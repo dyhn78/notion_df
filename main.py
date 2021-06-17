@@ -5,7 +5,7 @@ from notion_client import AsyncClient, Client
 
 from stopwatch import stopwatch
 from db_reader import DatabaseRetrieveReader as DBRetrieveReader, DatabaseQueryReader as DBQueryReader
-from db_query.filter_maker import DatabaseQueryFilterFrameMaker as DBQueryFilterframemaker
+from db_query.filter_maker import QueryFrameMaker, AndFilter as And, OrFilter as Or
 
 # TODO: .env 파일에 토큰 숨기기
 os.environ['NOTION_TOKEN'] = ***REMOVED***
@@ -26,28 +26,28 @@ test_retrieve_reader = DBRetrieveReader(test_database)
 
 default_filter = {'database_id': TEST_DATABASE_ID,
                   'filter': {
-                      'or': [{
+                      'and': [{
                           'property': '이름',
-                          'text': {'contains': '1'}
+                          'text': {'starts_with': '2'}
                       },
                           {
                               'property': '이름',
-                              'text': {'contains': '2'}
+                              'text': {'ends_with': '0'}
                           }]
                   }}
 
-filter_frame_maker = DBQueryFilterframemaker(test_retrieve_reader)
-name_filter_frame = filter_frame_maker.text('이름')
-filter1 = name_filter_frame.starts_with('2')
-filter2 = name_filter_frame.ends_with('0')
-test_filter = (filter1 & filter2)
+testdb_frame = QueryFrameMaker(test_retrieve_reader)
+name_frame = testdb_frame.text('이름')
+filter1 = name_frame.starts_with('2')
+filter2 = name_frame.ends_with('0')
+test_filter = And(filter1, filter2)
 
 pprint(test_filter.apply)
 pprint(test_filter.nesting)
 
 test_subpages = notion.databases.query(database_id=TEST_DATABASE_ID, filter=test_filter.apply)
 
-print('\n' * 5)
+print('\n' * 3)
 pprint(DBQueryReader(test_subpages).plain_items)
 
 # help(notion.databases)
