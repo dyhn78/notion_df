@@ -1,70 +1,102 @@
-from typing import List, Dict, Any
-# from pprint import pprint
+class DatabaseRetrieveReader:
+    def __init__(self, retrieve_results: dict):
+        """
+        :argument retrieve_results: notion.databases.retrieve(database_id: str) 메소드로 얻을 수 있다.
+        """
+        self.raw = retrieve_results
+
+    @property
+    def database_frame(self) -> dict[str, str]:
+        """
+        :return {prop_name: prop_type for prop_name in database}
+        """
+        decorated_properties = self.raw['properties']
+        result = {}
+        for prop_name, decorated_value in decorated_properties.items():
+            result[prop_name] = decorated_value['type']
+        return result
 
 
-# TODO datetime.fromisoformat, isoformat 적용
-def plain_value(decorated_property) -> Any:
-    prop_type = decorated_property['type']
-    decorated_value = decorated_property[prop_type]
+class DatabaseQueryReader:
+    def __init__(self, query_results: dict):
+        self.query_results = query_results
 
-    if prop_type == 'title':
-        result = ''.join([deco_text['plain_text'] for deco_text in decorated_value])
-    elif prop_type == 'select':
-        result = decorated_value['name']
-    elif prop_type == 'multi_select':
-        result = [single_dicts['name'] for single_dicts in decorated_value]
-        result.sort()
-    elif prop_type in ['people', 'person']:
+    @property
+    def plain_items(self) -> list[dict]:
+        decorated_pages = [pages['properties'] for pages in self.query_results['results']]
         result = []
-        for single_dicts in decorated_value:
-            try:
-                res = single_dicts['name']
-            except KeyError:
-                res = 'bot'
+        for decorated_page in decorated_pages:
+            res = {}
+            for key, decorated_property in decorated_page.items():
+                # if key == 'rollupX': print(decorated_property)
+                res[key] = self.__get_plain_value(decorated_property)
             result.append(res)
-        result.sort()
-    elif prop_type == 'relation':
-        result = [single_dicts['id'] for single_dicts in decorated_value]
-        result.sort()
-    elif prop_type == 'rollup':
-        result = [plain_value(deco_dict) for deco_dict in decorated_value['array']]
-        if len(result) == 1:
-            result = result[0]
-        result.sort()
-    else:
-        result = decorated_value
-    return result
+        return result
 
+    # TODO: datetime.fromisoformat, isoformat 적용
+    @classmethod
+    def __get_plain_value(cls, decorated_property):
+        prop_type = decorated_property['type']
+        decorated_value = decorated_property[prop_type]
 
-def flatten_query(query_results: Dict) -> List[Dict]:
-    decorated_pages = [pages['properties'] for pages in query_results['results']]
-    result = []
-    for decorated_page in decorated_pages:
-        res = {}
-        for key, decorated_property in decorated_page.items():
-            # if key == 'rollupX': print(decorated_property)
-            res[key] = plain_value(decorated_property)
-        result.append(res)
-    return result
+        if prop_type in ['title', 'rich_text']:
+            result = ''.join([deco_text['plain_text'] for deco_text in decorated_value])
+        elif prop_type == 'select':
+            result = decorated_value['name']
+        elif prop_type == 'multi_select':
+            result = [single_dicts['name'] for single_dicts in decorated_value]
+            result.sort()
+        elif prop_type in ['people', 'person']:
+            result = []
+            for single_dicts in decorated_value:
+                try:
+                    res = single_dicts['name']
+                except KeyError:
+                    res = 'bot_' + single_dicts['id'][0:4]
+                result.append(res)
+            result.sort()
+        elif prop_type == 'relation':
+            result = [single_dicts['id'] for single_dicts in decorated_value]
+            result.sort()
+        elif prop_type == 'rollup':
+            result = [cls.__get_plain_value(deco_dict) for deco_dict in decorated_value['array']]
+            if len(result) == 1:
+                result = result[0]
+            result.sort()
+        else:
+            result = decorated_value
+        return result
 
 
 """
 flatten_query의 반환값 예시:
 
-    [{'Xmulti_select': ['a'],
-      'Xpeople': ['Younghoon Yun'],
-      'Xselect': '1',
-      'back_relationX': [],
+    [{'back_relationX': [],
       'checkboxX': False,
       'created_timeX': '2021-06-14T06:56:58.744Z',
+      'dateX': {'end': None, 'start': '2021-06-14'},
       'emailX': '123',
       'fileX': [],
       'formulaX': {'number': 123, 'type': 'number'},
-      'relationX': ['6ec57963-a8e6-4fb9-afa2-bf01ccc6dcf7'],
-      'rollupX': ['2'],
+      'multi_selectX': ['a'],
+      'peopleX': ['Younghoon Yun'],
+      'relationX': ['6ec57963-a8e6-4fb9-afa2-bf01ccc6dcf7',
+                    '9e2efdc4-308c-4ec6-97df-765db284f128'],
+      'rollupX': [['Younghoon Yun', 'bot_3f83'], ['Younghoon Yun', 'bot_3f83']],
+      'rollupX2': [['Younghoon Yun', 'bot_3f83'], ['Younghoon Yun', 'bot_3f83']],
+      'selectX': '1',
       'telephoneX': '123',
       'urlX': '123',
-      '열': {'end': None, 'start': '2021-06-14'},
+      '속성': [{'annotations': {'bold': False,
+                              'code': False,
+                              'color': 'default',
+                              'italic': False,
+                              'strikethrough': False,
+                              'underline': False},
+              'href': None,
+              'plain_text': 'asd',
+              'text': {'content': 'asd', 'link': None},
+              'type': 'text'}],
       '이름': '1'}]
 
 flatten_query의 입력값 예시:
@@ -157,4 +189,3 @@ flatten_query의 입력값 예시:
                                                    'type': 'text'}],
                                         'type': 'title'}}}]}
 """
-
