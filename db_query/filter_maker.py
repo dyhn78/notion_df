@@ -1,90 +1,101 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 from pprint import pprint
 
 from db_reader import DatabaseRetrieveReader as DBRetrieveReader
 
 
-class QueryFilter(ABC):
-    """참고로, nesting 기준이 Notion 앱에서보다 더 강하다.
-    예를 들어 any('contains', ['1', 'A', '@'] 형식으로 필터를 구성할 경우
-    Notion 앱에서는 nesting == 0이지만, API 상에서는 1로 판정한다."""
-    @property
-    @abstractmethod
-    def apply(self):
-        pass
-
-    @property
-    @abstractmethod
-    def nesting(self):
-        pass
-
-    def __and__(self, other):
-        """filter1 & filter2 형식으로 사용할 수 있다."""
-        return AndFilter(self, other)
-
-    def __or__(self, other):
-        """filter1 | filter2 형식으로 사용할 수 있다."""
-        return OrFilter(self, other)
-
-
-class PlainQueryFilter(QueryFilter):
-    def __init__(self, plain_filter_value: dict):
-        self._apply = plain_filter_value
-
-    @property
-    def apply(self):
-        return self._apply
-
-    @property
-    def nesting(self):
-        return 0
-
-
-class CompoundFilter(QueryFilter):
-    def __init__(self, *elements):
-        elements = list(elements)
-        if elements and not all(isinstance(e, AndFilter) for e in elements) \
-                and not all(isinstance(e, OrFilter) for e in elements):
-            self.elements = elements
-            self._nesting = 1 + max(e.nesting for e in elements)
-        else:
-            self.elements = []
-            for e in elements:
-                self.elements.extend(e.elements)
-            self._nesting = max(e.nesting for e in elements)
-
+class QueryFilter:
+    # TODO: AssertionError 대신 커스텀 에러클래스 정의
+    def __init__(self, filter_value: dict, nesting: int, bracket_type: str):
+        """nesting 기준이 Notion 앱에서보다 더 강하다.
+        예를 들어 any('contains', ['1', 'A', '@'] 형식으로 필터를 구성할 경우
+        Notion 앱에서는 nesting == 0이지만, API 상에서는 1로 판정한다."""
+        self.apply = filter_value
+        self.nesting = nesting
+        self.bracket_type = bracket_type
         if self.nesting > 2:
-            # TODO: AssertionError 대신 커스텀 에러클래스 정의
             print('Nested greater than 2!')
             pprint(self.apply)
             raise AssertionError
 
-    @property
-    @abstractmethod
-    def apply(self):
-        pass
+    def __and__(self, other):
+        """filter1 & filter2 형식으로 사용할 수 있다."""
+        if self.bracket_type == other.bracket_type and self.bracket_type != 'None':
+            return self.__join(other)
+        else:
+            return DatabaseQueryFilterFrameMaker.all(self, other)
 
-    @property
-    def nesting(self):
-        return self._nesting
+    def __or__(self, other):
+        """filter1 | filter2 형식으로 사용할 수 있다."""
+        if self.bracket_type == other.bracket_type and self.bracket_type != 'None':
+            return self.__join(other)
+        else:
+            return DatabaseQueryFilterFrameMaker.any(self, other)
+
+    def __join(self, other):
+        args = []
+        print(args)
+        for instance in self, other:
+            args.extend(instance.apply[instance.bracket_type])
+            print(args)
+        filter_value = {self.bracket_type: args}
+        return QueryFilter(filter_value, self.nesting, self.bracket_type)
 
 
-class AndFilter(CompoundFilter):
-    @property
-    def apply(self):
-        return {'and': list(e.apply for e in self.elements)}
+class PropertyFilterFrame(ABC):
+    prop_class = None
+
+    def __init__(self, prop_name):
+        self.prop_name = prop_name
+        assert self.prop_class is not None
+
+    def _build(self, filter_name, arg):
+        return QueryFilter({
+            'property': self.prop_name,
+            self.prop_class: {filter_name: arg}
+        }, 0, 'None')
+
+    def is_empty(self):
+        return self._build('is_empty', True)
+
+    def is_not_empty(self):
+        return self._build('is_not_empty', True)
+
+    def all(self, filter_name, args: list):
+        filters = self.__split_list_of_expected_values(filter_name, args)
+        return DatabaseQueryFilterFrameMaker.all(*filters)
+
+    def any(self, filter_name, args: list):
+        filters = self.__split_list_of_expected_values(filter_name, args)
+        return DatabaseQueryFilterFrameMaker.any(*filters)
+
+    def __split_list_of_expected_values(self, filter_name, args):
+        filters = []
+        for arg in args:
+            filters.append(self._build(filter_name, arg))
+        return filters
 
 
-class OrFilter(CompoundFilter):
-    @property
-    def apply(self):
-        return {'or': list(e.apply for e in self.elements)}
-
-
-class QueryFrameMaker:
+class DatabaseQueryFilterFrameMaker:
     def __init__(self, retrieve_reader: DBRetrieveReader):
         """특정한 데이터베이스 하나를 위한 query_filter 프레임을 만든다."""
         self.database_frame = retrieve_reader.database_frame
+
+    @classmethod
+    def all(cls, *filters: QueryFilter):
+        nesting = cls.__eval_compound_nest(*filters)
+        and_filter = QueryFilter({'and': [ft.apply for ft in filters]}, nesting, 'and')
+        return and_filter
+
+    @classmethod
+    def any(cls, *filters: QueryFilter):
+        nesting = cls.__eval_compound_nest(*filters)
+        or_filter = QueryFilter({'or': [ft.apply for ft in filters]}, nesting, 'or')
+        return or_filter
+
+    @staticmethod
+    def __eval_compound_nest(*filters: QueryFilter):
+        return 1 + max(ft.nesting for ft in filters)
 
     def __call__(self, name: str, value_type=None):
         """알맞은 PropertyFilters를 자동으로 찾아 반환한다."""
@@ -111,129 +122,93 @@ class QueryFrameMaker:
 
     @staticmethod
     def text(name: str):
-        return TextFrame(name)
+        return _TextFilter(name)
 
     @staticmethod
     def number(name: str):
-        return NumberFrame(name)
+        return _NumberFilter(name)
 
     @staticmethod
     def checkbox(name: str):
-        return CheckboxFrame(name)
+        return _CheckboxFilter(name)
 
     @staticmethod
     def select(name: str):
-        return SelectFrame(name)
+        return _SelectFilter(name)
 
     @staticmethod
     def files(name: str):
-        return FilesFrame(name)
+        return _FilesFilter(name)
 
     @staticmethod
     def multi_select(name: str):
-        return MultiselectFrame(name)
+        return _MultiselectFilter(name)
 
     @staticmethod
     def date(name: str):
-        return DateFrame(name)
+        return _DateFilter(name)
 
     @staticmethod
     def people(name: str):
-        return PeopleFrame(name)
+        return _PeopleFilter(name)
 
     @staticmethod
     def relation(name: str):
-        return RelationFrame(name)
+        return _RelationFilter(name)
 
 
-class PlainFilterFrame:
-    prop_class = None
-
-    def __init__(self, prop_name):
-        self.prop_name = prop_name
-        assert self.prop_class is not None
-
-    def make_filter(self, filter_type, arg):
-        return PlainQueryFilter({
-            'property': self.prop_name,
-            self.prop_class: {filter_type: arg}
-        })
-
-    def is_empty(self):
-        return self.make_filter('is_empty', True)
-
-    def is_not_empty(self):
-        return self.make_filter('is_not_empty', True)
-
-
-class EqualtypeFrame(ABC, PlainFilterFrame):
-    def equals(self, arg):
-        return self.make_filter('equals', arg)
-
-    def does_not_equal(self, arg):
-        return self.make_filter('does_not_equal', arg)
-
-    def equals_to_any(self, *args):
-        return OrFilter(self.equals(arg) for arg in args)
-
-    def equals_to_none(self, *args):
-        return AndFilter(self.does_not_equal(arg) for arg in args)
-
-
-class ContaintypeFrame(ABC, PlainFilterFrame):
-    def contains(self, arg):
-        return self.make_filter('contains', str(arg))
-
-    def does_not_contain(self, arg):
-        return self.make_filter('does_not_contain', str(arg))
-
-    def contains_any(self, *args):
-        return OrFilter(self.contains(arg) for arg in args)
-
-    def contains_all(self, *args):
-        return AndFilter(self.contains(arg) for arg in args)
-
-    def contains_none(self, *args):
-        return AndFilter(self.does_not_contain(arg) for arg in args)
-
-    def contains_not_all(self, *args):
-        return OrFilter(self.does_not_contain(arg) for arg in args)
-
-
-class TextFrame(EqualtypeFrame, ContaintypeFrame):
+class _TextFilter(PropertyFilterFrame):
     prop_class = 'text'
 
+    def equals(self, arg):
+        return self._build('equals', arg)
+
+    def does_not_equal(self, arg):
+        return self._build('does_not_equal', arg)
+
+    def contains(self, arg):
+        return self._build('contains', str(arg))
+
+    def does_not_contain(self, arg):
+        return self._build('does_not_contain', str(arg))
+
     def starts_with(self, arg):
-        return self.make_filter('starts_with', str(arg))
+        return self._build('starts_with', str(arg))
 
     def ends_with(self, arg):
-        return self.make_filter('ends_with', str(arg))
-
-    def starts_with_one_of(self, *args):
-        return OrFilter(self.starts_with(arg) for arg in args)
-
-    def ends_with_one_of(self, *args):
-        return AndFilter(self.ends_with(arg) for arg in args)
+        return self._build('ends_with', str(arg))
 
 
-class NumberFrame(EqualtypeFrame):
+class _NumberFilter(PropertyFilterFrame):
     prop_class = 'number'
 
+    def equals(self, arg):
+        return self._build('equals', arg)
+
+    def does_not_equal(self, arg):
+        return self._build('does_not_equal', arg)
+
     def greater_than(self, arg):
-        return self.make_filter('greater_than', arg)
+        return self._build('greater_than', arg)
 
     def less_than(self, arg):
-        return self.make_filter('less_than', arg)
+        return self._build('less_than', arg)
 
     def greater_than_or_equal_to(self, arg):
-        return self.make_filter('greater_than_or_equal_to', arg)
+        return self._build('greater_than_or_equal_to', arg)
 
     def less_than_or_equal_to(self, arg):
-        return self.make_filter('less_than_or_equal_to', arg)
+        return self._build('less_than_or_equal_to', arg)
 
 
-class CheckboxFrame(EqualtypeFrame):
+class _CheckboxFilter(PropertyFilterFrame):
     prop_class = 'checkbox'
+
+    def equals(self, arg):
+        return self._build('equals', arg)
+
+    def does_not_equal(self, arg):
+        return self._build('does_not_equal', arg)
 
     def is_empty(self):
         return self.equals(False)
@@ -242,58 +217,88 @@ class CheckboxFrame(EqualtypeFrame):
         return self.equals(True)
 
 
-class SelectFrame(EqualtypeFrame):
+class _SelectFilter(PropertyFilterFrame):
     prop_class = 'select'
 
-
-class MultiselectFrame(EqualtypeFrame, ContaintypeFrame):
-    prop_class = 'multi_select'
-
-
-class DateFrame(EqualtypeFrame):
-    prop_class = 'date'
+    def equals(self, arg):
+        return self._build('equals', arg)
 
     def does_not_equal(self, arg):
-        return OrFilter(self.before(arg), self.after(arg))
+        return self._build('does_not_equal', arg)
+
+
+class _MultiselectFilter(PropertyFilterFrame):
+    prop_class = 'multi_select'
+
+    def equals(self, arg):
+        return self._build('equals', arg)
+
+    def does_not_equal(self, arg):
+        return self._build('does_not_equal', arg)
+
+    def contains(self, arg):
+        return self._build('contains', arg)
+
+    def does_not_contain(self, arg):
+        return self._build('does_not_contain', arg)
+
+
+class _DateFilter(PropertyFilterFrame):
+    prop_class = 'date'
+
+    def equals(self, arg):
+        return self._build('equals', arg)
 
     def before(self, arg):
-        return self.make_filter('before', arg)
+        return self._build('before', arg)
 
     def after(self, arg):
-        return self.make_filter('after', arg)
+        return self._build('after', arg)
 
     def on_or_before(self, arg):
-        return self.make_filter('on_or_before', arg)
+        return self._build('on_or_before', arg)
 
     def on_or_after(self, arg):
-        return self.make_filter('on_or_after', arg)
+        return self._build('on_or_after', arg)
 
     def past_week(self, arg):
-        return self.make_filter('past_week', arg)
+        return self._build('past_week', arg)
 
     def past_month(self, arg):
-        return self.make_filter('past_month', arg)
+        return self._build('past_month', arg)
 
     def past_year(self, arg):
-        return self.make_filter('past_year', arg)
+        return self._build('past_year', arg)
 
     def next_week(self, arg):
-        return self.make_filter('next_week', arg)
+        return self._build('next_week', arg)
 
     def next_month(self, arg):
-        return self.make_filter('next_month', arg)
+        return self._build('next_month', arg)
 
     def next_year(self, arg):
-        return self.make_filter('next_year', arg)
+        return self._build('next_year', arg)
 
 
-class PeopleFrame(EqualtypeFrame, ContaintypeFrame):
+class _PeopleFilter(PropertyFilterFrame):
     prop_class = 'people'
 
+    def equals(self, arg):
+        return self._build('equals', arg)
 
-class FilesFrame(PlainFilterFrame):
+    def does_not_equal(self, arg):
+        return self._build('does_not_equal', arg)
+
+
+class _FilesFilter(PropertyFilterFrame):
     prop_class = 'files'
 
 
-class RelationFrame(ContaintypeFrame):
+class _RelationFilter(PropertyFilterFrame):
     prop_class = 'relation'
+
+    def contains(self, arg):
+        return self._build('contains', arg)
+
+    def does_not_contain(self, arg):
+        return self._build('does_not_contain', arg)
