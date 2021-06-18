@@ -37,15 +37,16 @@ class CompoundFilter(QueryFilter):
             else:
                 heteros.append(e)
 
+        self._nesting = 0
+        if homos:
+            self._nesting = max(e.nesting for e in homos)
         if heteros:
-            self._nesting = 1 + max(e.nesting for e in elements)
-            if self.nesting > 2:
-                # TODO: AssertionError 대신 커스텀 에러클래스 정의
-                print('Nested greater than 2!')
-                pprint(self.apply)
-                raise AssertionError
-        else:
-            self._nesting = max(e.nesting for e in elements)
+            self._nesting = max(self._nesting, 1 + max(e.nesting for e in heteros))
+        if self.nesting > 2:
+            # TODO: AssertionError 대신 커스텀 에러클래스 정의
+            print('Nested greater than 2!')
+            pprint(self.apply)
+            raise AssertionError
 
         self.elements = heteros
         for e in homos:
@@ -73,7 +74,7 @@ class OrFilter(CompoundFilter):
         return {'or': list(e.apply for e in self.elements)}
 
 
-class QueryFrameMaker:
+class QueryFilterFrameMaker:
     def __init__(self, retrieve_reader: DBRetrieveReader):
         """특정한 데이터베이스 하나를 위한 query_filter 프레임을 만든다."""
         self.database_frame = retrieve_reader.database_frame
