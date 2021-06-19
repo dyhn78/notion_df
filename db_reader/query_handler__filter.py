@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from pprint import pprint
 
-from read_db.parser import DatabaseRetrieveReader as DBRetrieveReader
+from db_reader.parser import DatabaseRetrieveReader as DBRetrieveReader
 
 
 class QueryFilter(ABC):

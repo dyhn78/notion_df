@@ -4,8 +4,8 @@ from notion_client import AsyncClient, Client
 # from notion_client import api_endpoints, APIErrorCode, APIResponseError
 
 from stopwatch import stopwatch
-from read_db.parser import DatabaseRetrieveReader as DBRetrieveReader, DatabaseQueryReader as DBQueryReader
-from read_db.query_maker import QueryMaker
+from db_reader.parser import DatabaseRetrieveReader as DBRetrieveReader, DatabaseQueryReader as DBQueryReader
+from db_reader.query_handler import QueryHandler
 
 # TODO: .env 파일에 토큰 숨기기
 os.environ['NOTION_TOKEN'] = ***REMOVED***
@@ -36,7 +36,7 @@ default_filter = {'database_id': TEST_DATABASE_ID,
                           }]
                   }}
 
-test_db_query_maker = QueryMaker(test_retrieve_reader)
+test_db_query_maker = QueryHandler(test_retrieve_reader)
 
 name_frame = test_db_query_maker.filter_maker.frame_by_text('이름')
 filter1 = name_frame.starts_with('2')

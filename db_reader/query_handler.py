@@ -1,9 +1,9 @@
-from read_db.query_maker_filter import QueryFilter, PlainFilter, QueryFilterMaker
-from read_db.query_maker_sorts import QuerySort as Sort
-from read_db.parser import DatabaseRetrieveReader as DBRetrieveReader
+from db_reader.query_handler__filter import QueryFilter, PlainFilter, QueryFilterMaker
+from db_reader.query_handler__sort import QuerySort as Sort
+from db_reader.parser import DatabaseRetrieveReader as DBRetrieveReader
 
 
-class QueryMaker:
+class QueryHandler:
     def __init__(self, retrieve_reader: DBRetrieveReader):
         # retrieve_reader 치우기.
         self.page_size = 100
