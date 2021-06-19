@@ -4,8 +4,8 @@ from notion_client import AsyncClient, Client
 # from notion_client import api_endpoints, APIErrorCode, APIResponseError
 
 from stopwatch import stopwatch
-from db_reader import DatabaseRetrieveReader as DBRetrieveReader, DatabaseQueryReader as DBQueryReader
-from db_query.filter_maker import DatabaseQueryFilterFrameMaker as DBQueryFilterframemaker
+from read_db.parser import DatabaseRetrieveReader as DBRetrieveReader, DatabaseQueryReader as DBQueryReader
+from read_db.query_maker import QueryMaker
 
 # TODO: .env 파일에 토큰 숨기기
 os.environ['NOTION_TOKEN'] = ***REMOVED***
@@ -36,20 +36,20 @@ default_filter = {'database_id': TEST_DATABASE_ID,
                           }]
                   }}
 
-filter_frame_maker = DBQueryFilterframemaker(test_retrieve_reader)
-name_filter_frame = filter_frame_maker.text('이름')
-filter1 = name_filter_frame.starts_with('2')
-filter2 = name_filter_frame.ends_with('0')
+test_db_query_maker = QueryMaker(test_retrieve_reader)
+
+name_frame = test_db_query_maker.filter_maker.frame_by_text('이름')
+filter1 = name_frame.starts_with('2')
+filter2 = name_frame.ends_with('0')
 test_filter = (filter1 & filter2)
-test_sort = None
-
 pprint(test_filter.apply)
-pprint(test_filter.nesting)
+test_db_query_maker.filter_handler.push(test_filter)
 
-test_subpages = notion.databases.query(database_id=TEST_DATABASE_ID, filter=test_filter.apply, sort=test_sort.apply,
-                                       start_cursor=0, page_size=100)
+test_db_query_maker.sort.append_ascending('이름')
+pprint(test_db_query_maker.sort.apply)
+test_db_query_maker.page_size = 30
 
-print('\n' * 5)
+test_subpages = notion.databases.query(database_id=TEST_DATABASE_ID, **test_db_query_maker.apply)
 pprint(DBQueryReader(test_subpages).plain_items)
 
 # help(notion.databases)

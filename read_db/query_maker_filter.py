@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from pprint import pprint
 
-from db_reader import DatabaseRetrieveReader as DBRetrieveReader
+from read_db.parser import DatabaseRetrieveReader as DBRetrieveReader
 
 
 class QueryFilter(ABC):
@@ -74,15 +74,15 @@ class OrFilter(CompoundFilter):
         return {'or': list(e.apply for e in self.elements)}
 
 
-class QueryFilterFrameMaker:
+class QueryFilterMaker:
     def __init__(self, retrieve_reader: DBRetrieveReader):
         """특정한 데이터베이스 하나를 위한 query_filter 프레임을 만든다."""
-        self.database_frame = retrieve_reader.database_frame
+        self.__database_frame = retrieve_reader.database_frame
 
-    def __call__(self, name: str, value_type=None):
+    def __call__(self, prop_name: str, value_type=None):
         """알맞은 PropertyFilters를 자동으로 찾아 반환한다."""
-        prop_class = self.__get_prop_class(name, value_type)
-        return getattr(self, prop_class)(name)
+        prop_class = self.__get_prop_class(prop_name, value_type)
+        return getattr(self, prop_class)(prop_name)
 
     def __get_prop_class(self, name, value_type):
         if name == 'formula':
@@ -91,7 +91,7 @@ class QueryFilterFrameMaker:
         elif name == 'rollup':
             prop_class = value_type
         else:
-            prop_type = self.database_frame[name]
+            prop_type = self.__database_frame[name]
             if prop_type in ['title', 'rich_text', 'url', 'email', 'phone_number']:
                 prop_class = 'text'
             elif prop_type in ['created_time', 'last_edited_time']:
@@ -103,56 +103,56 @@ class QueryFilterFrameMaker:
         return prop_class
 
     @staticmethod
-    def text(name: str):
-        return TextFrame(name)
+    def frame_by_text(prop_name: str):
+        return TextFrame(prop_name)
 
     @staticmethod
-    def number(name: str):
-        return NumberFrame(name)
+    def frame_by_number(prop_name: str):
+        return NumberFrame(prop_name)
 
     @staticmethod
-    def checkbox(name: str):
-        return CheckboxFrame(name)
+    def frame_by_checkbox(prop_name: str):
+        return CheckboxFrame(prop_name)
 
     @staticmethod
-    def select(name: str):
-        return SelectFrame(name)
+    def frame_by_select(prop_name: str):
+        return SelectFrame(prop_name)
 
     @staticmethod
-    def files(name: str):
-        return FilesFrame(name)
+    def frame_by_files(prop_name: str):
+        return FilesFrame(prop_name)
 
     @staticmethod
-    def multi_select(name: str):
-        return MultiselectFrame(name)
+    def frame_by_multi_select(prop_name: str):
+        return MultiselectFrame(prop_name)
 
     @staticmethod
-    def date(name: str):
-        return DateFrame(name)
+    def frame_by_date(prop_name: str):
+        return DateFrame(prop_name)
 
     @staticmethod
-    def people(name: str):
-        return PeopleFrame(name)
+    def frame_by_people(prop_name: str):
+        return PeopleFrame(prop_name)
 
     @staticmethod
-    def relation(name: str):
-        return RelationFrame(name)
+    def frame_by_relation(prop_name: str):
+        return RelationFrame(prop_name)
 
 
-class PlainQueryFilter(QueryFilter):
-    def __init__(self, plain_filter_value: dict):
-        self._apply = plain_filter_value
+class PlainFilter(QueryFilter):
+    def __init__(self, plain_filter: dict):
+        self._dump = plain_filter
 
     @property
     def apply(self):
-        return self._apply
+        return self._dump
 
     @property
     def nesting(self):
         return 0
 
 
-class PlainFilterFrame:
+class PlainFrame:
     prop_class = None
 
     def __init__(self, prop_name):
@@ -160,7 +160,7 @@ class PlainFilterFrame:
         assert self.prop_class is not None
 
     def make_filter(self, filter_type, arg):
-        return PlainQueryFilter({
+        return PlainFilter({
             'property': self.prop_name,
             self.prop_class: {filter_type: arg}
         })
@@ -172,7 +172,7 @@ class PlainFilterFrame:
         return self.make_filter('is_not_empty', True)
 
 
-class EqualtypeFrame(ABC, PlainFilterFrame):
+class EqualtypeFrame(ABC, PlainFrame):
     def equals(self, arg):
         return self.make_filter('equals', arg)
 
@@ -186,7 +186,7 @@ class EqualtypeFrame(ABC, PlainFilterFrame):
         return AndFilter(self.does_not_equal(arg) for arg in args)
 
 
-class ContaintypeFrame(ABC, PlainFilterFrame):
+class ContaintypeFrame(ABC, PlainFrame):
     def contains(self, arg):
         return self.make_filter('contains', str(arg))
 
@@ -297,7 +297,7 @@ class PeopleFrame(EqualtypeFrame, ContaintypeFrame):
     prop_class = 'people'
 
 
-class FilesFrame(PlainFilterFrame):
+class FilesFrame(PlainFrame):
     prop_class = 'files'
 
 
