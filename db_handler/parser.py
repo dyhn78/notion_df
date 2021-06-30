@@ -1,43 +1,59 @@
-from pprint import pprint
+# from pprint import pprint
 
-class DatabaseRetrieveReader:
+
+class DatabaseParser:
     def __init__(self, retrieve_results: dict):
         """
         :argument retrieve_results: notion.databases.retrieve(database_id: str) 메소드로 얻을 수 있다.
         """
-        self.raw = retrieve_results
+        self.results = retrieve_results
+        self.properties_table = self.results['properties']
 
     @property
-    def database_frame(self) -> dict[str, str]:
+    def prop_type_table(self) -> dict[str, str]:
         """
         :return {prop_name: prop_type for prop_name in database}
         """
-        decorated_properties = self.raw['properties']
-        result = {}
-        for prop_name, decorated_value in decorated_properties.items():
-            result[prop_name] = decorated_value['type']
-        return result
-
-
-class DatabaseQueryReader:
-    def __init__(self, query_results: dict):
-        self.query_results = query_results
+        return {prop_name: rich_property_object['type']
+                for prop_name, rich_property_object in self.properties_table.listed_items()}
 
     @property
-    def plain_items(self) -> list[dict]:
-        decorated_pages = [pages['properties'] for pages in self.query_results['results']]
-        result = []
-        for decorated_page in decorated_pages:
-            res = {}
-            for key, decorated_property in decorated_page.items():
-                # if key == 'rollupX': print(decorated_property)
-                res[key] = self.__get_plain_value(decorated_property)
-            result.append(res)
-        return result
+    def prop_id_table(self) -> dict[str, str]:
+        """
+        :return {prop_name: prop_id for prop_name in database}
+        """
+        return {prop_name: rich_property_object['id']
+                for prop_name, rich_property_object in self.properties_table.listed_items()}
 
+
+class PageListParser:
+    def __init__(self, query_results: dict):
+        self.has_more = query_results['has_more']
+        self.next_cursor = query_results['next_cursor']
+        self.listed_objects = [PageParser(page_result) for page_result in query_results['results']]
+
+    @property
+    def listed_items(self) -> list[dict]:
+        return [{'id': page_object.id, 'properties': page_object.properties} for page_object in self.listed_objects]
+
+    @property
+    def dicted_items_by_id(self) -> dict[dict]:
+        return {page_object.id: page_object.properties for page_object in self.listed_objects}
+
+    @property
+    def title_id_table(self) -> dict[dict]:
+        return {page_object.title: page_object.id for page_object in self.listed_objects}
+
+
+class PageParser:
     # TODO: datetime.fromisoformat, isoformat 적용
-    @classmethod
-    def __get_plain_value(cls, rich_property_object):
+    def __init__(self, page):
+        self.id = page['id']
+        self.title = None
+        self.properties = {prop_name: self.__flatten_rich_property(rich_property_object)
+                           for prop_name, rich_property_object in page['properties'].items()}
+
+    def __flatten_rich_property(self, rich_property_object):
         # print('>'*20)
         # pprint(rich_property_object)
         prop_type = rich_property_object['type']
@@ -45,7 +61,13 @@ class DatabaseQueryReader:
 
         if prop_type in ['title', 'rich_text', 'text']:
             plain_text = ''.join([rich_text_object['plain_text'] for rich_text_object in prop_object])
-            result = [plain_text, prop_object]
+            rich_text = []
+            for rich_text_object in prop_object:
+                rich_text.append({key: rich_text_object[key]
+                                  for key in ['type', 'text', 'mention', 'equation'] if key in rich_text_object})
+            result = [plain_text, rich_text]
+            if prop_type == 'title':
+                self.title = result
         elif prop_type == 'select':
             result = prop_object['name']
         elif prop_type == 'multi_select':
@@ -65,7 +87,8 @@ class DatabaseQueryReader:
             result.sort()
         elif prop_type == 'rollup':
             # pprint(prop_object)
-            result = [cls.__get_plain_value(rollup_object) for rollup_object in prop_object['array']]
+            value_type = prop_object['type']
+            result = [self.__flatten_rich_property(rollup_object) for rollup_object in prop_object[value_type]]
             # print('\n')
             # pprint(result)
             result.sort()
@@ -76,38 +99,61 @@ class DatabaseQueryReader:
         return result
 
 
-"""
-flatten_query의 반환값 예시:
+class BlockParser:
+    pass
 
-    [{'back_relationX': [],
+
+"""
+plain_items의 반환값 예시:
+
+    [{'back_relationX': ['e15c62be-b9e4-4bb5-9b62-9220804fe93f'],
       'checkboxX': False,
-      'created_timeX': '2021-06-14T06:56:58.744Z',
-      'dateX': {'end': None, 'start': '2021-06-14'},
-      'emailX': '123',
+      'created_timeX': '2021-06-17T10:47:00.000Z',
       'fileX': [],
       'formulaX': {'number': 123, 'type': 'number'},
-      'multi_selectX': ['a'],
-      'peopleX': ['Younghoon Yun'],
-      'relationX': ['6ec57963-a8e6-4fb9-afa2-bf01ccc6dcf7',
-                    '9e2efdc4-308c-4ec6-97df-765db284f128'],
-      'rollupX': [['Younghoon Yun', 'bot_3f83'], ['Younghoon Yun', 'bot_3f83']],
-      'rollupX2': [['Younghoon Yun', 'bot_3f83'], ['Younghoon Yun', 'bot_3f83']],
-      'selectX': '1',
-      'telephoneX': '123',
-      'urlX': '123',
-      '속성': [{'annotations': {'bold': False,
-                              'code': False,
-                              'color': 'default',
-                              'italic': False,
-                              'strikethrough': False,
-                              'underline': False},
-              'href': None,
-              'plain_text': 'asd',
-              'text': {'content': 'asd', 'link': None},
-              'type': 'text'}],
-      '이름': '1'}]
+      'multi_selectX': [],
+      'peopleX': [],
+      'relationX': ['9ed7d4fe-3c29-4e66-a4ed-cfa450814653'],
+      'rollupX': [[]],
+      'rollupX2': [['1234 1647 ',
+                    [{'text': {'content': '1234 ', 'link': None}, 'type': 'text'},
+                     {'mention': {'page': {'id': 'e15c62be-b9e4-4bb5-9b62-9220804fe93f'},
+                                  'type': 'page'},
+                      'type': 'mention'},
+                     {'text': {'content': ' ', 'link': None}, 'type': 'text'}]]],
+      '속성': ['150 가나다 23610',
+             [{'mention': {'page': {'id': 'a6a64f5c-0ed7-4127-a86b-72ac5b77c8db'},
+                           'type': 'page'},
+               'type': 'mention'},
+              {'text': {'content': ' 가나다 ', 'link': None}, 'type': 'text'},
+              {'mention': {'page': {'id': '3009f442-5e13-4828-9067-fbd574f31b49'},
+                           'type': 'page'},
+               'type': 'mention'}]],
+      '이름': ['23610',
+             [{'text': {'content': '23610', 'link': None}, 'type': 'text'}]]},
+     {'back_relationX': ['3009f442-5e13-4828-9067-fbd574f31b49'],
+      'checkboxX': False,
+      'created_timeX': '2021-06-17T10:47:00.000Z',
+      'fileX': [],
+      'formulaX': {'number': 123, 'type': 'number'},
+      'multi_selectX': [],
+      'peopleX': [],
+      'relationX': [],
+      'rollupX': [],
+      'rollupX2': [],
+      '속성': ['1234 1647 ',
+             [{'text': {'content': '1234 ', 'link': None}, 'type': 'text'},
+              {'mention': {'page': {'id': 'e15c62be-b9e4-4bb5-9b62-9220804fe93f'},
+                           'type': 'page'},
+               'type': 'mention'},
+              {'text': {'content': ' ', 'link': None}, 'type': 'text'}]],
+      '이름': ['2580',
+             [{'text': {'content': '2580', 'link': None}, 'type': 'text'}]]}]
 
-flatten_query의 입력값 예시:
+
+
+
+plain_items의 입력값 예시:
 
     {'has_more': False,
      'next_cursor': None,

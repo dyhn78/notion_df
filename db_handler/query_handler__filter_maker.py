@@ -1,86 +1,21 @@
-from abc import ABC, abstractmethod
-from pprint import pprint
+from abc import ABC
 
-from db_reader.parser import DatabaseRetrieveReader as DBRetrieveReader
-
-
-class QueryFilter(ABC):
-    """참고로, nesting 기준이 Notion 앱에서보다 더 강하다.
-    예를 들어 any('contains', ['1', 'A', '@'] 형식으로 필터를 구성할 경우
-    Notion 앱에서는 nesting == 0이지만, API 상에서는 1로 판정한다."""
-    @property
-    @abstractmethod
-    def apply(self):
-        pass
-
-    @property
-    @abstractmethod
-    def nesting(self):
-        pass
-
-    def __and__(self, other):
-        """filter1 & filter2 형식으로 사용할 수 있다."""
-        return AndFilter(self, other)
-
-    def __or__(self, other):
-        """filter1 | filter2 형식으로 사용할 수 있다."""
-        return OrFilter(self, other)
-
-
-class CompoundFilter(QueryFilter):
-    def __init__(self, *elements):
-        homos = []
-        heteros = []
-        for e in elements:
-            if type(e) == type(self):
-                homos.append(e)
-            else:
-                heteros.append(e)
-
-        self._nesting = 0
-        if homos:
-            self._nesting = max(e.nesting for e in homos)
-        if heteros:
-            self._nesting = max(self._nesting, 1 + max(e.nesting for e in heteros))
-        if self.nesting > 2:
-            # TODO: AssertionError 대신 커스텀 에러클래스 정의
-            print('Nested greater than 2!')
-            pprint(self.apply)
-            raise AssertionError
-
-        self.elements = heteros
-        for e in homos:
-            self.elements.extend(e.elements)
-
-    @property
-    @abstractmethod
-    def apply(self):
-        pass
-
-    @property
-    def nesting(self):
-        return self._nesting
-
-
-class AndFilter(CompoundFilter):
-    @property
-    def apply(self):
-        return {'and': list(e.apply for e in self.elements)}
-
-
-class OrFilter(CompoundFilter):
-    @property
-    def apply(self):
-        return {'or': list(e.apply for e in self.elements)}
+from db_handler.parser import DatabaseParser as DBParser
+from db_handler.query_handler__filter_base import QueryFilter, OrFilter, AndFilter
 
 
 class QueryFilterMaker:
-    def __init__(self, retrieve_reader: DBRetrieveReader):
+    def __init__(self):
         """특정한 데이터베이스 하나를 위한 query_filter 프레임을 만든다."""
-        self.__database_frame = retrieve_reader.database_frame
+        self.__types_table = None
+
+    def add_db_retrieve(self, database_parser: DBParser):
+        self.__types_table = database_parser.prop_type_table
 
     def __call__(self, prop_name: str, value_type=None):
         """알맞은 PropertyFilters를 자동으로 찾아 반환한다."""
+        if self.__types_table is None:
+            raise AssertionError
         prop_class = self.__get_prop_class(prop_name, value_type)
         return getattr(self, prop_class)(prop_name)
 
@@ -91,7 +26,7 @@ class QueryFilterMaker:
         elif name == 'rollup':
             prop_class = value_type
         else:
-            prop_type = self.__database_frame[name]
+            prop_type = self.__types_table[name]
             if prop_type in ['title', 'rich_text', 'url', 'email', 'phone_number']:
                 prop_class = 'text'
             elif prop_type in ['created_time', 'last_edited_time']:
@@ -107,6 +42,10 @@ class QueryFilterMaker:
         return TextFrame(prop_name)
 
     @staticmethod
+    def frame_by_relation(prop_name: str):
+        return RelationFrame(prop_name)
+
+    @staticmethod
     def frame_by_number(prop_name: str):
         return NumberFrame(prop_name)
 
@@ -119,12 +58,12 @@ class QueryFilterMaker:
         return SelectFrame(prop_name)
 
     @staticmethod
-    def frame_by_files(prop_name: str):
-        return FilesFrame(prop_name)
-
-    @staticmethod
     def frame_by_multi_select(prop_name: str):
         return MultiselectFrame(prop_name)
+
+    @staticmethod
+    def frame_by_files(prop_name: str):
+        return FilesFrame(prop_name)
 
     @staticmethod
     def frame_by_date(prop_name: str):
@@ -133,10 +72,6 @@ class QueryFilterMaker:
     @staticmethod
     def frame_by_people(prop_name: str):
         return PeopleFrame(prop_name)
-
-    @staticmethod
-    def frame_by_relation(prop_name: str):
-        return RelationFrame(prop_name)
 
 
 class PlainFilter(QueryFilter):
