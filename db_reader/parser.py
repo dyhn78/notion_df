@@ -1,3 +1,5 @@
+from pprint import pprint
+
 class DatabaseRetrieveReader:
     def __init__(self, retrieve_results: dict):
         """
@@ -35,36 +37,42 @@ class DatabaseQueryReader:
 
     # TODO: datetime.fromisoformat, isoformat 적용
     @classmethod
-    def __get_plain_value(cls, decorated_property):
-        prop_type = decorated_property['type']
-        decorated_value = decorated_property[prop_type]
+    def __get_plain_value(cls, rich_property_object):
+        # print('>'*20)
+        # pprint(rich_property_object)
+        prop_type = rich_property_object['type']
+        prop_object = rich_property_object[prop_type]
 
-        if prop_type in ['title', 'rich_text']:
-            result = ''.join([deco_text['plain_text'] for deco_text in decorated_value])
+        if prop_type in ['title', 'rich_text', 'text']:
+            plain_text = ''.join([rich_text_object['plain_text'] for rich_text_object in prop_object])
+            result = [plain_text, prop_object]
         elif prop_type == 'select':
-            result = decorated_value['name']
+            result = prop_object['name']
         elif prop_type == 'multi_select':
-            result = [single_dicts['name'] for single_dicts in decorated_value]
+            result = [select_object['name'] for select_object in prop_object]
             result.sort()
         elif prop_type in ['people', 'person']:
             result = []
-            for single_dicts in decorated_value:
+            for select_object in prop_object:
                 try:
-                    res = single_dicts['name']
+                    res = select_object['name']
                 except KeyError:
-                    res = 'bot_' + single_dicts['id'][0:4]
+                    res = 'bot_' + select_object['id'][0:4]
                 result.append(res)
             result.sort()
         elif prop_type == 'relation':
-            result = [single_dicts['id'] for single_dicts in decorated_value]
+            result = [relation_object['id'] for relation_object in prop_object]
             result.sort()
         elif prop_type == 'rollup':
-            result = [cls.__get_plain_value(deco_dict) for deco_dict in decorated_value['array']]
-            if len(result) == 1:
-                result = result[0]
+            # pprint(prop_object)
+            result = [cls.__get_plain_value(rollup_object) for rollup_object in prop_object['array']]
+            # print('\n')
+            # pprint(result)
             result.sort()
         else:
-            result = decorated_value
+            result = prop_object
+        # print('<' * 20)
+        # pprint(result)
         return result
 
 
