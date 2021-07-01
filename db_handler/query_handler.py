@@ -1,44 +1,60 @@
-from db_handler.query_handler__filter_base import QueryFilter
-from db_handler.query_handler__filter_maker import QueryFilterMaker, PlainFilter
-from db_handler.query_handler__sort import QuerySort as Sort
+from db_handler.handler_base import RequestHandler
+from db_handler.query__filter_base import QueryFilter
+from db_handler.query__filter_handler import QueryFilterMaker, PlainFilter
+from db_handler.query__sort_base import QuerySort
 from db_handler.parser import DatabaseParser as DBParser
 
 
-class QueryHandler:
-    def __init__(self, page_id: str, database_parser=None):
+class QueryHandler(RequestHandler):
+    """
+    notion.databases.query(**self.apply)
+    """
+    def __init__(self, page_id: str, database_parser=None, start_cursor=None):
         # retrieve_reader 치우기.
         self.page_id = page_id
         self.page_size = 100
-        self.sort = Sort()
-        self.filter_handler = QueryFilterHandler()
+        self.start_cursor = start_cursor
+        self.filter_handler = PlainFilter({})
         self.filter_maker = QueryFilterMaker()
-        # self.start_cursor = ''
+        self.sort_handler = []
         if database_parser is not None:
-            self.add_db_retrieve(database_parser)
+            self.__add_db_retrieve(database_parser)
 
-    def add_db_retrieve(self, database_parser: DBParser):
+    def __add_db_retrieve(self, database_parser: DBParser):
         self.filter_maker.add_db_retrieve(database_parser)
 
     @property
     def apply(self):
-        return {
+        res = {
             'database_id': self.page_id,
             'filter': self.filter_handler.apply,
-            'sorts': self.sort.apply,
-            # 'start_cursor': self.start_cursor,
+            'sorts': self.sort_handler,
             'page_size': self.page_size
         }
+        if self.start_cursor:
+            res['start_cursor'] = self.start_cursor
+        return res
 
+    def clear_filter(self):
+        self.filter_handler = PlainFilter({})
 
-class QueryFilterHandler:
-    def __init__(self):
-        self.apply = PlainFilter({})
+    def push_filter(self, query_filter: QueryFilter):
+        self.filter_handler = query_filter
 
-    def clear(self):
-        self.apply = PlainFilter({})
+    def clear_sort(self):
+        self.sort_handler = []
 
-    def push(self, query_filter: QueryFilter):
-        self.apply = query_filter.apply
+    def append_sort_ascending(self, prop_name):
+        self.sort_handler.append(QuerySort.make_ascending_sort(prop_name))
+
+    def append_sort_descending(self, prop_name):
+        self.sort_handler.append(QuerySort.make_descending_sort(prop_name))
+
+    def appendleft_sort_ascending(self, prop_name):
+        self.sort_handler.insert(0, QuerySort.make_ascending_sort(prop_name))
+
+    def appendleft_sort_descending(self, prop_name):
+        self.sort_handler.insert(0, QuerySort.make_descending_sort(prop_name))
 
 
 """

@@ -1,7 +1,7 @@
 from abc import ABC
 
 from db_handler.parser import DatabaseParser as DBParser
-from db_handler.query_handler__filter_base import QueryFilter, OrFilter, AndFilter
+from db_handler.query__filter_base import QueryFilter, OrFilter, AndFilter
 
 
 class QueryFilterMaker:
@@ -107,7 +107,7 @@ class PlainFrame:
         return self.make_filter('is_not_empty', True)
 
 
-class EqualtypeFrame(ABC, PlainFrame):
+class EqualtypeFrame(PlainFrame):
     def equals(self, arg):
         return self.make_filter('equals', arg)
 
@@ -121,7 +121,7 @@ class EqualtypeFrame(ABC, PlainFrame):
         return AndFilter(self.does_not_equal(arg) for arg in args)
 
 
-class ContaintypeFrame(ABC, PlainFrame):
+class ContaintypeFrame(PlainFrame):
     def contains(self, arg):
         return self.make_filter('contains', str(arg))
 

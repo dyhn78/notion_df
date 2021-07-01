@@ -15,7 +15,7 @@ class DatabaseParser:
         :return {prop_name: prop_type for prop_name in database}
         """
         return {prop_name: rich_property_object['type']
-                for prop_name, rich_property_object in self.properties_table.listed_items()}
+                for prop_name, rich_property_object in self.properties_table.items()}
 
     @property
     def prop_id_table(self) -> dict[str, str]:
@@ -23,26 +23,36 @@ class DatabaseParser:
         :return {prop_name: prop_id for prop_name in database}
         """
         return {prop_name: rich_property_object['id']
-                for prop_name, rich_property_object in self.properties_table.listed_items()}
+                for prop_name, rich_property_object in self.properties_table.items()}
 
 
 class PageListParser:
     def __init__(self, query_results: dict):
         self.has_more = query_results['has_more']
         self.next_cursor = query_results['next_cursor']
-        self.listed_objects = [PageParser(page_result) for page_result in query_results['results']]
+        self.list_of_objects = [PageParser(page_result) for page_result in query_results['results']]
+        self.__list_of_items = None
+        self.__dict_by_id = None
+        self.__title_to_id = None
 
     @property
-    def listed_items(self) -> list[dict]:
-        return [{'id': page_object.id, 'properties': page_object.properties} for page_object in self.listed_objects]
+    def list_of_items(self) -> list[dict]:
+        if self.__list_of_items is None:
+            self.__list_of_items = [{'id': page_object.id, 'properties': page_object.props}
+                                    for page_object in self.list_of_objects]
+        return self.__list_of_items
 
     @property
-    def dicted_items_by_id(self) -> dict[dict]:
-        return {page_object.id: page_object.properties for page_object in self.listed_objects}
+    def dict_by_id(self) -> dict[dict]:
+        if self.__dict_by_id is None:
+            self.__dict_by_id = {page_object.id: page_object.props for page_object in self.list_of_objects}
+        return self.__dict_by_id
 
     @property
-    def title_id_table(self) -> dict[dict]:
-        return {page_object.title: page_object.id for page_object in self.listed_objects}
+    def title_to_id(self) -> dict[dict]:
+        if self.__title_to_id is None:
+            self.__title_to_id = {page_object.title: page_object.id for page_object in self.list_of_objects}
+        return self.__title_to_id
 
 
 class PageParser:
@@ -50,8 +60,8 @@ class PageParser:
     def __init__(self, page):
         self.id = page['id']
         self.title = None
-        self.properties = {prop_name: self.__flatten_rich_property(rich_property_object)
-                           for prop_name, rich_property_object in page['properties'].items()}
+        self.props = {prop_name: self.__flatten_rich_property(rich_property_object)
+                      for prop_name, rich_property_object in page['properties'].items()}
 
     def __flatten_rich_property(self, rich_property_object):
         # print('>'*20)

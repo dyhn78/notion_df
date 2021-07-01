@@ -1,19 +1,54 @@
-from db_handler.patch_handler import PatchHandler
-from db_handler.parser import PageListParser as PLParser
+from collections.abc import Callable
+import datetime
+from datetime import datetime as datetimeclass
+
+from db_handler.write_handler import DatabaseUpdateHandler as DBUpdateHandler
+from db_handler.parser import PageListParser as PLParser, PageParser
 
 
-def clone_relations(domain: PLParser, base: PLParser,
+def clone_from_base(dom: PageParser, base: PLParser,
                     domain_to_target: str, domain_to_base: str, base_to_target: str):
-    patch_queue = []
-    for dom_id, dom_props in domain.listed_items:
-        dom_patch = PatchHandler(dom_id)
+    bs_id = dom.props[domain_to_base]
+    bs_props = base.dict_by_id[bs_id]
+    tar_id = bs_props[base_to_target]
 
-        bs_id = dom_props[domain_to_base]
-        bs_props = base.dicted_items_by_id[bs_id]
-        tar_id = bs_props[base_to_target]
-        dom_patch.append_relation(dom_props[domain_to_target], tar_id)
-        patch_queue.append(dom_patch)
+    dom_patch = DBUpdateHandler(dom.id)
+    dom_patch.append_relation(dom.props[domain_to_target], tar_id)
+    return dom_patch
 
 
-def find_proper_target_by_name(domain: PLParser, base: PLParser):
-    pass
+def find_by_title(dom: PageParser, target: PLParser,
+                  domain_to_target: str, dom_function: Callable):
+    tar_title = dom_function(dom.title)
+    try:
+        tar_id = target.title_to_id[tar_title]
+        dom_patch = DBUpdateHandler(dom.id)
+        dom_patch.append_relation(dom.props[domain_to_target], tar_id)
+        return dom_patch
+    except KeyError:
+        # TODO : create_handler 만들어 추가
+        return tar_title
+
+
+class ParseTimeProperty:
+    korean_dayname = ["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"]
+
+    def __init__(self, date: datetimeclass):
+        self.plain_date = date.date()
+        self.true_date = (date + datetime.timedelta(hours=-5)).date()
+
+    def __date(self, plain=False):
+        return self.plain_date if plain else self.true_date
+
+    def dig6(self, plain=False):
+        return self.__date(plain).strftime("%y%m%d")
+
+    def dig6_and_dayname(self, plain=False):
+        dayname = self.korean_dayname[self.__date(plain).weekday()]
+        return f'{self.__date(plain).strftime("%y%m%d")} {dayname}'
+
+
+"""
+someday = datetimeclass.fromisoformat('2021-07-01T00:00:00.000+09:00')
+print(someday.hour)
+"""
