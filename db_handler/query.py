@@ -1,8 +1,8 @@
-from db_handler.abstract_structures import Requestor
-from db_handler.query__filter_base import QueryFilter
-from db_handler.query__filter_handler import QueryFilterMaker, PlainFilter
-from db_handler.query__sort_base import QuerySort
-from db_handler.parser import DatabaseParser as DBParser
+from db_handler.decorate__abstract import Requestor
+from db_handler.query__filter import QueryFilter
+from db_handler.query__filter__frame import QueryFilterMaker, PlainFilter
+from db_handler.query__sort import QuerySort
+from db_handler.parse import DatabaseParser as DBParser
 
 
 class QueryHandler(Requestor):

@@ -2,8 +2,8 @@ from collections.abc import Callable
 import datetime
 from datetime import datetime as datetimeclass
 
-from db_handler.write_requestor import DatabaseUpdateRequestor as DBUpdateHandler
-from db_handler.parser import PageListParser as PLParser, PageParser
+from db_handler.edit import DatabaseUpdateRequestor as DBUpdateHandler
+from db_handler.parse import PageListParser as PLParser, PageParser
 
 
 def clone_from_base(dom: PageParser, base: PLParser,

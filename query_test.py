@@ -3,8 +3,8 @@ from pprint import pprint
 from notion_client import AsyncClient, Client
 
 from stopwatch import stopwatch
-from db_handler.parser import DatabaseParser as DBParser, PageListParser as PLParser
-from db_handler.query_requestor import QueryHandler
+from db_handler.parse import DatabaseParser as DBParser, PageListParser as PLParser
+from db_handler.query import QueryHandler
 
 # TODO: .env 파일에 토큰 숨기기
 os.environ['NOTION_TOKEN'] = ***REMOVED***
