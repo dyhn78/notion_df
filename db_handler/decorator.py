@@ -1,63 +1,77 @@
-from abc import abstractmethod
-
-from db_handler.handler_base import BaseHandler
+from db_handler.abstract_structures import ValueStack
 
 
-class Decorator(BaseHandler):
-    def __init__(self):
-        self._apply = []
+class PropertyDecorator(ValueStack):
+    def __init__(self, sender_class):
+        super().__init__(sender_class)
+        self.value = None
+        self.value_type = None
 
-    def clear(self):
-        self._apply = []
+    def base_wrap(self):
+        assert None not in [self.value, self.value_type]
+        return {self.value_type: self.value}
 
     @property
     def apply(self):
-        return self._apply
-
-    def block_type(self, block_type):
-        return {
-            'object': 'block',
-            'type': block_type,
-            block_type: self.apply
-        }
+        return self.base_wrap()
 
 
-class RichTextHandler(Decorator):
+class RichTextDecorator(PropertyDecorator):
+    def __init__(self, sender_class, value_type, block_type=None):
+        super().__init__(sender_class)
+        self.value = []
+        self.value_type = value_type
+        self.block_type = block_type
+
+    def clear(self):
+        self.value = []
+
+    @property
+    def apply(self):
+        res = self.base_wrap()
+        if self.block_type:
+            res = {
+                'object': 'block',
+                'type': self.block_type,
+                self.block_type: res
+            }
+        return res
+
     def append_text(self, content, link=None):
-        self._apply.append(self.__text(content, link))
+        self.value.append(self.__text(content, link))
 
     def append_equation(self, expression: str):
-        self._apply.append(self.__equation(expression))
+        self.value.append(self.__equation(expression))
 
     def append_mention_page(self, page_id):
-        self._apply.append(self.__mention_page(page_id, 'page'))
+        self.value.append(self.__mention_page(page_id, 'page'))
 
     def append_mention_database(self, database_id):
-        self._apply.append(self.__mention_page(database_id, 'database'))
+        self.value.append(self.__mention_page(database_id, 'database'))
 
     def append_mention_user(self, user_id):
-        self._apply.append(self.__mention_page(user_id, 'user'))
+        self.value.append(self.__mention_page(user_id, 'user'))
 
     def append_mention_date(self, start_date, end_date=None):
-        self._apply.append(self.__mention_date(start_date, end_date))
+        self.value.append(self.__mention_date(start_date, end_date))
 
     def appendleft_text(self, content, link=None):
-        self._apply.insert(0, self.__text(content, link))
+        self.value.insert(0, self.__text(content, link))
 
     def appendleft_equation(self, expression: str):
-        self._apply.insert(0, self.__equation(expression))
+        self.value.insert(0, self.__equation(expression))
 
     def appendleft_mention_page(self, page_id):
-        self._apply.insert(0, self.__mention_page(page_id, 'page'))
+        self.value.insert(0, self.__mention_page(page_id, 'page'))
 
     def appendleft_mention_database(self, database_id):
-        self._apply.insert(0, self.__mention_page(database_id, 'database'))
+        self.value.insert(0, self.__mention_page(database_id, 'database'))
 
     def appendleft_mention_user(self, user_id):
-        self._apply.insert(0, self.__mention_page(user_id, 'user'))
+        self.value.insert(0, self.__mention_page(user_id, 'user'))
 
     def appendleft_mention_date(self, start_date, end_date=None):
-        self._apply.insert(0, self.__mention_date(start_date, end_date))
+        self.value.insert(0, self.__mention_date(start_date, end_date))
 
     @classmethod
     def __type(cls, prop_type, value):
@@ -108,6 +122,11 @@ class RichTextHandler(Decorator):
         return cls.__type('mention', mention)
 
 
+class NumberDecorator(PropertyDecorator):
+    def __init__(self):
+        pass
+
+
 """            
 TEST_DATABASE_ID = "5c021bea3e2941f39bff902cb2ebfe47"
 notion.pages.create(
@@ -117,19 +136,20 @@ notion.pages.create(
                     },
                     properties={
                         'title': [
-                                  {
-                                    'text': {
-                                      'content': 'Tuscan Kale',
-                                    },
-                                  },
-                                ],
+                          { 
+                            'type': 'text',
+                            'text': {
+                              'content': 'Tuscan Kale',
+                            },
+                          },
+                        ],
                     })
 """
 """
 {
-    object: 'block',
-    type: 'heading_2',
-    heading_2: {
+    'object': 'block',
+    'type': 'heading_2',
+    'heading_2': {
       'text': [
         {
           'type': 'text',

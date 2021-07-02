@@ -1,16 +1,13 @@
-from db_handler.handler_base import RequestHandler
+from db_handler.abstract_structures import Requestor
 from db_handler.query__filter_base import QueryFilter
 from db_handler.query__filter_handler import QueryFilterMaker, PlainFilter
 from db_handler.query__sort_base import QuerySort
 from db_handler.parser import DatabaseParser as DBParser
 
 
-class QueryHandler(RequestHandler):
-    """
-    notion.databases.query(**self.apply)
-    """
-    def __init__(self, page_id: str, database_parser=None, start_cursor=None):
-        # retrieve_reader 치우기.
+class QueryHandler(Requestor):
+    def __init__(self, notion, page_id: str, database_parser=None, start_cursor=None):
+        super().__init__(notion)
         self.page_id = page_id
         self.page_size = 100
         self.start_cursor = start_cursor
@@ -19,9 +16,6 @@ class QueryHandler(RequestHandler):
         self.sort_handler = []
         if database_parser is not None:
             self.__add_db_retrieve(database_parser)
-
-    def __add_db_retrieve(self, database_parser: DBParser):
-        self.filter_maker.add_db_retrieve(database_parser)
 
     @property
     def apply(self):
@@ -34,6 +28,12 @@ class QueryHandler(RequestHandler):
         if self.start_cursor:
             res['start_cursor'] = self.start_cursor
         return res
+
+    def execute(self):
+        return self.notion.databases.query(**self.apply)
+
+    def __add_db_retrieve(self, database_parser: DBParser):
+        self.filter_maker.add_db_retrieve(database_parser)
 
     def clear_filter(self):
         self.filter_handler = PlainFilter({})

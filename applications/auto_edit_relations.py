@@ -2,7 +2,7 @@ from collections.abc import Callable
 import datetime
 from datetime import datetime as datetimeclass
 
-from db_handler.write_handler import DatabaseUpdateHandler as DBUpdateHandler
+from db_handler.write_requestor import DatabaseUpdateRequestor as DBUpdateHandler
 from db_handler.parser import PageListParser as PLParser, PageParser
 
 
