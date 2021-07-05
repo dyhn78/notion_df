@@ -1,3 +1,8 @@
+from collections import defaultdict
+
+from interface.parse.pages import PagePropertyParser
+
+
 class DatabasePropertyParser:
     def __init__(self, retrieve_response: dict):
         """
@@ -25,9 +30,7 @@ class DatabasePropertyParser:
 
 class PageListParser:
     def __init__(self, query_response: dict):
-        self.has_more = query_response['has_more']
-        self.next_cursor = query_response['next_cursor']
-        self.list_of_objects = [QueryPageParser(page_result) for page_result in query_response['results']]
+        self.list_of_objects = [PagePropertyParser(page_result) for page_result in query_response['results']]
         self.__list_of_items = None
         self.__dict_by_id = None
         self.__title_to_id = None
@@ -50,3 +53,12 @@ class PageListParser:
         if self.__title_to_id is None:
             self.__title_to_id = {page_object.title: page_object.id for page_object in self.list_of_objects}
         return self.__title_to_id
+
+    def index_to_id(self, prop_name) -> dict[dict]:
+        return {page_object.props[prop_name]: page_object.id for page_object in self.list_of_objects}
+
+    def prop_to_ids(self, prop_name) -> dict[list[dict]]:
+        res = defaultdict(list)
+        for page_object in self.list_of_objects:
+            res[page_object.props[prop_name]].append(page_object.id)
+        return res

@@ -6,7 +6,6 @@ class QueryFilter(ABC):
     """참고로, nesting 기준이 Notion 앱에서보다 더 강하다.
     예를 들어 any('contains', ['1', 'A', '@'] 형식으로 필터를 구성할 경우
     Notion 앱에서는 nesting == 0이지만, API 상에서는 1로 판정한다."""
-    @property
     @abstractmethod
     def apply(self):
         pass
@@ -55,14 +54,13 @@ class CompoundFilter(QueryFilter):
         if self.nesting > 2:
             # TODO: AssertionError 대신 커스텀 에러클래스 정의
             print('Nested greater than 2!')
-            pprint(self.apply)
+            pprint(self.apply())
             raise AssertionError
 
         self.elements = heteros
         for e in homos:
             self.elements.extend(e.elements)
 
-    @property
     @abstractmethod
     def apply(self):
         pass
@@ -73,12 +71,10 @@ class CompoundFilter(QueryFilter):
 
 
 class AndFilter(CompoundFilter):
-    @property
     def apply(self):
-        return {'and': list(e.apply for e in self.elements)}
+        return {'and': list(e.apply() for e in self.elements)}
 
 
 class OrFilter(CompoundFilter):
-    @property
     def apply(self):
-        return {'or': list(e.apply for e in self.elements)}
+        return {'or': list(e.apply() for e in self.elements)}

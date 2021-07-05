@@ -1,4 +1,4 @@
-from edit_property_unit import *
+from interface.requests.edit_property_unit import *
 from interface.requests.structures import DictStash, ListStash
 
 
