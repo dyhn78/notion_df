@@ -1,7 +1,7 @@
 from interface.requests.structures import Requestor
-from query__filter import QueryFilter, PlainFilter
-from query__filter_frame import QueryFilterMaker
-from query__sort import QuerySort
+from query_filter_unit import QueryFilter, PlainFilter
+from query_filter_frame import QueryFilterMaker
+from query_sort import QuerySort
 
 
 class DatabaseQuery(Requestor):

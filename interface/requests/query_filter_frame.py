@@ -1,5 +1,5 @@
-from interface.requests.query__filter import PlainFilter, OrFilter, AndFilter
-from interface.response.parse import DatabaseParser as DBParser
+from interface.requests.query_filter_unit import PlainFilter, OrFilter, AndFilter
+from interface.parser.databases import DatabasePropertyParser as DBParser
 
 
 class QueryFilterMaker:

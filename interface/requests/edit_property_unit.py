@@ -20,13 +20,7 @@ class PropertyCarrier(ValueCarrier, metaclass=ABCMeta):
 class SingletypeProperty(PropertyCarrier, DictStash):
     def __init__(self, prop_name, prop_value):
         super().__init__(prop_name)
-        self.edit(PlainCarrier({self.value_type: prop_value}))
-
-
-class MultitypeProperty(PropertyCarrier, ListStash):
-    def __init__(self, prop_name, prop_values):
-        super().__init__(prop_name)
-        self.subcarriers = [PlainCarrier({self.value_type: prop_value}) for prop_value in prop_values]
+        self.add_to_dictstash(PlainCarrier({self.value_type: prop_value}))
 
 
 class NumberProperty(SingletypeProperty):
@@ -49,12 +43,25 @@ class PeopleProperty(SingletypeProperty):
     value_type = 'people'
 
 
+class MultitypeProperty(PropertyCarrier, ListStash):
+    def __init__(self, prop_name, prop_values):
+        super().__init__(prop_name)
+        self.subcarriers = [PlainCarrier({self.value_type: prop_value}) for prop_value in prop_values]
+
+
 class MultiSelectProperty(MultitypeProperty):
     value_type = 'multi_select'
 
 
 class RelationProperty(MultitypeProperty):
     value_type = 'relation'
+
+
+class DateProperty(PropertyCarrier, DictStash):
+    def __init__(self, prop_name, start_date, end_date):
+        super().__init__(prop_name)
+        self.add_to_dictstash(SingletypeProperty('start', start_date))
+        self.add_to_dictstash(SingletypeProperty('end', end_date))
 
 
 def make_block_type(inner_value, block_type) -> ValueCarrier:
@@ -66,14 +73,7 @@ def make_block_type(inner_value, block_type) -> ValueCarrier:
     return PlainCarrier(res)
 
 
-class DateCarrier(PropertyCarrier, DictStash):
-    def __init__(self, prop_name, start_date, end_date):
-        super().__init__(prop_name)
-        self.edit(SingletypeProperty('start', start_date))
-        self.edit(SingletypeProperty('end', end_date))
-
-
-class RichTextCarrier(PropertyCarrier, ListStash):
+class RichTextProperty(PropertyCarrier, ListStash):
     # TODO : Children을 가질 수 있게 수정하기. (우선순위 보통)
     def __init__(self, prop_name, value_type, block_type=None):
         super().__init__(prop_name)
@@ -87,40 +87,40 @@ class RichTextCarrier(PropertyCarrier, ListStash):
         return res
 
     def append_text(self, content, link=None):
-        self.append(self.__text(content, link))
+        self.append_to_liststash(self.__text(content, link))
 
     def append_equation(self, expression: str):
-        self.append(self.__equation(expression))
+        self.append_to_liststash(self.__equation(expression))
 
     def append_mention_page(self, page_id):
-        self.append(self.__mention_page(page_id, 'page'))
+        self.append_to_liststash(self.__mention_page(page_id, 'page'))
 
     def append_mention_database(self, database_id):
-        self.append(self.__mention_page(database_id, 'database'))
+        self.append_to_liststash(self.__mention_page(database_id, 'database'))
 
     def append_mention_user(self, user_id):
-        self.append(self.__mention_page(user_id, 'user'))
+        self.append_to_liststash(self.__mention_page(user_id, 'user'))
 
     def append_mention_date(self, start_date, end_date=None):
-        self.append(self.__mention_date(start_date, end_date))
+        self.append_to_liststash(self.__mention_date(start_date, end_date))
 
     def appendleft_text(self, content, link=None):
-        self.appendleft(self.__text(content, link))
+        self.appendleft_to_liststash(self.__text(content, link))
 
     def appendleft_equation(self, expression: str):
-        self.appendleft(self.__equation(expression))
+        self.appendleft_to_liststash(self.__equation(expression))
 
     def appendleft_mention_page(self, page_id):
-        self.appendleft(self.__mention_page(page_id, 'page'))
+        self.appendleft_to_liststash(self.__mention_page(page_id, 'page'))
 
     def appendleft_mention_database(self, database_id):
-        self.appendleft(self.__mention_page(database_id, 'database'))
+        self.appendleft_to_liststash(self.__mention_page(database_id, 'database'))
 
     def appendleft_mention_user(self, user_id):
-        self.appendleft(self.__mention_page(user_id, 'user'))
+        self.appendleft_to_liststash(self.__mention_page(user_id, 'user'))
 
     def appendleft_mention_date(self, start_date, end_date=None):
-        self.appendleft(self.__mention_date(start_date, end_date))
+        self.appendleft_to_liststash(self.__mention_date(start_date, end_date))
 
     @classmethod
     def __prop_type_wrap(cls, prop_type, value):
@@ -173,67 +173,3 @@ class RichTextCarrier(PropertyCarrier, ListStash):
         }
         outer_value = cls.__prop_type_wrap('mention', mention)
         return PlainCarrier(outer_value)
-
-
-"""            
-TEST_DATABASE_ID = "5c021bea3e2941f39bff902cb2ebfe47"
-notion.pages.create(
-                    parent={
-                        'database_id': TEST_DATABASE_ID,
-                        'type': 'database_id'
-                    },
-                    properties={
-                        'title': [
-                          { 
-                            'type': 'text',
-                            'text': {
-                              'content': 'Tuscan Kale',
-                            },
-                          },
-                        ],
-                    })
-"""
-"""
-{
-    'object': 'block',
-    'type': 'heading_2',
-    'heading_2': {
-      'text': [
-        {
-          'type': 'text',
-          'text': {
-            'content': 'Lacinato kale',
-          },
-        },
-      ],
-    },
-}
-"""
-"""
-{'has_more': False,
- 'next_cursor': None,
- 'object': 'list',
- 'results': [{'created_time': '2021-06-16T04:42:00.000Z',
-              'has_children': False,
-              'id': '605851d2-cfd7-4bba-bd67-4bb3b6c62f9f',
-              'last_edited_time': '2021-06-16T04:42:00.000Z',
-              'object': 'block',
-              'paragraph': {'text': [{'annotations': {'bold': False,
-                                                      'code': False,
-                                                      'color': 'default',
-                                                      'italic': False,
-                                                      'strikethrough': False,
-                                                      'underline': False},
-                                      'href': None,
-                                      'plain_text': '1234',
-                                      'text': {'content': '1234', 'link': None},
-                                      'type': 'text'}]},
-              'type': 'paragraph'},
-             {'child_page': {'title': 'ㄱㄴㄷㄹ'},
-              'created_time': '2021-06-16T04:42:00.000Z',
-              'has_children': False,
-              'id': '92935b02-908e-47f1-bca0-da1471653901',
-              'last_edited_time': '2021-07-02T12:53:00.000Z',
-              'object': 'block',
-              'type': 'child_page'}]}
-"""

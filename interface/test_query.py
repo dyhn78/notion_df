@@ -3,7 +3,7 @@ from pprint import pprint
 from notion_client import AsyncClient, Client
 
 from stopwatch import stopwatch
-from interface.response.parse import PageListParser as PLParser
+from interface.parser.databases import PageListParser as PLParser
 from interface.requests.query import DatabaseQuery
 
 # TODO: .env 파일에 토큰 숨기기

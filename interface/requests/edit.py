@@ -1,8 +1,8 @@
 from abc import ABCMeta
 
 from interface.requests.structures import Requestor
-from interface.requests.edit__property_frame import PagePropertyStack, DatabasePropertyStack, BlockChildrenStack
-from interface.response.parse import DatabaseParser as DBParser
+from interface.requests.edit_property_frame import PagePropertyStack, DatabasePropertyStack, BlockChildrenStack
+from interface.parser.databases import DatabasePropertyParser as DBParser
 
 
 class PageEdit(Requestor, metaclass=ABCMeta):
@@ -33,7 +33,7 @@ class PageCreate(PageEdit):
         return self.merge_dict(self.parent_id, self.props.apply(), self.children.apply())
 
     def execute(self):
-        return self.notion.pages.create()
+        return self.notion.pages.create_and_append_to_liststash()
 
 
 class DatabaseEdit(PageEdit, metaclass=ABCMeta):

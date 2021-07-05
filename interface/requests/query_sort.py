@@ -6,16 +6,16 @@ class QuerySort(ListStash):
         return {'sorts': self.stash()}
 
     def append_ascending(self, prop_name):
-        self.append(self.ascending_sort(prop_name))
+        self.append_to_liststash(self.ascending_sort(prop_name))
 
     def append_descending(self, prop_name):
-        self.append(self.descending_sort(prop_name))
+        self.append_to_liststash(self.descending_sort(prop_name))
 
     def appendleft_ascending(self, prop_name):
-        self.appendleft(self.ascending_sort(prop_name))
+        self.appendleft_to_liststash(self.ascending_sort(prop_name))
 
     def appendleft_descending(self, prop_name):
-        self.appendleft(self.descending_sort(prop_name))
+        self.appendleft_to_liststash(self.descending_sort(prop_name))
 
     @classmethod
     def ascending_sort(cls, prop_name):

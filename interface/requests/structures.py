@@ -66,11 +66,11 @@ class ListStash(ValueCarrier, metaclass=ABCMeta):
     def stash(self):
         return [carrier.apply() for carrier in self.subcarriers]
 
-    def append(self, carrier: ValueCarrier):
+    def append_to_liststash(self, carrier: ValueCarrier):
         self.subcarriers.append(carrier)
         return carrier
 
-    def appendleft(self, carrier: ValueCarrier):
+    def appendleft_to_liststash(self, carrier: ValueCarrier):
         self.subcarriers.insert(0, carrier)
         return carrier
 
@@ -80,14 +80,14 @@ class UniformListStash(ListStash, metaclass=ABCMeta):
         super().__init__()
         self.frame_class = frame_class
 
-    def create(self):
+    def create_and_append_to_liststash(self):
         carrier = self.frame_class()
-        self.append(carrier)
+        self.append_to_liststash(carrier)
         return carrier
 
-    def createleft(self):
+    def create_and_appendleft_to_liststash(self):
         carrier = self.frame_class()
-        self.appendleft(carrier)
+        self.appendleft_to_liststash(carrier)
         return carrier
 
 
@@ -99,7 +99,7 @@ class DictStash(ValueCarrier, metaclass=ABCMeta):
                 res[ckey] = cvalue
         return res
 
-    def edit(self, carrier: ValueCarrier):
+    def add_to_dictstash(self, carrier: ValueCarrier):
         self.subcarriers.append(carrier)
         return carrier
 
@@ -109,9 +109,9 @@ class UniformDictStash(DictStash, metaclass=ABCMeta):
         super().__init__()
         self.frame_class = frame_class
 
-    def add(self):
+    def create_and_add_to_dictstash(self):
         carrier = self.frame_class()
-        self.edit(carrier)
+        self.add_to_dictstash(carrier)
         return carrier
 
 
