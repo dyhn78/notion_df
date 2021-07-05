@@ -1,8 +1,6 @@
 from __future__ import annotations
 from abc import abstractmethod, ABC, ABCMeta
-from typing import Union, Type
-
-from notion_client import Client, AsyncClient
+from typing import Type
 
 
 class Structure(ABC):
@@ -12,25 +10,6 @@ class Structure(ABC):
 
     def __bool__(self):
         return bool(self.apply())
-
-
-class Requestor(Structure):
-    def __init__(self, notion: Union[Client, AsyncClient]):
-        self.notion = notion
-
-    @abstractmethod
-    def execute(self):
-        pass
-
-    @classmethod
-    def merge_dict(cls, *dicts: Union[dict, None]):
-        res = {}
-        for carrier in dicts:
-            if carrier is None:
-                continue
-            for ckey, cvalue in carrier:
-                res[ckey] = cvalue
-        return res
 
 
 class ValueReceiver(Structure):
@@ -95,8 +74,8 @@ class DictStash(ValueCarrier, metaclass=ABCMeta):
     def stash(self):
         res = {}
         for carrier in self.subcarriers:
-            for ckey, cvalue in carrier.apply():
-                res[ckey] = cvalue
+            for key, value in carrier.apply().items():
+                res[key] = value
         return res
 
     def add_to_dictstash(self, carrier: ValueCarrier):

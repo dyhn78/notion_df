@@ -12,14 +12,14 @@ class PropertyCarrier(ValueCarrier, metaclass=ABCMeta):
 
     def apply(self):
         return {
-            'type': self.value_type,
-            self.value_type: self.stash()
+            self.prop_name: self.stash()
         }
 
 
 class SingletypeProperty(PropertyCarrier, DictStash):
     def __init__(self, prop_name, prop_value):
         super().__init__(prop_name)
+        self.add_to_dictstash(PlainCarrier({'type': self.value_type}))
         self.add_to_dictstash(PlainCarrier({self.value_type: prop_value}))
 
 
@@ -43,25 +43,28 @@ class PeopleProperty(SingletypeProperty):
     value_type = 'people'
 
 
-class MultitypeProperty(PropertyCarrier, ListStash):
-    def __init__(self, prop_name, prop_values):
-        super().__init__(prop_name)
-        self.subcarriers = [PlainCarrier({self.value_type: prop_value}) for prop_value in prop_values]
-
-
-class MultiSelectProperty(MultitypeProperty):
+class MultiSelectProperty(SingletypeProperty):
     value_type = 'multi_select'
 
+    def __init__(self, prop_name, prop_values):
+        # value = [PlainCarrier({'name': prop_value}) for prop_value in prop_values]
+        value = [{'name': prop_value} for prop_value in prop_values]
+        super().__init__(prop_name, value)
 
-class RelationProperty(MultitypeProperty):
+
+class RelationProperty(SingletypeProperty):
     value_type = 'relation'
 
+    def __init__(self, prop_name, prop_values):
+        # value = [PlainCarrier({'id': prop_value}) for prop_value in prop_values]
+        value = [{'id': prop_value} for prop_value in prop_values]
+        super().__init__(prop_name, value)
 
-class DateProperty(PropertyCarrier, DictStash):
+
+class DateProperty(SingletypeProperty):
     def __init__(self, prop_name, start_date, end_date):
-        super().__init__(prop_name)
-        self.add_to_dictstash(SingletypeProperty('start', start_date))
-        self.add_to_dictstash(SingletypeProperty('end', end_date))
+        value = {'start': start_date, 'end': end_date}
+        super().__init__(prop_name, value)
 
 
 def make_block_type(inner_value, block_type) -> ValueCarrier:

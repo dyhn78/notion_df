@@ -1,35 +1,34 @@
-from interface.requests.structures import Requestor
-from query_filter_unit import QueryFilter, PlainFilter
-from query_filter_frame import QueryFilterMaker
-from query_sort import QuerySort
+from interface.requests.requestor import RecursiveRequestor
+from interface.requests.query_filter_unit import QueryFilter, PlainFilter
+from interface.requests.query_filter_maker import QueryFilterMaker
+from interface.requests.query_sort import QuerySort
 
 
-class DatabaseQuery(Requestor):
-    def __init__(self, notion, page_id: str, page_size=100, database_parser=None, start_cursor=None):
-        super().__init__(notion)
-        self.page_id = {'database_id': page_id}
-        self.page_size = {'page_size': page_size}
-        self.start_cursor = {'start_cursor': start_cursor} if start_cursor else None
-        self.filter = PlainFilter({})
-        self.filter_maker = QueryFilterMaker()
+class Query(RecursiveRequestor):
+    def __init__(self, page_id: str, database_parser=None):
+        self.__page_id = {'database_id': page_id}
+        self.__filter = PlainFilter({})
+        self.__filter_is_not_empty = False
         self.sort = QuerySort()
+        self.filter_maker = QueryFilterMaker()
         if database_parser is not None:
             self.filter_maker.add_db_retrieve(database_parser)
 
     def apply(self):
-        return self.merge_dict(
-            self.page_id,
-            self.page_size,
-            self.start_cursor,
-            self.sort.apply(),
-            {'filter': self.filter.apply()}
-        )
+        filter_apply = {'filter': self.__filter.apply()} \
+            if self.__filter_is_not_empty else None
+        return self._merge_dict(self.__page_id, self.sort.apply(), filter_apply)
 
-    def execute(self):
-        return self.notion.databases.query(**self.apply())
+    def _execute_once(self, page_size=None, start_cursor=None):
+        start_cursor = {'start_cursor': start_cursor} if start_cursor else None
+        page_size = {'page_size': (page_size if page_size else self.MAX_PAGE_SIZE)}
+        args = self._merge_dict(self.apply(), start_cursor, page_size)
+        return self.notion.databases.query(**args)
 
     def clear_filter(self):
-        self.filter = PlainFilter({})
+        self.__filter = PlainFilter({})
+        self.__filter_is_not_empty = False
 
     def push_filter(self, query_filter: QueryFilter):
-        self.filter = query_filter
+        self.__filter = query_filter
+        self.__filter_is_not_empty = True
