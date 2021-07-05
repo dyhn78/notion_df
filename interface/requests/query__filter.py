@@ -25,6 +25,18 @@ class QueryFilter(ABC):
         return OrFilter(self, other)
 
 
+class PlainFilter(QueryFilter):
+    def __init__(self, plain_filter: dict):
+        self.value = plain_filter
+
+    def apply(self):
+        return self.value
+
+    @property
+    def nesting(self):
+        return 0
+
+
 class CompoundFilter(QueryFilter):
     def __init__(self, *elements):
         homos = []

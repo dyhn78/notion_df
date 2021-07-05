@@ -1,0 +1,127 @@
+from __future__ import annotations
+from abc import abstractmethod, ABC, ABCMeta
+from typing import Union, Type
+
+from notion_client import Client, AsyncClient
+
+
+class Structure(ABC):
+    @abstractmethod
+    def apply(self) -> dict:
+        pass
+
+    def __bool__(self):
+        return bool(self.apply())
+
+
+class Requestor(Structure):
+    def __init__(self, notion: Union[Client, AsyncClient]):
+        self.notion = notion
+
+    @abstractmethod
+    def execute(self):
+        pass
+
+    @classmethod
+    def merge_dict(cls, *dicts: Union[dict, None]):
+        res = {}
+        for carrier in dicts:
+            if carrier is None:
+                continue
+            for ckey, cvalue in carrier:
+                res[ckey] = cvalue
+        return res
+
+
+class ValueReceiver(Structure):
+    def __init__(self):
+        self.__value = None
+
+    def apply(self):
+        return self.__value.apply()
+
+    def clear(self):
+        self.__value = None
+
+    def save(self, handler):
+        self.__value = handler
+
+
+class ValueCarrier(Structure, metaclass=ABCMeta):
+    def __init__(self):
+        self.subcarriers = []
+
+    def __bool__(self):
+        return bool(self.subcarriers)
+
+    def clear(self):
+        self.subcarriers = []
+
+    @abstractmethod
+    def stash(self):
+        pass
+
+
+class ListStash(ValueCarrier, metaclass=ABCMeta):
+    def stash(self):
+        return [carrier.apply() for carrier in self.subcarriers]
+
+    def append(self, carrier: ValueCarrier):
+        self.subcarriers.append(carrier)
+        return carrier
+
+    def appendleft(self, carrier: ValueCarrier):
+        self.subcarriers.insert(0, carrier)
+        return carrier
+
+
+class UniformListStash(ListStash, metaclass=ABCMeta):
+    def __init__(self, frame_class: Type[ValueCarrier]):
+        super().__init__()
+        self.frame_class = frame_class
+
+    def create(self):
+        carrier = self.frame_class()
+        self.append(carrier)
+        return carrier
+
+    def createleft(self):
+        carrier = self.frame_class()
+        self.appendleft(carrier)
+        return carrier
+
+
+class DictStash(ValueCarrier, metaclass=ABCMeta):
+    def stash(self):
+        res = {}
+        for carrier in self.subcarriers:
+            for ckey, cvalue in carrier.apply():
+                res[ckey] = cvalue
+        return res
+
+    def edit(self, carrier: ValueCarrier):
+        self.subcarriers.append(carrier)
+        return carrier
+
+
+class UniformDictStash(DictStash, metaclass=ABCMeta):
+    def __init__(self, frame_class: Type[ValueCarrier]):
+        super().__init__()
+        self.frame_class = frame_class
+
+    def add(self):
+        carrier = self.frame_class()
+        self.edit(carrier)
+        return carrier
+
+
+class PlainCarrier(ValueCarrier):
+    def __init__(self, value):
+        super().__init__()
+        self.value = value
+
+    def stash(self):
+        return self.value
+
+    def apply(self):
+        return self.value

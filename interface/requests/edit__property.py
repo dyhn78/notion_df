@@ -1,39 +1,60 @@
-from db_handler.decorate__abstract import *
+from abc import ABCMeta
+
+from interface.requests.structures import ValueCarrier, PlainCarrier, DictStash, ListStash
 
 
-class NumberDecorator(SingletypeDecorator):
+class PropertyCarrier(ValueCarrier, metaclass=ABCMeta):
+    value_type = 'None'
+
+    def __init__(self, prop_name):
+        super().__init__()
+        self.prop_name = prop_name
+
+    def apply(self):
+        return {
+            'type': self.value_type,
+            self.value_type: self.stash()
+        }
+
+
+class SingletypeProperty(PropertyCarrier, DictStash):
+    def __init__(self, prop_name, prop_value):
+        super().__init__(prop_name)
+        self.edit(PlainCarrier({self.value_type: prop_value}))
+
+
+class MultitypeProperty(PropertyCarrier, ListStash):
+    def __init__(self, prop_name, prop_values):
+        super().__init__(prop_name)
+        self.subcarriers = [PlainCarrier({self.value_type: prop_value}) for prop_value in prop_values]
+
+
+class NumberProperty(SingletypeProperty):
     value_type = 'number'
 
 
-class CheckboxDecorator(SingletypeDecorator):
+class CheckboxProperty(SingletypeProperty):
     value_type = 'checkbox'
 
 
-class SelectDecorator(SingletypeDecorator):
+class SelectProperty(SingletypeProperty):
     value_type = 'select'
 
 
-class FilesDecorator(SingletypeDecorator):
+class FilesProperty(SingletypeProperty):
     value_type = 'files'
 
 
-class PeopleDecorator(SingletypeDecorator):
+class PeopleProperty(SingletypeProperty):
     value_type = 'people'
 
 
-class MultiSelectDecorator(MultitypeDecorator):
+class MultiSelectProperty(MultitypeProperty):
     value_type = 'multi_select'
 
 
-class RelationDecorator(MultitypeDecorator):
+class RelationProperty(MultitypeProperty):
     value_type = 'relation'
-
-
-class DateDecorator(PropertyDecorator, DictStash):
-    def __init__(self, prop_name, start_date, end_date):
-        super().__init__(prop_name)
-        self.edit(SingletypeDecorator('start', start_date))
-        self.edit(SingletypeDecorator('end', end_date))
 
 
 def make_block_type(inner_value, block_type) -> ValueCarrier:
@@ -45,7 +66,14 @@ def make_block_type(inner_value, block_type) -> ValueCarrier:
     return PlainCarrier(res)
 
 
-class RichTextDecorator(PropertyDecorator, ListStash):
+class DateCarrier(PropertyCarrier, DictStash):
+    def __init__(self, prop_name, start_date, end_date):
+        super().__init__(prop_name)
+        self.edit(SingletypeProperty('start', start_date))
+        self.edit(SingletypeProperty('end', end_date))
+
+
+class RichTextCarrier(PropertyCarrier, ListStash):
     # TODO : Children을 가질 수 있게 수정하기. (우선순위 보통)
     def __init__(self, prop_name, value_type, block_type=None):
         super().__init__(prop_name)

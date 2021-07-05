@@ -1,7 +1,5 @@
-from abc import ABC
-
-from db_handler.parse import DatabaseParser as DBParser
-from db_handler.query__filter import QueryFilter, OrFilter, AndFilter
+from interface.requests.query__filter import PlainFilter, OrFilter, AndFilter
+from interface.response.parse import DatabaseParser as DBParser
 
 
 class QueryFilterMaker:
@@ -73,19 +71,6 @@ class QueryFilterMaker:
     @staticmethod
     def frame_by_people(prop_name: str):
         return PeopleFrame(prop_name)
-
-
-class PlainFilter(QueryFilter):
-    def __init__(self, plain_filter: dict):
-        self._dump = plain_filter
-
-    @property
-    def apply(self):
-        return self._dump
-
-    @property
-    def nesting(self):
-        return 0
 
 
 class PlainFrame:
