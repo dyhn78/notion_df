@@ -16,7 +16,13 @@ class MatchbyReference(PropertyHandler):
         self._reference_to_target = reference_to_target
 
     def _process_unit(self, dom: PagePropertyParser):
-        ref_id = dom.props[self._domain_to_reference]
+        if dom.props[self._domain_to_target]:
+            return False
+        if not dom.props[self._domain_to_reference]:
+            self._append_reprocess(dom)
+            return True
+
+        ref_id = dom.props[self._domain_to_reference][0]
         ref_props = self._reference.dict_by_id[ref_id]
         tar_id = ref_props[self._reference_to_target]
 
@@ -26,6 +32,10 @@ class MatchbyReference(PropertyHandler):
 
 
 class MatchbyIndex(PropertyHandler):
+    """
+    :param target_index: None 인 경우 제목 [title 속성]을 바탕으로 판단한다.
+    # TODO equal-to가 아니라 startswith (예를 들어 '210625'로부터 '210625 금요일'을 찾는 것) 조건도 가능하면 좋겠다.(낮음)
+    """
     def __init__(self, domain: PageListParser, target: PageListParser,
                  domain_to_target: str, domain_function: Callable,
                  domain_index: Union[None, str, tuple[str, None]],
@@ -38,6 +48,10 @@ class MatchbyIndex(PropertyHandler):
         self._domain_function = domain_function
 
     def _process_unit(self, dom: PagePropertyParser):
+        if dom.props[self._domain_to_target]:
+            self._append_reprocess(dom)
+            return False
+
         if self._target_index:
             target_indices = self._target.index_to_id(self._target_index)
         else:
@@ -67,6 +81,7 @@ class MatchorCreatebyIndex(MatchbyIndex):
         self._target_id = target_id
 
     def _process_unit(self, dom: PagePropertyParser):
+        # TODO : reprocess와 process 사이에서 무한 루프가 돌고 있다. 없애야 한다. (우선순위 최상)
         tar_index = super()._process_unit(dom)
         if not tar_index:
             return

@@ -1,132 +1,130 @@
 from abc import ABCMeta
+from datetime import datetime as datetimeclass, date as dateclass
+from typing import Union
 
-from interface.requests.structures import ValueCarrier, PlainCarrier, DictStash, ListStash
+from interface.requests.structures import ValueCarrier, ListStash
 
 
-class PropertyCarrier(ValueCarrier, metaclass=ABCMeta):
+class PageProperty(ValueCarrier, metaclass=ABCMeta):
     value_type = 'None'
 
     def __init__(self, prop_name):
         super().__init__()
         self.prop_name = prop_name
+        self.prop_value = None
 
     def apply(self):
-        return {
-            self.prop_name: self.stash()
-        }
+        return {self.prop_name: self.prop_value}
+
+    def _wrap_to_prop(self, value):
+        return {'type': self.value_type,
+                self.value_type: value}
 
 
-class SingletypeProperty(PropertyCarrier, DictStash):
-    def __init__(self, prop_name, prop_value):
+class SimpleProperty(PageProperty):
+    def __init__(self, prop_name, value):
         super().__init__(prop_name)
-        self.add_to_dictstash(PlainCarrier({'type': self.value_type}))
-        self.add_to_dictstash(PlainCarrier({self.value_type: prop_value}))
+        self.prop_value = self._wrap_to_prop(value)
 
 
-class NumberProperty(SingletypeProperty):
+class NumberProperty(SimpleProperty):
     value_type = 'number'
 
 
-class CheckboxProperty(SingletypeProperty):
+class CheckboxProperty(SimpleProperty):
     value_type = 'checkbox'
 
 
-class SelectProperty(SingletypeProperty):
+class SelectProperty(SimpleProperty):
     value_type = 'select'
 
 
-class FilesProperty(SingletypeProperty):
+class FilesProperty(SimpleProperty):
     value_type = 'files'
 
 
-class PeopleProperty(SingletypeProperty):
+class PeopleProperty(SimpleProperty):
     value_type = 'people'
 
 
-class MultiSelectProperty(SingletypeProperty):
+class MultiSelectProperty(SimpleProperty):
     value_type = 'multi_select'
 
-    def __init__(self, prop_name, prop_values):
-        # value = [PlainCarrier({'name': prop_value}) for prop_value in prop_values]
-        value = [{'name': prop_value} for prop_value in prop_values]
-        super().__init__(prop_name, value)
+    def __init__(self, prop_name, values):
+        prop_value = [{'name': value} for value in values]
+        super().__init__(prop_name, prop_value)
 
 
-class RelationProperty(SingletypeProperty):
+class RelationProperty(SimpleProperty):
     value_type = 'relation'
 
-    def __init__(self, prop_name, prop_values):
-        # value = [PlainCarrier({'id': prop_value}) for prop_value in prop_values]
-        value = [{'id': prop_value} for prop_value in prop_values]
+    def __init__(self, prop_name, page_ids):
+        value = [{'id': page_id} for page_id in page_ids]
         super().__init__(prop_name, value)
 
 
-class DateProperty(SingletypeProperty):
-    def __init__(self, prop_name, start_date, end_date):
-        value = {'start': start_date, 'end': end_date}
+class DateProperty(SimpleProperty):
+    def __init__(self, prop_name,
+                 start_date: Union[datetimeclass, dateclass],
+                 end_date=Union[datetimeclass, dateclass, None]):
+        start_string = start_date.isoformat()
+        value = dict(start=start_string)
+
+        if end_date is not None:
+            end_string = end_date.isoformat()
+            value.update(end=end_string)
+
         super().__init__(prop_name, value)
 
 
-def make_block_type(inner_value, block_type) -> ValueCarrier:
-    res = {
-        'object': 'block',
-        'type': block_type,
-        block_type: inner_value
-    }
-    return PlainCarrier(res)
-
-
-class RichTextProperty(PropertyCarrier, ListStash):
+class RichTextProperty(PageProperty, ListStash):
     # TODO : Children을 가질 수 있게 수정하기. (우선순위 보통)
-    def __init__(self, prop_name, value_type, block_type=None):
+    def __init__(self, prop_name, value_type):
         super().__init__(prop_name)
         self.value_type = value_type
-        self.block_type = block_type
 
-    def apply(self):
-        res = super().apply()
-        if self.block_type:
-            res = make_block_type(res, self.block_type)
-        return res
+    @property
+    def prop_value(self):
+        return self._wrap_to_prop(self._unpack())
 
     def append_text(self, content, link=None):
-        self.append_to_liststash(self.__text(content, link))
+        self.stash(self.__text(content, link))
 
     def append_equation(self, expression: str):
-        self.append_to_liststash(self.__equation(expression))
+        self.stash(self.__equation(expression))
 
     def append_mention_page(self, page_id):
-        self.append_to_liststash(self.__mention_page(page_id, 'page'))
+        self.stash(self.__mention_page(page_id, 'page'))
 
     def append_mention_database(self, database_id):
-        self.append_to_liststash(self.__mention_page(database_id, 'database'))
+        self.stash(self.__mention_page(database_id, 'database'))
 
     def append_mention_user(self, user_id):
-        self.append_to_liststash(self.__mention_page(user_id, 'user'))
+        self.stash(self.__mention_page(user_id, 'user'))
 
     def append_mention_date(self, start_date, end_date=None):
-        self.append_to_liststash(self.__mention_date(start_date, end_date))
+        self.stash(self.__mention_date(start_date, end_date))
 
     def appendleft_text(self, content, link=None):
-        self.appendleft_to_liststash(self.__text(content, link))
+        self.stashleft(self.__text(content, link))
 
     def appendleft_equation(self, expression: str):
-        self.appendleft_to_liststash(self.__equation(expression))
+        self.stashleft(self.__equation(expression))
 
     def appendleft_mention_page(self, page_id):
-        self.appendleft_to_liststash(self.__mention_page(page_id, 'page'))
+        self.stashleft(self.__mention_page(page_id, 'page'))
 
     def appendleft_mention_database(self, database_id):
-        self.appendleft_to_liststash(self.__mention_page(database_id, 'database'))
+        self.stashleft(self.__mention_page(database_id, 'database'))
 
     def appendleft_mention_user(self, user_id):
-        self.appendleft_to_liststash(self.__mention_page(user_id, 'user'))
+        self.stashleft(self.__mention_page(user_id, 'user'))
 
     def appendleft_mention_date(self, start_date, end_date=None):
-        self.appendleft_to_liststash(self.__mention_date(start_date, end_date))
+        self.stashleft(self.__mention_date(start_date, end_date))
 
     @classmethod
-    def __prop_type_wrap(cls, prop_type, value):
+    def __wrap_prop_type(cls, prop_type, value):
         return {
             'type': prop_type,
             prop_type: value
@@ -137,14 +135,12 @@ class RichTextProperty(PropertyCarrier, ListStash):
         value = {'content': content}
         if link:
             value[link] = link
-        outer_value = cls.__prop_type_wrap('text', value)
-        return PlainCarrier(outer_value)
+        return cls.__wrap_prop_type('text', value)
 
     @classmethod
     def __equation(cls, expression: str):
         equation = {'expression': expression},
-        outer_value = cls.__prop_type_wrap('equation', equation)
-        return PlainCarrier(outer_value)
+        return cls.__wrap_prop_type('equation', equation)
 
     @classmethod
     def __mention_page(cls, target_id, target_class):
@@ -158,21 +154,23 @@ class RichTextProperty(PropertyCarrier, ListStash):
             target_class: {'id': target_id},
             'type': target_class
         }
-        outer_value = cls.__prop_type_wrap('mention', mention)
-        return PlainCarrier(outer_value)
+        return cls.__wrap_prop_type('mention', mention)
 
     @classmethod
     def __mention_date(cls, start_date, end_date=None):
         """
         :param start_date, end_date: ISO8601 date and time
         """
-        date = {
-            'start': start_date,
-            'end': end_date
-        }
-        mention = {
-            'date': date,
-            'type': 'date'
-        }
-        outer_value = cls.__prop_type_wrap('mention', mention)
-        return PlainCarrier(outer_value)
+        date = {'start': start_date,
+                'end': end_date}
+        mention = {'date': date,
+                   'type': 'date'}
+        return cls.__wrap_prop_type('mention', mention)
+
+
+def make_block_type(inner_value, block_type):
+    return {
+        'object': 'block',
+        'type': block_type,
+        block_type: inner_value
+    }

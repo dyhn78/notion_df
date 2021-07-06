@@ -5,8 +5,8 @@ from datetime import datetime as datetimeclass
 class ParseTimeProperty:
     korean_dayname = ["월요일", "화요일", "수요일", "목요일", "금요일", "토요일", "일요일"]
 
-    def __init__(self, date_string: str):
-        self.datetime = datetimeclass.fromisoformat(date_string)
+    def __init__(self, date_time: datetimeclass):
+        self.datetime = date_time
         self.plain_date = self.datetime.date()
         self.true_date = (self.datetime + datetime.timedelta(hours=-5)).date()
 

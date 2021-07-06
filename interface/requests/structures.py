@@ -1,6 +1,5 @@
 from __future__ import annotations
 from abc import abstractmethod, ABC, ABCMeta
-from typing import Type
 
 
 class Structure(ABC):
@@ -27,6 +26,47 @@ class ValueReceiver(Structure):
 
 
 class ValueCarrier(Structure, metaclass=ABCMeta):
+    pass
+
+
+class Stash(ValueCarrier, metaclass=ABCMeta):
+    def __init__(self):
+        self._subdicts = []
+
+    def __bool__(self):
+        return bool(self._subdicts)
+
+    def clear(self):
+        self._subdicts = []
+
+
+class ListStash(Stash, metaclass=ABCMeta):
+    def _unpack(self):
+        return self._subdicts
+
+    def stash(self, plaindict: dict):
+        self._subdicts.append(plaindict)
+        return plaindict
+
+    def stashleft(self, carrier: dict):
+        self._subdicts.insert(0, carrier)
+        return carrier
+
+
+class DictStash(Stash, metaclass=ABCMeta):
+    def _unpack(self):
+        res = {}
+        for subdict in self._subdicts:
+            for key, value in subdict.items():
+                res[key] = value
+        return res
+
+    def stash(self, subdict: dict):
+        self._subdicts.append(subdict)
+        return subdict
+
+
+class TwofoldStash(ValueCarrier, metaclass=ABCMeta):
     def __init__(self):
         self.subcarriers = []
 
@@ -36,71 +76,28 @@ class ValueCarrier(Structure, metaclass=ABCMeta):
     def clear(self):
         self.subcarriers = []
 
-    @abstractmethod
-    def stash(self):
-        pass
 
-
-class ListStash(ValueCarrier, metaclass=ABCMeta):
-    def stash(self):
+class TwofoldListStash(TwofoldStash, metaclass=ABCMeta):
+    def _unpack(self):
         return [carrier.apply() for carrier in self.subcarriers]
 
-    def append_to_liststash(self, carrier: ValueCarrier):
+    def stash(self, carrier: ValueCarrier):
         self.subcarriers.append(carrier)
         return carrier
 
-    def appendleft_to_liststash(self, carrier: ValueCarrier):
+    def stashleft(self, carrier: ValueCarrier):
         self.subcarriers.insert(0, carrier)
         return carrier
 
 
-class UniformListStash(ListStash, metaclass=ABCMeta):
-    def __init__(self, frame_class: Type[ValueCarrier]):
-        super().__init__()
-        self.frame_class = frame_class
-
-    def create_and_append_to_liststash(self):
-        carrier = self.frame_class()
-        self.append_to_liststash(carrier)
-        return carrier
-
-    def create_and_appendleft_to_liststash(self):
-        carrier = self.frame_class()
-        self.appendleft_to_liststash(carrier)
-        return carrier
-
-
-class DictStash(ValueCarrier, metaclass=ABCMeta):
-    def stash(self):
+class TwofoldDictStash(TwofoldStash, metaclass=ABCMeta):
+    def _unpack(self):
         res = {}
         for carrier in self.subcarriers:
             for key, value in carrier.apply().items():
                 res[key] = value
         return res
 
-    def add_to_dictstash(self, carrier: ValueCarrier):
+    def stash(self, carrier: ValueCarrier):
         self.subcarriers.append(carrier)
         return carrier
-
-
-class UniformDictStash(DictStash, metaclass=ABCMeta):
-    def __init__(self, frame_class: Type[ValueCarrier]):
-        super().__init__()
-        self.frame_class = frame_class
-
-    def create_and_add_to_dictstash(self):
-        carrier = self.frame_class()
-        self.add_to_dictstash(carrier)
-        return carrier
-
-
-class PlainCarrier(ValueCarrier):
-    def __init__(self, value):
-        super().__init__()
-        self.value = value
-
-    def stash(self):
-        return self.value
-
-    def apply(self):
-        return self.value

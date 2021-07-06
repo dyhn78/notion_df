@@ -1,33 +1,23 @@
-from interface.requests.structures import ListStash, PlainCarrier
+from interface.requests.structures import ListStash
 
 
 class QuerySort(ListStash):
     def apply(self) -> dict:
-        return {'sorts': self.stash()}
+        return {'sorts': self._unpack()}
 
     def append_ascending(self, prop_name):
-        self.append_to_liststash(self.ascending_sort(prop_name))
+        self.stash(self.__sort(prop_name, 'ascending'))
 
     def append_descending(self, prop_name):
-        self.append_to_liststash(self.descending_sort(prop_name))
+        self.stash(self.__sort(prop_name, 'descending'))
 
     def appendleft_ascending(self, prop_name):
-        self.appendleft_to_liststash(self.ascending_sort(prop_name))
+        self.stashleft(self.__sort(prop_name, 'ascending'))
 
     def appendleft_descending(self, prop_name):
-        self.appendleft_to_liststash(self.descending_sort(prop_name))
-
-    @classmethod
-    def ascending_sort(cls, prop_name):
-        return cls.__make_sort(prop_name, 'ascending')
-
-    @classmethod
-    def descending_sort(cls, prop_name):
-        return cls.__make_sort(prop_name, 'descending')
+        self.stashleft(self.__sort(prop_name, 'descending'))
 
     @staticmethod
-    def __make_sort(prop_name, direction):
-        return PlainCarrier({
-            'property': prop_name,
-            'direction': direction,
-        })
+    def __sort(prop_name, direction):
+        return {'property': prop_name,
+                'direction': direction}

@@ -1,12 +1,14 @@
+from datetime import datetime as datetimeclass
+
+
 class PagePropertyParser:
-    # TODO: datetime.fromisoformat, isoformat 적용
     def __init__(self, page):
         self.id = page['id']
         self.title = None
-        self.props = {prop_name: self.__flatten_rich_property(rich_property_object)
+        self.props = {prop_name: self.__flatten(rich_property_object)
                       for prop_name, rich_property_object in page['properties'].items()}
 
-    def __flatten_rich_property(self, rich_property_object):
+    def __flatten(self, rich_property_object):
         prop_type = rich_property_object['type']
         prop_object = rich_property_object[prop_type]
 
@@ -21,16 +23,16 @@ class PagePropertyParser:
                      if key in rich_text_object}
                 )
 
-            result = [plain_text, rich_text]
             if prop_type == 'title':
                 self.title = plain_text
+            return [plain_text, rich_text]
 
         elif prop_type == 'select':
-            result = prop_object['name']
+            return prop_object['name']
 
         elif prop_type == 'multi_select':
             result = [select_object['name'] for select_object in prop_object]
-            result.sort()
+            return sorted(result)
 
         elif prop_type in ['people', 'person']:
             result = []
@@ -40,24 +42,33 @@ class PagePropertyParser:
                 except KeyError:
                     res = 'bot_' + select_object['id'][0:4]
                 result.append(res)
-            result.sort()
+            return sorted(result)
+
+        elif prop_type == 'date':
+            if prop_object is not None:
+                return {key: self.__from_datestring(value)
+                        for key, value in prop_object.items()}
+            else:
+                return None
 
         elif prop_type == 'formula':
-            return self.__flatten_rich_property(prop_object)
+            return self.__flatten(prop_object)
 
         elif prop_type == 'relation':
             result = [relation_object['id'] for relation_object in prop_object]
-            result.sort()
+            return sorted(result)
 
         elif prop_type == 'rollup':
             value_type = prop_object['type']
+            try:
+                rollup_objects = prop_object[value_type]
+            except KeyError:
+                return None
             if value_type not in prop_object:
                 result = []
             else:
                 try:
-                    result = [self.__flatten_rich_property(rollup_object)
-                              for rollup_object in prop_object[value_type]]
-
+                    result = [self.__flatten(rich_property_obj) for rich_property_obj in rollup_objects]
                     try:
                         result.sort()
                     except TypeError:
@@ -65,12 +76,18 @@ class PagePropertyParser:
                         # result.sort(key=lambda x: x[sorted(x.keys())[0]])
                         # 딕셔너리의 키 목록 중 사전순으로 가장 앞에 오는 것으로써 정렬한다.
                 except TypeError:
-                    print(prop_object[value_type])
-                    result = prop_object[value_type]
+                    return prop_object[value_type]
         else:
-            result = prop_object
+            return prop_object
 
         return result
+
+    @staticmethod
+    def __from_datestring(datestring):
+        if type(datestring) == str:
+            return datetimeclass.fromisoformat(datestring)
+        else:
+            return None
 
 
 class BlockListParser:

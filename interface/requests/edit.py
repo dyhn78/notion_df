@@ -33,7 +33,7 @@ class PageCreate(PageEdit):
         return self._merge_dict(self._parent_id, self.props.apply(), self.children.apply())
 
     def execute(self):
-        return self.notion.pages.create_and_append_to_liststash()
+        return self.notion.pages.create()
 
 
 class DatabaseEdit(Requestor, metaclass=ABCMeta):

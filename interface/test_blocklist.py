@@ -5,7 +5,6 @@ from notion_client import Client
 
 from stopwatch import stopwatch
 
-# TODO: .env 파일에 토큰 숨기기
 os.environ['NOTION_TOKEN'] = ***REMOVED***
 notion = Client(auth=os.environ['NOTION_TOKEN'])
 

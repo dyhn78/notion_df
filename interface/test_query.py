@@ -6,7 +6,6 @@ from stopwatch import stopwatch
 from interface.parse.databases import PageListParser as PLParser
 from interface.requests.query import Query
 
-# TODO: .env 파일에 토큰 숨기기
 os.environ['NOTION_TOKEN'] = ***REMOVED***
 
 ASYNC = False
