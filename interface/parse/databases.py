@@ -29,11 +29,15 @@ class DatabasePropertyParser:
 
 
 class PageListParser:
-    def __init__(self, query_response: dict):
-        self.list_of_objects = [PagePropertyParser(page_result) for page_result in query_response['results']]
+    def __init__(self, list_of_objects: list[PagePropertyParser]):
+        self.list_of_objects = list_of_objects
         self.__list_of_items = None
         self.__dict_by_id = None
         self.__title_to_id = None
+
+    @classmethod
+    def from_query(cls, query_response: dict):
+        return cls([PagePropertyParser(page_result) for page_result in query_response['results']])
 
     @property
     def list_of_items(self) -> list[dict]:

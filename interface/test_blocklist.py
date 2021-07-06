@@ -3,7 +3,7 @@ from pprint import pprint
 
 from notion_client import Client
 
-from stopwatch import stopwatch
+from applications.helpers.stopwatch import stopwatch
 
 os.environ['NOTION_TOKEN'] = ***REMOVED***
 notion = Client(auth=os.environ['NOTION_TOKEN'])

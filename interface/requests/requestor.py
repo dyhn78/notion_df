@@ -1,12 +1,26 @@
 import os
 from abc import abstractmethod
-from typing import Union
+from json import JSONDecodeError
+from typing import Union, Callable
 from collections import defaultdict
 
 from notion_client import Client, AsyncClient
 
-from interface.requests.structures import Structure
-from stopwatch import stopwatch
+from interface.structure.carriers import Structure
+from applications.helpers.stopwatch import stopwatch
+
+
+def retry(method: Callable, recursion_limit=5):
+    def wrapper(self, recursion=recursion_limit, **kwargs):
+        try:
+            response = method(self, **kwargs)
+        except JSONDecodeError:
+            if recursion == 0:
+                raise AssertionError
+            response = wrapper(recursion - 1)
+        return response
+
+    return wrapper
 
 
 class Requestor(Structure):
@@ -47,6 +61,7 @@ class RecursiveRequestor(Requestor):
     MAX_PAGE_SIZE = 100
     INF = int(1e9)
 
+    @retry
     @abstractmethod
     def _execute_once(self, page_size=None, start_cursor=None):
         pass

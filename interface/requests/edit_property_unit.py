@@ -2,7 +2,7 @@ from abc import ABCMeta
 from datetime import datetime as datetimeclass, date as dateclass
 from typing import Union
 
-from interface.requests.structures import ValueCarrier, ListStash
+from interface.structure.carriers import ValueCarrier, ListStash
 
 
 class PageProperty(ValueCarrier, metaclass=ABCMeta):
@@ -88,40 +88,22 @@ class RichTextProperty(PageProperty, ListStash):
         return self._wrap_to_prop(self._unpack())
 
     def append_text(self, content, link=None):
-        self.stash(self.__text(content, link))
+        self._subdicts.append(self.__text(content, link))
 
     def append_equation(self, expression: str):
-        self.stash(self.__equation(expression))
+        self._subdicts.append(self.__equation(expression))
 
     def append_mention_page(self, page_id):
-        self.stash(self.__mention_page(page_id, 'page'))
+        self._subdicts.append(self.__mention_page(page_id, 'page'))
 
     def append_mention_database(self, database_id):
-        self.stash(self.__mention_page(database_id, 'database'))
+        self._subdicts.append(self.__mention_page(database_id, 'database'))
 
     def append_mention_user(self, user_id):
-        self.stash(self.__mention_page(user_id, 'user'))
+        self._subdicts.append(self.__mention_page(user_id, 'user'))
 
     def append_mention_date(self, start_date, end_date=None):
-        self.stash(self.__mention_date(start_date, end_date))
-
-    def appendleft_text(self, content, link=None):
-        self.stashleft(self.__text(content, link))
-
-    def appendleft_equation(self, expression: str):
-        self.stashleft(self.__equation(expression))
-
-    def appendleft_mention_page(self, page_id):
-        self.stashleft(self.__mention_page(page_id, 'page'))
-
-    def appendleft_mention_database(self, database_id):
-        self.stashleft(self.__mention_page(database_id, 'database'))
-
-    def appendleft_mention_user(self, user_id):
-        self.stashleft(self.__mention_page(user_id, 'user'))
-
-    def appendleft_mention_date(self, start_date, end_date=None):
-        self.stashleft(self.__mention_date(start_date, end_date))
+        self._subdicts.append(self.__mention_date(start_date, end_date))
 
     @classmethod
     def __wrap_prop_type(cls, prop_type, value):

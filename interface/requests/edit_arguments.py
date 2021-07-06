@@ -1,6 +1,6 @@
-from interface.requests.edit_blocks import TextBlock, TitleBlock, TodoBlock, PlainTextBlock, PlainTodoBlock
+from interface.requests.edit_blocks import TextBlock, PageBlock, PlainTextBlock
 from interface.requests.edit_property_unit import *
-from interface.requests.structures import TwofoldDictStash, TwofoldListStash
+from interface.structure.carriers import TwofoldDictStash, TwofoldListStash
 
 
 class PagePropertyStack(TwofoldDictStash):
@@ -14,15 +14,15 @@ class PagePropertyStack(TwofoldDictStash):
 
 class DatabasePropertyStack(PagePropertyStack):
     def add_number(self, prop_name: str, prop_value):
-        carrier = RelationProperty(prop_name, prop_value)
+        carrier = NumberProperty(prop_name, prop_value)
         return self.stash(carrier)
 
     def add_checkbox(self, prop_name: str, prop_value):
-        carrier = RelationProperty(prop_name, prop_value)
+        carrier = CheckboxProperty(prop_name, prop_value)
         return self.stash(carrier)
 
     def add_select(self, prop_name: str, prop_value):
-        carrier = RelationProperty(prop_name, prop_value)
+        carrier = SelectProperty(prop_name, prop_value)
         return self.stash(carrier)
 
     def add_files(self, prop_name: str, prop_value):
@@ -54,53 +54,53 @@ class BlockChildrenStack(TwofoldListStash):
     def apply(self):
         return {'children': self._unpack()}
 
-    def append_page(self, title):
-        return self.stash(TitleBlock(title))
+    def add_page(self, title):
+        return self.stash(PageBlock(title))
 
-    def append_paragraph(self):
+    def add_paragraph(self):
         return self.stash(TextBlock('paragraph'))
 
-    def append_heading_1(self):
+    def add_heading_1(self):
         return self.stash(TextBlock('heading_1'))
 
-    def append_heading_2(self):
+    def add_heading_2(self):
         return self.stash(TextBlock('heading_2'))
 
-    def append_heading_3(self):
+    def add_heading_3(self):
         return self.stash(TextBlock('heading_3'))
 
-    def append_bulleted_list(self):
+    def add_bulleted_list(self):
         return self.stash(TextBlock('bulleted_list_item'))
 
-    def append_numbered_list(self):
+    def add_numbered_list(self):
         return self.stash(TextBlock('numbered_list_item'))
 
-    def append_to_do(self, checked=False):
-        return self.stash(TodoBlock(checked))
+    def add_to_do(self, checked=False):
+        return self.stash(TextBlock('to_do', checked=checked))
 
-    def append_toggle(self):
+    def add_toggle(self):
         return self.stash(TextBlock('toggle'))
 
-    def append_plain_paragraph(self, text_content):
+    def add_plain_paragraph(self, text_content):
         return self.stash(PlainTextBlock(text_content, 'paragraph'))
 
-    def append_plain_heading_1(self, text_content):
+    def add_plain_heading_1(self, text_content):
         return self.stash(PlainTextBlock(text_content, 'heading_1'))
 
-    def append_plain_heading_2(self, text_content):
+    def add_plain_heading_2(self, text_content):
         return self.stash(PlainTextBlock(text_content, 'heading_2'))
 
-    def append_plain_heading_3(self, text_content):
+    def add_plain_heading_3(self, text_content):
         return self.stash(PlainTextBlock(text_content, 'heading_3'))
 
-    def append_plain_bulleted_list(self, text_content):
+    def add_plain_bulleted_list(self, text_content):
         return self.stash(PlainTextBlock(text_content, 'bulleted_list_item'))
 
-    def append_plain_numbered_list(self, text_content):
+    def add_plain_numbered_list(self, text_content):
         return self.stash(PlainTextBlock(text_content, 'numbered_list_item'))
 
-    def append_plain_to_do(self, text_content, checked=False):
-        return self.stash(PlainTodoBlock(text_content, checked))
+    def add_plain_to_do(self, text_content, checked=False):
+        return self.stash(PlainTextBlock(text_content, checked=checked))
 
-    def append_plain_toggle(self, text_content):
+    def add_plain_toggle(self, text_content):
         return self.stash(PlainTextBlock(text_content, 'toggle'))

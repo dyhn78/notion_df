@@ -2,7 +2,7 @@ from typing import Callable, Union
 
 from interface.parse.databases import PageListParser
 from interface.parse.pages import PagePropertyParser
-from interface.process.handler import PropertyHandler
+from applications.process.handler import PropertyHandler
 from interface.requests.edit import DatabaseUpdate, DatabaseCreate
 
 
@@ -27,15 +27,16 @@ class MatchbyReference(PropertyHandler):
         tar_id = ref_props[self._reference_to_target]
 
         dom_patch = DatabaseUpdate(dom.id)
-        dom_patch.props.add_relation(self._domain_to_target, [tar_id])
+        dom_patch.props.add_relation(self._domain_to_target, tar_id)
         self._append_requests(dom_patch)
 
 
 class MatchbyIndex(PropertyHandler):
     """
     :param target_index: None 인 경우 제목 [title 속성]을 바탕으로 판단한다.
-    # TODO equal-to가 아니라 startswith (예를 들어 '210625'로부터 '210625 금요일'을 찾는 것) 조건도 가능하면 좋겠다.(낮음)
     """
+    # TODO equal-to가 아니라 startswith \
+    #  (예를 들어 '210625'로부터 '210625 금요일'을 찾는 것) 조건도 가능하면 좋겠다.(낮음)
     def __init__(self, domain: PageListParser, target: PageListParser,
                  domain_to_target: str, domain_function: Callable,
                  domain_index: Union[None, str, tuple[str, None]],
@@ -49,7 +50,6 @@ class MatchbyIndex(PropertyHandler):
 
     def _process_unit(self, dom: PagePropertyParser):
         if dom.props[self._domain_to_target]:
-            self._append_reprocess(dom)
             return False
 
         if self._target_index:
@@ -62,6 +62,7 @@ class MatchbyIndex(PropertyHandler):
         else:
             dom_index = (dom.props[self._domain_index], )
         tar_index = self._domain_function(*dom_index)
+
         if tar_index not in target_indices:
             return tar_index
         else:
@@ -81,7 +82,7 @@ class MatchorCreatebyIndex(MatchbyIndex):
         self._target_id = target_id
 
     def _process_unit(self, dom: PagePropertyParser):
-        # TODO : reprocess와 process 사이에서 무한 루프가 돌고 있다. 없애야 한다. (우선순위 최상)
+        # TODO : reprocess와 process 사이에서 무한 루프가 돌고 있다. 없애야 한다. (최상)
         tar_index = super()._process_unit(dom)
         if not tar_index:
             return

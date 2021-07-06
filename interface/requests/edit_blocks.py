@@ -1,5 +1,5 @@
 from interface.requests.edit_property_unit import RichTextProperty
-from interface.requests.structures import ValueCarrier
+from interface.structure.carriers import ValueCarrier
 
 
 class Block(ValueCarrier):
@@ -21,7 +21,7 @@ class Block(ValueCarrier):
         return {self._content_type: value}
 
 
-class TitleBlock(Block):
+class PageBlock(Block):
     _block_type = 'child_page'
     _content_type = 'title'
 
@@ -32,35 +32,18 @@ class TitleBlock(Block):
 class TextBlock(Block, RichTextProperty):
     _content_type = 'text'
 
-    def __init__(self, block_type):
+    def __init__(self, block_type, **kwargs):
         self._block_type = block_type
         RichTextProperty.__init__(self, prop_name='text', value_type='text')
+        self._additional_args = kwargs
 
     def apply(self):
         self.block_content = RichTextProperty.apply(self)
+        self.block_content.update(**self._additional_args)
         return Block.apply(self)
 
 
 class PlainTextBlock(TextBlock):
-    def __init__(self, text_content, block_type):
-        super().__init__(block_type)
-        self.append_text(text_content)
-
-
-class TodoBlock(TextBlock):
-    _block_type = 'to_do'
-
-    def __init__(self, checked=True):
-        super().__init__(self._block_type)
-        self.checked = checked
-
-    def apply(self):
-        self.block_content = RichTextProperty.apply(self)
-        self.block_content.update(checked=self.checked)
-        return Block.apply(self)
-
-
-class PlainTodoBlock(TodoBlock):
-    def __init__(self, text_content, checked=True):
-        super().__init__(checked)
+    def __init__(self, text_content, block_type, **kwargs):
+        super().__init__(block_type, **kwargs)
         self.append_text(text_content)

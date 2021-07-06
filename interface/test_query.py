@@ -2,8 +2,8 @@ import os
 from pprint import pprint
 from notion_client import AsyncClient, Client
 
-from stopwatch import stopwatch
-from interface.parse.databases import PageListParser as PLParser
+from applications.helpers.stopwatch import stopwatch
+from interface.parse.databases import PageListParser
 from interface.requests.query import Query
 
 os.environ['NOTION_TOKEN'] = ***REMOVED***
@@ -35,7 +35,7 @@ test_db_query_maker.sort.append_ascending('이름')
 test_subpages = test_db_query_maker.execute()
 # pprint(test_subpages)
 
-plain_items = PLParser(test_subpages).list_of_items
+plain_items = PageListParser(test_subpages).list_of_items
 pprint(plain_items)
 
 stopwatch('작업 완료')

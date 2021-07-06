@@ -1,4 +1,6 @@
-from interface.requests.requestor import RecursiveRequestor
+from json import JSONDecodeError
+
+from interface.requests.requestor import RecursiveRequestor, retry
 from interface.requests.query_filter_unit import QueryFilter, PlainFilter
 from interface.requests.query_filter_maker import QueryFilterMaker
 from interface.requests.query_sort import QuerySort
@@ -19,11 +21,18 @@ class Query(RecursiveRequestor):
             if self.__filter_is_not_empty else None
         return self._merge_dict(self.__page_id, self.sort.apply(), filter_apply)
 
+    @retry
     def _execute_once(self, page_size=None, start_cursor=None):
         start_cursor = {'start_cursor': start_cursor} if start_cursor else None
         page_size = {'page_size': (page_size if page_size else self.MAX_PAGE_SIZE)}
         args = self._merge_dict(self.apply(), start_cursor, page_size)
-        return self.notion.databases.query(**args)
+        try:
+            response = self.notion.databases.query(**args)
+        except JSONDecodeError:
+            if recursion == 0:
+                raise AssertionError
+            response = self._execute_once(page_size, start_cursor, recursion - 1)
+        return response
 
     def clear_filter(self):
         self.__filter = PlainFilter({})

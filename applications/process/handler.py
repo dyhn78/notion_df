@@ -48,7 +48,7 @@ class PropertyHandler(Handler):
         """
         pass
 
-    def execute(self, reprocess_outside=False, async_client=False):
+    def execute(self, reprocess_outside=False, async_client=False) -> PageListParser:
         for dom in self._domain.list_of_objects:
             self._process_unit(dom)
 
@@ -57,16 +57,15 @@ class PropertyHandler(Handler):
         else:
             self._send_request_async()
 
-        if reprocess_outside:
-            return self._reprocess_queue
-        else:
+        queue = self._reprocess_queue
+        if not reprocess_outside:
             if not async_client:
                 self._reprocess()
                 self._send_request()
             else:
                 self._reprocess_async()
                 self._send_request_async()
-            return None
+        return PageListParser(queue)
 
     def _reprocess(self):
         for dom in self._reprocess_queue:

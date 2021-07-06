@@ -44,14 +44,6 @@ class ListStash(Stash, metaclass=ABCMeta):
     def _unpack(self):
         return self._subdicts
 
-    def stash(self, plaindict: dict):
-        self._subdicts.append(plaindict)
-        return plaindict
-
-    def stashleft(self, carrier: dict):
-        self._subdicts.insert(0, carrier)
-        return carrier
-
 
 class DictStash(Stash, metaclass=ABCMeta):
     def _unpack(self):
@@ -61,43 +53,39 @@ class DictStash(Stash, metaclass=ABCMeta):
                 res[key] = value
         return res
 
-    def stash(self, subdict: dict):
-        self._subdicts.append(subdict)
-        return subdict
-
 
 class TwofoldStash(ValueCarrier, metaclass=ABCMeta):
     def __init__(self):
-        self.subcarriers = []
+        self._subcarriers = []
 
     def __bool__(self):
-        return bool(self.subcarriers)
+        return bool(self._subcarriers)
 
     def clear(self):
-        self.subcarriers = []
+        self._subcarriers = []
 
 
 class TwofoldListStash(TwofoldStash, metaclass=ABCMeta):
     def _unpack(self):
-        return [carrier.apply() for carrier in self.subcarriers]
+        return [carrier.apply() for carrier in self._subcarriers]
 
     def stash(self, carrier: ValueCarrier):
-        self.subcarriers.append(carrier)
+        self._subcarriers.append(carrier)
         return carrier
 
     def stashleft(self, carrier: ValueCarrier):
-        self.subcarriers.insert(0, carrier)
+        self._subcarriers.insert(0, carrier)
         return carrier
 
 
 class TwofoldDictStash(TwofoldStash, metaclass=ABCMeta):
     def _unpack(self):
         res = {}
-        for carrier in self.subcarriers:
+        for carrier in self._subcarriers:
             for key, value in carrier.apply().items():
                 res[key] = value
         return res
 
     def stash(self, carrier: ValueCarrier):
-        self.subcarriers.append(carrier)
+        self._subcarriers.append(carrier)
         return carrier

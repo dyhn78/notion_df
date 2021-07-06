@@ -1,8 +1,9 @@
 from abc import ABCMeta
 
-from interface.requests.requestor import Requestor
-from interface.requests.edit_property_stack import PagePropertyStack, DatabasePropertyStack, BlockChildrenStack
+from interface.requests.requestor import Requestor, retry
+from interface.requests.edit_arguments import PagePropertyStack, DatabasePropertyStack, BlockChildrenStack
 from interface.parse.databases import DatabasePropertyParser as DBParser
+from applications.helpers.page_id_to_url import page_id_to_url
 
 
 class PageEdit(Requestor, metaclass=ABCMeta):
@@ -18,9 +19,14 @@ class PageUpdate(PageEdit):
     def apply(self):
         return self._merge_dict(self._page_id, self.props.apply())
 
+    @retry
     def execute(self):
-        print(self.apply())
+        self.print_url()
         return self.notion.pages.update(**self.apply())
+
+    def print_url(self):
+        page_id = self._page_id['page_id']
+        print(page_id_to_url(page_id))
 
 
 class PageCreate(PageEdit):
@@ -32,6 +38,7 @@ class PageCreate(PageEdit):
     def apply(self):
         return self._merge_dict(self._parent_id, self.props.apply(), self.children.apply())
 
+    @retry
     def execute(self):
         return self.notion.pages.create()
 

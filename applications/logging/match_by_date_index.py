@@ -1,6 +1,6 @@
 # from pprint import pprint
 
-from stopwatch import stopwatch
+from applications.helpers.stopwatch import stopwatch
 from parse_time_property import ParseTimeProperty
 from interface.parse.databases import PageListParser
 from applications.logging.match_property import MatchorCreatebyIndex
@@ -16,11 +16,11 @@ def match_or_create_by_date_index(domain_id, target_id, domain_to_target, domain
     frame = domain_query.filter_maker.frame_by_relation(domain_to_target)
     domain_query.push_filter(frame.is_empty())
     response = domain_query.execute()
-    domain = PageListParser(response)
+    domain = PageListParser.from_query(response)
 
     target_query = Query(target_id)
     response = target_query.execute()
-    target = PageListParser(response)
+    target = PageListParser.from_query(response)
 
     stopwatch('DB 받아오기')
     processing = MatchorCreatebyIndex(

@@ -1,4 +1,4 @@
-from interface.requests.structures import ListStash
+from interface.structure.carriers import ListStash
 
 
 class QuerySort(ListStash):
@@ -6,16 +6,16 @@ class QuerySort(ListStash):
         return {'sorts': self._unpack()}
 
     def append_ascending(self, prop_name):
-        self.stash(self.__sort(prop_name, 'ascending'))
+        self._subdicts.append(self.__sort(prop_name, 'ascending'))
 
     def append_descending(self, prop_name):
-        self.stash(self.__sort(prop_name, 'descending'))
+        self._subdicts.append(self.__sort(prop_name, 'descending'))
 
     def appendleft_ascending(self, prop_name):
-        self.stashleft(self.__sort(prop_name, 'ascending'))
+        self._subdicts.insert(0, self.__sort(prop_name, 'ascending'))
 
     def appendleft_descending(self, prop_name):
-        self.stashleft(self.__sort(prop_name, 'descending'))
+        self._subdicts.insert(0, self.__sort(prop_name, 'descending'))
 
     @staticmethod
     def __sort(prop_name, direction):

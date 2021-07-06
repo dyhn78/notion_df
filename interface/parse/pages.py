@@ -34,7 +34,7 @@ class PagePropertyParser:
             result = [select_object['name'] for select_object in prop_object]
             return sorted(result)
 
-        elif prop_type in ['people', 'person']:
+        elif prop_type in ['people', 'person', 'created_by', 'last_edited_by']:
             result = []
             for select_object in prop_object:
                 try:
@@ -45,11 +45,14 @@ class PagePropertyParser:
             return sorted(result)
 
         elif prop_type == 'date':
-            if prop_object is not None:
+            if type(prop_object) == dict:
                 return {key: self.__from_datestring(value)
                         for key, value in prop_object.items()}
             else:
                 return None
+
+        elif prop_type in ['created_time', 'last_edited_time']:
+            return self.__from_datestring(prop_object[:-1])
 
         elif prop_type == 'formula':
             return self.__flatten(prop_object)
