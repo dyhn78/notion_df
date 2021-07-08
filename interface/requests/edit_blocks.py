@@ -34,16 +34,16 @@ class TextBlock(Block, RichTextProperty):
 
     def __init__(self, block_type, **kwargs):
         self._block_type = block_type
-        RichTextProperty.__init__(self, prop_name='text', value_type='text')
+        RichTextProperty.__init__(self, value_type='text', prop_name='text')
         self._additional_args = kwargs
+
+    @classmethod
+    def plain_form(cls, text_content, block_type, **kwargs):
+        self = cls(block_type, **kwargs)
+        self.write_text(text_content)
+        return self
 
     def apply(self):
         self.block_content = RichTextProperty.apply(self)
         self.block_content.update(**self._additional_args)
         return Block.apply(self)
-
-
-class PlainTextBlock(TextBlock):
-    def __init__(self, text_content, block_type, **kwargs):
-        super().__init__(block_type, **kwargs)
-        self.append_text(text_content)

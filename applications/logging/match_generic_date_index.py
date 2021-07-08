@@ -1,9 +1,9 @@
 # from pprint import pprint
 
 from applications.helpers.stopwatch import stopwatch
-from parse_time_property import ParseTimeProperty
+from applications.logging.parse_time_property import ParseTimeProperty
 from interface.parse.databases import PageListParser
-from applications.logging.match_property import MatchorCreatebyIndex
+from applications.process.match_property import MatchorCreatebyIndex
 from interface.requests.query import Query
 
 
@@ -25,7 +25,7 @@ def match_or_create_by_date_index(domain_id, target_id, domain_to_target, domain
     stopwatch('DB 받아오기')
     processing = MatchorCreatebyIndex(
         domain, target, target_id, domain_to_target,
-        lambda x: ParseTimeProperty(x['start']).dig6_and_dayname(plain=True), domain_index, None
+        lambda x: ParseTimeProperty(x['start']).strf_dig6_and_weekday(), domain_index, None
     )
     processing.execute()
     print(processing.process_count)

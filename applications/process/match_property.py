@@ -27,7 +27,7 @@ class MatchbyReference(PropertyHandler):
         tar_id = ref_props[self._reference_to_target]
 
         dom_patch = DatabaseUpdate(dom.id)
-        dom_patch.props.add_relation(self._domain_to_target, tar_id)
+        dom_patch.props.write_relation(self._domain_to_target, tar_id)
         self._append_requests(dom_patch)
 
 
@@ -52,28 +52,31 @@ class MatchbyIndex(PropertyHandler):
         if dom.props[self._domain_to_target]:
             return False
 
-        if self._target_index:
-            target_indices = self._target.index_to_id(self._target_index)
-        else:
-            target_indices = self._target.title_to_id
-
         if type(self._domain_index) == tuple:
             dom_index = (dom.props[index] for index in self._domain_index)
         else:
             dom_index = (dom.props[self._domain_index], )
         tar_index = self._domain_function(*dom_index)
 
-        if tar_index not in target_indices:
+        if tar_index not in self._target_indices():
             return tar_index
         else:
             tar_id = self._target.title_to_id[tar_index]
             dom_patch = DatabaseUpdate(dom.id)
-            dom_patch.props.add_relation(self._domain_to_target, [tar_id])
+            dom_patch.props.write_relation(self._domain_to_target, [tar_id])
             self._append_requests(dom_patch)
             return False
 
+    def _target_indices(self):
+        if self._target_index:
+            return self._target.index_to_id(self._target_index)
+        else:
+            return self._target.title_to_id
+
 
 class MatchorCreatebyIndex(MatchbyIndex):
+    new_target_indices = []
+
     def __init__(self, domain: PageListParser, target: PageListParser, target_id: str,
                  domain_to_target: str, domain_function: Callable,
                  domain_index: Union[None, str, tuple[str, None]],
@@ -82,11 +85,12 @@ class MatchorCreatebyIndex(MatchbyIndex):
         self._target_id = target_id
 
     def _process_unit(self, dom: PagePropertyParser):
-        # TODO : reprocess와 process 사이에서 무한 루프가 돌고 있다. 없애야 한다. (최상)
         tar_index = super()._process_unit(dom)
         if not tar_index:
             return
-        tar_patch = DatabaseCreate(self._target_id)
-        tar_patch.props.add_title(tar_index)
-        self._append_requests(tar_patch)
+        if tar_index not in self.new_target_indices:
+            tar_patch = DatabaseCreate(self._target_id)
+            tar_patch.props.add_title(tar_index)
+            self._append_requests(tar_patch)
+            self.new_target_indices.append(tar_index)
         self._append_reprocess(dom)

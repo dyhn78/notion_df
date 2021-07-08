@@ -52,7 +52,8 @@ class PagePropertyParser:
                 return None
 
         elif prop_type in ['created_time', 'last_edited_time']:
-            return self.__from_datestring(prop_object[:-1])
+            return {'start': self.__from_datestring(prop_object[:-1]),
+                    'end': None}
 
         elif prop_type == 'formula':
             return self.__flatten(prop_object)

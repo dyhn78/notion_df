@@ -3,7 +3,6 @@ from abc import ABCMeta
 from interface.requests.requestor import Requestor, retry
 from interface.requests.edit_arguments import PagePropertyStack, DatabasePropertyStack, BlockChildrenStack
 from interface.parse.databases import DatabasePropertyParser as DBParser
-from applications.helpers.page_id_to_url import page_id_to_url
 
 
 class PageEdit(Requestor, metaclass=ABCMeta):
@@ -14,33 +13,34 @@ class PageEdit(Requestor, metaclass=ABCMeta):
 class PageUpdate(PageEdit):
     def __init__(self, page_id: str):
         super().__init__()
-        self._page_id = {'page_id': page_id}
+        self._id = page_id
+        self._id_apply = {'page_id': self._id}
 
     def apply(self):
-        return self._merge_dict(self._page_id, self.props.apply())
+        return self._merge_dict(self._id_apply, self.props.apply())
 
     @retry
-    def execute(self):
-        self.print_url()
+    def execute(self, print_info='page update'):
+        if print_info:
+            self.print_info(print_info)
         return self.notion.pages.update(**self.apply())
-
-    def print_url(self):
-        page_id = self._page_id['page_id']
-        print(page_id_to_url(page_id))
 
 
 class PageCreate(PageEdit):
     def __init__(self, parent_id: str):
         super().__init__()
-        self._parent_id = {'page_id': parent_id}
         self.children = BlockChildrenStack()
+        self._id = parent_id
+        self._id_apply = {'page_id': self._id}
 
     def apply(self):
-        return self._merge_dict(self._parent_id, self.props.apply(), self.children.apply())
+        return self._merge_dict(self._id_apply, self.props.apply(), self.children.apply())
 
     @retry
-    def execute(self):
-        return self.notion.pages.create()
+    def execute(self, print_info='page create'):
+        if print_info:
+            self.print_info(print_info)
+        return self.notion.pages.create(**self.apply())
 
 
 class DatabaseEdit(Requestor, metaclass=ABCMeta):
@@ -61,8 +61,30 @@ class DatabaseUpdate(DatabaseEdit, PageUpdate):
         DatabaseEdit.__init__(self, database_parser)
         self._page_id = {'page_id': page_id}
 
+    def execute(self, print_info='database update'):
+        return PageUpdate.execute(self, print_info=print_info)
+
 
 class DatabaseCreate(DatabaseEdit, PageCreate):
     def __init__(self, parent_id: str, database_parser=None):
         DatabaseEdit.__init__(self, database_parser)
         self._parent_id = {'database_id': parent_id}
+
+    def execute(self, print_info='database create'):
+        return PageCreate.execute(self, print_info=print_info)
+
+
+class BlockAppend(Requestor):
+    def __init__(self, block_id: str):
+        self.children = BlockChildrenStack()
+        self._id = block_id
+        self._id_apply = {'block_id': self._id}
+
+    def apply(self):
+        return self._merge_dict(self._id_apply, self.children.apply())
+
+    @retry
+    def execute(self, print_info='block append'):
+        if print_info:
+            self.print_info(print_info)
+        return self.notion.blocks.children.append(**self.apply())

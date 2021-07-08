@@ -6,6 +6,7 @@ from collections import defaultdict
 
 from notion_client import Client, AsyncClient
 
+from applications.helpers.page_id_to_url import page_id_to_url
 from interface.structure.carriers import Structure
 from applications.helpers.stopwatch import stopwatch
 
@@ -25,6 +26,7 @@ def retry(method: Callable, recursion_limit=5):
 
 class Requestor(Structure):
     notion: Union[Client, AsyncClient]
+    _id = ''
 
     @property
     def notion(self):
@@ -32,9 +34,14 @@ class Requestor(Structure):
         os.environ['NOTION_TOKEN'] = ***REMOVED***
         return Client(auth=os.environ['NOTION_TOKEN'])
 
+    @retry
     @abstractmethod
     def execute(self):
         pass
+
+    def print_info(self, *string):
+        if self._id:
+            print(*string, page_id_to_url(self._id), sep='; ')
 
     @classmethod
     def _merge_dict(cls, *dicts: Union[dict, None]):
