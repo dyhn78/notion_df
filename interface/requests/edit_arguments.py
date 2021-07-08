@@ -1,7 +1,7 @@
 from typing import Union
 from datetime import datetime as datetimeclass, date as dateclass
 
-from interface.requests.edit_blocks import TextBlock, PageBlock
+from interface.requests.edit_blocks import TextBlock, Block
 from interface.requests.edit_property_unit import PageProperty, RichTextProperty
 from interface.structure.carriers import TwofoldDictStash, TwofoldListStash
 
@@ -10,13 +10,22 @@ class PagePropertyStack(TwofoldDictStash):
     def apply(self):
         return {'properties': self._unpack()}
 
-    def add_title(self, prop_name: str):
-        self.stash(RichTextProperty(prop_name, 'title'))
+    def write_rich_title(self, prop_name: str):
+        self.stash(RichTextProperty('title', prop_name))
+
+    def write_plain_title(self, prop_name: str, value):
+        self.stash(RichTextProperty.plain_form('title', prop_name, value))
 
 
 class DatabasePropertyStack(PagePropertyStack):
     def write_rich_text(self, prop_name: str):
-        self.stash(RichTextProperty(prop_name, 'rich_text'))
+        self.stash(RichTextProperty('rich_text', prop_name))
+
+    def write_plain_text(self, prop_name: str, value):
+        self.stash(RichTextProperty.plain_form('rich_text', prop_name, value))
+
+    def write_date(self, prop_name: str, start_date: Union[datetimeclass, dateclass], end_date=None):
+        self.stash(PageProperty.date(prop_name, start_date, end_date))
 
     def write_number(self, prop_name: str, value):
         self.stash(PageProperty.number(prop_name, value))
@@ -39,9 +48,6 @@ class DatabasePropertyStack(PagePropertyStack):
     def write_relation(self, prop_name: str, page_ids: list[str]):
         self.stash(PageProperty.relation(prop_name, page_ids))
 
-    def write_date(self, prop_name: str, start_date: Union[datetimeclass, dateclass], end_date=None):
-        self.stash(PageProperty.date(prop_name, start_date, end_date))
-
 
 class BlockChildrenStack(TwofoldListStash):
     def apply(self):
@@ -59,7 +65,7 @@ class BlockChildAgent:
         self.caller = caller
 
     def page(self, title):
-        return self.caller.stash(PageBlock(title))
+        return self.caller.stash(Block.page(title))
 
     def paragraph(self):
         return self.caller.stash(TextBlock('paragraph'))

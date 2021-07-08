@@ -75,11 +75,13 @@ class RecursiveRequestor(Requestor):
 
     def execute(self, page_size=INF):
         res = []
+        if page_size == 0:
+            page_size = self.INF
         has_more = True
         start_cursor = None
         page_retrieved = 0
         while has_more and page_size > 0:
-            response = self._execute_once(page_size=min(page_size, self.MAX_PAGE_SIZE),
+            response = self._execute_once(self, page_size=min(page_size, self.MAX_PAGE_SIZE),
                                           start_cursor=start_cursor)
             has_more = response['has_more']
             start_cursor = response['next_cursor']

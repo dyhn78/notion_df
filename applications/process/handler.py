@@ -1,3 +1,4 @@
+from __future__ import annotations
 from abc import abstractmethod
 from typing import Union
 
@@ -41,37 +42,39 @@ class PropertyHandler(Handler):
         self._domain = domain
 
     @abstractmethod
-    def _process_unit(self, dom: PagePropertyParser):
+    def process_unit(self, dom: PagePropertyParser):
         """
         프로세싱이 성공했거나 필요없었던 대상이라면 False 를,
         리프로세싱이 필요하면 True 혹은 관련 인자(bool 값이 True 여야 함)를 반환한다.
         """
         pass
 
+    def _execute_these(self, doms: list[PagePropertyParser]):
+        for dom in doms.copy():
+            self.process_unit(dom)
+
     def execute(self, reprocess_outside=False, async_client=False) -> PageListParser:
-        for dom in self._domain.list_of_objects:
-            self._process_unit(dom)
+        self._execute_these(self._domain.list_of_objects)
 
         if not async_client:
             self._send_request()
         else:
             self._send_request_async()
-
         queue = self._reprocess_queue
+
         if not reprocess_outside:
+            self._execute_these(self._reprocess_queue)
+            self._reprocess_queue.clear()
+
             if not async_client:
-                self._reprocess()
                 self._send_request()
             else:
-                self._reprocess_async()
                 self._send_request_async()
+
         return PageListParser(queue)
 
-    def _reprocess(self):
-        for dom in self._reprocess_queue:
-            self._process_unit(dom)
-        self._reprocess_queue.clear()
 
-    def _reprocess_async(self):
-        pass
-        self._reprocess_queue.clear()
+class DomParser:
+    def __init__(self, caller: type(PropertyHandler), dom: PagePropertyParser):
+        self.caller = caller
+        self.dom = dom

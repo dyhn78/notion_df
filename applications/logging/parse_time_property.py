@@ -20,13 +20,16 @@ class ParseTimeProperty:
         return f'{self.date.strftime("%y%m%d")} {dayname}'
 
     def strf_year_and_week(self):
-        year, week, weekday = self._augmented_iso_calendar()
-        first_day_of_week = self.date + datetime.timedelta(days=-weekday)
-        last_day_of_week = first_day_of_week + + datetime.timedelta(days=6)
+        return (self.date.strftime("%Y년 %U주: ") +
+                self.first_day_of_week().strftime("%m%d-") +
+                self.last_day_of_week().strftime("%m%d"))
 
-        return (self.date.strftime("%y-%U주: ") +
-                first_day_of_week.strftime("%y%m%d-") +
-                last_day_of_week.strftime("%y%m%d"))
+    def first_day_of_week(self):
+        year, week, weekday = self._augmented_iso_calendar()
+        return self.date + datetime.timedelta(days=-weekday)
+
+    def last_day_of_week(self):
+        return self.first_day_of_week() + + datetime.timedelta(days=6)
 
     def _augmented_iso_calendar(self):
         year, week, weekday = self.date.isocalendar()

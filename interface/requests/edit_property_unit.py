@@ -1,67 +1,60 @@
 from abc import ABCMeta
 from datetime import datetime as datetimeclass, date as dateclass
-from typing import Union, Any
+from typing import Union
 
 from interface.structure.carriers import ValueCarrier, ListStash
 
 
 class PageProperty(ValueCarrier, metaclass=ABCMeta):
-    value_type = 'None'
-
-    def __init__(self, value_type, prop_name):
+    def __init__(self, value_type, prop_name, prop_value):
         super().__init__()
-        self.value_type = value_type
-        self.prop_name = prop_name
-        self.prop_value = None
+        self._value_type = value_type
+        self._prop_name = prop_name
+        if prop_value is not None:
+            self.prop_value = prop_value
 
     def apply(self):
-        return {self.prop_name: self.prop_value}
+        return {self._prop_name: self.wrapped_value()}
 
-    def _wrap_to_prop(self, value):
-        return {'type': self.value_type,
-                self.value_type: value}
-
-    @classmethod
-    def _simple_prop(cls, value_type, prop_name, value):
-        self = cls(value_type, prop_name)
-        self.prop_value = self._wrap_to_prop(value)
-        return self
+    def wrapped_value(self):
+        return {'type': self._value_type,
+                self._value_type: self.prop_value}
 
     @classmethod
     def number(cls, prop_name, value):
-        return cls._simple_prop('number', prop_name, value)
+        return cls('number', prop_name, value)
 
     @classmethod
     def checkbox(cls, prop_name, value):
-        return cls._simple_prop('checkbox', prop_name, value)
+        return cls('checkbox', prop_name, value)
 
     @classmethod
     def select(cls, prop_name, value):
-        return cls._simple_prop('select', prop_name, value)
+        return cls('select', prop_name, value)
 
     @classmethod
     def files(cls, prop_name, value):
-        return cls._simple_prop('files', prop_name, value)
+        return cls('files', prop_name, value)
 
     @classmethod
     def people(cls, prop_name, value):
-        return cls._simple_prop('people', prop_name, value)
+        return cls('people', prop_name, value)
 
     @classmethod
     def multi_select(cls, prop_name, values):
         prop_value = [{'name': value} for value in values]
-        return cls._simple_prop('multi_select', prop_name, prop_value)
+        return cls('multi_select', prop_name, prop_value)
 
     @classmethod
     def relation(cls, prop_name, page_ids):
         prop_value = [{'id': page_id} for page_id in page_ids]
-        return cls._simple_prop('relation', prop_name, prop_value)
+        return cls('relation', prop_name, prop_value)
 
     @classmethod
     def date(cls, prop_name,
              start_date: Union[datetimeclass, dateclass], end_date=None):
         prop_value = cls._date_isoformat(start_date, end_date)
-        return cls._simple_prop('date', prop_name, prop_value)
+        return cls('date', prop_name, prop_value)
 
     @staticmethod
     def _date_isoformat(start_date: Union[datetimeclass, dateclass], end_date=None):
@@ -79,15 +72,18 @@ class PageProperty(ValueCarrier, metaclass=ABCMeta):
 class RichTextProperty(PageProperty, ListStash):
     # TODO : Children을 가질 수 있게 수정하기. (우선순위 보통)
     def __init__(self, value_type, prop_name):
-        super().__init__(value_type, prop_name)
+        assert value_type in ['text', 'title', 'rich_text']
+        super().__init__(value_type, prop_name, None)
+
+    @classmethod
+    def plain_form(cls, value_type, prop_name, text_content):
+        self = cls(value_type, prop_name)
+        self.write_text(text_content)
+        return self
 
     @property
     def prop_value(self):
-        return self._wrap_to_prop(self._unpack())
-
-    @prop_value.setter
-    def prop_value(self, value):
-        pass
+        return self._unpack()
 
     def write_text(self, content, link=None):
         self._subdicts.append(self.__text(content, link))
@@ -139,3 +135,7 @@ class RichTextProperty(PageProperty, ListStash):
         mention = {'date': date,
                    'type': 'date'}
         return cls._wrap_to_rich_text('mention', mention)
+
+
+if __name__ == '__main__':
+    pass

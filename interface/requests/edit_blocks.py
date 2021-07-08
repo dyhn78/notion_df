@@ -3,39 +3,41 @@ from interface.structure.carriers import ValueCarrier
 
 
 class Block(ValueCarrier):
-    _block_type = 'None'
-    _content_type = 'None'
-
-    def __init__(self, block_content):
-        super().__init__()
-        self.block_content = block_content
+    def __init__(self, block_type, value_type, contents):
+        self._block_type = block_type
+        self._value_type = value_type
+        if contents is not None:
+            self.contents = contents
 
     def apply(self):
         return {
             'object': 'block',
             'type': self._block_type,
-            self._block_type: self.block_content
+            self._block_type: self.contents
         }
 
     def __wrap_to_block(self, value):
-        return {self._content_type: value}
+        return {self._value_type: value}
+
+    @classmethod
+    def page(cls, title):
+        wrapped_title = {'title': title}
+        return cls('child_page', wrapped_title, None)
 
 
 class PageBlock(Block):
-    _block_type = 'child_page'
-    _content_type = 'title'
-
     def __init__(self, title):
-        super().__init__(self.__wrap_to_block(title))
+        wrapped_title = {'title': title}
+        super().__init__('child_page', wrapped_title, None)
 
 
 class TextBlock(Block, RichTextProperty):
-    _content_type = 'text'
+    _value_type = 'text'
 
     def __init__(self, block_type, **kwargs):
-        self._block_type = block_type
-        RichTextProperty.__init__(self, value_type='text', prop_name='text')
-        self._additional_args = kwargs
+        Block.__init__(self, block_type, 'text', None)
+        RichTextProperty.__init__(self, 'text', 'text')
+        self._kwargs = kwargs
 
     @classmethod
     def plain_form(cls, text_content, block_type, **kwargs):
@@ -43,7 +45,8 @@ class TextBlock(Block, RichTextProperty):
         self.write_text(text_content)
         return self
 
-    def apply(self):
-        self.block_content = RichTextProperty.apply(self)
-        self.block_content.update(**self._additional_args)
-        return Block.apply(self)
+    @property
+    def contents(self):
+        contents = RichTextProperty.apply(self)
+        contents.update(**self._kwargs)
+        return contents
