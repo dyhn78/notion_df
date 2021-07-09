@@ -26,50 +26,50 @@ class QueryFilterMaker:
             prop_class = value_type
         else:
             prop_type = self.__types_table[name]
-            if prop_type in ['title', 'rich_text', 'url', 'email', 'phone_number']:
+            if prop_type in ['text', 'title', 'rich_text', 'url', 'email', 'phone_number']:
                 prop_class = 'text'
-            elif prop_type in ['created_time', 'last_edited_time']:
+            elif prop_type in ['date', 'created_time', 'last_edited_time']:
                 prop_class = 'date'
-            elif prop_type in ['created_by', 'last_edited_by']:
+            elif prop_type in ['people', 'person', 'created_by', 'last_edited_by']:
                 prop_class = 'people'
             else:
                 prop_class = prop_type
         return prop_class
 
     @staticmethod
-    def frame_by_text(prop_name: str):
+    def by_text(prop_name: str):
         return TextFrame(prop_name)
 
     @staticmethod
-    def frame_by_relation(prop_name: str):
+    def by_relation(prop_name: str):
         return RelationFrame(prop_name)
 
     @staticmethod
-    def frame_by_number(prop_name: str):
+    def by_number(prop_name: str):
         return NumberFrame(prop_name)
 
     @staticmethod
-    def frame_by_checkbox(prop_name: str):
+    def by_checkbox(prop_name: str):
         return CheckboxFrame(prop_name)
 
     @staticmethod
-    def frame_by_select(prop_name: str):
+    def by_select(prop_name: str):
         return SelectFrame(prop_name)
 
     @staticmethod
-    def frame_by_multi_select(prop_name: str):
+    def by_multi_select(prop_name: str):
         return MultiselectFrame(prop_name)
 
     @staticmethod
-    def frame_by_files(prop_name: str):
+    def by_files(prop_name: str):
         return FilesFrame(prop_name)
 
     @staticmethod
-    def frame_by_date(prop_name: str):
+    def by_date(prop_name: str):
         return DateFrame(prop_name)
 
     @staticmethod
-    def frame_by_people(prop_name: str):
+    def by_people(prop_name: str):
         return PeopleFrame(prop_name)
 
 
@@ -80,25 +80,25 @@ class PlainFrame:
         self.prop_name = prop_name
         assert self.prop_class is not None
 
-    def make_filter(self, filter_type, arg):
+    def _wrap_as_filter(self, filter_type, arg):
         return PlainFilter({
             'property': self.prop_name,
             self.prop_class: {filter_type: arg}
         })
 
     def is_empty(self):
-        return self.make_filter('is_empty', True)
+        return self._wrap_as_filter('is_empty', True)
 
     def is_not_empty(self):
-        return self.make_filter('is_not_empty', True)
+        return self._wrap_as_filter('is_not_empty', True)
 
 
 class EqualtypeFrame(PlainFrame):
     def equals(self, arg):
-        return self.make_filter('equals', arg)
+        return self._wrap_as_filter('equals', arg)
 
     def does_not_equal(self, arg):
-        return self.make_filter('does_not_equal', arg)
+        return self._wrap_as_filter('does_not_equal', arg)
 
     def equals_to_any(self, *args):
         return OrFilter(self.equals(arg) for arg in args)
@@ -109,10 +109,10 @@ class EqualtypeFrame(PlainFrame):
 
 class ContaintypeFrame(PlainFrame):
     def contains(self, arg):
-        return self.make_filter('contains', str(arg))
+        return self._wrap_as_filter('contains', str(arg))
 
     def does_not_contain(self, arg):
-        return self.make_filter('does_not_contain', str(arg))
+        return self._wrap_as_filter('does_not_contain', str(arg))
 
     def contains_any(self, *args):
         return OrFilter(self.contains(arg) for arg in args)
@@ -131,10 +131,10 @@ class TextFrame(EqualtypeFrame, ContaintypeFrame):
     prop_class = 'text'
 
     def starts_with(self, arg):
-        return self.make_filter('starts_with', str(arg))
+        return self._wrap_as_filter('starts_with', str(arg))
 
     def ends_with(self, arg):
-        return self.make_filter('ends_with', str(arg))
+        return self._wrap_as_filter('ends_with', str(arg))
 
     def starts_with_one_of(self, *args):
         return OrFilter(self.starts_with(arg) for arg in args)
@@ -147,16 +147,16 @@ class NumberFrame(EqualtypeFrame):
     prop_class = 'number'
 
     def greater_than(self, arg):
-        return self.make_filter('greater_than', arg)
+        return self._wrap_as_filter('greater_than', arg)
 
     def less_than(self, arg):
-        return self.make_filter('less_than', arg)
+        return self._wrap_as_filter('less_than', arg)
 
     def greater_than_or_equal_to(self, arg):
-        return self.make_filter('greater_than_or_equal_to', arg)
+        return self._wrap_as_filter('greater_than_or_equal_to', arg)
 
     def less_than_or_equal_to(self, arg):
-        return self.make_filter('less_than_or_equal_to', arg)
+        return self._wrap_as_filter('less_than_or_equal_to', arg)
 
 
 class CheckboxFrame(EqualtypeFrame):
@@ -184,34 +184,34 @@ class DateFrame(EqualtypeFrame):
         return OrFilter(self.before(arg), self.after(arg))
 
     def before(self, arg):
-        return self.make_filter('before', arg)
+        return self._wrap_as_filter('before', arg)
 
     def after(self, arg):
-        return self.make_filter('after', arg)
+        return self._wrap_as_filter('after', arg)
 
     def on_or_before(self, arg):
-        return self.make_filter('on_or_before', arg)
+        return self._wrap_as_filter('on_or_before', arg)
 
     def on_or_after(self, arg):
-        return self.make_filter('on_or_after', arg)
+        return self._wrap_as_filter('on_or_after', arg)
 
-    def past_week(self, arg):
-        return self.make_filter('past_week', arg)
+    def within_past_week(self):
+        return self._wrap_as_filter('past_week', {})
 
-    def past_month(self, arg):
-        return self.make_filter('past_month', arg)
+    def within_past_month(self):
+        return self._wrap_as_filter('past_month', {})
 
-    def past_year(self, arg):
-        return self.make_filter('past_year', arg)
+    def within_past_year(self):
+        return self._wrap_as_filter('past_year', {})
 
-    def next_week(self, arg):
-        return self.make_filter('next_week', arg)
+    def within_next_week(self):
+        return self._wrap_as_filter('next_week', {})
 
-    def next_month(self, arg):
-        return self.make_filter('next_month', arg)
+    def within_next_month(self):
+        return self._wrap_as_filter('next_month', {})
 
-    def next_year(self, arg):
-        return self.make_filter('next_year', arg)
+    def within_next_year(self):
+        return self._wrap_as_filter('next_year', {})
 
 
 class PeopleFrame(EqualtypeFrame, ContaintypeFrame):

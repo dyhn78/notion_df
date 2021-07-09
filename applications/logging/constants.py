@@ -18,9 +18,10 @@ NALJJA_TO_GIGAN = ILJI_TO_GIGAN = JINDO_TO_GIGAN = '🧶기간'
 ILJI_TO_NALJJA = JINDO_TO_NALJJA = '🧶날짜'
 JINDO_TO_ILJI = '🧵일지'
 
-NALJJA_INDEX = '📆날짜'
-ILJI_INDEX = JINDO_INDEX = '날짜⏲️'
-NALJJA_INBOUND = GIGAN_INBOUND = None
+GIGAN_DATE_INDEX = '📅날짜 범위'
+NALJJA_DATE_INDEX = '📆날짜'
+ILJI_DATE_INDEX = JINDO_DATE_INDEX = '날짜⏲️'
+NALJJA_TITLE_INBOUND = GIGAN_TITLE_INBOUND = '📚제목'
 
 ilji_as_naljja = jindo_as_naljja = formatting_as_naljja
 naljja_as_gigan = ilji_as_gigan = jindo_as_gigan = formatting_as_gigan

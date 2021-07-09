@@ -1,4 +1,5 @@
 from collections import defaultdict
+from pprint import pprint
 
 from interface.parse.pages import PagePropertyParser
 
@@ -59,7 +60,16 @@ class PageListParser:
         return self.__title_to_id
 
     def index_to_id(self, prop_name) -> dict[dict]:
-        return {page_object.props[prop_name]: page_object.id for page_object in self.list_of_objects}
+        try:
+            return {page_object.props[prop_name]: page_object.id for page_object in self.list_of_objects}
+        except TypeError:
+            try:
+                return {page_object.props[prop_name][0]: page_object.id for page_object in self.list_of_objects}
+            except TypeError:
+                page_object = self.list_of_objects[0]
+                pprint(f"key : {page_object.props[prop_name]}")
+                pprint(f"value : {page_object.id}")
+                raise TypeError
 
     def prop_to_ids(self, prop_name) -> dict[list[dict]]:
         res = defaultdict(list)

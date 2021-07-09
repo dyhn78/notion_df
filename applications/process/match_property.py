@@ -45,7 +45,7 @@ class MatchbyIndex(PropertyHandler):
     _target_id: str
     _domain_to_target: str
     _domain_index: str
-    _target_index: str  # None 인 경우 제목 [title 속성]을 바탕으로 판단한다.
+    _target_inbound: str  # None 인 경우 제목 [title 속성]을 바탕으로 판단한다.
     _domain_function: Callable
 
     # TODO equal-to가 아니라 startswith \
@@ -58,14 +58,14 @@ class MatchbyIndex(PropertyHandler):
     def default(cls, domain: PageListParser, target: PageListParser,
                 target_id: str, domain_to_target: str,
                 domain_index: Union[None, str, tuple[str, None]],
-                target_index: Union[None, str, tuple[str, None]],
+                target_inbound: Union[None, str, tuple[str, None]],
                 domain_function: Callable):
         self = cls(domain, target)
         self._target = target
         self._target_id = target_id
         self._domain_to_target = domain_to_target
         self._domain_index = domain_index
-        self._target_index = target_index
+        self._target_inbound = target_inbound
         self._domain_function = domain_function
         return self
 
@@ -79,8 +79,8 @@ class MatchbyIndex(PropertyHandler):
             dom_index = (dom.props[self._domain_index],)
         tar_index = self._domain_function(*dom_index)
 
-        if self._target_index:
-            target_indices = self._target.index_to_id(self._target_index)
+        if self._target_inbound:
+            target_indices = self._target.index_to_id(self._target_inbound)
         else:
             target_indices = self._target.title_to_id
 

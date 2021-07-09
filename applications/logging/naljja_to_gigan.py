@@ -9,8 +9,8 @@ from interface.requests.edit import DatabaseCreate
 class NaljjaToGigan(MatchorCreatebyIndex):
     _target_id = GIGAN_ID
     _domain_to_target = NALJJA_TO_GIGAN
-    _domain_index = NALJJA_INDEX
-    _target_index = GIGAN_INBOUND
+    _domain_index = NALJJA_DATE_INDEX
+    _target_inbound = GIGAN_TITLE_INBOUND
 
     @staticmethod
     def _domain_function(date):
