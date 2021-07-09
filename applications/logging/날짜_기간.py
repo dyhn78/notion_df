@@ -32,7 +32,7 @@ if __name__ == '__main__':
     naljja = PageListParser.from_query(response)
 
     query = Query(ILJI_ID)
-    frame = query.filter_maker.by_relation(ILJI_TO_GIGAN)
+    frame = query.filter_maker.by_relation(TO_GIGAN)
     ft = frame.is_empty()
     if CHECK_ONLY_PAST_30_DAYS:
         frame = query.filter_maker.by_date(ILJI_DATE_INDEX)
@@ -45,32 +45,50 @@ if __name__ == '__main__':
     ilji = PageListParser.from_query(response)
 
     query = Query(JINDO_ID)
-    frame = query.filter_maker.by_relation(JINDO_TO_GIGAN)
+    frame = query.filter_maker.by_relation(TO_GIGAN)
     ft = frame.is_empty()
     if CHECK_ONLY_PAST_30_DAYS:
         frame = query.filter_maker.by_date(JINDO_DATE_INDEX)
         ft &= frame.within_past_month()
-    if CHECK_ONLY_PAST_365_DAYS:
+    elif CHECK_ONLY_PAST_365_DAYS:
         frame = query.filter_maker.by_date(JINDO_DATE_INDEX)
         ft &= frame.within_past_year()
     query.push_filter(ft)
     response = query.execute()
     jindo = PageListParser.from_query(response)
 
+    query = Query(SSEUGI_ID)
+    frame = query.filter_maker.by_relation(TO_GIGAN)
+    ft = frame.is_empty()
+    if CHECK_ONLY_PAST_30_DAYS:
+        frame = query.filter_maker.by_date(SSEUGI_DATE_INDEX)
+        ft &= frame.within_past_month()
+    elif CHECK_ONLY_PAST_365_DAYS:
+        frame = query.filter_maker.by_date(SSEUGI_DATE_INDEX)
+        ft &= frame.within_past_year()
+    query.push_filter(ft)
+    response = query.execute()
+    sseugi = PageListParser.from_query(response)
+
     request = NaljjaToGigan(naljja, gigan)
     stopwatch('날짜->기간')
     request.execute()
 
     request = MatchbyReference.default(
-        ilji, naljja, ILJI_TO_GIGAN, ILJI_TO_NALJJA, NALJJA_TO_GIGAN
+        ilji, naljja, TO_GIGAN, TO_NALJJA, TO_GIGAN
     )
     stopwatch('일지-(날짜)->기간')
     request.execute()
 
     request = MatchbyReference.default(
-        jindo, naljja, JINDO_TO_GIGAN, JINDO_TO_NALJJA, NALJJA_TO_GIGAN
+        jindo, naljja, TO_GIGAN, TO_NALJJA, TO_GIGAN
     )
     stopwatch('진도-(날짜)->기간')
     request.execute()
 
+    request = MatchbyReference.default(
+        sseugi, naljja, TO_GIGAN, TO_NALJJA, TO_GIGAN
+    )
+    stopwatch('쓰기-(날짜)->기간')
+    request.execute()
     stopwatch('작업 완료')
