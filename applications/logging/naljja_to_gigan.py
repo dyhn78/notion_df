@@ -1,5 +1,3 @@
-from typing import Callable
-
 from applications.logging.constants import *
 from applications.process.match_property import MatchorCreatebyIndex, MatchbyIndex
 from interface.parse.pages import PagePropertyParser
@@ -8,7 +6,7 @@ from interface.requests.edit import DatabaseCreate
 
 class NaljjaToGigan(MatchorCreatebyIndex):
     _target_id = GIGAN_ID
-    _domain_to_target = NALJJA_TO_GIGAN
+    _domain_to_target = TO_GIGAN
     _domain_index = NALJJA_DATE_INDEX
     _target_inbound = GIGAN_TITLE_INBOUND
 

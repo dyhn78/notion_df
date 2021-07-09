@@ -31,8 +31,14 @@ class MatchbyReference(PropertyHandler):
         if not dom.props[self._domain_to_reference]:
             self._append_reprocess(dom)
             return True
-
-        ref_id = dom.props[self._domain_to_reference][0]
+        i = 0
+        while True:
+            try:
+                ref_id = dom.props[self._domain_to_reference][i]
+                break
+            except KeyError:
+                # 예컨대 삭제된 일지를 첫 번째 원소로 들고 있을 경우
+                i += 1
         ref_props = self._reference.dict_by_id[ref_id]
         tar_id = ref_props[self._reference_to_target]
 

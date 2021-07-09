@@ -3,7 +3,7 @@ from datetime import datetime as datetimeclass
 
 
 class ParseTimeProperty:
-    korean_weekday = ["화요일", "수요일", "목요일", "금요일", "토요일", "일요일", "월요일"]
+    korean_weekday = ["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"]
 
     def __init__(self, date_time: datetimeclass, plain_date=False):
         self.datetime = date_time + datetime.timedelta(hours=9)

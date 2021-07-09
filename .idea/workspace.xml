@@ -1,0 +1,320 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="31374636-4e05-48ac-979e-41ae34b13695" name="새 변경 목록" comment="새 변경 목록" />
+    <list id="2a8a7209-1ffb-43f2-969c-0ddf95281e08" name="디폴트 변경 목록" comment="일지-&gt;진도-&gt;날짜-&gt;기간 성공">
+      <change beforePath="$PROJECT_DIR$/.idea/runConfigurations/_.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/runConfigurations/__.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/applications/logging/constants.py" beforeDir="false" afterPath="$PROJECT_DIR$/applications/logging/constants.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/applications/logging/naljja_to_gigan.py" beforeDir="false" afterPath="$PROJECT_DIR$/applications/logging/naljja_to_gigan.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/applications/logging/parse_time_property.py" beforeDir="false" afterPath="$PROJECT_DIR$/applications/logging/parse_time_property.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/applications/process/match_property.py" beforeDir="false" afterPath="$PROJECT_DIR$/applications/process/match_property.py" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ChangesViewManager" show_ignored="true" />
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Stub" />
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Rebase.Settings">
+    <option name="NEW_BASE" value="origin/main" />
+  </component>
+  <component name="Git.Settings">
+    <favorite-branches>
+      <branch-storage>
+        <map>
+          <entry type="LOCAL">
+            <value>
+              <list>
+                <branch-info repo="$PROJECT_DIR$" source="main" />
+              </list>
+            </value>
+          </entry>
+        </map>
+      </branch-storage>
+    </favorite-branches>
+    <option name="PUSH_AUTO_UPDATE" value="true" />
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="main" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="RESET_MODE" value="HARD" />
+  </component>
+  <component name="GitSEFilterConfiguration">
+    <file-type-list>
+      <filtered-out-file-type name="LOCAL_BRANCH" />
+      <filtered-out-file-type name="REMOTE_BRANCH" />
+      <filtered-out-file-type name="TAG" />
+      <filtered-out-file-type name="COMMIT_BY_MESSAGE" />
+    </file-type-list>
+  </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$USER_HOME$/AppData/Local/Programs/Python/Python39/Lib/json/encoder.py" root0="SKIP_INSPECTION" />
+    <setting file="file://$USER_HOME$/AppData/Local/Programs/Python/Python39/Lib/site-packages/notion_client/client.py" root0="SKIP_INSPECTION" />
+  </component>
+  <component name="ProblemsViewState">
+    <hideBySeverity>
+      <option value="15" />
+    </hideBySeverity>
+  </component>
+  <component name="ProjectId" id="1u3aBpl0esiLDIYwdfd7vlaKHwg" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
+    <property name="TODO_SCOPE" value="모든 위치" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/db_handler/edit.py" />
+    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+  </component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="D:\Dev\Workspace\Notion-py\examples" />
+      <recent name="D:\Dev\Workspace\Notion-py\interface" />
+      <recent name="D:\Dev\Workspace\Notion-py\applications" />
+      <recent name="D:\Dev\Workspace\Notion-py\interface\requests" />
+      <recent name="D:\Dev\Workspace\Notion-py\interface\structure" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Python.일지_진도_쓰기_날짜">
+    <configuration name="날짜_기간" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="Notion-py" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/applications/logging" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/applications/logging/날짜_기간.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="일지_진도_쓰기_날짜" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="Notion-py" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/applications/logging" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/applications/logging/일지_진도_쓰기_날짜.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.일지_진도_쓰기_날짜" />
+        <item itemvalue="Python.날짜_기간" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="애플리케이션 수준" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task id="Default" summary="디폴트 작업">
+      <changelist id="" name="디폴트 변경 목록" comment="" />
+      <created>1623896594872</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1625850827325</updated>
+    </task>
+    <task id="LOCAL-00001" summary="DatabaseQueryFilterFrameMaker (이하 FilterFrameMaker) 만들었다.&#10;FilterFrameMaker 에서는 다음 두 가지 조작이 가능하다.&#10;1. FilterFrameMaker -(Property 하나 선택)-&gt;&#10;PropertyFilterFrame (이하 FilterFrame)&#10;-(조건 및 인자 선택)-&gt; QueryFilter (이하 Filter)&#10;2. FilterFrameMaker.all 또는 .any (*arg: Filter)&#10;&#10;&#10;다음으로, Filter 클래스에도 두 종류의 이항연산자를 추가하였다.&#10;1. &amp;, | (*arg: Filter)&#10;2. all, any 메소드 (*arg: 조건 및 인자)">
+      <created>1623928649123</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1623928649123</updated>
+    </task>
+    <task id="LOCAL-00002" summary="query filter 의 dict 형태를 친절하게 조립해주는 filter_maker.py 모듈을 만들었다.&#10;다음 두 가지 방식으로 복잡한 필터를 구현할 수 있다.&#10;1. QueryFrameMaker -(Property 하나 선택)-&gt;&#10;FilterFrame -(조건 및 인자 선택)-&gt; QueryFilter&#10;2. AndFilter 또는 OrFilter(인자: *QueryFilter) -&gt; QueryFilter&#10;&#10;또한 QueryFilter 클래스에도 &amp;, | 이항연산자를 구현하였다.&#10;&#10;여러모로 추상클래스의 활용 방법에 대해 많이 깨닫는 시간이었다.">
+      <created>1623939815581</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1623939815581</updated>
+    </task>
+    <task id="LOCAL-00003" summary="query filter 의 dict 형태를 친절하게 조립해주는 filter_maker.py 모듈을 만들었다.&#10;다음 두 가지 방식으로 복잡한 필터를 구현할 수 있다.&#10;1. QueryFrameMaker -(Property 하나 선택)-&gt;&#10;FilterFrame -(조건 및 인자 선택)-&gt; QueryFilter&#10;2. AndFilter 또는 OrFilter(인자: *QueryFilter) -&gt; QueryFilter&#10;&#10;또한 QueryFilter 클래스에도 &amp;, | 이항연산자를 구현하였다.&#10;&#10;여러모로 추상클래스의 활용 방법에 대해 많이 깨닫는 시간이었다.">
+      <created>1623940509174</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1623940509174</updated>
+    </task>
+    <task id="LOCAL-00004" summary="Property Stack 클래스 거의 정비됨">
+      <created>1625232627667</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1625232627667</updated>
+    </task>
+    <task id="LOCAL-00005" summary="DB-Handler (Filter 리팩토링 제외하고) 완료">
+      <created>1625459512990</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1625459512990</updated>
+    </task>
+    <task id="LOCAL-00006" summary="DB-Handler (Filter 리팩토링 제외하고) 완료">
+      <created>1625461641049</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1625461641049</updated>
+    </task>
+    <task id="LOCAL-00007" summary="Match-Relations 에 클래스 씌우기">
+      <created>1625492042079</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1625492042079</updated>
+    </task>
+    <task id="LOCAL-00008" summary="Match-Relations 첫 성공. 일지-&gt;날짜">
+      <created>1625519027669</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1625519027669</updated>
+    </task>
+    <task id="LOCAL-00009" summary="Match-Relations 첫 성공. 일지-&gt;날짜">
+      <created>1625519206657</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1625519206657</updated>
+    </task>
+    <task id="LOCAL-00010" summary="일지-&gt;진도-&gt;날짜 성공">
+      <created>1625586651867</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1625586651867</updated>
+    </task>
+    <task id="LOCAL-00011" summary="일지-&gt;진도-&gt;날짜-&gt;기간 성공">
+      <created>1625769766946</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1625769766946</updated>
+    </task>
+    <task id="LOCAL-00012" summary="일지-&gt;진도-&gt;날짜-&gt;기간 성공">
+      <created>1625769857290</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1625769857290</updated>
+    </task>
+    <task id="LOCAL-00013" summary="일지-&gt;진도-&gt;날짜-&gt;기간 성공">
+      <created>1625845919666</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1625845919667</updated>
+    </task>
+    <task id="LOCAL-00014" summary="일지-&gt;진도-&gt;날짜-&gt;기간 성공">
+      <created>1625846585361</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1625846585361</updated>
+    </task>
+    <task id="LOCAL-00015" summary="변경 목록">
+      <changelist id="" name="변경 목록" comment="" />
+      <created>1625850827299</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1625850976700</updated>
+    </task>
+    <task id="LOCAL-00016" summary="일지-&gt;진도-&gt;날짜-&gt;기간 성공">
+      <created>1625850902941</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1625850902941</updated>
+    </task>
+    <task active="true" id="LOCAL-00017" summary="새 변경 목록">
+      <changelist id="31374636-4e05-48ac-979e-41ae34b13695" name="새 변경 목록" comment="" />
+      <created>1625850976691</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1625850976700</updated>
+    </task>
+    <task id="LOCAL-00018" summary="새 변경 목록">
+      <created>1625851016334</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1625851016334</updated>
+    </task>
+    <option name="localTasksCounter" value="19" />
+    <option name="trackContextForNewChangelist" value="true" />
+    <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="oldMeFiltersMigrated" value="true" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="DatabaseQueryFilterFrameMaker (이하 FilterFrameMaker) 만들었다.&#10;FilterFrameMaker에서는 다음 두 가지 조작이 가능하다.&#10;1. FilterFrameMaker -(Property 하나 선택)-&gt;&#10;PropertyFilterFrame (이하 FilterFrame)&#10;-(조건 선택)-&gt; QueryFilter (이하 Filter)&#10;2. FilterFrameMaker.any/all(*arg: QueryFilter)&#10;또한 Filter 클래스에서도 any/all 연산,&#10;또는 이와 동치인 &amp;, | 연산을 수행할 수 있다." />
+    <MESSAGE value="DatabaseQueryFilterFrameMaker (이하 FilterFrameMaker) 만들었다.&#10;FilterFrameMaker 에서는 다음 두 가지 조작이 가능하다.&#10;1. FilterFrameMaker -(Property 하나 선택)-&gt;&#10;PropertyFilterFrame (이하 FilterFrame)&#10;-(조건 및 인자 선택)-&gt; QueryFilter (이하 Filter)&#10;2. FilterFrameMaker.all 또는 .any (*arg: Filter)&#10;&#10;&#10;다음으로, Filter 클래스에도 두 종류의 이항연산자를 추가하였다.&#10;1. &amp;, | (*arg: Filter)&#10;2. all, any 메소드 (*arg: 조건 및 인자)" />
+    <MESSAGE value="query filter 의 dict 형태를 친절하게 조립해주는 filter_maker.py 모듈을 만들었다.&#10;다음 두 가지 방식으로 복잡한 필터를 구현할 수 있다.&#10;1. QueryFrameMaker -(Property 하나 선택)-&gt;&#10;FilterFrame -(조건 및 인자 선택)-&gt; QueryFilter&#10;2. AndFilter 또는 OrFilter(인자: *QueryFilter) -&gt; QueryFilter&#10;&#10;또한 QueryFilter 클래스에도 &amp;, | 이항연산자를 구현하였다.&#10;&#10;여러모로 추상클래스의 활용 방법에 대해 많이 깨닫는 시간이었다." />
+    <MESSAGE value="Property Stack 클래스 거의 정비됨" />
+    <MESSAGE value="DB-Handler (Filter 리팩토링 제외하고) 완료" />
+    <MESSAGE value="Match-Relations 에 클래스 씌우기" />
+    <MESSAGE value="Match-Relations 첫 성공. 일지-&gt;날짜" />
+    <MESSAGE value="일지-&gt;진도-&gt;날짜 성공" />
+    <MESSAGE value="일지-&gt;진도-&gt;날짜-&gt;기간 성공" />
+    <MESSAGE value="새 변경 목록" />
+    <option name="LAST_COMMIT_MESSAGE" value="새 변경 목록" />
+    <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="true" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <default-breakpoints>
+        <breakpoint type="python-exception">
+          <properties notifyOnTerminate="true" exception="BaseException">
+            <option name="notifyOnTerminate" value="true" />
+          </properties>
+        </breakpoint>
+      </default-breakpoints>
+    </breakpoint-manager>
+  </component>
+</project>
