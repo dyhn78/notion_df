@@ -4,22 +4,28 @@ from applications.process.match_property import MatchbyReference
 from applications.logging.naljja_to_gigan import NaljjaToGigan
 from applications.logging.constants import *
 from applications.helpers.stopwatch import stopwatch
-from interface.requests.query_filter_unit import OrFilter
 
+CHECK_ONLY_PAST_30_DAYS = True
 CHECK_ONLY_PAST_365_DAYS = False
 
 if __name__ == '__main__':
     stopwatch('클라이언트 접속')
 
     query = Query(GIGAN_ID)
-    response = query.execute()
-    if CHECK_ONLY_PAST_365_DAYS:
+    if CHECK_ONLY_PAST_30_DAYS:
+        frame = query.filter_maker.by_date(GIGAN_DATE_INDEX)
+        query.push_filter(frame.within_past_month())
+    elif CHECK_ONLY_PAST_365_DAYS:
         frame = query.filter_maker.by_date(GIGAN_DATE_INDEX)
         query.push_filter(frame.within_past_year())
+    response = query.execute()
     gigan = PageListParser.from_query(response)
 
     query = Query(NALJJA_ID)
-    if CHECK_ONLY_PAST_365_DAYS:
+    if CHECK_ONLY_PAST_30_DAYS:
+        frame = query.filter_maker.by_date(NALJJA_DATE_INDEX)
+        query.push_filter(frame.within_past_month())
+    elif CHECK_ONLY_PAST_365_DAYS:
         frame = query.filter_maker.by_date(NALJJA_DATE_INDEX)
         query.push_filter(frame.within_past_year())
     response = query.execute()
@@ -28,22 +34,26 @@ if __name__ == '__main__':
     query = Query(ILJI_ID)
     frame = query.filter_maker.by_relation(ILJI_TO_GIGAN)
     ft = frame.is_empty()
-    query.push_filter(ft)
-    if CHECK_ONLY_PAST_365_DAYS:
+    if CHECK_ONLY_PAST_30_DAYS:
         frame = query.filter_maker.by_date(ILJI_DATE_INDEX)
-        ft2 = frame.within_past_year()
-        query.push_filter(OrFilter(ft, ft2))
+        ft &= frame.within_past_month()
+    elif CHECK_ONLY_PAST_365_DAYS:
+        frame = query.filter_maker.by_date(ILJI_DATE_INDEX)
+        ft &= frame.within_past_year()
+    query.push_filter(ft)
     response = query.execute()
     ilji = PageListParser.from_query(response)
 
     query = Query(JINDO_ID)
     frame = query.filter_maker.by_relation(JINDO_TO_GIGAN)
     ft = frame.is_empty()
-    query.push_filter(ft)
+    if CHECK_ONLY_PAST_30_DAYS:
+        frame = query.filter_maker.by_date(JINDO_DATE_INDEX)
+        ft &= frame.within_past_month()
     if CHECK_ONLY_PAST_365_DAYS:
         frame = query.filter_maker.by_date(JINDO_DATE_INDEX)
-        ft2 = frame.within_past_year()
-        query.push_filter(OrFilter(ft, ft2))
+        ft &= frame.within_past_year()
+    query.push_filter(ft)
     response = query.execute()
     jindo = PageListParser.from_query(response)
 

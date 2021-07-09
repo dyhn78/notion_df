@@ -28,10 +28,11 @@ if __name__ == '__main__':
 
     query = Query(JINDO_ID)
     frame = query.filter_maker.by_relation(ILJI_TO_NALJJA)
-    query.push_filter(frame.is_empty())
+    ft = frame.is_empty()
     if CHECK_ONLY_PAST_30_DAYS:
         frame = query.filter_maker.by_date(JINDO_DATE_INDEX)
-        query.push_filter(frame.within_past_month())
+        ft &= frame.within_past_month()
+    query.push_filter(ft)
     response = query.execute()
     jindo = PageListParser.from_query(response)
 
