@@ -1,10 +1,55 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="2a8a7209-1ffb-43f2-969c-0ddf95281e08" name="디폴트 변경 목록" comment="일지-&gt;진도-&gt;날짜-&gt;기간 성공">
+    <list default="true" id="2a8a7209-1ffb-43f2-969c-0ddf95281e08" name="디폴트 변경 목록" comment="날짜-&gt;기간 리팩토링">
+      <change afterPath="$PROJECT_DIR$/notion_py/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/notion_py/applications/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/notion_py/applications/log_editor/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/notion_py/applications/process/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/notion_py/helpers/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/notion_py/interface/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/notion_py/interface/examples/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/notion_py/interface/examples/requests_examples/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/notion_py/interface/examples/response_examples/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/notion_py/interface/parse/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/notion_py/interface/requests/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/notion_py/interface/structure/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/terminal.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/Notion-py.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Notion-py.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/applications/logging/날짜_기간.py" beforeDir="false" afterPath="$PROJECT_DIR$/applications/logging/날짜_기간.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/applications/logging/일지_진도_쓰기_날짜.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/applications/helpers/page_id_to_url.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/helpers/page_id_to_url.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/applications/helpers/stopwatch.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/helpers/stopwatch.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/applications/logging/constants.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/log_editor/constants.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/applications/logging/naljja_to_gigan.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/log_editor/naljja_to_gigan.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/applications/logging/parse_time_property.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/log_editor/parse_time_property.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/applications/logging/날짜_기간.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/log_editor/날짜_기간.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/applications/process/handler.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/process/handler.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/applications/process/match_property.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/process/match_property.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/requests_examples/blocks.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/examples/requests_examples/blocks.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/requests_examples/create.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/examples/requests_examples/create.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/requests_examples/property.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/examples/requests_examples/property.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/requests_examples/query_filter.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/examples/requests_examples/query_filter.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/response_examples/page_children_list.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/examples/response_examples/page_children_list.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/response_examples/page_retrieve.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/examples/response_examples/page_retrieve.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/response_examples/query.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/examples/response_examples/query.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/response_examples/query_parsed.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/examples/response_examples/query_parsed.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/response_examples/query_일지.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/examples/response_examples/query_일지.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/test_blocklist.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/examples/test_blocklist.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/test_query.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/examples/test_query.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/test_retrieve.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/examples/test_retrieve.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/interface/parse/databases.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/parse/databases.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/interface/parse/pages.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/parse/pages.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/interface/requests/edit.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/requests/edit.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/interface/requests/edit_arguments.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/requests/edit_arguments.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/interface/requests/edit_blocks.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/requests/edit_blocks.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/interface/requests/edit_property_unit.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/requests/edit_property_unit.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/interface/requests/query.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/requests/query.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/interface/requests/query_filter_maker.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/requests/query_filter_maker.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/interface/requests/query_filter_unit.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/requests/query_filter_unit.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/interface/requests/query_sort.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/requests/query_sort.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/interface/requests/requestor.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/requests/requestor.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/interface/structure/carriers.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/structure/carriers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/interface/structure/client_wrap.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/structure/client_wrap.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -62,6 +107,7 @@
     <hideBySeverity>
       <option value="15" />
     </hideBySeverity>
+    <option name="selectedIndex" value="1" />
   </component>
   <component name="ProjectId" id="1u3aBpl0esiLDIYwdfd7vlaKHwg" />
   <component name="ProjectViewState">
@@ -73,40 +119,19 @@
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="TODO_SCOPE" value="모든 위치" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/db_handler/edit.py" />
-    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PythonContentEntriesConfigurable" />
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
-      <recent name="D:\Dev\Workspace\Notion-py\examples" />
+      <recent name="D:\Dev\Workspace\Notion-py\notion_py\interface" />
+      <recent name="D:\Dev\Workspace\Notion-py\notion_py" />
+      <recent name="D:\Dev\Workspace\Notion-py" />
+      <recent name="D:\Dev\Workspace\Notion-py\utility" />
       <recent name="D:\Dev\Workspace\Notion-py\interface" />
-      <recent name="D:\Dev\Workspace\Notion-py\applications" />
-      <recent name="D:\Dev\Workspace\Notion-py\interface\requests" />
-      <recent name="D:\Dev\Workspace\Notion-py\interface\structure" />
     </key>
   </component>
-  <component name="RunManager">
-    <configuration name="날짜_기간" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="Notion-py" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/applications/logging" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/applications/logging/날짜_기간.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
+  <component name="RunManager" selected="Python.terminal (1)">
     <configuration name="날짜_기간" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Notion-py" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -128,10 +153,118 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="databases" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="Notion-py" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/utility/interface/parse" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/utility/interface/parse/databases.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="edit" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="Notion-py" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/utility/interface/requests" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/utility/interface/requests/edit.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="requestor (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="Notion-py" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/interface/client_wrap/requests" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/interface/client_wrap/requests/requestor.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="terminal (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="Notion-py" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/terminal.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="terminal" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="Notion-py" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/applications" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/applications/terminal.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.날짜_기간" />
-        <item itemvalue="Python.날짜_기간" />
+        <item itemvalue="Python.terminal (1)" />
+        <item itemvalue="Python.terminal" />
+        <item itemvalue="Python.edit" />
+        <item itemvalue="Python.databases" />
+        <item itemvalue="Python.requestor (1)" />
       </list>
     </recent_temporary>
   </component>
@@ -277,7 +410,14 @@
       <option name="project" value="LOCAL" />
       <updated>1625851183752</updated>
     </task>
-    <option name="localTasksCounter" value="20" />
+    <task id="LOCAL-00020" summary="날짜-&gt;기간 리팩토링">
+      <created>1625974774966</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1625974774966</updated>
+    </task>
+    <option name="localTasksCounter" value="21" />
     <option name="trackContextForNewChangelist" value="true" />
     <servers />
   </component>
@@ -304,7 +444,8 @@
     <MESSAGE value="일지-&gt;진도-&gt;날짜 성공" />
     <MESSAGE value="새 변경 목록" />
     <MESSAGE value="일지-&gt;진도-&gt;날짜-&gt;기간 성공" />
-    <option name="LAST_COMMIT_MESSAGE" value="일지-&gt;진도-&gt;날짜-&gt;기간 성공" />
+    <MESSAGE value="날짜-&gt;기간 리팩토링" />
+    <option name="LAST_COMMIT_MESSAGE" value="날짜-&gt;기간 리팩토링" />
     <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="true" />
   </component>
   <component name="XDebuggerManager">
