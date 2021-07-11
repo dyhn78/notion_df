@@ -1,14 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="31374636-4e05-48ac-979e-41ae34b13695" name="새 변경 목록" comment="새 변경 목록" />
-    <list id="2a8a7209-1ffb-43f2-969c-0ddf95281e08" name="디폴트 변경 목록" comment="일지-&gt;진도-&gt;날짜-&gt;기간 성공">
-      <change beforePath="$PROJECT_DIR$/.idea/runConfigurations/_.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/runConfigurations/__.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/applications/logging/constants.py" beforeDir="false" afterPath="$PROJECT_DIR$/applications/logging/constants.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/applications/logging/naljja_to_gigan.py" beforeDir="false" afterPath="$PROJECT_DIR$/applications/logging/naljja_to_gigan.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/applications/logging/parse_time_property.py" beforeDir="false" afterPath="$PROJECT_DIR$/applications/logging/parse_time_property.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/applications/process/match_property.py" beforeDir="false" afterPath="$PROJECT_DIR$/applications/process/match_property.py" afterDir="false" />
+    <list default="true" id="2a8a7209-1ffb-43f2-969c-0ddf95281e08" name="디폴트 변경 목록" comment="일지-&gt;진도-&gt;날짜-&gt;기간 성공">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/applications/logging/날짜_기간.py" beforeDir="false" afterPath="$PROJECT_DIR$/applications/logging/날짜_기간.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/applications/logging/일지_진도_쓰기_날짜.py" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -89,7 +85,7 @@
       <recent name="D:\Dev\Workspace\Notion-py\interface\structure" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.일지_진도_쓰기_날짜">
+  <component name="RunManager">
     <configuration name="날짜_기간" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Notion-py" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -111,7 +107,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="일지_진도_쓰기_날짜" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="날짜_기간" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Notion-py" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -123,7 +119,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/applications/logging/일지_진도_쓰기_날짜.py" />
+      <option name="SCRIPT_NAME" value="D:\Dev\Workspace\Notion-py\applications\logging\날짜_기간.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -134,7 +130,7 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.일지_진도_쓰기_날짜" />
+        <item itemvalue="Python.날짜_기간" />
         <item itemvalue="Python.날짜_기간" />
       </list>
     </recent_temporary>
@@ -142,7 +138,7 @@
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="애플리케이션 수준" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task id="Default" summary="디폴트 작업">
-      <changelist id="" name="디폴트 변경 목록" comment="" />
+      <changelist id="2a8a7209-1ffb-43f2-969c-0ddf95281e08" name="디폴트 변경 목록" comment="일지-&gt;진도-&gt;날짜-&gt;기간 성공" />
       <created>1623896594872</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
@@ -247,7 +243,6 @@
       <updated>1625846585361</updated>
     </task>
     <task id="LOCAL-00015" summary="변경 목록">
-      <changelist id="" name="변경 목록" comment="" />
       <created>1625850827299</created>
       <option name="number" value="00015" />
       <option name="presentableId" value="LOCAL-00015" />
@@ -262,7 +257,6 @@
       <updated>1625850902941</updated>
     </task>
     <task active="true" id="LOCAL-00017" summary="새 변경 목록">
-      <changelist id="31374636-4e05-48ac-979e-41ae34b13695" name="새 변경 목록" comment="" />
       <created>1625850976691</created>
       <option name="number" value="00017" />
       <option name="presentableId" value="LOCAL-00017" />
@@ -276,7 +270,14 @@
       <option name="project" value="LOCAL" />
       <updated>1625851016334</updated>
     </task>
-    <option name="localTasksCounter" value="19" />
+    <task id="LOCAL-00019" summary="일지-&gt;진도-&gt;날짜-&gt;기간 성공">
+      <created>1625851183752</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1625851183752</updated>
+    </task>
+    <option name="localTasksCounter" value="20" />
     <option name="trackContextForNewChangelist" value="true" />
     <servers />
   </component>
@@ -301,9 +302,9 @@
     <MESSAGE value="Match-Relations 에 클래스 씌우기" />
     <MESSAGE value="Match-Relations 첫 성공. 일지-&gt;날짜" />
     <MESSAGE value="일지-&gt;진도-&gt;날짜 성공" />
-    <MESSAGE value="일지-&gt;진도-&gt;날짜-&gt;기간 성공" />
     <MESSAGE value="새 변경 목록" />
-    <option name="LAST_COMMIT_MESSAGE" value="새 변경 목록" />
+    <MESSAGE value="일지-&gt;진도-&gt;날짜-&gt;기간 성공" />
+    <option name="LAST_COMMIT_MESSAGE" value="일지-&gt;진도-&gt;날짜-&gt;기간 성공" />
     <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="true" />
   </component>
   <component name="XDebuggerManager">
