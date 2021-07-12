@@ -1,14 +1,15 @@
 # from pprint import pprint
 
-from .query_filter_maker import QueryFilterMaker
-from .query_filter_unit import QueryFilter, PlainFilter
-from .query_sort import QuerySort
-from .requestor import RecursiveRequestor, retry
+from .filter_maker import QueryFilterMaker
+from .filter_unit import QueryFilter, PlainFilter
+from .sort import QuerySort
+from notion_py.interface.structure import RecursiveRequestor, retry
 
 
 class Query(RecursiveRequestor):
     def __init__(self, page_id: str, database_parser=None):
-        self._page_id = {'database_id': page_id}
+        self.page_id = page_id
+        self._id_apply = {'database_id': page_id}
         self._filter = PlainFilter({})
         self._filter_is_not_empty = False
         self.sort = QuerySort()
@@ -19,7 +20,7 @@ class Query(RecursiveRequestor):
     def apply(self, print_result=False):
         filter_apply = {'filter': self._filter.apply()} \
             if self._filter_is_not_empty else None
-        return self._merge_dict(self._page_id, self.sort.apply(), filter_apply)
+        return self._merge_dict(self._id_apply, self.sort.apply(), filter_apply)
 
     @retry
     def _execute_once(self, page_size=None, start_cursor=None):

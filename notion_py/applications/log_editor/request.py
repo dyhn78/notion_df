@@ -1,10 +1,10 @@
 # from pprint import pprint
 
-from notion_py.interface.parse import PageListParser
-from notion_py.interface.requests import Query
+from notion_py.interface.parse import PagePropertyList
+from notion_py.interface.query import Query
 from notion_py.helpers.stopwatch import stopwatch
-from notion_py.applications.process.match_property import MatchbyReference, MatchorCreatebyIndex
-from notion_py.applications.log_editor.naljja_to_gigan import NaljjaToGigan
+from notion_py.applications.log_editor.match_property import MatchbyReference, MatchorCreatebyIndex
+from notion_py.applications.log_editor.class_naljja_to_gigan import NaljjaToGigan
 from notion_py.applications.log_editor.constants import *
 
 CHECK_ONLY_PAST_X_DAYS = 7
@@ -21,7 +21,7 @@ def connect_to_naljja():
         if CHECK_ONLY_PAST_X_DAYS == 30:
             query.push_filter(frame.within_past_month())
     response = query.execute()
-    naljja = PageListParser.from_query(response)
+    naljja = PagePropertyList.from_query_response(response)
 
     query = Query(ILJI_ID)
     if CHECK_ONLY_PAST_X_DAYS:
@@ -31,7 +31,7 @@ def connect_to_naljja():
         if CHECK_ONLY_PAST_X_DAYS == 30:
             query.push_filter(frame.within_past_month())
     response = query.execute()
-    ilji = PageListParser.from_query(response)
+    ilji = PagePropertyList.from_query_response(response)
 
     request = MatchorCreatebyIndex.default(
         ilji, naljja, NALJJA_ID, TO_NALJJA,
@@ -51,7 +51,7 @@ def connect_to_naljja():
             ft &= frame.within_past_month()
     query.push_filter(ft)
     response = query.execute()
-    jindo = PageListParser.from_query(response)
+    jindo = PagePropertyList.from_query_response(response)
 
     query = Query(SSEUGI_ID)
     frame = query.filter_maker.by_relation(TO_NALJJA)
@@ -64,7 +64,7 @@ def connect_to_naljja():
             ft &= frame.within_past_month()
     query.push_filter(ft)
     response = query.execute()
-    sseugi = PageListParser.from_query(response)
+    sseugi = PagePropertyList.from_query_response(response)
 
     request = MatchbyReference.default(
         jindo, ilji, TO_NALJJA, TO_ILJI, TO_NALJJA
@@ -108,7 +108,7 @@ def connect_to_gigan():
         elif CHECK_ONLY_PAST_X_DAYS == 365:
             query.push_filter(frame.within_past_year())
     response = query.execute()
-    gigan = PageListParser.from_query(response)
+    gigan = PagePropertyList.from_query_response(response)
 
     query = Query(NALJJA_ID)
     if CHECK_ONLY_PAST_X_DAYS:
@@ -120,7 +120,7 @@ def connect_to_gigan():
         elif CHECK_ONLY_PAST_X_DAYS == 365:
             query.push_filter(frame.within_past_year())
     response = query.execute()
-    naljja = PageListParser.from_query(response)
+    naljja = PagePropertyList.from_query_response(response)
 
     request = NaljjaToGigan(naljja, gigan)
     stopwatch('날짜->기간')
@@ -139,7 +139,7 @@ def connect_to_gigan():
             ft &= frame.within_past_year()
     query.push_filter(ft)
     response = query.execute()
-    ilji = PageListParser.from_query(response)
+    ilji = PagePropertyList.from_query_response(response)
 
     query = Query(JINDO_ID)
     frame = query.filter_maker.by_relation(TO_GIGAN)
@@ -154,7 +154,7 @@ def connect_to_gigan():
             ft &= frame.within_past_year()
     query.push_filter(ft)
     response = query.execute()
-    jindo = PageListParser.from_query(response)
+    jindo = PagePropertyList.from_query_response(response)
 
     query = Query(SSEUGI_ID)
     frame = query.filter_maker.by_relation(TO_GIGAN)
@@ -169,7 +169,7 @@ def connect_to_gigan():
             ft &= frame.within_past_year()
     query.push_filter(ft)
     response = query.execute()
-    sseugi = PageListParser.from_query(response)
+    sseugi = PagePropertyList.from_query_response(response)
 
     request = MatchbyReference.default(
         ilji, naljja, TO_GIGAN, TO_NALJJA, TO_GIGAN

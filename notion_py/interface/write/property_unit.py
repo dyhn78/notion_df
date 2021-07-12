@@ -2,7 +2,7 @@ from abc import ABCMeta
 from datetime import datetime as datetimeclass, date as dateclass
 from typing import Union
 
-from ..structure.carriers import ValueCarrier, ListStash
+from notion_py.interface.structure import ValueCarrier, ListStash
 
 
 class PageProperty(ValueCarrier, metaclass=ABCMeta):

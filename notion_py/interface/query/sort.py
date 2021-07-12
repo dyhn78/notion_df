@@ -1,4 +1,4 @@
-from ..structure.carriers import ListStash
+from ..structure import ListStash
 
 
 class QuerySort(ListStash):

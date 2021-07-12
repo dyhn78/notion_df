@@ -1,5 +1,5 @@
-from .edit_property_unit import RichTextProperty
-from ..structure.carriers import ValueCarrier
+from .property_unit import RichTextProperty
+from notion_py.interface.structure.carriers import ValueCarrier
 
 
 class Block(ValueCarrier):

@@ -6,9 +6,8 @@ from collections import defaultdict
 
 from notion_client import Client, AsyncClient
 
-from ..structure.carriers import Structure
-from notion_py.helpers.page_id_to_url import page_id_to_url
-from notion_py.helpers.stopwatch import stopwatch
+from notion_py.interface.structure import Structure
+from notion_py.helpers import page_id_to_url, stopwatch
 
 
 def retry(method: Callable, recursion_limit=5):
@@ -25,14 +24,17 @@ def retry(method: Callable, recursion_limit=5):
 
 
 class Requestor(Structure):
-    notion: Union[Client, AsyncClient]
-    _id = ''
+    _id_raw = ''
 
     @property
-    def notion(self):
+    def notion(self) -> Union[Client, AsyncClient]:
         # TODO: .env 파일에 토큰 숨기기
         os.environ['NOTION_TOKEN'] = ***REMOVED***
         return Client(auth=os.environ['NOTION_TOKEN'])
+
+    @abstractmethod
+    def apply(self):
+        pass
 
     @retry
     @abstractmethod
@@ -40,8 +42,8 @@ class Requestor(Structure):
         pass
 
     def print_info(self, *string):
-        if self._id:
-            print(*string, page_id_to_url(self._id), sep='; ')
+        if self._id_raw:
+            print(*string, page_id_to_url(self._id_raw), sep='; ')
 
     @classmethod
     def _merge_dict(cls, *dicts: Union[dict, None]):
@@ -75,6 +77,7 @@ class RecursiveRequestor(Requestor):
 
     def execute(self, page_size=INF):
         res = []
+        result = {'results': res}
         if page_size == 0:
             page_size = self.INF
         has_more = True
@@ -90,4 +93,4 @@ class RecursiveRequestor(Requestor):
             page_size -= self.MAX_PAGE_SIZE
             page_retrieved += len(response['results'])
             stopwatch(f'{page_retrieved} 개 완료')
-        return {'results': res}
+        return result

@@ -2,8 +2,8 @@ from __future__ import annotations
 from abc import abstractmethod
 from typing import Union
 
-from notion_py.interface.parse import PagePropertyParser, PageListParser
-from notion_py.interface.requests.requestor import Requestor
+from notion_py.interface.parse import PageProperty, PagePropertyList
+from notion_py.interface.structure import Requestor
 
 
 class Handler:
@@ -28,32 +28,32 @@ class Handler:
         self._requests_queue.append(task)
         self.process_count += 1
 
-    def _append_reprocess(self, task: PagePropertyParser):
+    def _append_reprocess(self, task: PageProperty):
         self._reprocess_queue.append(task)
         self.process_count += 1
 
-    def extend_reprocess_queue(self, queue: list[PagePropertyParser]):
+    def extend_reprocess_queue(self, queue: list[PageProperty]):
         self._reprocess_queue.extend(queue)
 
 
 class PropertyHandler(Handler):
-    def __init__(self, domain: PageListParser):
+    def __init__(self, domain: PagePropertyList):
         self._domain = domain
 
     @abstractmethod
-    def process_unit(self, dom: PagePropertyParser):
+    def process_unit(self, dom: PageProperty):
         """
         프로세싱이 성공했거나 필요없었던 대상이라면 False 를,
         리프로세싱이 필요하면 True 혹은 관련 인자(bool 값이 True 여야 함)를 반환한다.
         """
         pass
 
-    def _execute_these(self, doms: list[PagePropertyParser]):
+    def _execute_these(self, doms: list[PageProperty]):
         for dom in doms.copy():
             self.process_unit(dom)
 
-    def execute(self, reprocess_outside=False, async_client=False) -> PageListParser:
-        self._execute_these(self._domain.list_of_objects)
+    def execute(self, reprocess_outside=False, async_client=False) -> PagePropertyList:
+        self._execute_these(self._domain.parser_list)
 
         if not async_client:
             self._send_request()
@@ -70,10 +70,10 @@ class PropertyHandler(Handler):
             else:
                 self._send_request_async()
 
-        return PageListParser(queue)
+        return PagePropertyList(self._domain.database_id, queue)
 
 
 class DomParser:
-    def __init__(self, caller: type(PropertyHandler), dom: PagePropertyParser):
+    def __init__(self, caller: type(PropertyHandler), dom: PageProperty):
         self.caller = caller
         self.dom = dom

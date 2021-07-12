@@ -1,16 +1,19 @@
 from collections import defaultdict
 from pprint import pprint
 
-from .pages import PagePropertyParser
+from .pages import PageProperty
 
 
-class DatabasePropertyParser:
-    def __init__(self, retrieve_response: dict):
+class DatabaseProperty:
+    def __init__(self, props_table: dict):
+        self.props_table = props_table
+
+    @classmethod
+    def from_retrieve_response(cls, response: dict):
         """
-        :argument retrieve_response: notion.databases.retrieve(database_id: str) 메소드로 얻을 수 있다.
+        :argument response: notion.databases.retrieve(database_id: str) 메소드로 얻을 수 있다.
         """
-        self.results = retrieve_response
-        self.properties_table = self.results['properties']
+        return cls(response['properties'])
 
     @property
     def prop_type_table(self) -> dict[str, str]:
@@ -18,7 +21,7 @@ class DatabasePropertyParser:
         :return {prop_name: prop_type for prop_name in database}
         """
         return {prop_name: rich_property_object['type']
-                for prop_name, rich_property_object in self.properties_table.items()}
+                for prop_name, rich_property_object in self.props_table.items()}
 
     @property
     def prop_id_table(self) -> dict[str, str]:
@@ -26,53 +29,56 @@ class DatabasePropertyParser:
         :return {prop_name: prop_id for prop_name in database}
         """
         return {prop_name: rich_property_object['id']
-                for prop_name, rich_property_object in self.properties_table.items()}
+                for prop_name, rich_property_object in self.props_table.items()}
 
 
-class PageListParser:
-    def __init__(self, list_of_objects: list[PagePropertyParser]):
-        self.list_of_objects = list_of_objects
-        self.__list_of_items = None
-        self.__dict_by_id = None
-        self.__title_to_id = None
+class PagePropertyList:
+    def __init__(self, database_id: str, page_parsers: list[PageProperty]):
+        self.database_id = database_id
+        self.parser_list = page_parsers
+        self.search = PagePropertySearchAgent(self)
 
     @classmethod
-    def from_query(cls, query_response: dict):
-        return cls([PagePropertyParser(page_result) for page_result in query_response['results']])
+    def from_query_response(cls, response: dict):
+        database_id = 'None'
+        return cls(database_id, [PageProperty.from_query_response(page_result, database_id)
+                                 for page_result in response['results']])
+
+
+class PagePropertySearchAgent:
+    def __init__(self, caller):
+        self.caller = caller
+        self._page_parser_by_id = None
+        self._id_by_unique_title = None
+        self._id_by_index = defaultdict(dict)
 
     @property
-    def list_of_items(self) -> list[dict]:
-        if self.__list_of_items is None:
-            self.__list_of_items = [{'id': page_object.id, 'properties': page_object.props}
-                                    for page_object in self.list_of_objects]
-        return self.__list_of_items
+    def page_parser_by_id(self) -> dict[dict]:
+        if self._page_parser_by_id is None:
+            self._page_parser_by_id = {page_object.page_id: page_object.props
+                                       for page_object in self.caller.parser_list}
+        return self._page_parser_by_id
 
     @property
-    def dict_by_id(self) -> dict[dict]:
-        if self.__dict_by_id is None:
-            self.__dict_by_id = {page_object.id: page_object.props for page_object in self.list_of_objects}
-        return self.__dict_by_id
+    def id_by_unique_title(self) -> dict[dict]:
+        if self._id_by_unique_title is None:
+            self._id_by_unique_title = {page_object.title: page_object.page_id
+                                        for page_object in self.caller.parser_list}
+        return self._id_by_unique_title
 
-    @property
-    def title_to_id(self) -> dict[dict]:
-        if self.__title_to_id is None:
-            self.__title_to_id = {page_object.title: page_object.id for page_object in self.list_of_objects}
-        return self.__title_to_id
-
-    def index_to_id(self, prop_name) -> dict[dict]:
-        try:
-            return {page_object.props[prop_name]: page_object.id for page_object in self.list_of_objects}
-        except TypeError:
+    def id_by_index(self, prop_name) -> dict[dict]:
+        if not self._id_by_index[prop_name]:
             try:
-                return {page_object.props[prop_name][0]: page_object.id for page_object in self.list_of_objects}
+                res = {page_object.props[prop_name]: page_object.page_id
+                       for page_object in self.caller.parser_list}
             except TypeError:
-                page_object = self.list_of_objects[0]
-                pprint(f"key : {page_object.props[prop_name]}")
-                pprint(f"value : {page_object.id}")
-                raise TypeError
-
-    def prop_to_ids(self, prop_name) -> dict[list[dict]]:
-        res = defaultdict(list)
-        for page_object in self.list_of_objects:
-            res[page_object.props[prop_name]].append(page_object.id)
-        return res
+                try:
+                    res = {page_object.props[prop_name][0]: page_object.page_id
+                           for page_object in self.caller.parser_list}
+                except TypeError:
+                    page_object = self.caller.parser_list[0]
+                    pprint(f"key : {page_object.props[prop_name]}")
+                    pprint(f"value : {page_object.page_id}")
+                    raise TypeError
+            self._id_by_index[prop_name] = res
+        return self._id_by_index[prop_name]

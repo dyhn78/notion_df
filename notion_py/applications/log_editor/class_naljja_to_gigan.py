@@ -1,7 +1,7 @@
 from .constants import *
-from ..process.match_property import MatchorCreatebyIndex, MatchbyIndex
-from notion_py.interface.parse import PagePropertyParser
-from notion_py.interface.requests import DatabaseCreate
+from notion_py.applications.log_editor.match_property import MatchorCreatebyIndex, MatchbyIndex
+from notion_py.interface.parse import PageProperty
+from notion_py.interface.write import CreateunderDatabase
 
 
 class NaljjaToGigan(MatchorCreatebyIndex):
@@ -14,21 +14,21 @@ class NaljjaToGigan(MatchorCreatebyIndex):
     def _domain_function(date):
         return NaljjaParse(date).get_tar()
 
-    def process_unit(self, dom: PagePropertyParser):
+    def process_unit(self, dom: PageProperty):
         tar_index = MatchbyIndex.process_unit(self, dom)
         if not tar_index:
             return
         self._append_reprocess(dom)
 
         if tar_index not in self.new_target_indices:
-            tar_patch = DatabaseCreate(self._target_id)
+            tar_patch = CreateunderDatabase(self._target_id)
             self._append_requests(tar_patch)
             self.new_target_indices.append(tar_index)
 
-            tar_patch.props.write_plain_title('📚제목', tar_index)
+            tar_patch.props.write.title('📚제목', tar_index)
 
             dom_parse = NaljjaParse(dom.props[self._domain_index])
-            tar_patch.props.write_date('📅기간', dom_parse.start_date(), dom_parse.end_date())
+            tar_patch.props.write.date('📅기간', dom_parse.start_date(), dom_parse.end_date())
 
 
 class NaljjaParse:

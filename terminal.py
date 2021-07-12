@@ -1,4 +1,4 @@
-from notion_py.applications.log_editor.날짜_기간 import connect_to_naljja, connect_to_gigan
+from notion_py.applications.log_editor.request import connect_to_naljja, connect_to_gigan
 
 connect_to_naljja()
 connect_to_gigan()

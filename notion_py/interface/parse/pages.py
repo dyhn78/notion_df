@@ -1,12 +1,49 @@
 from datetime import datetime as datetimeclass
 
 
-class PagePropertyParser:
-    def __init__(self, page):
-        self.id = page['id']
-        self.title = None
-        self.props = {prop_name: self.__flatten(rich_property_object)
-                      for prop_name, rich_property_object in page['properties'].items()}
+class PageProperty:
+    def __init__(self, page_id: str, parent_id: str,
+                 parent_is_database: bool, title: str, props: dict):
+        self.page_id = page_id
+        self.parent_id = parent_id
+        self.parent_is_database = parent_is_database
+        self.title = title
+        self.props = props
+
+    @classmethod
+    def from_query_response(cls, response_frag, parent_id):
+        self = cls(
+            page_id=response_frag['id'],
+            parent_id=parent_id,
+            parent_is_database=True,
+            title='',
+            props={}
+        )
+        for prop_name, rich_property_object in response_frag['properties'].items():
+            self.props[prop_name] = self.__flatten(rich_property_object)
+        return self
+
+    @classmethod
+    def from_retrieve_response(cls, response):
+        parent_type = response['parent']['type']
+        if parent_type == 'database_id':
+            parent_id = response['parent']['database_id']
+            parent_is_database = True
+        elif parent_type == 'page_id':
+            parent_id = response['parent']['page_id']
+            parent_is_database = False
+        else:
+            raise AssertionError
+        self = cls(
+            page_id=response['id'],
+            parent_id=parent_id,
+            parent_is_database=parent_is_database,
+            title='',
+            props={}
+        )
+        for prop_name, rich_property_object in response['properties'].items():
+            self.props[prop_name] = self.__flatten(rich_property_object)
+        return self
 
     def __flatten(self, rich_property_object):
         prop_type = rich_property_object['type']
@@ -72,7 +109,8 @@ class PagePropertyParser:
                 result = []
             else:
                 try:
-                    result = [self.__flatten(rich_property_obj) for rich_property_obj in rollup_objects]
+                    result = [self.__flatten(rich_property_obj)
+                              for rich_property_obj in rollup_objects]
                     try:
                         result.sort()
                     except TypeError:
@@ -92,7 +130,3 @@ class PagePropertyParser:
             return datetimeclass.fromisoformat(datestring)
         else:
             return None
-
-
-class BlockListParser:
-    pass
