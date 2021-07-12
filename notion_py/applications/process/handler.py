@@ -53,7 +53,7 @@ class PropertyHandler(Handler):
             self.process_unit(dom)
 
     def execute(self, reprocess_outside=False, async_client=False) -> PagePropertyList:
-        self._execute_these(self._domain.parser_list)
+        self._execute_these(self._domain.parsed_pages)
 
         if not async_client:
             self._send_request()

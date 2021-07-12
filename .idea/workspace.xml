@@ -3,14 +3,9 @@
   <component name="ChangeListManager">
     <list default="true" id="2a8a7209-1ffb-43f2-969c-0ddf95281e08" name="디폴트 변경 목록" comment="Page Document 클래스">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/parse/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/parse/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/parse/databases.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/parse/database.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/parse/pages.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/parse/page.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/query/filter_maker.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/query/filter_maker.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/retrieve.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/retrieve.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/write/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/write/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/write/arguments.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/write/stacks.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/write/request.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/write/request.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/process/handler.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/process/handler.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/document.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/write/document.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/parse/database.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/parse/database.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -84,11 +79,11 @@
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="D:\Dev\Workspace\Notion-py\notion_py\interface\write" />
       <recent name="D:\Dev\Workspace\Notion-py\notion_py\interface" />
       <recent name="D:\Dev\Workspace\Notion-py\notion_py\applications\log_editor" />
       <recent name="D:\Dev\Workspace\Notion-py\notion_py\interface\edit" />
       <recent name="D:\Dev\Workspace\Notion-py\notion_py\interface\structure" />
-      <recent name="D:\Dev\Workspace\Notion-py\notion_py" />
     </key>
   </component>
   <component name="RunManager" selected="Python.test_retrieve">
@@ -331,7 +326,14 @@
       <option name="project" value="LOCAL" />
       <updated>1626097013316</updated>
     </task>
-    <option name="localTasksCounter" value="23" />
+    <task id="LOCAL-00023" summary="Page Document 클래스">
+      <created>1626097983429</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1626097983429</updated>
+    </task>
+    <option name="localTasksCounter" value="24" />
     <option name="trackContextForNewChangelist" value="true" />
     <servers />
   </component>

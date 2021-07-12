@@ -31,7 +31,7 @@ class MatchbyReference(PropertyHandler):
             self._append_reprocess(dom)
             return True
         ref_id = self._find_ref_id(dom)
-        ref_props = self._reference.search.page_parser_by_id[ref_id]
+        ref_props = self._reference.search.page_by_id[ref_id]
         tar_id = ref_props[self._reference_to_target]
 
         dom_patch = UpdateunderDatabase(dom.page_id)

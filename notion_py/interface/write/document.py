@@ -8,26 +8,27 @@ from notion_py.interface.retrieve import PageRetrieve
 
 
 class PageDocument:
-    def __init__(self, page_parser: PageProperty, parent_id=''):
-        self.page_id = page_parser.page_id
+    def __init__(self, parsed_page: PageProperty, parent_id=''):
+        self.page_id = parsed_page.page_id
+        self.title = parsed_page.title
+
         if parent_id:
             self.parent_id = parent_id
         else:
-            self.parent_id = page_parser.parent_id
-        self.title = page_parser.title
+            self.parent_id = parsed_page.parent_id
 
-        if page_parser.parent_is_database:
+        if parsed_page.parent_is_database:
             self._requestor = UpdateunderDatabase(self.page_id)
         else:
             self._requestor = UpdateRequest.under_page(self.page_id)
         self.props = self._requestor.props
-        self.props.read = page_parser.props
+        self.props.read = parsed_page.props
 
     @classmethod
-    def from_page_retrieve(cls, page_id):
+    def from_direct_retrieve(cls, page_id):
         response = PageRetrieve(page_id).execute()
-        page_parser = PageProperty.from_retrieve_response(response)
-        return cls(page_parser)
+        parsed_page = PageProperty.from_retrieve_response(response)
+        return cls(parsed_page)
 
     def apply(self):
         return self._requestor.apply()
@@ -37,10 +38,10 @@ class PageDocument:
 
 
 class PageListDocument:
-    def __init__(self, page_list_parser: PagePropertyList, database_id: str):
+    def __init__(self, parsed_query: PagePropertyList, database_id: str):
         self.database_id = database_id
-        self.page_list = [PageDocument(page_parser)
-                          for page_parser in page_list_parser.parser_list]
+        self.page_list = [PageDocument(parsed_page)
+                          for parsed_page in parsed_query.parsed_pages]
 
         self.page_by_id = {page.page_id: page for page in self.page_list}
         self._id_by_unique_title = None
@@ -48,11 +49,11 @@ class PageListDocument:
         self._ids_by_prop = defaultdict(dict)
 
     @classmethod
-    def from_database_query(cls, query: Query):
+    def from_direct_query(cls, query: Query):
         response = query.execute()
         database_id = query.page_id
-        page_list_parser = PagePropertyList.from_query_response(response)
-        return cls(page_list_parser, database_id)
+        parsed_query = PagePropertyList.from_query_response(response)
+        return cls(parsed_query, database_id)
 
     def apply(self):
         result = []
