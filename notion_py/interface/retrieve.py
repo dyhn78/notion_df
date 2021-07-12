@@ -24,3 +24,14 @@ class PageRetrieve(Requestor):
     def execute(self):
         return self.notion.pages.retrieve(**self.apply())
 
+
+class BlockChildrenList(Requestor):
+    def __init__(self, block_id: str):
+        self.block_id = block_id
+
+    def apply(self):
+        return {'block_id': self.block_id}
+
+    @retry
+    def execute(self):
+        return self.notion.blocks.children.list(**self.apply())

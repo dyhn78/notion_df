@@ -1,6 +1,6 @@
 from abc import ABCMeta
 
-from .arguments import PagePropertyStack, DatabasePropertyStack, BlockChildrenStack
+from .stacks import PagePropertyStack, DatabasePropertyStack, BlockChildrenStack
 from notion_py.interface.structure import Requestor, retry
 from notion_py.interface.parse import DatabaseProperty
 

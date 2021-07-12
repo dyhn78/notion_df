@@ -1,39 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="2a8a7209-1ffb-43f2-969c-0ddf95281e08" name="디폴트 변경 목록" comment="notion_py 패키지로 모든 파일 모으기.&#10;terminal.py 파일에 작업 스케줄러 연결.">
-      <change afterPath="$PROJECT_DIR$/notion_py/docx_interface/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/notion_py/interface/document.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/notion_py/interface/parse/blocks.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/notion_py/interface/query/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/notion_py/interface/retrieve.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/notion_py/interface/write/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/notion_py/interface/write/request.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/Notion-py.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Notion-py.iml" afterDir="false" />
+    <list default="true" id="2a8a7209-1ffb-43f2-969c-0ddf95281e08" name="디폴트 변경 목록" comment="Page Document 클래스">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/applications/log_editor/naljja_to_gigan.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/log_editor/class_naljja_to_gigan.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/applications/log_editor/날짜_기간.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/log_editor/request.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/applications/process/handler.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/process/handler.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/applications/process/match_property.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/log_editor/match_property.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/helpers/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/helpers/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/examples/test_query.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/examples/test_query.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/notion_py/interface/parse/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/parse/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/parse/databases.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/parse/databases.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/parse/pages.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/parse/pages.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/requests/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/requests/edit.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/requests/edit_arguments.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/write/arguments.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/requests/edit_blocks.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/write/blocks.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/requests/edit_property_unit.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/write/property_unit.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/requests/query.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/query/request.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/requests/query_filter_maker.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/query/filter_maker.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/requests/query_filter_unit.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/query/filter_unit.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/requests/query_sort.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/query/sort.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/requests/requestor.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/structure/requestor.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/structure/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/structure/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/structure/client_wrap.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/terminal.py" beforeDir="false" afterPath="$PROJECT_DIR$/terminal.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/parse/databases.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/parse/database.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/parse/pages.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/parse/page.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/query/filter_maker.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/query/filter_maker.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/retrieve.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/retrieve.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/write/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/write/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/write/arguments.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/write/stacks.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/write/request.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/write/request.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -347,7 +324,14 @@
       <option name="project" value="LOCAL" />
       <updated>1625983248578</updated>
     </task>
-    <option name="localTasksCounter" value="22" />
+    <task id="LOCAL-00022" summary="Page Document 클래스">
+      <created>1626097013316</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1626097013316</updated>
+    </task>
+    <option name="localTasksCounter" value="23" />
     <option name="trackContextForNewChangelist" value="true" />
     <servers />
   </component>
@@ -376,7 +360,8 @@
     <MESSAGE value="일지-&gt;진도-&gt;날짜-&gt;기간 성공" />
     <MESSAGE value="날짜-&gt;기간 리팩토링" />
     <MESSAGE value="notion_py 패키지로 모든 파일 모으기.&#10;terminal.py 파일에 작업 스케줄러 연결." />
-    <option name="LAST_COMMIT_MESSAGE" value="notion_py 패키지로 모든 파일 모으기.&#10;terminal.py 파일에 작업 스케줄러 연결." />
+    <MESSAGE value="Page Document 클래스" />
+    <option name="LAST_COMMIT_MESSAGE" value="Page Document 클래스" />
     <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="true" />
   </component>
   <component name="XDebuggerManager">

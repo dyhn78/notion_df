@@ -26,14 +26,8 @@ class PageProperty:
     @classmethod
     def from_retrieve_response(cls, response):
         parent_type = response['parent']['type']
-        if parent_type == 'database_id':
-            parent_id = response['parent']['database_id']
-            parent_is_database = True
-        elif parent_type == 'page_id':
-            parent_id = response['parent']['page_id']
-            parent_is_database = False
-        else:
-            raise AssertionError
+        parent_id = response['parent'][parent_type]
+        parent_is_database = (parent_type == 'database_id')
         self = cls(
             page_id=response['id'],
             parent_id=parent_id,

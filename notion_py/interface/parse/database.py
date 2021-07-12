@@ -1,7 +1,7 @@
 from collections import defaultdict
 from pprint import pprint
 
-from .pages import PageProperty
+from .page import PageProperty
 
 
 class DatabaseProperty:
