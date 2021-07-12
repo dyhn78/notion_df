@@ -2,10 +2,10 @@ from typing import Callable, Union
 
 from notion_py.interface.parse import PageProperty, PagePropertyList
 from notion_py.interface.write import UpdateunderDatabase, CreateunderDatabase
-from notion_py.applications.process.handler import PropertyHandler
+from notion_py.applications.log_editor.request_handler import PropertyRequestHandler
 
 
-class MatchbyReference(PropertyHandler):
+class MatchbyReference(PropertyRequestHandler):
     _domain_to_target: str
     _domain_to_reference: str
     _reference_to_target: str
@@ -50,7 +50,7 @@ class MatchbyReference(PropertyHandler):
         return ref_id
 
 
-class MatchbyIndex(PropertyHandler):
+class MatchbyIndex(PropertyRequestHandler):
     _target_id: str
     _domain_to_target: str
     _domain_index: str

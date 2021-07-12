@@ -3,7 +3,7 @@ from pprint import pprint
 
 from notion_py.interface.parse import PageProperty, PagePropertyList
 from notion_py.interface.query import Query
-from notion_py.interface.write import UpdateRequest, UpdateunderDatabase
+from notion_py.interface.write import UpdateRequest, UpdateunderDatabase, AppendBlock
 from notion_py.interface.retrieve import PageRetrieve
 
 
@@ -18,10 +18,12 @@ class PageDocument:
             self.parent_id = parsed_page.parent_id
 
         if parsed_page.parent_is_database:
-            self._requestor = UpdateunderDatabase(self.page_id)
+            self._update_props = UpdateunderDatabase(self.page_id)
         else:
-            self._requestor = UpdateRequest.under_page(self.page_id)
-        self.props = self._requestor.props
+            self._update_props = UpdateRequest.under_page(self.page_id)
+        self._append_blocks = AppendBlock(self.page_id)
+
+        self.props = self._update_props.props
         self.props.read = parsed_page.props
 
     @classmethod
@@ -31,10 +33,10 @@ class PageDocument:
         return cls(parsed_page)
 
     def apply(self):
-        return self._requestor.apply()
+        return [self._update_props.apply(), self._append_blocks.apply()]
 
     def execute(self):
-        return self._requestor.execute()
+        return [self._update_props.execute(), self._append_blocks.execute()]
 
 
 class PageListDocument:

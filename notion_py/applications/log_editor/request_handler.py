@@ -6,7 +6,7 @@ from notion_py.interface.parse import PageProperty, PagePropertyList
 from notion_py.interface.structure import Requestor
 
 
-class Handler:
+class RequestHandler:
     _requests_queue = []
     _reprocess_queue = []
     process_count = 0
@@ -32,11 +32,8 @@ class Handler:
         self._reprocess_queue.append(task)
         self.process_count += 1
 
-    def extend_reprocess_queue(self, queue: list[PageProperty]):
-        self._reprocess_queue.extend(queue)
 
-
-class PropertyHandler(Handler):
+class PropertyRequestHandler(RequestHandler):
     def __init__(self, domain: PagePropertyList):
         self._domain = domain
 
@@ -74,6 +71,6 @@ class PropertyHandler(Handler):
 
 
 class DomParser:
-    def __init__(self, caller: type(PropertyHandler), dom: PageProperty):
+    def __init__(self, caller: type(PropertyRequestHandler), dom: PageProperty):
         self.caller = caller
         self.dom = dom

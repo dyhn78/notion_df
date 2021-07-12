@@ -4,8 +4,8 @@
     <list default="true" id="2a8a7209-1ffb-43f2-969c-0ddf95281e08" name="디폴트 변경 목록" comment="Page Document 클래스">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/notion_py/applications/process/handler.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/process/handler.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/document.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/write/document.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/parse/database.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/parse/database.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/write/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/write/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/write/document.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/write/document.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -86,7 +86,7 @@
       <recent name="D:\Dev\Workspace\Notion-py\notion_py\interface\structure" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.test_retrieve">
+  <component name="RunManager" selected="Python.terminal">
     <configuration name="databases" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Notion-py" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -129,6 +129,27 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="terminal" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="Notion-py" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/terminal.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="test_retrieve" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Notion-py" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -154,9 +175,11 @@
       <item itemvalue="Python.databases" />
       <item itemvalue="Python.edit" />
       <item itemvalue="Python.test_retrieve" />
+      <item itemvalue="Python.terminal" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.terminal" />
         <item itemvalue="Python.test_retrieve" />
         <item itemvalue="Python.edit" />
         <item itemvalue="Python.databases" />
@@ -333,7 +356,14 @@
       <option name="project" value="LOCAL" />
       <updated>1626097983429</updated>
     </task>
-    <option name="localTasksCounter" value="24" />
+    <task id="LOCAL-00024" summary="Page Document 클래스">
+      <created>1626099302003</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1626099302003</updated>
+    </task>
+    <option name="localTasksCounter" value="25" />
     <option name="trackContextForNewChangelist" value="true" />
     <servers />
   </component>
