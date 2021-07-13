@@ -1,11 +1,11 @@
 # from pprint import pprint
-
+from notion_py.applications.constant_page_ids import NALJJA_ID, ILJI_ID, JINDO_ID, GIGAN_ID, SSEUGI_ID
 from notion_py.interface.parse import PagePropertyList
-from notion_py.interface.query import Query
+from notion_py.interface.read import Query
 from notion_py.helpers.stopwatch import stopwatch
 from notion_py.applications.log_editor.match_property import MatchbyReference, MatchorCreatebyIndex
 from notion_py.applications.log_editor.class_naljja_to_gigan import NaljjaToGigan
-from notion_py.applications.log_editor.constants import *
+from notion_py.applications.log_editor.constant_attribute_names import *
 
 CHECK_ONLY_PAST_X_DAYS = 7
 

@@ -1,15 +1,18 @@
 from abc import ABCMeta
 
-from .stacks import PagePropertyStack, DatabasePropertyStack, BlockChildrenStack
-from notion_py.interface.structure import Requestor, retry
+from notion_py.interface.structure import Requestor, retry, ignore_if_empty
 from notion_py.interface.parse import DatabaseProperty
+from .property_stack import BasicPagePropertyStack, TabularPagePropertyStack
+from .block_stack import BlockChildrenStack
+from .constants import DEFAULT_OVERWRITE, DEFAULT_EDIT_MODE
 
 
-class UpdateRequest(Requestor):
-    def __init__(self, id_raw: str, id_apply: dict[str, str], props: PagePropertyStack):
-        self._id_raw = id_raw
-        self._id_apply = id_apply
-        self.props = props
+class UpdateBasicPage(Requestor):
+    def __init__(self, page_id, overwrite=DEFAULT_OVERWRITE):
+        self.page_id = page_id
+        self._id_apply = {'page_id': page_id}
+        self._overwrite = overwrite
+        self.props = BasicPagePropertyStack(overwrite=self._overwrite)
 
     def apply(self):
         return self._merge_dict(self._id_apply, self.props.apply())
@@ -18,89 +21,70 @@ class UpdateRequest(Requestor):
         return bool(self.props.apply())
 
     @retry
+    @ignore_if_empty
     def execute(self, print_info='update..'):
-        if not self:
-            return {}
         if print_info:
             self.print_info(print_info)
-        return self.notion.pages.update(**self.apply())
-
-    @classmethod
-    def under_page(cls, page_id):
-        return cls(
-            id_raw=page_id,
-            id_apply={'page_id': page_id},
-            props=PagePropertyStack()
-        )
+        res = self.notion.pages.update(**self.apply())
+        self.props = BasicPagePropertyStack(overwrite=self._overwrite)
+        return res
 
 
-class CreateRequest(Requestor):
-    def __init__(self, id_raw: str, id_apply: dict[str, dict], props: PagePropertyStack):
-        self._id_raw = id_raw
-        self._id_apply = id_apply
-        self.props = props
-        self.children = BlockChildrenStack()
+class CreateBasicPage(Requestor):
+    def __init__(self, parent_id: str):
+        self.page_id = parent_id
+        self._id_apply = {'parent': {'page_id': parent_id}}
+        self.props = BasicPagePropertyStack(overwrite=DEFAULT_OVERWRITE)
+        self.children = BlockChildrenStack(edit_mode=DEFAULT_EDIT_MODE)
 
     def apply(self):
-        return self._merge_dict(self._id_apply, self.props.apply(), self.children.apply())
+        return self._merge_dict(self._id_apply, self.props.apply(),
+                                self.children.apply())
 
     def __bool__(self):
         return bool(self.props.apply()) and bool(self.children.apply())
 
     @retry
+    @ignore_if_empty
     def execute(self, print_info='create..'):
-        if not self:
-            return {}
         if print_info:
             print(print_info)
-        return self.notion.pages.create(**self.apply())
-
-    @classmethod
-    def under_page(cls, parent_id: str):
-        return cls(
-            id_raw=parent_id,
-            id_apply={'parent': {'page_id': parent_id}},
-            props=PagePropertyStack()
-        )
+        res = self.notion.pages.create(**self.apply())
+        self.props = BasicPagePropertyStack(overwrite=DEFAULT_OVERWRITE)
+        self.children = BlockChildrenStack(edit_mode=DEFAULT_EDIT_MODE)
+        return res
 
 
-class DatabaseEdit(Requestor, metaclass=ABCMeta):
-    def __init__(self, database_parser=None):
+class DatabaseTable(metaclass=ABCMeta):
+    def __init__(self, parsed_database: DatabaseProperty = None):
         self.id_table = None
         self.types_table = None
-        if database_parser is not None:
-            assert type(database_parser) == DatabaseProperty
-            self.id_table = database_parser.prop_id_table
-            self.types_table = database_parser.prop_type_table
+        if parsed_database is not None:
+            self.id_table = parsed_database.prop_id_table
+            self.types_table = parsed_database.prop_type_table
 
 
-class UpdateunderDatabase(UpdateRequest, DatabaseEdit):
-    def __init__(self, page_id: str, database_parser=None):
-        UpdateRequest.__init__(
-            self,
-            id_raw=page_id,
-            id_apply={'page_id': page_id},
-            props=DatabasePropertyStack()
-        )
-        DatabaseEdit.__init__(self, database_parser)
+class UpdateTabularPage(UpdateBasicPage, DatabaseTable):
+    def __init__(self, page_id: str, overwrite=DEFAULT_OVERWRITE,
+                 parsed_database=None):
+        UpdateBasicPage.__init__(self, page_id)
+        DatabaseTable.__init__(self, parsed_database)
+        self.props = TabularPagePropertyStack(overwrite=overwrite)
 
 
-class CreateunderDatabase(CreateRequest, DatabaseEdit):
-    def __init__(self, parent_id: str, database_parser=None):
-        CreateRequest.__init__(
-            self,
-            id_raw=parent_id,
-            id_apply={'parent': {'database_id': self._id_raw}},
-            props=DatabasePropertyStack()
-        )
-        DatabaseEdit.__init__(self, database_parser)
+class CreateTabularPage(CreateBasicPage, DatabaseTable):
+    def __init__(self, parent_id: str, parsed_database=None):
+        CreateBasicPage.__init__(self, parent_id)
+        DatabaseTable.__init__(self, parsed_database)
+        self.props = TabularPagePropertyStack(overwrite=DEFAULT_OVERWRITE)
 
 
-class AppendBlock(Requestor):
-    def __init__(self, block_id: str):
-        self._id_raw = block_id
-        self._id_apply = {'block_id': block_id}
-        self.children = BlockChildrenStack()
+class AppendBlockChildren(Requestor):
+    def __init__(self, parent_id: str, edit_mode=DEFAULT_EDIT_MODE):
+        self._id_raw = parent_id
+        self._id_apply = {'block_id': parent_id}
+        self._edit_mode = edit_mode
+        self.children = BlockChildrenStack(edit_mode=self._edit_mode)
 
     def apply(self):
         return self._merge_dict(self._id_apply, self.children.apply())
@@ -109,9 +93,10 @@ class AppendBlock(Requestor):
         return bool(self.children.apply())
 
     @retry
-    def execute(self, print_info='append..'):
-        if not self:
-            return {}
+    @ignore_if_empty
+    def execute(self, print_info='append..') -> dict:
         if print_info:
             self.print_info(print_info)
-        return self.notion.blocks.children.append(**self.apply())
+        res = self.notion.blocks.children.append(**self.apply())
+        self.children = BlockChildrenStack(edit_mode=self._edit_mode)
+        return res

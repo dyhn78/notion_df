@@ -1,11 +1,11 @@
 from typing import Callable, Union
 
 from notion_py.interface.parse import PageProperty, PagePropertyList
-from notion_py.interface.write import UpdateunderDatabase, CreateunderDatabase
-from notion_py.applications.log_editor.request_handler import PropertyRequestHandler
+from notion_py.interface.write import UpdateTabularPage, CreateTabularPage
+from notion_py.applications.log_editor.request_stack import PropertyRequestStack
 
 
-class MatchbyReference(PropertyRequestHandler):
+class MatchbyReference(PropertyRequestStack):
     _domain_to_target: str
     _domain_to_reference: str
     _reference_to_target: str
@@ -34,8 +34,8 @@ class MatchbyReference(PropertyRequestHandler):
         ref_props = self._reference.search.page_by_id[ref_id]
         tar_id = ref_props[self._reference_to_target]
 
-        dom_patch = UpdateunderDatabase(dom.page_id)
-        dom_patch.props.write.relation(self._domain_to_target, tar_id)
+        dom_patch = UpdateTabularPage(dom.page_id)
+        dom_patch.props.write_rich.relation(self._domain_to_target, tar_id)
         self._append_requests(dom_patch)
 
     def _find_ref_id(self, dom):
@@ -50,7 +50,7 @@ class MatchbyReference(PropertyRequestHandler):
         return ref_id
 
 
-class MatchbyIndex(PropertyRequestHandler):
+class MatchbyIndex(PropertyRequestStack):
     _target_id: str
     _domain_to_target: str
     _domain_index: str
@@ -97,8 +97,8 @@ class MatchbyIndex(PropertyRequestHandler):
             return tar_index
         else:
             tar_id = self._target.search.id_by_unique_title[tar_index]
-            dom_patch = UpdateunderDatabase(dom.page_id)
-            dom_patch.props.write.relation(self._domain_to_target, [tar_id])
+            dom_patch = UpdateTabularPage(dom.page_id)
+            dom_patch.props.write_rich.relation(self._domain_to_target, [tar_id])
             self._append_requests(dom_patch)
             return False
 
@@ -113,8 +113,8 @@ class MatchorCreatebyIndex(MatchbyIndex):
         self._append_reprocess(dom)
 
         if tar_index not in self.new_target_indices:
-            tar_patch = CreateunderDatabase(self._target_id)
+            tar_patch = CreateTabularPage(self._target_id)
             self._append_requests(tar_patch)
             self.new_target_indices.append(tar_index)
 
-            tar_patch.props.write_plain.title('📚제목', tar_index)
+            tar_patch.props.write.title('📚제목', tar_index)

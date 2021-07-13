@@ -1,1 +1,1 @@
-__all__ = ['structure', 'retrieve', 'query', 'parse', 'write', 'document']
+__all__ = ['structure', 'read', 'parse', 'write']

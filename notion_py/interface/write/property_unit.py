@@ -8,18 +8,20 @@ from notion_py.interface.structure import ValueCarrier, ListStash
 class PageProperty(ValueCarrier, metaclass=ABCMeta):
     def __init__(self, value_type, prop_name, prop_value):
         super().__init__()
-        self._value_type = value_type
-        self._prop_name = prop_name
+        self.value_type = value_type
+        self.prop_name = prop_name
         if prop_value is not None:
             self.prop_value = prop_value
 
     def apply(self):
-        return {self._prop_name: self.wrapped_value()}
+        return {self.prop_name: self.wrapped_value()}
 
     def wrapped_value(self):
-        return {'type': self._value_type,
-                self._value_type: self.prop_value}
+        return {'type': self.value_type,
+                self.value_type: self.prop_value}
 
+
+class SimplePageProperty(PageProperty):
     @classmethod
     def number(cls, prop_name, value):
         return cls('number', prop_name, value)

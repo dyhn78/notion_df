@@ -1,5 +1,7 @@
 from datetime import datetime as datetimeclass
 
+from notion_py.interface.parse.blocks import parse_rich_texts
+
 
 class PageProperty:
     def __init__(self, page_id: str, parent_id: str,
@@ -20,7 +22,7 @@ class PageProperty:
             props={}
         )
         for prop_name, rich_property_object in response_frag['properties'].items():
-            self.props[prop_name] = self.__flatten(rich_property_object)
+            self.props[prop_name] = self._flatten(rich_property_object)
         return self
 
     @classmethod
@@ -36,24 +38,15 @@ class PageProperty:
             props={}
         )
         for prop_name, rich_property_object in response['properties'].items():
-            self.props[prop_name] = self.__flatten(rich_property_object)
+            self.props[prop_name] = self._flatten(rich_property_object)
         return self
 
-    def __flatten(self, rich_property_object):
+    def _flatten(self, rich_property_object):
         prop_type = rich_property_object['type']
         prop_object = rich_property_object[prop_type]
 
         if prop_type in ['title', 'rich_text', 'text']:
-            plain_text = ''.join([rich_text_object['plain_text']
-                                  for rich_text_object in prop_object])
-            rich_text = []
-            for rich_text_object in prop_object:
-                rich_text.append(
-                    {key: rich_text_object[key]
-                     for key in ['type', 'text', 'mention', 'equation']
-                     if key in rich_text_object}
-                )
-
+            plain_text, rich_text = parse_rich_texts(prop_object)
             if prop_type == 'title':
                 self.title = plain_text
             return [plain_text, rich_text]
@@ -87,7 +80,7 @@ class PageProperty:
                     'end': None}
 
         elif prop_type == 'formula':
-            return self.__flatten(prop_object)
+            return self._flatten(prop_object)
 
         elif prop_type == 'relation':
             result = [relation_object['id'] for relation_object in prop_object]
@@ -103,7 +96,7 @@ class PageProperty:
                 result = []
             else:
                 try:
-                    result = [self.__flatten(rich_property_obj)
+                    result = [self._flatten(rich_property_obj)
                               for rich_property_obj in rollup_objects]
                     try:
                         result.sort()

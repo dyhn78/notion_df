@@ -1,7 +1,8 @@
-from .constants import *
+from .constant_attribute_names import *
 from notion_py.applications.log_editor.match_property import MatchorCreatebyIndex, MatchbyIndex
 from notion_py.interface.parse import PageProperty
-from notion_py.interface.write import CreateunderDatabase
+from notion_py.interface.write import CreateTabularPage
+from ..constant_page_ids import GIGAN_ID
 
 
 class NaljjaToGigan(MatchorCreatebyIndex):
@@ -21,14 +22,14 @@ class NaljjaToGigan(MatchorCreatebyIndex):
         self._append_reprocess(dom)
 
         if tar_index not in self.new_target_indices:
-            tar_patch = CreateunderDatabase(self._target_id)
+            tar_patch = CreateTabularPage(self._target_id)
             self._append_requests(tar_patch)
             self.new_target_indices.append(tar_index)
 
-            tar_patch.props.write.title('📚제목', tar_index)
+            tar_patch.props.write_rich.title('📚제목', tar_index)
 
             dom_parse = NaljjaParse(dom.props[self._domain_index])
-            tar_patch.props.write.date('📅기간', dom_parse.start_date(), dom_parse.end_date())
+            tar_patch.props.write_rich.date('📅기간', dom_parse.start_date(), dom_parse.end_date())
 
 
 class NaljjaParse:

@@ -1,3 +1,3 @@
 from .database import DatabaseProperty, PagePropertyList
 from .page import PageProperty
-from .blocks import BlockListParser
+from .blocks import BlockChildren, BlockChild

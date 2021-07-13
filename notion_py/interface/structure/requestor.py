@@ -16,10 +16,19 @@ def retry(method: Callable, recursion_limit=5):
             response = method(self, **kwargs)
         except JSONDecodeError:
             if recursion == 0:
-                raise AssertionError
+                raise RecursionError
             response = wrapper(recursion - 1)
         return response
 
+    return wrapper
+
+
+def ignore_if_empty(method: Callable):
+    def wrapper(self, **kwargs):
+        if not self:
+            return {}
+        else:
+            return method(self, **kwargs)
     return wrapper
 
 

@@ -1,3 +1,3 @@
-from .request import UpdateRequest, CreateRequest, CreateunderDatabase, UpdateunderDatabase, AppendBlock
-from .stacks import PagePropertyStack
-from .document import PageDocument, PageListDocument
+from .request import UpdateBasicPage, CreateBasicPage, CreateTabularPage, UpdateTabularPage, AppendBlockChildren
+from .property_stack import BasicPagePropertyStack, TabularPagePropertyStack
+from .editor import BasicPageEditor, PageListEditor, TabularPageEditor

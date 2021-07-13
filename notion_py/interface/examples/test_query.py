@@ -4,7 +4,7 @@ from notion_client import AsyncClient, Client
 
 from notion_py.helpers.stopwatch import stopwatch
 from notion_py.interface.parse import PagePropertyList
-from notion_py.interface.query import Query
+from notion_py.interface.read import Query
 
 os.environ['NOTION_TOKEN'] = ***REMOVED***
 

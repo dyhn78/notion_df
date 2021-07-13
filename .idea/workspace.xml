@@ -2,10 +2,46 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="2a8a7209-1ffb-43f2-969c-0ddf95281e08" name="디폴트 변경 목록" comment="Page Document 클래스">
+      <change afterPath="$PROJECT_DIR$/notion_py/applications/constant_page_ids.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/notion_py/applications/read_scraper/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/notion_py/applications/read_scraper/helpers.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/notion_py/applications/read_scraper/lib_gy.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/notion_py/applications/read_scraper/lib_snu.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/notion_py/applications/read_scraper/request.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/notion_py/applications/read_scraper/yes24.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/notion_py/interface/write/block_stack.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/notion_py/interface/write/constants.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/notion_py/interface/write/property_stack.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/notion_py/selenium chromedriver.exe" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/applications/process/handler.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/process/handler.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/log_editor/class_naljja_to_gigan.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/log_editor/class_naljja_to_gigan.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/log_editor/constants.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/log_editor/constant_attribute_names.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/log_editor/match_property.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/log_editor/match_property.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/log_editor/request.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/log_editor/request.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/log_editor/request_handler.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/log_editor/request_stack.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/examples/response_examples/page_children_list.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/examples/response_examples/blocklist_children.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/examples/response_examples/page_retrieve.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/examples/response_examples/retrieve_page.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/examples/test_query.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/examples/test_query.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/parse/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/parse/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/parse/blocks.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/parse/blocks.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/parse/database.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/parse/database.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/parse/page.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/parse/page.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/query/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/read/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/query/filter_maker.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/read/filter_maker.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/query/filter_unit.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/read/filter_unit.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/query/request.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/read/query_request.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/query/sort.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/read/sort.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/retrieve.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/read/retrieve_request.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/structure/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/structure/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/structure/requestor.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/structure/requestor.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/notion_py/interface/write/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/write/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/write/document.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/write/document.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/write/blocks.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/write/block_unit.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/write/document.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/write/editor.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/write/property_unit.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/write/property_unit.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/write/request.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/write/request.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/write/stacks.py" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -65,28 +101,32 @@
     </hideBySeverity>
   </component>
   <component name="ProjectId" id="1u3aBpl0esiLDIYwdfd7vlaKHwg" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">
+    <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="TODO_SCOPE" value="모든 위치" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/notion_py/interface/write/stacks.py" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PythonContentEntriesConfigurable" />
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="D:\Dev\Workspace\Notion-py\notion_py\interface\read" />
+      <recent name="D:\Dev\Workspace\Notion-py\notion_py\applications\log_editor" />
       <recent name="D:\Dev\Workspace\Notion-py\notion_py\interface\write" />
       <recent name="D:\Dev\Workspace\Notion-py\notion_py\interface" />
-      <recent name="D:\Dev\Workspace\Notion-py\notion_py\applications\log_editor" />
       <recent name="D:\Dev\Workspace\Notion-py\notion_py\interface\edit" />
-      <recent name="D:\Dev\Workspace\Notion-py\notion_py\interface\structure" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.terminal">
+  <component name="RunManager" selected="Python.test">
     <configuration name="databases" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Notion-py" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -150,6 +190,27 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="test" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="Notion-py" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/test.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="test_retrieve" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Notion-py" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -176,9 +237,11 @@
       <item itemvalue="Python.edit" />
       <item itemvalue="Python.test_retrieve" />
       <item itemvalue="Python.terminal" />
+      <item itemvalue="Python.test" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.test" />
         <item itemvalue="Python.terminal" />
         <item itemvalue="Python.test_retrieve" />
         <item itemvalue="Python.edit" />
@@ -363,7 +426,14 @@
       <option name="project" value="LOCAL" />
       <updated>1626099302003</updated>
     </task>
-    <option name="localTasksCounter" value="25" />
+    <task id="LOCAL-00025" summary="Page Document 클래스">
+      <created>1626099986476</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1626099986476</updated>
+    </task>
+    <option name="localTasksCounter" value="26" />
     <option name="trackContextForNewChangelist" value="true" />
     <servers />
   </component>
@@ -380,6 +450,7 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
     <MESSAGE value="DatabaseQueryFilterFrameMaker (이하 FilterFrameMaker) 만들었다.&#10;FilterFrameMaker에서는 다음 두 가지 조작이 가능하다.&#10;1. FilterFrameMaker -(Property 하나 선택)-&gt;&#10;PropertyFilterFrame (이하 FilterFrame)&#10;-(조건 선택)-&gt; QueryFilter (이하 Filter)&#10;2. FilterFrameMaker.any/all(*arg: QueryFilter)&#10;또한 Filter 클래스에서도 any/all 연산,&#10;또는 이와 동치인 &amp;, | 연산을 수행할 수 있다." />
     <MESSAGE value="DatabaseQueryFilterFrameMaker (이하 FilterFrameMaker) 만들었다.&#10;FilterFrameMaker 에서는 다음 두 가지 조작이 가능하다.&#10;1. FilterFrameMaker -(Property 하나 선택)-&gt;&#10;PropertyFilterFrame (이하 FilterFrame)&#10;-(조건 및 인자 선택)-&gt; QueryFilter (이하 Filter)&#10;2. FilterFrameMaker.all 또는 .any (*arg: Filter)&#10;&#10;&#10;다음으로, Filter 클래스에도 두 종류의 이항연산자를 추가하였다.&#10;1. &amp;, | (*arg: Filter)&#10;2. all, any 메소드 (*arg: 조건 및 인자)" />
     <MESSAGE value="query filter 의 dict 형태를 친절하게 조립해주는 filter_maker.py 모듈을 만들었다.&#10;다음 두 가지 방식으로 복잡한 필터를 구현할 수 있다.&#10;1. QueryFrameMaker -(Property 하나 선택)-&gt;&#10;FilterFrame -(조건 및 인자 선택)-&gt; QueryFilter&#10;2. AndFilter 또는 OrFilter(인자: *QueryFilter) -&gt; QueryFilter&#10;&#10;또한 QueryFilter 클래스에도 &amp;, | 이항연산자를 구현하였다.&#10;&#10;여러모로 추상클래스의 활용 방법에 대해 많이 깨닫는 시간이었다." />
