@@ -75,9 +75,9 @@ class Requestor(Structure):
         return res
 
 
-class RecursiveRequestor(Requestor):
+class LongRequestor(Requestor):
     MAX_PAGE_SIZE = 100
-    INF = int(1e9)
+    INF = int(1e5) - 1
 
     @retry
     @abstractmethod

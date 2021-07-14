@@ -1,6 +1,6 @@
 from typing import Callable, Union
 
-from notion_py.interface.parse import PageProperty, PagePropertyList
+from notion_py.interface.parse import PageParser, PageListParser
 from notion_py.interface.write import UpdateTabularPage, CreateTabularPage
 from notion_py.applications.log_editor.request_stack import PropertyRequestStack
 
@@ -10,12 +10,12 @@ class MatchbyReference(PropertyRequestStack):
     _domain_to_reference: str
     _reference_to_target: str
 
-    def __init__(self, domain: PagePropertyList, reference: PagePropertyList):
+    def __init__(self, domain: PageListParser, reference: PageListParser):
         super().__init__(domain)
         self._reference = reference
 
     @classmethod
-    def default(cls, domain: PagePropertyList, reference: PagePropertyList,
+    def default(cls, domain: PageListParser, reference: PageListParser,
                 domain_to_target: str, domain_to_reference: str, reference_to_target: str):
         self = cls(domain, reference)
         self._reference = reference
@@ -24,7 +24,7 @@ class MatchbyReference(PropertyRequestStack):
         self._reference_to_target = reference_to_target
         return self
 
-    def process_unit(self, dom: PageProperty):
+    def process_unit(self, dom: PageParser):
         if dom.props[self._domain_to_target]:
             return False
         if not dom.props[self._domain_to_reference]:
@@ -59,12 +59,12 @@ class MatchbyIndex(PropertyRequestStack):
 
     # TODO equal-to가 아니라 startswith \
     #  (예를 들어 '210625'로부터 '210625 금요일'을 찾는 것) 조건도 가능하면 좋겠다.(낮음)
-    def __init__(self, domain: PagePropertyList, target: PagePropertyList):
+    def __init__(self, domain: PageListParser, target: PageListParser):
         super().__init__(domain)
         self._target = target
 
     @classmethod
-    def default(cls, domain: PagePropertyList, target: PagePropertyList,
+    def default(cls, domain: PageListParser, target: PageListParser,
                 target_id: str, domain_to_target: str,
                 domain_index: Union[None, str, tuple[str, None]],
                 target_inbound: Union[None, str, tuple[str, None]],
@@ -78,7 +78,7 @@ class MatchbyIndex(PropertyRequestStack):
         self._domain_function = domain_function
         return self
 
-    def process_unit(self, dom: PageProperty):
+    def process_unit(self, dom: PageParser):
         if dom.props[self._domain_to_target]:
             return False
 
@@ -106,7 +106,7 @@ class MatchbyIndex(PropertyRequestStack):
 class MatchorCreatebyIndex(MatchbyIndex):
     new_target_indices = []
 
-    def process_unit(self, dom: PageProperty):
+    def process_unit(self, dom: PageParser):
         tar_index = super().process_unit(dom)
         if not tar_index:
             return

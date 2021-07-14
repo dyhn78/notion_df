@@ -1,11 +1,13 @@
 from __future__ import annotations
 from typing import Callable, Union, Optional
+import os
 
 from selenium import webdriver
 from selenium.webdriver.chrome.webdriver import WebDriver
+from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import StaleElementReferenceException, NoSuchElementException, NoSuchWindowException
 
-from .helpers import try_twice
+from .helpers import try_twice_and_return_default_value
 
 tag_input_box = '#a_q'
 tag_search_button = '#sb1 > a'
@@ -17,46 +19,20 @@ tags_detail_info_button = '#lists > ul > li:nth-child({}) > dl > dt > a'
 
 
 def retry(method: Callable, recursion_limit=5) -> Callable:
-    def wrapper(driver, recursion=recursion_limit, **kwargs):
+    def wrapper(driver, *args, recursion=recursion_limit):
         try:
-            response = method(driver, **kwargs)
+            response = method(driver, *args)
         except (NoSuchElementException or StaleElementReferenceException):
             if recursion == 0:
                 raise RecursionError
             driver.stop_client()
             driver.start_client()
-            response = wrapper(driver, recursion - 1)
+            response = wrapper(driver, recursion=recursion - 1)
         return response
     return wrapper
 
 
-def ignore_no_window_exception(method: Callable) -> Callable:
-    def wrapper(self: GoyangLibrary, **kwargs):
-        try:
-            result = method(self, **kwargs)
-        except NoSuchWindowException:
-            result = self.default_value
-        return result
-    return wrapper
-
-
-@retry
-def get_input_box(driver: WebDriver, url):
-    driver.get(url)
-    driver.implicitly_wait(5)
-    input_box = driver.find_element_by_css_selector(tag_input_box)
-    return input_box
-
-
-@retry
-def get_book_code(driver: WebDriver, url) -> str:
-    driver.get(url)
-    book_code = driver.find_element_by_css_selector(tag_book_code).text
-    return book_code
-
-
 class GoyangLibrary:
-    chromedriver_path = ''
     str_gajwa_lib = '가좌도서관'
     str_other_lib = '고양시 상호대차'
     str_failed = '스크랩 실패'
@@ -64,18 +40,19 @@ class GoyangLibrary:
 
     def __init__(self):
         self.drivers = []
+        options = Options()
+        options.add_argument('--headless')
         for i in range(2):
-            driver = webdriver.Chrome(self.chromedriver_path)
+            driver = webdriver.Chrome(self.chromedriver_path, options=options)
             driver.minimize_window()
             self.drivers.append(driver)
 
-    def execute(self, book_name) -> list[Union[str, bool]]:
-        res = self.execute(book_name)
-        return self.default_value if res is None else res
+    @property
+    def chromedriver_path(self):
+        return os.path.abspath('chromedriver.exe')
 
-    @try_twice
-    @ignore_no_window_exception
-    def _execute_raw(self, book_name) -> Optional[list[Union[str, bool]]]:
+    @try_twice_and_return_default_value
+    def execute(self, book_name: str) -> Optional[dict]:
         """
         :return: [도서관 이름: str('가좌도서관', '고양시 상호대차', '스크랩 실패'),
                     현재 대출 가능: bool,
@@ -84,7 +61,10 @@ class GoyangLibrary:
         url_main_page = 'https://www.goyanglib.or.kr/center/data/search.asp'
 
         self.drivers[0].start_client()
-        input_box = get_input_box(self.drivers[0], url_main_page)
+        try:
+            input_box = self.get_input_box(self.drivers[0], url_main_page)
+        except NoSuchWindowException:
+            return None
         input_box.send_keys(book_name)
 
         search_button = self.drivers[0].find_element_by_css_selector(tag_search_button)
@@ -114,7 +94,7 @@ class GoyangLibrary:
                 return None
 
             for lib_index, lib_name_raw in enumerate(lib_names):
-                # self.drivers[0].find_element_by_css_selector(tag_availability).text = '대출(가능), 예약(불가능) \n ... '
+                # self.drivers[0].find_element_by_css_selector(tag_availability).text = '대출(가능), 예약(불가능) \n ..'
                 # 여기서 split(',')[0] 하면 쉼표 전에서 자를 수 있다.
                 tag_availability = tags_availability.format(str(lib_index + 1))
                 available_here_str = self.drivers[0].find_element_by_css_selector(tag_availability).text.split(',')[0]
@@ -125,11 +105,34 @@ class GoyangLibrary:
                     detail_button = self.drivers[0].find_element_by_css_selector(tag_detail_info_button)
                     detail_button_url = detail_button.get_attribute('href')
                     try:
-                        book_code = get_book_code(self.drivers[1], detail_button_url)
+                        book_code = self.get_book_code(self.drivers[1], detail_button_url)
                     except RecursionError:
                         book_code = ''
-                    return [self.str_gajwa_lib, available_here, book_code]
+                    return {
+                        'lib_name': self.str_gajwa_lib,
+                        'available': available_here,
+                        'book_code': book_code
+                    }
                 else:
                     available_somewhere = available_here or available_somewhere
 
-        return [self.str_other_lib, available_somewhere, '']
+        return {
+            'lib_name': self.str_other_lib,
+            'available': available_somewhere,
+            'book_code': ''
+        }
+
+    @staticmethod
+    @retry
+    def get_input_box(driver: WebDriver, url):
+        driver.get(url)
+        driver.implicitly_wait(5)
+        input_box = driver.find_element_by_css_selector(tag_input_box)
+        return input_box
+
+    @staticmethod
+    @retry
+    def get_book_code(driver: WebDriver, url) -> str:
+        driver.get(url)
+        book_code = driver.find_element_by_css_selector(tag_book_code).text
+        return book_code

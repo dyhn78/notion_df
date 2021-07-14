@@ -13,7 +13,7 @@ def get_yes24_url(book_name) -> str:
           f"qdomain=%c5%eb%c7%d5%b0%cb%bb%f6&query={book_name_encoded}"
 
     response = requests.get(url)
-    up_soup = BeautifulSoup(response, 'html5lib')
+    up_soup = BeautifulSoup(response.text, 'html5lib')
 
     tag_book = '#schMid_wrap > div:nth-child(4) > div.goodsList.goodsList_list > table > tbody > ' \
                'tr:nth-child(1) > td.goods_infogrp > p.goods_name.goods_icon > a'

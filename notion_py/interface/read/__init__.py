@@ -1,2 +1,2 @@
-from .query_request import Query
-from .retrieve_request import RetrieveDatabase, RetrievePage, GetBlockChildren
+from .request_query import Query
+from .request_retrieve import RetrieveDatabase, RetrievePage, RetrieveBlockChildren

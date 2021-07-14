@@ -3,7 +3,7 @@ from pprint import pprint
 from notion_client import AsyncClient, Client
 
 from notion_py.helpers.stopwatch import stopwatch
-from notion_py.interface.parse import PagePropertyList
+from notion_py.interface.parse import PageListParser
 from notion_py.interface.read import Query
 
 os.environ['NOTION_TOKEN'] = ***REMOVED***
@@ -35,7 +35,7 @@ test_db_query_maker.sort.append_ascending('이름')
 test_subpages = test_db_query_maker.execute()
 # pprint(test_subpages)
 
-# plain_items = PagePropertyList.from_query_response(test_subpages).list_of_items
+# plain_items = PageListParser.from_query_response(test_subpages).list_of_items
 # pprint(plain_items)
 
 stopwatch('작업 완료')

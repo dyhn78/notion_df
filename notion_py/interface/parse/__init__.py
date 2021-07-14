@@ -1,3 +1,4 @@
-from .database import DatabaseProperty, PagePropertyList
-from .page import PageProperty
-from .blocks import BlockChildren, BlockChild
+from .database import DatabaseParser
+from .pagelist import PageListParser
+from .page import PageParser
+from .blocks import BlockChildrenParser, BlockChildParser

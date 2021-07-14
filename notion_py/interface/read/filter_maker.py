@@ -1,5 +1,5 @@
 from .filter_unit import PlainFilter, OrFilter, AndFilter
-from ..parse.database import DatabaseProperty as DBParser
+from ..parse.database import DatabaseParser as DBParser
 
 
 class QueryFilterMaker:

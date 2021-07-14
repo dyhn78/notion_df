@@ -3,9 +3,9 @@ from datetime import datetime as datetimeclass
 from notion_py.interface.parse.blocks import parse_rich_texts
 
 
-class PageProperty:
-    def __init__(self, page_id: str, parent_id: str,
-                 parent_is_database: bool, title: str, props: dict):
+class PageParser:
+    def __init__(self, page_id: str, parent_is_database: bool,
+                 title: str, props: dict, parent_id=''):
         self.page_id = page_id
         self.parent_id = parent_id
         self.parent_is_database = parent_is_database
@@ -13,10 +13,9 @@ class PageProperty:
         self.props = props
 
     @classmethod
-    def from_query_response(cls, response_frag, parent_id):
+    def from_query_response(cls, response_frag):
         self = cls(
             page_id=response_frag['id'],
-            parent_id=parent_id,
             parent_is_database=True,
             title='',
             props={}

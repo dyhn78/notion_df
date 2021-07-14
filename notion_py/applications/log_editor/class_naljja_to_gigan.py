@@ -1,6 +1,6 @@
 from .constant_attribute_names import *
 from notion_py.applications.log_editor.match_property import MatchorCreatebyIndex, MatchbyIndex
-from notion_py.interface.parse import PageProperty
+from notion_py.interface.parse import PageParser
 from notion_py.interface.write import CreateTabularPage
 from ..constant_page_ids import GIGAN_ID
 
@@ -15,7 +15,7 @@ class NaljjaToGigan(MatchorCreatebyIndex):
     def _domain_function(date):
         return NaljjaParse(date).get_tar()
 
-    def process_unit(self, dom: PageProperty):
+    def process_unit(self, dom: PageParser):
         tar_index = MatchbyIndex.process_unit(self, dom)
         if not tar_index:
             return
