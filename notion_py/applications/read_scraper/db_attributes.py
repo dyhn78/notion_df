@@ -58,11 +58,12 @@ class ReadingPage(TabularPage):
         return docx_name, true_name
 
     def set_yes24_url_if_empty(self) -> str:
-        if self.props.read_empty_value(self.PROP_NAME['url']):
-            url = get_yes24_url(self.get_names())
-            self.props.write.url(self.PROP_NAME['url'], url)
-        else:
+        if not self.props.read_empty_value(self.PROP_NAME['url']):
             url = self.props.read[self.PROP_NAME['url']]
+            if 'http://yes24' in url:
+                return url
+        url = get_yes24_url(self.get_names())
+        self.props.write.url(self.PROP_NAME['url'], url)
         return url
 
     def set_yes24_metadata(self, url):

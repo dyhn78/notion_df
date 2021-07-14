@@ -35,7 +35,7 @@ class MatchbyReference(PropertyRequestStack):
         tar_id = ref_props[self._reference_to_target]
 
         dom_patch = UpdateTabularPage(dom.page_id)
-        dom_patch.props.write_rich.relation(self._domain_to_target, tar_id)
+        dom_patch.props.write.relation(self._domain_to_target, tar_id)
         self._append_requests(dom_patch)
 
     def _find_ref_id(self, dom):
@@ -98,7 +98,7 @@ class MatchbyIndex(PropertyRequestStack):
         else:
             tar_id = self._target.search.id_by_unique_title[tar_index]
             dom_patch = UpdateTabularPage(dom.page_id)
-            dom_patch.props.write_rich.relation(self._domain_to_target, [tar_id])
+            dom_patch.props.write.relation(self._domain_to_target, [tar_id])
             self._append_requests(dom_patch)
             return False
 

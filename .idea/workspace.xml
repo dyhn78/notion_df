@@ -1,44 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="2a8a7209-1ffb-43f2-969c-0ddf95281e08" name="디폴트 변경 목록" comment="Read Scraper 패키지">
-      <change afterPath="$PROJECT_DIR$/chromedriver.exe" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/notion_py/applications/read_scraper/db_attributes.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/notion_py/interface/editor/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/notion_py/interface/editor/block.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/notion_py/interface/editor/page.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/notion_py/interface/parse/pagelist.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/notion_py/interface/write/block_child_stash.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/notion_py/interface/write/block_contents.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/notion_py/interface/write/property_stash.py" afterDir="false" />
+    <list default="true" id="2a8a7209-1ffb-43f2-969c-0ddf95281e08" name="디폴트 변경 목록" comment="Read Scraper 디버깅; BlockEditor 클래스 창설">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/applications/log_editor/class_naljja_to_gigan.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/log_editor/class_naljja_to_gigan.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/notion_py/applications/log_editor/match_property.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/log_editor/match_property.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/applications/log_editor/request.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/log_editor/request.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/applications/log_editor/request_stack.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/log_editor/request_stack.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/applications/read_scraper/helpers.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/read_scraper/helpers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/applications/read_scraper/lib_gy.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/read_scraper/lib_gy.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/applications/read_scraper/request.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/read_scraper/request.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/applications/read_scraper/yes24.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/read_scraper/yes24.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/examples/test_query.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/examples/test_query.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/parse/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/parse/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/parse/blocks.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/parse/blocks.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/parse/database.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/parse/database.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/parse/page.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/parse/page.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/read/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/read/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/read/filter_maker.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/read/filter_maker.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/read/query_request.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/read/request_query.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/read/retrieve_request.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/read/request_retrieve.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/structure/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/structure/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/structure/requestor.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/structure/requestor.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/write/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/write/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/write/block_stack.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/write/block_unit.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/write/block_child_unit.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/write/editor.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/editor/pagelist.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/write/property_stack.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/write/property_unit.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/write/property_unit.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/write/request.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/write/request.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/selenium chromedriver.exe" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/read_scraper/db_attributes.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/read_scraper/db_attributes.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -126,7 +92,7 @@
       <recent name="D:\Dev\Workspace\Notion-py\notion_py\interface" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.test">
+  <component name="RunManager" selected="Python.terminal">
     <configuration name="databases" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Notion-py" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -241,8 +207,8 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.test" />
         <item itemvalue="Python.terminal" />
+        <item itemvalue="Python.test" />
         <item itemvalue="Python.test_retrieve" />
         <item itemvalue="Python.edit" />
         <item itemvalue="Python.databases" />
@@ -440,7 +406,14 @@
       <option name="project" value="LOCAL" />
       <updated>1626176205020</updated>
     </task>
-    <option name="localTasksCounter" value="27" />
+    <task id="LOCAL-00027" summary="Read Scraper 디버깅; BlockEditor 클래스 창설">
+      <created>1626287783285</created>
+      <option name="number" value="00027" />
+      <option name="presentableId" value="LOCAL-00027" />
+      <option name="project" value="LOCAL" />
+      <updated>1626287783285</updated>
+    </task>
+    <option name="localTasksCounter" value="28" />
     <option name="trackContextForNewChangelist" value="true" />
     <servers />
   </component>
@@ -472,7 +445,8 @@
     <MESSAGE value="notion_py 패키지로 모든 파일 모으기.&#10;terminal.py 파일에 작업 스케줄러 연결." />
     <MESSAGE value="Page Document 클래스" />
     <MESSAGE value="Read Scraper 패키지" />
-    <option name="LAST_COMMIT_MESSAGE" value="Read Scraper 패키지" />
+    <MESSAGE value="Read Scraper 디버깅; BlockEditor 클래스 창설" />
+    <option name="LAST_COMMIT_MESSAGE" value="Read Scraper 디버깅; BlockEditor 클래스 창설" />
     <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="true" />
   </component>
   <component name="XDebuggerManager">
