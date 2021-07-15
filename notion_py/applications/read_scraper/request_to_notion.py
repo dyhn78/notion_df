@@ -35,8 +35,8 @@ def get_pagelist(page_size=0) -> ReadingPageList:
     ft_overwrite_option = frame.equals_to_any(*ReadingPage.PROP_VALUE['edit_status_code'][1:3 + 1])
     ft_overwrite_option |= frame.is_empty()
     ft = ft & ft_overwrite_option
-    # frame = query.filter_maker.by_text('📚제목')
-    # ft &= frame.equals('어떻게 일할 것인가')
+    frame = query.filter_maker.by_text('📚제목')
+    ft &= frame.equals('1780년, 열하로 간 조선의 사신들')
     query.push_filter(ft)
     # pprint(query.apply())
     return ReadingPageList.from_query(query, page_size=page_size)

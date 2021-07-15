@@ -50,13 +50,14 @@ class GoyangLibrary:
         options = Options()
         options.add_argument('--headless')
         for i in range(2):
-            driver = webdriver.Chrome(self.chromedriver_path, options=options)
+            driver = webdriver.Chrome(self.chromedriver_path, options=options,
+                                      service_log_path=os.devnull)
             driver.minimize_window()
             self.drivers.append(driver)
 
     @property
     def chromedriver_path(self):
-        print(os.path.abspath('chromedriver.exe'))
+        # print(os.path.abspath('chromedriver.exe'))
         return os.path.abspath('chromedriver.exe')
 
     @try_twice
@@ -144,3 +145,18 @@ class GoyangLibrary:
         driver.get(url)
         book_code = driver.find_element_by_css_selector(tag_book_code).text
         return book_code
+
+
+"""
+    def start(self):
+        try:
+            cmd = [self.path]
+            cmd.extend(self.command_line_args())
+            self.process = subprocess.Popen(cmd, env=self.env,
+                                            close_fds=platform.system() != 'Windows',
+                                            stdout=self.log_file, stderr=self.log_file,
+                                            creationflags=CREATE_NO_WINDOW)
+        except TypeError:
+            raise
+
+"""

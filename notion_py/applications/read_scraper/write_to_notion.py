@@ -68,7 +68,7 @@ class ReadingPage(TabularPage):
     def set_yes24_url_if_empty(self) -> str:
         if not self.props.read_empty_value(self.PROP_NAME['url']):
             url = self.props.read[self.PROP_NAME['url']]
-            if 'http://yes24' in url:
+            if 'yes24' in url:
                 return url
         url = get_yes24_url(self.get_names())
         if url:
