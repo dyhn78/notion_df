@@ -33,7 +33,7 @@ def ignore_if_empty(method: Callable):
 
 
 class Requestor(Structure):
-    _id_raw = ''
+    parent_id = ''
 
     @property
     def notion(self) -> Union[Client, AsyncClient]:
@@ -51,7 +51,7 @@ class Requestor(Structure):
         pass
 
     def print_url(self, string, page_id=''):
-        page_id = self._id_raw if not page_id else page_id
+        page_id = self.parent_id if not page_id else page_id
         if page_id:
             stopwatch(' '.join([string, page_id_to_url(page_id)]))
 

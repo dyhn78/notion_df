@@ -5,6 +5,7 @@ from notion_py.interface.parse import DatabaseParser
 from .property_stash import BasicPagePropertyStash, TabularPagePropertyStash
 from .block_child_stash import BlockChildrenStash
 from .block_contents import BlockContents
+from ...helpers import stopwatch, page_id_to_url
 
 
 class UpdateBasicPage(Requestor):
@@ -20,10 +21,11 @@ class UpdateBasicPage(Requestor):
         return bool(self.props.apply())
 
     @retry
-    @ignore_if_empty
     def execute(self):
-        self.print_url('update')
+        if not self.props:
+            return {}
         res = self.notion.pages.update(**self.apply())
+        stopwatch(' '.join(['update', page_id_to_url(self.page_id)]))
         self.props = BasicPagePropertyStash()
         return res
 
@@ -43,10 +45,11 @@ class CreateBasicPage(Requestor):
         return bool(self.props.apply()) and bool(self.children.apply())
 
     @retry
-    @ignore_if_empty
     def execute(self):
+        if not (self.props or self.children):
+            return {}
         res = self.notion.pages.create(**self.apply())
-        self.print_url('create', res['id'])
+        stopwatch(' '.join(['create', page_id_to_url(res['id'])]))
         self.props = BasicPagePropertyStash()
         self.children = BlockChildrenStash()
         return res
@@ -77,7 +80,7 @@ class CreateTabularPage(CreateBasicPage, DatabaseTable):
 
 class AppendBlockChildren(Requestor):
     def __init__(self, parent_id: str):
-        self._id_raw = parent_id
+        self.parent_id = parent_id
         self._id_apply = {'block_id': parent_id}
         self.children = BlockChildrenStash()
 
@@ -88,10 +91,11 @@ class AppendBlockChildren(Requestor):
         return bool(self.children.apply())
 
     @retry
-    @ignore_if_empty
     def execute(self) -> dict:
+        if not self.children:
+            return {}
+        stopwatch(' '.join(['append', page_id_to_url(self.parent_id)]))
         res = self.notion.blocks.children.append(**self.apply())
-        self.print_url('append')
         self.children = BlockChildrenStash()
         return res
 

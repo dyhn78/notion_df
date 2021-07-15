@@ -56,6 +56,7 @@ class GoyangLibrary:
 
     @property
     def chromedriver_path(self):
+        print(os.path.abspath('chromedriver.exe'))
         return os.path.abspath('chromedriver.exe')
 
     @try_twice

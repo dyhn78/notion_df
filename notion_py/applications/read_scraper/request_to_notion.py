@@ -18,10 +18,10 @@ def update_books(scrap_options=None, page_size=0):
     pagelist = get_pagelist(page_size=page_size)
     build_request_for_a_book = RequestBuilderforBook(scrap_options)
     for page in pagelist.values:
+        stopwatch(f'-----{page.title}')
         try:
             build_request_for_a_book.execute(page)
             page.execute()
-            stopwatch(f'-----{page.title}')
         except:
             pass
     stopwatch('서적류 완료')
@@ -38,7 +38,7 @@ def get_pagelist(page_size=0) -> ReadingPageList:
     # frame = query.filter_maker.by_text('📚제목')
     # ft &= frame.equals('어떻게 일할 것인가')
     query.push_filter(ft)
-    pprint(query.apply())
+    # pprint(query.apply())
     return ReadingPageList.from_query(query, page_size=page_size)
     # return ReadingPageList.from_query_and_retrieve_of_each_elements(query)
 

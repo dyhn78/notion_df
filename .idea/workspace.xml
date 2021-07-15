@@ -1,21 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="2a8a7209-1ffb-43f2-969c-0ddf95281e08" name="디폴트 변경 목록" comment="Read Scraper 디버깅; BlockEditor 클래스 창설">
+    <list default="true" id="2a8a7209-1ffb-43f2-969c-0ddf95281e08" name="디폴트 변경 목록" comment="Read Scraper 완료">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/applications/read_scraper/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/read_scraper/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/applications/read_scraper/db_attributes.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/read_scraper/write_to_notion.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/applications/read_scraper/helpers.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/read_scraper/helpers.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/notion_py/applications/read_scraper/lib_gy.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/read_scraper/lib_gy.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/applications/read_scraper/request.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/read_scraper/request_to_notion.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/applications/read_scraper/yes24.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/read_scraper/yes24.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/structure/carriers.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/structure/carriers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/read_scraper/request_to_notion.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/read_scraper/request_to_notion.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/notion_py/interface/structure/requestor.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/structure/requestor.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/write/property_stash.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/write/property_stash.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/write/property_unit.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/write/property_unit.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/notion_py/interface/write/request.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/write/request.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/terminal.py" beforeDir="false" afterPath="$PROJECT_DIR$/terminal.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/test.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -104,7 +96,7 @@
     </key>
   </component>
   <component name="RunManager" selected="Python.terminal">
-    <configuration name="edit" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="request" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Notion-py" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -112,11 +104,11 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/utility/interface/requests" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/notion_py/interface/write" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/utility/interface/requests/edit.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/notion_py/interface/write/request.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -210,19 +202,19 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Python.edit" />
       <item itemvalue="Python.test_retrieve" />
       <item itemvalue="Python.terminal" />
       <item itemvalue="Python.test" />
       <item itemvalue="Python.request_to_notion" />
+      <item itemvalue="Python.request" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="Python.terminal" />
+        <item itemvalue="Python.request" />
         <item itemvalue="Python.test" />
         <item itemvalue="Python.request_to_notion" />
         <item itemvalue="Python.test_retrieve" />
-        <item itemvalue="Python.edit" />
       </list>
     </recent_temporary>
   </component>
@@ -431,7 +423,14 @@
       <option name="project" value="LOCAL" />
       <updated>1626288184525</updated>
     </task>
-    <option name="localTasksCounter" value="29" />
+    <task id="LOCAL-00029" summary="Read Scraper 완료">
+      <created>1626348464502</created>
+      <option name="number" value="00029" />
+      <option name="presentableId" value="LOCAL-00029" />
+      <option name="project" value="LOCAL" />
+      <updated>1626348464502</updated>
+    </task>
+    <option name="localTasksCounter" value="30" />
     <option name="trackContextForNewChangelist" value="true" />
     <servers />
   </component>
@@ -464,7 +463,8 @@
     <MESSAGE value="Page Document 클래스" />
     <MESSAGE value="Read Scraper 패키지" />
     <MESSAGE value="Read Scraper 디버깅; BlockEditor 클래스 창설" />
-    <option name="LAST_COMMIT_MESSAGE" value="Read Scraper 디버깅; BlockEditor 클래스 창설" />
+    <MESSAGE value="Read Scraper 완료" />
+    <option name="LAST_COMMIT_MESSAGE" value="Read Scraper 완료" />
     <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="true" />
   </component>
   <component name="XDebuggerManager">
