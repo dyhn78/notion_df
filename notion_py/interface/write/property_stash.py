@@ -1,7 +1,7 @@
-# from pprint import pprint
 from abc import ABCMeta
 from collections import defaultdict
 from datetime import datetime as datetimeclass, date as dateclass
+from pprint import pprint
 from typing import Union, Optional
 
 from ..structure import TwofoldDictStash
@@ -68,8 +68,7 @@ class PagePropertyRichAgent:
 
     def title(self):
         res = WriteTitleProperty('title')
-        self.caller.stash(res)
-        return res
+        return self.caller.stash(res)
 
 
 class PagePropertyPlainAgent:
@@ -93,13 +92,10 @@ class TabularPagePropertyRichAgent:
 
     def title(self, prop_name: str):
         res = WriteRichTextProperty('title', prop_name)
-        self.caller.stash(res)
-        return res
+        return self.caller.stash(res)
 
     def text(self, prop_name: str):
-        res = WriteRichTextProperty('rich_text', prop_name)
-        self.caller.stash(WriteRichTextProperty('rich_text', prop_name))
-        return res
+        return self.caller.stash(WriteRichTextProperty('rich_text', prop_name))
 
 
 class TabularPagePropertyPlainAgent:

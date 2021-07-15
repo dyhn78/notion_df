@@ -87,5 +87,10 @@ class TwofoldDictStash(TwofoldStash, metaclass=ABCMeta):
         return res
 
     def stash(self, carrier: ValueCarrier):
+        """
+        return 값을 carrier가 아니라 subcarriers[-1]로 설정하였다.
+        본래 리스트 append 메소드는 원본 id를 그대로 유지한 채 집어넣어야 정상이지만,
+        id 값을 조사해보면 컴퓨터가 carrier의 복사본을 넣는다는 점을 발견할 수 있다.
+        """
         self._subcarriers.append(carrier)
-        return carrier
+        return self._subcarriers[-1]

@@ -42,7 +42,8 @@ class WriteRichTextProperty(WritePageProperty, ListStash):
 
     @property
     def prop_value(self):
-        return self._unpack()
+        res = self._unpack()
+        return res
 
     def write_text(self, contents, link=None):
         self._subdicts.append(self._text(contents, link))
@@ -50,13 +51,13 @@ class WriteRichTextProperty(WritePageProperty, ListStash):
     def write_equation(self, expression: str):
         self._subdicts.append(self._equation(expression))
 
-    def mention_page(self, page_id):
+    def mention_page(self, page_id: str):
         self._subdicts.append(self._mention_page(page_id, 'page'))
 
-    def mention_database(self, database_id):
+    def mention_database(self, database_id: str):
         self._subdicts.append(self._mention_page(database_id, 'database'))
 
-    def mention_user(self, user_id):
+    def mention_user(self, user_id: str):
         self._subdicts.append(self._mention_page(user_id, 'user'))
 
     def mention_date(self, start_date: Union[datetimeclass, dateclass], end_date=None):

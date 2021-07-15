@@ -1,13 +1,11 @@
 from __future__ import annotations
-from typing import Callable, Union, Optional
+from typing import Callable, Optional, Any
 import os
 
 from selenium import webdriver
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import StaleElementReferenceException, NoSuchElementException, NoSuchWindowException
-
-from .helpers import try_twice_and_return_default_value
 
 tag_input_box = '#a_q'
 tag_search_button = '#sb1 > a'
@@ -32,11 +30,20 @@ def retry(method: Callable, recursion_limit=5) -> Callable:
     return wrapper
 
 
+def try_twice(function: Callable[[Any, str], Any]):
+    def wrapper(self, strings: tuple[str, str]):
+        first_str, second_str = strings
+        has_true_name = second_str and (second_str != first_str)
+        result = function(self, first_str)
+        if not result and has_true_name:
+            result = function(self, second_str)
+        return result
+    return wrapper
+
+
 class GoyangLibrary:
     str_gajwa_lib = '가좌도서관'
     str_other_lib = '고양시 상호대차'
-    str_failed = '스크랩 실패'
-    default_value = [str_failed, False, '']
 
     def __init__(self):
         self.drivers = []
@@ -51,7 +58,7 @@ class GoyangLibrary:
     def chromedriver_path(self):
         return os.path.abspath('chromedriver.exe')
 
-    @try_twice_and_return_default_value
+    @try_twice
     def execute(self, book_name: str) -> Optional[dict]:
         """
         :return: [도서관 이름: str('가좌도서관', '고양시 상호대차', '스크랩 실패'),

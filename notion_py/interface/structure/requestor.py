@@ -50,9 +50,10 @@ class Requestor(Structure):
     def execute(self):
         pass
 
-    def print_info(self, *string):
-        if self._id_raw:
-            print(*string, page_id_to_url(self._id_raw), sep='; ')
+    def print_url(self, string, page_id=''):
+        page_id = self._id_raw if not page_id else page_id
+        if page_id:
+            stopwatch(' '.join([string, page_id_to_url(page_id)]))
 
     @classmethod
     def _merge_dict(cls, *dicts: Union[dict, None]):

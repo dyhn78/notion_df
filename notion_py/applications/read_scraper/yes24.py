@@ -1,15 +1,16 @@
 from urllib import parse
-
 import requests
 from bs4 import BeautifulSoup
-from notion_py.applications.read_scraper.helpers import try_twice
+
+from .helpers import try_twice, parse_contents
 
 
 @try_twice
 def get_yes24_url(book_name) -> str:
+    book_name = ''.join(filter(lambda x: str.isalnum(x) or x == ' ', book_name))
     book_name_encoded = parse.quote_plus(book_name, encoding='euc-kr')
     url_main_page = 'http://www.yes24.com'
-    url = f"http://www.yes24.com/searchcorner/Search?keywordAd=&keyword=&domain=ALL&" \
+    url = f"http://www.yes24.com/searchcorner/Search?keywordAd=&keyword=&domain=BOOK&" \
           f"qdomain=%c5%eb%c7%d5%b0%cb%bb%f6&query={book_name_encoded}"
 
     response = requests.get(url)
@@ -25,11 +26,10 @@ def get_yes24_url(book_name) -> str:
             url = url_main_page + url_part
         else:
             url = url_part
-    except ValueError:
+    except (ValueError, AttributeError):
         return ''
     if '?OzSrank=1' in url:
         url = url[0:-len('?OzSrank=1')]
-    print(url)
     return url
 
 
@@ -48,9 +48,13 @@ def scrap_yes24_metadata(url) -> dict:
     tag_cover_image = '#yDetailTopWrap > div.topColLft > div.gd_imgArea > span > em > img'
     tag_contents = '#infoset_toc > div.infoSetCont_wrap > div.infoWrap_txt'
 
-    name = soup.select(tag_name)[0].text
-    for char in '?!"':
-        name = name.replace(char, '')
+    name = ''
+    try:
+        name = soup.select_one(tag_name).text
+        for char in '?!"':
+            name = name.replace(char, '')
+    except AttributeError:
+        pass
 
     subname = ''
     try:
@@ -93,10 +97,7 @@ def scrap_yes24_metadata(url) -> dict:
     contents = []
     try:
         contents_raw = soup.select_one(tag_contents).text
-        for char in ['<B>', r'</b>', '<b>']:
-            contents_raw = contents_raw.replace(char, '')
-        contents_raw = contents_raw.strip()
-        contents = contents_raw.split('<br/>')
+        contents = parse_contents(contents_raw)
     except AttributeError:
         pass
 

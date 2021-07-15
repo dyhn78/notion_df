@@ -1,1 +1,1 @@
-from .request import update_reading_list
+from .request_to_notion import update_reading_list

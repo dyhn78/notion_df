@@ -21,9 +21,8 @@ class UpdateBasicPage(Requestor):
 
     @retry
     @ignore_if_empty
-    def execute(self, print_info='update..'):
-        if print_info:
-            self.print_info(print_info)
+    def execute(self):
+        self.print_url('update')
         res = self.notion.pages.update(**self.apply())
         self.props = BasicPagePropertyStash()
         return res
@@ -45,10 +44,9 @@ class CreateBasicPage(Requestor):
 
     @retry
     @ignore_if_empty
-    def execute(self, print_info='create..'):
-        if print_info:
-            print(print_info)
+    def execute(self):
         res = self.notion.pages.create(**self.apply())
+        self.print_url('create', res['id'])
         self.props = BasicPagePropertyStash()
         self.children = BlockChildrenStash()
         return res
@@ -91,10 +89,9 @@ class AppendBlockChildren(Requestor):
 
     @retry
     @ignore_if_empty
-    def execute(self, print_info='append..') -> dict:
-        if print_info:
-            self.print_info(print_info)
+    def execute(self) -> dict:
         res = self.notion.blocks.children.append(**self.apply())
+        self.print_url('append')
         self.children = BlockChildrenStash()
         return res
 
