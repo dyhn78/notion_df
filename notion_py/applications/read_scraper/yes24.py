@@ -6,7 +6,7 @@ from .helpers import try_twice, parse_contents
 
 
 @try_twice
-def get_yes24_url(book_name) -> str:
+def scrap_yes24_url(book_name) -> str:
     book_name = ''.join(filter(lambda x: str.isalnum(x) or x == ' ', book_name))
     book_name_encoded = parse.quote_plus(book_name, encoding='euc-kr')
     url_main_page = 'http://www.yes24.com'

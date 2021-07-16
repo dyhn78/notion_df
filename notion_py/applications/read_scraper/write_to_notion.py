@@ -1,6 +1,6 @@
 import re
 
-from notion_py.applications.read_scraper.yes24 import get_yes24_url, scrap_yes24_metadata
+from notion_py.applications.read_scraper.yes24 import scrap_yes24_url, scrap_yes24_metadata
 from notion_py.interface.editor import TabularPage, PageList
 from notion_py.interface.parse import PageParser
 from notion_py.interface.write import AppendBlockChildren, CreateBasicPage
@@ -23,20 +23,19 @@ class ReadingPage(TabularPage):
         edit_status='🏁준비',
         not_available='🔍대출중'
     )
-    PROP_VALUE = dict(
-        edit_status_code=[
-            '0️⃣⛳정보 없음',
-            '1️⃣📥건너뛰기(continue)',
-            '2️⃣📥백업 유지(append)',
-            '3️⃣📥덮어쓰기(overwrite)',
-            '4️⃣👤원제/표지 검정',
-            '5️⃣🔍링크 직접 찾기',
-            '6️⃣🔍대출정보 직접 찾기',
-            '7️⃣👤차례/표지(docx/jpg) 복사',
-            '8️⃣⛳스크랩 완료'
-        ],
+    STATUS_CODE = [
+        '0️⃣⛳정보 없음',
+        '1️⃣📥백업 유지(append)',
+        '2️⃣📥덮어쓰기(overwrite)',
+        '3️⃣📥건너뛰기(continue)',
+        '4️⃣👤원제/표지 검정',
+        '5️⃣🔍링크 직접 찾기',
+        '6️⃣🔍대출정보 직접 찾기',
+        '7️⃣⛳스크랩 완료'
+    ]
+    STATUS = dict(
         edit_done=4,
-        edit_strongly_done=8,
+        edit_strongly_done=7,
         url_missing=5,
         lib_missing=6
     )
@@ -65,17 +64,17 @@ class ReadingPage(TabularPage):
         true_name = self.props.read[self.PROP_NAME['true_name']][0]
         return docx_name, true_name
 
-    def set_yes24_url_if_empty(self) -> str:
-        if not self.props.read_empty_value(self.PROP_NAME['url']):
-            url = self.props.read[self.PROP_NAME['url']]
-            if 'yes24' in url:
-                return url
-        url = get_yes24_url(self.get_names())
+    def get_yes24_url(self):
+        url = self.props.read[self.PROP_NAME['url']]
+        if 'yes24' in url:
+            return url
+        return ''
+
+    def set_yes24_url(self, url: str):
         if url:
             self.props.write.url(self.PROP_NAME['url'], url)
         else:
-            self.scrap_status = self.PROP_VALUE['edit_status_code'][self.PROP_VALUE['url_missing']]
-        return url
+            self.scrap_status = self.STATUS_CODE[self.STATUS['url_missing']]
 
     def set_yes24_metadata(self, url):
         res = scrap_yes24_metadata(url)
@@ -87,20 +86,8 @@ class ReadingPage(TabularPage):
         self.props.write.number(self.PROP_NAME['page'], res['page'])
         self.props.write.files(self.PROP_NAME['cover_image'], res['cover_image'])
         self.set_contents_to_subpage(res['contents'])
-        self.props.set_overwrite(True)
 
-    def set_contents_to_subpage(self, contents: list):
-        # TODO : 비동기 프로그래밍으로 구현할 경우... 어떻게 해야 제일 효율적일지 모르겠다.
-        # TODO : mention_page 기능이 제대로 작동하지 않는 것 같다.
-        subpage_id = self.get_or_create_subpage_id()
-        link_to_contents = self.props.write_rich.text(self.PROP_NAME['link_to_contents'])
-        link_to_contents.mention_page(subpage_id)
-
-        subpage_patch = AppendBlockChildren(subpage_id)
-        self.parse_contents_then_append(subpage_patch, contents)
-        subpage_patch.execute()
-
-    def get_or_create_subpage_id(self):
+    def get_or_make_subpage_id(self):
         # TODO : GenerativeRequestor 구현되면 아래 구문을 삽입한다.
         """
         if self.children.read:
@@ -112,6 +99,18 @@ class ReadingPage(TabularPage):
         subpage_patch.props.write.title(f'={self.title}')
         response = subpage_patch.execute()
         return PageParser.from_retrieve_response(response).page_id
+
+    def set_contents_to_subpage(self, contents: list):
+        # TODO : 비동기 프로그래밍으로 구현할 경우... 어떻게 해야 제일 효율적일지 모르겠다.
+        # TODO : mention_page 기능이 제대로 작동하지 않는 것 같다.
+        subpage_id = self.get_or_make_subpage_id()
+        self.props.set_overwrite(True)
+        link_to_contents = self.props.write_rich.text(self.PROP_NAME['link_to_contents'])
+        link_to_contents.mention_page(subpage_id)
+
+        subpage_patch = AppendBlockChildren(subpage_id)
+        self.parse_contents_then_append(subpage_patch, contents)
+        subpage_patch.execute()
 
     @staticmethod
     def parse_contents_then_append(patch: AppendBlockChildren, contents: list[str]):
@@ -143,7 +142,7 @@ class ReadingPage(TabularPage):
         elif 'gy' in datas.keys():
             first_on_the_list = 'gy'
         else:
-            self.scrap_status = self.PROP_VALUE['edit_status_code'][self.PROP_VALUE['lib_missing']]
+            self.scrap_status = self.STATUS_CODE[self.STATUS['lib_missing']]
             return
 
         first_data = datas.pop(first_on_the_list)
@@ -168,13 +167,14 @@ class ReadingPage(TabularPage):
         return string, available
 
     def set_edit_status(self):
+        self.set_local_edit_options()
         if not self.scrap_status:
             if self.edit_option == 'append':
-                self.scrap_status = self.PROP_VALUE['edit_status_code'][self.PROP_VALUE['edit_done']]
+                self.scrap_status = self.STATUS_CODE[self.STATUS['edit_done']]
             elif self.edit_option == 'continue':
-                self.scrap_status = self.PROP_VALUE['edit_status_code'][self.PROP_VALUE['edit_done']]
+                self.scrap_status = self.STATUS_CODE[self.STATUS['edit_done']]
             elif self.edit_option == 'overwrite':
-                self.scrap_status = self.PROP_VALUE['edit_status_code'][self.PROP_VALUE['edit_strongly_done']]
+                self.scrap_status = self.STATUS_CODE[self.STATUS['edit_strongly_done']]
         self.props.set_overwrite(True)
         self.props.write.select(self.PROP_NAME['edit_status'], self.scrap_status)
         self.props.set_overwrite(False)

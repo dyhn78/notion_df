@@ -11,8 +11,6 @@ CHECK_ONLY_PAST_X_DAYS = 7
 
 
 def connect_to_naljja():
-    stopwatch('클라이언트 접속')
-
     query = Query(NALJJA_ID)
     if CHECK_ONLY_PAST_X_DAYS:
         frame = query.filter_maker.by_date(NALJJA_DATE_INDEX)
@@ -96,8 +94,6 @@ def connect_to_naljja():
 
 
 def connect_to_gigan():
-    stopwatch('클라이언트 접속')
-
     query = Query(GIGAN_ID)
     if CHECK_ONLY_PAST_X_DAYS:
         frame = query.filter_maker.by_date(GIGAN_DATE_INDEX)

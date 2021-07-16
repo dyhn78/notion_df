@@ -1,7 +1,7 @@
 from notion_py.applications.log_editor.request import connect_to_naljja, connect_to_gigan
-from notion_py.applications.read_scraper import update_reading_list
+from notion_py.applications.read_scraper import update_ilggi
 
-update_reading_list()
+update_ilggi()
 connect_to_naljja()
 connect_to_gigan()
 

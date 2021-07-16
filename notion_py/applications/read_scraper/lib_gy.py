@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import Callable, Optional, Any
 import os
-
+import emoji
 from selenium import webdriver
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.chrome.options import Options
@@ -22,7 +22,7 @@ def retry(method: Callable, recursion_limit=5) -> Callable:
             response = method(driver, *args)
         except (NoSuchElementException or StaleElementReferenceException):
             if recursion == 0:
-                raise RecursionError
+                return None
             driver.stop_client()
             driver.start_client()
             response = wrapper(driver, recursion=recursion - 1)
@@ -39,6 +39,10 @@ def try_twice(function: Callable[[Any, str], Any]):
             result = function(self, second_str)
         return result
     return wrapper
+
+
+def remove_emoji(text):
+    return emoji.get_emoji_regexp().sub(u'', text)
 
 
 class GoyangLibrary:
@@ -61,7 +65,9 @@ class GoyangLibrary:
         return os.path.abspath('chromedriver.exe')
 
     @try_twice
+    @retry
     def execute(self, book_name: str) -> Optional[dict]:
+        book_name = remove_emoji(book_name)
         """
         :return: [도서관 이름: str('가좌도서관', '고양시 상호대차', '스크랩 실패'),
                     현재 대출 가능: bool,
@@ -84,7 +90,7 @@ class GoyangLibrary:
         if no_book and '검색하신 도서가 없습니다' in no_book[0].text:
             return None
 
-        self.drivers[0].implicitly_wait(12)
+        self.drivers[0].implicitly_wait(10)
         page_buttons = self.drivers[0].find_elements_by_css_selector(tag_page_buttons)
         page_buttons = page_buttons[1:-1]
         pages = len(page_buttons)
@@ -135,7 +141,7 @@ class GoyangLibrary:
     @retry
     def get_input_box(driver: WebDriver, url):
         driver.get(url)
-        driver.implicitly_wait(5)
+        driver.implicitly_wait(3)
         input_box = driver.find_element_by_css_selector(tag_input_box)
         return input_box
 
@@ -143,6 +149,7 @@ class GoyangLibrary:
     @retry
     def get_book_code(driver: WebDriver, url) -> str:
         driver.get(url)
+        driver.implicitly_wait(3)
         book_code = driver.find_element_by_css_selector(tag_book_code).text
         return book_code
 

@@ -13,7 +13,9 @@ def try_twice(function: Callable[[str], Any]):
 
 
 def parse_contents(contents_raw: str) -> list[str]:
-    for char_to_delete in ['<B>', r'</B>', '<b>', r'</b>', r'\t', '__']:
+    chars_to_delete = {'<b>', '<strong>', r'\t', '__'}
+    chars_to_delete = duplicate_char_variations(chars_to_delete)
+    for char_to_delete in chars_to_delete:
         contents_raw = contents_raw.replace(char_to_delete, '')
     filtered = [contents_raw.strip()]
     for char_to_split in ['<br/>', '</br>', '<br>', '\n']:
@@ -31,3 +33,10 @@ def parse_contents(contents_raw: str) -> list[str]:
                 continue
             filtered.append(text_line)
     return filtered
+
+
+def duplicate_char_variations(chars: set[str]) -> set[str]:
+    chars.update(char.replace('<', '</') for char in chars.copy())
+    chars.update(char.replace('>', '/>') for char in chars.copy())
+    chars.update(char.upper() for char in chars.copy())
+    return chars
