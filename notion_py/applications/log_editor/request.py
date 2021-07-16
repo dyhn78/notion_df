@@ -7,26 +7,24 @@ from notion_py.applications.log_editor.match_property import MatchbyReference, M
 from notion_py.applications.log_editor.class_naljja_to_gigan import NaljjaToGigan
 from notion_py.applications.log_editor.constant_attribute_names import *
 
-CHECK_ONLY_PAST_X_DAYS = 7
 
-
-def connect_to_naljja():
+def connect_to_naljja(check_only_past_x_days = 0):
     query = Query(NALJJA_ID)
-    if CHECK_ONLY_PAST_X_DAYS:
+    if check_only_past_x_days:
         frame = query.filter_maker.by_date(NALJJA_DATE_INDEX)
-        if CHECK_ONLY_PAST_X_DAYS == 7:
+        if check_only_past_x_days == 7:
             query.push_filter(frame.within_past_week())
-        if CHECK_ONLY_PAST_X_DAYS == 30:
+        if check_only_past_x_days == 30:
             query.push_filter(frame.within_past_month())
     response = query.execute()
     naljja = PageListParser.from_query_response(response)
 
     query = Query(ILJI_ID)
-    if CHECK_ONLY_PAST_X_DAYS:
+    if check_only_past_x_days:
         frame = query.filter_maker.by_date(ILJI_DATE_INDEX)
-        if CHECK_ONLY_PAST_X_DAYS == 7:
+        if check_only_past_x_days == 7:
             query.push_filter(frame.within_past_week())
-        if CHECK_ONLY_PAST_X_DAYS == 30:
+        if check_only_past_x_days == 30:
             query.push_filter(frame.within_past_month())
     response = query.execute()
     ilji = PageListParser.from_query_response(response)
@@ -41,11 +39,11 @@ def connect_to_naljja():
     query = Query(JINDO_ID)
     frame = query.filter_maker.by_relation(TO_NALJJA)
     ft = frame.is_empty()
-    if CHECK_ONLY_PAST_X_DAYS:
+    if check_only_past_x_days:
         frame = query.filter_maker.by_date(JINDO_DATE_INDEX)
-        if CHECK_ONLY_PAST_X_DAYS == 7:
+        if check_only_past_x_days == 7:
             ft &= frame.within_past_week()
-        if CHECK_ONLY_PAST_X_DAYS == 30:
+        if check_only_past_x_days == 30:
             ft &= frame.within_past_month()
     query.push_filter(ft)
     response = query.execute()
@@ -54,11 +52,11 @@ def connect_to_naljja():
     query = Query(SSEUGI_ID)
     frame = query.filter_maker.by_relation(TO_NALJJA)
     ft = frame.is_empty()
-    if CHECK_ONLY_PAST_X_DAYS:
+    if check_only_past_x_days:
         frame = query.filter_maker.by_date(SSEUGI_DATE_INDEX)
-        if CHECK_ONLY_PAST_X_DAYS == 7:
+        if check_only_past_x_days == 7:
             ft &= frame.within_past_week()
-        if CHECK_ONLY_PAST_X_DAYS == 30:
+        if check_only_past_x_days == 30:
             ft &= frame.within_past_month()
     query.push_filter(ft)
     response = query.execute()
@@ -93,27 +91,27 @@ def connect_to_naljja():
     stopwatch('작업 완료')
 
 
-def connect_to_gigan():
+def connect_to_gigan(check_only_past_x_days = 0):
     query = Query(GIGAN_ID)
-    if CHECK_ONLY_PAST_X_DAYS:
+    if check_only_past_x_days:
         frame = query.filter_maker.by_date(GIGAN_DATE_INDEX)
-        if CHECK_ONLY_PAST_X_DAYS == 7:
+        if check_only_past_x_days == 7:
             query.push_filter(frame.within_past_week())
-        elif CHECK_ONLY_PAST_X_DAYS == 30:
+        elif check_only_past_x_days == 30:
             query.push_filter(frame.within_past_month())
-        elif CHECK_ONLY_PAST_X_DAYS == 365:
+        elif check_only_past_x_days == 365:
             query.push_filter(frame.within_past_year())
     response = query.execute()
     gigan = PageListParser.from_query_response(response)
 
     query = Query(NALJJA_ID)
-    if CHECK_ONLY_PAST_X_DAYS:
+    if check_only_past_x_days:
         frame = query.filter_maker.by_date(NALJJA_DATE_INDEX)
-        if CHECK_ONLY_PAST_X_DAYS == 7:
+        if check_only_past_x_days == 7:
             query.push_filter(frame.within_past_week())
-        elif CHECK_ONLY_PAST_X_DAYS == 30:
+        elif check_only_past_x_days == 30:
             query.push_filter(frame.within_past_month())
-        elif CHECK_ONLY_PAST_X_DAYS == 365:
+        elif check_only_past_x_days == 365:
             query.push_filter(frame.within_past_year())
     response = query.execute()
     naljja = PageListParser.from_query_response(response)
@@ -125,13 +123,13 @@ def connect_to_gigan():
     query = Query(ILJI_ID)
     frame = query.filter_maker.by_relation(TO_GIGAN)
     ft = frame.is_empty()
-    if CHECK_ONLY_PAST_X_DAYS:
+    if check_only_past_x_days:
         frame = query.filter_maker.by_date(ILJI_DATE_INDEX)
-        if CHECK_ONLY_PAST_X_DAYS == 7:
+        if check_only_past_x_days == 7:
             ft &= frame.within_past_week()
-        elif CHECK_ONLY_PAST_X_DAYS == 30:
+        elif check_only_past_x_days == 30:
             ft &= frame.within_past_month()
-        elif CHECK_ONLY_PAST_X_DAYS == 365:
+        elif check_only_past_x_days == 365:
             ft &= frame.within_past_year()
     query.push_filter(ft)
     response = query.execute()
@@ -140,13 +138,13 @@ def connect_to_gigan():
     query = Query(JINDO_ID)
     frame = query.filter_maker.by_relation(TO_GIGAN)
     ft = frame.is_empty()
-    if CHECK_ONLY_PAST_X_DAYS:
+    if check_only_past_x_days:
         frame = query.filter_maker.by_date(JINDO_DATE_INDEX)
-        if CHECK_ONLY_PAST_X_DAYS == 7:
+        if check_only_past_x_days == 7:
             ft &= frame.within_past_week()
-        elif CHECK_ONLY_PAST_X_DAYS == 30:
+        elif check_only_past_x_days == 30:
             ft &= frame.within_past_month()
-        elif CHECK_ONLY_PAST_X_DAYS == 365:
+        elif check_only_past_x_days == 365:
             ft &= frame.within_past_year()
     query.push_filter(ft)
     response = query.execute()
@@ -155,13 +153,13 @@ def connect_to_gigan():
     query = Query(SSEUGI_ID)
     frame = query.filter_maker.by_relation(TO_GIGAN)
     ft = frame.is_empty()
-    if CHECK_ONLY_PAST_X_DAYS:
+    if check_only_past_x_days:
         frame = query.filter_maker.by_date(SSEUGI_DATE_INDEX)
-        if CHECK_ONLY_PAST_X_DAYS == 7:
+        if check_only_past_x_days == 7:
             ft &= frame.within_past_week()
-        elif CHECK_ONLY_PAST_X_DAYS == 30:
+        elif check_only_past_x_days == 30:
             ft &= frame.within_past_month()
-        elif CHECK_ONLY_PAST_X_DAYS == 365:
+        elif check_only_past_x_days == 365:
             ft &= frame.within_past_year()
     query.push_filter(ft)
     response = query.execute()

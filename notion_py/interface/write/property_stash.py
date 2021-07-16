@@ -102,37 +102,37 @@ class TabularPagePropertyPlainAgent:
     def __init__(self, caller: TabularPagePropertyStash):
         self.caller = caller
 
-    def title(self, prop_name: str, value):
+    def title(self, prop_name: str, value: str):
         return self.caller.stash(WriteRichTextProperty('title', prop_name, value))
 
-    def text(self, prop_name: str, value):
+    def text(self, prop_name: str, value: str):
         return self.caller.stash(WriteRichTextProperty('rich_text', prop_name, value))
 
-    def url(self, prop_name: str, value):
+    def url(self, prop_name: str, value: str):
         return self.caller.stash(WriteSimplePageProperty.url(prop_name, value))
 
-    def email(self, prop_name: str, value):
+    def email(self, prop_name: str, value: str):
         return self.caller.stash(WriteSimplePageProperty.email(prop_name, value))
 
-    def phone_number(self, prop_name: str, value):
+    def phone_number(self, prop_name: str, value: str):
         return self.caller.stash(WriteSimplePageProperty.phone_number(prop_name, value))
 
     def date(self, prop_name: str, start_date: Union[datetimeclass, dateclass], end_date=None):
         return self.caller.stash(WriteSimplePageProperty.date(prop_name, start_date, end_date))
 
-    def number(self, prop_name: str, value):
+    def number(self, prop_name: str, value: Union[int, float]):
         return self.caller.stash(WriteSimplePageProperty.number(prop_name, value))
 
-    def checkbox(self, prop_name: str, value):
+    def checkbox(self, prop_name: str, value: bool):
         return self.caller.stash(WriteSimplePageProperty.checkbox(prop_name, value))
 
-    def select(self, prop_name: str, value):
+    def select(self, prop_name: str, value: str):
         return self.caller.stash(WriteSimplePageProperty.select(prop_name, value))
 
-    def files(self, prop_name: str, value):
+    def files(self, prop_name: str, value: str):
         return self.caller.stash(WriteSimplePageProperty.files(prop_name, value))
 
-    def people(self, prop_name: str, value):
+    def people(self, prop_name: str, value: str):
         return self.caller.stash(WriteSimplePageProperty.people(prop_name, value))
 
     def multi_select(self, prop_name: str, values: list[str]):

@@ -8,11 +8,9 @@ from ..read import Query, RetrieveBlockChildren
 
 
 class PageList:
-    unit_editor = TabularPage
-
     def __init__(self, parsed_query: PageListParser, parent_id: str):
         self.parent_id = parent_id
-        self.values = [self.unit_editor(parsed_page, parent_id)
+        self.values = [TabularPage(parsed_page, parent_id)
                        for parsed_page in parsed_query.values]
         self.page_by_id: dict[str, TabularPage] \
             = {page.page_id: page for page in self.values}

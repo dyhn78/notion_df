@@ -2,9 +2,17 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="2a8a7209-1ffb-43f2-969c-0ddf95281e08" name="디폴트 변경 목록" comment="Read Scraper 완료">
+      <change afterPath="$PROJECT_DIR$/notion_py/applications/read_scraper/reset_library_status.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/once_in_a_month.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/applications/read_scraper/lib_gy.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/read_scraper/lib_gy.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/applications/read_scraper/request_to_notion.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/read_scraper/request_to_notion.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/log_editor/request.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/log_editor/request.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/read_scraper/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/read_scraper/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/read_scraper/request_to_notion.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/read_scraper/regular_request.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/read_scraper/write_to_notion.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/read_scraper/regular_writing.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/read_scraper/yes24.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/read_scraper/yes24.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/pagelist.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/editor/pagelist.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/write/property_stash.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/write/property_stash.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/terminal.py" beforeDir="false" afterPath="$PROJECT_DIR$/terminal.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -93,6 +101,27 @@
     </key>
   </component>
   <component name="RunManager" selected="Python.test">
+    <configuration name="regular_request" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="Notion-py" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/notion_py/applications/read_scraper" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="D:\Dev\Workspace\Notion-py\notion_py\applications\read_scraper\regular_request.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="request" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Notion-py" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -106,27 +135,6 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/notion_py/interface/write/request.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="request_to_notion" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="Notion-py" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/notion_py/applications/read_scraper" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="D:\Dev\Workspace\Notion-py\notion_py\applications\read_scraper\request_to_notion.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -200,17 +208,17 @@
     </configuration>
     <list>
       <item itemvalue="Python.request" />
-      <item itemvalue="Python.request_to_notion" />
       <item itemvalue="Python.terminal" />
       <item itemvalue="Python.test" />
       <item itemvalue="Python.test_retrieve" />
+      <item itemvalue="Python.regular_request" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="Python.test" />
         <item itemvalue="Python.terminal" />
         <item itemvalue="Python.request" />
-        <item itemvalue="Python.request_to_notion" />
+        <item itemvalue="Python.regular_request" />
         <item itemvalue="Python.test_retrieve" />
       </list>
     </recent_temporary>
@@ -448,7 +456,14 @@
       <option name="project" value="LOCAL" />
       <updated>1626407510600</updated>
     </task>
-    <option name="localTasksCounter" value="33" />
+    <task id="LOCAL-00033" summary="Read Scraper 완료">
+      <created>1626407804463</created>
+      <option name="number" value="00033" />
+      <option name="presentableId" value="LOCAL-00033" />
+      <option name="project" value="LOCAL" />
+      <updated>1626407804463</updated>
+    </task>
+    <option name="localTasksCounter" value="34" />
     <option name="trackContextForNewChangelist" value="true" />
     <servers />
   </component>
@@ -487,13 +502,6 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/notion_py/interface/editor/pagelist.py</url>
-          <line>40</line>
-          <option name="timeStamp" value="2" />
-        </line-breakpoint>
-      </breakpoints>
       <default-breakpoints>
         <breakpoint type="python-exception">
           <properties notifyOnTerminate="true" exception="BaseException">

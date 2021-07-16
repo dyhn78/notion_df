@@ -33,7 +33,7 @@ def scrap_yes24_url(book_name) -> str:
     return url
 
 
-def scrap_yes24_metadata(url) -> dict:
+def scrap_yes24_metadata(url: str) -> dict:
     results = {}
 
     response = requests.get(url)
