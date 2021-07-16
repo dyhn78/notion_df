@@ -64,6 +64,10 @@ class GoyangLibrary:
         # print(os.path.abspath('chromedriver.exe'))
         return os.path.abspath('chromedriver.exe')
 
+    def quit(self):
+        for driver in self.drivers:
+            driver.quit()
+
     @try_twice
     @retry
     def execute(self, book_name: str) -> Optional[dict]:

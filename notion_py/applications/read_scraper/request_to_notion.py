@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from pprint import pprint
-
 from notion_py.interface.read import Query
 from notion_py.helpers import stopwatch
 from .yes24 import scrap_yes24_url
@@ -22,6 +20,7 @@ def update_books(scrap_options=None, page_size=0):
         stopwatch(f'{page.title}')
         build_request_for_a_book.execute(page)
         page.execute()
+    build_request_for_a_book.quit()
     stopwatch('서적류 완료')
 
 
@@ -33,6 +32,10 @@ class RequestBuilderforBook:
             self.global_options = global_options
         if 'gy_lib' in self.global_options:
             self.gylib = GoyangLibrary()
+
+    def quit(self):
+        if 'gy_lib' in self.global_options:
+            self.gylib.quit()
 
     def execute(self, page: ReadingPage):
         url = page.get_yes24_url()
