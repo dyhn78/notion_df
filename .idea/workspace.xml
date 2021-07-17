@@ -1,19 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="2a8a7209-1ffb-43f2-969c-0ddf95281e08" name="디폴트 변경 목록" comment="날짜-&gt;기간 리팩토링">
-      <change afterPath="$PROJECT_DIR$/.env" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/notion_py/applications/read_scraper/avoid_selenium_console_screen.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+    <list default="true" id="620c4a01-5f58-49ef-a421-f45c53b9d9e6" name="새 변경 목록" comment="env 파일">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/applications/read_scraper/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/read_scraper/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/applications/read_scraper/lib_gy.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/read_scraper/lib_gy.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/applications/read_scraper/regular_request.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/read_scraper/handle_scrapers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/applications/read_scraper/regular_writing.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/read_scraper/write_to_notion.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/applications/read_scraper/reset_library_status.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/read_scraper/reset_library_status.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/structure/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/structure/__init__.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/notion_py/interface/structure/requestor.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/structure/requestor.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/write/request.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/write/request.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/terminal.py" beforeDir="false" afterPath="$PROJECT_DIR$/terminal.py" afterDir="false" />
+    </list>
+    <list id="2a8a7209-1ffb-43f2-969c-0ddf95281e08" name="무시" comment="">
+      <change afterPath="$PROJECT_DIR$/.env" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -223,10 +218,11 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.test" />
-        <item itemvalue="Python.request" />
         <item itemvalue="Python.regular_request" />
         <item itemvalue="Python.test_retrieve" />
+        <item itemvalue="Python.test" />
+        <item itemvalue="Python.request" />
+        <item itemvalue="Python.test" />
       </list>
     </recent_temporary>
   </component>
@@ -237,7 +233,7 @@
       <created>1623896594872</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1625850827325</updated>
+      <updated>1626501912911</updated>
     </task>
     <task id="LOCAL-00001" summary="DatabaseQueryFilterFrameMaker (이하 FilterFrameMaker) 만들었다.&#10;FilterFrameMaker 에서는 다음 두 가지 조작이 가능하다.&#10;1. FilterFrameMaker -(Property 하나 선택)-&gt;&#10;PropertyFilterFrame (이하 FilterFrame)&#10;-(조건 및 인자 선택)-&gt; QueryFilter (이하 Filter)&#10;2. FilterFrameMaker.all 또는 .any (*arg: Filter)&#10;&#10;&#10;다음으로, Filter 클래스에도 두 종류의 이항연산자를 추가하였다.&#10;1. &amp;, | (*arg: Filter)&#10;2. all, any 메소드 (*arg: 조건 및 인자)">
       <created>1623928649123</created>
@@ -351,12 +347,12 @@
       <option name="project" value="LOCAL" />
       <updated>1625850902941</updated>
     </task>
-    <task active="true" id="LOCAL-00017" summary="새 변경 목록">
+    <task id="LOCAL-00017" summary="새 변경 목록">
       <created>1625850976691</created>
       <option name="number" value="00017" />
       <option name="presentableId" value="LOCAL-00017" />
       <option name="project" value="LOCAL" />
-      <updated>1625850976700</updated>
+      <updated>1626501790788</updated>
     </task>
     <task id="LOCAL-00018" summary="새 변경 목록">
       <created>1625851016334</created>
@@ -470,9 +466,27 @@
       <option name="project" value="LOCAL" />
       <updated>1626407804463</updated>
     </task>
-    <option name="localTasksCounter" value="34" />
+    <task active="true" id="LOCAL-00034" summary="새 변경 목록">
+      <changelist id="620c4a01-5f58-49ef-a421-f45c53b9d9e6" name="새 변경 목록" comment="" />
+      <created>1626501790741</created>
+      <option name="number" value="00034" />
+      <option name="presentableId" value="LOCAL-00034" />
+      <option name="project" value="LOCAL" />
+      <updated>1626501912911</updated>
+    </task>
+    <task id="LOCAL-00035" summary="env 파일">
+      <created>1626501819162</created>
+      <option name="number" value="00035" />
+      <option name="presentableId" value="LOCAL-00035" />
+      <option name="project" value="LOCAL" />
+      <updated>1626501819162</updated>
+    </task>
+    <option name="localTasksCounter" value="36" />
     <option name="trackContextForNewChangelist" value="true" />
     <servers />
+  </component>
+  <component name="UnknownFeatures">
+    <option featureType="com.intellij.fileTypeFactory" implementationName="*.env" />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
     <option name="TAB_STATES">
@@ -504,7 +518,8 @@
     <MESSAGE value="Read Scraper 패키지" />
     <MESSAGE value="Read Scraper 디버깅; BlockEditor 클래스 창설" />
     <MESSAGE value="Read Scraper 완료" />
-    <option name="LAST_COMMIT_MESSAGE" value="Read Scraper 완료" />
+    <MESSAGE value="env 파일" />
+    <option name="LAST_COMMIT_MESSAGE" value="env 파일" />
     <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="true" />
   </component>
   <component name="XDebuggerManager">

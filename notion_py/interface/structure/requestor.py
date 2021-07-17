@@ -28,8 +28,8 @@ class Requestor(Structure):
 
     @property
     def notion(self) -> Union[Client, AsyncClient]:
-        # TODO: .env 파일에 토큰 숨기기
-        return Client(auth=os.environ['NOTION_TOKEN'])
+        token = os.environ['NOTION_TOKEN'].strip("'").strip('"')
+        return Client(auth=token)
 
     @abstractmethod
     def apply(self):
