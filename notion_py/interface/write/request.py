@@ -1,6 +1,6 @@
 from abc import ABCMeta
 
-from notion_py.interface.structure import Requestor, retry, ignore_if_empty
+from notion_py.interface.structure import Requestor, retry
 from notion_py.interface.parse import DatabaseParser
 from .property_stash import BasicPagePropertyStash, TabularPagePropertyStash
 from .block_child_stash import BlockChildrenStash

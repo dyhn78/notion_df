@@ -23,22 +23,12 @@ def retry(method: Callable, recursion_limit=5):
     return wrapper
 
 
-def ignore_if_empty(method: Callable):
-    def wrapper(self, **kwargs):
-        if not self:
-            return {}
-        else:
-            return method(self, **kwargs)
-    return wrapper
-
-
 class Requestor(Structure):
     parent_id = ''
 
     @property
     def notion(self) -> Union[Client, AsyncClient]:
         # TODO: .env 파일에 토큰 숨기기
-        os.environ['NOTION_TOKEN'] = ***REMOVED***
         return Client(auth=os.environ['NOTION_TOKEN'])
 
     @abstractmethod

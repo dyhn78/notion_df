@@ -4,7 +4,7 @@ from notion_py.interface.read import Query
 from notion_py.helpers import stopwatch
 from .yes24 import scrap_yes24_url, scrap_yes24_metadata
 from ..constant_page_ids import ILGGI_ID
-from .regular_writing import ReadingPage, ReadingPageList
+from .write_to_notion import ReadingPage, ReadingPageList
 from .lib_gy import GoyangLibrary
 from .lib_snu import scrap_snu_library
 

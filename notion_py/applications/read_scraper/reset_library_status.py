@@ -1,7 +1,7 @@
 from notion_py.helpers import stopwatch
 from notion_py.interface.read import Query
 from ..constant_page_ids import ILGGI_ID
-from .regular_writing import ReadingPageList, ReadingPage
+from .write_to_notion import ReadingPageList, ReadingPage
 
 
 def reset_library_status(page_size=0):
