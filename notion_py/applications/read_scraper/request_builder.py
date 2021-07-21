@@ -1,44 +1,35 @@
 from __future__ import annotations
 
-from notion_py.interface.read import Query
 from notion_py.helpers import stopwatch
 from .yes24 import scrap_yes24_url, scrap_yes24_metadata
-from ..constant_page_ids import ILGGI_ID
-from .write_to_notion import ReadingPage, ReadingPageList
+from .reading_page import BookReadingPage, BookReadingPageList
 from .lib_gy import GoyangLibrary
 from .lib_snu import scrap_snu_library
 
 
-def update_ilggi():
-    update_books(page_size=0)
+def regular_scrap_in_ilggi():
+    regular_scrap_for_books(page_size=0)
 
 
-def update_books(scrap_options=None, page_size=0):
-    pagelist = query_books(page_size=page_size)
-    build_request_for_a_book = RequestBuilderforBook(scrap_options)
+def regular_scrap_for_books(scrap_options=None, page_size=0):
+    pagelist = BookReadingPageList.for_regular_scrap(page_size=page_size)
+    request_builder = RequestBuilderforBook(scrap_options)
     for page in pagelist.values:
         stopwatch(f'{page.title}')
-        build_request_for_a_book.execute(page)
+        request_builder.execute(page)
         page.execute()
-    build_request_for_a_book.quit()
+    request_builder.quit()
     stopwatch('서적류 완료')
 
 
-def query_books(page_size=0) -> ReadingPageList:
-    query = Query(ILGGI_ID)
-    frame = query.filter_maker.by_select(ReadingPage.PROP_NAME['media_type'])
-    ft = frame.equals_to_any('📖단행본', '☕연속간행물', '✒학습자료')
-    frame = query.filter_maker.by_select(ReadingPage.PROP_NAME['edit_status'])
-    ft_overwrite_option = frame.equals_to_any(
-        ReadingPage.EDIT_STATUS['append'],
-        ReadingPage.EDIT_STATUS['overwrite'],
-        ReadingPage.EDIT_STATUS['continue'])
-    ft_overwrite_option |= frame.is_empty()
-    ft_debug = frame.does_not_equal(ReadingPage.EDIT_STATUS['done'])
-    ft = ft & ft_overwrite_option & ft_debug
-    query.push_filter(ft)
-    return ReadingPageList.from_query(query, page_size=page_size)
-    # return ReadingPageList.from_query_and_retrieve_of_each_elements(query)
+def reset_status_for_books(page_size=0):
+    pagelist = BookReadingPageList.for_reset_library_info(page_size=page_size)
+    for page in pagelist.values:
+        page.props.set_overwrite(True)
+        page.props.write.select(page.PROP_NAME['edit_status'], page.EDIT_STATUS['append'])
+        page.props.write.checkbox(page.PROP_NAME['not_available'], False)
+        page.execute()
+    stopwatch('작업 완료')
 
 
 class RequestBuilderforBook:
@@ -50,11 +41,7 @@ class RequestBuilderforBook:
         if 'gy_lib' in self.global_options:
             self.gylib = GoyangLibrary()
 
-    def quit(self):
-        if 'gy_lib' in self.global_options:
-            self.gylib.quit()
-
-    def execute(self, page: ReadingPage):
+    def execute(self, page: BookReadingPage):
         url = page.get_yes24_url()
         if not url:
             url = scrap_yes24_url(page.get_names())
@@ -80,3 +67,7 @@ class RequestBuilderforBook:
             if res:
                 datas.update(snu=res)
         return datas
+
+    def quit(self):
+        if 'gy_lib' in self.global_options:
+            self.gylib.quit()

@@ -1,3 +1,3 @@
-from notion_py.applications.read_scraper import reset_library_status
+from notion_py.applications.read_scraper import reset_status_for_books
 
-reset_library_status()
+reset_status_for_books()

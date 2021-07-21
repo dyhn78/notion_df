@@ -1,12 +1,20 @@
+from __future__ import annotations
 import re
 
 from notion_py.interface.editor import TabularPage, PageList
 from notion_py.interface.parse import PageParser
 from notion_py.interface.write import AppendBlockChildren, CreateBasicPage
 from .lib_gy import GoyangLibrary
+from ..constant_page_ids import ILGGI_ID
+from ...interface.read import Query
 
 
 class ReadingPage(TabularPage):
+    def __init__(self, parsed_page, parent_id):
+        super().__init__(parsed_page, parent_id)
+        self.edit_option = ''
+        self.scrap_status = ''
+
     PROP_NAME = dict(
         media_type='🔵유형',
         docx_name='📚제목',
@@ -22,7 +30,6 @@ class ReadingPage(TabularPage):
         edit_status='🏁준비',
         not_available='🔍대출중'
     )
-    MEDIA_TYPES = ['📖단행본', '☕연속간행물', '✒학습자료']
     EDIT_STATUS = {
         'pass': '0️⃣⛳정보 없음',
         'append': '1️⃣📥백업 유지(append)',
@@ -31,21 +38,24 @@ class ReadingPage(TabularPage):
         'done': '4️⃣👤원제/표지 검정',
         'url_missing': '5️⃣🔍링크 직접 찾기',
         'lib_missing': '6️⃣🔍대출정보 직접 찾기',
-        'edit_strongly_done': '7️⃣⛳스크랩 완료'
+        'completely_done': '7️⃣⛳스크랩 완료'
     }
 
-    def __init__(self, parsed_page, parent_id):
-        super().__init__(parsed_page, parent_id)
-        self.edit_option = ''
-        self.scrap_status = ''
+    @classmethod
+    def at_status_for_regular_scrap(cls):
+        return [cls.EDIT_STATUS[key] for key in ['append', 'overwrite', 'continue']]
+
+    @classmethod
+    def at_status_for_reset_library_status(cls):
+        return [cls.EDIT_STATUS[key] for key in ['done', 'url_missing', 'lib_missing']]
 
     def get_edit_options(self) -> None:
         edit_status = self.props.read[self.PROP_NAME['edit_status']]
-        if not edit_status:
-            self.edit_option = 'append'
-        else:
+        try:
             charref = re.compile(r'(?<=\().+(?=\))')
             self.edit_option = re.findall(charref, edit_status)[0]
+        except IndexError:  # findall의 반환값이 빈 리스트일 경우
+            self.edit_option = 'append'
         parser = {'append': (False, 'a'),
                   'continue': (False, 'r'),
                   'overwrite': (True, 'w')}
@@ -61,7 +71,7 @@ class ReadingPage(TabularPage):
             elif self.edit_option == 'continue':
                 self.scrap_status = self.EDIT_STATUS['done']
             elif self.edit_option == 'overwrite':
-                self.scrap_status = self.EDIT_STATUS['edit_strongly_done']
+                self.scrap_status = self.EDIT_STATUS['completely_done']
         self.props.set_overwrite(True)
         self.props.write.select(self.PROP_NAME['edit_status'], self.scrap_status)
         self.props.set_overwrite(False)
@@ -70,6 +80,10 @@ class ReadingPage(TabularPage):
         docx_name = self.props.read[self.PROP_NAME['docx_name']][0]
         true_name = self.props.read[self.PROP_NAME['true_name']][0]
         return docx_name, true_name
+
+
+class BookReadingPage(ReadingPage):
+    MEDIA_TYPES = ['📖단행본', '☕연속간행물', '✒학습자료']
 
     def get_yes24_url(self):
         url = self.props.read[self.PROP_NAME['url']]
@@ -173,8 +187,36 @@ class ReadingPage(TabularPage):
         return string, available
 
 
-class ReadingPageList(PageList):
+class BookReadingPageList(PageList):
+    _unit = BookReadingPage
+
     def __init__(self, parsed_query, parent_id):
         super().__init__(parsed_query, parent_id)
-        self.values = [ReadingPage(parsed_page, parent_id)
+        self.values = [self._unit(parsed_page, parent_id)
                        for parsed_page in parsed_query.values]
+
+    @classmethod
+    def for_regular_scrap(cls, page_size=0):
+        query = Query(ILGGI_ID)
+        frame = query.filter_maker.by_select(cls._unit.PROP_NAME['media_type'])
+        ft = frame.equals_to_any(*cls._unit.MEDIA_TYPES)
+        frame = query.filter_maker.by_select(cls._unit.PROP_NAME['edit_status'])
+        ft_status = frame.equals_to_any(*cls._unit.at_status_for_regular_scrap())
+        ft_status |= frame.is_empty()
+        ft &= ft_status
+        ft &= frame.does_not_equal(cls._unit.EDIT_STATUS['done'])
+        query.push_filter(ft)
+        return cls.from_query(query, page_size=page_size)
+        # TODO : ReadingPageList.from_query_and_retrieve_of_each_elements(query)
+
+    @classmethod
+    def for_reset_library_info(cls, page_size=0):
+        query = Query(ILGGI_ID)
+        frame = query.filter_maker.by_select(cls._unit.PROP_NAME['media_type'])
+        ft = frame.equals_to_any(*cls._unit.MEDIA_TYPES)
+        frame = query.filter_maker.by_select(cls._unit.PROP_NAME['edit_status'])
+        ft &= frame.equals_to_any(*cls._unit.at_status_for_reset_library_status())
+        frame = query.filter_maker.by_checkbox(cls._unit.PROP_NAME['not_available'])
+        ft |= frame.equals(True)
+        query.push_filter(ft)
+        return BookReadingPageList.from_query(query, page_size=page_size)

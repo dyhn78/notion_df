@@ -1,2 +1,1 @@
-from .handle_scrapers import update_ilggi
-from .reset_library_status import reset_library_status
+from .request_builder import regular_scrap_in_ilggi, reset_status_for_books

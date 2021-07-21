@@ -1,7 +1,6 @@
 from abc import ABCMeta
 from collections import defaultdict
 from datetime import datetime as datetimeclass, date as dateclass
-from pprint import pprint
 from typing import Union, Optional
 
 from ..structure import TwofoldDictStash
@@ -47,12 +46,10 @@ class PagePropertyStash(TwofoldDictStash, metaclass=ABCMeta):
                 #  이 기능은 없애야 한다.
                 return cls._is_empty_value(value[0])
             return True
-        elif type(value) == str:
-            return value in ['', '.', '-']
-        elif type(value) == int:
-            return value in [0, 1]
+        elif type(value) == bool:
+            return value
         else:
-            return not bool(value)
+            return str(value) in ['', '.', '-', '0', '1']
 
 
 class BasicPagePropertyStash(PagePropertyStash):
