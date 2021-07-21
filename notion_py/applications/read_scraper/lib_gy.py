@@ -117,7 +117,7 @@ class GoyangLibrary:
                 # 여기서 split(',')[0] 하면 쉼표 전에서 자를 수 있다.
                 tag_availability = tags_availability.format(str(lib_index + 1))
                 available_here_str = self.drivers[0].find_element_by_css_selector(tag_availability).text.split(',')[0]
-                available_here = ('불가능' in available_here_str)
+                available_here = not ('불가능' in available_here_str)
 
                 if '가좌' in lib_name_raw.text:
                     tag_detail_info_button = tags_detail_info_button.format(str(lib_index + 1))
