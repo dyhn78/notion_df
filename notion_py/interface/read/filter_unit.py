@@ -51,15 +51,15 @@ class CompoundFilter(QueryFilter):
             self._nesting = max([e.nesting for e in homos])
         if heteros:
             self._nesting = max(self._nesting, 1 + max([e.nesting for e in heteros]))
-        if self.nesting > 2:
-            # TODO: AssertionError 대신 커스텀 에러클래스 정의
-            print('Nested greater than 2!')
-            pprint(self.apply())
-            raise AssertionError
-
         self.elements = heteros
         for e in homos:
             self.elements.extend(e.elements)
+
+        if self.nesting > 2:
+            # TODO: AssertionError 대신 커스텀 에러클래스 정의
+            print('Nesting greater than 2!')
+            pprint(self.apply())
+            raise AssertionError
 
     @abstractmethod
     def apply(self):

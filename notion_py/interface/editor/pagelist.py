@@ -1,6 +1,7 @@
 from __future__ import annotations
 from collections import defaultdict
 from pprint import pprint
+from typing import Optional
 
 from .page import TabularPage
 from ..parse import PageListParser, BlockChildrenParser

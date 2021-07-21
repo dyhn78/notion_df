@@ -47,7 +47,7 @@ class ReadingPage(TabularPage):
 
     @classmethod
     def at_status_for_reset_library_status(cls):
-        return [cls.EDIT_STATUS[key] for key in ['done', 'url_missing', 'lib_missing']]
+        return [cls.EDIT_STATUS[key] for key in ['url_missing', 'lib_missing']]
 
     def get_edit_options(self) -> None:
         edit_status = self.props.read[self.PROP_NAME['edit_status']]
@@ -216,7 +216,7 @@ class BookReadingPageList(PageList):
         ft = frame.equals_to_any(*cls._unit.MEDIA_TYPES)
         frame = query.filter_maker.by_select(cls._unit.PROP_NAME['edit_status'])
         ft &= frame.equals_to_any(*cls._unit.at_status_for_reset_library_status())
-        frame = query.filter_maker.by_checkbox(cls._unit.PROP_NAME['not_available'])
-        ft |= frame.equals(True)
+        # frame = query.filter_maker.by_checkbox(cls._unit.PROP_NAME['not_available'])
+        # ft |= frame.equals(True)
         query.push_filter(ft)
         return BookReadingPageList.from_query(query, page_size=page_size)

@@ -3,14 +3,12 @@ import time
 start_time = time.time()
 
 
-def stopwatch(comments: str):
+def stopwatch(comments: str) -> None:
     seconds = round(time.time() - start_time, 3)
     minutes = int(seconds // 60)
-    seconds = round(seconds - minutes * 60, 3)
-    second_str = f'{seconds} 초; {comments}'
+    second_str = '%6.3f' % (seconds - minutes * 60)
+    minute_str = '%3d' % minutes
     if minutes:
-        minute_str = f'{minutes} 분'
-        print(f'{minute_str} {second_str}')
+        print(f'{minute_str}분 {second_str}초; {comments}')
     else:
-        print(second_str)
-
+        print(f'{second_str}초; {comments}')
