@@ -19,17 +19,17 @@ tags_detail_info_button = '#lists > ul > li:nth-child({}) > dl > dt > a'
 
 
 def retry_webdriver(method: Callable, recursion_limit=5) -> Callable:
-    def wrapper(driver, *args, recursion=0):
+    def wrapper(self, *args, recursion=0):
         if recursion != 0:
-            stopwatch(f'셀레늄 재시작 {recursion}/{recursion_limit}회')
+            stopwatch(f'selenium 재시작 {recursion}/{recursion_limit}회')
         try:
-            response = method(driver, *args)
+            response = method(self, *args)
         except (NoSuchElementException, StaleElementReferenceException):
             if recursion == recursion_limit:
                 return None
-            driver.stop_client()
-            driver.start_client()
-            response = wrapper(driver, recursion=recursion + 1)
+            # driver.stop_client()
+            # driver.start_client()
+            response = wrapper(self, recursion=recursion + 1)
         return response
     return wrapper
 
@@ -49,9 +49,8 @@ def remove_emoji(text):
     return emoji.get_emoji_regexp().sub(u'', text)
 
 
-class GoyangLibrary:
-    str_gajwa_lib = '가좌도서관'
-    str_other_lib = '고양시 상호대차'
+class SeleniumScraper:
+    driver_num = 1
 
     def __init__(self):
         self.drivers = []
@@ -59,7 +58,7 @@ class GoyangLibrary:
         options.add_argument('--headless')
         options.add_argument('--disable-dev-shm-usage')
         options.add_argument('--no-sandbox')
-        for i in range(2):
+        for i in range(self.driver_num):
             driver = webdriver.Chrome(self.chromedriver_path, options=options,
                                       service_log_path=os.devnull)
             driver.minimize_window()
@@ -73,6 +72,12 @@ class GoyangLibrary:
     def quit(self):
         for driver in self.drivers:
             driver.quit()
+
+
+class GoyangLibrary(SeleniumScraper):
+    driver_num = 2
+    str_gajwa_lib = '가좌도서관'
+    str_other_lib = '고양시 상호대차'
 
     @try_twice
     @retry_webdriver

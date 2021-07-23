@@ -1,10 +1,11 @@
 from __future__ import annotations
 import re
+from typing import Union
 
 from notion_py.interface.editor import TabularPage, PageList
 from notion_py.interface.parse import PageParser
 from notion_py.interface.write import AppendBlockChildren, CreateBasicPage
-from .lib_gy_selenium import GoyangLibrary
+from .lib_gy import GoyangLibrary
 from ..constant_page_ids import ILGGI_ID
 from ...interface.read import Query
 
@@ -162,38 +163,40 @@ class BookReadingPage(ReadingPage):
 
     def set_lib_datas(self, datas: dict):
         datastrings = []
+        print(datas)
         if 'gy' in datas.keys() and \
                 datas['gy']['lib_name'] == GoyangLibrary.str_gajwa_lib:
-            first_on_the_list = 'gy'
+            first_lib = 'gy'
         elif 'snu' in datas.keys():
-            first_on_the_list = 'snu'
+            first_lib = 'snu'
         elif 'gy' in datas.keys():
-            first_on_the_list = 'gy'
+            first_lib = 'gy'
         else:
             self.scrap_status = self.EDIT_STATUS['lib_missing']
             return
 
-        first_data = datas.pop(first_on_the_list)
-        if first_on_the_list == 'gy':
-            string, available = self.format_gy_lib(first_data)
-        else:
-            string, available = first_data, None
+        first_data = datas.pop(first_lib)
+        string, available = self.format_lib(first_lib, first_data)
         datastrings.append(string)
-        datastrings.extend(datas.values())
+        datastrings.extend([self.format_lib(lib, data)[0] for lib, data in datas.items()])
         joined_string = '; '.join(datastrings)
 
         self.props.set_overwrite(True)
         self.props.write.text(self.PROP_NAME['location'], joined_string)
-        if available is not None:
-            self.props.write.checkbox(self.PROP_NAME['not_available'], not available)
+        self.props.write.checkbox(self.PROP_NAME['not_available'], not available)
 
     @staticmethod
-    def format_gy_lib(res: dict):
-        string = f"{res['lib_name']}"
-        if book_code := res['book_code']:
-            string += f" {book_code}"
-        available = res['available']
-        return string, available
+    def format_lib(lib: str, res: Union[dict, str]) -> tuple[str, bool]:
+        if lib == 'gy':
+            string = f"{res['lib_name']}"
+            if book_code := res['book_code']:
+                string += f" {book_code}"
+            available = res['available']
+            return string, available
+        elif lib == 'snu':
+            return res, True
+        else:
+            return res, True
 
 
 class BookReadingPageList(PageList):

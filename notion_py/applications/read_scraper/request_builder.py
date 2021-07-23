@@ -3,12 +3,12 @@ from __future__ import annotations
 from notion_py.helpers import stopwatch
 from .yes24 import scrap_yes24_url, scrap_yes24_metadata
 from .reading_page import BookReadingPage, BookReadingPageList
-from .lib_gy_selenium import GoyangLibrary
-from .lib_snu import scrap_snu_library
+from .lib_gy import GoyangLibrary
+from .lib_snu import SNULibrary
 
 
-def regular_scrap_in_ilggi():
-    regular_scrap_for_books(page_size=0)
+def regular_scrap_in_ilggi(page_size=0):
+    regular_scrap_for_books(page_size=page_size)
 
 
 def regular_scrap_for_books(scrap_options=None, page_size=0):
@@ -30,6 +30,8 @@ class RequestBuilderforBook:
             self.global_scraper_option = global_scraper_options
         if 'gy_lib' in self.global_scraper_option:
             self.gylib = GoyangLibrary()
+        if 'snu_lib' in self.global_scraper_option:
+            self.snulib = SNULibrary()
 
     def execute(self, page: BookReadingPage):
         url = page.get_yes24_url()
@@ -48,15 +50,16 @@ class RequestBuilderforBook:
 
     def scrap_lib_datas(self, book_names: tuple[str, str]):
         datas = {}
+        if 'snu_lib' in self.global_scraper_option:
+            # noinspection PyTypeChecker
+            res = self.snulib.execute(book_names)
+            if res:
+                datas.update(snu=res)
         if 'gy_lib' in self.global_scraper_option:
             # noinspection PyTypeChecker
             res = self.gylib.execute(book_names)
             if res:
                 datas.update(gy=res)
-        if 'snu_lib' in self.global_scraper_option:
-            res = scrap_snu_library(book_names)
-            if res:
-                datas.update(snu=res)
         return datas
 
     def quit(self):
