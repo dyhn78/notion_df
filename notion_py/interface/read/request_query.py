@@ -3,7 +3,7 @@
 from .filter_maker import QueryFilterMaker
 from .filter_unit import QueryFilter, PlainFilter
 from .sort import QuerySort
-from notion_py.interface.structure import LongRequestor, retry
+from notion_py.interface.structure import LongRequestor, retry_request
 
 
 class Query(LongRequestor):
@@ -22,7 +22,7 @@ class Query(LongRequestor):
             if self._filter_is_not_empty else None
         return self._merge_dict(self._id_apply, self.sort.apply(), filter_apply)
 
-    @retry
+    @retry_request
     def _execute_once(self, page_size=None, start_cursor=None):
         page_size = {'page_size': (page_size if page_size else self.MAX_PAGE_SIZE)}
         start_cursor = {'start_cursor': start_cursor} if start_cursor else None

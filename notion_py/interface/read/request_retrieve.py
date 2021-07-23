@@ -1,4 +1,4 @@
-from ..structure import retry, Requestor, LongRequestor
+from ..structure import retry_request, Requestor, LongRequestor
 
 
 class RetrieveDatabase(Requestor):
@@ -8,7 +8,7 @@ class RetrieveDatabase(Requestor):
     def apply(self):
         return {'database_id': self.database_id}
 
-    @retry
+    @retry_request
     def execute(self):
         return self.notion.databases.retrieve(**self.apply())
 
@@ -20,7 +20,7 @@ class RetrievePage(Requestor):
     def apply(self):
         return {'page_id': self.page_id}
 
-    @retry
+    @retry_request
     def execute(self):
         return self.notion.pages.retrieve(**self.apply())
 
@@ -32,7 +32,7 @@ class RetrieveBlockChildren(LongRequestor):
     def apply(self):
         return {'block_id': self.block_id}
 
-    @retry
+    @retry_request
     def _execute_once(self, page_size=None, start_cursor=None):
         page_size = {'page_size': (page_size if page_size else self.MAX_PAGE_SIZE)}
         start_cursor = {'start_cursor': start_cursor} if start_cursor else None

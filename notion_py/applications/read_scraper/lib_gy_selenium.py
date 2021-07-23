@@ -18,10 +18,10 @@ tag_book_code = '#printArea > div.tblType01.mt30 > table > tbody > tr:nth-child(
 tags_detail_info_button = '#lists > ul > li:nth-child({}) > dl > dt > a'
 
 
-def retry(method: Callable, recursion_limit=5) -> Callable:
+def retry_webdriver(method: Callable, recursion_limit=5) -> Callable:
     def wrapper(driver, *args, recursion=0):
         if recursion != 0:
-            stopwatch(f'다시 시도 {recursion}')
+            stopwatch(f'셀레늄 재시작 {recursion}/{recursion_limit}회')
         try:
             response = method(driver, *args)
         except (NoSuchElementException, StaleElementReferenceException):
@@ -75,7 +75,7 @@ class GoyangLibrary:
             driver.quit()
 
     @try_twice
-    @retry
+    @retry_webdriver
     def execute(self, book_name: str) -> Optional[dict]:
         book_name = remove_emoji(book_name)
         """
@@ -151,7 +151,7 @@ class GoyangLibrary:
             return None
 
     @staticmethod
-    @retry
+    @retry_webdriver
     def get_input_box(driver: WebDriver, url):
         driver.get(url)
         driver.implicitly_wait(3)
@@ -159,7 +159,7 @@ class GoyangLibrary:
         return input_box
 
     @staticmethod
-    @retry
+    @retry_webdriver
     def get_book_code(driver: WebDriver, url) -> str:
         driver.get(url)
         driver.implicitly_wait(3)

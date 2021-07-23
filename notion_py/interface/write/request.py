@@ -1,6 +1,6 @@
 from abc import ABCMeta
 
-from notion_py.interface.structure import Requestor, retry
+from notion_py.interface.structure import Requestor, retry_request
 from notion_py.interface.parse import DatabaseParser
 from .property_stash import BasicPagePropertyStash, TabularPagePropertyStash
 from .block_child_stash import BlockChildrenStash
@@ -20,7 +20,7 @@ class UpdateBasicPage(Requestor):
     def __bool__(self):
         return bool(self.props.apply())
 
-    @retry
+    @retry_request
     def execute(self):
         if not self.props:
             return {}
@@ -44,7 +44,7 @@ class CreateBasicPage(Requestor):
     def __bool__(self):
         return bool(self.props.apply()) and bool(self.children.apply())
 
-    @retry
+    @retry_request
     def execute(self):
         if not (self.props or self.children):
             return {}
@@ -90,7 +90,7 @@ class AppendBlockChildren(Requestor):
     def __bool__(self):
         return bool(self.children.apply())
 
-    @retry
+    @retry_request
     def execute(self) -> dict:
         if not self.children:
             return {}
