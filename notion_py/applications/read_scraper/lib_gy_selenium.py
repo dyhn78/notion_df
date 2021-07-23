@@ -7,6 +7,8 @@ from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import StaleElementReferenceException, NoSuchElementException, NoSuchWindowException
 
+from notion_py.helpers import stopwatch
+
 tag_input_box = '#a_q'
 tag_search_button = '#sb1 > a'
 tag_page_buttons = '#pagelist > ul > li > a'
@@ -17,15 +19,17 @@ tags_detail_info_button = '#lists > ul > li:nth-child({}) > dl > dt > a'
 
 
 def retry(method: Callable, recursion_limit=5) -> Callable:
-    def wrapper(driver, *args, recursion=recursion_limit):
+    def wrapper(driver, *args, recursion=0):
+        if recursion != 0:
+            stopwatch(f'다시 시도 {recursion}')
         try:
             response = method(driver, *args)
-        except (NoSuchElementException or StaleElementReferenceException):
-            if recursion == 0:
+        except (NoSuchElementException, StaleElementReferenceException):
+            if recursion == recursion_limit:
                 return None
             driver.stop_client()
             driver.start_client()
-            response = wrapper(driver, recursion=recursion - 1)
+            response = wrapper(driver, recursion=recursion + 1)
         return response
     return wrapper
 
@@ -53,6 +57,8 @@ class GoyangLibrary:
         self.drivers = []
         options = Options()
         options.add_argument('--headless')
+        options.add_argument('--disable-dev-shm-usage')
+        options.add_argument('--no-sandbox')
         for i in range(2):
             driver = webdriver.Chrome(self.chromedriver_path, options=options,
                                       service_log_path=os.devnull)
@@ -135,11 +141,14 @@ class GoyangLibrary:
                 else:
                     available_somewhere = available_here or available_somewhere
 
-        return {
-            'lib_name': self.str_other_lib,
-            'available': available_somewhere,
-            'book_code': ''
-        }
+        if available_somewhere:
+            return {
+                'lib_name': self.str_other_lib,
+                'available': True,
+                'book_code': ''
+            }
+        else:
+            return None
 
     @staticmethod
     @retry

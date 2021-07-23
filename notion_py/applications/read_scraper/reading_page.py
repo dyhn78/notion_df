@@ -4,7 +4,7 @@ import re
 from notion_py.interface.editor import TabularPage, PageList
 from notion_py.interface.parse import PageParser
 from notion_py.interface.write import AppendBlockChildren, CreateBasicPage
-from .lib_gy import GoyangLibrary
+from .lib_gy_selenium import GoyangLibrary
 from ..constant_page_ids import ILGGI_ID
 from ...interface.read import Query
 
@@ -32,14 +32,26 @@ class ReadingPage(TabularPage):
     )
     EDIT_STATUS = {
         'pass': '0️⃣⛳정보 없음',
-        'append': '1️⃣📥백업 유지(append)',
-        'overwrite': '2️⃣📥덮어쓰기(overwrite)',
-        'continue': '3️⃣📥건너뛰기(continue)',
+        'append': '1️⃣📥안전하게(append)',
+        'overwrite': '2️⃣📥확실하게(overwrite)',
+        'continue': '3️⃣📥업데이트만(continue)',
         'done': '4️⃣👤원제/표지 검정',
         'url_missing': '5️⃣🔍링크 직접 찾기',
         'lib_missing': '6️⃣🔍대출정보 직접 찾기',
         'completely_done': '7️⃣⛳스크랩 완료'
     }
+
+
+class BookReadingPage(ReadingPage):
+    MEDIA_TYPES = ['📖단행본', '☕연속간행물', '✒학습자료']
+    DEFAULT_SCRAPER_OPTION = {'yes24', 'gy_lib', 'snu_lib'}
+    LOCAL_EDIT_OPTIONS = {'append': (False, 'a'),
+                          'continue': (False, 'r'),
+                          'overwrite': (True, 'w')}
+
+    def __init__(self, parsed_page: PageParser, parent_id: str):
+        super().__init__(parsed_page, parent_id)
+        self.local_scraper_option = self.DEFAULT_SCRAPER_OPTION
 
     @classmethod
     def at_status_for_regular_scrap(cls):
@@ -56,12 +68,13 @@ class ReadingPage(TabularPage):
             self.edit_option = re.findall(charref, edit_status)[0]
         except IndexError:  # findall의 반환값이 빈 리스트일 경우
             self.edit_option = 'append'
-        parser = {'append': (False, 'a'),
-                  'continue': (False, 'r'),
-                  'overwrite': (True, 'w')}
-        props_option, children_option = parser[self.edit_option]
+        edit_option = self.LOCAL_EDIT_OPTIONS[self.edit_option]
+
+        props_option, children_option = edit_option
         self.props.set_overwrite(props_option)
         self.children.set_overwrite(children_option)
+        if edit_option == 'continue':
+            self.local_scraper_option.remove('yes24')
 
     def set_edit_status(self):
         self.get_edit_options()
@@ -80,10 +93,6 @@ class ReadingPage(TabularPage):
         docx_name = self.props.read[self.PROP_NAME['docx_name']][0]
         true_name = self.props.read[self.PROP_NAME['true_name']][0]
         return docx_name, true_name
-
-
-class BookReadingPage(ReadingPage):
-    MEDIA_TYPES = ['📖단행본', '☕연속간행물', '✒학습자료']
 
     def get_yes24_url(self):
         url = self.props.read[self.PROP_NAME['url']]
