@@ -20,7 +20,6 @@ class SNULibrary(SeleniumScraper):
               f'1&mfacet=library,exclude,HD_CHEM_BIO,1&mfacet=library,exclude,HD_DIGIT,1&mfacet=library,exclude,KYU,' \
               f'1&mfacet=library,exclude,MUSEUM,1&offset=0&pcAvailability=false '
 
-        print(url)
         driver = self.drivers[0]
         driver.start_client()
         driver.get(url)

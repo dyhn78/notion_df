@@ -163,7 +163,6 @@ class BookReadingPage(ReadingPage):
 
     def set_lib_datas(self, datas: dict):
         datastrings = []
-        print(datas)
         if 'gy' in datas.keys() and \
                 datas['gy']['lib_name'] == GoyangLibrary.str_gajwa_lib:
             first_lib = 'gy'

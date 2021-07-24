@@ -15,10 +15,9 @@ def regular_scrap_for_books(scrap_options=None, page_size=0):
     pagelist = BookReadingPageList.for_regular_scrap(page_size=page_size)
     request_builder = RequestBuilderforBook(scrap_options)
     for page in pagelist.values:
-        stopwatch(f'{page.title}')
+        stopwatch(f'{page.title}____')
         request_builder.execute(page)
         page.execute()
-    request_builder.quit()
     stopwatch('서적류 완료')
 
 
@@ -33,38 +32,44 @@ class RequestBuilderforBook:
         if 'snu_lib' in self.global_scraper_option:
             self.snulib = SNULibrary()
 
+    def __del__(self):
+        if 'gy_lib' in self.global_scraper_option:
+            del self.gylib
+        if 'snu_lib' in self.global_scraper_option:
+            del self.snulib
+
     def execute(self, page: BookReadingPage):
         url = page.get_yes24_url()
         if not url:
             url = scrap_yes24_url(page.get_names())
             page.set_yes24_url(url)
+
         if url:
             stopwatch(url)
             if ('yes24' in self.global_scraper_option and
                     'yes24' in page.local_scraper_option):
                 metadata = scrap_yes24_metadata(url)
                 page.set_yes24_metadata(metadata)
-            lib_datas = self.scrap_lib_datas(page.get_names())
+
+        lib_datas = {}
+        book_names = page.get_names()
+        if ('snu_lib' in self.global_scraper_option or
+                'gy_lib' in self.global_scraper_option):
+            if 'snu_lib' in self.global_scraper_option:
+                # noinspection PyTypeChecker
+                snu_lib = self.snulib.execute(book_names)
+                if snu_lib:
+                    stopwatch(snu_lib)
+                    lib_datas.update(snu=snu_lib)
+            if 'gy_lib' in self.global_scraper_option:
+                # noinspection PyTypeChecker
+                gy_lib = self.gylib.execute(book_names)
+                if gy_lib:
+                    stopwatch(gy_lib['lib_name'])
+                    lib_datas.update(gy=gy_lib)
             page.set_lib_datas(lib_datas)
+
         page.set_edit_status()
-
-    def scrap_lib_datas(self, book_names: tuple[str, str]):
-        datas = {}
-        if 'snu_lib' in self.global_scraper_option:
-            # noinspection PyTypeChecker
-            res = self.snulib.execute(book_names)
-            if res:
-                datas.update(snu=res)
-        if 'gy_lib' in self.global_scraper_option:
-            # noinspection PyTypeChecker
-            res = self.gylib.execute(book_names)
-            if res:
-                datas.update(gy=res)
-        return datas
-
-    def quit(self):
-        if 'gy_lib' in self.global_scraper_option:
-            self.gylib.quit()
 
 
 def reset_status_for_books(page_size=0):

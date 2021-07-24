@@ -3,7 +3,6 @@ from typing import Callable, Optional, Any
 import os
 import emoji
 from selenium import webdriver
-from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import StaleElementReferenceException, NoSuchElementException, NoSuchWindowException
 
@@ -62,6 +61,7 @@ class SeleniumScraper:
             driver = webdriver.Chrome(self.chromedriver_path, options=options,
                                       service_log_path=os.devnull)
             driver.minimize_window()
+            driver.start_client()
             self.drivers.append(driver)
 
     @property
@@ -72,6 +72,9 @@ class SeleniumScraper:
     def quit(self):
         for driver in self.drivers:
             driver.quit()
+
+    def __del__(self):
+        self.quit()
 
 
 class GoyangLibrary(SeleniumScraper):
@@ -90,9 +93,11 @@ class GoyangLibrary(SeleniumScraper):
         """
         url_main_page = 'https://www.goyanglib.or.kr/center/data/search.asp'
 
-        self.drivers[0].start_client()
+        driver = self.drivers[0]
         try:
-            input_box = self.get_input_box(self.drivers[0], url_main_page)
+            driver.get(url_main_page)
+            driver.implicitly_wait(3)
+            input_box = driver.find_element_by_css_selector(tag_input_box)
         except NoSuchWindowException:
             return None
         input_box.send_keys(book_name)
@@ -121,7 +126,7 @@ class GoyangLibrary(SeleniumScraper):
 
             lib_names = self.drivers[0].find_elements_by_css_selector(tag_lib_names)
             if not lib_names:
-                return None
+                break
 
             for lib_index, lib_name_raw in enumerate(lib_names):
                 # self.drivers[0].find_element_by_css_selector(tag_availability).text = '대출(가능), 예약(불가능) \n ..'
@@ -134,10 +139,13 @@ class GoyangLibrary(SeleniumScraper):
                     tag_detail_info_button = tags_detail_info_button.format(str(lib_index + 1))
                     detail_button = self.drivers[0].find_element_by_css_selector(tag_detail_info_button)
                     detail_button_url = detail_button.get_attribute('href')
+                    book_code = ''
                     try:
-                        book_code = self.get_book_code(self.drivers[1], detail_button_url)
-                    except RecursionError:
-                        book_code = ''
+                        driver.get(detail_button_url)
+                        driver.implicitly_wait(3)
+                        book_code = driver.find_element_by_css_selector(tag_book_code).text
+                    except NoSuchElementException:
+                        pass
                     return {
                         'lib_name': self.str_gajwa_lib,
                         'available': available_here,
@@ -154,19 +162,3 @@ class GoyangLibrary(SeleniumScraper):
             }
         else:
             return None
-
-    @staticmethod
-    @retry_webdriver
-    def get_input_box(driver: WebDriver, url):
-        driver.get(url)
-        driver.implicitly_wait(3)
-        input_box = driver.find_element_by_css_selector(tag_input_box)
-        return input_box
-
-    @staticmethod
-    @retry_webdriver
-    def get_book_code(driver: WebDriver, url) -> str:
-        driver.get(url)
-        driver.implicitly_wait(3)
-        book_code = driver.find_element_by_css_selector(tag_book_code).text
-        return book_code
