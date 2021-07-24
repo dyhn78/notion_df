@@ -15,7 +15,7 @@ def regular_scrap_for_books(scrap_options=None, page_size=0):
     pagelist = BookReadingPageList.for_regular_scrap(page_size=page_size)
     request_builder = RequestBuilderforBook(scrap_options)
     for page in pagelist.values:
-        stopwatch(f'{page.title}____')
+        print(f'____{page.title}____')
         request_builder.execute(page)
         page.execute()
     stopwatch('서적류 완료')
