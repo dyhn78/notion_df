@@ -18,6 +18,7 @@ def regular_scrap_for_books(scrap_options=None, page_size=0):
         print(f'____{page.title}____')
         request_builder.execute(page)
         page.execute()
+    request_builder.quit()
     stopwatch('서적류 완료')
 
 
@@ -33,10 +34,13 @@ class RequestBuilderforBook:
             self.snulib = SNULibrary()
 
     def __del__(self):
+        self.quit()
+
+    def quit(self):
         if 'gy_lib' in self.global_scraper_option:
-            del self.gylib
+            self.gylib.quit()
         if 'snu_lib' in self.global_scraper_option:
-            del self.snulib
+            self.snulib.quit()
 
     def execute(self, page: BookReadingPage):
         url = page.get_yes24_url()
