@@ -12,7 +12,7 @@ def regular_scrap_in_ilggi(page_size=0):
 
 
 def regular_scrap_for_books(scrap_options=None, page_size=0):
-    pagelist = BookReadingPageList.for_regular_scrap(page_size=page_size)
+    pagelist = BookReadingPageList.query_for_regulars(page_size=page_size)
     request_builder = RequestBuilderforBook(scrap_options)
     for page in pagelist.values:
         print(f'____{page.title}____')
@@ -77,7 +77,7 @@ class RequestBuilderforBook:
 
 
 def reset_status_for_books(page_size=0):
-    pagelist = BookReadingPageList.for_reset_library_info(page_size=page_size)
+    pagelist = BookReadingPageList.query_for_library_resets(page_size=page_size)
     for page in pagelist.values:
         page.props.set_overwrite(True)
         page.props.write.select(page.PROP_NAME['edit_status'], page.EDIT_STATUS['append'])

@@ -9,26 +9,36 @@ from ..read import Query, RetrieveBlockChildren
 
 
 class PageList:
+    unit_class = TabularPage
+
     def __init__(self, parsed_query: PageListParser, parent_id: str):
         self.parent_id = parent_id
-        self.values = [TabularPage(parsed_page, parent_id)
-                       for parsed_page in parsed_query.values]
-        self.page_by_id: dict[str, TabularPage] \
-            = {page.page_id: page for page in self.values}
         self._id_by_unique_title = None
         self._id_by_index = defaultdict(dict)
         self._ids_by_prop = defaultdict(dict)
 
+        self.values: list[TabularPage] \
+            = [self.unit_class(parsed_page, parent_id)
+               for parsed_page in parsed_query.values]
+        self.page_by_id: dict[str, TabularPage] \
+            = {page.page_id: page for page in self.values}
+
+    def __iter__(self):
+        return iter(self.values)
+
+    def __len__(self):
+        return len(self.values)
+
     @classmethod
-    def from_query(cls, query: Query, page_size=0):
+    def query(cls, query: Query, page_size=0):
         response = query.execute(page_size=page_size)
         database_id = query.page_id
         parsed_query = PageListParser.from_query_response(response)
         return cls(parsed_query, database_id)
 
     @classmethod
-    def from_query_and_childrens_retrieve(cls, query: Query, page_size=0):
-        self = cls.from_query(query, page_size=page_size)
+    def query_and_retrieve_childrens(cls, query: Query, page_size=0):
+        self = cls.query(query, page_size=page_size)
         request_queue = []
         result_queue = []
         for page in self.values:

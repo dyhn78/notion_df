@@ -22,7 +22,7 @@ class BasicPage(Requestor):
         self.children = self._append_blocks.children
 
     @classmethod
-    def from_direct_retrieve(cls, page_id):
+    def retrieve(cls, page_id):
         response = RetrievePage(page_id).execute()
         parsed_page = PageParser.from_retrieve_response(response)
         return cls(parsed_page)
@@ -35,6 +35,8 @@ class BasicPage(Requestor):
 
 
 class TabularPage(BasicPage):
+    PROP_NAME: dict[str, str] = {}
+
     def __init__(self, parsed_page: PageParser, parent_id=''):
         super().__init__(parsed_page, parent_id=parent_id)
         self._update_props = UpdateTabularPage(self.page_id)
@@ -42,7 +44,7 @@ class TabularPage(BasicPage):
         self.props.fetch(parsed_page.props)
 
     @classmethod
-    def from_direct_retrieve(cls, page_id):
+    def retrieve(cls, page_id):
         response = RetrievePage(page_id).execute()
         parsed_page = PageParser.from_retrieve_response(response)
         return cls(parsed_page)

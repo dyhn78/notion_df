@@ -6,7 +6,7 @@ from notion_py.interface.editor import TabularPage, PageList
 from notion_py.interface.parse import PageParser
 from notion_py.interface.write import AppendBlockChildren, CreateBasicPage
 from .lib_gy import GoyangLibrary
-from ..constant_page_ids import ILGGI_ID
+from ..constant_page_ids import ID_READINGS
 from ...interface.read import Query
 
 
@@ -16,21 +16,21 @@ class ReadingPage(TabularPage):
         self.edit_option = ''
         self.scrap_status = ''
 
-    PROP_NAME = dict(
-        media_type='🔵유형',
-        docx_name='📚제목',
-        true_name='🔍원제(검색용)',
-        subname='📚부제',
-        url='📚링크',
-        author='📚만든이',
-        publisher='📚만든곳',
-        page='📚N(쪽+)',
-        cover_image='📚표지',
-        link_to_contents='📦이동',
-        location='🔍위치',
-        edit_status='🏁준비',
-        not_available='🔍대출중'
-    )
+    PROP_NAME = {
+        'media_type': '🔵유형',
+        'docx_name': '📚제목',
+        'true_name': '🔍원제(검색용)',
+        'subname': '📚부제',
+        'url': '📚링크',
+        'author': '📚만든이',
+        'publisher': '📚만든곳',
+        'page': '📚N(쪽+)',
+        'cover_image': '📚표지',
+        'link_to_contents': '📦이동',
+        'location': '🔍위치',
+        'edit_status': '🏁준비',
+        'not_available': '🔍대출중'
+    }
     EDIT_STATUS = {
         'pass': '0️⃣⛳정보 없음',
         'append': '1️⃣📥안전하게(append)',
@@ -199,35 +199,39 @@ class BookReadingPage(ReadingPage):
 
 
 class BookReadingPageList(PageList):
-    _unit = BookReadingPage
+    unit_class = BookReadingPage
+    client_id = ID_READINGS
 
     def __init__(self, parsed_query, parent_id):
         super().__init__(parsed_query, parent_id)
-        self.values = [self._unit(parsed_page, parent_id)
-                       for parsed_page in parsed_query.values]
+        self.values: list[BookReadingPage] \
+            = [self.unit_class(parsed_page, parent_id)
+               for parsed_page in parsed_query.values]
+        self.page_by_id: dict[str, BookReadingPage] \
+            = {page.page_id: page for page in self.values}
 
     @classmethod
-    def for_regular_scrap(cls, page_size=0):
-        query = Query(ILGGI_ID)
-        frame = query.filter_maker.by_select(cls._unit.PROP_NAME['media_type'])
-        ft = frame.equals_to_any(*cls._unit.MEDIA_TYPES)
-        frame = query.filter_maker.by_select(cls._unit.PROP_NAME['edit_status'])
-        ft_status = frame.equals_to_any(*cls._unit.at_status_for_regular_scrap())
+    def query_for_regulars(cls, page_size=0):
+        query = Query(cls.client_id)
+        frame = query.filter_maker.by_select(cls.unit_class.PROP_NAME['media_type'])
+        ft = frame.equals_to_any(*cls.unit_class.MEDIA_TYPES)
+        frame = query.filter_maker.by_select(cls.unit_class.PROP_NAME['edit_status'])
+        ft_status = frame.equals_to_any(*cls.unit_class.at_status_for_regular_scrap())
         ft_status |= frame.is_empty()
         ft &= ft_status
-        ft &= frame.does_not_equal(cls._unit.EDIT_STATUS['done'])
+        ft &= frame.does_not_equal(cls.unit_class.EDIT_STATUS['done'])
         query.push_filter(ft)
-        return cls.from_query(query, page_size=page_size)
+        return cls.query(query, page_size=page_size)
         # TODO : ReadingPageList.from_query_and_retrieve_of_each_elements(query)
 
     @classmethod
-    def for_reset_library_info(cls, page_size=0):
-        query = Query(ILGGI_ID)
-        frame = query.filter_maker.by_select(cls._unit.PROP_NAME['media_type'])
-        ft = frame.equals_to_any(*cls._unit.MEDIA_TYPES)
-        frame = query.filter_maker.by_select(cls._unit.PROP_NAME['edit_status'])
-        ft &= frame.equals_to_any(*cls._unit.at_status_for_reset_library_status())
+    def query_for_library_resets(cls, page_size=0):
+        query = Query(cls.client_id)
+        frame = query.filter_maker.by_select(cls.unit_class.PROP_NAME['media_type'])
+        ft = frame.equals_to_any(*cls.unit_class.MEDIA_TYPES)
+        frame = query.filter_maker.by_select(cls.unit_class.PROP_NAME['edit_status'])
+        ft &= frame.equals_to_any(*cls.unit_class.at_status_for_reset_library_status())
         # frame = query.filter_maker.by_checkbox(cls._unit.PROP_NAME['not_available'])
         # ft |= frame.equals(True)
         query.push_filter(ft)
-        return BookReadingPageList.from_query(query, page_size=page_size)
+        return BookReadingPageList.query(query, page_size=page_size)
