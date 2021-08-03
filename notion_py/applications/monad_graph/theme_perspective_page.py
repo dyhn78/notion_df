@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from notion_py.interface.editor import TabularPage, PageList
 from notion_py.interface.read import Query
-from ..constant_page_ids import ID_THEMES, ID_PERSPECTIVES
+from ..constants import ID_THEMES, ID_PERSPECTIVES
 
 
 class ThemePage(TabularPage):

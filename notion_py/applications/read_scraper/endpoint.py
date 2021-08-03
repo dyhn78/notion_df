@@ -7,11 +7,11 @@ from .lib_gy import GoyangLibrary
 from .lib_snu import SNULibrary
 
 
-def regular_scrap_in_ilggi(page_size=0):
-    regular_scrap_for_books(page_size=page_size)
+def regular_read_scraper(page_size=0):
+    regular_book_scraper(page_size=page_size)
 
 
-def regular_scrap_for_books(scrap_options=None, page_size=0):
+def regular_book_scraper(scrap_options=None, page_size=0):
     pagelist = BookReadingPageList.query_for_regulars(page_size=page_size)
     request_builder = RequestBuilderforBook(scrap_options)
     for page in pagelist.values:

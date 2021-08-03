@@ -1,15 +1,15 @@
-from .constant_attribute_names import *
+from .constants import *
 from notion_py.applications.log_editor.match_property import MatchorCreatebyIndex, MatchbyIndex
 from notion_py.interface.parse import PageParser
 from notion_py.interface.write import CreateTabularPage
-from ..constant_page_ids import ID_PERIODS
+from ..constants import ID_PERIODS
 
 
 class NaljjaToGigan(MatchorCreatebyIndex):
     _target_id = ID_PERIODS
-    _domain_to_target = TO_GIGAN
-    _domain_index = NALJJA_DATE_INDEX
-    _target_inbound = GIGAN_TITLE_INBOUND
+    _domain_to_target = TO_PERIODS
+    _domain_index = DATES_INDEX
+    _target_inbound = TITLE_PROPERTY
 
     @staticmethod
     def _domain_function(date):

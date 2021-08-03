@@ -1,5 +1,14 @@
 from .parse_time_property import ParseTimeProperty
-from ..constant_page_ids import *
+
+
+TO_PERIODS = '🧶기간'
+TO_DATES = '🧶날짜'
+TO_JOURNALS = '🧵일지'
+
+PERIODS_INDEX = '📅날짜 범위'
+DATES_INDEX = '📆날짜'
+DOMAINS_INDEX = '날짜⏲️'  # 일지, 진도, 쓰기
+TITLE_PROPERTY = '📚제목'  # 날짜, 기간
 
 
 def formatting_as_naljja(x):
@@ -9,15 +18,6 @@ def formatting_as_naljja(x):
 def formatting_as_gigan(x):
     return ParseTimeProperty(x['start'], plain_date=True).strf_year_and_week()
 
-
-TO_GIGAN = '🧶기간'
-TO_NALJJA = '🧶날짜'
-TO_ILJI = '🧵일지'
-
-GIGAN_DATE_INDEX = '📅날짜 범위'
-NALJJA_DATE_INDEX = '📆날짜'
-ILJI_DATE_INDEX = JINDO_DATE_INDEX = SSEUGI_DATE_INDEX = '날짜⏲️'
-NALJJA_TITLE_INBOUND = GIGAN_TITLE_INBOUND = '📚제목'
 
 as_naljja = formatting_as_naljja
 # as_gigan = formatting_as_gigan()

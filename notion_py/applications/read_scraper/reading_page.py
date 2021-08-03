@@ -6,7 +6,7 @@ from notion_py.interface.editor import TabularPage, PageList
 from notion_py.interface.parse import PageParser
 from notion_py.interface.write import AppendBlockChildren, CreateBasicPage
 from .lib_gy import GoyangLibrary
-from ..constant_page_ids import ID_READINGS
+from ..constants import ID_READINGS
 from ...interface.read import Query
 
 
