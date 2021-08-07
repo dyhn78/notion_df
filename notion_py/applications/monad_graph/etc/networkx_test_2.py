@@ -1,13 +1,13 @@
 import networkx as nx
 import matplotlib.pyplot as plt
 
-from notion_py.applications.monad_graph.theme_perspective_page import ThemePageList, PerspectivePageList
+from notion_py.applications.monad_graph.pagelist import ThemePageList, IdeaPageList
 
 
 class MonadList:
     def __init__(self, page_size=0):
         self.themes = ThemePageList.query(page_size=page_size)
-        # self.perspectives = PerspectivePageList.query_all()
+        # self.ideas = IdeaPageList.query_all()
 
     def basic_graph(self):
         graph = nx.DiGraph()

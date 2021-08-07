@@ -37,8 +37,9 @@ class BasicPage(Requestor):
 class TabularPage(BasicPage):
     PROP_NAME: dict[str, str] = {}
 
-    def __init__(self, parsed_page: PageParser, parent_id=''):
+    def __init__(self, parsed_page: PageParser, prop_name: dict[str, str], parent_id=''):
         super().__init__(parsed_page, parent_id=parent_id)
+        self.prop_name = prop_name
         self._update_props = UpdateTabularPage(self.page_id)
         self.props = self._update_props.props
         self.props.fetch(parsed_page.props)

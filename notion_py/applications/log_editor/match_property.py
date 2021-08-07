@@ -31,7 +31,7 @@ class MatchbyReference(PropertyRequestStack):
             self._append_reprocess(dom)
             return True
         ref_id = self._find_ref_id(dom)
-        ref_props = self._reference.search.page_by_id[ref_id]
+        ref_props = self._reference.search.page_by_id(ref_id)
         tar_id = ref_props[self._reference_to_target]
 
         dom_patch = UpdateTabularPage(dom.page_id)
@@ -88,19 +88,17 @@ class MatchbyIndex(PropertyRequestStack):
             dom_index = (dom.props[self._domain_index],)
         tar_index = self._domain_function(*dom_index)
 
-        if self._target_inbound:
-            target_indices = self._target.search.id_by_index(self._target_inbound)
-        else:
-            target_indices = self._target.search.id_by_unique_title
-
-        if tar_index not in target_indices:
+        try:
+            if self._target_inbound:
+                tar_id = self._target.search.id_by_index(self._target_inbound, tar_index)
+            else:
+                tar_id = self._target.search.id_by_title(tar_index)
+        except KeyError:
             return tar_index
-        else:
-            tar_id = self._target.search.id_by_unique_title[tar_index]
-            dom_patch = UpdateTabularPage(dom.page_id)
-            dom_patch.props.write.relation(self._domain_to_target, [tar_id])
-            self._append_requests(dom_patch)
-            return False
+        dom_patch = UpdateTabularPage(dom.page_id)
+        dom_patch.props.write.relation(self._domain_to_target, [tar_id])
+        self._append_requests(dom_patch)
+        return False
 
 
 class MatchorCreatebyIndex(MatchbyIndex):
