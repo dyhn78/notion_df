@@ -221,7 +221,7 @@ class BookReadingPageList(PageList):
         ft &= ft_status
         ft &= frame.does_not_equal(cls.unit_class.EDIT_STATUS['done'])
         query.push_filter(ft)
-        return cls.query(query, page_size=page_size)
+        return cls.query_this(query, page_size=page_size)
         # TODO : ReadingPageList.from_query_and_retrieve_of_each_elements(query)
 
     @classmethod
@@ -234,4 +234,4 @@ class BookReadingPageList(PageList):
         # frame = query.filter_maker.by_checkbox(cls._unit.PROP_NAME['not_available'])
         # ft |= frame.equals(True)
         query.push_filter(ft)
-        return BookReadingPageList.query(query, page_size=page_size)
+        return BookReadingPageList.query_this(query, page_size=page_size)

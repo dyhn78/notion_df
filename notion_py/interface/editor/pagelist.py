@@ -30,15 +30,15 @@ class PageList:
         return len(self.values)
 
     @classmethod
-    def query(cls, query: Query, page_size=0):
+    def query_this(cls, query: Query, page_size=0):
         response = query.execute(page_size=page_size)
         database_id = query.page_id
         parsed_query = PageListParser.from_query_response(response)
         return cls(parsed_query, database_id)
 
     @classmethod
-    def query_and_retrieve_childrens(cls, query: Query, page_size=0):
-        self = cls.query(query, page_size=page_size)
+    def query_this_and_retrieve_childrens(cls, query: Query, page_size=0):
+        self = cls.query_this(query, page_size=page_size)
         request_queue = []
         result_queue = []
         for page in self.values:

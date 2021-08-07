@@ -6,7 +6,7 @@ from notion_py.applications.monad_graph.theme_perspective_page import ThemePageL
 
 class MonadList:
     def __init__(self, page_size=0):
-        self.themes = ThemePageList.query_all(page_size=page_size)
+        self.themes = ThemePageList.query(page_size=page_size)
         # self.perspectives = PerspectivePageList.query_all()
 
     def basic_graph(self):

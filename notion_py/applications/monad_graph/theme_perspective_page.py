@@ -33,16 +33,16 @@ class PerspectivePage(TabularPage):
     }
 
 
-class RelationFocusedPageList(PageList):
+class SelfRelatedPageList(PageList):
     unit_class: type(TabularPage)
     client_id: str
 
     @classmethod
-    def query_all(cls, page_size=0):
+    def query(cls, page_size=0):
         query = Query(cls.client_id)
-        return cls.query(query, page_size=page_size)
+        return cls.query_this(query, page_size=page_size)
 
-    def relations(self, page, relation: str):
+    def related_pages(self, page, relation: str):
         res = []
         for page_id in page.props.read[page.PROP_NAME[relation]]:
             try:
@@ -52,7 +52,7 @@ class RelationFocusedPageList(PageList):
         return res
 
 
-class ThemePageList(RelationFocusedPageList):
+class ThemePageList(SelfRelatedPageList):
     unit_class = ThemePage
     client_id = ID_THEMES
 
@@ -65,15 +65,15 @@ class ThemePageList(RelationFocusedPageList):
             = {page.page_id: page for page in self.values}
 
     @classmethod
-    def query_all(cls, page_size=0) -> ThemePageList:
-        return super().query_all(page_size=page_size)
+    def query(cls, page_size=0) -> ThemePageList:
+        return super().query(page_size=page_size)
 
-    def relations(self, page: ThemePage, relation: str) -> list[ThemePage]:
+    def related_pages(self, page: ThemePage, relation_prop_name: str) -> list[ThemePage]:
         # noinspection PyTypeChecker
-        return super().relations(page, relation)
+        return super().related_pages(page, relation_prop_name)
 
 
-class PerspectivePageList(RelationFocusedPageList):
+class PerspectivePageList(SelfRelatedPageList):
     unit_class = PerspectivePage
     client_id = ID_PERSPECTIVES
 
@@ -86,9 +86,9 @@ class PerspectivePageList(RelationFocusedPageList):
             = {page.page_id: page for page in self.values}
 
     @classmethod
-    def query_all(cls, page_size=0) -> PerspectivePageList:
-        return super().query_all(page_size=page_size)
+    def query(cls, page_size=0) -> PerspectivePageList:
+        return super().query(page_size=page_size)
 
-    def relations(self, page: PerspectivePage, relation: str) -> list[PerspectivePage]:
+    def related_pages(self, page: PerspectivePage, relation: str) -> list[PerspectivePage]:
         # noinspection PyTypeChecker
-        return super().relations(page, relation)
+        return super().related_pages(page, relation)
