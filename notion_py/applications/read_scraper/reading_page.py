@@ -2,12 +2,10 @@ from __future__ import annotations
 import re
 from typing import Union
 
-from notion_py.interface.editor import TabularPage, PageList
+from notion_py.interface.editor import TabularPage
 from notion_py.interface.parse import PageParser
 from notion_py.interface.write import AppendBlockChildren, CreateBasicPage
 from .lib_gy import GoyangLibrary
-from ..constants import ID_READINGS
-from ...interface.read import Query
 
 
 class ReadingPage(TabularPage):
@@ -16,6 +14,7 @@ class ReadingPage(TabularPage):
         self.edit_option = ''
         self.scrap_status = ''
 
+    # TODO / 이 변수들을 DF으로 이동
     PROP_NAME = {
         'media_type': '🔵유형',
         'docx_name': '📚제목',
@@ -52,7 +51,7 @@ class BookReadingPage(ReadingPage):
 
     def __init__(self, parsed_page: PageParser, parent_id: str):
         super().__init__(parsed_page, parent_id)
-        self.local_scraper_option = self.DEFAULT_SCRAPER_OPTION
+        self.scraper_option = self.DEFAULT_SCRAPER_OPTION
 
     def get_edit_options(self) -> None:
         edit_status = self.props.read[self.PROP_NAME['edit_status']]
@@ -67,7 +66,7 @@ class BookReadingPage(ReadingPage):
         self.props.set_overwrite(props_option)
         self.children.set_overwrite(children_option)
         if edit_option == 'continue':
-            self.local_scraper_option.remove('yes24')
+            self.scraper_option.remove('yes24')
 
     def set_edit_status(self):
         self.get_edit_options()
@@ -188,69 +187,3 @@ class BookReadingPage(ReadingPage):
             return res, True
         else:
             return res, True
-
-
-class BookReadingPageList(PageList):
-    unit = BookReadingPage
-    client_id = ID_READINGS
-
-    PROP_NAME = {
-        'media_type': '🔵유형',
-        'docx_name': '📚제목',
-        'true_name': '🔍원제(검색용)',
-        'subname': '📚부제',
-        'url': '📚링크',
-        'author': '📚만든이',
-        'publisher': '📚만든곳',
-        'page': '📚N(쪽+)',
-        'cover_image': '📚표지',
-        'link_to_contents': '📦이동',
-        'location': '🔍위치',
-        'edit_status': '🏁준비',
-        'not_available': '🔍대출중'
-    }
-    EDIT_STATUS = {
-        'pass': '0️⃣⛳정보 없음',
-        'append': '1️⃣📥안전하게(append)',
-        'overwrite': '2️⃣📥확실하게(overwrite)',
-        'continue': '3️⃣📥업데이트만(continue)',
-        'done': '4️⃣👤원제/표지 검정',
-        'url_missing': '5️⃣🔍링크 직접 찾기',
-        'lib_missing': '6️⃣🔍대출정보 직접 찾기',
-        'completely_done': '7️⃣⛳스크랩 완료'
-    }
-    MEDIA_TYPES = ['📖단행본', '☕연속간행물', '✒학습자료']
-    DEFAULT_SCRAPER_OPTION = {'yes24', 'gy_lib', 'snu_lib'}
-    LOCAL_EDIT_OPTIONS = {'append': (False, 'a'),
-                          'continue': (False, 'r'),
-                          'overwrite': (True, 'w')}
-
-    @classmethod
-    def query_for_regulars(cls, page_size=0):
-        query = Query(cls.client_id)
-        frame = query.filter_maker.by_select(cls.PROP_NAME['media_type'])
-        ft = frame.equals_to_any(*cls.MEDIA_TYPES)
-        frame = query.filter_maker.by_select(cls.PROP_NAME['edit_status'])
-        ft_status = frame.equals_to_any(
-            *[cls.EDIT_STATUS[key] for key in ['append', 'overwrite', 'continue']])
-        ft_status |= frame.is_empty()
-        ft &= ft_status
-        ft &= frame.does_not_equal(cls.EDIT_STATUS['done'])
-        query.push_filter(ft)
-        return cls.query_this(
-            query, page_size=page_size, unit=cls.unit)
-        # TODO : ReadingPageList.from_query_and_retrieve_of_each_elements(query)
-
-    @classmethod
-    def query_for_library_resets(cls, page_size=0):
-        query = Query(cls.client_id)
-        frame = query.filter_maker.by_select(cls.PROP_NAME['media_type'])
-        ft = frame.equals_to_any(*cls.MEDIA_TYPES)
-        frame = query.filter_maker.by_select(cls.PROP_NAME['edit_status'])
-        ft &= frame.equals_to_any(
-            *[cls.EDIT_STATUS[key] for key in ['url_missing', 'lib_missing']])
-        # frame = query.filter_maker.by_checkbox(cls._unit.PROP_NAME['not_available'])
-        # ft |= frame.equals(True)
-        query.push_filter(ft)
-        return BookReadingPageList.query_this(
-            query, page_size=page_size, unit=cls.unit)

@@ -1,7 +1,7 @@
 import networkx as nx
 import matplotlib.pyplot as plt
 
-from notion_py.applications.monad_graph.pagelist import ThemePageList, IdeaPageList
+from notion_py.applications.monad_graph.dataframe import ThemePageList, IdeaPageList
 
 
 class MonadList:

@@ -1,1 +1,2 @@
-from .endpoint import regular_read_scraper, reset_status_for_books
+from .endpoint import scrap_readings
+from .endpoint_monthly import reset_status_for_books

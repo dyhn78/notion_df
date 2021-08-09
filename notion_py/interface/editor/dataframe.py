@@ -1,20 +1,62 @@
 from __future__ import annotations
 from collections import defaultdict
+from typing import Optional, Any
 from pprint import pprint
 
-from .page import TabularPage
+from . import TabularPage
 from ..parse import PageListParser, BlockChildrenParser
 from ..read import Query, RetrieveBlockChildren
+
+
+class PropertyFrame:
+    def __init__(self, values=None):
+        if type(values) == tuple:
+            prop_name, prop_value = values
+        elif type(values) == str:
+            prop_name = values
+            prop_value = None
+        else:
+            raise AssertionError(f'Invalid PropertyFrame: {values}')
+        self.name = prop_name
+        self.value = prop_value
+
+
+class DataFrame:
+    def __init__(self, database_id: str,
+                 database_name: str,
+                 properties: Optional[dict[str, Any]] = None,
+                 unit=TabularPage):
+        self.database_id = database_id
+        self.database_name = database_name
+        self.props = {}
+        self.props = {key: PropertyFrame(value) for key, value in properties.items()}
+        self.unit = unit
+
+    def execute_query(self, page_size=0) -> PageList:
+        query = self.make_query()
+        return self.insert_query(query, page_size=page_size)
+
+    def make_query(self):
+        return Query(self.database_id)
+
+    def insert_query(self, query: Query, page_size=0):
+        response = query.execute(page_size=page_size)
+        parsed_query = PageListParser.from_query_response(response)
+        return self._pagelist()(self, parsed_query, self.unit)
+
+    @staticmethod
+    def _pagelist():
+        return PageList
 
 
 class PageList:
     PROP_NAME = {}
 
-    def __init__(self, parsed_query: PageListParser, database_id: str, unit=TabularPage):
-        self.frame = None
-        self.database_id = database_id
+    def __init__(self, dataframe: DataFrame,
+                 parsed_query: PageListParser, unit=TabularPage):
+        self.dataframe = dataframe
         self.values: list[TabularPage] \
-            = [unit(parsed_page, self.PROP_NAME, database_id)
+            = [unit(parsed_page, self.PROP_NAME, self.dataframe.database_id)
                for parsed_page in parsed_query.values]
 
         self._page_by_id = None
@@ -22,16 +64,13 @@ class PageList:
         self._id_by_index = defaultdict(dict)
         self._ids_by_prop = defaultdict(dict)
 
-    @classmethod
-    def query_this(cls, query: Query, page_size=0, unit=TabularPage):
-        response = query.execute(page_size=page_size)
-        database_id = query.page_id
-        parsed_query = PageListParser.from_query_response(response)
-        return cls(parsed_query, database_id, unit)
+    def __iter__(self):
+        return iter(self.values)
 
-    @classmethod
-    def query_this_and_retrieve_childrens(cls, query: Query, page_size=0):
-        self = cls.query_this(query, page_size=page_size)
+    def __len__(self):
+        return len(self.values)
+
+    def retrieve_childrens(self):
         request_queue = []
         result_queue = []
         for page in self.values:
@@ -44,13 +83,9 @@ class PageList:
             page = self.page_by_id(page_id)
             parsed_blocklist = BlockChildrenParser.from_response(response)
             page.children.fetch(parsed_blocklist.children)
-        return self
 
-    def __iter__(self):
-        return iter(self.values)
-
-    def __len__(self):
-        return len(self.values)
+    def retrieve_descendants(self):
+        pass  # TODO
 
     def apply(self):
         result = []

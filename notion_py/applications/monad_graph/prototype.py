@@ -4,48 +4,71 @@ import math
 import networkx as nx
 import plotly.graph_objects as go
 
-from notion_py.applications.monad_graph.pagelist \
-    import ThemeDatabase, IdeaDatabase, SelfRelatedPageList
-from notion_py.interface.editor import PageList
+from notion_py.helpers import stopwatch
+from notion_py.applications.monad_graph.dataframe \
+    import SelfRelatedPageList, SelfRelatedDataFrame, theme_dataframe, idea_dataframe
+from notion_py.applications.monad_graph.gradient_descent \
+    import GradientDescent
 
 
 class MonadList:
-    def __init__(self, page_size=0):
-        self.themes = ThemeDatabase.query(page_size=page_size)
-        self.ideas = IdeaDatabase.query(page_size=page_size)
+    def __init__(self, page_size=50, epochs=5000, learning_rate=0.05):
+        self.themes = theme_dataframe.execute_query(page_size=page_size)
+        self.ideas = idea_dataframe.execute_query(page_size=page_size)
         self.all: dict[str, SelfRelatedPageList] \
-            = {pagelist.frame.self_relating_flag: pagelist
+            = {pagelist.dataframe.database_name: pagelist
                for pagelist in [self.themes, self.ideas]}
         self.graph = nx.DiGraph()
         self.fig = go.Figure()
         self.node_info = node_info(self.graph)
 
+        self.epochs = epochs
+        self.learning_rate = learning_rate
+
     def execute(self):
-        self.assign_node_positions()
+        self.add_nodes()
         self.add_edges()
-        self.draw_graph()
-        print(self.fig)
+        self.initialize_node_positions()
+        try:
+            self.optimize_node_positions()
+        except KeyboardInterrupt:
+            pass
+        self.draw_figure()
+        # print(self.fig)
         self.fig.update_layout(showlegend=False)
         self.fig.show()
 
-    def assign_node_positions(self):
+    def add_nodes(self):
+        for i, page in enumerate(chain(*self.all.values())):
+            self.graph.add_node(page.title, page_id=page.page_id)
+
+    def add_edges(self):
+        for lead_pl in self.all.values():
+            assert isinstance(lead_pl.dataframe, SelfRelatedDataFrame)
+            for relation_type, pl_flag in lead_pl.dataframe.spheres:
+                follow_pl = self.all[pl_flag]
+                assert isinstance(follow_pl, SelfRelatedPageList)
+                for leader_page in lead_pl:
+                    for follower_page in follow_pl.pages_related(
+                            leader_page, relation_type):
+                        self.graph.add_edge(
+                            leader_page.title, follower_page.title,
+                            relation_type=relation_type
+                        )
+
+    def initialize_node_positions(self):
         length = sum(len(pagelist) for pagelist in self.all.values())
         for i, page in enumerate(chain(*self.all.values())):
             theta = (2 * math.pi / length) * i
             pos = [math.cos(theta), math.sin(theta)]
-            self.graph.add_node(page.title, page_id=page.page_id, pos=pos)
+            self.graph.nodes[page.title].update(pos=pos)
 
-    def add_edges(self):
-        for lead_pl in self.all.values():
-            assert isinstance(lead_pl, PageList)
-            for prop, pl_flag in lead_pl.frame.spheres:
-                follow_pl = self.all[pl_flag]
-                assert isinstance(follow_pl, PageList)
-                for leader_page in lead_pl:
-                    for follower_page in follow_pl.pages_related(leader_page, prop):
-                        self.graph.add_edge(follower_page.title, leader_page.title)
+    def optimize_node_positions(self):
+        gradient_descent = GradientDescent(
+            self.graph, epochs=self.epochs, learning_rate=self.learning_rate)
+        gradient_descent.execute()
 
-    def draw_graph(self):
+    def draw_figure(self):
         # TODO > 'hoverinfo': 'text'
         for key_node in self.graph.nodes:
             trace = {'x': [],
@@ -63,7 +86,7 @@ class MonadList:
                 trace['y'].extend([None, fo.y, ky.y])
             self.fig.add_trace(go.Scatter(**trace))
 
-    def draw_graph_one_by_one(self):
+    def draw_figure_prototype(self):
         for node in self.graph.nodes:
             nd = self.node_info(node)
             self.fig.add_trace(go.Scatter(
@@ -87,7 +110,6 @@ def node_info(graph: nx.DiGraph):
     class NodeInfo:
         def __init__(self, node_name: str):
             self.node = graph.nodes[node_name]
-            print(node_name, self.node)
             self.x, self.y = self.node['pos']
             self.name = node_name
 
@@ -95,5 +117,6 @@ def node_info(graph: nx.DiGraph):
 
 
 if __name__ == '__main__':
-    monad_list = MonadList(page_size=20)
+    monad_list = MonadList()
     monad_list.execute()
+    stopwatch('작업 완료')

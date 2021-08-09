@@ -9,7 +9,7 @@ from notion_py.applications.log_editor.class_naljja_to_gigan import NaljjaToGiga
 from .constants import *
 
 
-def match_with_dates(check_only_past_x_days=0):
+def update_dates(check_only_past_x_days=0):
     editor = LogEditor(TO_DATES, DOMAINS_INDEX,
                        check_only_past_x_days=check_only_past_x_days)
     dates = editor.query_parents(ID_DATES, DATES_INDEX)
@@ -47,7 +47,7 @@ def match_with_dates(check_only_past_x_days=0):
     match_children(ID_WRITINGS, '쓰기')
 
 
-def match_with_periods(check_only_past_x_days=0):
+def update_periods(check_only_past_x_days=0):
     editor = LogEditor(TO_PERIODS, DOMAINS_INDEX,
                        check_only_past_x_days=check_only_past_x_days)
     periods = editor.query_parents(ID_PERIODS, PERIODS_INDEX)
