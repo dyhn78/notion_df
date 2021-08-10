@@ -1,4 +1,5 @@
 from __future__ import annotations
+from itertools import chain
 
 from notion_py.interface.editor import TabularPage, PageList
 from ..constants import ID_THEMES, ID_IDEAS
@@ -7,21 +8,30 @@ from ...interface.parse import PageListParser
 
 
 class SelfRelatedDataFrame(DataFrame):
-    downward_flags = {
-        'lo': 1,  # edge_weigth
-        'out': 0.3
-    }
-
     def __init__(self, database_id: str, database_name: str,
                  prop_name: dict[str, str], unit=TabularPage):
         super().__init__(database_id, database_name, prop_name, unit)
-        self.spheres = \
+        self.downwards = \
             [(key, key.split('_')[1]) for key in prop_name.keys()
-             if any(downward_flag in key for downward_flag in self.downward_flags)]
+             if any(flag in key for flag in self.edge_directions['down'])]
+        self.upwards = \
+            [(key, key.split('_')[1]) for key in prop_name.keys()
+             if any(flag in key for flag in self.edge_directions['up'])]
 
     @staticmethod
     def _pagelist():
         return SelfRelatedPageList
+
+    edge_directions = {
+        'down': ['lo', 'out'],
+        'up': ['hi', 'in']
+    }
+    edge_weigths = {
+        'lo': 1,
+        'out': 0.4,
+        'hi': 1,
+        'in': 0.4
+    }
 
 
 class SelfRelatedPageList(PageList):
