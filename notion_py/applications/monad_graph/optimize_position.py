@@ -35,6 +35,7 @@ class GradientDescent:
         self.parents_mass_when_attracting = 2
         self.parents_mass_when_repulsing = 10
 
+        self.constant_interaction = False
         # these constants are relative to learning_rate
         self.repulsion_strength = 0.2
         self.distraction_strength = 0.05
@@ -80,8 +81,12 @@ class GradientDescent:
         dist = get_dist(hi['pos'], lo['pos'])
         if dist < self.attraction_min or dist == 0:
             return 0.
-        rate = edge_weight * self.learning_rate
-        # rate = (weight * self.learning_rate * (dist - self.attraction_min) / dist)
+
+        if self.constant_interaction:
+            rate = edge_weight * self.learning_rate
+        else:
+            rate = (edge_weight * self.learning_rate *
+                    (dist - self.attraction_min) / dist)
         hi_x, hi_y = hi['pos']
         lo_x, lo_y = lo['pos']
         hi_dx = -(weight_hi * rate) * (hi_x - lo_x) / dist
@@ -131,9 +136,12 @@ class GradientDescent:
         dist = get_dist(nd1['pos'], nd2['pos'])
         if dist > self.repulsion_max or dist == 0:
             return 0.
-        rate = self.learning_rate * self.repulsion_strength
-        """rate = (self.learning_rate * self.repulsion_relative_strength *
-                (self.repulsion_max - dist) / self.repulsion_max)"""
+
+        if self.constant_interaction:
+            rate = self.learning_rate * self.repulsion_strength
+        else:
+            rate = (self.learning_rate * self.repulsion_strength *
+                    (self.repulsion_max - dist) / self.repulsion_max)
 
         nd1_x, nd1_y = nd1['pos']
         nd2_x, nd2_y = nd2['pos']
