@@ -28,7 +28,6 @@ class DataFrame:
                  unit=TabularPage):
         self.database_id = database_id
         self.database_name = database_name
-        self.props = {}
         self.props = {key: PropertyFrame(value) for key, value in properties.items()}
         self.unit = unit
 

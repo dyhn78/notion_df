@@ -48,4 +48,4 @@ class TabularPage(BasicPage):
     def retrieve(cls, page_id):
         response = RetrievePage(page_id).execute()
         parsed_page = PageParser.from_retrieve_response(response)
-        return cls(parsed_page)
+        return cls(parsed_page, {})

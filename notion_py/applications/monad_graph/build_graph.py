@@ -1,12 +1,10 @@
-import math
+import re
 from itertools import chain
 
 import networkx as nx
 
-from notion_py.applications.monad_graph.dataframe \
+from notion_py.applications.monad_graph.self_related_dataframe \
     import SelfRelatedPageList, SelfRelatedDataFrame, theme_dataframe, idea_dataframe
-from notion_py.applications.monad_graph.optimize_position \
-    import GradientDescent
 
 
 class BuildGraph:
@@ -16,35 +14,34 @@ class BuildGraph:
         self.all: dict[str, SelfRelatedPageList] \
             = {pagelist.dataframe.database_name: pagelist
                for pagelist in [self.themes, self.ideas]}
-        self.graph = nx.DiGraph()
+        self.G = nx.DiGraph()
 
     def execute(self):
         self.add_nodes()
         self.add_edges()
-        self.initialize_node_positions()
-        return self.graph
+        return self.G
 
     def add_nodes(self):
         for i, page in enumerate(chain(*self.all.values())):
-            self.graph.add_node(page.title, page_id=page.page_id)
+            self.G.add_node(self.parse_title(page.title), page_id=page.page_id)
 
     def add_edges(self):
-        for lead_pl in self.all.values():
-            assert isinstance(lead_pl.dataframe, SelfRelatedDataFrame)
-            for relation_type, pl_flag in lead_pl.dataframe.edge_directions['up']:
-                follow_pl = self.all[pl_flag]
-                assert isinstance(follow_pl, SelfRelatedPageList)
-                for leader_page in lead_pl:
-                    for follower_page in follow_pl.pages_related(
-                            leader_page, relation_type):
-                        self.graph.add_edge(
-                            follower_page.title, leader_page.title,
-                            relation_type=relation_type
+        for down_pagelist in self.all.values():
+            assert isinstance(down_pagelist.dataframe, SelfRelatedDataFrame)
+            for down_page in down_pagelist:
+                for upward_relation, pl_flag in down_pagelist.dataframe.upward_keys:
+                    up_pagelist = self.all[pl_flag]
+                    for up_page in up_pagelist.pages_related(
+                            down_page, down_pagelist, upward_relation):
+                        self.G.add_edge(
+                            self.parse_title(down_page.title),
+                            self.parse_title(up_page.title),
+                            relation_type=upward_relation
                         )
 
-    def initialize_node_positions(self):
-        length = sum(len(pagelist) for pagelist in self.all.values())
-        for i, page in enumerate(chain(*self.all.values())):
-            theta = (2 * math.pi / length) * i
-            pos = [math.cos(theta), math.sin(theta)]
-            self.graph.nodes[page.title].update(pos=pos)
+    @staticmethod
+    def parse_title(page_title: str):
+        code = re.compile('(?<=\[).+(?=\])')  # ex) '[cdit.html_css] ....'
+        if flag := code.search(page_title):
+            return flag.group()
+        return page_title

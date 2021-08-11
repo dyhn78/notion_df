@@ -4,8 +4,9 @@ from notion_py.applications.constants import \
 from notion_py.interface.parse import PageListParser
 from notion_py.interface.read import Query
 from notion_py.helpers.stopwatch import stopwatch
-from notion_py.applications.log_editor.match_property import MatchbyReference, MatchorCreatebyIndex
-from notion_py.applications.log_editor.class_naljja_to_gigan import NaljjaToGigan
+from notion_py.applications.log_editor.match_property import MatchbyReference, \
+    MatchorCreatebyIndex
+from notion_py.applications.log_editor.date_to_period import NaljjaToGigan
 from .constants import *
 
 
@@ -65,6 +66,7 @@ def update_periods(check_only_past_x_days=0):
         match_request.execute()
 
     match_children(ID_JOURNALS, '일지')
+    match_children(ID_SHOTS, '진도')
     match_children(ID_WRITINGS, '쓰기')
     match_children(ID_MEMOS, '메모')
 

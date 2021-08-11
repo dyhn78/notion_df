@@ -1,5 +1,6 @@
 from .constants import *
-from notion_py.applications.log_editor.match_property import MatchorCreatebyIndex, MatchbyIndex
+from notion_py.applications.log_editor.match_property import MatchorCreatebyIndex, \
+    MatchbyIndex
 from notion_py.interface.parse import PageParser
 from notion_py.interface.write import CreateTabularPage
 from ..constants import ID_PERIODS
@@ -29,7 +30,8 @@ class NaljjaToGigan(MatchorCreatebyIndex):
             tar_patch.props.write_rich.title('📚제목', tar_index)
 
             dom_parse = NaljjaParse(dom.props[self._domain_index])
-            tar_patch.props.write_rich.date('📅기간', dom_parse.start_date(), dom_parse.end_date())
+            tar_patch.props.write_rich.date('📅기간', dom_parse.start_date(),
+                                            dom_parse.end_date())
 
 
 class NaljjaParse:

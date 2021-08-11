@@ -2,7 +2,7 @@ from typing import Callable, Union
 
 from notion_py.interface.parse import PageParser, PageListParser
 from notion_py.interface.write import UpdateTabularPage, CreateTabularPage
-from notion_py.applications.log_editor.request_structure import PropertyRequestStack
+from notion_py.applications.log_editor.structure import PropertyRequestStack
 
 
 class MatchbyReference(PropertyRequestStack):
