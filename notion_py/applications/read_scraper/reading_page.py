@@ -2,9 +2,9 @@ from __future__ import annotations
 import re
 from typing import Union
 
-from notion_py.interface.editor import TabularPage
-from notion_py.interface.parse import PageParser
-from notion_py.interface.write import AppendBlockChildren, CreateBasicPage
+from notion_py.interface import TabularPage
+from notion_py.gateway.parse import PageParser
+from notion_py.gateway.write import AppendBlockChildren, CreateBasicPage
 from .lib_gy import GoyangLibrary
 
 

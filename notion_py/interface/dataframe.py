@@ -3,9 +3,9 @@ from collections import defaultdict
 from typing import Optional, Any
 from pprint import pprint
 
-from . import TabularPage
-from ..parse import PageListParser, BlockChildrenParser
-from ..read import Query, RetrieveBlockChildren
+from notion_py.interface import TabularPage
+from notion_py.gateway.parse import PageListParser, BlockChildrenParser
+from notion_py.gateway.read import Query, RetrieveBlockChildren
 
 
 class PropertyFrame:

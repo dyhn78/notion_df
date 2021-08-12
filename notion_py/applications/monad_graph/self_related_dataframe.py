@@ -1,8 +1,7 @@
 from __future__ import annotations
-from notion_py.interface.editor import TabularPage, PageList
+from notion_py.interface import DataFrame, PageList, TabularPage
+from notion_py.gateway.parse import PageListParser
 from ..constants import ID_THEMES, ID_IDEAS
-from ...interface.editor import DataFrame
-from ...interface.parse import PageListParser
 
 
 class SelfRelatedDataFrame(DataFrame):
@@ -58,7 +57,7 @@ class SelfRelatedPageList(PageList):
                 res.append(self.page_by_id(page_id))
             except KeyError:
                 # if not res:
-                #    from notion_py.helpers import page_id_to_url
+                #    from notion_py.utility import page_id_to_url
                 #    print(alien_page.title, prop_name, page_id_to_url(page_id))
                 continue
         return res

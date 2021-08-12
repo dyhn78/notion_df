@@ -1,6 +1,6 @@
 from pprint import pprint
 
-from notion_py.helpers import stopwatch
+from notion_py.utility import stopwatch
 from notion_py.applications.monad_graph.build_graph import BuildGraph
 from notion_py.applications.monad_graph.optimize_position import GradientDescent, \
     InitializeGraph

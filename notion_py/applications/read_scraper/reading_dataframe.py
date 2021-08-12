@@ -1,4 +1,4 @@
-from notion_py.interface.editor import DataFrame
+from notion_py.interface import DataFrame
 from ..constants import ID_READINGS
 from .reading_page import BookReadingPage
 

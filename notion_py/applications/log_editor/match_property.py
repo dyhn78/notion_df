@@ -1,7 +1,7 @@
 from typing import Callable, Union
 
-from notion_py.interface.parse import PageParser, PageListParser
-from notion_py.interface.write import UpdateTabularPage, CreateTabularPage
+from notion_py.gateway.parse import PageParser, PageListParser
+from notion_py.gateway.write import UpdateTabularPage, CreateTabularPage
 from notion_py.applications.log_editor.structure import PropertyRequestStack
 
 

@@ -1,9 +1,9 @@
 # from pprint import pprint
 from notion_py.applications.constants import \
     ID_PERIODS, ID_DATES, ID_JOURNALS, ID_SHOTS, ID_WRITINGS, ID_MEMOS
-from notion_py.interface.parse import PageListParser
-from notion_py.interface.read import Query
-from notion_py.helpers.stopwatch import stopwatch
+from notion_py.gateway.parse import PageListParser
+from notion_py.gateway.read import Query
+from notion_py.utility.stopwatch import stopwatch
 from notion_py.applications.log_editor.match_property import MatchbyReference, \
     MatchorCreatebyIndex
 from notion_py.applications.log_editor.date_to_period import NaljjaToGigan

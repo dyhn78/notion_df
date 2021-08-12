@@ -1,3 +1,4 @@
+# noinspection PyPep8
 database_query = {
     'has_more': False,
     'next_cursor': None,

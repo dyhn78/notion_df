@@ -3,7 +3,7 @@
 from .filter_maker import QueryFilterMaker
 from .filter_unit import QueryFilter, PlainFilter
 from .sort import QuerySort
-from notion_py.interface.structure import LongRequestor, retry_request
+from notion_py.gateway.structure import LongRequestor, retry_request
 
 
 class Query(LongRequestor):

@@ -2,9 +2,9 @@ import os
 from pprint import pprint
 from notion_client import AsyncClient, Client
 
-from notion_py.helpers.stopwatch import stopwatch
-from notion_py.interface.parse import PageListParser
-from notion_py.interface.read import Query
+from notion_py.utility.stopwatch import stopwatch
+from notion_py.gateway.parse import PageListParser
+from notion_py.gateway.read import Query
 
 os.environ['NOTION_TOKEN'] = ***REMOVED***
 

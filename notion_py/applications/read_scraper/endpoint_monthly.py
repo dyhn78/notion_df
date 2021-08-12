@@ -1,5 +1,5 @@
 from notion_py.applications.read_scraper.reading_dataframe import BookReadingQuerymaker
-from notion_py.helpers import stopwatch
+from notion_py.utility import stopwatch
 
 
 def reset_status_for_books(page_size=0):

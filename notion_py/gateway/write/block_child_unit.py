@@ -1,7 +1,7 @@
 from typing import Optional
 
 from .property_unit import WriteRichTextProperty
-from notion_py.interface.structure.carriers import ValueCarrier
+from notion_py.gateway.structure.carriers import ValueCarrier
 
 
 class WriteBlock(ValueCarrier):

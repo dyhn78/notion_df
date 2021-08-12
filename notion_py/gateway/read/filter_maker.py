@@ -1,5 +1,5 @@
 from .filter_unit import PlainFilter, OrFilter, AndFilter
-from ..parse.database import DatabaseParser as DBParser
+from ..parse import DatabaseParser
 
 
 class QueryFilterMaker:
@@ -15,7 +15,7 @@ class QueryFilterMaker:
         prop_class = self.__get_prop_class(prop_name, value_type)
         return getattr(self, prop_class)(prop_name)
 
-    def add_db_retrieve(self, database_parser: DBParser):
+    def add_db_retrieve(self, database_parser: DatabaseParser):
         self.__types_table = database_parser.prop_type_table
 
     def __get_prop_class(self, name, value_type):

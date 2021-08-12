@@ -2,8 +2,8 @@ from __future__ import annotations
 from abc import abstractmethod
 from typing import Union
 
-from notion_py.interface.parse import PageParser, PageListParser
-from notion_py.interface.structure import Requestor
+from notion_py.gateway.parse import PageParser, PageListParser
+from notion_py.gateway.structure import Requestor
 
 
 class RequestStack:

@@ -1,7 +1,7 @@
 from typing import Optional
 
 from ..parse import BlockChildParser
-# from ..editor import Block
+# from ..interface import Block
 from ..structure import ValueCarrier
 
 

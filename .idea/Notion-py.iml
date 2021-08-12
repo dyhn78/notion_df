@@ -9,7 +9,7 @@
     <option name="namespacePackageFolders">
       <list>
         <option value="$MODULE_DIR$/notion_py/applications" />
-        <option value="$MODULE_DIR$/notion_py/interface" />
+        <option value="$MODULE_DIR$/notion_py/gateway" />
       </list>
     </option>
   </component>

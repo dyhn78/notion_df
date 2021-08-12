@@ -8,8 +8,8 @@ from json import JSONDecodeError
 from notion_client import Client, AsyncClient
 from notion_client.errors import APIResponseError
 
-from notion_py.interface.structure import Structure
-from notion_py.helpers import page_id_to_url, stopwatch
+from notion_py.gateway.structure import Structure
+from notion_py.utility import page_id_to_url, stopwatch
 
 
 def retry_request(method: Callable, recursion_limit=5):

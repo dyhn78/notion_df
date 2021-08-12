@@ -1,11 +1,11 @@
 from abc import ABCMeta
 
-from notion_py.interface.structure import Requestor, retry_request
-from notion_py.interface.parse import DatabaseParser
+from notion_py.gateway.structure import Requestor, retry_request
+from notion_py.gateway.parse import DatabaseParser
 from .property_stash import BasicPagePropertyStash, TabularPagePropertyStash
 from .block_child_stash import BlockChildrenStash
 from .block_contents import BlockContents
-from ...helpers import stopwatch, page_id_to_url
+from ...utility import stopwatch, page_id_to_url
 
 
 class UpdateBasicPage(Requestor):

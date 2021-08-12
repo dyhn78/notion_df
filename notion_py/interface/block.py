@@ -2,12 +2,12 @@ from __future__ import annotations
 from typing import Optional
 from abc import ABCMeta
 
-from ..structure import Requestor
-from ..parse import BlockChildParser, BlockChildrenParser
-from ..read import RetrieveBlockChildren
-from ..write import AppendBlockChildren, UpdateBlockContents
-from ..write.block_contents import BlockContents
-from ..write.block_child_stash import BlockChildrenStash
+from notion_py.gateway.structure import Requestor
+from notion_py.gateway.parse import BlockChildParser, BlockChildrenParser
+from notion_py.gateway.read import RetrieveBlockChildren
+from notion_py.gateway.write import AppendBlockChildren, UpdateBlockContents
+from notion_py.gateway.write.block_contents import BlockContents
+from notion_py.gateway.write.block_child_stash import BlockChildrenStash
 
 
 class Block(Requestor, metaclass=ABCMeta):

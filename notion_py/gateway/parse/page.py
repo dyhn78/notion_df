@@ -1,6 +1,6 @@
 from datetime import datetime as datetimeclass
 
-from notion_py.interface.parse.blocks import parse_rich_texts
+from .blocks import parse_rich_texts
 
 
 class PageParser:

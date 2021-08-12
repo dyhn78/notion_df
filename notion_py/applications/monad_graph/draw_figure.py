@@ -1,7 +1,8 @@
 import networkx as nx
 from plotly import graph_objects as go
 
-from notion_py.applications.monad_graph.self_related_dataframe import SelfRelatedDataFrame
+from notion_py.applications.monad_graph.self_related_dataframe import \
+    SelfRelatedDataFrame
 
 
 class DrawFigure:
