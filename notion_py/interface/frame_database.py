@@ -18,7 +18,7 @@ class DatabaseFrame:
                  unit=TabularPageDeprecated):
         self.database_id = database_id
         self.database_name = database_name
-        self.props = {key: PropertyFrame(value) for key, value in properties.items()}
+        self.props = PropertyFrame(properties)
         self.unit = unit
 
     @staticmethod

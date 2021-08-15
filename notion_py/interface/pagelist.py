@@ -7,9 +7,9 @@ from ..gateway.parse import PageListParser
 
 class PageList(Requestor):
     def __init__(self, query_response: dict,
-                 frame: Optional[dict[str, PropertyFrame]] = None):
+                 frame: Optional[PropertyFrame] = None):
         if frame is None:
-            frame = {}
+            frame = PropertyFrame()
         self.frame = frame
 
         parsed_query = PageListParser.from_query_response(query_response)

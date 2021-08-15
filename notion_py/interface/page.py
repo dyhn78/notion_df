@@ -35,9 +35,9 @@ class BasicPage(Requestor):
 
 class TabularPage(Requestor):
     def __init__(self, page_id: Optional[str],
-                 frame: Optional[dict[str, PropertyFrame]] = None):
+                 frame: Optional[PropertyFrame] = None):
         if frame is None:
-            frame = {}
+            frame = PropertyFrame()
         self.frame = frame
 
         self.request = {}
