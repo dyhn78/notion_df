@@ -1,18 +1,23 @@
 from typing import Optional
 
-import dataframe
+from .frame_property import PropertyFrame
 from ..gateway.common import Requestor
 from ..gateway.parse import PageListParser
 
 
 class PageList(Requestor):
-    def __init__(self, query_response: dict):
+    def __init__(self, query_response: dict,
+                 frame: Optional[dict[str, PropertyFrame]] = None):
+        if frame is None:
+            frame = {}
+        self.frame = frame
+
         parsed_query = PageListParser.from_query_response(query_response)
-        self.request_update = None
+        self.values = None
 
     def _parse_result(self, query_response):
         page_list_parser = PageListParser.from_query_response(query_response)
-        for key in self.frame.props:
+        for key in self.frame:
             pass
         return
 

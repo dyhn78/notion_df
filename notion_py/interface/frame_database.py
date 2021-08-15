@@ -7,27 +7,15 @@ from typing import Optional, Any
 from notion_py.gateway.others import GetBlockChildren
 from notion_py.gateway.parse import PageListParser, BlockChildrenParser
 from notion_py.gateway.query import Query
-from notion_py.interface import page_deprecated as page_dep
+from .page_deprecated import TabularPageDeprecated
+from .frame_property import PropertyFrame
 
 
-class PropertyFrame:
-    def __init__(self, values=None):
-        if type(values) == tuple:
-            prop_name, prop_value = values
-        elif type(values) == str:
-            prop_name = values
-            prop_value = None
-        else:
-            raise AssertionError(f'Invalid PropertyFrame: {values}')
-        self.name = prop_name
-        self.value = prop_value
-
-
-class DataFrame:
+class DatabaseFrame:
     def __init__(self, database_id: str,
                  database_name: str,
                  properties: Optional[dict[str, Any]] = None,
-                 unit=page_dep.TabularPageDeprecated):
+                 unit=TabularPageDeprecated):
         self.database_id = database_id
         self.database_name = database_name
         self.props = {key: PropertyFrame(value) for key, value in properties.items()}
@@ -57,13 +45,13 @@ class PageListDeprecated:
     PROP_NAME = {}
 
     def __init__(self, query_response: dict,
-                 frame: DataFrame,
-                 unit=page_dep.TabularPageDeprecated):
+                 frame: DatabaseFrame,
+                 unit=TabularPageDeprecated):
         # TODO > unit 없애기. frame.unit에서 얻게 하기.
         self.frame = frame
 
         parsed_query = PageListParser.from_query_response(query_response)
-        self.values: list[page_dep.TabularPageDeprecated] \
+        self.values: list[TabularPageDeprecated] \
             = [unit(parsed_page, self.PROP_NAME, self.frame.database_id)
                for parsed_page in parsed_query.values]
 
@@ -110,9 +98,9 @@ class PageListDeprecated:
                 result.append(res)
         return result
 
-    def page_by_id(self, page_id: str) -> page_dep.TabularPageDeprecated:
+    def page_by_id(self, page_id: str) -> TabularPageDeprecated:
         if self._page_by_id is None:
-            self._page_by_id: dict[str, page_dep.TabularPageDeprecated] \
+            self._page_by_id: dict[str, TabularPageDeprecated] \
                 = {page.page_id: page for page in self.values}
         return self._page_by_id[page_id]
 

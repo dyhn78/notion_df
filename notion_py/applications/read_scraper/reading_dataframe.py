@@ -1,4 +1,4 @@
-from notion_py.interface import DataFrame
+from notion_py.interface import DatabaseFrame
 from ..constants import ID_READINGS
 from .reading_page import BookReadingPage
 
@@ -31,7 +31,7 @@ READING_PROPERTIES = {
     'not_available': '🔍대출중'
 }
 
-reading_dataframe = DataFrame(ID_READINGS, 'reads', READING_PROPERTIES, BookReadingPage)
+reading_dataframe = DatabaseFrame(ID_READINGS, 'reads', READING_PROPERTIES, BookReadingPage)
 
 
 class BookReadingQuerymaker:
