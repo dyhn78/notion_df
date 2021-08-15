@@ -4,7 +4,7 @@ from abc import ABCMeta
 
 from notion_py.gateway.common import Requestor
 from notion_py.gateway.parse import BlockChildParser, BlockChildrenParser
-from notion_py.gateway.query.get_block_children import GetBlockChildren
+from notion_py.gateway.others import GetBlockChildren
 from notion_py.gateway.write import AppendBlockChildren, UpdateBlock
 from notion_py.gateway.write.block.contents import BlockContents
 from notion_py.gateway.write.block.stash import BlockChildrenStash

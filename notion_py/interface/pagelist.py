@@ -6,12 +6,7 @@ from ..gateway.parse import PageListParser
 
 
 class PageList(Requestor):
-    def __init__(self, query_response: dict,
-                 frame: Optional[dataframe.DataFrame] = None):
-        if frame is None:
-            frame = dataframe.DataFrame.create_dummy()
-        self.frame = frame
-
+    def __init__(self, query_response: dict):
         parsed_query = PageListParser.from_query_response(query_response)
         self.request_update = None
 
