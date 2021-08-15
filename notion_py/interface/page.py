@@ -2,18 +2,20 @@ from typing import Optional
 
 from ..gateway.structure import Requestor
 from ..gateway.parse import PageParser
-from ..gateway.write import UpdateTabularPage
+from ..gateway.write import UpdateTabularPage, UpdateBasicPage
 from .dataframe import DataFrame
 
 
 class BasicPage(Requestor):
-    def __init__(self):
-        pass
+    def __init__(self, page_id: Optional[str]):
+        if page_id:
+            self.request_update = UpdateBasicPage(page_id)
 
     @classmethod
-    def from_retrieve(cls, retrieve_response: dict):
+    def from_retrieve(cls, retrieve_response: dict,
+                      page_id: Optional[str] = None):
         page_parser = PageParser.from_retrieve_response(retrieve_response)
-        return cls()
+        return cls(page_id)
 
     def apply(self):
         pass
@@ -35,14 +37,18 @@ class BasicPage(Requestor):
 
 
 class TabularPage(Requestor):
-    def __init__(self, frame: DataFrame, page_id: Optional[str]):
+    def __init__(self, page_id: Optional[str], frame: Optional[DataFrame] = None):
+        if frame is None:
+            frame = DataFrame.create_dummy()
         self.frame = frame
-        self.request_update = UpdateTabularPage(page_id)
+        if page_id:
+            self.request_update = UpdateTabularPage(page_id)
 
     @classmethod
-    def from_retrieve(cls, retrieve_response: dict, page_id: Optional[str]):
+    def from_retrieve(cls, retrieve_response: dict,
+                      page_id: Optional[str] = None, frame: Optional[DataFrame] = None):
         page_parser = PageParser.from_retrieve_response(retrieve_response)
-        return cls(DataFrame.create_dummy(), page_id)
+        return cls(page_id, frame)
 
     def apply(self):
         pass

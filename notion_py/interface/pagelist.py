@@ -6,7 +6,9 @@ from .dataframe import DataFrame
 
 
 class PageList(Requestor):
-    def __init__(self, frame: DataFrame, query_response: dict):
+    def __init__(self, query_response: dict, frame: Optional[DataFrame] = None):
+        if frame is None:
+            frame = DataFrame.create_dummy()
         self.frame = frame
         self.request_update = None
 
