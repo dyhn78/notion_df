@@ -2,12 +2,12 @@ from __future__ import annotations
 from typing import Optional
 from abc import ABCMeta
 
-from notion_py.gateway.structure import Requestor
+from notion_py.gateway.common import Requestor
 from notion_py.gateway.parse import BlockChildParser, BlockChildrenParser
-from notion_py.gateway.retrieve import RetrieveBlockChildren
-from notion_py.gateway.write import AppendBlockChildren, UpdateBlockContents
-from notion_py.gateway.write.block_contents import BlockContents
-from notion_py.gateway.write.block_child_stash import BlockChildrenStash
+from notion_py.gateway.query.get_block_children import GetBlockChildren
+from notion_py.gateway.write import AppendBlockChildren, UpdateBlock
+from notion_py.gateway.write.block.contents import BlockContents
+from notion_py.gateway.write.block.stash import BlockChildrenStash
 
 
 class Block(Requestor, metaclass=ABCMeta):
@@ -38,7 +38,7 @@ class ContentsBlock(Block):
                          parent_id if parent_id else None,
                          parsed_block.can_have_children,
                          parsed_block.has_children)
-        self._update_contents = UpdateBlockContents(self.block_id)
+        self._update_contents = UpdateBlock(self.block_id)
         self.contents: BlockContents = self._update_contents.contents
         self.contents.fetch(parsed_block)
 
@@ -104,7 +104,7 @@ class ChildbearingBlock(Block):
 
     @classmethod
     def _get_child_editors(cls, block_id):
-        response = RetrieveBlockChildren(block_id)
+        response = GetBlockChildren(block_id)
         parsed_children = BlockChildrenParser.from_response(response)
         child_editors = []
         for parsed_block in parsed_children.values:

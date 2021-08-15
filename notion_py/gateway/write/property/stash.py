@@ -3,8 +3,10 @@ from collections import defaultdict
 from datetime import datetime as datetimeclass, date as dateclass
 from typing import Union, Optional
 
-from ..structure import TwofoldDictStash
-from .property_unit import WritePageProperty, WriteSimplePageProperty, WriteRichTextProperty, WriteTitleProperty
+from ..twofold_stash import TwofoldDictStash
+from .unit import \
+    WritePageProperty, WriteSimplePageProperty, \
+    WriteRichTextProperty, WriteTitleProperty
 
 
 class PagePropertyStash(TwofoldDictStash, metaclass=ABCMeta):

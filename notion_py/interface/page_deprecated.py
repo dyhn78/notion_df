@@ -1,6 +1,6 @@
-from notion_py.gateway.structure import Requestor
+from notion_py.gateway.common import Requestor
 from notion_py.gateway.parse import PageParser
-from notion_py.gateway.retrieve import RetrievePage
+from notion_py.gateway.others import RetrievePage
 from notion_py.gateway.write import UpdateBasicPage, BasicPagePropertyStash, \
     AppendBlockChildren, UpdateTabularPage
 

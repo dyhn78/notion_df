@@ -1,4 +1,4 @@
-from ..structure import ListStash
+from ..common import ListStash
 
 
 class QuerySort(ListStash):

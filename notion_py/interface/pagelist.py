@@ -1,6 +1,6 @@
 from typing import Optional
 
-from ..gateway.structure import Requestor
+from ..gateway.common import Requestor
 from ..gateway.parse import PageListParser
 from .dataframe import DataFrame
 

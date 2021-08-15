@@ -1,4 +1,4 @@
-from notion_py.gateway.structure import retry_request, Requestor, LongRequestor
+from notion_py.gateway.common import retry_request, Requestor, LongRequestor
 
 
 class RetrieveDatabase(Requestor):
@@ -25,7 +25,7 @@ class RetrievePage(Requestor):
         return self.notion.pages.retrieve(**self.apply())
 
 
-class RetrieveBlockChildren(LongRequestor):
+class GetBlockChildren(LongRequestor):
     def __init__(self, block_id: str):
         self.block_id = block_id
 
@@ -34,7 +34,8 @@ class RetrieveBlockChildren(LongRequestor):
 
     @retry_request
     def _execute_once(self, page_size=None, start_cursor=None):
-        page_size = {'page_size': (page_size if page_size else self.MAX_PAGE_SIZE)}
-        start_cursor = {'start_cursor': start_cursor} if start_cursor else None
-        args = self._merge_dict(self.apply(), start_cursor, page_size)
+        args = dict(**self.apply(),
+                    page_size=(page_size if page_size else self.MAX_PAGE_SIZE))
+        if start_cursor:
+            args.update(start_cursor=start_cursor)
         return self.notion.blocks.children.list(**args)

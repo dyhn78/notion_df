@@ -3,7 +3,7 @@ from abc import abstractmethod
 from typing import Union
 
 from notion_py.gateway.parse import PageParser, PageListParser
-from notion_py.gateway.structure import Requestor
+from notion_py.gateway.common import Requestor
 
 
 class RequestStack:

@@ -3,7 +3,8 @@ from ..parse import DatabaseParser
 
 
 class QueryFilterMaker:
-    # TODO : ValueCarrier 클래스를 상속하도록 고치기 (우선순위는 높지 않은 편. 일단 돌아가는 데는 문제가 없으니)
+    # TODO : ValueCarrier 클래스를 상속하도록 고치기
+    #  (우선순위는 높지 않은 편. 일단 돌아가는 데는 문제가 없으니)
     def __init__(self):
         """특정한 데이터베이스 하나를 위한 query_filter 프레임을 만든다."""
         self.__types_table = None

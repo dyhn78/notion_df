@@ -1,8 +1,7 @@
 from typing import Optional
 
-from ..parse import BlockChildParser
-# from ..interface import Block
-from ..structure import ValueCarrier
+from notion_py.gateway.parse import BlockChildParser
+from notion_py.gateway.common import ValueCarrier
 
 
 class BlockContents(ValueCarrier):

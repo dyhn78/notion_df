@@ -1,3 +1,3 @@
-from .request import UpdateBasicPage, CreateBasicPage, CreateTabularPage, \
-    UpdateTabularPage, AppendBlockChildren, UpdateBlockContents
-from .property_stash import BasicPagePropertyStash, TabularPagePropertyStash
+from .endpoint import UpdateBasicPage, CreateBasicPage, CreateTabularPage, \
+    UpdateTabularPage, AppendBlockChildren, UpdateBlock
+from notion_py.gateway.write.property.stash import BasicPagePropertyStash, TabularPagePropertyStash

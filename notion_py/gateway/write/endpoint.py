@@ -1,11 +1,11 @@
 from abc import ABCMeta
 
-from notion_py.gateway.structure import Requestor, retry_request
-from notion_py.gateway.parse import DatabaseParser
-from .property_stash import BasicPagePropertyStash, TabularPagePropertyStash
-from .block_child_stash import BlockChildrenStash
-from .block_contents import BlockContents
 from ...utility import stopwatch, page_id_to_url
+from ..common import Requestor, retry_request
+from ..parse import DatabaseParser
+from .block.stash import BlockChildrenStash
+from .block.contents import BlockContents
+from .property import BasicPagePropertyStash, TabularPagePropertyStash
 
 
 class UpdateBasicPage(Requestor):
@@ -14,11 +14,12 @@ class UpdateBasicPage(Requestor):
         self._id_apply = {'page_id': page_id}
         self.props = BasicPagePropertyStash()
 
-    def apply(self):
-        return self._merge_dict(self._id_apply, self.props.apply())
-
     def __bool__(self):
         return bool(self.props.apply())
+
+    def apply(self):
+        return dict(**self.props.apply(),
+                    page_id=self.page_id)
 
     @retry_request
     def execute(self):
@@ -33,16 +34,16 @@ class UpdateBasicPage(Requestor):
 class CreateBasicPage(Requestor):
     def __init__(self, parent_id: str):
         self.page_id = parent_id
-        self._id_apply = {'parent': {'page_id': parent_id}}
         self.props = BasicPagePropertyStash()
         self.children = BlockChildrenStash()
 
-    def apply(self):
-        return self._merge_dict(self._id_apply, self.props.apply(),
-                                self.children.apply())
-
     def __bool__(self):
         return bool(self.props.apply()) and bool(self.children.apply())
+
+    def apply(self):
+        return dict(**self.props.apply(),
+                    **self.children.apply(),
+                    parent={'page_id': self.parent_id})
 
     @retry_request
     def execute(self):
@@ -81,14 +82,14 @@ class CreateTabularPage(CreateBasicPage, DatabaseTable):
 class AppendBlockChildren(Requestor):
     def __init__(self, parent_id: str):
         self.parent_id = parent_id
-        self._id_apply = {'block_id': parent_id}
         self.children = BlockChildrenStash()
-
-    def apply(self):
-        return self._merge_dict(self._id_apply, self.children.apply())
 
     def __bool__(self):
         return bool(self.children.apply())
+
+    def apply(self):
+        return dict(**self.children.apply(),
+                    block_id=self.parent_id)
 
     @retry_request
     def execute(self) -> dict:
@@ -100,7 +101,7 @@ class AppendBlockChildren(Requestor):
         return res
 
 
-class UpdateBlockContents(Requestor):
+class UpdateBlock(Requestor):
     # TODO : API가 만들어지면 추가할 예정.
     def __init__(self, block_id: str):
         self._id_raw = block_id

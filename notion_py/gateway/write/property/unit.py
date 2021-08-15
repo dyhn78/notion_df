@@ -2,7 +2,7 @@ from abc import ABCMeta
 from datetime import datetime as datetimeclass, date as dateclass
 from typing import Union, Optional
 
-from notion_py.gateway.structure import ValueCarrier, ListStash
+from notion_py.gateway.common import ValueCarrier, ListStash
 
 
 class WritePageProperty(ValueCarrier, metaclass=ABCMeta):

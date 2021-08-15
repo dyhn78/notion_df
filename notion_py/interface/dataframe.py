@@ -6,7 +6,7 @@ from pprint import pprint
 from notion_py.interface import TabularPageDeprecated
 from notion_py.gateway.parse import PageListParser, BlockChildrenParser
 from notion_py.gateway.query import Query
-from notion_py.gateway.retrieve import RetrieveBlockChildren
+from notion_py.gateway.query.get_block_children import GetBlockChildren
 
 
 class PropertyFrame:
@@ -78,7 +78,7 @@ class PageListDeprecated:
         request_queue = []
         result_queue = []
         for page in self.values:
-            request_queue.append(RetrieveBlockChildren(page.page_id))
+            request_queue.append(GetBlockChildren(page.page_id))
         for request in request_queue:
             page_id = request.block_id
             result_queue.append([page_id, request.execute()])

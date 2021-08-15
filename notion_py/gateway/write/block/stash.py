@@ -1,5 +1,5 @@
-from ..structure import TwofoldListStash
-from .block_child_unit import WriteTextBlock
+from ..twofold_stash import TwofoldListStash
+from .unit import WriteTextBlock
 
 
 class BlockChildrenStash(TwofoldListStash):
