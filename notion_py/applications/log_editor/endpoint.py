@@ -2,7 +2,7 @@
 from notion_py.applications.constants import \
     ID_PERIODS, ID_DATES, ID_JOURNALS, ID_SHOTS, ID_WRITINGS, ID_MEMOS
 from notion_py.gateway.parse import PageListParser
-from notion_py.gateway.read import Query
+from notion_py.gateway.query import Query
 from notion_py.utility.stopwatch import stopwatch
 from notion_py.applications.log_editor.match_property import MatchbyReference, \
     MatchorCreatebyIndex
@@ -36,7 +36,7 @@ def update_dates(check_only_past_x_days=0):
             children, journals, TO_DATES, TO_JOURNALS, TO_DATES
         )
         stopwatch(f'{children_name}-(일지)->날짜')
-        children = first_request.execute(reprocess_outside=True)
+        children = first_request.execute()
         second_request = MatchorCreatebyIndex.default(
             children, dates, ID_DATES, TO_DATES,
             DOMAINS_INDEX, TITLE_PROPERTY, as_naljja

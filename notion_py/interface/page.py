@@ -1,51 +1,81 @@
-from notion_py.gateway.structure import Requestor
-from notion_py.gateway.parse import PageParser
-from notion_py.gateway.read import RetrievePage
-from notion_py.gateway.write import UpdateBasicPage, BasicPagePropertyStash, \
-    AppendBlockChildren, UpdateTabularPage
+from typing import Optional
+
+from ..gateway.structure import Requestor
+from ..gateway.parse import PageParser
+from ..gateway.write import UpdateTabularPage
+from .dataframe import DataFrame
 
 
 class BasicPage(Requestor):
-    def __init__(self, parsed_page: PageParser, parent_id=''):
-        self.page_id = parsed_page.page_id
-        self.title = parsed_page.title
-        if parent_id:
-            self.parent_id = parent_id
-        else:
-            self.parent_id = parsed_page.parent_id
-
-        self._update_props = UpdateBasicPage(parsed_page.page_id)
-        self.props: BasicPagePropertyStash = self._update_props.props
-        self.props.fetch(parsed_page.props)
-
-        self._append_blocks = AppendBlockChildren(self.page_id)
-        self.children = self._append_blocks.children
+    def __init__(self):
+        pass
 
     @classmethod
-    def retrieve(cls, page_id):
-        response = RetrievePage(page_id).execute()
-        parsed_page = PageParser.from_retrieve_response(response)
-        return cls(parsed_page)
+    def from_retrieve(cls, retrieve_response: dict):
+        page_parser = PageParser.from_retrieve_response(retrieve_response)
+        return cls()
 
     def apply(self):
-        return [self._update_props.apply(), self._append_blocks.apply()]
+        pass
 
     def execute(self):
-        return [self._update_props.execute(), self._append_blocks.execute()]
+        pass
+
+    def read_title(self):
+        pass
+
+    def read_rich_title(self):
+        pass
+
+    def write_title(self):
+        pass
+
+    def write_rich_title(self):
+        pass
 
 
-class TabularPage(BasicPage):
-    PROP_NAME: dict[str, str] = {}
-
-    def __init__(self, parsed_page: PageParser, prop_name: dict[str, str], parent_id=''):
-        super().__init__(parsed_page, parent_id=parent_id)
-        self.prop_name = prop_name
-        self._update_props = UpdateTabularPage(self.page_id)
-        self.props = self._update_props.props
-        self.props.fetch(parsed_page.props)
+class TabularPage(Requestor):
+    def __init__(self, frame: DataFrame, page_id: Optional[str]):
+        self.frame = frame
+        self.request_update = UpdateTabularPage(page_id)
 
     @classmethod
-    def retrieve(cls, page_id):
-        response = RetrievePage(page_id).execute()
-        parsed_page = PageParser.from_retrieve_response(response)
-        return cls(parsed_page, {})
+    def from_retrieve(cls, retrieve_response: dict, page_id: Optional[str]):
+        page_parser = PageParser.from_retrieve_response(retrieve_response)
+        return cls(DataFrame.create_dummy(), page_id)
+
+    def apply(self):
+        pass
+
+    def execute(self):
+        pass
+
+    def read(self, prop_name: str):
+        pass
+
+    def read_rich(self, prop_name: str):
+        pass
+
+    def read_on(self, prop_key: str):
+        pass
+
+    def read_rich_on(self, prop_key: str):
+        pass
+
+    def read_all(self):
+        pass
+
+    def read_all_keys(self):
+        pass
+
+    def write(self, prop_name: str):
+        pass
+
+    def write_rich(self, prop_name: str):
+        pass
+
+    def write_on(self, prop_key: str):
+        pass
+
+    def write_rich_on(self, prop_key: str):
+        pass

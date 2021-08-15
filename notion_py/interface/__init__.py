@@ -1,3 +1,3 @@
-from .page import BasicPage, TabularPage
+from .page_deprecated import BasicPageDeprecated, TabularPageDeprecated
 from .block import Block, ContentsBlock, ChildbearingBlock, ChildbearingContentsBlock
-from .dataframe import DataFrame, PageList
+from .dataframe import DataFrame, PageListDeprecated

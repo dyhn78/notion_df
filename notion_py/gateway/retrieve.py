@@ -1,4 +1,4 @@
-from ..structure import retry_request, Requestor, LongRequestor
+from notion_py.gateway.structure import retry_request, Requestor, LongRequestor
 
 
 class RetrieveDatabase(Requestor):

@@ -3,9 +3,10 @@ from collections import defaultdict
 from typing import Optional, Any
 from pprint import pprint
 
-from notion_py.interface import TabularPage
+from notion_py.interface import TabularPageDeprecated
 from notion_py.gateway.parse import PageListParser, BlockChildrenParser
-from notion_py.gateway.read import Query, RetrieveBlockChildren
+from notion_py.gateway.query import Query
+from notion_py.gateway.retrieve import RetrieveBlockChildren
 
 
 class PropertyFrame:
@@ -25,13 +26,21 @@ class DataFrame:
     def __init__(self, database_id: str,
                  database_name: str,
                  properties: Optional[dict[str, Any]] = None,
-                 unit=TabularPage):
+                 unit=TabularPageDeprecated):
         self.database_id = database_id
         self.database_name = database_name
         self.props = {key: PropertyFrame(value) for key, value in properties.items()}
         self.unit = unit
 
-    def execute_query(self, page_size=0) -> PageList:
+    @staticmethod
+    def _pagelist():
+        return PageListDeprecated
+
+    @classmethod
+    def create_dummy(cls):
+        return cls('', '')
+
+    def execute_query(self, page_size=0) -> PageListDeprecated:
         query = self.make_query()
         return self.insert_query(query, page_size=page_size)
 
@@ -39,22 +48,18 @@ class DataFrame:
         return Query(self.database_id)
 
     def insert_query(self, query: Query, page_size=0):
-        response = query.execute(page_size=page_size)
+        response = query.execute()
         parsed_query = PageListParser.from_query_response(response)
         return self._pagelist()(self, parsed_query, self.unit)
 
-    @staticmethod
-    def _pagelist():
-        return PageList
 
-
-class PageList:
+class PageListDeprecated:
     PROP_NAME = {}
 
     def __init__(self, dataframe: DataFrame,
-                 parsed_query: PageListParser, unit=TabularPage):
+                 parsed_query: PageListParser, unit=TabularPageDeprecated):
         self.dataframe = dataframe
-        self.values: list[TabularPage] \
+        self.values: list[TabularPageDeprecated] \
             = [unit(parsed_page, self.PROP_NAME, self.dataframe.database_id)
                for parsed_page in parsed_query.values]
 
@@ -101,9 +106,9 @@ class PageList:
                 result.append(res)
         return result
 
-    def page_by_id(self, page_id: str) -> TabularPage:
+    def page_by_id(self, page_id: str) -> TabularPageDeprecated:
         if self._page_by_id is None:
-            self._page_by_id: dict[str, TabularPage] \
+            self._page_by_id: dict[str, TabularPageDeprecated] \
                 = {page.page_id: page for page in self.values}
         return self._page_by_id[page_id]
 

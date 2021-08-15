@@ -2,13 +2,13 @@ from __future__ import annotations
 import re
 from typing import Union
 
-from notion_py.interface import TabularPage
+from notion_py.interface import TabularPageDeprecated
 from notion_py.gateway.parse import PageParser
 from notion_py.gateway.write import AppendBlockChildren, CreateBasicPage
 from .lib_gy import GoyangLibrary
 
 
-class ReadingPage(TabularPage):
+class ReadingPage(TabularPageDeprecated):
     def __init__(self, parsed_page, parent_id):
         super().__init__(parsed_page, parent_id)
         self.edit_option = ''
@@ -122,8 +122,8 @@ class BookReadingPage(ReadingPage):
     def get_or_make_subpage_id(self):
         # TODO : GenerativeRequestor 구현되면 아래 구문을 삽입한다.
         """
-        if self.children.read:
-            block = self.children.read[0]
+        if self.children.query:
+            block = self.children.query[0]
             if block.contents and self.title in block.contents:
                 return block.block_id
         """

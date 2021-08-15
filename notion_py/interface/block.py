@@ -4,7 +4,7 @@ from abc import ABCMeta
 
 from notion_py.gateway.structure import Requestor
 from notion_py.gateway.parse import BlockChildParser, BlockChildrenParser
-from notion_py.gateway.read import RetrieveBlockChildren
+from notion_py.gateway.retrieve import RetrieveBlockChildren
 from notion_py.gateway.write import AppendBlockChildren, UpdateBlockContents
 from notion_py.gateway.write.block_contents import BlockContents
 from notion_py.gateway.write.block_child_stash import BlockChildrenStash
@@ -67,7 +67,7 @@ class UnsupportedBlock(Block):
 class ChildbearingBlock(Block):
     # TODO : recursive_apply 가능하도록 고치기.
     #  GenerativeRequestor 클래스를 따로 만들어서 Block의 상위 클래스로 두기.
-    #  BasicPage 클래스에도 적용.
+    #  BasicPageDeprecated 클래스에도 적용.
     def __init__(self, block_id='', parent_id=''):
         super().__init__(block_id, parent_id, True, False)
         self._append_blocks = AppendBlockChildren(self.block_id)

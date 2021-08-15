@@ -1,12 +1,12 @@
 from __future__ import annotations
-from notion_py.interface import DataFrame, PageList, TabularPage
+from notion_py.interface import DataFrame, PageListDeprecated, TabularPageDeprecated
 from notion_py.gateway.parse import PageListParser
 from ..constants import ID_THEMES, ID_IDEAS
 
 
 class SelfRelatedDataFrame(DataFrame):
     def __init__(self, database_id: str, database_name: str,
-                 prop_name: dict[str, str], unit=TabularPage):
+                 prop_name: dict[str, str], unit=TabularPageDeprecated):
         super().__init__(database_id, database_name, prop_name, unit)
         self.upward_keys = \
             [(key, self.get_flag(key)) for key in prop_name
@@ -28,7 +28,7 @@ class SelfRelatedDataFrame(DataFrame):
 
     @staticmethod
     def _pagelist():
-        return SelfRelatedPageList
+        return SelfRelatedPageListDeprecated
 
     @staticmethod
     def get_flag(key: str):
@@ -40,14 +40,14 @@ class SelfRelatedDataFrame(DataFrame):
         return weight[relation_type.split('_')[0]]
 
 
-class SelfRelatedPageList(PageList):
+class SelfRelatedPageListDeprecated(PageListDeprecated):
     def __init__(self, dataframe: SelfRelatedDataFrame,
-                 parsed_query: PageListParser, unit=TabularPage):
+                 parsed_query: PageListParser, unit=TabularPageDeprecated):
         super().__init__(dataframe, parsed_query, unit)
         assert isinstance(self.dataframe, SelfRelatedDataFrame)
 
-    def pages_related(self, alien_page: TabularPage,
-                      alien_pagelist: SelfRelatedPageList, prop_name: str):
+    def pages_related(self, alien_page: TabularPageDeprecated,
+                      alien_pagelist: SelfRelatedPageListDeprecated, prop_name: str):
         res = []
         # TODO > 이 명령을 직관적으로 만드는 것이 TabularPage에 DataFrame을 이식할 때
         #  꼭 구현해야 할 점이다.
