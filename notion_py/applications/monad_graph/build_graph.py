@@ -12,7 +12,7 @@ class BuildGraph:
         self.themes = theme_dataframe.execute_query(page_size=page_size)
         self.ideas = idea_dataframe.execute_query(page_size=page_size)
         self.all: dict[str, SelfRelatedPageListDeprecated] \
-            = {pagelist.dataframe.database_name: pagelist
+            = {pagelist.frame.database_name: pagelist
                for pagelist in [self.themes, self.ideas]}
         self.G = nx.DiGraph()
 
@@ -27,9 +27,9 @@ class BuildGraph:
 
     def add_edges(self):
         for down_pagelist in self.all.values():
-            assert isinstance(down_pagelist.dataframe, SelfRelatedDataFrame)
+            assert isinstance(down_pagelist.frame, SelfRelatedDataFrame)
             for down_page in down_pagelist:
-                for upward_relation, pl_flag in down_pagelist.dataframe.upward_keys:
+                for upward_relation, pl_flag in down_pagelist.frame.upward_keys:
                     up_pagelist = self.all[pl_flag]
                     for up_page in up_pagelist.pages_related(
                             down_page, down_pagelist, upward_relation):

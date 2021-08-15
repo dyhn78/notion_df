@@ -7,15 +7,11 @@ from .dataframe import DataFrame
 
 
 class BasicPage(Requestor):
-    def __init__(self, page_id: Optional[str]):
+    def __init__(self, retrieve_response: dict,
+                 page_id: Optional[str]):
+        page_parser = PageParser.from_retrieve_response(retrieve_response)
         if page_id:
             self.request_update = UpdateBasicPage(page_id)
-
-    @classmethod
-    def from_retrieve(cls, retrieve_response: dict,
-                      page_id: Optional[str] = None):
-        page_parser = PageParser.from_retrieve_response(retrieve_response)
-        return cls(page_id)
 
     def apply(self):
         pass

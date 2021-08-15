@@ -42,9 +42,9 @@ class SelfRelatedDataFrame(DataFrame):
 
 class SelfRelatedPageListDeprecated(PageListDeprecated):
     def __init__(self, dataframe: SelfRelatedDataFrame,
-                 parsed_query: PageListParser, unit=TabularPageDeprecated):
-        super().__init__(dataframe, parsed_query, unit)
-        assert isinstance(self.dataframe, SelfRelatedDataFrame)
+                 query_response: dict, unit=TabularPageDeprecated):
+        super().__init__(query_response, dataframe, unit)
+        assert isinstance(self.frame, SelfRelatedDataFrame)
 
     def pages_related(self, alien_page: TabularPageDeprecated,
                       alien_pagelist: SelfRelatedPageListDeprecated, prop_name: str):
@@ -52,7 +52,7 @@ class SelfRelatedPageListDeprecated(PageListDeprecated):
         # TODO > 이 명령을 직관적으로 만드는 것이 TabularPage에 DataFrame을 이식할 때
         #  꼭 구현해야 할 점이다.
         for page_id in alien_page.props.read[
-                alien_pagelist.dataframe.props[prop_name].name]:
+                alien_pagelist.frame.props[prop_name].name]:
             try:
                 res.append(self.page_by_id(page_id))
             except KeyError:

@@ -50,7 +50,7 @@ class BookReadingQuerymaker:
         ft &= ft_status
         ft &= frame.does_not_equal(cls.df.props['edit_status'].value['done'])
         query.push_filter(ft)
-        pagelist = cls.df.insert_query(query, page_size=page_size)
+        pagelist = cls.df.insert_query_deprecated(query, page_size=page_size)
         # TODO > pagelist.retrieve_childrens()
         return pagelist
 
@@ -67,5 +67,5 @@ class BookReadingQuerymaker:
         #      cls.df._unit.dataframe.props['not_available'].name)
         # ft |= frame.equals(True)
         query.push_filter(ft)
-        pagelist = cls.df.insert_query(query, page_size=page_size)
+        pagelist = cls.df.insert_query_deprecated(query, page_size=page_size)
         return pagelist
