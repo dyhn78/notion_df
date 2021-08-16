@@ -31,7 +31,8 @@ READING_PROPERTIES = {
     'not_available': '🔍대출중'
 }
 
-reading_dataframe = DatabaseFrame(ID_READINGS, 'reads', READING_PROPERTIES, BookReadingPage)
+reading_dataframe = DatabaseFrame(ID_READINGS, 'reads',
+                                  READING_PROPERTIES, BookReadingPage)
 
 
 class BookReadingQuerymaker:

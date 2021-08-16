@@ -34,7 +34,7 @@ class DatabaseFrame:
 
     def insert_query_deprecated(self, query: Query, page_size=0):
         response = query.execute(page_size=page_size)
-        return self._pagelist()(response, self, self.unit)
+        return self._pagelist()(response, self)
 
     def execute_query(self, page_size=0) -> PageListDeprecated:
         query = self.make_query()
@@ -45,14 +45,13 @@ class PageListDeprecated:
     PROP_NAME = {}
 
     def __init__(self, query_response: dict,
-                 frame: DatabaseFrame,
-                 unit=TabularPageDeprecated):
+                 frame: DatabaseFrame):
         # TODO > unit 없애기. frame.unit에서 얻게 하기.
         self.frame = frame
 
         parsed_query = PageListParser.from_query_response(query_response)
         self.values: list[TabularPageDeprecated] \
-            = [unit(parsed_page, self.PROP_NAME, self.frame.database_id)
+            = [frame.unit(parsed_page, self.PROP_NAME, self.frame.database_id)
                for parsed_page in parsed_query.values]
 
         self._page_by_id = None

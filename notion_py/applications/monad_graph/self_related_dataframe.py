@@ -42,8 +42,8 @@ class SelfRelatedDatabaseFrame(DatabaseFrame):
 
 class SelfRelatedPageListDeprecated(PageListDeprecated):
     def __init__(self, dataframe: SelfRelatedDatabaseFrame,
-                 query_response: dict, unit=TabularPageDeprecated):
-        super().__init__(query_response, dataframe, unit)
+                 query_response: dict):
+        super().__init__(query_response, dataframe)
         assert isinstance(self.frame, SelfRelatedDatabaseFrame)
 
     def pages_related(self, alien_page: TabularPageDeprecated,

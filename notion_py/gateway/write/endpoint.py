@@ -33,7 +33,7 @@ class UpdateBasicPage(Requestor):
 
 class CreateBasicPage(Requestor):
     def __init__(self, parent_id: str):
-        self.page_id = parent_id
+        self.parent_id = parent_id
         self.props = BasicPagePropertyStash()
         self.children = BlockChildrenStash()
 

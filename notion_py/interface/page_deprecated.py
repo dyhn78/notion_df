@@ -31,6 +31,7 @@ class BasicPageDeprecated(Requestor):
         return [self._update_props.apply(), self._append_blocks.apply()]
 
     def execute(self):
+        print(self.apply())
         return [self._update_props.execute(), self._append_blocks.execute()]
 
 

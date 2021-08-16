@@ -9,8 +9,8 @@ from .lib_gy import GoyangLibrary
 
 
 class ReadingPage(TabularPageDeprecated):
-    def __init__(self, parsed_page, parent_id):
-        super().__init__(parsed_page, parent_id)
+    def __init__(self, parsed_page, prop_name, parent_id=''):
+        super().__init__(parsed_page, prop_name, parent_id)
         self.edit_option = ''
         self.scrap_status = ''
 
@@ -49,8 +49,8 @@ class BookReadingPage(ReadingPage):
                           'continue': (False, 'r'),
                           'overwrite': (True, 'w')}
 
-    def __init__(self, parsed_page: PageParser, parent_id: str):
-        super().__init__(parsed_page, parent_id)
+    def __init__(self, parsed_page: PageParser, prop_name, parent_id=''):
+        super().__init__(parsed_page, prop_name, parent_id)
         self.scraper_option = self.DEFAULT_SCRAPER_OPTION
 
     def get_edit_options(self) -> None:
