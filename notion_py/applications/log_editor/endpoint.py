@@ -22,7 +22,7 @@ def update_dates(check_only_past_x_days=0):
     stopwatch('일지->날짜')
     request.execute()
 
-    memos = editor.query_parents(ID_MEMOS, DOMAINS_INDEX)
+    memos = editor.query_children(ID_MEMOS)
     request = MatchorCreatebyIndex.default(
         memos, dates, ID_DATES, TO_DATES,
         DOMAINS_INDEX, TITLE_PROPERTY, as_naljja
@@ -36,7 +36,7 @@ def update_dates(check_only_past_x_days=0):
             children, journals, TO_DATES, TO_JOURNALS, TO_DATES
         )
         stopwatch(f'{children_name}-(일지)->날짜')
-        children = first_request.execute()
+        children = first_request.execute(reprocess_outside=True)
         second_request = MatchorCreatebyIndex.default(
             children, dates, ID_DATES, TO_DATES,
             DOMAINS_INDEX, TITLE_PROPERTY, as_naljja

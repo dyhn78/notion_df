@@ -3,11 +3,9 @@ from typing import Optional
 
 class PropertyFrame(dict):
     def __init__(self, values: Optional[dict] = None):
-        super().__init__()
-        if not values:
-            return
-        for key, value in values.items():
-            self.update(key=PropertyUnit(value))
+        if values is None:
+            values = {}
+        super().__init__({key: PropertyUnit(value) for key, value in values.items()})
 
 
 class PropertyUnit:
