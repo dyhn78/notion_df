@@ -11,7 +11,7 @@ class PagePropertyRichAgent:
 
     def title(self):
         res = BasicPageTitleWriter('title')
-        return self.caller.apply(res)
+        return self.caller.unpack()
 
 
 class PagePropertyPlainAgent:
@@ -19,7 +19,7 @@ class PagePropertyPlainAgent:
         self.caller = caller
 
     def title(self, value):
-        return self.caller.apply(BasicPageTitleWriter('title', value))
+        return self.caller.unpack()
 
 
 class TabularPagePropertyRichAgent:
@@ -27,10 +27,10 @@ class TabularPagePropertyRichAgent:
         self.caller = caller
 
     def title(self, prop_name: str):
-        return self.caller.apply(RichTextUnitWriter('title', prop_name))
+        return self.caller.unpack()
 
     def text(self, prop_name: str):
-        return self.caller.apply(RichTextUnitWriter('rich_text', prop_name))
+        return self.caller.unpack()
 
 
 class TabularPagePropertyPlainAgent:
@@ -38,41 +38,41 @@ class TabularPagePropertyPlainAgent:
         self.caller = caller
 
     def title(self, prop_name: str, value: str):
-        return self.caller.apply(RichTextUnitWriter('title', prop_name, value))
+        return self.caller.unpack()
 
     def text(self, prop_name: str, value: str):
-        return self.caller.apply(RichTextUnitWriter('rich_text', prop_name, value))
+        return self.caller.unpack()
 
     def date(self, prop_name: str,
              start_date: Union[datetimeclass, dateclass], end_date=None):
-        return self.caller.apply(SimpleUnitWriter.date(prop_name, start_date, end_date))
+        return self.caller.unpack()
 
     def url(self, prop_name: str, value: str):
-        return self.caller.apply(SimpleUnitWriter.url(prop_name, value))
+        return self.caller.unpack()
 
     def email(self, prop_name: str, value: str):
-        return self.caller.apply(SimpleUnitWriter.email(prop_name, value))
+        return self.caller.unpack()
 
     def phone_number(self, prop_name: str, value: str):
-        return self.caller.apply(SimpleUnitWriter.phone_number(prop_name, value))
+        return self.caller.unpack()
 
     def number(self, prop_name: str, value: Union[int, float]):
-        return self.caller.apply(SimpleUnitWriter.number(prop_name, value))
+        return self.caller.unpack()
 
     def checkbox(self, prop_name: str, value: bool):
-        return self.caller.apply(SimpleUnitWriter.checkbox(prop_name, value))
+        return self.caller.unpack()
 
     def select(self, prop_name: str, value: str):
-        return self.caller.apply(SimpleUnitWriter.select(prop_name, value))
+        return self.caller.unpack()
 
     def files(self, prop_name: str, value: str):
-        return self.caller.apply(SimpleUnitWriter.files(prop_name, value))
+        return self.caller.unpack()
 
     def people(self, prop_name: str, value: str):
-        return self.caller.apply(SimpleUnitWriter.people(prop_name, value))
+        return self.caller.unpack()
 
     def multi_select(self, prop_name: str, values: list[str]):
-        return self.caller.apply(SimpleUnitWriter.multi_select(prop_name, values))
+        return self.caller.unpack()
 
     def relation(self, prop_name: str, page_ids: list[str]):
-        return self.caller.apply(SimpleUnitWriter.relation(prop_name, page_ids))
+        return self.caller.unpack()

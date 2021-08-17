@@ -93,7 +93,7 @@ class TabularPageProps(EditorComponent):
             proceed = self.eval_empty(self.read(prop_name))
 
         if proceed:
-            self.agent.props.apply(carrier)
+            self.agent.props.unpack()
 
     @staticmethod
     def eval_empty(value):

@@ -1,14 +1,13 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod, ABCMeta
 from pprint import pprint
 
+from ..common import ValueCarrier
 
-class QueryFilter(ABC):
+
+class QueryFilter(ValueCarrier):
     """참고로, nesting 기준이 Notion 앱에서보다 더 강하다.
     예를 들어 any('contains', ['1', 'A', '@'] 형식으로 필터를 구성할 경우
     Notion 앱에서는 nesting == 0이지만, API 상에서는 1로 판정한다."""
-    @abstractmethod
-    def apply(self):
-        pass
 
     @property
     @abstractmethod
@@ -28,7 +27,7 @@ class PlainFilter(QueryFilter):
     def __init__(self, plain_filter: dict):
         self._value = plain_filter
 
-    def apply(self):
+    def unpack(self):
         return self._value
 
     @property
@@ -36,7 +35,7 @@ class PlainFilter(QueryFilter):
         return 0
 
 
-class CompoundFilter(QueryFilter):
+class CompoundFilter(QueryFilter, metaclass=ABCMeta):
     def __init__(self, elements: list[QueryFilter]):
         homos = []
         heteros = []
@@ -53,17 +52,14 @@ class CompoundFilter(QueryFilter):
             self._nesting = max(self._nesting, 1 + max([e.nesting for e in heteros]))
         self.elements = heteros
         for e in homos:
+            assert isinstance(e, CompoundFilter)
             self.elements.extend(e.elements)
 
         if self.nesting > 2:
             # TODO: AssertionError 대신 커스텀 에러클래스 정의
             print('Nesting greater than 2!')
-            pprint(self.apply())
+            pprint(self.unpack())
             raise AssertionError
-
-    @abstractmethod
-    def apply(self):
-        pass
 
     @property
     def nesting(self):
@@ -71,10 +67,10 @@ class CompoundFilter(QueryFilter):
 
 
 class AndFilter(CompoundFilter):
-    def apply(self):
+    def unpack(self):
         return {'and': list(e.unpack() for e in self.elements)}
 
 
 class OrFilter(CompoundFilter):
-    def apply(self):
+    def unpack(self):
         return {'or': list(e.unpack() for e in self.elements)}

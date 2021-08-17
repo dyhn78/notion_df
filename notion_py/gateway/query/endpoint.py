@@ -15,11 +15,14 @@ class Query(LongRequestor):
         if database_parser is not None:
             self.filter_maker.add_db_retrieve(database_parser)
 
+    def __bool__(self):
+        return True
+
     def unpack(self, print_result=False):
         args = dict(**self.sort.unpack(),
                     database_id=self.page_id)
         if self._filter_is_not_empty:
-            args.update(filter=self._filter.apply())
+            args.update(filter=self._filter.unpack())
         return args
 
     @retry_request
@@ -28,7 +31,7 @@ class Query(LongRequestor):
                     page_size=page_size if page_size else self.MAX_PAGE_SIZE)
         if start_cursor:
             args.update(start_cursor=start_cursor)
-        response = self.notion.databases.query()
+        response = self.notion.databases.query(**args)
         return response
 
     def clear_filter(self):
