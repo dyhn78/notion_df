@@ -6,9 +6,8 @@ from notion_py.gateway.common.long_requestor import LongRequestor
 
 
 class Query(LongRequestor):
-    def __init__(self, page_id: str, database_parser=None):
-        self.page_id = page_id
-        self._id_apply = {'database_id': page_id}
+    def __init__(self, database_id: str, database_parser=None):
+        self.page_id = database_id
         self._filter = PlainFilter({})
         self._filter_is_not_empty = False
         self.sort = QuerySort()
@@ -17,16 +16,19 @@ class Query(LongRequestor):
             self.filter_maker.add_db_retrieve(database_parser)
 
     def apply(self, print_result=False):
-        filter_apply = {'filter': self._filter.apply()} \
-            if self._filter_is_not_empty else None
-        return self._merge_dict(self._id_apply, self.sort.apply(), filter_apply)
+        args = dict(**self.sort.apply(),
+                    database_id=self.page_id)
+        if self._filter_is_not_empty:
+            args.update(filter=self._filter.apply())
+        return args
 
     @retry_request
     def _execute_once(self, page_size=None, start_cursor=None):
-        page_size = {'page_size': (page_size if page_size else self.MAX_PAGE_SIZE)}
-        start_cursor = {'start_cursor': start_cursor} if start_cursor else None
-        args = self._merge_dict(self.apply(), start_cursor, page_size)
-        response = self.notion.databases.query(**args)
+        args = dict(**self.apply(),
+                    page_size=page_size if page_size else self.MAX_PAGE_SIZE)
+        if start_cursor:
+            args.update(start_cursor=start_cursor)
+        response = self.notion.databases.query()
         return response
 
     def clear_filter(self):

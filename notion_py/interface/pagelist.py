@@ -1,6 +1,6 @@
 from typing import Optional
 
-from .frame_property import PropertyFrame
+from notion_py.interface.frame.property import PropertyFrame
 from ..gateway.common import Requestor
 from ..gateway.parse import PageListParser
 

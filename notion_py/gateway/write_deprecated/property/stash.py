@@ -13,15 +13,69 @@ class PagePropertyStash(TwofoldDictStash, metaclass=ABCMeta):
     def __init__(self):
         super().__init__()
         self.read = defaultdict(dict)
+        self._overwrite_parameter = True
 
     def apply(self) -> dict:
         return {'properties': self._unpack()}
+
+    def set_overwrite(self, value: bool):
+        self._overwrite_parameter = value
+
+    def fetch(self, value: dict):
+        self.read.update(**value)
 
     def stash(self, carrier: WritePageProperty) -> Optional[WritePageProperty]:
         if self._overwrite(carrier.prop_name):
             return super().stash(carrier)
         else:
             return None
+
+    def _overwrite(self, prop_name: str):
+        if self._overwrite_parameter:
+            return True
+        else:
+            return self.read_empty_value(prop_name)
+
+    def read_empty_value(self, prop_name: str) -> bool:
+        value = self.read[prop_name]
+        return self._is_empty_value(value)
+
+    @classmethod
+    def _is_empty_value(cls, value) -> bool:
+        if type(value) == list:
+            if bool(value):
+                # TODO : fetch 가 정보를 read와 read_rich로 나누어 담는 기능이 구현되면,
+                #  이 기능은 없애야 한다.
+                return cls._is_empty_value(value[0])
+            return True
+        elif type(value) == bool:
+            return value
+        else:
+            return str(value) in ['', '.', '-', '0', '1']
+
+
+class BasicPagePropertyStash(PagePropertyStash):
+    def __init__(self):
+        super().__init__()
+        self.write = PagePropertyPlainAgent(self)
+        self.write_rich = PagePropertyRichAgent(self)
+
+
+class PagePropertyRichAgent:
+    def __init__(self, caller: BasicPagePropertyStash):
+        self.caller = caller
+
+    def title(self):
+        res = WriteTitleProperty('title')
+        return self.caller.stash(res)
+
+
+class PagePropertyPlainAgent:
+    def __init__(self, caller: BasicPagePropertyStash):
+        self.caller = caller
+
+    def title(self, value):
+        return self.caller.stash(WriteTitleProperty('title', value))
 
 
 class TabularPagePropertyStash(PagePropertyStash):
@@ -84,27 +138,3 @@ class TabularPagePropertyPlainAgent:
 
     def relation(self, prop_name: str, page_ids: list[str]):
         return self.caller.stash(WriteSimplePageProperty.relation(prop_name, page_ids))
-
-
-class BasicPagePropertyStash(PagePropertyStash):
-    def __init__(self):
-        super().__init__()
-        self.write = PagePropertyPlainAgent(self)
-        self.write_rich = PagePropertyRichAgent(self)
-
-
-class PagePropertyRichAgent:
-    def __init__(self, caller: BasicPagePropertyStash):
-        self.caller = caller
-
-    def title(self):
-        res = WriteTitleProperty('title')
-        return self.caller.stash(res)
-
-
-class PagePropertyPlainAgent:
-    def __init__(self, caller: BasicPagePropertyStash):
-        self.caller = caller
-
-    def title(self, value):
-        return self.caller.stash(WriteTitleProperty('title', value))

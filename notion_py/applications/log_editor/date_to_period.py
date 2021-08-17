@@ -2,7 +2,7 @@ from .constants import *
 from notion_py.applications.log_editor.match_property import MatchorCreatebyIndex, \
     MatchbyIndex
 from notion_py.gateway.parse import PageParser
-from notion_py.gateway.write import CreateTabularPage
+from notion_py.gateway.write_deprecated import CreateTabularPage
 from ..constants import ID_PERIODS
 
 

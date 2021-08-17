@@ -7,18 +7,18 @@ from typing import Optional, Any
 from notion_py.gateway.others import GetBlockChildren
 from notion_py.gateway.parse import PageListParser, BlockChildrenParser
 from notion_py.gateway.query import Query
-from .page_deprecated import TabularPageDeprecated
-from .frame_property import PropertyFrame
+from notion_py.interface.page_deprecated import TabularPageDeprecated
+from notion_py.interface.get.property import PropertyFrame
 
 
-class DatabaseFrame:
+class DatabaseGetter:
     def __init__(self, database_id: str,
                  database_name: str,
                  properties: Optional[dict[str, Any]] = None,
                  unit=TabularPageDeprecated):
         self.database_id = database_id
         self.database_name = database_name
-        self.props = PropertyFrame(properties)
+        self.frame = PropertyFrame(properties)
         self.unit = unit
 
     @staticmethod
@@ -32,20 +32,20 @@ class DatabaseFrame:
     def make_query(self):
         return Query(self.database_id)
 
-    def insert_query_deprecated(self, query: Query, page_size=0):
+    def send_query_deprecated(self, query: Query, page_size=0):
         response = query.execute(page_size=page_size)
         return self._pagelist()(response, self)
 
-    def execute_query(self, page_size=0) -> PageListDeprecated:
+    def query_all_deprecated(self, page_size=0) -> PageListDeprecated:
         query = self.make_query()
-        return self.insert_query_deprecated(query, page_size)
+        return self.send_query_deprecated(query, page_size)
 
 
 class PageListDeprecated:
     PROP_NAME = {}
 
     def __init__(self, query_response: dict,
-                 frame: DatabaseFrame):
+                 frame: DatabaseGetter):
         # TODO > unit 없애기. frame.unit에서 얻게 하기.
         self.frame = frame
 

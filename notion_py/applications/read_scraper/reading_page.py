@@ -4,7 +4,7 @@ from typing import Union
 
 from notion_py.interface import TabularPageDeprecated
 from notion_py.gateway.parse import PageParser
-from notion_py.gateway.write import AppendBlockChildren, CreateBasicPage
+from notion_py.gateway.write_deprecated import AppendBlockChildren, CreateBasicPage
 from .lib_gy import GoyangLibrary
 
 

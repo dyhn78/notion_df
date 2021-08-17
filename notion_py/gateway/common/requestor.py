@@ -26,7 +26,7 @@ def retry_request(method: Callable, recursion_limit=5):
 
 
 class Requestor(Structure):
-    parent_id = ''
+    page_id = ''
 
     @property
     def notion(self) -> Union[Client, AsyncClient]:
@@ -43,19 +43,9 @@ class Requestor(Structure):
         pass
 
     def print_url(self, string, page_id=''):
-        page_id = self.parent_id if not page_id else page_id
+        page_id = self.page_id if not page_id else page_id
         if page_id:
             stopwatch(' '.join([string, page_id_to_url(page_id)]))
-
-    @classmethod
-    def _merge_dict(cls, *dicts: Union[dict, None]):
-        res = {}
-        for carrier in dicts:
-            if carrier is None:
-                continue
-            for key, value in carrier.items():
-                res[key] = value
-        return res
 
     @classmethod
     def _zip_dict(cls, *dicts: Union[dict, None]):

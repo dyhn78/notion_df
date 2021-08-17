@@ -33,7 +33,7 @@ class UpdateBasicPage(Requestor):
 
 class CreateBasicPage(Requestor):
     def __init__(self, parent_id: str):
-        self.page_id = parent_id
+        self.parent_id = parent_id
         self.props = BasicPagePropertyStash()
         self.children = BlockChildrenStash()
 
@@ -43,7 +43,7 @@ class CreateBasicPage(Requestor):
     def apply(self):
         return dict(**self.props.apply(),
                     **self.children.apply(),
-                    parent={'page_id': self.page_id})
+                    parent={'page_id': self.parent_id})
 
     @retry_request
     def execute(self):
@@ -56,15 +56,26 @@ class CreateBasicPage(Requestor):
         return res
 
 
-class UpdateTabularPage(UpdateBasicPage):
-    def __init__(self, page_id: str):
+class DatabaseTable(metaclass=ABCMeta):
+    def __init__(self, parsed_database: DatabaseParser = None):
+        if parsed_database is not None:
+            self.id_table = parsed_database.prop_id_table
+            self.types_table = parsed_database.prop_type_table
+        else:
+            self.id_table = self.types_table = None
+
+
+class UpdateTabularPage(UpdateBasicPage, DatabaseTable):
+    def __init__(self, page_id: str, parsed_database: DatabaseParser = None):
         UpdateBasicPage.__init__(self, page_id)
+        DatabaseTable.__init__(self, parsed_database)
         self.props = TabularPagePropertyStash()
 
 
-class CreateTabularPage(CreateBasicPage):
-    def __init__(self, parent_id: str):
+class CreateTabularPage(CreateBasicPage, DatabaseTable):
+    def __init__(self, parent_id: str, parsed_database: DatabaseParser = None):
         CreateBasicPage.__init__(self, parent_id)
+        DatabaseTable.__init__(self, parsed_database)
         self.props = TabularPagePropertyStash()
 
 
@@ -72,7 +83,6 @@ class AppendBlockChildren(Requestor):
     def __init__(self, parent_id: str):
         self.parent_id = parent_id
         self.children = BlockChildrenStash()
-        self.overwrite_option = True
 
     def __bool__(self):
         return bool(self.children.apply())

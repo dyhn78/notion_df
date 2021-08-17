@@ -9,8 +9,8 @@ from notion_py.applications.monad_graph.self_related_dataframe \
 
 class BuildGraph:
     def __init__(self, page_size: int):
-        self.themes = theme_dataframe.execute_query(page_size=page_size)
-        self.ideas = idea_dataframe.execute_query(page_size=page_size)
+        self.themes = theme_dataframe.query_all_deprecated(page_size=page_size)
+        self.ideas = idea_dataframe.query_all_deprecated(page_size=page_size)
         self.all: dict[str, SelfRelatedPageListDeprecated] \
             = {pagelist.frame.database_name: pagelist
                for pagelist in [self.themes, self.ideas]}
