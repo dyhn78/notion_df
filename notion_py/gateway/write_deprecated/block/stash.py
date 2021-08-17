@@ -13,7 +13,7 @@ class BlockChildrenStash(TwofoldListStash):
         self.write_rich = BlockChildAgent(self)
         self._overwrite = False
 
-    def apply(self):
+    def unpack(self):
         return {'children': self._unpack()}
 
     def set_overwrite(self, value: bool):

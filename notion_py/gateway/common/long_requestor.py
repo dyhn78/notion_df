@@ -1,10 +1,10 @@
 from abc import abstractmethod
 
-from notion_py.gateway.common import Requestor, retry_request
+from notion_py.gateway.common import GatewayRequestor, retry_request
 from notion_py.utility import stopwatch
 
 
-class LongRequestor(Requestor):
+class LongRequestor(GatewayRequestor):
     MAX_PAGE_SIZE = 100
     INF = int(1e5) - 1
 
@@ -13,7 +13,7 @@ class LongRequestor(Requestor):
     def _execute_once(self, page_size=None, start_cursor=None):
         pass
 
-    def execute(self, page_size=INF):
+    def execute(self, page_size=0):
         res = []
         result = {'results': res}
         if page_size == 0:

@@ -9,7 +9,7 @@ class BlockContents(ValueCarrier):
         self.read: Optional[BlockChildParser] = None
         self._overwrite = True
 
-    def apply(self) -> dict:
+    def unpack(self) -> dict:
         pass
 
     def fetch(self, value: BlockChildParser):

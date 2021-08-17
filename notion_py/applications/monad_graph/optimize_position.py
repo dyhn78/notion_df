@@ -5,7 +5,7 @@ import networkx as nx
 from random import random
 
 from notion_py.utility import stopwatch
-from .self_related_dataframe import SelfRelatedDatabaseFrame
+from .self_related_dataframe import SelfRelatedDatabasePreset
 
 
 def get_dist(pos1: tuple[float, float], pos2: tuple[float, float]):
@@ -69,7 +69,7 @@ class GradientDescent:
         for edge_name in self.G.edges:
             relation_type = self.G.edges[edge_name]['relation_type']
             edge_weight = self.edge_weights[
-                SelfRelatedDatabaseFrame.parse_edge_type(relation_type)]
+                SelfRelatedDatabasePreset.parse_edge_type(relation_type)]
             self.add_attraction_between(edge_name[0], edge_name[1], edge_weight)
 
     def add_attraction_between(self, hi_node: str, lo_node: str, edge_weight):

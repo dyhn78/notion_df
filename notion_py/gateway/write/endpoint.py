@@ -1,104 +1,87 @@
-from abc import ABCMeta
-
+from .block import BlockChildrenStash, BlockContents
+from .property import PagePropertyStash
 from ...utility import stopwatch, page_id_to_url
-from ..common import Requestor, retry_request
-from ..parse import DatabaseParser
-from .block.stash import BlockChildrenStash
-from .block.contents import BlockContents
-from .property import BasicPagePropertyStash, TabularPagePropertyStash
+from ..common import GatewayRequestor, retry_request
 
 
-class UpdateBasicPage(Requestor):
+class UpdatePage(GatewayRequestor):
     def __init__(self, page_id):
         self.page_id = page_id
-        self._id_apply = {'page_id': page_id}
-        self.props = BasicPagePropertyStash()
+        self.props = PagePropertyStash()
 
     def __bool__(self):
-        return bool(self.props.apply())
+        return bool(self.props.unpack())
 
-    def apply(self):
-        return dict(**self.props.apply(),
+    def unpack(self):
+        return dict(**self.props.unpack(),
                     page_id=self.page_id)
 
     @retry_request
     def execute(self):
-        if not self.props:
+        if not bool(self):
             return {}
-        res = self.notion.pages.update(**self.apply())
+        res = self.notion.pages.update(**self.unpack())
         stopwatch(' '.join(['update', page_id_to_url(self.page_id)]))
-        self.props = BasicPagePropertyStash()
         return res
 
 
-class CreateBasicPage(Requestor):
+class CreatePage(GatewayRequestor):
     def __init__(self, parent_id: str):
-        self.page_id = parent_id
-        self.props = BasicPagePropertyStash()
+        self.parent_id = parent_id
+        self.props = PagePropertyStash()
         self.children = BlockChildrenStash()
 
     def __bool__(self):
-        return bool(self.props.apply()) and bool(self.children.apply())
+        return any([bool(self.props.unpack()),
+                    bool(self.children.unpack())])
 
-    def apply(self):
-        return dict(**self.props.apply(),
-                    **self.children.apply(),
-                    parent={'page_id': self.page_id})
+    def unpack(self):
+        return dict(**self.props.unpack(),
+                    **self.children.unpack(),
+                    parent={'page_id': self.parent_id})
 
     @retry_request
     def execute(self):
-        if not (self.props or self.children):
+        if not bool(self):
             return {}
-        res = self.notion.pages.create(**self.apply())
+        res = self.notion.pages.create(**self.unpack())
         stopwatch(' '.join(['create', page_id_to_url(res['id'])]))
-        self.props = BasicPagePropertyStash()
-        self.children = BlockChildrenStash()
         return res
 
 
-class UpdateTabularPage(UpdateBasicPage):
-    def __init__(self, page_id: str):
-        UpdateBasicPage.__init__(self, page_id)
-        self.props = TabularPagePropertyStash()
-
-
-class CreateTabularPage(CreateBasicPage):
-    def __init__(self, parent_id: str):
-        CreateBasicPage.__init__(self, parent_id)
-        self.props = TabularPagePropertyStash()
-
-
-class AppendBlockChildren(Requestor):
+class AppendBlockChildren(GatewayRequestor):
     def __init__(self, parent_id: str):
         self.parent_id = parent_id
         self.children = BlockChildrenStash()
         self.overwrite_option = True
 
     def __bool__(self):
-        return bool(self.children.apply())
+        return bool(self.children.unpack())
 
-    def apply(self):
-        return dict(**self.children.apply(),
+    def unpack(self):
+        return dict(**self.children.unpack(),
                     block_id=self.parent_id)
 
     @retry_request
-    def execute(self) -> dict:
-        if not self.children:
+    def execute(self):
+        if not bool(self):
             return {}
+        res = self.notion.blocks.children.append(**self.unpack())
         stopwatch(' '.join(['append', page_id_to_url(self.parent_id)]))
-        res = self.notion.blocks.children.append(**self.apply())
-        self.children = BlockChildrenStash()
         return res
 
 
-class UpdateBlock(Requestor):
+class UpdateBlock(GatewayRequestor):
     # TODO : API가 만들어지면 추가할 예정.
     def __init__(self, block_id: str):
-        self._id_raw = block_id
+        self.block_id = block_id
         self.contents = BlockContents()
         pass
 
-    def apply(self):
+    def __bool__(self):
+        pass
+
+    def unpack(self):
         pass
 
     def execute(self):

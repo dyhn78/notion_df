@@ -1,11 +1,11 @@
-from notion_py.gateway.common import Requestor
+from notion_py.gateway.common import GatewayRequestor
 from notion_py.gateway.parse import PageParser
 from notion_py.gateway.others import RetrievePage
 from notion_py.gateway.write_deprecated import UpdateBasicPage, BasicPagePropertyStash, \
     AppendBlockChildren, UpdateTabularPage
 
 
-class BasicPageDeprecated(Requestor):
+class BasicPageDeprecated(GatewayRequestor):
     def __init__(self, parsed_page: PageParser, parent_id=''):
         self.page_id = parsed_page.page_id
         self.title = parsed_page.title
@@ -27,11 +27,11 @@ class BasicPageDeprecated(Requestor):
         parsed_page = PageParser.from_retrieve_response(response)
         return cls(parsed_page)
 
-    def apply(self):
-        return [self._update_props.apply(), self._append_blocks.apply()]
+    def unpack(self):
+        return [self._update_props.unpack(), self._append_blocks.unpack()]
 
     def execute(self):
-        print(self.apply())
+        print(self.unpack())
         return [self._update_props.execute(), self._append_blocks.execute()]
 
 

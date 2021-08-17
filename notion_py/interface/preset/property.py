@@ -19,11 +19,10 @@ class PropertyFrame(dict):
 class PropertyUnit:
     def __init__(self, values=None):
         if type(values) == tuple:
-            prop_name, prop_value = values
+            prop_name, prop_values = values
         elif type(values) == str:
-            prop_name = values
-            prop_value = None
+            prop_name, prop_values = values, None
         else:
             raise AssertionError(f'Invalid PropertyUnit: {values}')
         self.name = prop_name
-        self.value = prop_value
+        self.values = prop_values

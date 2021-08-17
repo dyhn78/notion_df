@@ -1,9 +1,9 @@
 from abc import ABCMeta
 
-from notion_py.gateway.common import ValueCarrier
+from notion_py.gateway.common import ValueCarrierDeprecated
 
 
-class TwofoldStash(ValueCarrier, metaclass=ABCMeta):
+class TwofoldStash(ValueCarrierDeprecated, metaclass=ABCMeta):
     def __init__(self):
         self._subcarriers = []
 
@@ -16,13 +16,13 @@ class TwofoldStash(ValueCarrier, metaclass=ABCMeta):
 
 class TwofoldListStash(TwofoldStash, metaclass=ABCMeta):
     def _unpack(self):
-        return [carrier.apply() for carrier in self._subcarriers]
+        return [carrier.unpack() for carrier in self._subcarriers]
 
-    def stash(self, carrier: ValueCarrier):
+    def stash(self, carrier: ValueCarrierDeprecated):
         self._subcarriers.append(carrier)
         return carrier
 
-    def stashleft(self, carrier: ValueCarrier):
+    def stashleft(self, carrier: ValueCarrierDeprecated):
         self._subcarriers.insert(0, carrier)
         return carrier
 
@@ -31,11 +31,11 @@ class TwofoldDictStash(TwofoldStash, metaclass=ABCMeta):
     def _unpack(self):
         res = {}
         for carrier in self._subcarriers:
-            for key, value in carrier.apply().items():
+            for key, value in carrier.unpack().items():
                 res[key] = value
         return res
 
-    def stash(self, carrier: ValueCarrier):
+    def stash(self, carrier: ValueCarrierDeprecated):
         """
         return 값을 carrier가 아니라 subcarriers[-1]로 설정하였다.
         본래 리스트 append 메소드는 원본 id를 그대로 유지한 채 집어넣어야 정상이지만,

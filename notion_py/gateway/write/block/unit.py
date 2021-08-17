@@ -1,17 +1,18 @@
 from typing import Optional
 
-from ..property.unit import WriteRichTextProperty
-from notion_py.gateway.common.carriers import ValueCarrier
+from ..property.unit import RichTextUnitWriter
+from notion_py.gateway.common import ValueCarrier
 
 
-class WriteBlock(ValueCarrier):
+class BlockWriter(ValueCarrier):
+    # TODO : Children 을 가질 수 있게 수정하기.
     def __init__(self, block_type, value_type, contents=None):
         self._block_type = block_type
         self._value_type = value_type
         if contents is not None:
             self.contents = contents
 
-    def apply(self):
+    def unpack(self):
         res = {
             'object': 'block',
             'type': self._block_type,
@@ -27,17 +28,17 @@ class WriteBlock(ValueCarrier):
         return cls('child_page', 'title', {'title': title})
 
 
-class WriteTextBlock(WriteBlock, WriteRichTextProperty):
+class TextBlockWriter(BlockWriter, RichTextUnitWriter):
     value_type = 'text'
 
     def __init__(self, block_type, plain_text_contents: Optional[str] = None, **kwargs):
-        WriteBlock.__init__(self, block_type=block_type, value_type='text')
-        WriteRichTextProperty.__init__(self, value_type='text', prop_name=block_type,
-                                       plain_text_contents=plain_text_contents)
+        BlockWriter.__init__(self, block_type=block_type, value_type='text')
+        RichTextUnitWriter.__init__(self, value_type='text', prop_name=block_type,
+                                    plain_text_contents=plain_text_contents)
         self._kwargs = kwargs
 
     @property
     def contents(self):
-        contents = WriteRichTextProperty.apply(self)
+        contents = RichTextUnitWriter.unpack(self)
         contents.update(**self._kwargs)
         return contents

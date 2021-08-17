@@ -15,8 +15,8 @@ class Query(LongRequestor):
         if database_parser is not None:
             self.filter_maker.add_db_retrieve(database_parser)
 
-    def apply(self, print_result=False):
-        args = dict(**self.sort.apply(),
+    def unpack(self, print_result=False):
+        args = dict(**self.sort.unpack(),
                     database_id=self.page_id)
         if self._filter_is_not_empty:
             args.update(filter=self._filter.apply())
@@ -24,7 +24,7 @@ class Query(LongRequestor):
 
     @retry_request
     def _execute_once(self, page_size=None, start_cursor=None):
-        args = dict(**self.apply(),
+        args = dict(**self.unpack(),
                     page_size=page_size if page_size else self.MAX_PAGE_SIZE)
         if start_cursor:
             args.update(start_cursor=start_cursor)

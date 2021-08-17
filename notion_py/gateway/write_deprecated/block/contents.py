@@ -1,15 +1,15 @@
 from typing import Optional
 
 from notion_py.gateway.parse import BlockChildParser
-from notion_py.gateway.common import ValueCarrier
+from notion_py.gateway.common import ValueCarrierDeprecated
 
 
-class BlockContents(ValueCarrier):
+class BlockContents(ValueCarrierDeprecated):
     def __init__(self):
         self.read: Optional[BlockChildParser] = None
         self._overwrite = True
 
-    def apply(self) -> dict:
+    def unpack(self) -> dict:
         pass
 
     def fetch(self, value: BlockChildParser):

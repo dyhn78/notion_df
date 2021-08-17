@@ -1,5 +1,17 @@
-from ..twofold_stash import TwofoldListStash
-from .unit import WriteTextBlock
+from abc import ABCMeta
+
+from .unit import TextBlockWriter
+from ...common.carriers import TwofoldStash
+from ...common import ValueCarrier
+
+
+class TwofoldListStash(TwofoldStash, metaclass=ABCMeta):
+    def _unpack(self):
+        return [carrier.unpack() for carrier in self._subcarriers]
+
+    def apply_left(self, carrier: ValueCarrier):
+        self._subcarriers.insert(0, carrier)
+        return self._subcarriers[0]
 
 
 class BlockChildrenStash(TwofoldListStash):
@@ -13,7 +25,7 @@ class BlockChildrenStash(TwofoldListStash):
         self.write_rich = BlockChildAgent(self)
         self._overwrite = False
 
-    def apply(self):
+    def unpack(self):
         return {'children': self._unpack()}
 
     def set_overwrite(self, value: bool):
@@ -26,28 +38,28 @@ class BlockChildPlainAgent:
         self.caller = caller
 
     def paragraph(self, text_contents):
-        return self.caller.stash(WriteTextBlock('paragraph', text_contents))
+        return self.caller.apply(TextBlockWriter('paragraph', text_contents))
 
     def heading_1(self, text_contents):
-        return self.caller.stash(WriteTextBlock('heading_1', text_contents))
+        return self.caller.apply(TextBlockWriter('heading_1', text_contents))
 
     def heading_2(self, text_contents):
-        return self.caller.stash(WriteTextBlock('heading_2', text_contents))
+        return self.caller.apply(TextBlockWriter('heading_2', text_contents))
 
     def heading_3(self, text_contents):
-        return self.caller.stash(WriteTextBlock('heading_3', text_contents))
+        return self.caller.apply(TextBlockWriter('heading_3', text_contents))
 
     def bulleted_list(self, text_contents):
-        return self.caller.stash(WriteTextBlock('bulleted_list_item', text_contents))
+        return self.caller.apply(TextBlockWriter('bulleted_list_item', text_contents))
 
     def numbered_list(self, text_contents):
-        return self.caller.stash(WriteTextBlock('numbered_list_item', text_contents))
+        return self.caller.apply(TextBlockWriter('numbered_list_item', text_contents))
 
     def to_do(self, text_contents, checked=False):
-        return self.caller.stash(WriteTextBlock('to_do', text_contents, checked=checked))
+        return self.caller.apply(TextBlockWriter('to_do', text_contents, checked=checked))
 
     def toggle(self, text_contents):
-        return self.caller.stash(WriteTextBlock('toggle', text_contents))
+        return self.caller.apply(TextBlockWriter('toggle', text_contents))
 
 
 class BlockChildAgent:
@@ -55,25 +67,25 @@ class BlockChildAgent:
         self.caller = caller
 
     def paragraph(self):
-        return self.caller.stash(WriteTextBlock('paragraph'))
+        return self.caller.apply(TextBlockWriter('paragraph'))
 
     def heading_1(self):
-        return self.caller.stash(WriteTextBlock('heading_1'))
+        return self.caller.apply(TextBlockWriter('heading_1'))
 
     def heading_2(self):
-        return self.caller.stash(WriteTextBlock('heading_2'))
+        return self.caller.apply(TextBlockWriter('heading_2'))
 
     def heading_3(self):
-        return self.caller.stash(WriteTextBlock('heading_3'))
+        return self.caller.apply(TextBlockWriter('heading_3'))
 
     def bulleted_list(self):
-        return self.caller.stash(WriteTextBlock('bulleted_list_item'))
+        return self.caller.apply(TextBlockWriter('bulleted_list_item'))
 
     def numbered_list(self):
-        return self.caller.stash(WriteTextBlock('numbered_list_item'))
+        return self.caller.apply(TextBlockWriter('numbered_list_item'))
 
     def to_do(self, checked=False):
-        return self.caller.stash(WriteTextBlock('to_do', checked=checked))
+        return self.caller.apply(TextBlockWriter('to_do', checked=checked))
 
     def toggle(self):
-        return self.caller.stash(WriteTextBlock('toggle'))
+        return self.caller.apply(TextBlockWriter('toggle'))

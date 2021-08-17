@@ -1,11 +1,11 @@
 from typing import Optional
 
-from notion_py.interface.frame.property import PropertyFrame
-from ..gateway.common import Requestor
-from ..gateway.parse import PageListParser
+from notion_py.interface.preset.property import PropertyFrame
+from notion_py.gateway.common import GatewayRequestor
+from notion_py.gateway.parse import PageListParser
 
 
-class PageList(Requestor):
+class PageList(GatewayRequestor):
     def __init__(self, query_response: dict,
                  frame: Optional[PropertyFrame] = None):
         if frame is None:
@@ -21,7 +21,7 @@ class PageList(Requestor):
             pass
         return
 
-    def apply(self):
+    def unpack(self):
         pass
 
     def execute(self):

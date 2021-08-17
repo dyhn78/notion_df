@@ -1,4 +1,3 @@
 from .blocks import BlockChildParser, BlockChildrenParser
-from .page import PageParser
-from .pagelist import PageListParser
+from .page import PageParser, PageListParser
 from .database import DatabaseParser

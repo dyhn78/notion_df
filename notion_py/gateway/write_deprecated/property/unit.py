@@ -2,10 +2,10 @@ from abc import ABCMeta
 from datetime import datetime as datetimeclass, date as dateclass
 from typing import Union, Optional
 
-from notion_py.gateway.common import ValueCarrier, ListStash
+from notion_py.gateway.common import ValueCarrierDeprecated, ListStash
 
 
-class WritePageProperty(ValueCarrier, metaclass=ABCMeta):
+class WritePageProperty(ValueCarrierDeprecated, metaclass=ABCMeta):
     def __init__(self, value_type, prop_name, prop_value):
         super().__init__()
         self.value_type = value_type
@@ -13,7 +13,7 @@ class WritePageProperty(ValueCarrier, metaclass=ABCMeta):
         if prop_value is not None:
             self.prop_value = prop_value
 
-    def apply(self):
+    def unpack(self):
         return {self.prop_name: self._wrap_to_prop()}
 
     def _wrap_to_prop(self):

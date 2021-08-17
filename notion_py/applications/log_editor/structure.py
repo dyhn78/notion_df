@@ -3,7 +3,7 @@ from abc import abstractmethod
 from typing import Union
 
 from notion_py.gateway.parse import PageParser, PageListParser
-from notion_py.gateway.common import Requestor
+from notion_py.gateway.common import GatewayRequestor
 
 
 class RequestStack:
@@ -24,7 +24,7 @@ class RequestStack:
         # TODO : 비동기 프로그래밍 구현
         self._requests_queue.clear()
 
-    def _append_requests(self, task: Requestor):
+    def _append_requests(self, task: GatewayRequestor):
         self._requests_queue.append(task)
         self.process_count += 1
 

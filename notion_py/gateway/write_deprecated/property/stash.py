@@ -15,7 +15,7 @@ class PagePropertyStash(TwofoldDictStash, metaclass=ABCMeta):
         self.read = defaultdict(dict)
         self._overwrite_parameter = True
 
-    def apply(self) -> dict:
+    def unpack(self) -> dict:
         return {'properties': self._unpack()}
 
     def set_overwrite(self, value: bool):

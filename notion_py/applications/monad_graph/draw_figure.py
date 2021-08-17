@@ -2,7 +2,7 @@ import networkx as nx
 from plotly import graph_objects as go
 
 from notion_py.applications.monad_graph.self_related_dataframe import \
-    SelfRelatedDatabaseFrame
+    SelfRelatedDatabasePreset
 
 
 class DrawFigure:
@@ -61,7 +61,7 @@ class DrawFigure:
         ky = self.node_info(lead_node)
         for follow_node in self.G.predecessors(lead_node):
             relation_type = self.G.edges[follow_node, lead_node]['relation_type']
-            if SelfRelatedDatabaseFrame.parse_edge_type(relation_type) == edge_type:
+            if SelfRelatedDatabasePreset.parse_edge_type(relation_type) == edge_type:
                 fo = self.node_info(follow_node)
                 trace['x'].extend([None, fo.x, ky.x])
                 trace['y'].extend([None, fo.y, ky.y])

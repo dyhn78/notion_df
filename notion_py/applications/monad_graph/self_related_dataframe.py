@@ -1,10 +1,11 @@
 from __future__ import annotations
-from notion_py.interface import DatabaseFrame, PageListDeprecated, TabularPageDeprecated
+from notion_py.interface.preset import DatabasePreset, PageListDeprecated
+from notion_py.interface import TabularPageDeprecated
 from notion_py.gateway.parse import PageListParser
 from ..constants import ID_THEMES, ID_IDEAS
 
 
-class SelfRelatedDatabaseFrame(DatabaseFrame):
+class SelfRelatedDatabasePreset(DatabasePreset):
     def __init__(self, database_id: str, database_name: str,
                  prop_name: dict[str, str], unit=TabularPageDeprecated):
         super().__init__(database_id, database_name, prop_name, unit)
@@ -41,10 +42,10 @@ class SelfRelatedDatabaseFrame(DatabaseFrame):
 
 
 class SelfRelatedPageListDeprecated(PageListDeprecated):
-    def __init__(self, dataframe: SelfRelatedDatabaseFrame,
+    def __init__(self, dataframe: SelfRelatedDatabasePreset,
                  query_response: dict):
         super().__init__(query_response, dataframe)
-        assert isinstance(self.frame, SelfRelatedDatabaseFrame)
+        assert isinstance(self.frame, SelfRelatedDatabasePreset)
 
     def pages_related(self, alien_page: TabularPageDeprecated,
                       alien_pagelist: SelfRelatedPageListDeprecated, prop_name: str):
@@ -72,7 +73,7 @@ THEME_PROP_NAME = {
     'hi_ideas': '📕구성',
     'in_ideas': '📕속성',
 }
-theme_dataframe = SelfRelatedDatabaseFrame(ID_THEMES, 'themes', THEME_PROP_NAME)
+theme_dataframe = SelfRelatedDatabasePreset(ID_THEMES, 'themes', THEME_PROP_NAME)
 
 IDEA_PROP_NAME = {
     'hi_ideas': '✖️구성',
@@ -83,4 +84,4 @@ IDEA_PROP_NAME = {
     'out_themes': '📕적용',
     'lo_themes': '📕요소',
 }
-idea_dataframe = SelfRelatedDatabaseFrame(ID_IDEAS, 'ideas', IDEA_PROP_NAME)
+idea_dataframe = SelfRelatedDatabasePreset(ID_IDEAS, 'ideas', IDEA_PROP_NAME)

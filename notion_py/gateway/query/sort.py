@@ -2,7 +2,7 @@ from ..common import ListStash
 
 
 class QuerySort(ListStash):
-    def apply(self) -> dict:
+    def unpack(self) -> dict:
         return {'sorts': self._unpack()}
 
     def append_ascending(self, prop_name):

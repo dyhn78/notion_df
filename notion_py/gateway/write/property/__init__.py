@@ -1,1 +1,1 @@
-from .stash import BasicPagePropertyStash, TabularPagePropertyStash
+from .stash import PagePropertyStash

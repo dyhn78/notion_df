@@ -26,10 +26,10 @@ class QueryFilter(ABC):
 
 class PlainFilter(QueryFilter):
     def __init__(self, plain_filter: dict):
-        self.value = plain_filter
+        self._value = plain_filter
 
     def apply(self):
-        return self.value
+        return self._value
 
     @property
     def nesting(self):
@@ -37,7 +37,7 @@ class PlainFilter(QueryFilter):
 
 
 class CompoundFilter(QueryFilter):
-    def __init__(self, elements):
+    def __init__(self, elements: list[QueryFilter]):
         homos = []
         heteros = []
         for e in elements:
@@ -72,9 +72,9 @@ class CompoundFilter(QueryFilter):
 
 class AndFilter(CompoundFilter):
     def apply(self):
-        return {'and': list(e.apply() for e in self.elements)}
+        return {'and': list(e.unpack() for e in self.elements)}
 
 
 class OrFilter(CompoundFilter):
     def apply(self):
-        return {'or': list(e.apply() for e in self.elements)}
+        return {'or': list(e.unpack() for e in self.elements)}

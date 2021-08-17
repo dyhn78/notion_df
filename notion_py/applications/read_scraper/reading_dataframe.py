@@ -1,4 +1,4 @@
-from notion_py.interface import DatabaseFrame
+from notion_py.interface.preset import DatabasePreset
 from ..constants import ID_READINGS
 from .reading_page import BookReadingPage
 
@@ -31,8 +31,8 @@ READING_PROPERTIES = {
     'not_available': '🔍대출중'
 }
 
-reading_dataframe = DatabaseFrame(ID_READINGS, 'reads',
-                                  READING_PROPERTIES, BookReadingPage)
+reading_dataframe = DatabasePreset(ID_READINGS, 'reads',
+                                   READING_PROPERTIES, BookReadingPage)
 
 
 class BookReadingQuerymaker:
@@ -42,14 +42,14 @@ class BookReadingQuerymaker:
     def query_regulars(cls, page_size=0):
         query = cls.df.make_query()
         frame = query.filter_maker.by_select(cls.df.frame['media_type'].name)
-        ft = frame.equals_to_any(*cls.df.frame['media_type'].value['book'])
+        ft = frame.equals_to_any(*cls.df.frame['media_type'].values['book'])
         frame = query.filter_maker.by_select(cls.df.frame['edit_status'].name)
         ft_status = frame.equals_to_any(
-            *[cls.df.frame['edit_status'].value[key]
+            *[cls.df.frame['edit_status'].values[key]
               for key in ['append', 'overwrite', 'continue']])
         ft_status |= frame.is_empty()
         ft &= ft_status
-        ft &= frame.does_not_equal(cls.df.frame['edit_status'].value['done'])
+        ft &= frame.does_not_equal(cls.df.frame['edit_status'].values['done'])
         query.push_filter(ft)
         pagelist = cls.df.send_query_deprecated(query, page_size=page_size)
         # TODO > pagelist.retrieve_childrens()
@@ -59,10 +59,10 @@ class BookReadingQuerymaker:
     def query_for_library_resets(cls, page_size=0):
         query = cls.df.make_query()
         frame = query.filter_maker.by_select(cls.df.frame['media_type'].name)
-        ft = frame.equals_to_any(*cls.df.frame['media_type'].value)
+        ft = frame.equals_to_any(*cls.df.frame['media_type'].values)
         frame = query.filter_maker.by_select(cls.df.frame['edit_status'].name)
         ft &= frame.equals_to_any(
-            *[cls.df.frame['edit_status'].value[key]
+            *[cls.df.frame['edit_status'].values[key]
               for key in ['url_missing', 'lib_missing']])
         # frame = query.filter_maker.by_checkbox(
         #      cls.df._unit.dataframe.props['not_available'].name)

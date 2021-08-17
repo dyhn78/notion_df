@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import Optional
 from abc import ABCMeta
 
-from notion_py.gateway.common import Requestor
+from notion_py.gateway.common import GatewayRequestor
 from notion_py.gateway.parse import BlockChildParser, BlockChildrenParser
 from notion_py.gateway.others import GetBlockChildren
 from notion_py.gateway.write_deprecated import AppendBlockChildren, UpdateBlock
@@ -10,7 +10,8 @@ from notion_py.gateway.write_deprecated.block.contents import BlockContents
 from notion_py.gateway.write_deprecated.block.stash import BlockChildrenStash
 
 
-class Block(Requestor, metaclass=ABCMeta):
+# TODO : Block(EditMaster) 에 병합
+class Block(GatewayRequestor, metaclass=ABCMeta):
     def __init__(self, block_id: str, parent_id: Optional[str],
                  can_have_children: bool, has_children: bool):
         self.block_id = block_id
@@ -30,9 +31,12 @@ class Block(Requestor, metaclass=ABCMeta):
     def fetch_children(self, child_editors: list[Block]):
         pass
 
+    def __bool__(self):
+        pass
+
 
 class ContentsBlock(Block):
-    # TODO : API 지원될 때까지 개발 보류
+    # TODO : API 나왔다!!
     def __init__(self, parsed_block: BlockChildParser, parent_id=''):
         super().__init__(parsed_block.block_id,
                          parent_id if parent_id else None,
@@ -42,7 +46,7 @@ class ContentsBlock(Block):
         self.contents: BlockContents = self._update_contents.contents
         self.contents.fetch(parsed_block)
 
-    def apply(self):
+    def unpack(self):
         return []
 
     def execute(self):
@@ -57,7 +61,7 @@ class UnsupportedBlock(Block):
         self.contents: BlockContents = BlockContents()
         self.contents.fetch(parsed_block)
 
-    def apply(self):
+    def unpack(self):
         return []
 
     def execute(self):
@@ -73,10 +77,10 @@ class ChildbearingBlock(Block):
         self._append_blocks = AppendBlockChildren(self.block_id)
         self.children: BlockChildren = self._append_blocks.children
 
-    def apply(self):
-        res = [self._append_blocks.apply()]
+    def unpack(self):
+        res = [self._append_blocks.unpack()]
         for child_editor in self.children.read:
-            res.append(child_editor.apply())
+            res.append(child_editor.unpack())
         return res
 
     def execute(self):
@@ -85,25 +89,25 @@ class ChildbearingBlock(Block):
             res.append(child_editor.execute())
         return res
 
-    def fetch_children(self, child_editors: list[Block]):
+    def apply_children(self, child_editors: list[Block]):
         if child_editors:
             self.children.fetch(child_editors)
             self.has_children = True
 
     @classmethod
-    def from_direct_retrieve(cls, block_id):
+    def fetch_children(cls, block_id):
         self = cls(block_id)
-        self.fetch_children(cls._get_child_editors(block_id))
+        self.apply_children(cls._fetch_children(block_id))
         return self
 
     @classmethod
-    def from_direct_retrieve_recursively(cls, block_id):
+    def fetch_descendants(cls, block_id):
         self = cls(block_id)
-        self.fetch_children(cls._get_child_editors_recursively(block_id))
+        self.apply_children(cls._fetch_descendants(block_id))
         return self
 
     @classmethod
-    def _get_child_editors(cls, block_id):
+    def _fetch_children(cls, block_id):
         response = GetBlockChildren(block_id)
         parsed_children = BlockChildrenParser.from_response(response)
         child_editors = []
@@ -118,12 +122,12 @@ class ChildbearingBlock(Block):
         return child_editors
 
     @classmethod
-    def _get_child_editors_recursively(cls, block_id):
-        child_editors = cls._get_child_editors(block_id)
+    def _fetch_descendants(cls, block_id):
+        child_editors = cls._fetch_children(block_id)
         for child in child_editors:
             if child.has_children:
-                grandchildren = cls._get_child_editors_recursively(child.block_id)
-                child.fetch_children(grandchildren)
+                grandchildren = cls._fetch_descendants(child.block_id)
+                child.apply_children(grandchildren)
         return child_editors
 
 

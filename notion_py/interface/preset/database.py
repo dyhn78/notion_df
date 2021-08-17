@@ -7,11 +7,11 @@ from typing import Optional, Any
 from notion_py.gateway.others import GetBlockChildren
 from notion_py.gateway.parse import PageListParser, BlockChildrenParser
 from notion_py.gateway.query import Query
-from notion_py.interface.page_deprecated import TabularPageDeprecated
-from notion_py.interface.get.property import PropertyFrame
+from .property import PropertyFrame
+from ..page_deprecated import TabularPageDeprecated
 
 
-class DatabaseGetter:
+class DatabasePreset:
     def __init__(self, database_id: str,
                  database_name: str,
                  properties: Optional[dict[str, Any]] = None,
@@ -45,7 +45,7 @@ class PageListDeprecated:
     PROP_NAME = {}
 
     def __init__(self, query_response: dict,
-                 frame: DatabaseGetter):
+                 frame: DatabasePreset):
         # TODO > unit 없애기. frame.unit에서 얻게 하기.
         self.frame = frame
 
@@ -86,7 +86,7 @@ class PageListDeprecated:
         result = []
         for page_object in self.values:
             if page_object:
-                result.append(page_object.apply())
+                result.append(page_object.unpack())
         return result
 
     def execute(self):

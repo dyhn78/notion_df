@@ -1,10 +1,25 @@
+from __future__ import annotations
 from typing import Union, Any, Callable
 from datetime import datetime as datetimeclass
 
 from .rich_text import parse_rich_texts
 
+
+class PageListParser(list):
+    def __init__(self, page_parsers: list[PageParser]):
+        super().__init__(page_parsers)
+
+    def __getitem__(self, index) -> PageParser:
+        return super().__getitem__(index)
+
+    @classmethod
+    def fetch_query(cls, response: dict):
+        return cls([PageParser.fetch_query_frag(page_result)
+                    for page_result in response['results']])
+
+
 # find prop_types by prop_format
-prop_types = {
+PROP_TYPES = {
     'text': ['text', 'rich_text', 'title'],
     'select': ['select'],
     'multi_select': ['multi_select'],
@@ -16,9 +31,10 @@ prop_types = {
     'rollup': ['rollup']
 }
 # find prop_format by prop_type
-prop_formats = {}
-for form, prop_types in prop_types.items():
-    prop_formats.update(**{typ: form for typ in prop_types})
+PROP_FORMATS = {}
+
+for form, PROP_TYPES in PROP_TYPES.items():
+    PROP_FORMATS.update(**{typ: form for typ in PROP_TYPES})
 
 
 class PageParser:
@@ -32,17 +48,17 @@ class PageParser:
     def fetch_retrieve(cls, response):
         self = cls(response['id'])
         for prop_name, rich_property_object in response['properties'].items():
-            self.props[prop_name] = self.fetch_unit(rich_property_object, prop_name)
+            self.props[prop_name] = self.parse_unit(rich_property_object, prop_name)
         return self
 
     @classmethod
     def fetch_query_frag(cls, response_frag):
         return cls.fetch_retrieve(response_frag)
 
-    def fetch_unit(self, rich_property_object, prop_name: str):
+    def parse_unit(self, rich_property_object, prop_name: str):
         prop_type = rich_property_object['type']
         prop_object = rich_property_object[prop_type]
-        prop_format = prop_formats[prop_type]
+        prop_format = PROP_FORMATS[prop_type]
 
         parser_name = f'_parse_{prop_format}'
         parser: Union[Callable[[Any], Any], Callable[[Any, str], Any],
@@ -60,7 +76,7 @@ class PageParser:
         return result
 
     def _parse_formula(self, prop_object, prop_name):
-        return self.fetch_unit(prop_object, prop_name)
+        return self.parse_unit(prop_object, prop_name)
 
     def _parse_auto_date(self, prop_object):
         start = prop_object[:-1]
@@ -89,7 +105,7 @@ class PageParser:
             return None
 
         try:
-            result = [self.fetch_unit(rollup_element, prop_name)
+            result = [self.parse_unit(rollup_element, prop_name)
                       for rollup_element in rollup_merged]
             return sorted(result)
             # result.sort(key=lambda x: x[sorted(x.keys())[0]])

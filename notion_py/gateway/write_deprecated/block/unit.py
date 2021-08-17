@@ -1,17 +1,17 @@
 from typing import Optional
 
 from ..property.unit import WriteRichTextProperty
-from notion_py.gateway.common.carriers import ValueCarrier
+from notion_py.gateway.common.carriers import ValueCarrierDeprecated
 
 
-class WriteBlock(ValueCarrier):
+class WriteBlock(ValueCarrierDeprecated):
     def __init__(self, block_type, value_type, contents=None):
         self._block_type = block_type
         self._value_type = value_type
         if contents is not None:
             self.contents = contents
 
-    def apply(self):
+    def unpack(self):
         res = {
             'object': 'block',
             'type': self._block_type,
@@ -38,6 +38,6 @@ class WriteTextBlock(WriteBlock, WriteRichTextProperty):
 
     @property
     def contents(self):
-        contents = WriteRichTextProperty.apply(self)
+        contents = WriteRichTextProperty.unpack(self)
         contents.update(**self._kwargs)
         return contents
