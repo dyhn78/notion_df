@@ -2,11 +2,11 @@
 import networkx as nx
 
 from notion_py.utility import stopwatch
-from notion_py.applications.monad_graph.self_related_dataframe import SelfRelatedDatabasePreset
+from notion_py.applications.monad_graph.self_related_dataframe import SelfRelatedDatabaseFrameDeprecated
 
 
 def edge_weight(relation: str):
-    weight = SelfRelatedDatabasePreset.downward_flags
+    weight = SelfRelatedDatabaseFrameDeprecated.downward_flags
     return weight[relation.split('_')[0]]
 
 

@@ -5,29 +5,26 @@ from pprint import pprint
 from typing import Optional, Any
 
 from notion_py.gateway.others import GetBlockChildren
-from notion_py.gateway.parse import PageListParser, BlockChildrenParser
+from notion_py.gateway.parse_deprecated import PageListParser, BlockChildrenParser
 from notion_py.gateway.query import Query
-from .property import PropertyFrame
+
+from .property_deprecated import PropertyFrameDeprecated
 from ..page_deprecated import TabularPageDeprecated
 
 
-class DatabasePreset:
+class DatabaseFrameDeprecated:
     def __init__(self, database_id: str,
                  database_name: str,
                  properties: Optional[dict[str, Any]] = None,
                  unit=TabularPageDeprecated):
         self.database_id = database_id
         self.database_name = database_name
-        self.frame = PropertyFrame(properties)
+        self.frame = PropertyFrameDeprecated(properties)
         self.unit = unit
 
     @staticmethod
     def _pagelist():
         return PageListDeprecated
-
-    @classmethod
-    def create_dummy(cls):
-        return cls('', '')
 
     def make_query(self):
         return Query(self.database_id)
@@ -45,7 +42,7 @@ class PageListDeprecated:
     PROP_NAME = {}
 
     def __init__(self, query_response: dict,
-                 frame: DatabasePreset):
+                 frame: DatabaseFrameDeprecated):
         # TODO > unit 없애기. frame.unit에서 얻게 하기.
         self.frame = frame
 

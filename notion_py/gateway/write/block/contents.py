@@ -1,6 +1,6 @@
 from typing import Optional
 
-from notion_py.gateway.parse import BlockChildParser
+from notion_py.gateway.parse_deprecated import BlockChildParser
 from notion_py.gateway.common import ValueCarrier
 
 

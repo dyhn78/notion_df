@@ -1,4 +1,4 @@
-from notion_py.interface.preset import DatabasePreset
+from notion_py.interface.frame import DatabaseFrameDeprecated
 from ..constants import ID_READINGS
 from .reading_page import BookReadingPage
 
@@ -31,8 +31,8 @@ READING_PROPERTIES = {
     'not_available': '🔍대출중'
 }
 
-reading_dataframe = DatabasePreset(ID_READINGS, 'reads',
-                                   READING_PROPERTIES, BookReadingPage)
+reading_dataframe = DatabaseFrameDeprecated(ID_READINGS, 'reads',
+                                            READING_PROPERTIES, BookReadingPage)
 
 
 class BookReadingQuerymaker:

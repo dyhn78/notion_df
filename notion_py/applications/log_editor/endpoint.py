@@ -1,7 +1,7 @@
 # from pprint import pprint
 from notion_py.applications.constants import \
     ID_PERIODS, ID_DATES, ID_JOURNALS, ID_SHOTS, ID_WRITINGS, ID_MEMOS
-from notion_py.gateway.parse import PageListParser
+from notion_py.gateway.parse_deprecated import PageListParser
 from notion_py.gateway.query import Query
 from notion_py.utility.stopwatch import stopwatch
 from notion_py.applications.log_editor.match_property import MatchbyReference, \

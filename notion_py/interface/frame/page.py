@@ -1,8 +1,8 @@
 from typing import Optional, Any
 
-from .property import PropertyFrame
-from .database import DatabasePreset
-from ..edit.tabular_page import TabularPage
+from .property_deprecated import PropertyFrameDeprecated
+from .database_deprecated import DatabaseFrameDeprecated
+from notion_py.interface.edit.tabular_page import TabularPage
 
 
 class TabularPagePreset:
@@ -12,11 +12,11 @@ class TabularPagePreset:
                  page_editor=TabularPage):
         self.page_id = page_id
         self.database_name = database_name
-        self.frame = PropertyFrame(properties)
+        self.frame = PropertyFrameDeprecated(properties)
         self.unit = page_editor
 
     @classmethod
-    def import_database_frame(cls, page_id: str, frame: DatabasePreset):
+    def import_database_frame(cls, page_id: str, frame: DatabaseFrameDeprecated):
         return cls(page_id, frame.database_name, frame.frame, frame.unit)
 
     @classmethod

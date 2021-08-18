@@ -4,7 +4,7 @@ from itertools import chain
 import networkx as nx
 
 from notion_py.applications.monad_graph.self_related_dataframe \
-    import SelfRelatedPageListDeprecated, SelfRelatedDatabasePreset, theme_dataframe, idea_dataframe
+    import SelfRelatedPageListDeprecated, SelfRelatedDatabaseFrameDeprecated, theme_dataframe, idea_dataframe
 
 
 class BuildGraph:
@@ -27,7 +27,7 @@ class BuildGraph:
 
     def add_edges(self):
         for down_pagelist in self.all.values():
-            assert isinstance(down_pagelist.frame, SelfRelatedDatabasePreset)
+            assert isinstance(down_pagelist.frame, SelfRelatedDatabaseFrameDeprecated)
             for down_page in down_pagelist:
                 for upward_relation, pl_flag in down_pagelist.frame.upward_keys:
                     up_pagelist = self.all[pl_flag]
