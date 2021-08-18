@@ -42,7 +42,9 @@ class PageParser:
         self.page_id = page_id
         self.props = {}
         self.props_rich = {}
+        self.prop_types = {}
         self.title = ''
+        self._current_prop_type = ''
 
     @classmethod
     def fetch_retrieve(cls, response):
@@ -57,6 +59,7 @@ class PageParser:
 
     def parse_unit(self, rich_property_object, prop_name: str):
         prop_type = rich_property_object['type']
+        self._current_prop_type = prop_type
         prop_object = rich_property_object[prop_type]
         prop_format = PROP_FORMATS[prop_type]
 
@@ -73,6 +76,7 @@ class PageParser:
                 result = parser(prop_object, prop_name, prop_type)
         # TODO > how to auto-fill arguments?
 
+        self.prop_types[prop_name] = self._current_prop_type
         return result
 
     def _parse_formula(self, prop_object, prop_name):
@@ -94,6 +98,7 @@ class PageParser:
         self.props_rich[prop_name] = rich_text
         if prop_type == 'title':
             self.title = plain_text
+            self._current_prop_type = 'title'
         return plain_text
 
     def _parse_rollup(self, prop_object, prop_name):

@@ -1,2 +1,2 @@
 from .stash import PagePropertyStash
-from .unit import PropertyUnitWriter
+from .unit import PropertyUnitWriter, RichTextUnitWriter, SimpleUnitWriter

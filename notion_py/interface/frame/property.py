@@ -1,29 +1,26 @@
 from __future__ import annotations
-from typing import Optional, ValuesView, ItemsView, Mapping
-from itertools import chain
+from typing import Optional, Iterable
 
 
-class PropertyFrame(dict):
+class PropertyFrame(list):
     def __init__(self, units: Optional[list[PropertyUnit]] = None):
         super().__init__({})
+        self.key_to_name: dict[str, str] = {}
+        self.name_to_unit: dict[str, PropertyUnit] = {}
         if units is not None:
-            self.update({unit.name: unit for unit in units})
-        self.key_to_name = {}
+            self.extend(units)
 
-    def update(self, __m: Mapping[str, PropertyUnit],
-               **kwargs: dict[str, PropertyUnit]):
-        super().update(__m, **kwargs)
-        for prop_name, frame_unit in chain(__m.items(), kwargs.items()):
-            self.key_to_name.update({frame_unit.key: prop_name})
-
-    def __getitem__(self, item) -> PropertyUnit:
+    def __getitem__(self, item: int) -> PropertyUnit:
         return super().__getitem__(item)
 
-    def values(self) -> ValuesView[PropertyUnit]:
-        return super().values()
+    def append(self, frame_unit: PropertyUnit):
+        super().append(frame_unit)
+        self.key_to_name.update({frame_unit.key: frame_unit.name})
+        self.name_to_unit.update({frame_unit.name: frame_unit})
 
-    def items(self) -> ItemsView[str, PropertyUnit]:
-        return super().items()
+    def extend(self, frame_units: Iterable[PropertyUnit]):
+        for unit in frame_units:
+            self.append(unit)
 
 
 class PropertyUnit:

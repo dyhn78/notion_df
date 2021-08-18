@@ -5,9 +5,9 @@ from notion_py.gateway.common import Requestor
 
 
 class EditorMaster(Requestor):
-    def __init__(self, head_id: str):
+    def __init__(self, target_id: str):
         self.components: dict[str, EditorComponent] = {}
-        self.head_id = head_id
+        self.target_id = target_id
         self.set_overwrite_option(True)
 
     def set_overwrite_option(self, option: bool):
