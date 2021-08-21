@@ -1,1 +1,1 @@
-__all__ = ['common', 'query', 'parse', 'write_deprecated']
+__all__ = ['common', 'query', 'parse_deprecated', 'write_deprecated']

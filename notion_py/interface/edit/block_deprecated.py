@@ -3,7 +3,7 @@ from typing import Optional
 from abc import ABCMeta
 
 from notion_py.gateway.common import GatewayRequestor
-from notion_py.gateway.parse import BlockChildParser, BlockChildrenParser
+from notion_py.gateway.parse_deprecated import BlockChildParser, BlockChildrenParser
 from notion_py.gateway.others import GetBlockChildren
 from notion_py.gateway.write_deprecated import AppendBlockChildren, UpdateBlock
 from notion_py.gateway.write_deprecated.block.contents import BlockContents

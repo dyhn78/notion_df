@@ -21,7 +21,7 @@ class Requestor(ValueCarrier):
         pass
 
 
-class Stash(ValueCarrierDeprecated, metaclass=ABCMeta):
+class Stash(ValueCarrier, metaclass=ABCMeta):
     def __init__(self):
         self._subdicts: list[dict] = []
 

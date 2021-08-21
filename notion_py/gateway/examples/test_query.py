@@ -3,7 +3,7 @@ from pprint import pprint
 from notion_client import AsyncClient, Client
 
 from notion_py.utility.stopwatch import stopwatch
-from notion_py.gateway.parse import PageListParser
+from notion_py.gateway.parse_deprecated import PageListParser
 from notion_py.gateway.query import Query
 
 os.environ['NOTION_TOKEN'] = ***REMOVED***

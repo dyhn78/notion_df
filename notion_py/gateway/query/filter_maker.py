@@ -1,5 +1,5 @@
 from .filter_unit import PlainFilter, OrFilter, AndFilter
-from ..parse import DatabaseParser
+from ..parse_deprecated import DatabaseParser
 
 
 class QueryFilterMaker:

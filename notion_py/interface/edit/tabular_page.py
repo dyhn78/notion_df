@@ -1,57 +1,68 @@
-from typing import Optional, Any
+from __future__ import annotations
+from typing import Optional, Any, Callable, Union
 
+from notion_py.gateway.common import ValueCarrier, DateFormat
+from notion_py.gateway.parse import PageParser
 from notion_py.gateway.others import RetrievePage
 from notion_py.gateway.write import UpdatePage
-from .common import EditorComponent
+from notion_py.gateway.write.property import \
+    PropertyUnitWriter, RichTextUnitWriter, SimpleUnitWriter
+
 from .block import Block
-from .tabular_property_agent import PlainPropertyAgent, RichPropertyAgent
-from ..preset import PropertyFrame
-from ..parse import PageParser
-from ...gateway.common import ValueCarrier
+from .common import EditorComponent
+from ..frame import PropertyFrame
 
 
 class TabularPage(Block):
     def __init__(self, page_id: str,
                  frame: Optional[PropertyFrame] = None):
         super().__init__(page_id)
+        self.props = TabularProperty(caller=self)
+        self.components.update(props=self.props)
+
         self.frame = frame if frame is not None else PropertyFrame()
-        self.props = None
         self.title = ''
 
     def fetch_retrieve(self):
-        requestor = RetrievePage(self.head_id)
+        requestor = RetrievePage(self.target_id)
         response = requestor.execute()
         page_parser = PageParser.fetch_retrieve(response)
-        self.fetch_page_parser(page_parser)
+
+        self.props.fetch_parser(page_parser)
+        self.title = page_parser.title
         return self.props
 
-    def fetch_page_parser(self, page_parser: PageParser):
-        self.props = TabularPageProps(caller=self,
-                                      read_plain=page_parser.props,
-                                      read_rich=page_parser.props_rich)
-        self.components.update(props=self.props)
-        self.title = page_parser.title
 
-
-class TabularPageProps(EditorComponent):
-    def __init__(self, caller: TabularPage,
-                 read_plain: Optional[dict[str, Any]] = None,
-                 read_rich: Optional[dict[str, Any]] = None):
+class TabularProperty(EditorComponent):
+    def __init__(self, caller: TabularPage):
         super().__init__(caller)
         self.frame = caller.frame
-        self.agent = UpdatePage(caller.head_id)
+        self.agent = UpdatePage(caller.target_id)
+        self.writer = TabularPropertyWriter(self)
 
-        self._read_rich = read_rich
-        self._read_plain = read_plain
-
+        self._read_plain = {}
+        self._read_rich = {}
         self._read_full = {}
-        for prop_name in read_plain:
-            if prop_name in read_rich:
-                value = {'plain': read_plain[prop_name],
-                         'rich': read_rich[prop_name]}
+
+    def fetch_parser(self, page_parser: PageParser):
+        self._read_plain = page_parser.props
+        self._read_rich = page_parser.props_rich
+        for prop_name, prop_type in page_parser.prop_types:
+            frame_unit = self.frame.name_to_unit[prop_name]
+            frame_unit.type = prop_type
+        self._set_read_full()
+
+    def _set_read_full(self):
+        for prop_name in self._read_plain:
+            if prop_name in self._read_rich:
+                value = {'plain': self._read_plain[prop_name],
+                         'rich': self._read_rich[prop_name]}
             else:
-                value = read_plain[prop_name]
+                value = self._read_plain[prop_name]
             self._read_full[prop_name] = value
+
+    def _prop_name(self, key):
+        return self.frame.key_to_name[key]
 
     def read_all(self):
         return self._read_full
@@ -71,29 +82,25 @@ class TabularPageProps(EditorComponent):
     def read_rich_on(self, prop_key: str):
         return self.read_rich(self._prop_name(prop_key))
 
-    def write(self, prop_name: str):
-        return PlainPropertyAgent(self, prop_name)
+    def write(self, prop_name: str, prop_value, prop_type: Optional[str] = None):
+        if not prop_type:
+            prop_type = self.frame.name_to_unit[prop_name].type
+        write_method: Callable[[str, Any], None] = getattr(self.writer, prop_type)
+        write_method(prop_name, prop_value)
 
-    def write_rich(self, prop_name: str):
-        return RichPropertyAgent(self, prop_name)
+    def write_rich(self, prop_name: str, prop_type: Optional[str] = None):
+        if not prop_type:
+            prop_type = self.frame.name_to_unit[prop_name].type
+        method_name = f'rich_{prop_type}'
+        write_method: \
+            Callable[[str], PropertyUnitWriter] = getattr(self.writer, method_name)
+        carrier = write_method(prop_name)
+        return carrier
 
-    def write_on(self, prop_key: str):
-        return self.write(self._prop_name(prop_key))
-
-    def write_rich_on(self, prop_key: str):
-        return self.write_rich(self._prop_name(prop_key))
-
-    def _prop_name(self, key):
-        return self.frame[key].name
-
-    def apply(self, prop_name: str, carrier: ValueCarrier):
-        if self.enable_overwrite:
-            proceed = True
-        else:
-            proceed = self.eval_empty(self.read(prop_name))
-
-        if proceed:
-            self.agent.props.unpack()
+    def fetch_carrier(self, prop_name: str, carrier: ValueCarrier):
+        """will be called from TabularPropertyWriter"""
+        if self.enable_overwrite or self.eval_empty(self.read(prop_name)):
+            self.agent.props.apply(carrier)
 
     @staticmethod
     def eval_empty(value):
@@ -101,3 +108,60 @@ class TabularPageProps(EditorComponent):
             return bool(value)
         else:
             return str(value) in ['', '.', '-', '0', '1']
+
+
+class TabularPropertyWriter:
+    def __init__(self, caller: TabularProperty):
+        self.caller = caller
+
+    def push(self, prop_name: str, carrier: PropertyUnitWriter):
+        self.caller.fetch_carrier(prop_name, carrier)
+
+    def rich_title(self, prop_name: str):
+        writer = RichTextUnitWriter('title', prop_name)
+        self.push(prop_name, writer)
+        return writer
+
+    def rich_text(self, prop_name: str):
+        writer = RichTextUnitWriter('rich_text', prop_name)
+        self.push(prop_name, writer)
+        return writer
+
+    def title(self, prop_name: str, value: str):
+        self.push(prop_name, self.rich_title(prop_name).write_text(value))
+
+    def text(self, prop_name: str, value: str):
+        self.push(prop_name, self.rich_text(prop_name).write_text(value))
+
+    def date(self, prop_name: str, value: DateFormat):
+        self.push(prop_name, SimpleUnitWriter.date(prop_name, value))
+
+    def url(self, prop_name: str, value: str):
+        self.push(prop_name, SimpleUnitWriter.url(prop_name, value))
+
+    def email(self, prop_name: str, value: str):
+        self.push(prop_name, SimpleUnitWriter.email(prop_name, value))
+
+    def phone_number(self, prop_name: str, value: str):
+        self.push(prop_name, SimpleUnitWriter.phone_number(prop_name, value))
+
+    def number(self, prop_name: str, value: Union[int, float]):
+        self.push(prop_name, SimpleUnitWriter.number(prop_name, value))
+
+    def checkbox(self, prop_name: str, value: bool):
+        self.push(prop_name, SimpleUnitWriter.checkbox(prop_name, value))
+
+    def select(self, prop_name: str, value: str):
+        self.push(prop_name, SimpleUnitWriter.select(prop_name, value))
+
+    def files(self, prop_name: str, value: str):
+        self.push(prop_name, SimpleUnitWriter.files(prop_name, value))
+
+    def people(self, prop_name: str, value: str):
+        self.push(prop_name, SimpleUnitWriter.people(prop_name, value))
+
+    def multi_select(self, prop_name: str, values: list[str]):
+        self.push(prop_name, SimpleUnitWriter.multi_select(prop_name, values))
+
+    def relation(self, prop_name: str, page_ids: list[str]):
+        self.push(prop_name, SimpleUnitWriter.relation(prop_name, page_ids))

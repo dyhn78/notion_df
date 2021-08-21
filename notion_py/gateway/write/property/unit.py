@@ -1,21 +1,6 @@
 from abc import ABCMeta
-from datetime import datetime as datetimeclass, date as dateclass
-from typing import Union, Optional
 
-from notion_py.gateway.common import ValueCarrier, ListStash
-
-
-def isoformat_date(start_date: Union[datetimeclass, dateclass],
-                   end_date=None):
-    if end_date is not None:
-        assert type(end_date) in [datetimeclass, dateclass]
-    start_string = start_date.isoformat()
-    res = dict(start=start_string)
-
-    if end_date is not None:
-        end_string = end_date.isoformat()
-        res.update(end=end_string)
-    return res
+from ...common import ValueCarrier, ListStash, DateFormat, make_isoformat
 
 
 class PropertyUnitWriter(ValueCarrier, metaclass=ABCMeta):
@@ -35,11 +20,8 @@ class PropertyUnitWriter(ValueCarrier, metaclass=ABCMeta):
 
 
 class RichTextUnitWriter(PropertyUnitWriter, ListStash):
-    def __init__(self, value_type, prop_name,
-                 plain_text_contents: Optional[str] = None):
+    def __init__(self, value_type, prop_name):
         super().__init__(value_type, prop_name, None)
-        if plain_text_contents is not None:
-            self.write_text(plain_text_contents)
 
     @property
     def prop_value(self):
@@ -69,8 +51,8 @@ class RichTextUnitWriter(PropertyUnitWriter, ListStash):
         equation = {'expression': expression},
         self._subdicts.append(self._wrap_to_rich_text('equation', equation))
 
-    def mention_date(self, start_date: Union[datetimeclass, dateclass], end_date=None):
-        date = isoformat_date(start_date, end_date)
+    def mention_date(self, date_value: DateFormat):
+        date = make_isoformat(date_value)
         mention = {'type': 'date', 'date': date}
         self._subdicts.append(self._wrap_to_rich_text('mention', mention))
 
@@ -85,8 +67,8 @@ class RichTextUnitWriter(PropertyUnitWriter, ListStash):
 
 
 class BasicPageTitleWriter(RichTextUnitWriter):
-    def __init__(self, prop_name, plain_text_content: Optional[str] = None):
-        super().__init__('title', prop_name, plain_text_content)
+    def __init__(self, prop_name):
+        super().__init__('title', prop_name)
 
     def _wrap_to_prop(self):
         return {self.value_type: self.prop_value}
@@ -126,17 +108,16 @@ class SimpleUnitWriter(PropertyUnitWriter):
         return cls('select', prop_name, {'name': value})
 
     @classmethod
-    def multi_select(cls, prop_name, values):
+    def multi_select(cls, prop_name, values: list[str]):
         prop_value = [{'name': value} for value in values]
         return cls('multi_select', prop_name, prop_value)
 
     @classmethod
-    def relation(cls, prop_name, page_ids):
+    def relation(cls, prop_name, page_ids: list[str]):
         prop_value = [{'id': page_id} for page_id in page_ids]
         return cls('relation', prop_name, prop_value)
 
     @classmethod
-    def date(cls, prop_name,
-             start_date: Union[datetimeclass, dateclass], end_date=None):
-        prop_value = isoformat_date(start_date, end_date)
+    def date(cls, prop_name, value: DateFormat):
+        prop_value = make_isoformat(value)
         return cls('date', prop_name, prop_value)

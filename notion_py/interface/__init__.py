@@ -1,3 +1,3 @@
 from .page_deprecated import BasicPageDeprecated, TabularPageDeprecated
-from .block_deprecated import \
+from notion_py.interface.edit.block_deprecated import \
     Block, ContentsBlock, ChildbearingBlock, ChildbearingContentsBlock

@@ -2,7 +2,7 @@ from abc import ABCMeta
 
 from ...utility import stopwatch, page_id_to_url
 from ..common import GatewayRequestor, retry_request
-from ..parse import DatabaseParser
+from ..parse_deprecated import DatabaseParser
 from .block.stash import BlockChildrenStash
 from .block.contents import BlockContents
 from .property import BasicPagePropertyStash, TabularPagePropertyStash
