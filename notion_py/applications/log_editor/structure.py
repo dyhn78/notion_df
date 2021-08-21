@@ -47,7 +47,11 @@ class PropertyRequestStack(RequestStack):
 
     def _execute_these(self, doms: list[PageParser]):
         for dom in doms.copy():
-            self.process_unit(dom)
+            try:
+                self.process_unit(dom)
+            except:  # 삭제 예정
+                from notion_py.utility import page_id_to_url
+                print(f'error at: {dom.title}:: {page_id_to_url(dom.page_id)}')
 
     def execute(self, reprocess_outside=False, async_client=False) -> PageListParser:
         self._execute_these(self._domain.values)
