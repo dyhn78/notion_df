@@ -6,7 +6,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import StaleElementReferenceException, NoSuchElementException, NoSuchWindowException
 
-from notion_py.utility import stopwatch
+from notion_py.interface.utility import stopwatch
 
 tag_input_box = '#a_q'
 tag_search_button = '#sb1 > a'

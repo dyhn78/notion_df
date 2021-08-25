@@ -1,9 +1,8 @@
 from .constants import *
-from notion_py.applications.log_editor.match_property import MatchorCreatebyIndex, \
-    MatchbyIndex
-from notion_py.gateway.parse_deprecated import PageParser
-from notion_py.gateway.write_deprecated import CreateTabularPage
+from .match_property import MatchorCreatebyIndex, MatchbyIndex
 from ..constants import ID_PERIODS
+from ...interface.gateway.parse_deprecated import PageParser
+from ...interface.gateway.write_deprecated import CreateTabularPage
 
 
 class NaljjaToGigan(MatchorCreatebyIndex):

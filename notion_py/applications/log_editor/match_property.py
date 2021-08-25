@@ -1,8 +1,9 @@
 from typing import Callable, Union
 
-from notion_py.gateway.parse_deprecated import PageParser, PageListParser
-from notion_py.gateway.write_deprecated import UpdateTabularPage, CreateTabularPage
 from notion_py.applications.log_editor.structure import PropertyRequestStack
+from notion_py.interface.gateway.parse_deprecated import PageListParser, PageParser
+from notion_py.interface.gateway.write_deprecated import UpdateTabularPage, \
+    CreateTabularPage
 
 
 class MatchbyReference(PropertyRequestStack):

@@ -4,7 +4,7 @@ import math
 import networkx as nx
 from random import random
 
-from notion_py.utility import stopwatch
+from notion_py.interface.utility import stopwatch
 from .self_related_dataframe import SelfRelatedDatabaseFrameDeprecated
 
 

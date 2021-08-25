@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from notion_py.utility import stopwatch
+from notion_py.interface.utility import stopwatch
 from .yes24 import scrap_yes24_url, scrap_yes24_metadata
 from .reading_page import BookReadingPage
 from .reading_dataframe import BookReadingQuerymaker

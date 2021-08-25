@@ -1,13 +1,13 @@
 # from pprint import pprint
 from notion_py.applications.constants import \
     ID_PERIODS, ID_DATES, ID_JOURNALS, ID_SHOTS, ID_WRITINGS, ID_MEMOS
-from notion_py.gateway.parse_deprecated import PageListParser
-from notion_py.gateway.query import Query
-from notion_py.utility.stopwatch import stopwatch
+from notion_py.interface.utility import stopwatch
 from notion_py.applications.log_editor.match_property import MatchbyReference, \
     MatchorCreatebyIndex
 from notion_py.applications.log_editor.date_to_period import NaljjaToGigan
 from .constants import *
+from ...interface.gateway.parse_deprecated import PageListParser
+from ...interface.gateway.query import Query
 
 
 def update_dates(check_only_past_x_days=0):

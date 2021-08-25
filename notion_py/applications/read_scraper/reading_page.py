@@ -2,10 +2,10 @@ from __future__ import annotations
 import re
 from typing import Union
 
-from notion_py.interface import TabularPageDeprecated
-from notion_py.gateway.parse_deprecated import PageParser
-from notion_py.gateway.write_deprecated import AppendBlockChildren, CreateBasicPage
 from .lib_gy import GoyangLibrary
+from ...interface.client.edit.page_deprecated import TabularPageDeprecated
+from ...interface.gateway.parse_deprecated import PageParser
+from ...interface.gateway.write_deprecated import AppendBlockChildren, CreateBasicPage
 
 
 class ReadingPage(TabularPageDeprecated):

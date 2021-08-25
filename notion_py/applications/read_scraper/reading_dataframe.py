@@ -1,6 +1,6 @@
-from notion_py.interface.frame import DatabaseFrameDeprecated
-from ..constants import ID_READINGS
 from .reading_page import BookReadingPage
+from ..constants import ID_READINGS
+from ...interface.client.frame import DatabaseFrameDeprecated
 
 READING_PROPERTIES = {
     'media_type': ('🔵유형',

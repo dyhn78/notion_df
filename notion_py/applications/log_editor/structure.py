@@ -2,8 +2,8 @@ from __future__ import annotations
 from abc import abstractmethod
 from typing import Union
 
-from notion_py.gateway.parse_deprecated import PageParser, PageListParser
-from notion_py.gateway.common import GatewayRequestor
+from notion_py.interface.common import Gateway
+from notion_py.interface.gateway.parse_deprecated import PageParser, PageListParser
 
 
 class RequestStack:
@@ -24,7 +24,7 @@ class RequestStack:
         # TODO : 비동기 프로그래밍 구현
         self._requests_queue.clear()
 
-    def _append_requests(self, task: GatewayRequestor):
+    def _append_requests(self, task: Gateway):
         self._requests_queue.append(task)
         self.process_count += 1
 
@@ -50,7 +50,7 @@ class PropertyRequestStack(RequestStack):
             try:
                 self.process_unit(dom)
             except:  # 삭제 예정
-                from notion_py.utility import page_id_to_url
+                from notion_py.interface.utility import page_id_to_url
                 print(f'error at: {dom.title}:: {page_id_to_url(dom.page_id)}')
 
     def execute(self, reprocess_outside=False, async_client=False) -> PageListParser:

@@ -1,8 +1,7 @@
 from __future__ import annotations
-from notion_py.interface.frame import DatabaseFrameDeprecated, PageListDeprecated
-from notion_py.interface import TabularPageDeprecated
-from notion_py.gateway.parse_deprecated import PageListParser
 from ..constants import ID_THEMES, ID_IDEAS
+from ...interface.client.edit.page_deprecated import TabularPageDeprecated
+from ...interface.client.frame import DatabaseFrameDeprecated, PageListDeprecated
 
 
 class SelfRelatedDatabaseFrameDeprecated(DatabaseFrameDeprecated):
@@ -58,7 +57,7 @@ class SelfRelatedPageListDeprecated(PageListDeprecated):
                 res.append(self.page_by_id(page_id))
             except KeyError:
                 # if not res:
-                #    from notion_py.utility import page_id_to_url
+                #    from notion_py.others import page_id_to_url
                 #    print(alien_page.title, prop_name, page_id_to_url(page_id))
                 continue
         return res

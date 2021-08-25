@@ -1,7 +1,7 @@
 # import numpy
 import networkx as nx
 
-from notion_py.utility import stopwatch
+from notion_py.interface.utility import stopwatch
 from notion_py.applications.monad_graph.self_related_dataframe import SelfRelatedDatabaseFrameDeprecated
 
 
