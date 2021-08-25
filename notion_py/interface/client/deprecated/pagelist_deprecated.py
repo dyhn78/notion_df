@@ -4,11 +4,11 @@ from collections import defaultdict
 from pprint import pprint
 from typing import Optional, Any
 
-from notion_py.interface.gateway.others import GetBlockChildren
+from notion_py.interface.gateway.read import GetBlockChildren
 from .property_deprecated import PropertyFrameDeprecated
-from ..edit.page_deprecated import TabularPageDeprecated
-from ...gateway.parse_deprecated import PageListParser, BlockChildrenParser
-from ...gateway.query import Query
+from notion_py.interface.client.deprecated.page_deprecated import TabularPageDeprecated
+from notion_py.interface.gateway.parse_deprecated import PageListParser, BlockChildrenParser
+from notion_py.interface.gateway.query import Query
 
 
 class DatabaseFrameDeprecated:
@@ -42,7 +42,6 @@ class PageListDeprecated:
 
     def __init__(self, query_response: dict,
                  frame: DatabaseFrameDeprecated):
-        # TODO > unit 없애기. frame.unit에서 얻게 하기.
         self.frame = frame
 
         parsed_query = PageListParser.from_query_response(query_response)
@@ -74,9 +73,6 @@ class PageListDeprecated:
             page = self.page_by_id(page_id)
             parsed_blocklist = BlockChildrenParser.from_response(response)
             page.children.fetch(parsed_blocklist.children)
-
-    def retrieve_descendants(self):
-        pass  # TODO
 
     def apply(self):
         result = []

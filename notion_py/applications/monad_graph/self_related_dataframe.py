@@ -1,7 +1,7 @@
 from __future__ import annotations
 from ..constants import ID_THEMES, ID_IDEAS
-from ...interface.client.edit.page_deprecated import TabularPageDeprecated
-from ...interface.client.frame import DatabaseFrameDeprecated, PageListDeprecated
+from ...interface.client.deprecated import \
+    DatabaseFrameDeprecated, PageListDeprecated, TabularPageDeprecated
 
 
 class SelfRelatedDatabaseFrameDeprecated(DatabaseFrameDeprecated):
@@ -52,7 +52,7 @@ class SelfRelatedPageListDeprecated(PageListDeprecated):
         # TODO > 이 명령을 직관적으로 만드는 것이 TabularPage에 DataFrame을 이식할 때
         #  꼭 구현해야 할 점이다.
         for page_id in alien_page.props.read[
-                alien_pagelist.frame.frame[prop_name].name]:
+            alien_pagelist.frame.frame[prop_name].name]:
             try:
                 res.append(self.page_by_id(page_id))
             except KeyError:

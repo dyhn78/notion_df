@@ -1,6 +1,6 @@
 from abc import abstractmethod
 
-from notion_py.interface.common import Gateway, retry_request
+from notion_py.interface.struct import Gateway, retry_request
 from notion_py.interface.utility import stopwatch
 
 

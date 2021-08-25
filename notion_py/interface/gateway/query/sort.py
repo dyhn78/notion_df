@@ -1,4 +1,4 @@
-from notion_py.interface.common import ListStash
+from notion_py.interface.struct import ListStash
 
 
 class QuerySort(ListStash):

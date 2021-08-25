@@ -3,7 +3,7 @@ import re
 from typing import Union
 
 from .lib_gy import GoyangLibrary
-from ...interface.client.edit.page_deprecated import TabularPageDeprecated
+from notion_py.interface.client.deprecated.page_deprecated import TabularPageDeprecated
 from ...interface.gateway.parse_deprecated import PageParser
 from ...interface.gateway.write_deprecated import AppendBlockChildren, CreateBasicPage
 

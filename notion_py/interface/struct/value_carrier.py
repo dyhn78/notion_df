@@ -11,10 +11,6 @@ class ValueCarrier(ABC):
         return bool(self.unpack())
 
 
-class ValueCarrierDeprecated(ValueCarrier, metaclass=ABCMeta):
-    pass
-
-
 class Requestor(ValueCarrier):
     @abstractmethod
     def execute(self):

@@ -1,7 +1,7 @@
 from abc import abstractmethod, ABCMeta
 from pprint import pprint
 
-from notion_py.interface.common import ValueCarrier
+from notion_py.interface.struct import ValueCarrier
 
 
 class QueryFilter(ValueCarrier):

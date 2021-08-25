@@ -1,13 +1,13 @@
 import os
 import time
-from abc import abstractmethod
+from abc import abstractmethod, ABCMeta
 from json import JSONDecodeError
 from typing import Union, Callable
 
 from notion_client import Client, AsyncClient
 from notion_client.errors import APIResponseError
 
-from .carriers import Requestor
+from .value_carrier import Requestor
 from notion_py.interface.utility import stopwatch
 
 
@@ -24,13 +24,9 @@ def retry_request(method: Callable, recursion_limit=5):
     return wrapper
 
 
-class Gateway(Requestor):
+class Gateway(Requestor, metaclass=ABCMeta):
     _token = os.environ['NOTION_TOKEN'].strip("'").strip('"')
     notion: Union[Client, AsyncClient] = Client(auth=_token)
-
-    @abstractmethod
-    def __bool__(self):
-        pass
 
     @retry_request
     @abstractmethod

@@ -1,6 +1,6 @@
 from abc import ABCMeta
 
-from notion_py.interface.common import ValueCarrier
+from notion_py.interface.struct import ValueCarrier
 
 
 class TwofoldStash(ValueCarrier, metaclass=ABCMeta):

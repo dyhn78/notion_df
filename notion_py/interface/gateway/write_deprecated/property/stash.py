@@ -44,8 +44,6 @@ class PagePropertyStash(TwofoldDictStash, metaclass=ABCMeta):
     def _is_empty_value(cls, value) -> bool:
         if type(value) == list:
             if bool(value):
-                # TODO : fetch 가 정보를 read와 read_rich로 나누어 담는 기능이 구현되면,
-                #  이 기능은 없애야 한다.
                 return cls._is_empty_value(value[0])
             return True
         elif type(value) == bool:

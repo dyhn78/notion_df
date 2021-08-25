@@ -4,20 +4,6 @@ from datetime import datetime as datetimeclass
 
 from .rich_text import parse_rich_texts
 
-
-class PageListParser(list):
-    def __init__(self, page_parsers: list[PageParser]):
-        super().__init__(page_parsers)
-
-    def __getitem__(self, index) -> PageParser:
-        return super().__getitem__(index)
-
-    @classmethod
-    def fetch_query(cls, response: dict):
-        return cls([PageParser.fetch_query_frag(page_result)
-                    for page_result in response['results']])
-
-
 # find prop_types by prop_format
 PROP_TYPES = {
     'text': ['text', 'rich_text', 'title'],
@@ -32,9 +18,17 @@ PROP_TYPES = {
 }
 # find prop_format by prop_type
 PROP_FORMATS = {}
-
 for form, PROP_TYPES in PROP_TYPES.items():
     PROP_FORMATS.update(**{typ: form for typ in PROP_TYPES})
+
+
+class PageListParser:
+    def __init__(self, response: dict):
+        self.values = [PageParser.fetch_query_frag(page_result)
+                       for page_result in response['results']]
+
+    def __iter__(self) -> list[PageParser]:
+        return self.values
 
 
 class PageParser:
@@ -68,13 +62,13 @@ class PageParser:
                       Callable[[Any, str, str], Any]] \
             = getattr(self, parser_name, __default=lambda x: x)
         try:
+            # TODO > how to auto-fill arguments?
             result = parser(prop_object)
         except TypeError:
             try:
                 result = parser(prop_object, prop_name)
             except TypeError:
                 result = parser(prop_object, prop_name, prop_type)
-        # TODO > how to auto-fill arguments?
 
         self.prop_types[prop_name] = self._current_prop_type
         return result

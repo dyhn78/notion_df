@@ -3,10 +3,6 @@ from .unit import WriteTextBlock
 
 
 class BlockChildrenStash(TwofoldListStash):
-    # TODO: 향후 block children을 수정, 삭제하는 기능이 추가되면,
-    #  'will_overwrite' 메소드와 'conditional_stash' 기능을 추가.
-    #  PropertyStack 에서 복붙해오기.
-
     def __init__(self):
         super().__init__()
         self.write = BlockChildPlainAgent(self)

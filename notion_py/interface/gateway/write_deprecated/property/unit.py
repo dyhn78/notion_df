@@ -2,7 +2,7 @@ from abc import ABCMeta
 from datetime import datetime as datetimeclass, date as dateclass
 from typing import Union, Optional
 
-from notion_py.interface.common import ValueCarrier, ListStash
+from notion_py.interface.struct import ValueCarrier, ListStash
 
 
 class WritePageProperty(ValueCarrier, metaclass=ABCMeta):
@@ -34,7 +34,6 @@ class WritePageProperty(ValueCarrier, metaclass=ABCMeta):
 
 
 class WriteRichTextProperty(WritePageProperty, ListStash):
-    # TODO : Children을 가질 수 있게 수정하기. (우선순위 보통)
     def __init__(self, value_type, prop_name, plain_text_contents: Optional[str] = None):
         super().__init__(value_type, prop_name, None)
         if plain_text_contents is not None:

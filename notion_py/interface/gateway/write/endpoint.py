@@ -1,7 +1,7 @@
 from .block import BlockChildrenStash, BlockContents
 from .property import PagePropertyStash
 from notion_py.interface.utility import stopwatch, page_id_to_url
-from ...common import Gateway, retry_request
+from ...struct import Gateway, retry_request
 
 
 class UpdatePage(Gateway):
@@ -72,7 +72,7 @@ class AppendBlockChildren(Gateway):
 
 
 class UpdateBlock(Gateway):
-    # TODO : API가 만들어지면 추가할 예정.
+    # TODO
     def __init__(self, block_id: str):
         self.block_id = block_id
         self.contents = BlockContents()

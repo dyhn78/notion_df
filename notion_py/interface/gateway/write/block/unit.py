@@ -1,9 +1,8 @@
-from notion_py.interface.common import ValueCarrier
+from notion_py.interface.struct import ValueCarrier
 from ..property.unit import RichTextUnitWriter
 
 
 class BlockWriter(ValueCarrier):
-    # TODO : Children 을 가질 수 있게 수정하기.
     def __init__(self, block_type, value_type, contents=None):
         self._block_type = block_type
         self._value_type = value_type

@@ -1,6 +1,6 @@
 from typing import Optional
 
-from notion_py.interface.common import ValueCarrier
+from notion_py.interface.struct import ValueCarrier
 from ..property.unit import WriteRichTextProperty
 
 

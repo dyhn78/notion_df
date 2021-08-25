@@ -1,4 +1,4 @@
-from notion_py.interface.common import Gateway, retry_request, LongGateway
+from notion_py.interface.struct import Gateway, retry_request, LongGateway
 
 
 class RetrieveDatabase(Gateway):

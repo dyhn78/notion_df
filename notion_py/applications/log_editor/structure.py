@@ -2,7 +2,7 @@ from __future__ import annotations
 from abc import abstractmethod
 from typing import Union
 
-from notion_py.interface.common import Gateway
+from notion_py.interface.struct import Gateway
 from notion_py.interface.gateway.parse_deprecated import PageParser, PageListParser
 
 

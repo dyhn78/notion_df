@@ -1,5 +1,5 @@
-from notion_py.interface.common import Requestor
-from notion_py.interface.gateway.others import RetrievePage
+from notion_py.interface.struct import Requestor
+from notion_py.interface.gateway.read import RetrievePage
 from notion_py.interface.gateway.parse_deprecated import PageParser
 from notion_py.interface.gateway.write_deprecated import UpdateBasicPage, \
     AppendBlockChildren, UpdateTabularPage

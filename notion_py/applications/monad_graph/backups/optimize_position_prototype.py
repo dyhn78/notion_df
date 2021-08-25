@@ -2,12 +2,17 @@
 import networkx as nx
 
 from notion_py.interface.utility import stopwatch
-from notion_py.applications.monad_graph.self_related_dataframe import SelfRelatedDatabaseFrameDeprecated
+from ..self_related_dataframe import SelfRelatedDatabaseFrameDeprecated
 
 
 def edge_weight(relation: str):
-    weight = SelfRelatedDatabaseFrameDeprecated.downward_flags
-    return weight[relation.split('_')[0]]
+    weight = SelfRelatedDatabaseFrameDeprecated.edge_weights
+    nominal_weight = weight[relation.split('_')[0]]
+    if nominal_weight == 'strong':
+        return 1.0
+    elif nominal_weight == 'weak':
+        return 0.4
+    raise KeyError
 
 
 class GradientDescent:

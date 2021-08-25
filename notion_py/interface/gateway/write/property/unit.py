@@ -1,6 +1,6 @@
 from abc import ABCMeta
 
-from notion_py.interface.common import ValueCarrier, ListStash, DateFormat, make_isoformat
+from notion_py.interface.struct import ValueCarrier, ListStash, DateFormat, make_isoformat
 
 
 class PropertyUnitWriter(ValueCarrier, metaclass=ABCMeta):

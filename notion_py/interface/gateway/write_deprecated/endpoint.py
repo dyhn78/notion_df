@@ -3,9 +3,8 @@ from abc import ABCMeta
 from notion_py.interface.utility import stopwatch, page_id_to_url
 from ..parse_deprecated import DatabaseParser
 from .block.stash import BlockChildrenStash
-from .block.contents import BlockContents
 from .property import BasicPagePropertyStash, TabularPagePropertyStash
-from ...common import Gateway, retry_request
+from ...struct import Gateway, retry_request
 
 
 class UpdateBasicPage(Gateway):
@@ -99,20 +98,3 @@ class AppendBlockChildren(Gateway):
         res = self.notion.blocks.children.append(**self.unpack())
         self.children = BlockChildrenStash()
         return res
-
-
-class UpdateBlock(Gateway):
-    # TODO : API가 만들어지면 추가할 예정.
-    def __init__(self, block_id: str):
-        self._id_raw = block_id
-        self.contents = BlockContents()
-        pass
-
-    def __bool__(self):
-        pass
-
-    def unpack(self):
-        pass
-
-    def execute(self):
-        pass

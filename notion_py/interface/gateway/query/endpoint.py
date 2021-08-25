@@ -1,7 +1,7 @@
 from .filter_maker import QueryFilterMaker
 from .filter_unit import QueryFilter, PlainFilter
 from .sort import QuerySort
-from ...common import LongGateway, retry_request
+from ...struct import LongGateway, retry_request
 
 
 class Query(LongGateway):
