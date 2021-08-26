@@ -7,6 +7,9 @@ from notion_py.interface.gateway.write_deprecated.property import BasicPagePrope
 
 
 class BasicPageDeprecated(Requestor):
+    def __bool__(self):
+        return True
+
     def __init__(self, parsed_page: PageParser, parent_id=''):
         self.page_id = parsed_page.page_id
         self.title = parsed_page.title

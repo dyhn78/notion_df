@@ -5,6 +5,9 @@ from ..property.unit import WriteRichTextProperty
 
 
 class WriteBlock(ValueCarrier):
+    def __bool__(self):
+        pass
+
     def __init__(self, block_type, value_type, contents=None):
         self._block_type = block_type
         self._value_type = value_type

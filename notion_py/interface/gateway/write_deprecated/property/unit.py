@@ -105,6 +105,9 @@ class WriteTitleProperty(WriteRichTextProperty):
 
 
 class WriteSimplePageProperty(WritePageProperty):
+    def __bool__(self):
+        pass
+
     @classmethod
     def number(cls, prop_name, value):
         return cls('number', prop_name, value)
