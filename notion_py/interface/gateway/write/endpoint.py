@@ -1,7 +1,9 @@
-from .block import BlockChildrenStash, BlockContents
-from .property import PagePropertyStash
+from typing import Optional
+
 from notion_py.interface.utility import stopwatch, page_id_to_url
-from ...struct import Gateway, retry_request
+from .stash_block import BlockChildrenStash
+from .stash_property import PagePropertyStash
+from ...struct import Gateway, retry_request, ValueCarrier
 
 
 class UpdatePage(Gateway):
@@ -49,6 +51,29 @@ class CreatePage(Gateway):
         return res
 
 
+class UpdateBlock(Gateway):
+    # TODO
+    def __init__(self, block_id: str):
+        self.block_id = block_id
+        self.contents: Optional[ValueCarrier] = None
+        pass
+
+    def __bool__(self):
+        return self.contents is not None
+
+    def unpack(self):
+        return dict(**self.contents.unpack(),
+                    block_id=self.block_id)
+
+    @retry_request
+    def execute(self):
+        if not bool(self):
+            return {}
+        res = self.notion.blocks.update(**self.unpack())
+        stopwatch(' '.join(['update', page_id_to_url(self.block_id)]))
+        return res
+
+
 class AppendBlockChildren(Gateway):
     def __init__(self, parent_id: str):
         self.parent_id = parent_id
@@ -69,20 +94,3 @@ class AppendBlockChildren(Gateway):
         res = self.notion.blocks.children.append(**self.unpack())
         stopwatch(' '.join(['append', page_id_to_url(self.parent_id)]))
         return res
-
-
-class UpdateBlock(Gateway):
-    # TODO
-    def __init__(self, block_id: str):
-        self.block_id = block_id
-        self.contents = BlockContents()
-        pass
-
-    def __bool__(self):
-        pass
-
-    def unpack(self):
-        pass
-
-    def execute(self):
-        pass

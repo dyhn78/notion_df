@@ -18,8 +18,14 @@ class MasterEditor(Editor, metaclass=ABCMeta):
         self.set_overwrite_option(True)
         self.agents: dict[str, Editor] = {}
 
+    def __iter__(self):
+        return self.agents.values()
+
     def __len__(self):
         return len(self.agents)
+
+    def __bool__(self):
+        return any(agent for agent in self)
 
     def set_overwrite_option(self, option: bool):
         for requestor in self.agents.values():
@@ -43,6 +49,9 @@ class BridgeEditor(Editor, metaclass=ABCMeta):
     def __len__(self):
         return len(self.values)
 
+    def __bool__(self):
+        return any(child for child in self)
+
     def set_overwrite_option(self, option: bool):
         for child in self:
             child.set_overwrite_option(option)
@@ -59,6 +68,9 @@ class GatewayEditor(Editor, metaclass=ABCMeta):
         self.caller = caller
         self.gateway: Optional[Requestor] = None
         self.enable_overwrite = True
+
+    def __bool__(self):
+        return bool(self.gateway)
 
     def set_overwrite_option(self, option: bool):
         self.enable_overwrite = option

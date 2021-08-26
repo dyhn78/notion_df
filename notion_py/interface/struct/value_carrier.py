@@ -7,8 +7,9 @@ class ValueCarrier(ABC):
     def unpack(self) -> dict:
         pass
 
+    @abstractmethod
     def __bool__(self):
-        return bool(self.unpack())
+        pass
 
 
 class Requestor(ValueCarrier):

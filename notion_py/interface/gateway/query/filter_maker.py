@@ -1,41 +1,42 @@
 from .filter_unit import PlainFilter, OrFilter, AndFilter
 from ..parse_deprecated import DatabaseParser
 
+# find types by format
+FILTER_TYPES = {
+    'text': ['text', 'title', 'rich_text', 'url', 'email', 'phone_number'],
+    'date': ['date', 'created_time', 'last_edited_time'],
+    'people': ['people', 'person', 'created_by', 'last_edited_by']
+}
+# find format by type
+FILTER_FORMATS = {}
+for form, types in FILTER_TYPES.items():
+    FILTER_FORMATS.update(**{typ: form for typ in types})
+
 
 class QueryFilterMaker:
-    # TODO : ValueCarrier 클래스를 상속하도록 고치기
-    #  (우선순위는 높지 않은 편. 일단 돌아가는 데는 문제가 없으니)
     def __init__(self):
         """특정한 데이터베이스 하나를 위한 query_filter 프레임을 만든다."""
+        # TODO : types_table 을 property_frame 으로 대체
         self.__types_table = None
 
-    def __call__(self, prop_name: str, value_type=None):
+    def __call__(self, prop_name: str, prop_type=None):
         """알맞은 PropertyFilters를 자동으로 찾아 반환한다."""
-        if self.__types_table is None:
-            raise AssertionError
-        prop_class = self.__get_prop_class(prop_name, value_type)
-        return getattr(self, prop_class)(prop_name)
+        if prop_type == 'formula':
+            format_type = prop_type
+            assert prop_type in ['text', 'checkbox', 'number', 'date']
+        elif prop_type == 'rollup':
+            format_type = prop_type
+        else:
+            if prop_type is None:
+                if self.__types_table is None:
+                    raise AssertionError
+                prop_type = self.__types_table[prop_name]
+            format_type = FILTER_FORMATS[prop_type]
+        frame_func = f'by_{format_type}'
+        return getattr(self, frame_func)(prop_name)
 
     def add_db_retrieve(self, database_parser: DatabaseParser):
         self.__types_table = database_parser.prop_type_table
-
-    def __get_prop_class(self, name, value_type):
-        if name == 'formula':
-            prop_class = value_type
-            assert value_type in ['text', 'checkbox', 'number', 'date']
-        elif name == 'rollup':
-            prop_class = value_type
-        else:
-            prop_type = self.__types_table[name]
-            if prop_type in ['text', 'title', 'rich_text', 'url', 'email', 'phone_number']:
-                prop_class = 'text'
-            elif prop_type in ['date', 'created_time', 'last_edited_time']:
-                prop_class = 'date'
-            elif prop_type in ['people', 'person', 'created_by', 'last_edited_by']:
-                prop_class = 'people'
-            else:
-                prop_class = prop_type
-        return prop_class
 
     @staticmethod
     def by_text(prop_name: str):
@@ -74,7 +75,7 @@ class QueryFilterMaker:
         return PeopleFrame(prop_name)
 
 
-class PlainFrame:
+class FilterFrame:
     prop_class = None
 
     def __init__(self, prop_name):
@@ -94,7 +95,7 @@ class PlainFrame:
         return self._wrap_as_filter('is_not_empty', True)
 
 
-class EqualtypeFrame(PlainFrame):
+class EqualtypeFrame(FilterFrame):
     def equals(self, value):
         return self._wrap_as_filter('equals', value)
 
@@ -108,7 +109,7 @@ class EqualtypeFrame(PlainFrame):
         return AndFilter([self.does_not_equal(value) for value in values])
 
 
-class ContaintypeFrame(PlainFrame):
+class ContaintypeFrame(FilterFrame):
     def contains(self, value):
         return self._wrap_as_filter('contains', str(value))
 
@@ -219,7 +220,7 @@ class PeopleFrame(EqualtypeFrame, ContaintypeFrame):
     prop_class = 'people'
 
 
-class FilesFrame(PlainFrame):
+class FilesFrame(FilterFrame):
     prop_class = 'files'
 
 

@@ -5,10 +5,10 @@ from ...struct import LongGateway, retry_request
 
 
 class Query(LongGateway):
-    def __init__(self, database_id: str, database_parser=None):
-        self.page_id = database_id
-        self._filter = PlainFilter({})
-        self._filter_is_not_empty = False
+    def __init__(self, database_id: str, name='', database_parser=None):
+        super().__init__(name)
+        self.database_id = database_id
+        self.filter = PlainFilter({})
         self.sort = QuerySort()
         self.filter_maker = QueryFilterMaker()
         if database_parser is not None:
@@ -17,26 +17,25 @@ class Query(LongGateway):
     def __bool__(self):
         return True
 
-    def unpack(self, print_result=False):
+    def unpack(self, page_size=None, start_cursor=None):
         args = dict(**self.sort.unpack(),
-                    database_id=self.page_id)
-        if self._filter_is_not_empty:
-            args.update(filter=self._filter.unpack())
+                    database_id=self.database_id,
+                    page_size=page_size if page_size else self.MAX_PAGE_SIZE)
+        if self.filter:
+            args.update(filter=self.filter.unpack())
+        if start_cursor:
+            args.update(start_cursor=start_cursor)
         return args
 
     @retry_request
     def _execute_once(self, page_size=None, start_cursor=None):
-        args = dict(**self.unpack(),
-                    page_size=page_size if page_size else self.MAX_PAGE_SIZE)
-        if start_cursor:
-            args.update(start_cursor=start_cursor)
-        response = self.notion.databases.query(**args)
+        response = self.notion.databases.query(
+            **self.unpack(page_size=page_size, start_cursor=start_cursor)
+        )
         return response
 
     def clear_filter(self):
-        self._filter = PlainFilter({})
-        self._filter_is_not_empty = False
+        self.filter = PlainFilter({})
 
     def push_filter(self, query_filter: QueryFilter):
-        self._filter = query_filter
-        self._filter_is_not_empty = True
+        self.filter = query_filter

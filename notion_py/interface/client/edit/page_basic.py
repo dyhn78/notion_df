@@ -3,11 +3,10 @@ from typing import Optional
 from .block import Block
 from .editor_struct import GatewayEditor, BridgeEditor
 from .page_tabular import TabularProperty
+from ..encode.tabular_property_unit import PropertyUnitWriter, RichTextUnitWriter
 from ..parse import PageParser
 from ...gateway.read import RetrievePage
 from ...gateway.write import UpdatePage
-from ...gateway.write.property import BasicPageTitleWriter, RichTextUnitWriter, \
-    PropertyUnitWriter
 
 
 class BasicPage(Block):
@@ -47,7 +46,7 @@ class BasicPageProperty(GatewayEditor):
         return self._read_plain['title']
 
     def write_rich_title(self):
-        writer = RichTextUnitWriter(value_type='title', prop_name='title')
+        writer = RichTextUnitWriter(prop_type='title', prop_name='title')
         pushed = self._push(writer)
         return pushed if pushed is not None else writer
 
@@ -65,13 +64,3 @@ class BasicPageProperty(GatewayEditor):
     @staticmethod
     def eval_empty(value):
         return TabularProperty.eval_empty(value)
-
-
-class BasicPropertyAgent:
-    @classmethod
-    def write_rich_title(cls):
-        return BasicPageTitleWriter('title')
-
-    @classmethod
-    def write_title(cls, value: str):
-        return cls.write_rich_title().write_text(value)

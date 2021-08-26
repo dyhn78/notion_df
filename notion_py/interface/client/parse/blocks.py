@@ -12,8 +12,8 @@ UNSUPPORTED = {"unsupported"}
 
 class BlockChildrenParser:
     def __init__(self, response: dict):
-        self.values: list[BlockChildParser] = \
-            [BlockChildParser.fetch_response_frag(rich_block_object)
+        self.values: list[BlockContentsParser] = \
+            [BlockContentsParser.fetch_response_frag(rich_block_object)
              for rich_block_object in response['results']]
         self.read_plain: list[str] = [child.read_plain for child in self.values]
         self.read_rich: list[list] = [child.read_rich for child in self.values]
@@ -22,11 +22,11 @@ class BlockChildrenParser:
         return self.values
 
 
-class BlockChildParser:
+class BlockContentsParser:
     def __init__(self, block_id: str, block_type: str):
         self.block_id = block_id
         self.block_type = block_type
-        self.has_children = None
+        self.has_children = False
         self.is_supported_type = (self.block_type in SUPPORTED)
         self.can_have_children = (self.block_type in CAN_HAVE_CHILDREN)
 
@@ -34,11 +34,11 @@ class BlockChildParser:
         self.read_rich = []
 
     @classmethod
-    def fetch_response_frag(cls, rich_block_object):
-        self = cls(block_id=rich_block_object['id'],
-                   block_type=rich_block_object['type'])
-        self.has_children = rich_block_object['has_children']
-        self.parse_unit(rich_block_object)
+    def fetch_response_frag(cls, response_frag):
+        self = cls(block_id=response_frag['id'],
+                   block_type=response_frag['type'])
+        self.has_children = response_frag['has_children']
+        self.parse_unit(response_frag)
         return self
 
     def parse_unit(self, rich_block_object):

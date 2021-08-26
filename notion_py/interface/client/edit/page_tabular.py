@@ -4,12 +4,12 @@ from typing import Optional
 
 from .block import Block
 from .editor_struct import GatewayEditor, BridgeEditor
-from .property_writer import TabularPropertybyKey
+from ..encode.tabular_property import TabularPropertybyKey
+from ..encode.tabular_property_unit import PropertyUnitWriter
 from ..frame import PropertyFrame
 from ..parse import PageParser
 from ...gateway.read import RetrievePage
 from ...gateway.write import UpdatePage
-from ...gateway.write.property import PropertyUnitWriter
 
 
 class TabularPage(Block):

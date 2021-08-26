@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod, ABCMeta
 from typing import Union, Optional
 
-from ...gateway.write.property import PropertyUnitWriter, \
-    RichTextUnitWriter, SimpleUnitWriter
-from ...struct import DateFormat
+from .tabular_property_unit import \
+    PropertyUnitWriter, RichTextUnitWriter, SimpleUnitWriter
+from notion_py.interface.struct import DateFormat
 
 
 class TabularPropertybyName(ABC):

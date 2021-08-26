@@ -4,12 +4,15 @@ from notion_py.interface.struct import ValueCarrier, ListStash, DateFormat, make
 
 
 class PropertyUnitWriter(ValueCarrier, metaclass=ABCMeta):
-    def __init__(self, value_type, prop_name, prop_value):
+    def __init__(self, prop_type, prop_name, prop_value):
         super().__init__()
-        self.value_type = value_type
+        self.value_type = prop_type
         self.prop_name = prop_name
         if prop_value is not None:
             self.prop_value = prop_value
+
+    def __bool__(self):
+        return bool(self.unpack())
 
     def unpack(self):
         return {self.prop_name: self._wrap_to_prop()}
@@ -20,8 +23,8 @@ class PropertyUnitWriter(ValueCarrier, metaclass=ABCMeta):
 
 
 class RichTextUnitWriter(PropertyUnitWriter, ListStash):
-    def __init__(self, value_type, prop_name):
-        super().__init__(value_type, prop_name, None)
+    def __init__(self, prop_type, prop_name):
+        super().__init__(prop_type, prop_name, None)
 
     @property
     def prop_value(self):
@@ -85,6 +88,7 @@ class SimpleUnitWriter(PropertyUnitWriter):
 
     @classmethod
     def files(cls, prop_name, value):
+        # TODO : 새 API 활용
         return cls('files', prop_name, value)
 
     @classmethod

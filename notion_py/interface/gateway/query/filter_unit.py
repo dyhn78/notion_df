@@ -27,43 +27,50 @@ class PlainFilter(QueryFilter):
     def __init__(self, plain_filter: dict):
         self._value = plain_filter
 
-    def unpack(self):
-        return self._value
+    def __bool__(self):
+        return bool(self._value)
 
     @property
     def nesting(self):
         return 0
 
+    def unpack(self):
+        return self._value
+
 
 class CompoundFilter(QueryFilter, metaclass=ABCMeta):
     def __init__(self, elements: list[QueryFilter]):
-        homos = []
-        heteros = []
-        for e in elements:
-            if type(e) == type(self):
-                homos.append(e)
-            else:
-                heteros.append(e)
-
+        self.elements = []
         self._nesting = 0
-        if homos:
-            self._nesting = max([e.nesting for e in homos])
-        if heteros:
-            self._nesting = max(self._nesting, 1 + max([e.nesting for e in heteros]))
-        self.elements = heteros
-        for e in homos:
-            assert isinstance(e, CompoundFilter)
-            self.elements.extend(e.elements)
+        self.extend(elements)
 
-        if self.nesting > 2:
-            # TODO: AssertionError 대신 커스텀 에러클래스 정의
-            print('Nesting greater than 2!')
-            pprint(self.unpack())
-            raise AssertionError
+    def __iter__(self):
+        return self.elements
+
+    def __bool__(self):
+        return bool(self.elements)
 
     @property
     def nesting(self):
         return self._nesting
+
+    def append(self, element: QueryFilter):
+        return self.extend([element])
+
+    def extend(self, elements: list[QueryFilter]):
+        homos = [e for e in elements if type(e) == type(self)]
+        heteros = [e for e in elements if type(e) != type(self)]
+        for e in homos:
+            assert isinstance(e, CompoundFilter)
+            self.elements.extend(e.elements)
+            self._nesting = max(self._nesting, e.nesting)
+        for e in heteros:
+            self.elements.append(e)
+            self._nesting = max(self._nesting, 1 + e.nesting)
+        if self.nesting > 2:
+            # TODO: AssertionError 대신 커스텀 에러클래스 정의
+            pprint(self.unpack())
+            raise ValueError('Nesting greater than 2!')
 
 
 class AndFilter(CompoundFilter):

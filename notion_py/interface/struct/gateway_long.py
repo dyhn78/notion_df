@@ -8,12 +8,16 @@ class LongGateway(Gateway):
     MAX_PAGE_SIZE = 100
     INF = int(1e5) - 1
 
+    def __init__(self, name=''):
+        self.name = name
+
     @abstractmethod
     @retry_request
     def _execute_once(self, page_size=None, start_cursor=None):
         pass
 
     def execute(self, page_size=0):
+
         res = []
         result = {'results': res}
         if page_size == 0:
@@ -31,5 +35,9 @@ class LongGateway(Gateway):
 
             page_size -= self.MAX_PAGE_SIZE
             page_retrieved += len(response['results'])
-            stopwatch(f'{page_retrieved} 개 완료')
+
+            comments = f'{page_retrieved} 개 완료'
+            if self.name:
+                comments += f' << {self.name}'
+            stopwatch(comments)
         return result

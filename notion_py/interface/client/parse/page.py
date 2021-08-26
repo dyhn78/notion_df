@@ -4,8 +4,8 @@ from datetime import datetime as datetimeclass
 
 from .rich_text import parse_rich_texts
 
-# find prop_types by prop_format
-PROP_TYPES = {
+# find types by format
+VALUE_TYPES = {
     'text': ['text', 'rich_text', 'title'],
     'select': ['select'],
     'multi_select': ['multi_select'],
@@ -16,10 +16,10 @@ PROP_TYPES = {
     'relation': ['relation'],
     'rollup': ['rollup']
 }
-# find prop_format by prop_type
-PROP_FORMATS = {}
-for form, PROP_TYPES in PROP_TYPES.items():
-    PROP_FORMATS.update(**{typ: form for typ in PROP_TYPES})
+# find format by type
+VALUE_FORMATS = {}
+for form, types in VALUE_TYPES.items():
+    VALUE_FORMATS.update(**{typ: form for typ in types})
 
 
 class PageListParser:
@@ -55,7 +55,7 @@ class PageParser:
         prop_type = rich_property_object['type']
         self._current_prop_type = prop_type
         prop_object = rich_property_object[prop_type]
-        prop_format = PROP_FORMATS[prop_type]
+        prop_format = VALUE_FORMATS[prop_type]
 
         parser_name = f'_parse_{prop_format}'
         parser: Union[Callable[[Any], Any], Callable[[Any, str], Any],
