@@ -4,7 +4,7 @@ from datetime import datetime as datetimeclass
 
 from .rich_text import parse_rich_texts
 
-# find types by format
+# find types by api_format
 VALUE_TYPES = {
     'text': ['text', 'rich_text', 'title'],
     'select': ['select'],
@@ -16,7 +16,7 @@ VALUE_TYPES = {
     'relation': ['relation'],
     'rollup': ['rollup']
 }
-# find format by type
+# find api_format by type
 VALUE_FORMATS = {}
 for form, types in VALUE_TYPES.items():
     VALUE_FORMATS.update(**{typ: form for typ in types})
@@ -24,39 +24,58 @@ for form, types in VALUE_TYPES.items():
 
 class PageListParser:
     def __init__(self, response: dict):
-        self.values = [PageParser.fetch_query_frag(page_result)
+        self.values = [PageParser.parse_query_frag(page_result)
                        for page_result in response['results']]
 
     def __iter__(self) -> list[PageParser]:
         return self.values
 
+    def __getitem__(self, index: int):
+        return self.values[index]
+
+    def __len__(self):
+        return len(self.values)
+
 
 class PageParser:
     def __init__(self, page_id: str):
         self.page_id = page_id
-        self.props = {}
-        self.props_rich = {}
-        self.prop_types = {}
+        self.prop_types = {}  # {prop_name: prop_type for prop_name in _}
+        self.prop_ids = {}  # {prop_name: prop_id for prop_name in _}
+        self.prop_values = {}  # {prop_name: prop_value for prop_name in _}
+        self.prop_rich_values = {}
         self.title = ''
         self._current_prop_type = ''
 
     @classmethod
-    def fetch_retrieve(cls, response):
+    def parse_retrieve(cls, response: dict):
         self = cls(response['id'])
         for prop_name, rich_property_object in response['properties'].items():
-            self.props[prop_name] = self.parse_unit(rich_property_object, prop_name)
+            self.prop_values[prop_name] = self.parser_unit(rich_property_object, prop_name)
         return self
 
     @classmethod
-    def fetch_query_frag(cls, response_frag):
-        return cls.fetch_retrieve(response_frag)
+    def parse_update(cls, response: dict):
+        # TODO if necessary
+        return cls.parse_retrieve(response)
 
-    def parse_unit(self, rich_property_object, prop_name: str):
+    @classmethod
+    def parse_create(cls, response: dict):
+        # TODO if necessary
+        return cls.parse_retrieve(response)
+
+    @classmethod
+    def parse_query_frag(cls, response_frag: dict):
+        # TODO if necessary
+        return cls.parse_retrieve(response_frag)
+
+    def parser_unit(self, rich_property_object, prop_name: str):
+        self.prop_ids[prop_name] = rich_property_object['id']
         prop_type = rich_property_object['type']
         self._current_prop_type = prop_type
+
         prop_object = rich_property_object[prop_type]
         prop_format = VALUE_FORMATS[prop_type]
-
         parser_name = f'_parse_{prop_format}'
         parser: Union[Callable[[Any], Any], Callable[[Any, str], Any],
                       Callable[[Any, str, str], Any]] \
@@ -74,7 +93,7 @@ class PageParser:
         return result
 
     def _parse_formula(self, prop_object, prop_name):
-        return self.parse_unit(prop_object, prop_name)
+        return self.parser_unit(prop_object, prop_name)
 
     def _parse_auto_date(self, prop_object):
         start = prop_object[:-1]
@@ -89,7 +108,7 @@ class PageParser:
 
     def _parse_text(self, prop_object, prop_name, prop_type):
         plain_text, rich_text = parse_rich_texts(prop_object)
-        self.props_rich[prop_name] = rich_text
+        self.prop_rich_values[prop_name] = rich_text
         if prop_type == 'title':
             self.title = plain_text
             self._current_prop_type = 'title'
@@ -104,7 +123,7 @@ class PageParser:
             return None
 
         try:
-            result = [self.parse_unit(rollup_element, prop_name)
+            result = [self.parser_unit(rollup_element, prop_name)
                       for rollup_element in rollup_merged]
             return sorted(result)
             # result.sort(key=lambda x: x[sorted(x.keys())[0]])

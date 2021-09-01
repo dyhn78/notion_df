@@ -1,13 +1,13 @@
 from .filter_unit import PlainFilter, OrFilter, AndFilter
 from ..parse_deprecated import DatabaseParser
 
-# find types by format
+# find types by api_format
 FILTER_TYPES = {
     'text': ['text', 'title', 'rich_text', 'url', 'email', 'phone_number'],
     'date': ['date', 'created_time', 'last_edited_time'],
     'people': ['people', 'person', 'created_by', 'last_edited_by']
 }
-# find format by type
+# find api_format by type
 FILTER_FORMATS = {}
 for form, types in FILTER_TYPES.items():
     FILTER_FORMATS.update(**{typ: form for typ in types})

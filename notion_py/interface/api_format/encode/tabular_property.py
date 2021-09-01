@@ -16,17 +16,17 @@ class TabularPropertybyName(ABC):
             -> Optional[PropertyUnitWriter]:
         pass
 
-    def write_rich(self, prop_name: str, prop_type: Optional[str] = None):
-        if not prop_type:
-            prop_type = self._prop_type(prop_name)
-        writer_func = f'write_rich_{prop_type}'
-        return getattr(self, writer_func)(prop_name)
-
-    def write(self, prop_name: str, prop_value, prop_type: Optional[str] = None):
+    def write_at(self, prop_name: str, prop_value, prop_type: Optional[str] = None):
         if not prop_type:
             prop_type = self._prop_type(prop_name)
         writer_func = f'write_{prop_type}'
         return getattr(self, writer_func)(prop_name, prop_value)
+
+    def write_rich_at(self, prop_name: str, prop_type: Optional[str] = None):
+        if not prop_type:
+            prop_type = self._prop_type(prop_name)
+        writer_func = f'write_rich_{prop_type}'
+        return getattr(self, writer_func)(prop_name)
 
     def write_rich_title(self, prop_name: str) -> Optional[RichTextUnitWriter]:
         writer = RichTextUnitWriter('title', prop_name)
@@ -90,11 +90,11 @@ class TabularPropertybyKey(TabularPropertybyName, metaclass=ABCMeta):
 
     def write_on(self, prop_key: str, prop_value, prop_type: Optional[str] = None):
         prop_name = self._prop_name(prop_key)
-        return self.write(prop_name, prop_value, prop_type)
+        return self.write_at(prop_name, prop_value, prop_type)
 
     def write_rich_on(self, prop_key: str, prop_type: Optional[str] = None):
         prop_name = self._prop_name(prop_key)
-        return self.write_rich(prop_name, prop_type)
+        return self.write_rich_at(prop_name, prop_type)
 
     def write_rich_title_on(self, prop_key: str):
         prop_name = self._prop_name(prop_key)

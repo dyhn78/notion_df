@@ -1,7 +1,7 @@
 from abc import abstractmethod
 
 from notion_py.interface.struct import ValueCarrier
-from notion_py.interface.client.encode.tabular_property_unit import RichTextUnitWriter
+from .tabular_property_unit import RichTextUnitWriter
 
 
 class BlockWriter(ValueCarrier):

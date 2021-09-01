@@ -4,7 +4,7 @@ from abc import abstractmethod, ABC, ABCMeta
 
 class ValueCarrier(ABC):
     @abstractmethod
-    def unpack(self) -> dict:
+    def unpack(self):
         pass
 
     @abstractmethod

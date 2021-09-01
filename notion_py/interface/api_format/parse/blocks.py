@@ -13,10 +13,8 @@ UNSUPPORTED = {"unsupported"}
 class BlockChildrenParser:
     def __init__(self, response: dict):
         self.values: list[BlockContentsParser] = \
-            [BlockContentsParser.fetch_response_frag(rich_block_object)
+            [BlockContentsParser.parse_retrieve_frag(rich_block_object)
              for rich_block_object in response['results']]
-        self.read_plain: list[str] = [child.read_plain for child in self.values]
-        self.read_rich: list[list] = [child.read_rich for child in self.values]
 
     def __iter__(self):
         return self.values
@@ -27,6 +25,7 @@ class BlockContentsParser:
         self.block_id = block_id
         self.block_type = block_type
         self.has_children = False
+        self.is_page_block = (self.block_type in PAGE_TYPES)
         self.is_supported_type = (self.block_type in SUPPORTED)
         self.can_have_children = (self.block_type in CAN_HAVE_CHILDREN)
 
@@ -34,14 +33,29 @@ class BlockContentsParser:
         self.read_rich = []
 
     @classmethod
-    def fetch_response_frag(cls, response_frag):
-        self = cls(block_id=response_frag['id'],
-                   block_type=response_frag['type'])
-        self.has_children = response_frag['has_children']
-        self.parse_unit(response_frag)
+    def parse_retrieve(cls, response):
+        self = cls(block_id=response['id'],
+                   block_type=response['type'])
+        self.has_children = response['has_children']
+        self.parser_unit(response)
         return self
 
-    def parse_unit(self, rich_block_object):
+    @classmethod
+    def parse_retrieve_frag(cls, response_frag):
+        # TODO if necessary
+        return cls.parse_retrieve(response_frag)
+
+    @classmethod
+    def parse_update(cls, response_frag):
+        # TODO if necessary
+        return cls.parse_retrieve(response_frag)
+
+    @classmethod
+    def parse_create_frag(cls, response_frag):
+        # TODO if necessary
+        return cls.parse_retrieve(response_frag)
+
+    def parser_unit(self, rich_block_object):
         block_object = rich_block_object[self.block_type]
 
         if self.block_type in TEXT_TYPES:

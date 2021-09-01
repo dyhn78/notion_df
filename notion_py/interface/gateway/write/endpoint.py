@@ -1,96 +1,108 @@
-from typing import Optional
-
-from notion_py.interface.utility import stopwatch, page_id_to_url
-from .stash_block import BlockChildrenStash
-from .stash_property import PagePropertyStash
-from ...struct import Gateway, retry_request, ValueCarrier
+from .stash import BlockChildrenStash, PagePropertyStash
+from notion_py.interface.struct import Gateway, retry_request, drop_empty_request
+from notion_py.interface.api_format.encode import BlockWriter
+from ...utility import stopwatch, page_id_to_url
 
 
-class UpdatePage(Gateway):
-    def __init__(self, page_id):
-        self.page_id = page_id
-        self.props = PagePropertyStash()
-
-    def __bool__(self):
-        return bool(self.props.unpack())
-
-    def unpack(self):
-        return dict(**self.props.unpack(),
-                    page_id=self.page_id)
-
-    @retry_request
-    def execute(self):
-        if not bool(self):
-            return {}
-        res = self.notion.pages.update(**self.unpack())
-        stopwatch(' '.join(['update', page_id_to_url(self.page_id)]))
-        return res
-
-
-class CreatePage(Gateway):
+class CreatePage(Gateway, PagePropertyStash, BlockChildrenStash):
     def __init__(self, parent_id: str):
+        PagePropertyStash.__init__(self)
+        BlockChildrenStash.__init__(self)
         self.parent_id = parent_id
-        self.props = PagePropertyStash()
-        self.children = BlockChildrenStash()
 
     def __bool__(self):
-        return any([bool(self.props.unpack()),
-                    bool(self.children.unpack())])
+        return any([PagePropertyStash.__bool__(self),
+                    BlockChildrenStash.__bool__(self)])
+
+    def clear(self):
+        PagePropertyStash.clear(self)
+        BlockChildrenStash.clear(self)
 
     def unpack(self):
-        return dict(**self.props.unpack(),
-                    **self.children.unpack(),
+        return dict(**PagePropertyStash.unpack(self),
+                    **BlockChildrenStash.unpack(self),
                     parent={'page_id': self.parent_id})
 
+    @drop_empty_request
     @retry_request
     def execute(self):
-        if not bool(self):
-            return {}
         res = self.notion.pages.create(**self.unpack())
         stopwatch(' '.join(['create', page_id_to_url(res['id'])]))
         return res
 
 
+class UpdatePage(Gateway, PagePropertyStash):
+    def __init__(self, page_id):
+        PagePropertyStash.__init__(self)
+        self.page_id = page_id
+
+    def __bool__(self):
+        return PagePropertyStash.__bool__(self)
+
+    def clear(self):
+        PagePropertyStash.clear(self)
+
+    def unpack(self):
+        return dict(**PagePropertyStash.unpack(self),
+                    page_id=self.page_id)
+
+    @drop_empty_request
+    @retry_request
+    def execute(self):
+        res = self.notion.pages.update(**self.unpack())
+        stopwatch(' '.join(['update', page_id_to_url(self.page_id)]))
+        return res
+
+
+class AppendBlockChildren(Gateway, BlockChildrenStash):
+    def __init__(self, parent_id: str):
+        BlockChildrenStash.__init__(self)
+        self.parent_id = parent_id
+
+    def __bool__(self):
+        return BlockChildrenStash.__bool__(self)
+
+    def clear(self):
+        BlockChildrenStash.clear(self)
+
+    def unpack(self):
+        return dict(**BlockChildrenStash.unpack(self),
+                    block_id=self.parent_id)
+
+    @drop_empty_request
+    @retry_request
+    def execute(self):
+        res = self.notion.blocks.children.append_block(**self.unpack())
+        stopwatch(' '.join(['append', page_id_to_url(self.parent_id)]))
+        return res
+
+
 class UpdateBlock(Gateway):
-    # TODO
     def __init__(self, block_id: str):
         self.block_id = block_id
-        self.contents: Optional[ValueCarrier] = None
+        self._contents_value = None
         pass
 
     def __bool__(self):
-        return self.contents is not None
+        return self._contents_value is not None
+
+    def clear(self):
+        self._contents_value = None
+
+    def contents_apply(self, carrier: BlockWriter):
+        self._contents_value = carrier
+        return carrier
 
     def unpack(self):
-        return dict(**self.contents.unpack(),
+        return dict(**self._contents_value.unpack(),
                     block_id=self.block_id)
 
     @retry_request
     def execute(self):
-        if not bool(self):
+        """making a request with empty carrier
+        will clear the original read_plain of block"""
+        if self._contents_value is None:
             return {}
         res = self.notion.blocks.update(**self.unpack())
         stopwatch(' '.join(['update', page_id_to_url(self.block_id)]))
-        return res
-
-
-class AppendBlockChildren(Gateway):
-    def __init__(self, parent_id: str):
-        self.parent_id = parent_id
-        self.children = BlockChildrenStash()
-        self.overwrite_option = True
-
-    def __bool__(self):
-        return bool(self.children.unpack())
-
-    def unpack(self):
-        return dict(**self.children.unpack(),
-                    block_id=self.parent_id)
-
-    @retry_request
-    def execute(self):
-        if not bool(self):
-            return {}
-        res = self.notion.blocks.children.append(**self.unpack())
-        stopwatch(' '.join(['append', page_id_to_url(self.parent_id)]))
         return res

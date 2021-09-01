@@ -4,7 +4,7 @@ from typing import Union
 from .block_unit import BlockWriter, RichTextBlockWriter, PageBlockWriter
 
 
-class RichBlockContents(ABC):
+class RichBlockContentsWriter(ABC):
     @abstractmethod
     def _push(self, carrier: BlockWriter) \
             -> Union[RichTextBlockWriter, PageBlockWriter]:
@@ -35,7 +35,7 @@ class RichBlockContents(ABC):
         return self._push(RichTextBlockWriter('toggle'))
 
 
-class BlockContents(RichBlockContents, metaclass=ABCMeta):
+class BlockContentsWriter(RichBlockContentsWriter, metaclass=ABCMeta):
     def write_page_block(self, title: str) -> PageBlockWriter:
         writer = PageBlockWriter(title)
         return self._push(writer)

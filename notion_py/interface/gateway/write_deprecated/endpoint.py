@@ -4,7 +4,7 @@ from notion_py.interface.utility import stopwatch, page_id_to_url
 from ..parse_deprecated import DatabaseParser
 from .block.stash import BlockChildrenStash
 from .property import BasicPagePropertyStash, TabularPagePropertyStash
-from ...struct import Gateway, retry_request
+from notion_py.interface.struct import Gateway, retry_request
 
 
 class UpdateBasicPage(Gateway):
@@ -95,6 +95,6 @@ class AppendBlockChildren(Gateway):
         if not self.children:
             return {}
         stopwatch(' '.join(['append', page_id_to_url(self.parent_id)]))
-        res = self.notion.blocks.children.append(**self.unpack())
+        res = self.notion.blocks.children.append_block(**self.unpack())
         self.children = BlockChildrenStash()
         return res

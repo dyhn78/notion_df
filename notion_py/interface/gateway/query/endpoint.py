@@ -1,7 +1,7 @@
 from .filter_maker import QueryFilterMaker
 from .filter_unit import QueryFilter, PlainFilter
 from .sort import QuerySort
-from ...struct import LongGateway, retry_request
+from notion_py.interface.struct import LongGateway, retry_request
 
 
 class Query(LongGateway):

@@ -54,7 +54,7 @@ class BookReadingPage(ReadingPage):
         self.scraper_option = self.DEFAULT_SCRAPER_OPTION
 
     def get_edit_options(self) -> None:
-        edit_status = self.props.read[self.PROP_NAME['edit_status']]
+        edit_status = self.props.read_list[self.PROP_NAME['edit_status']]
         try:
             charref = re.compile(r'(?<=\().+(?=\))')
             self.edit_option = re.findall(charref, edit_status)[0]
@@ -78,41 +78,41 @@ class BookReadingPage(ReadingPage):
             elif self.edit_option == 'overwrite':
                 self.scrap_status = self.EDIT_STATUS['completely_done']
         self.props.set_overwrite(True)
-        self.props.write.select(self.PROP_NAME['edit_status'], self.scrap_status)
+        self.props.write_at.select(self.PROP_NAME['edit_status'], self.scrap_status)
         self.props.set_overwrite(False)
 
     def get_names(self) -> tuple[str, str]:
-        docx_name = self.props.read[self.PROP_NAME['docx_name']][0]
-        true_name = self.props.read[self.PROP_NAME['true_name']][0]
+        docx_name = self.props.read_list[self.PROP_NAME['docx_name']][0]
+        true_name = self.props.read_list[self.PROP_NAME['true_name']][0]
         return docx_name, true_name
 
     def get_yes24_url(self):
-        url = self.props.read[self.PROP_NAME['url']]
+        url = self.props.read_list[self.PROP_NAME['url']]
         if 'yes24' in url:
             return url
         return ''
 
     def set_yes24_url(self, url: str):
         if url:
-            self.props.write.url(self.PROP_NAME['url'], url)
+            self.props.write_at.url(self.PROP_NAME['url'], url)
         else:
             self.scrap_status = self.EDIT_STATUS['url_missing']
 
     def set_yes24_metadata(self, metadata: dict):
         self.get_edit_options()
-        self.props.write.text(self.PROP_NAME['true_name'], metadata['name'])
-        self.props.write.text(self.PROP_NAME['subname'], metadata['subname'])
-        self.props.write.text(self.PROP_NAME['author'], metadata['author'])
-        self.props.write.text(self.PROP_NAME['publisher'], metadata['publisher'])
-        self.props.write.number(self.PROP_NAME['page'], metadata['page'])
-        self.props.write.files(self.PROP_NAME['cover_image'], metadata['cover_image'])
-        self.set_contents_to_subpage(metadata['contents'])
+        self.props.write_at.text(self.PROP_NAME['true_name'], metadata['name'])
+        self.props.write_at.text(self.PROP_NAME['subname'], metadata['subname'])
+        self.props.write_at.text(self.PROP_NAME['author'], metadata['author'])
+        self.props.write_at.text(self.PROP_NAME['publisher'], metadata['publisher'])
+        self.props.write_at.number(self.PROP_NAME['page'], metadata['page'])
+        self.props.write_at.files(self.PROP_NAME['cover_image'], metadata['cover_image'])
+        self.set_contents_to_subpage(metadata['read_plain'])
 
     def set_contents_to_subpage(self, contents: list):
         # TODO : 비동기 프로그래밍으로 구현할 경우... 어떻게 해야 제일 효율적일지 모르겠다.
         subpage_id = self.get_or_make_subpage_id()
         self.props.set_overwrite(True)
-        link_to_contents = self.props.write_rich.text(self.PROP_NAME['link_to_contents'])
+        link_to_contents = self.props.write_rich_at.text(self.PROP_NAME['link_to_contents'])
         link_to_contents.mention_page(subpage_id)
 
         subpage_patch = AppendBlockChildren(subpage_id)
@@ -124,11 +124,11 @@ class BookReadingPage(ReadingPage):
         """
         if self.children.query:
             block = self.children.query[0]
-            if block.contents and self.title in block.contents:
+            if block.read_plain and self.title in block.read_plain:
                 return block.block_id
         """
         subpage_patch = CreateBasicPage(self.page_id)
-        subpage_patch.props.write.title(f'={self.title}')
+        subpage_patch.props.write_at.title(f'={self.title}')
         response = subpage_patch.execute()
         return PageParser.from_retrieve_response(response).page_id
 
@@ -144,13 +144,13 @@ class BookReadingPage(ReadingPage):
 
         for text_line in contents:
             if re.findall(section, text_line) or re.findall(section_eng, text_line):
-                patch.children.write.heading_2(text_line)
+                patch.children.write_at.heading_2(text_line)
             elif re.findall(chapter, text_line) or re.findall(chapter_eng, text_line):
-                patch.children.write.heading_3(text_line)
+                patch.children.write_at.heading_3(text_line)
             elif re.findall(small_chapter, text_line):
-                patch.children.write.paragraph(text_line)
+                patch.children.write_at.paragraph(text_line)
             else:
-                patch.children.write.toggle(text_line)
+                patch.children.write_at.toggle(text_line)
 
     def set_lib_datas(self, datas: dict):
         datastrings = []
@@ -172,8 +172,8 @@ class BookReadingPage(ReadingPage):
         joined_string = '; '.join(datastrings)
 
         self.props.set_overwrite(True)
-        self.props.write.text(self.PROP_NAME['location'], joined_string)
-        self.props.write.checkbox(self.PROP_NAME['not_available'], not available)
+        self.props.write_at.text(self.PROP_NAME['location'], joined_string)
+        self.props.write_at.checkbox(self.PROP_NAME['not_available'], not available)
 
     @staticmethod
     def format_lib(lib: str, res: Union[dict, str]) -> tuple[str, bool]:

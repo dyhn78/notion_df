@@ -1,15 +1,17 @@
 from __future__ import annotations
-from typing import Optional, Iterable
+from typing import Optional, Iterable, Union
+
+from ...api_format.parse import PageParser, DatabaseParser
 
 
 class PropertyFrame:
-    # TODO : Parser 로부터 frame 을 업데이트하는 메소드 필요.
     def __init__(self, units: Optional[list[PropertyUnit]] = None):
         if units is None:
             units = []
         self.values: list[PropertyUnit] = []
         self.key_to_name: dict[str, str] = {}
-        self.name_to_unit: dict[str, PropertyUnit] = {}
+        self.by_key: dict[str, PropertyUnit] = {}
+        self.by_name: dict[str, PropertyUnit] = {}
         self.extend(units)
 
     def __iter__(self):
@@ -18,6 +20,9 @@ class PropertyFrame:
     def __len__(self):
         return len(self.values)
 
+    def __getitem__(self, prop_name: str):
+        return self.by_name[prop_name]
+
     def extend(self, frame_units: Iterable[PropertyUnit]):
         for unit in frame_units:
             self.append(unit)
@@ -25,7 +30,13 @@ class PropertyFrame:
     def append(self, frame_unit: PropertyUnit):
         self.values.append(frame_unit)
         self.key_to_name.update({frame_unit.key: frame_unit.name})
-        self.name_to_unit.update({frame_unit.name: frame_unit})
+        self.by_name.update({frame_unit.name: frame_unit})
+        self.by_key.update({frame_unit.key: frame_unit})
+
+    def fetch_parser(self, parser: Union[PageParser, DatabaseParser]):
+        for prop_name, prop_type in parser.prop_types:
+            frame_unit = self.by_name[prop_name]
+            frame_unit.type = prop_type
 
 
 class PropertyUnit:

@@ -25,7 +25,7 @@ def print_edges(gp):
 def print_pages(builder: BuildGraph):
     for pagelist in builder.all.values():
         for page in pagelist.values:
-            pprint(page.props.read)
+            pprint(page.props.read_list)
 
 
 if __name__ == '__main__':

@@ -11,12 +11,12 @@ class Editor(Requestor, metaclass=ABCMeta):
         pass
 
 
-class MasterEditor(Editor, metaclass=ABCMeta):
+class MainEditor(Editor, metaclass=ABCMeta):
     def __init__(self, master_id: str, caller: Optional[BridgeEditor] = None):
-        self.caller = caller
         self.master_id = master_id
         self.set_overwrite_option(True)
         self.agents: dict[str, Editor] = {}
+        self.caller = caller
 
     def __iter__(self):
         return self.agents.values()
@@ -39,12 +39,15 @@ class MasterEditor(Editor, metaclass=ABCMeta):
 
 
 class BridgeEditor(Editor, metaclass=ABCMeta):
-    def __init__(self, caller: MasterEditor):
+    def __init__(self, caller: MainEditor):
         self.caller = caller
-        self.values: list[MasterEditor] = []
+        self.values: list[MainEditor] = []
 
     def __iter__(self):
         return self.values
+
+    def __getitem__(self, index: int):
+        return self.values[index]
 
     def __len__(self):
         return len(self.values)
@@ -63,8 +66,8 @@ class BridgeEditor(Editor, metaclass=ABCMeta):
         return [child.execute() for child in self]
 
 
-class GatewayEditor(Editor, metaclass=ABCMeta):
-    def __init__(self, caller: MasterEditor):
+class GroundEditor(Editor, metaclass=ABCMeta):
+    def __init__(self, caller: MainEditor):
         self.caller = caller
         self.gateway: Optional[Requestor] = None
         self.enable_overwrite = True
