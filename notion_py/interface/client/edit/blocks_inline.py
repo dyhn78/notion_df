@@ -403,9 +403,6 @@ class NewBlockChildren(Editor):
         self.requests.clear()
         return res
 
-    def _push(self, carrier: BlockWriter) -> BlockWriter:
-        return self.gateway.append_block(carrier)
-
     def indent_next_block(self) -> NewBlockChildren:
         """if not possible, the cursor will stay at its position."""
         try:

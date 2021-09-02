@@ -26,11 +26,9 @@ class BlockChildrenStash(ValueCarrier):
     def unpack(self):
         return {'children': self._block_value.unpack()}
 
-    def append_block(self, carrier: BlockWriter):
+    def apply_contents(self, carrier: BlockWriter):
+        """polymorphic with UpdateBlock.apply_contents()"""
         return self._block_value.apply(carrier)
-
-    def appendleft_block(self, carrier: BlockWriter):
-        return self._block_value.apply_left(carrier)
 
 
 class TwofoldDictStash(TwofoldStash, metaclass=ABCMeta):

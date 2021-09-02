@@ -95,6 +95,6 @@ class AppendBlockChildren(Gateway):
         if not self.children:
             return {}
         stopwatch(' '.join(['append', page_id_to_url(self.parent_id)]))
-        res = self.notion.blocks.children.append_block(**self.unpack())
+        res = self.notion.blocks.children.apply_contents(**self.unpack())
         self.children = BlockChildrenStash()
         return res

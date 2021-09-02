@@ -79,7 +79,7 @@ class AppendBlockChildren(Gateway, BlockChildrenStash):
     @drop_empty_request
     @retry_request
     def execute(self) -> dict:
-        res = self.notion.blocks.children.append_block(**self.unpack())
+        res = self.notion.blocks.children.apply_contents(**self.unpack())
         stopwatch(' '.join(['append', page_id_to_url(self.parent_id)]))
         self.clear()
         return res
@@ -98,6 +98,7 @@ class UpdateBlock(Gateway):
         self._contents_value = None
 
     def apply_contents(self, carrier: BlockWriter):
+        """polymorphic with BlockChildrenStash.apply_contents()"""
         self._contents_value = carrier
         return carrier
 

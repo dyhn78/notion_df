@@ -24,7 +24,7 @@ class NaljjaToGigan(MatchorCreatebyIndex):
         if tar_index not in self.new_target_indices:
             tar_patch = CreateTabularPage(self._target_id)
             self._append_requests(tar_patch)
-            self.new_target_indices.append_block(tar_index)
+            self.new_target_indices.apply_contents(tar_index)
 
             tar_patch.props.write_rich.title('📚제목', tar_index)
 
