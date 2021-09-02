@@ -104,15 +104,15 @@ class PageListDeprecated:
     def id_by_index(self, prop_name: str, index_value) -> str:
         if not self._id_by_index[prop_name]:
             try:
-                res = {page_object.props.read_list[prop_name]: page_object.page_id
+                res = {page_object.props.reads[prop_name]: page_object.page_id
                        for page_object in self.values}
             except TypeError:
                 try:
-                    res = {page_object.props.read_list[prop_name][0]: page_object.page_id
+                    res = {page_object.props.reads[prop_name][0]: page_object.page_id
                            for page_object in self.values}
                 except TypeError:
                     page_object = self.values[0]
-                    pprint(f"key : {page_object.props.read_list[prop_name]}")
+                    pprint(f"key : {page_object.props.reads[prop_name]}")
                     pprint(f"value : {page_object.page_id}")
                     raise TypeError
             self._id_by_index[prop_name] = res
@@ -122,6 +122,6 @@ class PageListDeprecated:
         if not self._ids_by_prop[prop_name]:
             res = defaultdict(list)
             for page_object in self.values:
-                res[page_object.props.read_list[prop_name]].append(page_object.page_id)
+                res[page_object.props.reads[prop_name]].append(page_object.page_id)
             self._ids_by_prop[prop_name] = res
         return self._ids_by_prop[prop_name][prop_value]

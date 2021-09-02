@@ -3,15 +3,17 @@ from typing import Optional
 from collections import defaultdict
 from pprint import pprint
 
-from .blocks_inline import InlinePageContents, Block, BlockChildren
-from .struct import BridgeEditor, MainEditor, GroundEditor
-from ..frame import PropertyUnit, PropertyFrame
+from .blocks_inline import BlockChildren, SupportedBlock
+from ...struct import \
+    BridgeEditor, MasterEditor, GroundEditor, \
+    PropertyUnit, PropertyFrame
+from .eval_empty import eval_empty
 from ...api_format.encode import TabularPropertybyKey, PropertyUnitWriter
 from ...api_format.parse import PageListParser, PageParser, DatabaseParser
 from ...gateway import Query, RetrievePage, UpdatePage, RetrieveDatabase
 
 
-class TabularPage(Block):
+class TabularPageBlock(SupportedBlock):
     def __init__(self, page_id: str,
                  frame: Optional[PropertyFrame] = None,
                  caller: Optional[PageList] = None):
@@ -26,19 +28,40 @@ class TabularPage(Block):
                 frame = PropertyFrame()
         self.frame = frame
 
-    def fetch_retrieve(self):
+    def retrieve_this(self):
         gateway = RetrievePage(self.master_id)
         response = gateway.execute()
         parser = PageParser.parse_retrieve(response)
+        self.apply_page_parser(parser)
 
+    def apply_page_parser(self, parser):
+        self.title = parser.title
         self.frame.fetch_parser(parser)
         self.props.fetch_parser(parser)
-        self.title = parser.title
-        return self.props
+
+    def read(self):
+        props = {key: value['plain']
+                 for key, value in self.props.read_all_at().items()}
+        return {'type': 'text',
+                'props': props,
+                'children': self.children.reads()}
+
+    def read_rich(self):
+        props = {key: value['rich']
+                 for key, value in self.props.read_all_at().items()}
+        return {'type': 'text',
+                'props': props,
+                'children': self.children.reads_rich()}
+
+    def unpack(self):
+        pass
+
+    def execute(self):
+        pass
 
 
 class TabularProperty(GroundEditor, TabularPropertybyKey):
-    def __init__(self, caller: TabularPage):
+    def __init__(self, caller: TabularPageBlock):
         super().__init__(caller)
         self.gateway = UpdatePage(caller.master_id)
         self.frame = caller.frame
@@ -58,11 +81,11 @@ class TabularProperty(GroundEditor, TabularPropertybyKey):
                 value = self._read_plain[name]
             self._read_full[name] = value
 
-    def read_all(self):
+    def read_all_at(self):
         return self._read_full
 
-    def read_all_keys(self):
-        return {key: self._read_full[self._prop_name(key)] for key in self.frame}
+    def read_all_of(self):
+        return {key: self._read_full[self._name_at(key)] for key in self.frame}
 
     def read_at(self, prop_name: str):
         return self._read_plain[prop_name]
@@ -70,11 +93,11 @@ class TabularProperty(GroundEditor, TabularPropertybyKey):
     def read_rich_at(self, prop_name: str):
         return self._read_rich[prop_name]
 
-    def read_on(self, prop_key: str):
-        return self.read_at(self._prop_name(prop_key))
+    def read_of(self, prop_key: str):
+        return self.read_at(self._name_at(prop_key))
 
-    def read_rich_on(self, prop_key: str):
-        return self.read_rich_at(self._prop_name(prop_key))
+    def read_rich_of(self, prop_key: str):
+        return self.read_rich_at(self._name_at(prop_key))
 
     def _push(self, prop_name: str, carrier: PropertyUnitWriter) \
             -> Optional[PropertyUnitWriter]:
@@ -82,11 +105,11 @@ class TabularProperty(GroundEditor, TabularPropertybyKey):
             return self.gateway.apply_prop(carrier)
         return None
 
-    def _prop_name(self, prop_key: str):
-        return self.frame.key_to_name[prop_key]
+    def _name_at(self, prop_key: str):
+        return self.frame.by_key[prop_key].name
 
-    def _prop_type(self, prop_name: str):
-        return self.frame[prop_name].type
+    def _type_of(self, prop_name: str):
+        return self.frame.by_name[prop_name].type
 
     @staticmethod
     def eval_empty(value):
@@ -96,7 +119,7 @@ class TabularProperty(GroundEditor, TabularPropertybyKey):
 class PageList(BridgeEditor):
     def __init__(self, caller: Database):
         super().__init__(caller)
-        self.values: list[TabularPage] = []
+        self.values: list[TabularPageBlock] = []
         self.frame = caller.frame
 
         self._page_by_id = None
@@ -106,15 +129,15 @@ class PageList(BridgeEditor):
 
     def fetch_parser(self, pagelist_parser: PageListParser):
         for page_parser in pagelist_parser:
-            child_page = TabularPage(page_parser.page_id, caller=self)
+            child_page = TabularPageBlock(page_parser.page_id, caller=self)
             child_page.props.fetch_parser(page_parser)
             self.values.append(child_page)
         if pagelist_parser:
             self.frame.fetch_parser(pagelist_parser[0])
 
-    def page_by_id(self, page_id: str) -> TabularPage:
+    def page_by_id(self, page_id: str) -> TabularPageBlock:
         if self._page_by_id is None:
-            self._page_by_id: dict[str, TabularPage] \
+            self._page_by_id: dict[str, TabularPageBlock] \
                 = {page.master_id: page for page in self.values}
         return self._page_by_id[page_id]
 
@@ -146,7 +169,7 @@ class PageList(BridgeEditor):
         return self._ids_by_prop[prop_name][prop_value]
 
 
-class Database(MainEditor):
+class Database(MasterEditor):
     def __init__(self, database_id: str,
                  database_name: str,
                  frame_units: Optional[list[PropertyUnit]] = None,
@@ -168,3 +191,13 @@ class Database(MainEditor):
         response = gateway.execute()
         parser = DatabaseParser(response)
         self.frame.fetch_parser(parser)
+
+    def unpack(self):
+        pass
+
+    def execute(self):
+        pass
+
+
+class DatabaseSchema(GroundEditor):
+    pass  # TODO, in the far future

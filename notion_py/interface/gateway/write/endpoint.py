@@ -28,6 +28,7 @@ class CreatePage(Gateway, PagePropertyStash, BlockChildrenStash):
     def execute(self):
         res = self.notion.pages.create(**self.unpack())
         stopwatch(' '.join(['create', page_id_to_url(res['id'])]))
+        self.clear()
         return res
 
 
@@ -51,6 +52,7 @@ class UpdatePage(Gateway, PagePropertyStash):
     def execute(self):
         res = self.notion.pages.update(**self.unpack())
         stopwatch(' '.join(['update', page_id_to_url(self.page_id)]))
+        self.clear()
         return res
 
 
@@ -74,6 +76,7 @@ class AppendBlockChildren(Gateway, BlockChildrenStash):
     def execute(self):
         res = self.notion.blocks.children.append_block(**self.unpack())
         stopwatch(' '.join(['append', page_id_to_url(self.parent_id)]))
+        self.clear()
         return res
 
 
@@ -89,7 +92,7 @@ class UpdateBlock(Gateway):
     def clear(self):
         self._contents_value = None
 
-    def contents_apply(self, carrier: BlockWriter):
+    def apply_contents(self, carrier: BlockWriter):
         self._contents_value = carrier
         return carrier
 
@@ -105,4 +108,5 @@ class UpdateBlock(Gateway):
             return {}
         res = self.notion.blocks.update(**self.unpack())
         stopwatch(' '.join(['update', page_id_to_url(self.block_id)]))
+        self.clear()
         return res

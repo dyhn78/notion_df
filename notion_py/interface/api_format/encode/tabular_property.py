@@ -8,7 +8,7 @@ from notion_py.interface.struct import DateFormat
 
 class TabularPropertybyName(ABC):
     @abstractmethod
-    def _prop_type(self, prop_name: str):
+    def _type_of(self, prop_name: str):
         pass
 
     @abstractmethod
@@ -16,15 +16,15 @@ class TabularPropertybyName(ABC):
             -> Optional[PropertyUnitWriter]:
         pass
 
-    def write_at(self, prop_name: str, prop_value, prop_type: Optional[str] = None):
+    def write(self, prop_name: str, prop_value, prop_type: Optional[str] = None):
         if not prop_type:
-            prop_type = self._prop_type(prop_name)
+            prop_type = self._type_of(prop_name)
         writer_func = f'write_{prop_type}'
         return getattr(self, writer_func)(prop_name, prop_value)
 
-    def write_rich_at(self, prop_name: str, prop_type: Optional[str] = None):
+    def write_rich(self, prop_name: str, prop_type: Optional[str] = None):
         if not prop_type:
-            prop_type = self._prop_type(prop_name)
+            prop_type = self._type_of(prop_name)
         writer_func = f'write_rich_{prop_type}'
         return getattr(self, writer_func)(prop_name)
 
@@ -85,73 +85,73 @@ class TabularPropertybyName(ABC):
 
 class TabularPropertybyKey(TabularPropertybyName, metaclass=ABCMeta):
     @abstractmethod
-    def _prop_name(self, prop_key: str):
+    def _name_at(self, prop_key: str):
         pass
 
-    def write_on(self, prop_key: str, prop_value, prop_type: Optional[str] = None):
-        prop_name = self._prop_name(prop_key)
-        return self.write_at(prop_name, prop_value, prop_type)
+    def write_at(self, prop_key: str, prop_value, prop_type: Optional[str] = None):
+        prop_name = self._name_at(prop_key)
+        return self.write(prop_name, prop_value, prop_type)
 
-    def write_rich_on(self, prop_key: str, prop_type: Optional[str] = None):
-        prop_name = self._prop_name(prop_key)
-        return self.write_rich_at(prop_name, prop_type)
+    def write_rich_at(self, prop_key: str, prop_type: Optional[str] = None):
+        prop_name = self._name_at(prop_key)
+        return self.write_rich(prop_name, prop_type)
 
-    def write_rich_title_on(self, prop_key: str):
-        prop_name = self._prop_name(prop_key)
+    def write_rich_title_at(self, prop_key: str):
+        prop_name = self._name_at(prop_key)
         return self.write_rich_title(prop_name)
 
-    def write_rich_text_on(self, prop_key: str):
-        prop_name = self._prop_name(prop_key)
+    def write_rich_text_at(self, prop_key: str):
+        prop_name = self._name_at(prop_key)
         return self.write_rich_text(prop_name)
 
-    def write_title_on(self, prop_key: str, value: str):
-        prop_name = self._prop_name(prop_key)
+    def write_title_at(self, prop_key: str, value: str):
+        prop_name = self._name_at(prop_key)
         return self.write_title(prop_name, value)
 
-    def write_text_on(self, prop_key: str, value: str):
-        prop_name = self._prop_name(prop_key)
+    def write_text_at(self, prop_key: str, value: str):
+        prop_name = self._name_at(prop_key)
         return self.write_text(prop_name, value)
 
-    def write_date_on(self, prop_key: str, value: DateFormat):
-        prop_name = self._prop_name(prop_key)
+    def write_date_at(self, prop_key: str, value: DateFormat):
+        prop_name = self._name_at(prop_key)
         return self.write_date(prop_name, value)
 
-    def write_url_on(self, prop_key: str, value: str):
-        prop_name = self._prop_name(prop_key)
+    def write_url_at(self, prop_key: str, value: str):
+        prop_name = self._name_at(prop_key)
         return self.write_url(prop_name, value)
 
-    def write_email_on(self, prop_key: str, value: str):
-        prop_name = self._prop_name(prop_key)
+    def write_email_at(self, prop_key: str, value: str):
+        prop_name = self._name_at(prop_key)
         return self.write_email(prop_name, value)
 
-    def write_phone_number_on(self, prop_key: str, value: str):
-        prop_name = self._prop_name(prop_key)
+    def write_phone_number_at(self, prop_key: str, value: str):
+        prop_name = self._name_at(prop_key)
         return self.write_phone_number(prop_name, value)
 
-    def write_number_on(self, prop_key: str, value: Union[int, float]):
-        prop_name = self._prop_name(prop_key)
+    def write_number_at(self, prop_key: str, value: Union[int, float]):
+        prop_name = self._name_at(prop_key)
         return self.write_number(prop_name, value)
 
-    def write_checkbox_on(self, prop_key: str, value: bool):
-        prop_name = self._prop_name(prop_key)
+    def write_checkbox_at(self, prop_key: str, value: bool):
+        prop_name = self._name_at(prop_key)
         return self.write_checkbox(prop_name, value)
 
-    def write_select_on(self, prop_key: str, value: str):
-        prop_name = self._prop_name(prop_key)
+    def write_select_at(self, prop_key: str, value: str):
+        prop_name = self._name_at(prop_key)
         return self.write_select(prop_name, value)
 
-    def write_files_on(self, prop_key: str, value: str):
-        prop_name = self._prop_name(prop_key)
+    def write_files_at(self, prop_key: str, value: str):
+        prop_name = self._name_at(prop_key)
         return self.write_files(prop_name, value)
 
-    def write_people_on(self, prop_key: str, value: str):
-        prop_name = self._prop_name(prop_key)
+    def write_people_at(self, prop_key: str, value: str):
+        prop_name = self._name_at(prop_key)
         return self.write_people(prop_name, value)
 
-    def write_multi_select_on(self, prop_key: str, values: list[str]):
-        prop_name = self._prop_name(prop_key)
+    def write_multi_select_at(self, prop_key: str, values: list[str]):
+        prop_name = self._name_at(prop_key)
         return self.write_multi_select(prop_name, values)
 
-    def write_relation_on(self, prop_key: str, values: list[str]):
-        prop_name = self._prop_name(prop_key)
+    def write_relation_at(self, prop_key: str, values: list[str]):
+        prop_name = self._name_at(prop_key)
         return self.write_relation(prop_name, values)

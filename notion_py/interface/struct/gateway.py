@@ -1,6 +1,6 @@
 import os
 import time
-from abc import ABCMeta
+from abc import ABCMeta, abstractmethod
 from json import JSONDecodeError
 from typing import Union, Callable
 
@@ -9,6 +9,11 @@ from notion_client.errors import APIResponseError
 
 from notion_py.interface.utility import stopwatch
 from .value_carrier import Requestor
+
+
+class Gateway(Requestor, metaclass=ABCMeta):
+    _token = os.environ['NOTION_TOKEN'].strip("'").strip('"')
+    notion: Union[Client, AsyncClient] = Client(auth=_token)
 
 
 def drop_empty_request(method: Callable):
@@ -21,17 +26,53 @@ def drop_empty_request(method: Callable):
 
 def retry_request(func: Callable, recursion_limit=3):
     def wrapper(self, **kwargs):
-        for recursion in range(recursion_limit - 1):
+        recursion = 0
+        while True:
             try:
-                return func(self, **kwargs)
-            except (JSONDecodeError, APIResponseError):
-                time.sleep(0.5 * (2 ** recursion))
-            if recursion:
-                stopwatch(f'Notion 응답 재시도 {recursion + 1}/{recursion_limit}회')
-        func(self, **kwargs)
+                response = func(self, **kwargs)
+                return response
+            except (JSONDecodeError, APIResponseError) as e:
+                if recursion == recursion_limit:
+                    raise e
+                recursion += 1
+                stopwatch(f'Notion 응답 재시도 {recursion}/{recursion_limit}회')
+                time.sleep(1 * (1 ** recursion))
     return wrapper
 
 
-class Gateway(Requestor, metaclass=ABCMeta):
-    _token = os.environ['NOTION_TOKEN'].strip("'").strip('"')
-    notion: Union[Client, AsyncClient] = Client(auth=_token)
+class LongGateway(Gateway):
+    MAX_PAGE_SIZE = 100
+    INF = int(1e5) - 1
+
+    def __init__(self, name=''):
+        self.name = name
+
+    @abstractmethod
+    @retry_request
+    def _execute_once(self, page_size=None, start_cursor=None):
+        pass
+
+    def execute(self, page_size=0):
+        res = []
+        result = {'results': res}
+        if page_size == 0:
+            page_size = self.INF
+        has_more = True
+        start_cursor = None
+        page_retrieved = 0
+        while has_more and page_size > 0:
+            # noinspection PyArgumentList
+            response = self._execute_once(page_size=min(page_size, self.MAX_PAGE_SIZE),
+                                          start_cursor=start_cursor)
+            has_more = response['has_more']
+            start_cursor = response['next_cursor']
+            res.extend(response['results'])
+
+            page_size -= self.MAX_PAGE_SIZE
+            page_retrieved += len(response['results'])
+
+            comments = f'{page_retrieved} 개 완료'
+            if self.name:
+                comments += f' << {self.name}'
+            stopwatch(comments)
+        return result

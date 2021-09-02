@@ -51,7 +51,7 @@ class SelfRelatedPageListDeprecated(PageListDeprecated):
         res = []
         # TODO > 이 명령을 직관적으로 만드는 것이 TabularPage에 DataFrame을 이식할 때
         #  꼭 구현해야 할 점이다.
-        for page_id in alien_page.props.read_list[
+        for page_id in alien_page.props.reads[
             alien_pagelist.frame.frame[prop_name].name]:
             try:
                 res.append(self.page_by_id(page_id))

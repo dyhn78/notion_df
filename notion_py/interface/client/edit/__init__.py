@@ -1,1 +1,1 @@
-from notion_py.interface.client.edit.blocks_tabular import TabularPage
+from .blocks_tabular import TabularPageBlock

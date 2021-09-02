@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import Optional, Iterable, Union
 
-from ...api_format.parse import PageParser, DatabaseParser
+from ..api_format.parse import PageParser, DatabaseParser
 
 
 class PropertyFrame:
@@ -19,9 +19,6 @@ class PropertyFrame:
 
     def __len__(self):
         return len(self.values)
-
-    def __getitem__(self, prop_name: str):
-        return self.by_name[prop_name]
 
     def extend(self, frame_units: Iterable[PropertyUnit]):
         for unit in frame_units:

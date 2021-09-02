@@ -26,10 +26,10 @@ class NaljjaToGigan(MatchorCreatebyIndex):
             self._append_requests(tar_patch)
             self.new_target_indices.append_block(tar_index)
 
-            tar_patch.props.write_rich_at.title('📚제목', tar_index)
+            tar_patch.props.write_rich.title('📚제목', tar_index)
 
             dom_parse = NaljjaParse(dom.props[self._domain_index])
-            tar_patch.props.write_rich_at.date('📅기간', dom_parse.start_date())
+            tar_patch.props.write_rich.date('📅기간', dom_parse.start_date())
 
 
 class NaljjaParse:

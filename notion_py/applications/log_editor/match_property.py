@@ -36,7 +36,7 @@ class MatchbyReference(PropertyRequestStack):
         tar_id = ref_props[self._reference_to_target]
 
         dom_patch = UpdateTabularPage(dom.page_id)
-        dom_patch.props.write_at.relation(self._domain_to_target, tar_id)
+        dom_patch.props.write.relation(self._domain_to_target, tar_id)
         self._append_requests(dom_patch)
 
     def _find_ref_id(self, dom):
@@ -97,7 +97,7 @@ class MatchbyIndex(PropertyRequestStack):
         except KeyError:
             return tar_index
         dom_patch = UpdateTabularPage(dom.page_id)
-        dom_patch.props.write_at.relation(self._domain_to_target, [tar_id])
+        dom_patch.props.write.relation(self._domain_to_target, [tar_id])
         self._append_requests(dom_patch)
         return False
 
@@ -116,4 +116,4 @@ class MatchorCreatebyIndex(MatchbyIndex):
             self._append_requests(tar_patch)
             self.new_target_indices.append(tar_index)
 
-            tar_patch.props.write_at.title('📚제목', tar_index)
+            tar_patch.props.write.title('📚제목', tar_index)
