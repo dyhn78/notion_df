@@ -1,14 +1,16 @@
-from .stash import BlockChildrenStash, PagePropertyStash
+from .stash import BlockChildrenStash, PagePropertyStash, ArchiveToggle
 from notion_py.interface.struct import Gateway, retry_request, drop_empty_request
 from notion_py.interface.api_format.encode import BlockWriter
 from ...utility import stopwatch, page_id_to_url
 
 
-class CreatePage(Gateway, PagePropertyStash, BlockChildrenStash):
-    def __init__(self, parent_id: str):
+class CreatePage(Gateway, PagePropertyStash, BlockChildrenStash, ArchiveToggle):
+    def __init__(self, parent_id: str, under_database: bool):
         PagePropertyStash.__init__(self)
         BlockChildrenStash.__init__(self)
+        ArchiveToggle.__init__(self)
         self.parent_id = parent_id
+        self.parent_type = 'database_id' if under_database else 'page_id'
 
     def __bool__(self):
         return any([PagePropertyStash.__bool__(self),
@@ -21,20 +23,22 @@ class CreatePage(Gateway, PagePropertyStash, BlockChildrenStash):
     def unpack(self):
         return dict(**PagePropertyStash.unpack(self),
                     **BlockChildrenStash.unpack(self),
-                    parent={'page_id': self.parent_id})
+                    **ArchiveToggle.unpack(self),
+                    parent={self.parent_type: self.parent_id})
 
     @drop_empty_request
     @retry_request
-    def execute(self):
+    def execute(self) -> dict:
         res = self.notion.pages.create(**self.unpack())
         stopwatch(' '.join(['create', page_id_to_url(res['id'])]))
         self.clear()
         return res
 
 
-class UpdatePage(Gateway, PagePropertyStash):
+class UpdatePage(Gateway, PagePropertyStash, ArchiveToggle):
     def __init__(self, page_id):
         PagePropertyStash.__init__(self)
+        ArchiveToggle.__init__(self)
         self.page_id = page_id
 
     def __bool__(self):
@@ -45,11 +49,12 @@ class UpdatePage(Gateway, PagePropertyStash):
 
     def unpack(self):
         return dict(**PagePropertyStash.unpack(self),
+                    **ArchiveToggle.unpack(self),
                     page_id=self.page_id)
 
     @drop_empty_request
     @retry_request
-    def execute(self):
+    def execute(self) -> dict:
         res = self.notion.pages.update(**self.unpack())
         stopwatch(' '.join(['update', page_id_to_url(self.page_id)]))
         self.clear()
@@ -73,7 +78,7 @@ class AppendBlockChildren(Gateway, BlockChildrenStash):
 
     @drop_empty_request
     @retry_request
-    def execute(self):
+    def execute(self) -> dict:
         res = self.notion.blocks.children.append_block(**self.unpack())
         stopwatch(' '.join(['append', page_id_to_url(self.parent_id)]))
         self.clear()
@@ -101,7 +106,7 @@ class UpdateBlock(Gateway):
                     block_id=self.block_id)
 
     @retry_request
-    def execute(self):
+    def execute(self) -> dict:
         """making a request with empty carrier
         will clear the original read_plain of block"""
         if self._contents_value is None:

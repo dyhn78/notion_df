@@ -1,16 +1,14 @@
-class Cls1:
-    def __init__(self):
-        self.a = 2
+class A:
+    def __init__(self, value):
+        self.value = value
 
-class Cls2:
-    def __init__(self):
-        self.b = 3
+    def __str__(self):
+        return f'A({self.value})'
 
-class Cls3(Cls1, Cls2):
-    def __init__(self):
-        print(super())
-        super().__init__()
 
-inst3 = Cls3()
-print(inst3.b)
-print(inst3.a)
+array = [A(2), A(3)]
+c = A(4)
+array.append(c)
+print(array)
+del c
+print(array)

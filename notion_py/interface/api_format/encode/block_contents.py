@@ -7,7 +7,7 @@ from .block_unit import BlockWriter, RichTextBlockWriter, PageBlockWriter
 class RichBlockContentsWriter(ABC):
     @abstractmethod
     def _push(self, carrier: BlockWriter) \
-            -> Union[RichTextBlockWriter, PageBlockWriter]:
+            -> Union[RichTextBlockWriter]:
         pass
 
     def write_rich_paragraph(self) -> RichTextBlockWriter:
@@ -35,11 +35,18 @@ class RichBlockContentsWriter(ABC):
         return self._push(RichTextBlockWriter('toggle'))
 
 
-class BlockContentsWriter(RichBlockContentsWriter, metaclass=ABCMeta):
+class PageContentsWriter(ABC):
+    @abstractmethod
+    def _push(self, carrier: BlockWriter) \
+            -> Union[PageBlockWriter]:
+        pass
+
     def write_page_block(self, title: str) -> PageBlockWriter:
         writer = PageBlockWriter(title)
         return self._push(writer)
 
+
+class BlockContentsWriter(RichBlockContentsWriter, metaclass=ABCMeta):
     def write_paragraph(self, text_contents: str) -> RichTextBlockWriter:
         writer = self.write_rich_paragraph()
         writer.write_text(text_contents)

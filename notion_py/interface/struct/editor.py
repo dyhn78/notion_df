@@ -12,7 +12,8 @@ class Editor(Requestor, metaclass=ABCMeta):
 
 
 class MasterEditor(Editor, metaclass=ABCMeta):
-    def __init__(self, master_id: str, caller: Optional[BridgeEditor] = None):
+    def __init__(self, master_id: str,
+                 caller: Optional[BridgeEditor] = None):
         self.master_id = master_id
         self.set_overwrite_option(True)
         self.agents: dict[str, Editor] = {}
