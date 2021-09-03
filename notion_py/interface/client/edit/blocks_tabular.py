@@ -79,6 +79,19 @@ class TabularPageBlock(SupportedBlock):
         self.frame.fetch_parser(parser)
         self.props.apply_page_parser(parser)
 
+    def unpack(self):
+        return {'props': self.props.unpack(),
+                'children': self.children.unpack(),
+                'new_children': self.new_children.unpack()}
+
+    def execute(self):
+        """this is identical(except the first line) to InlinePageBlock.execute()"""
+        parser = self.props.execute()
+        self.apply_page_parser(parser)
+        if self.yet_not_created:
+            self.new_children.gateway.parent_id = self.master_id
+        self._execute_children_agents()
+
     def read(self):
         return {'type': 'page',
                 'props': self.props.read_all_plain(),
@@ -89,43 +102,28 @@ class TabularPageBlock(SupportedBlock):
                 'props': self.props.read_all_rich(),
                 'children': self.children.reads_rich()}
 
-    def unpack(self):
-        return {'props': self.props.unpack(),
-                'children': self.children.unpack(),
-                'new_children': self.new_children.unpack()}
-
-    def execute(self):
-        """this is identical(except the first line) to InlinePageBlock.execute()"""
-        response = self.props.execute()
-        if self.master_id:
-            parser = PageParser.parse_update(response)
-            self.apply_page_parser(parser)
-        else:
-            parser = PageParser.parse_create(response)
-            self.apply_page_parser(parser)
-            self.props.reset_gateway()
-            self.new_children.gateway.parent_id = self.master_id
-        self._execute_children_agents()
-
 
 class TabularProperty(GroundEditor, TabularPropertybyKey):
     def __init__(self, caller: TabularPageBlock):
         super().__init__(caller)
-        assert isinstance(self.caller, TabularPageBlock)
-        if self.caller.is_yet_not_created:
+        self.caller = caller
+        if self.caller.yet_not_created:
             self.gateway = CreatePage(self.caller.parent_id, under_database=True)
         else:
-            self.gateway = self._default_gateway()
+            self.gateway = UpdatePage(self.caller.master_id)
         self.frame = self.caller.frame
         self._read_plain = {}
         self._read_rich = {}
         self._read_full = {}
 
-    def reset_gateway(self):
-        self.gateway = self._default_gateway()
-
-    def _default_gateway(self):
-        return UpdatePage(self.caller.master_id)
+    def execute(self):
+        response = self.gateway.execute()
+        if self.caller.yet_not_created:
+            parser = PageParser.parse_create(response)
+            self.gateway = UpdatePage(self.caller.master_id)
+        else:
+            parser = PageParser.parse_update(response)
+        return parser
 
     def apply_page_parser(self, parser: PageParser):
         if not self.gateway.page_id:
@@ -164,7 +162,7 @@ class TabularProperty(GroundEditor, TabularPropertybyKey):
     def read_rich_of(self, prop_key: str):
         return self.read_rich_at(self._name_at(prop_key))
 
-    def _push(self, prop_name: str, carrier: PropertyEncoder) \
+    def push_carrier(self, prop_name: str, carrier: PropertyEncoder) \
             -> Optional[PropertyEncoder]:
         if self.enable_overwrite or eval_empty(self.read_at(prop_name)):
             return self.gateway.apply_prop(carrier)

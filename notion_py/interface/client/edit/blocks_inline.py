@@ -72,7 +72,7 @@ class SupportedBlock(DefaultBlock):
                 child.get_descendants()
 
     @property
-    def is_yet_not_created(self):
+    def yet_not_created(self):
         if self.master_id:
             return False
         else:
@@ -215,6 +215,13 @@ class InlinePageBlock(ContentsBlock):
         parser = PageParser.parse_retrieve(response)
         self.apply_page_parser(parser)
 
+    def execute(self):
+        parser = self.contents.execute()
+        self.apply_page_parser(parser)
+        if self.yet_not_created:
+            self.new_children.gateway.parent_id = self.master_id
+        self._execute_children_agents()
+
     def apply_page_parser(self, parser: PageParser):
         self.title = parser.title
         self.contents.apply_page_parser(parser)
@@ -224,18 +231,6 @@ class InlinePageBlock(ContentsBlock):
 
     def read_rich(self):
         return dict(**super().read(), type='page')
-
-    def execute(self):
-        response = self.contents.execute()
-        if self.master_id:
-            parser = PageParser.parse_update(response)
-            self.apply_page_parser(parser)
-        else:
-            parser = PageParser.parse_create(response)
-            self.apply_page_parser(parser)
-            self.master_id = parser.page_id
-            self.new_children.gateway.parent_id = self.master_id
-        self._execute_children_agents()
 
 
 class BlockContents(GroundEditor, metaclass=ABCMeta):
@@ -259,13 +254,13 @@ class BlockContents(GroundEditor, metaclass=ABCMeta):
 class TextBlockContents(BlockContents, TextContentsWriter):
     def __init__(self, caller: TextBlock):
         super().__init__(caller)
+        self.caller = caller
         self.gateway = UpdateBlock(self.caller.master_id)
 
     def push_carrier(self, carrier: RichTextContentsEncoder) -> RichTextContentsEncoder:
-        assert isinstance(self.caller, TextBlock)
-        if self.caller.is_yet_not_created:
-            new_children = self.caller.goto_parent().new_children
-            return new_children.push_carrier(carrier)
+        if self.caller.yet_not_created:
+            parent_block = self.caller.goto_parent()
+            return parent_block.new_children.push_carrier(carrier)
         else:
             return self.gateway.apply_contents(carrier)
 
@@ -273,11 +268,20 @@ class TextBlockContents(BlockContents, TextContentsWriter):
 class InlinePageBlockContents(BlockContents):
     def __init__(self, caller: InlinePageBlock):
         super().__init__(caller)
-        assert isinstance(self.caller, InlinePageBlock)
-        if self.caller.is_yet_not_created:
+        self.caller = caller
+        if self.caller.yet_not_created:
             self.gateway = CreatePage(self.caller.parent_id, under_database=False)
         else:
             self.gateway = UpdatePage(self.caller.master_id)
+
+    def execute(self):
+        response = self.gateway.execute()
+        if self.caller.yet_not_created:
+            parser = PageParser.parse_create(response)
+            self.gateway = UpdatePage(self.caller.master_id)
+        else:
+            parser = PageParser.parse_update(response)
+        return parser
 
     def apply_page_parser(self, parser: PageParser):
         if not self.gateway.page_id:
@@ -410,7 +414,6 @@ class NewBlockChildren(Editor):
     def exdent_next_block(self) -> NewBlockChildren:
         """if not possible, the cursor will stay at its position."""
         try:
-            assert isinstance(self.caller, SupportedBlock)
             cursor = self.caller.caller
         except (AttributeError, AssertionError):
             print('exdentation not possible!')
