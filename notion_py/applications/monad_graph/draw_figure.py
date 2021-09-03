@@ -53,9 +53,9 @@ class DrawFigure:
 
     def add_itself(self, trace, lead_node: str):
         ky = self.node_info(lead_node)
-        trace['x'].apply_contents(ky.x)
-        trace['y'].apply_contents(ky.y)
-        trace['text'].apply_contents(ky.name)
+        trace['x'].apply_children(ky.x)
+        trace['y'].apply_children(ky.y)
+        trace['text'].apply_children(ky.name)
 
     def add_followers_to(self, trace, lead_node: str, edge_type: str):
         ky = self.node_info(lead_node)

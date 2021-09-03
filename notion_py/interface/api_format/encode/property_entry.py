@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod, ABCMeta
 from typing import Union, Optional
 
-from .tabular_property_unit import \
-    PropertyUnitWriter, RichTextUnitWriter, SimpleUnitWriter
+from .property_encode import \
+    PropertyEncoder, RichTextPropertyEncoder, SimplePropertyEncoder
 from notion_py.interface.struct import DateFormat
 
 
@@ -12,8 +12,8 @@ class TabularPropertybyName(ABC):
         pass
 
     @abstractmethod
-    def _push(self, prop_name: str, carrier: PropertyUnitWriter) \
-            -> Optional[PropertyUnitWriter]:
+    def _push(self, prop_name: str, carrier: PropertyEncoder) \
+            -> Optional[PropertyEncoder]:
         pass
 
     def write(self, prop_name: str, prop_value, prop_type: Optional[str] = None):
@@ -28,13 +28,13 @@ class TabularPropertybyName(ABC):
         writer_func = f'write_rich_{prop_type}'
         return getattr(self, writer_func)(prop_name)
 
-    def write_rich_title(self, prop_name: str) -> Optional[RichTextUnitWriter]:
-        writer = RichTextUnitWriter('title', prop_name)
+    def write_rich_title(self, prop_name: str) -> Optional[RichTextPropertyEncoder]:
+        writer = RichTextPropertyEncoder('title', prop_name)
         pushed = self._push(prop_name, writer)
         return pushed if pushed is not None else writer
 
-    def write_rich_text(self, prop_name: str) -> Optional[RichTextUnitWriter]:
-        writer = RichTextUnitWriter('rich_text', prop_name)
+    def write_rich_text(self, prop_name: str) -> Optional[RichTextPropertyEncoder]:
+        writer = RichTextPropertyEncoder('rich_text', prop_name)
         pushed = self._push(prop_name, writer)
         return pushed if pushed is not None else writer
 
@@ -49,38 +49,38 @@ class TabularPropertybyName(ABC):
         return self._push(prop_name, writer)
 
     def write_date(self, prop_name: str, value: DateFormat):
-        return self._push(prop_name, SimpleUnitWriter.date(prop_name, value))
+        return self._push(prop_name, SimplePropertyEncoder.date(prop_name, value))
 
     def write_url(self, prop_name: str, value: str):
-        return self._push(prop_name, SimpleUnitWriter.url(prop_name, value))
+        return self._push(prop_name, SimplePropertyEncoder.url(prop_name, value))
 
     def write_email(self, prop_name: str, value: str):
-        return self._push(prop_name, SimpleUnitWriter.email(prop_name, value))
+        return self._push(prop_name, SimplePropertyEncoder.email(prop_name, value))
 
     def write_phone_number(self, prop_name: str, value: str):
-        return self._push(prop_name, SimpleUnitWriter.phone_number(prop_name, value))
+        return self._push(prop_name, SimplePropertyEncoder.phone_number(prop_name, value))
 
     def write_number(self, prop_name: str, value: Union[int, float]):
-        return self._push(prop_name, SimpleUnitWriter.number(prop_name, value))
+        return self._push(prop_name, SimplePropertyEncoder.number(prop_name, value))
 
     def write_checkbox(self, prop_name: str, value: bool):
-        return self._push(prop_name, SimpleUnitWriter.checkbox(prop_name, value))
+        return self._push(prop_name, SimplePropertyEncoder.checkbox(prop_name, value))
 
     def write_select(self, prop_name: str, value: str):
-        return self._push(prop_name, SimpleUnitWriter.select(prop_name, value))
+        return self._push(prop_name, SimplePropertyEncoder.select(prop_name, value))
 
     def write_files(self, prop_name: str, value: str):
-        return self._push(prop_name, SimpleUnitWriter.files(prop_name, value))
+        return self._push(prop_name, SimplePropertyEncoder.files(prop_name, value))
 
     def write_people(self, prop_name: str, value: str):
-        return self._push(prop_name, SimpleUnitWriter.people(prop_name, value))
+        return self._push(prop_name, SimplePropertyEncoder.people(prop_name, value))
 
     def write_multi_select(self, prop_name: str, values: list[str]):
-        return self._push(prop_name, SimpleUnitWriter.multi_select(prop_name, values))
+        return self._push(prop_name, SimplePropertyEncoder.multi_select(prop_name, values))
 
     def write_relation(self, prop_name: str, values: list[str]):
         """ values: list of <page_id>"""
-        return self._push(prop_name, SimpleUnitWriter.relation(prop_name, values))
+        return self._push(prop_name, SimplePropertyEncoder.relation(prop_name, values))
 
 
 class TabularPropertybyKey(TabularPropertybyName, metaclass=ABCMeta):

@@ -8,7 +8,7 @@ from ...struct import \
     BridgeEditor, MasterEditor, GroundEditor, \
     PropertyUnit, PropertyFrame
 from .eval_empty import eval_empty
-from ...api_format.encode import TabularPropertybyKey, PropertyUnitWriter
+from ...api_format.encode import TabularPropertybyKey, PropertyEncoder
 from ...api_format.parse import PageListParser, PageParser, DatabaseParser
 from ...gateway import Query, RetrievePage, UpdatePage, RetrieveDatabase, CreatePage
 
@@ -164,8 +164,8 @@ class TabularProperty(GroundEditor, TabularPropertybyKey):
     def read_rich_of(self, prop_key: str):
         return self.read_rich_at(self._name_at(prop_key))
 
-    def _push(self, prop_name: str, carrier: PropertyUnitWriter) \
-            -> Optional[PropertyUnitWriter]:
+    def _push(self, prop_name: str, carrier: PropertyEncoder) \
+            -> Optional[PropertyEncoder]:
         if self.enable_overwrite or eval_empty(self.read_at(prop_name)):
             return self.gateway.apply_prop(carrier)
         return None

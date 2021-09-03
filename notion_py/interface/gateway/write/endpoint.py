@@ -1,6 +1,6 @@
 from .stash import BlockChildrenStash, PagePropertyStash, ArchiveToggle
 from notion_py.interface.struct import Gateway, retry_request, drop_empty_request
-from notion_py.interface.api_format.encode import BlockWriter
+from notion_py.interface.api_format.encode import ContentsEncoder
 from ...utility import stopwatch, page_id_to_url
 
 
@@ -79,7 +79,7 @@ class AppendBlockChildren(Gateway, BlockChildrenStash):
     @drop_empty_request
     @retry_request
     def execute(self) -> dict:
-        res = self.notion.blocks.children.apply_contents(**self.unpack())
+        res = self.notion.blocks.children.apply_children(**self.unpack())
         stopwatch(' '.join(['append', page_id_to_url(self.parent_id)]))
         self.clear()
         return res
@@ -97,8 +97,7 @@ class UpdateBlock(Gateway):
     def clear(self):
         self._contents_value = None
 
-    def apply_contents(self, carrier: BlockWriter):
-        """polymorphic with BlockChildrenStash.apply_contents()"""
+    def apply_contents(self, carrier: ContentsEncoder):
         self._contents_value = carrier
         return carrier
 
@@ -109,7 +108,7 @@ class UpdateBlock(Gateway):
     @retry_request
     def execute(self) -> dict:
         """making a request with empty carrier
-        will clear the original read_plain of block"""
+        will <remove> the original read_plain of block"""
         if self._contents_value is None:
             return {}
         res = self.notion.blocks.update(**self.unpack())

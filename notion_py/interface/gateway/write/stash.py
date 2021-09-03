@@ -1,7 +1,7 @@
 from abc import ABCMeta
 
 from notion_py.interface.struct import TwofoldStash, ValueCarrier
-from notion_py.interface.api_format.encode import BlockWriter
+from notion_py.interface.api_format.encode import ContentsEncoder
 
 
 class TwofoldListStash(TwofoldStash, metaclass=ABCMeta):
@@ -26,8 +26,7 @@ class BlockChildrenStash(ValueCarrier):
     def unpack(self):
         return {'children': self._block_value.unpack()}
 
-    def apply_contents(self, carrier: BlockWriter):
-        """polymorphic with UpdateBlock.apply_contents()"""
+    def apply_children(self, carrier: ContentsEncoder):
         return self._block_value.apply(carrier)
 
 

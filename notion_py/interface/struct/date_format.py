@@ -10,10 +10,9 @@ class DateFormat:
         self.start_date = start_date
         self.end_date = end_date
 
-
-def make_isoformat(value: DateFormat):
-    start, end = value.start_date, value.end_date
-    res = dict(start=start.isoformat())
-    if end is not None:
-        res.update(end=end.isoformat())
-    return res
+    def make_isoformat(self):
+        start, end = self.start_date, self.end_date
+        res = dict(start=start.isoformat())
+        if end is not None:
+            res.update(end=end.isoformat())
+        return res

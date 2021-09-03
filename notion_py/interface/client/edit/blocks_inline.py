@@ -7,7 +7,8 @@ from notion_py.interface.struct.editor import GroundEditor, BridgeEditor, Master
     Editor
 from .eval_empty import eval_empty
 from ...api_format.encode import \
-    BlockWriter, BlockContentsWriter, RichTextUnitWriter, PropertyUnitWriter
+    TextContentsWriter, RichTextPropertyEncoder
+from ...api_format.encode.block_contents_encode import RichTextContentsEncoder
 from ...api_format.parse import \
     BlockChildrenParser, BlockContentsParser, PageParser
 from ...gateway import \
@@ -191,8 +192,6 @@ class TextBlock(ContentsBlock):
         response = self.contents.execute()
         parser = BlockContentsParser.parse_update(response)
         self.apply_block_parser(parser)
-        if self.master_id:
-            self.contents.reset_gateway()
         self._execute_children_agents()
 
     def read(self):
@@ -240,7 +239,7 @@ class InlinePageBlock(ContentsBlock):
 
 
 class BlockContents(GroundEditor, metaclass=ABCMeta):
-    def __init__(self, caller: MasterEditor):
+    def __init__(self, caller: ContentsBlock):
         super().__init__(caller)
         self.gateway: Optional[UpdateBlock] = None
         self._read_plain = ''
@@ -257,24 +256,18 @@ class BlockContents(GroundEditor, metaclass=ABCMeta):
         return self._read_rich
 
 
-class TextBlockContents(BlockContents, BlockContentsWriter):
+class TextBlockContents(BlockContents, TextContentsWriter):
     def __init__(self, caller: TextBlock):
         super().__init__(caller)
+        self.gateway = UpdateBlock(self.caller.master_id)
+
+    def push_carrier(self, carrier: RichTextContentsEncoder) -> RichTextContentsEncoder:
         assert isinstance(self.caller, TextBlock)
         if self.caller.is_yet_not_created:
-            self.gateway = self.caller.goto_parent().new_children.gateway
-            assert isinstance(self.gateway, AppendBlockChildren)
+            new_children = self.caller.goto_parent().new_children
+            return new_children.push_carrier(carrier)
         else:
-            self.gateway = self._default_gateway()
-
-    def reset_gateway(self):
-        self.gateway = self._default_gateway()
-
-    def _default_gateway(self):
-        return UpdateBlock(self.caller.master_id)
-
-    def _push(self, carrier: BlockWriter) -> BlockWriter:
-        return self.gateway.apply_contents(carrier)
+            return self.gateway.apply_contents(carrier)
 
 
 class InlinePageBlockContents(BlockContents):
@@ -295,15 +288,15 @@ class InlinePageBlockContents(BlockContents):
     def write(self, value: str):
         writer = self.write_rich()
         writer.write_text(value)
-        return self._push(writer)
+        return self.push_carrier(writer)
 
     def write_rich(self):
-        writer = RichTextUnitWriter(prop_type='title', prop_name='title')
-        pushed = self._push(writer)
+        writer = RichTextPropertyEncoder(prop_type='title', prop_name='title')
+        pushed = self.push_carrier(writer)
         return pushed if pushed is not None else writer
 
-    def _push(self, carrier: PropertyUnitWriter) \
-            -> Optional[RichTextUnitWriter]:
+    def push_carrier(self, carrier: RichTextPropertyEncoder) \
+            -> Optional[RichTextPropertyEncoder]:
         if self.enable_overwrite or eval_empty(self.read()):
             return self.gateway.apply_prop(carrier)
         return None
@@ -336,7 +329,9 @@ class NormalBlockChildren(BridgeEditor):
 class NewBlockChildren(Editor):
     def __init__(self, caller: SupportedBlock):
         self.caller = caller
-        self.requests: list[Union[AppendBlockChildren, InlinePageBlock]] = []
+        self._requests: list[Union[AppendBlockChildren, InlinePageBlock]] = []
+        self._array_interrupted = True
+        self.gateway: Optional[AppendBlockChildren] = None
         self.values: list[ContentsBlock] = []
 
     def __iter__(self) -> list[ContentsBlock]:
@@ -354,18 +349,15 @@ class NewBlockChildren(Editor):
     def set_overwrite_option(self, option: bool):
         pass
 
-    @property
-    def gateway(self):
-        return self.requests[-1]
-
     def add_gateway(self):
-        gateway = AppendBlockChildren(self.caller.master_id)
-        self.requests.append(gateway)
-        return gateway
+        self._requests.append(self.gateway)
+        self.gateway = AppendBlockChildren(self.caller.master_id)
+        return self.gateway
 
     def new_text_block(self):
-        if not isinstance(self.gateway, AppendBlockChildren):
+        if self._array_interrupted:
             self.add_gateway()
+            self._array_interrupted = False
         child = TextBlock.create_new(self)
         self.values.append(child)
         # for debugging
@@ -376,18 +368,21 @@ class NewBlockChildren(Editor):
     def new_inline_page(self):
         child = InlinePageBlock.create_new(self)
         self.values.append(child)
-        self.requests.append(child)
+        self._requests.append(child)
         # for debugging
         if id(child) != id(self.values[-1]):
             print('lol')
         return child
+
+    def push_carrier(self, carrier: RichTextContentsEncoder) -> RichTextContentsEncoder:
+        return self.gateway.apply_children(carrier)
 
     def unpack(self):
         return [child.unpack() for child in self]
 
     def execute(self):
         children = iter(self.values)
-        for request in self.requests:
+        for request in self._requests:
             if isinstance(request, AppendBlockChildren):
                 response = request.execute()
                 parsers = BlockChildrenParser(response)
@@ -400,7 +395,7 @@ class NewBlockChildren(Editor):
                 raise ValueError('what did you do?!')
         res = self.values.copy()
         self.values.clear()
-        self.requests.clear()
+        self._requests.clear()
         return res
 
     def indent_next_block(self) -> NewBlockChildren:

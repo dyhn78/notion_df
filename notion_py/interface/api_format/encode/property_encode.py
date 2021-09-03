@@ -1,9 +1,9 @@
 from abc import ABCMeta
 
-from notion_py.interface.struct import ValueCarrier, ListStash, DateFormat, make_isoformat
+from notion_py.interface.struct import ValueCarrier, ListStash, DateFormat
 
 
-class PropertyUnitWriter(ValueCarrier, metaclass=ABCMeta):
+class PropertyEncoder(ValueCarrier, metaclass=ABCMeta):
     def __init__(self, prop_type, prop_name, prop_value):
         super().__init__()
         self.value_type = prop_type
@@ -22,7 +22,7 @@ class PropertyUnitWriter(ValueCarrier, metaclass=ABCMeta):
                 self.value_type: self.prop_value}
 
 
-class RichTextUnitWriter(PropertyUnitWriter, ListStash):
+class RichTextPropertyEncoder(PropertyEncoder, ListStash):
     def __init__(self, prop_type, prop_name):
         super().__init__(prop_type, prop_name, None)
 
@@ -55,7 +55,7 @@ class RichTextUnitWriter(PropertyUnitWriter, ListStash):
         self._subdicts.append(self._wrap_to_rich_text('equation', equation))
 
     def mention_date(self, date_value: DateFormat):
-        date = make_isoformat(date_value)
+        date = date_value.make_isoformat()
         mention = {'type': 'date', 'date': date}
         self._subdicts.append(self._wrap_to_rich_text('mention', mention))
 
@@ -69,7 +69,7 @@ class RichTextUnitWriter(PropertyUnitWriter, ListStash):
         self._subdicts.append(self._mention_entity(user_id, 'user'))
 
 
-class BasicPageTitleWriter(RichTextUnitWriter):
+class InlinePageTitlePropertyEncoder(RichTextPropertyEncoder):
     def __init__(self, prop_name):
         super().__init__('title', prop_name)
 
@@ -77,7 +77,7 @@ class BasicPageTitleWriter(RichTextUnitWriter):
         return {self.value_type: self.prop_value}
 
 
-class SimpleUnitWriter(PropertyUnitWriter):
+class SimplePropertyEncoder(PropertyEncoder):
     @classmethod
     def number(cls, prop_name, value):
         return cls('number', prop_name, value)
@@ -123,5 +123,5 @@ class SimpleUnitWriter(PropertyUnitWriter):
 
     @classmethod
     def date(cls, prop_name, value: DateFormat):
-        prop_value = make_isoformat(value)
+        prop_value = value.make_isoformat()
         return cls('date', prop_name, prop_value)
