@@ -1,16 +1,17 @@
 from abc import ABC, abstractmethod, ABCMeta
 
 from .block_contents_encode import \
-    ContentsEncoder, RichTextContentsEncoder, PageContentsEncoder
+    ContentsEncoder, RichTextContentsEncoder, InlinePageContentsEncoder
 
 
-class PageContentsWriter(ABC):
+class InlinePageContentsWriter(ABC):
     @abstractmethod
-    def push_carrier(self, carrier: PageContentsEncoder) -> PageContentsEncoder:
+    def push_carrier(self, carrier: InlinePageContentsEncoder) \
+            -> InlinePageContentsEncoder:
         pass
 
-    def write_page_block(self, title: str) -> PageContentsEncoder:
-        writer = PageContentsEncoder(title)
+    def write_page_block(self, title: str) -> InlinePageContentsEncoder:
+        writer = InlinePageContentsEncoder(title)
         return self.push_carrier(writer)
 
 

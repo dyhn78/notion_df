@@ -9,7 +9,7 @@ from notion_py.interface.struct import Gateway, retry_request
 
 class UpdateBasicPage(Gateway):
     def __init__(self, page_id):
-        self.page_id = page_id
+        super().__init__(page_id)
         self._id_apply = {'page_id': page_id}
         self.props = BasicPagePropertyStash()
 
@@ -18,21 +18,21 @@ class UpdateBasicPage(Gateway):
 
     def unpack(self):
         return dict(**self.props.unpack(),
-                    page_id=self.page_id)
+                    page_id=self.target_id)
 
     @retry_request
     def execute(self):
         if not self.props:
             return {}
         res = self.notion.pages.update(**self.unpack())
-        stopwatch(' '.join(['update', page_id_to_url(self.page_id)]))
+        stopwatch(' '.join(['update', page_id_to_url(self.target_id)]))
         self.props = BasicPagePropertyStash()
         return res
 
 
 class CreateBasicPage(Gateway):
     def __init__(self, parent_id: str):
-        self.parent_id = parent_id
+        super().__init__(parent_id)
         self.props = BasicPagePropertyStash()
         self.children = BlockChildrenStash()
 
@@ -42,7 +42,7 @@ class CreateBasicPage(Gateway):
     def unpack(self):
         return dict(**self.props.unpack(),
                     **self.children.unpack(),
-                    parent={'page_id': self.parent_id})
+                    parent={'page_id': self.target_id})
 
     @retry_request
     def execute(self):
@@ -80,7 +80,7 @@ class CreateTabularPage(CreateBasicPage, DatabaseTable):
 
 class AppendBlockChildren(Gateway):
     def __init__(self, parent_id: str):
-        self.parent_id = parent_id
+        super().__init__(parent_id)
         self.children = BlockChildrenStash()
 
     def __bool__(self):
@@ -88,13 +88,13 @@ class AppendBlockChildren(Gateway):
 
     def unpack(self):
         return dict(**self.children.unpack(),
-                    block_id=self.parent_id)
+                    block_id=self.target_id)
 
     @retry_request
     def execute(self) -> dict:
         if not self.children:
             return {}
-        stopwatch(' '.join(['append', page_id_to_url(self.parent_id)]))
+        stopwatch(' '.join(['append', page_id_to_url(self.target_id)]))
         res = self.notion.blocks.children.apply_children(**self.unpack())
         self.children = BlockChildrenStash()
         return res

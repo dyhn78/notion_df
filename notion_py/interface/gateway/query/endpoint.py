@@ -6,8 +6,7 @@ from notion_py.interface.struct import LongGateway, retry_request
 
 class Query(LongGateway):
     def __init__(self, database_id: str, name='', database_parser=None):
-        super().__init__(name)
-        self.database_id = database_id
+        super().__init__(database_id, name)
         self.filter = PlainFilter({})
         self.sort = QuerySort()
         self.filter_maker = QueryFilterMaker()
@@ -19,7 +18,7 @@ class Query(LongGateway):
 
     def unpack(self, page_size=None, start_cursor=None):
         args = dict(**self.sort.unpack(),
-                    database_id=self.database_id,
+                    database_id=self.target_id,
                     page_size=page_size if page_size else self.MAX_PAGE_SIZE)
         if self.filter:
             args.update(filter=self.filter.unpack())

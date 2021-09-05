@@ -1,48 +1,71 @@
 from __future__ import annotations
 from abc import ABCMeta, abstractmethod
-from typing import Optional
+from typing import Optional, Union
 
 from notion_py.interface.struct import Requestor
 
 
 class Editor(Requestor, metaclass=ABCMeta):
     @abstractmethod
-    def set_overwrite_option(self, option: bool):
-        pass
+    def __init__(self, caller: Editor):
+        self.caller = caller
+
+    @property
+    def master(self) -> MasterEditor:
+        return self.caller.master
+
+    @property
+    def master_id(self):
+        return self.master.master_id
+
+    @master_id.setter
+    def master_id(self, value):
+        self.master.master_id = value
 
 
 class MasterEditor(Editor, metaclass=ABCMeta):
-    def __init__(self, master_id: str,
-                 caller: Optional[BridgeEditor] = None):
+    def __init__(self, master_id: str, caller: Optional[BridgeEditor] = None):
+        self.caller = caller
         self.master_id = master_id
         self.set_overwrite_option(True)
-        self.agents: dict[str, Editor] = {}
-        self.caller = caller
-
-    def __iter__(self):
-        return self.agents.values()
-
-    def __len__(self):
-        return len(self.agents)
+        self.agents: dict[str, Union[Editor]] = {}
 
     def __bool__(self):
-        return any(agent for agent in self)
+        return any(agent for agent in self.agents.values())
+
+    @property
+    def master(self):
+        return self
+
+    @property
+    def master_id(self):
+        return self._master_id
+
+    @master_id.setter
+    def master_id(self, value):
+        self._master_id = value
+        self.sync_master_id()
+
+    @abstractmethod
+    def sync_master_id(self):
+        pass
 
     def set_overwrite_option(self, option: bool):
         for requestor in self.agents.values():
-            requestor.set_overwrite_option(option)
+            if hasattr(requestor, 'set_overwrite_option'):
+                requestor.set_overwrite_option(option)
 
     @abstractmethod
     def unpack(self):
-        return {key: value.unpack() for key, value in self.agents}
+        return {key: value.unpack() for key, value in self.agents.items()}
 
     @abstractmethod
     def execute(self):
-        return {key: value.execute() for key, value in self.agents}
+        return {key: value.execute() for key, value in self.agents.items()}
 
 
 class BridgeEditor(Editor, metaclass=ABCMeta):
-    def __init__(self, caller: MasterEditor):
+    def __init__(self, caller: Editor):
         self.caller = caller
         self.values: list[MasterEditor] = []
 
@@ -70,7 +93,7 @@ class BridgeEditor(Editor, metaclass=ABCMeta):
 
 
 class GroundEditor(Editor, metaclass=ABCMeta):
-    def __init__(self, caller: MasterEditor):
+    def __init__(self, caller: Editor):
         self.caller = caller
         self.gateway: Optional[Requestor] = None
         self.enable_overwrite = True
@@ -86,6 +109,9 @@ class GroundEditor(Editor, metaclass=ABCMeta):
 
     def execute(self):
         return self.gateway.execute()
+
+    def sync_master_id(self):
+        self.gateway.target_id = self.master_id
 
 
 """

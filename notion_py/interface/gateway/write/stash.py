@@ -59,14 +59,17 @@ class ArchiveToggle(ValueCarrier):
     def __init__(self):
         self.value = None
 
+    def __bool__(self):
+        return self.value is not None
+
+    def clear(self):
+        self.value = None
+
     def archive(self):
         self.value = True
 
     def un_archive(self):
         self.value = False
-
-    def __bool__(self):
-        return self.value is not None
 
     def unpack(self) -> dict:
         return {'archived': self.value} if self else {}

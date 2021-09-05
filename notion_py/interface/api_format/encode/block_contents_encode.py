@@ -34,7 +34,7 @@ class RichTextContentsEncoder(ContentsEncoder, RichTextPropertyEncoder):
         return contents
 
 
-class PageContentsEncoder(ContentsEncoder):
+class InlinePageContentsEncoder(ContentsEncoder):
     def __init__(self, title):
         super().__init__(block_type='title', block_name='child_page')
         self.title = title

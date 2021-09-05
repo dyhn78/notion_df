@@ -1,4 +1,4 @@
 from .block_contents_entry import TextContentsWriter
-from .block_contents_encode import ContentsEncoder, RichTextContentsEncoder, PageContentsEncoder
+from .block_contents_encode import ContentsEncoder, RichTextContentsEncoder, InlinePageContentsEncoder
 from .property_entry import TabularPropertybyKey
 from .property_encode import PropertyEncoder, RichTextPropertyEncoder

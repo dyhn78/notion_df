@@ -15,6 +15,9 @@ class Gateway(Requestor, metaclass=ABCMeta):
     _token = os.environ['NOTION_TOKEN'].strip("'").strip('"')
     notion: Union[Client, AsyncClient] = Client(auth=_token)
 
+    def __init__(self, target_id: str):
+        self.target_id = target_id
+
 
 def drop_empty_request(method: Callable):
     def wrapper(self, **kwargs):
@@ -44,8 +47,9 @@ class LongGateway(Gateway):
     MAX_PAGE_SIZE = 100
     INF = int(1e5) - 1
 
-    def __init__(self, name=''):
-        self.name = name
+    def __init__(self, target_id: str, target_name=''):
+        super().__init__(target_id)
+        self.target_name = target_name
 
     @abstractmethod
     @retry_request
@@ -72,7 +76,7 @@ class LongGateway(Gateway):
             page_retrieved += len(response['results'])
 
             comments = f'{page_retrieved} 개 완료'
-            if self.name:
-                comments += f' << {self.name}'
+            if self.target_name:
+                comments += f' << {self.target_name}'
             stopwatch(comments)
         return result

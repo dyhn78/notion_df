@@ -18,7 +18,7 @@ stopwatch('클라이언트 접속')
 
 TEST_DATABASE_ID = "5c021bea3e2941f39bff902cb2ebfe47"
 
-test_database = notion.databases.retrieve_this()
+test_database = notion.databases.retrieve()
 test_db_query_maker = Query(TEST_DATABASE_ID)
 
 name_frame = test_db_query_maker.filter_maker.by_text('이름')
