@@ -64,7 +64,7 @@ class PageListDeprecated:
         request_queue = []
         result_queue = []
         for page in self.values:
-            request_queue.append(GetBlockChildren(page.page_id))
+            request_queue.append(GetBlockChildren(page))
         for request in request_queue:
             page_id = request.target_id
             result_queue.append([page_id, request.execute()])

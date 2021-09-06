@@ -1,4 +1,4 @@
-from notion_py.applications.read_scraper.reading_dataframe import BookReadingQuerymaker
+from notion_py.applications_deprecated.read_scraper.reading_dataframe import BookReadingQuerymaker
 from notion_py.interface.utility import stopwatch
 
 
@@ -8,5 +8,5 @@ def reset_status_for_books(page_size=0):
         page.props.set_overwrite(True)
         page.props.write.select(page.PROP_NAME['edit_status'], page.EDIT_STATUS['append'])
         page.props.write.checkbox(page.PROP_NAME['not_available'], False)
-        page.execute()
+        page.fetch()
     stopwatch('작업 완료')

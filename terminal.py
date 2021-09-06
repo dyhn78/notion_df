@@ -1,8 +1,7 @@
-from notion_py.applications.log_editor.endpoint import update_dates, update_periods
 from notion_py.interface.utility import stopwatch
+from notion_py.applications.log_editor import DateMatcher
 
-update_dates(check_only_past_x_days=7)
-update_periods(check_only_past_x_days=7)
+DateMatcher(date_range=7).execute()
 # scrap_readings(page_size=0)
 
 stopwatch('작업 완료')

@@ -15,7 +15,7 @@ class PropertyFrame:
         self.extend(units)
 
     def __iter__(self):
-        return self.values
+        return iter(self.values)
 
     def __len__(self):
         return len(self.values)
@@ -31,9 +31,12 @@ class PropertyFrame:
         self.by_key.update({frame_unit.key: frame_unit})
 
     def fetch_parser(self, parser: Union[PageParser, DatabaseParser]):
-        for prop_name, prop_type in parser.prop_types:
-            frame_unit = self.by_name[prop_name]
-            frame_unit.type = prop_type
+        for prop_name, prop_type in parser.prop_types.items():
+            if prop_name in self.by_name:
+                frame_unit = self.by_name[prop_name]
+                frame_unit.type = prop_type
+            else:
+                self.append(PropertyUnit(prop_name, prop_type=prop_type))
 
 
 class PropertyUnit:

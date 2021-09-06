@@ -1,18 +1,36 @@
 from __future__ import annotations
 from abc import ABCMeta, abstractmethod
-from typing import Optional, Union
+from typing import Union
+from notion_client import Client, AsyncClient
 
-from notion_py.interface.struct import Requestor, Gateway
+from .carrier import Requestor
+from ..utility import page_id_to_url
 
 
-class Editor(Requestor, metaclass=ABCMeta):
+class AbstractEditor(Requestor, metaclass=ABCMeta):
+    def __init__(self, root_editor: AbstractRootEditor):
+        self.root_editor = root_editor
+
+
+class AbstractRootEditor(AbstractEditor, metaclass=ABCMeta):
     @abstractmethod
-    def __init__(self, caller: Editor):
+    def __init__(self):
+        super().__init__(self)
+        self.notion: Union[Client, AsyncClient, None] = None
+
+
+class Editor(AbstractEditor, metaclass=ABCMeta):
+    def __init__(self, caller: Union[Editor, AbstractEditor]):
         self.caller = caller
+        super().__init__(caller.root_editor)
 
     @property
     def master(self) -> MasterEditor:
         return self.caller.master
+
+    @property
+    def parent(self) -> MasterEditor:
+        return self.master.caller.master
 
     @property
     def master_id(self) -> str:
@@ -22,23 +40,56 @@ class Editor(Requestor, metaclass=ABCMeta):
     def master_id(self, value: str):
         self.master.master_id = value
 
+    @property
+    def parent_id(self) -> str:
+        return self.parent.master_id
+
+    @parent_id.setter
+    def parent_id(self, value: str):
+        self.parent.master_id = value
+
+    @property
+    def master_url(self):
+        return page_id_to_url(self.master_id)
+
+    @property
+    def yet_not_created(self):
+        if self.master_id:
+            return False
+        else:
+            assert self.parent_id
+            return True
+
     def preview(self):
         pass
 
 
 class MasterEditor(Editor, metaclass=ABCMeta):
-    def __init__(self, master_id: str, caller: Optional[Editor] = None):
-        self.caller = caller
+    def __init__(self, caller: Union[Editor, AbstractEditor], master_id: str):
+        super().__init__(caller)
+        self.agents: dict[str, Union[Editor]] = {}
         self.master_id = master_id
         self.set_overwrite_option(True)
-        self.agents: dict[str, Union[Editor]] = {}
+        self.is_supported_type = False
+        self.can_have_children = False
+        self.has_children = False
 
     def __bool__(self):
         return any(agent for agent in self.agents.values())
 
+    def set_overwrite_option(self, option: bool):
+        for requestor in self.agents.values():
+            if hasattr(requestor, 'set_overwrite_option'):
+                requestor.set_overwrite_option(option)
+
     @property
     def master(self):
         return self
+
+    @property
+    @abstractmethod
+    def master_name(self):
+        pass
 
     @property
     def master_id(self):
@@ -47,16 +98,19 @@ class MasterEditor(Editor, metaclass=ABCMeta):
     @master_id.setter
     def master_id(self, value):
         self._master_id = value
-        self.sync_master_id()
 
-    @abstractmethod
-    def sync_master_id(self):
-        pass
-
-    def set_overwrite_option(self, option: bool):
-        for requestor in self.agents.values():
-            if hasattr(requestor, 'set_overwrite_option'):
-                requestor.set_overwrite_option(option)
+    @property
+    def parent_id(self):
+        try:
+            return self.parent.master_id
+        except AttributeError:
+            if self.master_url:
+                message = f'cannot find parent_id at: {self.master_url}'
+            else:
+                message = (f"ERROR: provide master_id or parent_id for this block;\n"
+                           f"editor info:\n"
+                           f"{self.preview()}")
+            raise AttributeError(message)
 
     @abstractmethod
     def preview(self):
@@ -69,11 +123,11 @@ class MasterEditor(Editor, metaclass=ABCMeta):
 
 class BridgeEditor(Editor, metaclass=ABCMeta):
     def __init__(self, caller: Editor):
-        self.caller = caller
+        super().__init__(caller)
         self.values: list[MasterEditor] = []
 
     def __iter__(self):
-        return self.values
+        return iter(self.values)
 
     def __getitem__(self, index: int):
         return self.values[index]
@@ -82,7 +136,7 @@ class BridgeEditor(Editor, metaclass=ABCMeta):
         return len(self.values)
 
     def __bool__(self):
-        return any(child for child in self)
+        return any([child for child in self.values])
 
     def set_overwrite_option(self, option: bool):
         for child in self:
@@ -93,28 +147,6 @@ class BridgeEditor(Editor, metaclass=ABCMeta):
 
     def execute(self):
         return [child.execute() for child in self]
-
-
-class GroundEditor(Editor, metaclass=ABCMeta):
-    def __init__(self, caller: Editor):
-        self.caller = caller
-        self.gateway: Optional[Gateway] = None
-        self.enable_overwrite = True
-
-    def __bool__(self):
-        return bool(self.gateway)
-
-    def set_overwrite_option(self, option: bool):
-        self.enable_overwrite = option
-
-    def preview(self):
-        return self.gateway.unpack()
-
-    def execute(self):
-        return self.gateway.execute()
-
-    def sync_master_id(self):
-        self.gateway.target_id = self.master_id
 
 
 """

@@ -1,12 +1,12 @@
 from .filter_maker import QueryFilterMaker
 from .filter_unit import QueryFilter, PlainFilter
 from .sort import QuerySort
-from notion_py.interface.struct import LongGateway, retry_request
+from notion_py.interface.struct import LongGateway, retry_request, Editor
 
 
 class Query(LongGateway):
-    def __init__(self, database_id: str, name='', database_parser=None):
-        super().__init__(database_id, name)
+    def __init__(self, editor: Editor, database_parser=None):
+        super().__init__(editor)
         self.filter = PlainFilter({})
         self.sort = QuerySort()
         self.filter_maker = QueryFilterMaker()

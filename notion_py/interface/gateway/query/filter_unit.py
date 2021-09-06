@@ -40,12 +40,12 @@ class PlainFilter(QueryFilter):
 
 class CompoundFilter(QueryFilter, metaclass=ABCMeta):
     def __init__(self, elements: list[QueryFilter]):
-        self.elements = []
+        self.elements: list[QueryFilter] = []
         self._nesting = 0
         self.extend(elements)
 
     def __iter__(self):
-        return self.elements
+        return iter(self.elements)
 
     def __bool__(self):
         return bool(self.elements)
@@ -75,9 +75,9 @@ class CompoundFilter(QueryFilter, metaclass=ABCMeta):
 
 class AndFilter(CompoundFilter):
     def unpack(self):
-        return {'and': list(e.preview() for e in self.elements)}
+        return {'and': list(e.unpack() for e in self.elements)}
 
 
 class OrFilter(CompoundFilter):
     def unpack(self):
-        return {'or': list(e.preview() for e in self.elements)}
+        return {'or': list(e.unpack() for e in self.elements)}

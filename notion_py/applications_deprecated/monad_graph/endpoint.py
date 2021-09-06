@@ -1,10 +1,10 @@
 from pprint import pprint
 
 from notion_py.interface.utility import stopwatch
-from notion_py.applications.monad_graph.build_graph import BuildGraph
-from notion_py.applications.monad_graph.optimize_position import GradientDescent, \
+from notion_py.applications_deprecated.monad_graph.build_graph import BuildGraph
+from notion_py.applications_deprecated.monad_graph.optimize_position import GradientDescent, \
     InitializeGraph
-from notion_py.applications.monad_graph.draw_figure import DrawFigure
+from notion_py.applications_deprecated.monad_graph.draw_figure import DrawFigure
 
 
 def print_nodes(gp):

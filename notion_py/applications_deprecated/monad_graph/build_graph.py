@@ -3,7 +3,7 @@ from itertools import chain
 
 import networkx as nx
 
-from notion_py.applications.monad_graph.self_related_dataframe \
+from notion_py.applications_deprecated.monad_graph.self_related_dataframe \
     import SelfRelatedPageListDeprecated, SelfRelatedDatabaseFrameDeprecated, theme_dataframe, idea_dataframe
 
 

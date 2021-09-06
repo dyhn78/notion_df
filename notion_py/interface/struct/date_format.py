@@ -7,12 +7,11 @@ class DateFormat:
                  end_date: Optional[Union[datetimeclass, dateclass]] = None):
         if start_date is None and end_date is not None:
             start_date, end_date = end_date, start_date
-        self.start_date = start_date
-        self.end_date = end_date
+        self.start = start_date
+        self.end = end_date
 
     def make_isoformat(self):
-        start, end = self.start_date, self.end_date
-        res = dict(start=start.isoformat())
+        res = dict(start=self.start.isoformat())
         if end is not None:
-            res.update(end=end.isoformat())
+            res.update(end=self.end.isoformat())
         return res

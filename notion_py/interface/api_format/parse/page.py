@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Union, Any, Callable
+from typing import Union, Any, Callable, Iterator
 from datetime import datetime as datetimeclass
 
 from .rich_text import parse_rich_texts
@@ -27,8 +27,8 @@ class PageListParser:
         self.values = [PageParser.parse_query_frag(page_result)
                        for page_result in response['results']]
 
-    def __iter__(self) -> list[PageParser]:
-        return self.values
+    def __iter__(self) -> Iterator[PageParser]:
+        return iter(self.values)
 
     def __getitem__(self, index: int):
         return self.values[index]
@@ -40,9 +40,9 @@ class PageListParser:
 class PageParser:
     def __init__(self, page_id: str):
         self.page_id = page_id
-        self.prop_types = {}  # {prop_name: prop_type for prop_name in _}
-        self.prop_ids = {}  # {prop_name: prop_id for prop_name in _}
-        self.prop_values = {}  # {prop_name: prop_value for prop_name in _}
+        self.prop_types: dict[str, str] = {}  # {prop_name: prop_type for prop_name in _}
+        self.prop_ids: dict[str, str] = {}  # {prop_name: prop_id for prop_name in _}
+        self.prop_values: dict[str, Any] = {}  # {prop_name: prop_value for prop_name ..}
         self.prop_rich_values = {}
         self.title = ''
         self._current_prop_type = ''
@@ -51,12 +51,15 @@ class PageParser:
     def parse_retrieve(cls, response: dict):
         self = cls(response['id'])
         for prop_name, rich_property_object in response['properties'].items():
-            self.prop_values[prop_name] = self.parser_unit(rich_property_object, prop_name)
+            self.prop_values[prop_name] = \
+                self.parser_unit(rich_property_object, prop_name)
         return self
 
     @classmethod
     def parse_update(cls, response: dict):
         # TODO if necessary
+        if not response:
+            return
         return cls.parse_retrieve(response)
 
     @classmethod
@@ -70,16 +73,25 @@ class PageParser:
         return cls.parse_retrieve(response_frag)
 
     def parser_unit(self, rich_property_object, prop_name: str):
-        self.prop_ids[prop_name] = rich_property_object['id']
+        try:
+            self.prop_ids[prop_name] = rich_property_object['id']
+        except (KeyError, AttributeError):
+            """
+            this mainly deals with formulas.
+            ex) string-type formulas:
+                {'id': 'xx', 'type': 'formula', {'string': 'xxxx'}}
+            """
+            pass
         prop_type = rich_property_object['type']
         self._current_prop_type = prop_type
 
         prop_object = rich_property_object[prop_type]
-        prop_format = VALUE_FORMATS[prop_type]
+        prop_format = VALUE_FORMATS.get(prop_type, 'DEFAULT')
         parser_name = f'_parse_{prop_format}'
+
         parser: Union[Callable[[Any], Any], Callable[[Any, str], Any],
                       Callable[[Any, str, str], Any]] \
-            = getattr(self, parser_name, __default=lambda x: x)
+            = getattr(self, parser_name, lambda x: x)
         try:
             # TODO > how to auto-fill arguments?
             result = parser(prop_object)

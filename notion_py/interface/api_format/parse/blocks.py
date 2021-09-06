@@ -17,7 +17,7 @@ class BlockChildrenParser:
              for rich_block_object in response['results']]
 
     def __iter__(self):
-        return self.values
+        return iter(self.values)
 
 
 class BlockContentsParser:

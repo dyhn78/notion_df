@@ -16,13 +16,13 @@ class TabularPropertybyName(ABC):
             -> Optional[PropertyEncoder]:
         pass
 
-    def write(self, prop_name: str, prop_value, prop_type: Optional[str] = None):
+    def write(self, prop_name: str, prop_value, prop_type=''):
         if not prop_type:
             prop_type = self._type_of(prop_name)
         writer_func = f'write_{prop_type}'
         return getattr(self, writer_func)(prop_name, prop_value)
 
-    def write_rich(self, prop_name: str, prop_type: Optional[str] = None):
+    def write_rich(self, prop_name: str, prop_type=''):
         if not prop_type:
             prop_type = self._type_of(prop_name)
         writer_func = f'write_rich_{prop_type}'
@@ -95,11 +95,11 @@ class TabularPropertybyKey(TabularPropertybyName, metaclass=ABCMeta):
     def _name_at(self, prop_key: str):
         pass
 
-    def write_at(self, prop_key: str, prop_value, prop_type: Optional[str] = None):
+    def write_at(self, prop_key: str, prop_value, prop_type=''):
         prop_name = self._name_at(prop_key)
         return self.write(prop_name, prop_value, prop_type)
 
-    def write_rich_at(self, prop_key: str, prop_type: Optional[str] = None):
+    def write_rich_at(self, prop_key: str, prop_type=''):
         prop_name = self._name_at(prop_key)
         return self.write_rich(prop_name, prop_type)
 

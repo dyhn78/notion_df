@@ -1,2 +1,1 @@
-from .pagelist import TabularPageBlock
-from .database import Database
+from .core import TabularPageBlock, Database

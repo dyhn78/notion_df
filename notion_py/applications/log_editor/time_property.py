@@ -2,7 +2,7 @@ import datetime
 from datetime import datetime as datetimeclass
 
 
-class ParseTimeProperty:
+class ProcessTimeProperty:
     korean_weekday = ["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"]
 
     def __init__(self, date_time: datetimeclass, plain_date=False):

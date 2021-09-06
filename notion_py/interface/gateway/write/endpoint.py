@@ -1,18 +1,23 @@
 from typing import Any
 
 from .stash import BlockChildrenStash, PagePropertyStash, ArchiveToggle
-from notion_py.interface.struct import Gateway, retry_request, drop_empty_request
+from notion_py.interface.struct import Gateway, retry_request, drop_empty_request, \
+    Editor
 from notion_py.interface.api_format.encode import ContentsEncoder
 from ...utility import stopwatch, page_id_to_url
 
 
 class CreatePage(Gateway, PagePropertyStash, BlockChildrenStash, ArchiveToggle):
-    def __init__(self, parent_id: str, under_database: bool):
-        Gateway.__init__(self, parent_id)
+    def __init__(self, editor: Editor, under_database: bool):
+        Gateway.__init__(self, editor)
         PagePropertyStash.__init__(self)
         BlockChildrenStash.__init__(self)
         ArchiveToggle.__init__(self)
         self.parent_type = 'database_id' if under_database else 'page_id'
+
+    @property
+    def target_id(self):
+        return self.editor.parent_id
 
     def __bool__(self):
         return any([PagePropertyStash.__bool__(self),
@@ -38,8 +43,8 @@ class CreatePage(Gateway, PagePropertyStash, BlockChildrenStash, ArchiveToggle):
 
 
 class UpdatePage(Gateway, PagePropertyStash, ArchiveToggle):
-    def __init__(self, page_id):
-        Gateway.__init__(self, page_id)
+    def __init__(self, editor: Editor):
+        Gateway.__init__(self, editor)
         PagePropertyStash.__init__(self)
         ArchiveToggle.__init__(self)
 
@@ -64,8 +69,8 @@ class UpdatePage(Gateway, PagePropertyStash, ArchiveToggle):
 
 
 class AppendBlockChildren(Gateway, BlockChildrenStash):
-    def __init__(self, parent_id: str):
-        Gateway.__init__(self, parent_id)
+    def __init__(self, editor: Editor):
+        Gateway.__init__(self, editor)
         BlockChildrenStash.__init__(self)
 
     def __bool__(self):
@@ -88,8 +93,8 @@ class AppendBlockChildren(Gateway, BlockChildrenStash):
 
 
 class UpdateBlock(Gateway):
-    def __init__(self, block_id: str):
-        Gateway.__init__(self, block_id)
+    def __init__(self, editor: Editor):
+        Gateway.__init__(self, editor)
         self._contents_value = None
 
     def __bool__(self):
