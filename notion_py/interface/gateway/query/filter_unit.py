@@ -75,9 +75,9 @@ class CompoundFilter(QueryFilter, metaclass=ABCMeta):
 
 class AndFilter(CompoundFilter):
     def unpack(self):
-        return {'and': list(e.unpack() for e in self.elements)}
+        return {'and': list(e.preview() for e in self.elements)}
 
 
 class OrFilter(CompoundFilter):
     def unpack(self):
-        return {'or': list(e.unpack() for e in self.elements)}
+        return {'or': list(e.preview() for e in self.elements)}

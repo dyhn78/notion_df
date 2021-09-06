@@ -65,7 +65,7 @@ class BookReadingQuerymaker:
             *[cls.df.frame['edit_status'].values[key]
               for key in ['url_missing', 'lib_missing']])
         # frame = query.filter_maker.by_checkbox(
-        #      cls.df._unit.dataframe.props['not_available'].name)
+        #      cls.df._unit.dataframe.tabular['not_available'].name)
         # ft |= frame.equals(True)
         query.push_filter(ft)
         pagelist = cls.df.send_query_deprecated(query, page_size=page_size)

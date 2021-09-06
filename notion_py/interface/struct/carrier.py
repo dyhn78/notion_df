@@ -2,9 +2,9 @@ from __future__ import annotations
 from abc import abstractmethod, ABC, ABCMeta
 
 
-class ValueCarrier(ABC):
+class Requestor(ABC):
     @abstractmethod
-    def unpack(self):
+    def execute(self):
         pass
 
     @abstractmethod
@@ -12,9 +12,13 @@ class ValueCarrier(ABC):
         pass
 
 
-class Requestor(ValueCarrier):
+class ValueCarrier(ABC):
     @abstractmethod
-    def execute(self):
+    def unpack(self):
+        pass
+
+    @abstractmethod
+    def __bool__(self):
         pass
 
 

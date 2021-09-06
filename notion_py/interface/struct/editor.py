@@ -2,7 +2,7 @@ from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 from typing import Optional, Union
 
-from notion_py.interface.struct import Requestor
+from notion_py.interface.struct import Requestor, Gateway
 
 
 class Editor(Requestor, metaclass=ABCMeta):
@@ -15,16 +15,19 @@ class Editor(Requestor, metaclass=ABCMeta):
         return self.caller.master
 
     @property
-    def master_id(self):
+    def master_id(self) -> str:
         return self.master.master_id
 
     @master_id.setter
-    def master_id(self, value):
+    def master_id(self, value: str):
         self.master.master_id = value
+
+    def preview(self):
+        pass
 
 
 class MasterEditor(Editor, metaclass=ABCMeta):
-    def __init__(self, master_id: str, caller: Optional[BridgeEditor] = None):
+    def __init__(self, master_id: str, caller: Optional[Editor] = None):
         self.caller = caller
         self.master_id = master_id
         self.set_overwrite_option(True)
@@ -56,8 +59,8 @@ class MasterEditor(Editor, metaclass=ABCMeta):
                 requestor.set_overwrite_option(option)
 
     @abstractmethod
-    def unpack(self):
-        return {key: value.unpack() for key, value in self.agents.items()}
+    def preview(self):
+        return {key: value.preview() for key, value in self.agents.items()}
 
     @abstractmethod
     def execute(self):
@@ -85,8 +88,8 @@ class BridgeEditor(Editor, metaclass=ABCMeta):
         for child in self:
             child.set_overwrite_option(option)
 
-    def unpack(self):
-        return [child.unpack() for child in self]
+    def preview(self):
+        return [child.preview() for child in self]
 
     def execute(self):
         return [child.execute() for child in self]
@@ -95,7 +98,7 @@ class BridgeEditor(Editor, metaclass=ABCMeta):
 class GroundEditor(Editor, metaclass=ABCMeta):
     def __init__(self, caller: Editor):
         self.caller = caller
-        self.gateway: Optional[Requestor] = None
+        self.gateway: Optional[Gateway] = None
         self.enable_overwrite = True
 
     def __bool__(self):
@@ -104,7 +107,7 @@ class GroundEditor(Editor, metaclass=ABCMeta):
     def set_overwrite_option(self, option: bool):
         self.enable_overwrite = option
 
-    def unpack(self):
+    def preview(self):
         return self.gateway.unpack()
 
     def execute(self):

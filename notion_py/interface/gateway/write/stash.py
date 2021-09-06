@@ -26,7 +26,7 @@ class BlockChildrenStash(ValueCarrier):
     def unpack(self):
         return {'children': self._block_value.unpack()}
 
-    def apply_children(self, carrier: ContentsEncoder):
+    def apply_contents(self, carrier: ContentsEncoder):
         return self._block_value.apply(carrier)
 
 

@@ -8,10 +8,10 @@ from notion_client import Client, AsyncClient
 from notion_client.errors import APIResponseError
 
 from notion_py.interface.utility import stopwatch
-from .value_carrier import Requestor
+from .carrier import Requestor, ValueCarrier
 
 
-class Gateway(Requestor, metaclass=ABCMeta):
+class Gateway(Requestor, ValueCarrier, metaclass=ABCMeta):
     _token = os.environ['NOTION_TOKEN'].strip("'").strip('"')
     notion: Union[Client, AsyncClient] = Client(auth=_token)
 

@@ -16,7 +16,7 @@ class TwofoldStash(ValueCarrier, metaclass=ABCMeta):
 
 class TwofoldListStash(TwofoldStash, metaclass=ABCMeta):
     def _unpack(self):
-        return [carrier.unpack() for carrier in self._subcarriers]
+        return [carrier.preview() for carrier in self._subcarriers]
 
     def stash(self, carrier: ValueCarrier):
         self._subcarriers.append(carrier)
@@ -31,7 +31,7 @@ class TwofoldDictStash(TwofoldStash, metaclass=ABCMeta):
     def _unpack(self):
         res = {}
         for carrier in self._subcarriers:
-            for key, value in carrier.unpack().items():
+            for key, value in carrier.preview().items():
                 res[key] = value
         return res
 
