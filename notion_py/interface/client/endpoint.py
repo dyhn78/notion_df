@@ -7,8 +7,8 @@ from notion_client import Client, AsyncClient
 from .inline.core import TextBlock, InlinePageBlock
 from .tabular import Database, TabularPageBlock
 from ..gateway import Query
-from ..struct import MasterEditor, PropertyFrame, PropertyUnit, DateFormat
-from ..struct.editor import AbstractRootEditor
+from ..struct import MasterEditor, AbstractRootEditor, \
+    PropertyFrame, PropertyUnit, DateFormat
 
 
 class RootEditor(AbstractRootEditor):

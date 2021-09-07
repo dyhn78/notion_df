@@ -2,9 +2,8 @@ import time
 from abc import ABCMeta, abstractmethod
 from json import JSONDecodeError
 from pprint import pprint
-from typing import Callable, Optional, Union
+from typing import Callable, Optional
 
-from notion_client import Client, AsyncClient
 from notion_client.errors import APIResponseError
 
 from notion_py.interface.utility import stopwatch
@@ -34,7 +33,7 @@ class GroundEditor(Editor, metaclass=ABCMeta):
 class Gateway(Requestor, ValueCarrier, metaclass=ABCMeta):
     def __init__(self, editor: Editor):
         self.editor = editor
-        self.notion: Union[Client, AsyncClient] = editor.root_editor.notion
+        self.notion = editor.root_editor.notion
 
     @property
     def target_id(self):
