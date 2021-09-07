@@ -57,19 +57,19 @@ class PagePropertyStash(ValueCarrier):
 
 class ArchiveToggle(ValueCarrier):
     def __init__(self):
-        self.value = None
+        self._archive_value = None
 
     def __bool__(self):
-        return self.value is not None
+        return self._archive_value is not None
 
     def clear(self):
-        self.value = None
+        self._archive_value = None
 
     def archive(self):
-        self.value = True
+        self._archive_value = True
 
     def un_archive(self):
-        self.value = False
+        self._archive_value = False
 
     def unpack(self) -> dict:
-        return {'archived': self.value} if self else {}
+        return {'archived': self._archive_value} if self else {}

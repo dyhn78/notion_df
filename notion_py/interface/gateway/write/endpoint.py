@@ -28,10 +28,12 @@ class CreatePage(Gateway, PagePropertyStash, BlockChildrenStash, ArchiveToggle):
         BlockChildrenStash.clear(self)
 
     def unpack(self):
-        return dict(**PagePropertyStash.unpack(self),
-                    **BlockChildrenStash.unpack(self),
-                    **ArchiveToggle.unpack(self),
-                    parent={self.parent_type: self.target_id})
+        res = dict(**PagePropertyStash.unpack(self),
+                   **BlockChildrenStash.unpack(self),
+                   parent={self.parent_type: self.target_id})
+        if self._archive_value is not None:
+            res.update(**ArchiveToggle.unpack(self))
+        return res
 
     @drop_empty_request
     @retry_request
@@ -55,9 +57,11 @@ class UpdatePage(Gateway, PagePropertyStash, ArchiveToggle):
         PagePropertyStash.clear(self)
 
     def unpack(self):
-        return dict(**PagePropertyStash.unpack(self),
-                    **ArchiveToggle.unpack(self),
-                    page_id=self.target_id)
+        res = dict(**PagePropertyStash.unpack(self),
+                   page_id=self.target_id)
+        if self._archive_value is not None:
+            res.update(**ArchiveToggle.unpack(self))
+        return res
 
     @drop_empty_request
     @retry_request

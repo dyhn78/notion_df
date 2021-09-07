@@ -1,6 +1,6 @@
 from .reading_page import BookReadingPage
 from ..constants import ID_READINGS
-from ...interface.client.deprecated import DatabaseFrameDeprecated
+from ...interface.editor.deprecated import DatabaseFrameDeprecated
 
 READING_PROPERTIES = {
     'media_type': ('🔵유형',

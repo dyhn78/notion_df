@@ -1,10 +1,11 @@
 from __future__ import annotations
 from typing import Union, Any, Callable, Iterator
-from datetime import datetime as datetimeclass
 
 from .rich_text import parse_rich_texts
 
 # find types by api_format
+from ...struct import DateFormat
+
 VALUE_TYPES = {
     'text': ['text', 'rich_text', 'title'],
     'select': ['select'],
@@ -107,16 +108,18 @@ class PageParser:
     def _parse_formula(self, prop_object, prop_name):
         return self.parser_unit(prop_object, prop_name)
 
-    def _parse_auto_date(self, prop_object):
+    @staticmethod
+    def _parse_auto_date(prop_object):
+        if type(prop_object) != str:
+            raise ValueError
         start = prop_object[:-1]
-        return {'start': self._parse_datestring(start), 'end': None}
+        return DateFormat.from_isoformat(start)
 
-    def _parse_manual_date(self, prop_object):
-        if type(prop_object) != dict:
-            return None
-        # key: 'start', 'end'
-        return {key: self._parse_datestring(value)
-                for key, value in prop_object.items()}
+    @staticmethod
+    def _parse_manual_date(prop_object):
+        if prop_object is None:
+            return DateFormat()
+        return DateFormat.from_isoformat(prop_object['start'], prop_object['end'])
 
     def _parse_text(self, prop_object, prop_name, prop_type):
         plain_text, rich_text = parse_rich_texts(prop_object)
@@ -142,12 +145,6 @@ class PageParser:
             # 딕셔너리의 키 목록 중 사전순으로 가장 앞에 오는 것으로써 정렬한다.
         except TypeError:
             return rollup_merged
-
-    @staticmethod
-    def _parse_datestring(datestring):
-        if type(datestring) != str:
-            return None
-        return datetimeclass.fromisoformat(datestring)
 
     @staticmethod
     def _parse_select(prop_object):

@@ -10,8 +10,18 @@ class DateFormat:
         self.start = start_date
         self.end = end_date
 
+    @classmethod
+    def from_isoformat(cls, start_datestring: str,
+                       end_datestring=''):
+        start = datetimeclass.fromisoformat(start_datestring)
+        if end_datestring:
+            end = datetimeclass.fromisoformat(end_datestring)
+        else:
+            end = None
+        return cls(start, end)
+
     def make_isoformat(self):
         res = dict(start=self.start.isoformat())
-        if end is not None:
+        if self.end is not None:
             res.update(end=self.end.isoformat())
         return res

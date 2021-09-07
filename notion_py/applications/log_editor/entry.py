@@ -4,7 +4,7 @@ from collections import Callable
 from typing import Optional
 
 from notion_py.applications.log_editor.time_property import ProcessTimeProperty
-from notion_py.interface.client import RootEditor, TypeName
+from notion_py.interface.editor import RootEditor, TypeName
 from ..page_ids import DatabaseInfo
 
 
@@ -130,10 +130,10 @@ class MatcherAlgorithm:
         for dom in self.domain:
             if self._is_already_matched(dom):
                 continue
-            tar, tar_index_value = \
-                self._try_matching_by_index_then_create_counterpart(dom)
-            if tar_writer_func is not None:
-                tar_writer_func(tar, tar_index_value)
+            if result := self._try_matching_by_index_then_create_counterpart(dom):
+                tar, tar_index_value = result
+                if tar_writer_func is not None:
+                    tar_writer_func(tar, tar_index_value)
         self.target.execute()
         for dom in self.domain:
             if self._is_already_matched(dom):
@@ -184,7 +184,7 @@ class MatcherAlgorithm:
             return False
         tar = self.target.pagelist.new_tabular_page()
         tar.props.write(self.tar_index, tar_index_value)
-        return tar, tar_index_value
+        return [tar, tar_index_value]
 
 
 class MatchBase:

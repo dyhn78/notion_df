@@ -6,7 +6,7 @@ from typing import Optional, Any
 
 from notion_py.interface.gateway.read import GetBlockChildren
 from .property_deprecated import PropertyFrameDeprecated
-from notion_py.interface.client.deprecated.page_deprecated import TabularPageDeprecated
+from notion_py.interface.editor.deprecated.page_deprecated import TabularPageDeprecated
 from notion_py.interface.gateway.parse_deprecated import PageListParser, BlockChildrenParser
 from notion_py.interface.gateway.query import Query
 

@@ -1,6 +1,6 @@
 from __future__ import annotations
 from ..constants import ID_THEMES, ID_IDEAS
-from ...interface.client.deprecated import \
+from ...interface.editor.deprecated import \
     DatabaseFrameDeprecated, PageListDeprecated, TabularPageDeprecated
 
 
