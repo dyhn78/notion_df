@@ -172,6 +172,7 @@ class MatcherAlgorithm:
     def _try_matching_by_index(self, dom: TypeName.tabular_page):
         dom_index_value = dom.props.read_of(self.dom_index)
         tar_index_value = self.index_func(dom_index_value)
+        print(dom_index_value, tar_index_value)
         if tar_index_value not in self.tars_by_index.keys():
             return tar_index_value
         tar = self.tars_by_index[tar_index_value]
