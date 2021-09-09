@@ -57,11 +57,8 @@ class PageParser:
         return self
 
     @classmethod
-    def parse_update(cls, response: dict):
-        # TODO if necessary
-        if not response:
-            return
-        return cls.parse_retrieve(response)
+    def parse_update(cls):
+        pass  # there is no response for 'update'
 
     @classmethod
     def parse_create(cls, response: dict):

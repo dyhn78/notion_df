@@ -3,7 +3,7 @@ from typing import Union, Optional
 
 from .property_encode import \
     PropertyEncoder, RichTextPropertyEncoder, SimplePropertyEncoder
-from notion_py.interface.struct import DateFormat
+from ...struct import DateFormat
 
 
 class TabularPropertybyName(ABC):
@@ -28,25 +28,25 @@ class TabularPropertybyName(ABC):
         writer_func = f'write_rich_{prop_type}'
         return getattr(self, writer_func)(prop_name)
 
-    def write_rich_title(self, prop_name: str) -> Optional[RichTextPropertyEncoder]:
-        writer = RichTextPropertyEncoder('title', prop_name)
-        pushed = self.push_carrier(prop_name, writer)
-        return pushed if pushed is not None else writer
-
     def write_rich_text(self, prop_name: str) -> Optional[RichTextPropertyEncoder]:
         writer = RichTextPropertyEncoder('rich_text', prop_name)
         pushed = self.push_carrier(prop_name, writer)
         return pushed if pushed is not None else writer
 
-    def write_title(self, prop_name: str, value: str):
-        writer = self.write_rich_title(prop_name)
-        writer.write_text(value)
-        return self.push_carrier(prop_name, writer)
+    def write_rich_title(self, prop_name: str) -> Optional[RichTextPropertyEncoder]:
+        writer = RichTextPropertyEncoder('title', prop_name)
+        pushed = self.push_carrier(prop_name, writer)
+        return pushed if pushed is not None else writer
 
     def write_text(self, prop_name: str, value: str):
         writer = self.write_rich_text(prop_name)
         writer.write_text(value)
-        return self.push_carrier(prop_name, writer)
+        return writer
+
+    def write_title(self, prop_name: str, value: str):
+        writer = self.write_rich_title(prop_name)
+        writer.write_text(value)
+        return writer
 
     def write_date(self, prop_name: str, value: DateFormat):
         return self.push_carrier(prop_name, SimplePropertyEncoder.date(prop_name, value))

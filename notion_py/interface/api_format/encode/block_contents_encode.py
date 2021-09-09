@@ -40,4 +40,4 @@ class InlinePageContentsEncoder(ContentsEncoder):
         self.title = title
 
     def _unpack_contents(self):
-        return {'title': self.title}
+        return {'child_page': {'title': self.title}}

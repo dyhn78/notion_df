@@ -12,9 +12,15 @@ UNSUPPORTED = {"unsupported"}
 
 class BlockChildrenParser:
     def __init__(self, response: dict):
-        self.values: list[BlockContentsParser] = \
-            [BlockContentsParser.parse_retrieve_frag(rich_block_object)
-             for rich_block_object in response['results']]
+        try:
+            self.values: list[BlockContentsParser] = self._parse(response['results'])
+        except KeyError:
+            self.values: list[BlockContentsParser] = self._parse([response])
+
+    @staticmethod
+    def _parse(response_frag):
+        return [BlockContentsParser.parse_retrieve_frag(rich_block_object)
+                for rich_block_object in response_frag]
 
     def __iter__(self):
         return iter(self.values)
@@ -46,9 +52,8 @@ class BlockContentsParser:
         return cls.parse_retrieve(response_frag)
 
     @classmethod
-    def parse_update(cls, response_frag):
-        # TODO if necessary
-        return cls.parse_retrieve(response_frag)
+    def parse_update(cls):
+        pass  # there is no response for 'update_page'
 
     @classmethod
     def parse_create_frag(cls, response_frag):

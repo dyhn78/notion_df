@@ -1,6 +1,6 @@
 from .reading_page import BookReadingPage
 from ..constants import ID_READINGS
-from ...interface.editor.deprecated import DatabaseFrameDeprecated
+from notion_py.interface.deprecated import DatabaseFrameDeprecated
 
 READING_PROPERTIES = {
     'media_type': ('🔵유형',
@@ -41,9 +41,9 @@ class BookReadingQuerymaker:
     @classmethod
     def query_regulars(cls, page_size=0):
         query = cls.df.make_query()
-        frame = query.filter_maker.by_select(cls.df.frame['media_type'].name)
+        frame = query.make_filter.select_of(cls.df.frame['media_type'].name)
         ft = frame.equals_to_any(*cls.df.frame['media_type'].values['book'])
-        frame = query.filter_maker.by_select(cls.df.frame['edit_status'].name)
+        frame = query.make_filter.select_of(cls.df.frame['edit_status'].name)
         ft_status = frame.equals_to_any(
             *[cls.df.frame['edit_status'].values[key]
               for key in ['append', 'overwrite', 'continue']])
@@ -58,13 +58,13 @@ class BookReadingQuerymaker:
     @classmethod
     def query_for_library_resets(cls, page_size=0):
         query = cls.df.make_query()
-        frame = query.filter_maker.by_select(cls.df.frame['media_type'].name)
+        frame = query.make_filter.select_of(cls.df.frame['media_type'].name)
         ft = frame.equals_to_any(*cls.df.frame['media_type'].values)
-        frame = query.filter_maker.by_select(cls.df.frame['edit_status'].name)
+        frame = query.make_filter.select_of(cls.df.frame['edit_status'].name)
         ft &= frame.equals_to_any(
             *[cls.df.frame['edit_status'].values[key]
               for key in ['url_missing', 'lib_missing']])
-        # frame = query.filter_maker.by_checkbox(
+        # frame = query.make_filter.by_checkbox(
         #      cls.df._unit.dataframe.tabular['not_available'].name)
         # ft |= frame.equals(True)
         query.push_filter(ft)

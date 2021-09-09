@@ -47,21 +47,21 @@ class BookScraper:
 
         if url:
             stopwatch(url)
-            if 'yes24' in page.scraper_option:
+            if 'yes24' in page.targets:
                 metadata = scrap_yes24_metadata(url)
                 page.set_yes24_metadata(metadata)
 
         lib_datas = {}
         book_names = page.get_names()
-        if any(lib in page.scraper_option
+        if any(lib in page.targets
                for lib in ['snu_lib', 'gy_lib']):
-            if 'snu_lib' in page.scraper_option:
+            if 'snu_lib' in page.targets:
                 # noinspection PyTypeChecker
                 snu_lib = self.snulib.execute(book_names)
                 if snu_lib:
                     stopwatch(snu_lib)
                     lib_datas.update(snu=snu_lib)
-            if 'gy_lib' in page.scraper_option:
+            if 'gy_lib' in page.targets:
                 # noinspection PyTypeChecker
                 gy_lib = self.gylib.execute(book_names)
                 if gy_lib:

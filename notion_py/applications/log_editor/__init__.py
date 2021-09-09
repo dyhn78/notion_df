@@ -1,1 +1,1 @@
-from .entry import DateMatcher
+from .matcher import DateMatcher

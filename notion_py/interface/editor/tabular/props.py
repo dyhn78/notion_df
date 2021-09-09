@@ -31,13 +31,12 @@ class TabularProperty(GroundEditor, TabularPropertybyKey):
         response = self.gateway.execute()
         if self.yet_not_created:
             parser = PageParser.parse_create(response)
+            self.apply_page_parser(parser)
             self.gateway = UpdatePage(self)
-        else:
-            parser = PageParser.parse_update(response)
-        self.apply_page_parser(parser)
 
     def apply_page_parser(self, parser: PageParser):
-        self.master_id = parser.page_id
+        if parser.page_id:
+            self.master_id = parser.page_id
         self.frame.fetch_parser(parser)
         self.caller.title = parser.title
 
@@ -53,39 +52,55 @@ class TabularProperty(GroundEditor, TabularPropertybyKey):
 
     def push_carrier(self, prop_name: str, carrier: PropertyEncoder) \
             -> Optional[PropertyEncoder]:
-        if self.enable_overwrite or eval_empty(self.read_at(prop_name)):
+        if self.enable_overwrite or eval_empty(self.read_of(prop_name)):
             return self.gateway.apply_prop(carrier)
         return None
 
-    def read_at_all(self):
+    def read_of_all(self):
         return self._read_plain
 
-    def read_rich_at_all(self):
+    def read_rich_of_all(self):
         return self._read_rich
 
-    def read_full_at_all(self):
+    def read_full_of_all(self):
         return self._read_full
 
-    def read_full_of_all(self):
+    def read_full_at_all(self):
         return {key: self._read_full[self._name_at(key)] for key in self.frame}
 
-    def read_of(self, prop_name: str):
-        return self._read_plain[prop_name]
+    def read_of(self, prop_name: str, default=None):
+        if not isinstance(prop_name, str):
+            raise TypeError
+        try:
+            value = self._read_plain[prop_name]
+        except KeyError:
+            value = default
+        if value is None:
+            value = default
+        return value
 
-    def read_rich_of(self, prop_name: str):
-        return self._read_rich[prop_name]
+    def read_rich_of(self, prop_name: str, default=None):
+        if not isinstance(prop_name, str):
+            raise TypeError
+        try:
+            value = self._read_plain[prop_name]
+        except KeyError:
+            value = default
+        if value is None:
+            value = default
+        return value
 
-    def read_at(self, prop_key: str):
-        return self.read_of(self._name_at(prop_key))
+    def read_at(self, prop_key: str, default=None):
+        return self.read_of(self._name_at(prop_key), default)
 
-    def read_rich_at(self, prop_key: str):
-        return self.read_rich_of(self._name_at(prop_key))
+    def read_rich_at(self, prop_key: str, default=None):
+        return self.read_rich_of(self._name_at(prop_key), default)
 
     def _name_at(self, prop_key: str):
-        return self.frame.by_key[prop_key].name
+        return self.frame.name_at(prop_key)
 
     def _type_of(self, prop_name: str):
-        return self.frame.by_name[prop_name].type
+        return self.frame.type_of(prop_name)
 
 
 """

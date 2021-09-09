@@ -1,3 +1,0 @@
-from notion_py.applications_deprecated.read_scraper import reset_status_for_books
-
-reset_status_for_books()

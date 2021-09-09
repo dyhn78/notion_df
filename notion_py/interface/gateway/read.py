@@ -13,7 +13,7 @@ class RetrieveDatabase(Gateway):
 
     @retry_request
     def execute(self):
-        return self.notion.databases.retrieve()
+        return self.notion.databases.retrieve(**self.unpack())
 
 
 class RetrievePage(Gateway):
@@ -28,7 +28,7 @@ class RetrievePage(Gateway):
 
     @retry_request
     def execute(self):
-        return self.notion.pages.retrieve()
+        return self.notion.pages.retrieve(**self.unpack())
 
 
 class RetrieveBlock(Gateway):
@@ -43,7 +43,7 @@ class RetrieveBlock(Gateway):
 
     @retry_request
     def execute(self):
-        return self.notion.blocks.retrieve()
+        return self.notion.blocks.retrieve(**self.unpack())
 
 
 class GetBlockChildren(LongGateway):

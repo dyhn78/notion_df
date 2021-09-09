@@ -24,10 +24,10 @@ class GroundEditor(Editor, metaclass=ABCMeta):
         self.enable_overwrite = option
 
     def preview(self):
-        return self.gateway.unpack()
+        return self.gateway.unpack() if self.gateway else {}
 
     def execute(self):
-        return self.gateway.execute()
+        return self.gateway.execute() if self.gateway else {}
 
 
 class Gateway(Requestor, ValueCarrier, metaclass=ABCMeta):

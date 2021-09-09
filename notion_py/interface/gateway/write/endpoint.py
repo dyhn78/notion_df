@@ -90,7 +90,7 @@ class AppendBlockChildren(Gateway, BlockChildrenStash):
     @drop_empty_request
     @retry_request
     def execute(self) -> dict:
-        res = self.notion.blocks.children.apply_contents(**self.unpack())
+        res = self.notion.blocks.children.append(**self.unpack())
         stopwatch(' '.join(['append', page_id_to_url(self.target_id)]))
         self.clear()
         return res
@@ -112,7 +112,7 @@ class UpdateBlock(Gateway):
         return carrier
 
     def unpack(self):
-        return dict(**self._contents_value.preview(),
+        return dict(**self._contents_value.unpack(),
                     block_id=self.target_id)
 
     @retry_request

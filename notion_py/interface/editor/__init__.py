@@ -1,1 +1,1 @@
-from .endpoint import RootEditor, TypeName
+from .root import NotionRootEditor, NotionTypeName

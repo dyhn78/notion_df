@@ -1,3 +1,4 @@
+from __future__ import annotations
 from abc import ABCMeta
 
 from notion_py.interface.struct import ValueCarrier, ListStash, DateFormat
@@ -35,7 +36,7 @@ class RichTextPropertyEncoder(PropertyEncoder, ListStash):
     def _wrap_to_rich_text(prop_type, value):
         return {
             'type': prop_type,
-            prop_type: value
+            prop_type: value,
         }
 
     def _mention_entity(self, target_id, target_class):
@@ -67,14 +68,6 @@ class RichTextPropertyEncoder(PropertyEncoder, ListStash):
 
     def mention_user(self, user_id: str):
         self._subdicts.append(self._mention_entity(user_id, 'user'))
-
-
-class InlinePageTitlePropertyEncoder(RichTextPropertyEncoder):
-    def __init__(self, prop_name):
-        super().__init__('title', prop_name)
-
-    def _wrap_to_prop(self):
-        return {self.value_type: self.prop_value}
 
 
 class SimplePropertyEncoder(PropertyEncoder):

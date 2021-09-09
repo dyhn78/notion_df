@@ -3,9 +3,9 @@ import re
 from typing import Union
 
 from .lib_gy import GoyangLibrary
-from notion_py.interface.editor.deprecated.page_deprecated import TabularPageDeprecated
-from ...interface.gateway.parse_deprecated import PageParser
-from ...interface.gateway.write_deprecated import AppendBlockChildren, CreateBasicPage
+from notion_py.interface.deprecated import TabularPageDeprecated
+from notion_py.interface.deprecated.parse_deprecated import PageParser
+from notion_py.interface.deprecated.write_deprecated import AppendBlockChildren, CreateBasicPage
 
 
 class ReadingPage(TabularPageDeprecated):
@@ -51,9 +51,9 @@ class BookReadingPage(ReadingPage):
 
     def __init__(self, parsed_page: PageParser, prop_name, parent_id=''):
         super().__init__(parsed_page, prop_name, parent_id)
-        self.scraper_option = self.DEFAULT_SCRAPER_OPTION
+        self.targets = self.DEFAULT_SCRAPER_OPTION
 
-    def get_edit_options(self) -> None:
+    def set_overwrite_option(self) -> None:
         edit_status = self.props.reads[self.PROP_NAME['edit_status']]
         try:
             charref = re.compile(r'(?<=\().+(?=\))')
@@ -66,10 +66,10 @@ class BookReadingPage(ReadingPage):
         self.props.set_overwrite(props_option)
         self.children.set_overwrite(children_option)
         if edit_option == 'continue':
-            self.scraper_option.remove('yes24')
+            self.targets.remove('yes24')
 
     def set_edit_status(self):
-        self.get_edit_options()
+        self.set_overwrite_option()
         if not self.scrap_status:
             if self.edit_option == 'append':
                 self.scrap_status = self.EDIT_STATUS['done']
@@ -99,7 +99,7 @@ class BookReadingPage(ReadingPage):
             self.scrap_status = self.EDIT_STATUS['url_missing']
 
     def set_yes24_metadata(self, metadata: dict):
-        self.get_edit_options()
+        self.set_overwrite_option()
         self.props.write.text(self.PROP_NAME['true_name'], metadata['name'])
         self.props.write.text(self.PROP_NAME['subname'], metadata['subname'])
         self.props.write.text(self.PROP_NAME['author'], metadata['author'])

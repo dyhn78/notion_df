@@ -120,6 +120,14 @@ class MasterEditor(Editor, metaclass=ABCMeta):
     def execute(self):
         return {key: value.execute() for key, value in self.agents.items()}
 
+    @abstractmethod
+    def fully_read(self):
+        pass
+
+    @abstractmethod
+    def fully_read_rich(self):
+        pass
+
 
 class BridgeEditor(Editor, metaclass=ABCMeta):
     def __init__(self, caller: Editor):
@@ -143,10 +151,10 @@ class BridgeEditor(Editor, metaclass=ABCMeta):
             child.set_overwrite_option(option)
 
     def preview(self):
-        return [child.preview() for child in self]
+        return [child.preview() for child in self.values]
 
     def execute(self):
-        return [child.execute() for child in self]
+        return [child.execute() for child in self.values]
 
 
 """

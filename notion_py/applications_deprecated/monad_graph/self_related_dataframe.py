@@ -1,6 +1,6 @@
 from __future__ import annotations
 from ..constants import ID_THEMES, ID_IDEAS
-from ...interface.editor.deprecated import \
+from notion_py.interface.deprecated import \
     DatabaseFrameDeprecated, PageListDeprecated, TabularPageDeprecated
 
 
