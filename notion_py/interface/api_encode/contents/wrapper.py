@@ -1,30 +1,36 @@
 from abc import ABC, abstractmethod, ABCMeta
 
-from .block_contents_encode import \
-    ContentsEncoder, RichTextContentsEncoder, InlinePageContentsEncoder
+from .maker import \
+    ContentsEncoder, RichTextContentsEncoder, \
+    PageContentsEncoderAsChildBlock
+from ..property.maker import RichTextPropertyEncoder
+from ..property.wrapper import PropertyEncoder
 
 
-class InlinePageContentsWriter(ABC):
+class PageContentsWriterAsIndepPage(ABC):
     @abstractmethod
-    def push_carrier(self, carrier: InlinePageContentsEncoder) \
-            -> InlinePageContentsEncoder:
+    def push_carrier(self, carrier: PropertyEncoder):
         pass
 
-    def write_title(self, title: str) -> InlinePageContentsEncoder:
-        writer = InlinePageContentsEncoder(title)
+    def write_rich_title(self) -> RichTextPropertyEncoder:
+        writer = RichTextPropertyEncoder(prop_type='title', prop_name='title')
         return self.push_carrier(writer)
 
-    """
+    def write_title(self, value: str):
+        writer = self.write_rich_title()
+        writer.write_text(value)
+        return writer
+
+
+class PageContentsWriterAsChildBlock(ABC):
     @abstractmethod
-    def push_carrier(self, carrier: ContentsEncoder) \
-            -> RichTextContentsEncoder:
+    def push_carrier(self, carrier: PageContentsEncoderAsChildBlock) \
+            -> PageContentsEncoderAsChildBlock:
         pass
 
-    def write_title(self, title: str):
-        writer = self.push_carrier(RichTextContentsEncoder('child_page'))
-        writer.write_text(title)
-        return writer
-    """
+    def write_title(self, title: str) -> PageContentsEncoderAsChildBlock:
+        writer = PageContentsEncoderAsChildBlock(title)
+        return self.push_carrier(writer)
 
 
 class RichTextContentsWriter(ABC):
@@ -59,42 +65,42 @@ class RichTextContentsWriter(ABC):
 
 
 class TextContentsWriter(RichTextContentsWriter, metaclass=ABCMeta):
-    def write_paragraph(self, text_contents: str) -> RichTextContentsEncoder:
+    def write_paragraph(self, value: str) -> RichTextContentsEncoder:
         writer = self.write_rich_paragraph()
-        writer.write_text(text_contents)
+        writer.write_text(value)
         return writer
 
-    def write_heading_1(self, text_contents: str) -> RichTextContentsEncoder:
+    def write_heading_1(self, value: str) -> RichTextContentsEncoder:
         writer = self.write_rich_heading_1()
-        writer.write_text(text_contents)
+        writer.write_text(value)
         return writer
 
-    def write_heading_2(self, text_contents: str) -> RichTextContentsEncoder:
+    def write_heading_2(self, value: str) -> RichTextContentsEncoder:
         writer = self.write_rich_heading_2()
-        writer.write_text(text_contents)
+        writer.write_text(value)
         return writer
 
-    def write_heading_3(self, text_contents: str) -> RichTextContentsEncoder:
+    def write_heading_3(self, value: str) -> RichTextContentsEncoder:
         writer = self.write_rich_heading_3()
-        writer.write_text(text_contents)
+        writer.write_text(value)
         return writer
 
-    def write_bulleted_list(self, text_contents: str) -> RichTextContentsEncoder:
+    def write_bulleted_list(self, value: str) -> RichTextContentsEncoder:
         writer = self.write_rich_bulleted_list()
-        writer.write_text(text_contents)
+        writer.write_text(value)
         return writer
 
-    def write_numbered_list(self, text_contents: str) -> RichTextContentsEncoder:
+    def write_numbered_list(self, value: str) -> RichTextContentsEncoder:
         writer = self.write_rich_numbered_list()
-        writer.write_text(text_contents)
+        writer.write_text(value)
         return writer
 
-    def write_to_do(self, text_contents: str, checked=False) -> RichTextContentsEncoder:
+    def write_to_do(self, value: str, checked=False) -> RichTextContentsEncoder:
         writer = self.write_rich_to_do(checked=checked)
-        writer.write_text(text_contents)
+        writer.write_text(value)
         return writer
 
-    def write_toggle(self, text_contents: str) -> RichTextContentsEncoder:
+    def write_toggle(self, value: str) -> RichTextContentsEncoder:
         writer = self.write_rich_toggle()
-        writer.write_text(text_contents)
+        writer.write_text(value)
         return writer

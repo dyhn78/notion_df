@@ -4,7 +4,7 @@ from typing import Optional
 
 from notion_client import Client, AsyncClient
 
-from .inline.inline_core import TextBlock, InlinePageBlock
+from .inline.inline_core import TextBlock, InlinePageBlockAsIndep
 from .tabular import Database, TabularPageBlock
 from ..gateway import Query
 from ..struct import MasterEditor, AbstractRootEditor, \
@@ -54,7 +54,7 @@ class NotionRootEditor(AbstractRootEditor):
 
     def open_inline_page(self, page_id: str):
         page_id = page_url_to_id(page_id)
-        document = InlinePageBlock(self, page_id)
+        document = InlinePageBlockAsIndep(self, page_id)
         self.top_documents.append(document)
         return document
 
@@ -68,7 +68,7 @@ class NotionRootEditor(AbstractRootEditor):
 class NotionTypeName:
     database = Database
     tabular_page = TabularPageBlock
-    inline_page = InlinePageBlock
+    inline_page = InlinePageBlockAsIndep
     text_block = TextBlock
 
     query = Query

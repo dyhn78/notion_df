@@ -1,7 +1,7 @@
 from abc import abstractmethod
 
 from notion_py.interface.struct import ValueCarrier
-from .property_encode import RichTextPropertyEncoder
+from notion_py.interface.api_encode.property.maker import RichTextPropertyEncoder
 
 
 class ContentsEncoder(ValueCarrier):
@@ -34,7 +34,7 @@ class RichTextContentsEncoder(ContentsEncoder, RichTextPropertyEncoder):
         return contents
 
 
-class InlinePageContentsEncoder(ContentsEncoder):
+class PageContentsEncoderAsChildBlock(ContentsEncoder):
     def __init__(self, title):
         super().__init__(block_type='title', block_name='child_page')
         self.title = title

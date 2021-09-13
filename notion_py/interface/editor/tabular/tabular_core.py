@@ -5,7 +5,7 @@ from typing import Optional, Union
 
 from .props import TabularProperty
 from ..inline.inline_core import ChildBearingBlock
-from ...api_format.parse import PageListParser, DatabaseParser
+from notion_py.interface.parse import PageListParser, DatabaseParser
 from ...gateway import RetrieveDatabase, Query
 from ...struct import AbstractEditor, Editor, BridgeEditor, PropertyFrame, MasterEditor
 

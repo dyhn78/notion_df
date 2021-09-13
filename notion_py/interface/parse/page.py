@@ -3,8 +3,8 @@ from typing import Union, Any, Callable, Iterator
 
 from .rich_text import parse_rich_texts
 
-# find types by api_format
-from ...struct import DateFormat
+# find types by api_parse
+from notion_py.interface.struct import DateFormat
 
 VALUE_TYPES = {
     'text': ['text', 'rich_text', 'title'],
@@ -17,7 +17,7 @@ VALUE_TYPES = {
     'relation': ['relation'],
     'rollup': ['rollup']
 }
-# find api_format by type
+# find api_parse by type
 VALUE_FORMATS = {}
 for form, types in VALUE_TYPES.items():
     VALUE_FORMATS.update(**{typ: form for typ in types})

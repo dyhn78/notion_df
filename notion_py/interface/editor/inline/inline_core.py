@@ -3,9 +3,10 @@ from __future__ import annotations
 from abc import abstractmethod, ABCMeta
 from typing import Optional, Union
 
-from .block_contents import BlockContents, TextContents, InlinePageContents
-from ...api_format.encode import RichTextContentsEncoder
-from ...api_format.parse import BlockChildrenParser
+from .block_contents import BlockContents, TextContents, \
+    PageContentsAsIndepPage, PageContentsAsChildBlock
+from notion_py.interface.api_encode import RichTextContentsEncoder
+from notion_py.interface.parse import BlockChildrenParser
 from ...gateway import GetBlockChildren, AppendBlockChildren
 from ...struct import Editor, BridgeEditor, GroundEditor, MasterEditor, drop_empty_request
 from ...struct.editor import AbstractEditor
@@ -17,7 +18,7 @@ class SupportedBlock(MasterEditor, metaclass=ABCMeta):
         return cls(caller, '')
 
 
-class ChildBearingBlock(SupportedBlock, metaclass=ABCMeta):
+class ChildBearingBlock(SupportedBlock):
     @abstractmethod
     def __init__(self, caller: Union[Editor, AbstractEditor], block_id: str):
         super().__init__(caller, block_id)
@@ -62,7 +63,8 @@ class BlockChildren(Editor):
         super().__init__(caller)
         self.caller = caller
         self._normal = NormalBlockChildrenContainer(self)
-        self._new = NewBlockChildrenContainer(self)
+        self._new = NewBlockChildrenContainerWithIndepInlinePage(self)
+        # self._new = NewBlockChildrenContainerWithChildInlinePage(self)
 
     @property
     def values(self):
@@ -118,7 +120,7 @@ class BlockChildren(Editor):
     def create_text_block(self) -> TextBlock:
         return self._new.create_text_block()
 
-    def create_inline_page(self) -> InlinePageBlock:
+    def create_inline_page(self) -> Union[InlinePageBlockAsIndep, InlinePageBlockAsChild]:
         return self._new.create_inline_page()
 
     def indent_next_block(self) -> BlockChildren:
@@ -159,7 +161,7 @@ class NormalBlockChildrenContainer(BridgeEditor, BlockChildrenContainer):
         for child_parser in children_parser:
             if child_parser.is_supported_type:
                 if child_parser.is_page_block:
-                    child = InlinePageBlock(self, child_parser.block_id)
+                    child = InlinePageBlockAsIndep(self, child_parser.block_id)
                 else:
                     child = TextBlock(self, child_parser.block_id)
                 child.contents.apply_block_parser(child_parser)
@@ -174,11 +176,11 @@ class NormalBlockChildrenContainer(BridgeEditor, BlockChildrenContainer):
         return [child.fully_read_rich() for child in self]
 
 
-class NewBlockChildrenContainer(GroundEditor, BlockChildrenContainer):
+class NewBlockChildrenContainerWithIndepInlinePage(GroundEditor, BlockChildrenContainer):
     def __init__(self, caller: Editor):
         super().__init__(caller)
         self._chunks: list[list[ContentsBlock]] = []
-        self._requests: list[Union[AppendBlockChildren, InlinePageBlock]] = []
+        self._requests: list[Union[AppendBlockChildren, InlinePageBlockAsIndep]] = []
         self.gateway = AppendBlockChildren(self)
         self._chunk_interrupted = True
 
@@ -209,7 +211,7 @@ class NewBlockChildrenContainer(GroundEditor, BlockChildrenContainer):
         for request in self._requests:
             if isinstance(request, AppendBlockChildren):
                 res.append(request.unpack())
-            elif isinstance(request, InlinePageBlock):
+            elif isinstance(request, InlinePageBlockAsIndep):
                 res.append(request.preview())
         return res
 
@@ -222,7 +224,7 @@ class NewBlockChildrenContainer(GroundEditor, BlockChildrenContainer):
                 parsers = BlockChildrenParser(response)
                 for parser, new_child in zip(parsers, chunk):
                     new_child.contents.apply_block_parser(parser)
-            elif isinstance(request, InlinePageBlock):
+            elif isinstance(request, InlinePageBlockAsIndep):
                 request.execute()
             else:
                 print('WHAT DID YOU DO?!')
@@ -244,26 +246,101 @@ class NewBlockChildrenContainer(GroundEditor, BlockChildrenContainer):
         self._chunks[-1].append(child)
         assert (id(child) == id(self[-1]) == id(self._chunks[-1][-1]))
         return child
-    """
+
     def create_inline_page(self):
-        if self._chunk_interrupted:
-            self.gateway = AppendBlockChildren(self)
-            self._requests.append(self.gateway)
-            self._chunks.append([])
-            self._chunk_interrupted = False
-        child = InlinePageBlock.create_new(self)
-        self._chunks[-1].append(child)
-        assert (id(child) == id(self[-1]) == id(self._chunks[-1][-1]))
-        return child
-    """
-    def create_inline_page(self):
-        child = InlinePageBlock.create_new(self)
+        child = InlinePageBlockAsIndep.create_new(self)
         self._requests.append(child)
         self._chunks.append([child])
         self._chunk_interrupted = True
         assert (id(child) == id(self[-1]) == id(self._chunks[-1][-1]))
         return child
 
+    def push_carrier(self, carrier: RichTextContentsEncoder) -> RichTextContentsEncoder:
+        return self.gateway.apply_contents(carrier)
+
+
+class NewBlockChildrenContainerWithChildInlinePage(
+        GroundEditor, BlockChildrenContainer):
+    def __init__(self, caller: Editor):
+        super().__init__(caller)
+        self._chunks: list[list[ContentsBlock]] = []
+        self._requests: list[Union[AppendBlockChildren, InlinePageBlockAsIndep]] = []
+        self.gateway = AppendBlockChildren(self)
+        self._chunk_interrupted = True
+
+    def __iter__(self):
+        return iter(self.values)
+
+    def __getitem__(self, index: int):
+        return self.values[index]
+
+    def __len__(self):
+        return len(self.values)
+
+    def __bool__(self):
+        return any(child for child in self)
+
+    @property
+    def values(self) -> list[ContentsBlock]:
+        res = []
+        for chunk in self._chunks:
+            if type(chunk) == list:
+                res.extend(chunk)
+            else:
+                res.append(chunk)
+        return res
+
+    def preview(self):
+        res = []
+        for request in self._requests:
+            if isinstance(request, AppendBlockChildren):
+                res.append(request.unpack())
+            """elif isinstance(request, InlinePageBlockAsIndep):
+                res.append(request.preview())"""
+        return res
+
+    def execute(self):
+        for request, chunk in zip(self._requests, self._chunks):
+            if isinstance(request, AppendBlockChildren):
+                response = request.execute()
+                if not response:
+                    continue
+                parsers = BlockChildrenParser(response)
+                for parser, new_child in zip(parsers, chunk):
+                    new_child.contents.apply_block_parser(parser)
+                """elif isinstance(request, InlinePageBlockAsIndep):
+                    request.execute()"""
+            else:
+                print('WHAT DID YOU DO?!')
+                pass
+        for child in self.values:
+            child.execute()
+        res = self.values.copy()
+        self.values.clear()
+        self._requests.clear()
+        return res
+
+    def create_text_block(self):
+        if self._chunk_interrupted:
+            self.gateway = AppendBlockChildren(self)
+            self._requests.append(self.gateway)
+            self._chunks.append([])
+            self._chunk_interrupted = False
+        child = TextBlock.create_new(self)
+        self._chunks[-1].append(child)
+        assert (id(child) == id(self[-1]) == id(self._chunks[-1][-1]))
+        return child
+
+    def create_inline_page(self):
+        if self._chunk_interrupted:
+            self.gateway = AppendBlockChildren(self)
+            self._requests.append(self.gateway)
+            self._chunks.append([])
+            self._chunk_interrupted = False
+        child = InlinePageBlockAsChild.create_new(self)
+        self._chunks[-1].append(child)
+        assert (id(child) == id(self[-1]) == id(self._chunks[-1][-1]))
+        return child
 
     def push_carrier(self, carrier: RichTextContentsEncoder) -> RichTextContentsEncoder:
         return self.gateway.apply_contents(carrier)
@@ -290,7 +367,7 @@ class ContentsBlock(ChildBearingBlock, metaclass=ABCMeta):
 class TextBlock(ContentsBlock):
     def __init__(self, caller: Union[Editor], block_id: str):
         super().__init__(caller=caller, block_id=block_id)
-        if isinstance(caller, NewBlockChildrenContainer):
+        if isinstance(caller, NewBlockChildrenContainerWithIndepInlinePage):
             self.contents = TextContents(self, caller)
         else:
             self.contents = TextContents(self)
@@ -314,14 +391,10 @@ class TextBlock(ContentsBlock):
         return dict(**super().fully_read(), type='text')
 
 
-class InlinePageBlock(ContentsBlock):
+class InlinePageBlockAsIndep(ContentsBlock):
     def __init__(self, caller: Union[Editor], page_id: str):
         super().__init__(caller, page_id)
-        """if isinstance(caller, NewBlockChildrenContainer):
-            self.contents = InlinePageContents(self, caller)
-        else:
-            self.contents = InlinePageContents(self)"""
-        self.contents = InlinePageContents(self)
+        self.contents = PageContentsAsIndepPage(self)
         self.agents.update(contents=self.contents)
         self.title = ''
 
@@ -333,6 +406,35 @@ class InlinePageBlock(ContentsBlock):
     def execute(self):
         self.contents.execute()
         self.children.execute()
+
+    def fully_read(self):
+        return dict(**super().fully_read(), type='page')
+
+    def fully_read_rich(self):
+        return dict(**super().fully_read(), type='page')
+
+
+class InlinePageBlockAsChild(ContentsBlock):
+    def __init__(self, caller: Union[Editor], page_id: str):
+        super().__init__(caller, page_id)
+        if isinstance(caller, NewBlockChildrenContainerWithChildInlinePage):
+            self.contents = PageContentsAsChildBlock(self, caller)
+        else:
+            self.contents = PageContentsAsChildBlock(self)
+        self.agents.update(contents=self.contents)
+        self.title = ''
+
+    @property
+    def master_name(self):
+        return self.title
+
+    @drop_empty_request
+    def execute(self):
+        if self.yet_not_created:
+            self.caller.execute()
+        else:
+            self.contents.execute()
+            self.children.execute()
 
     def fully_read(self):
         return dict(**super().fully_read(), type='page')

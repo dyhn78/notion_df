@@ -2,13 +2,13 @@ from __future__ import annotations
 from .filter_unit import PlainFilter, OrFilter, AndFilter
 from ...struct import Gateway, PropertyFrame, PropertyUnit
 
-# find types by api_format
+# find types by api_parse
 FILTER_TYPES = {
     'text': ['text', 'title', 'rich_text', 'url', 'email', 'phone_number'],
     'date': ['date', 'created_time', 'last_edited_time'],
     'people': ['people', 'person', 'created_by', 'last_edited_by']
 }
-# find api_format by type
+# find api_parse by type
 FILTER_FORMATS = {}
 for form, types in FILTER_TYPES.items():
     FILTER_FORMATS.update(**{typ: form for typ in types})

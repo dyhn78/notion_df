@@ -1,7 +1,7 @@
 from abc import ABCMeta
 
 from notion_py.interface.struct import TwofoldStash, ValueCarrier
-from notion_py.interface.api_format.encode import ContentsEncoder
+from notion_py.interface.api_encode import ContentsEncoder
 
 
 class TwofoldListStash(TwofoldStash, metaclass=ABCMeta):

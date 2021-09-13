@@ -1,7 +1,7 @@
 from typing import Optional
 
-from ...api_format.encode import TabularPropertybyKey, PropertyEncoder
-from ...api_format.parse import PageParser
+from notion_py.interface.api_encode import TabularPropertybyKey, PropertyEncoder
+from notion_py.interface.parse import PageParser
 from ...gateway import CreatePage, UpdatePage, RetrievePage
 from ...struct import GroundEditor, Editor, PropertyFrame, drop_empty_request
 from ...utility import eval_empty
@@ -51,10 +51,12 @@ class TabularProperty(GroundEditor, TabularPropertybyKey):
             self._read_full[name] = value
 
     def push_carrier(self, prop_name: str, carrier: PropertyEncoder) \
-            -> Optional[PropertyEncoder]:
-        if self.enable_overwrite or eval_empty(self.read_of(prop_name)):
+            -> PropertyEncoder:
+        overwrite = self.enable_overwrite or eval_empty(self.read_of(prop_name))
+        if overwrite:
             return self.gateway.apply_prop(carrier)
-        return None
+        else:
+            return carrier
 
     def read_of_all(self):
         return self._read_plain

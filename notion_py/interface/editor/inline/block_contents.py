@@ -1,10 +1,11 @@
 from abc import ABCMeta, abstractmethod
 from typing import Optional
 
-from ...api_format.encode import TextContentsWriter, RichTextContentsEncoder, \
-    PropertyEncoder
-from ...api_format.encode.block_contents import InlinePageContentsWriter
-from ...api_format.parse import BlockContentsParser, PageParser
+from notion_py.interface.api_encode import \
+    TextContentsWriter, RichTextContentsEncoder, \
+    PageContentsWriterAsChildBlock, PageContentsWriterAsIndepPage, \
+    RichTextPropertyEncoder
+from notion_py.interface.parse import BlockContentsParser, PageParser
 from ...gateway import UpdateBlock, RetrieveBlock, UpdatePage, RetrievePage, CreatePage
 from ...struct import Editor, GroundEditor
 from ...utility import eval_empty
@@ -66,8 +67,46 @@ class TextContents(BlockContents, TextContentsWriter):
     def push_carrier(self, carrier: RichTextContentsEncoder) -> RichTextContentsEncoder:
         return self.gateway.apply_contents(carrier)
 
-"""
-class InlinePageContents(BlockContents, InlinePageContentsWriter):
+
+class PageContentsAsIndepPage(BlockContents, PageContentsWriterAsIndepPage):
+    def __init__(self, caller: Editor):
+        super().__init__(caller)
+        self.caller = caller
+        if self.yet_not_created:
+            self.gateway = CreatePage(self, under_database=False)
+        else:
+            self.gateway = UpdatePage(self)
+
+    def retrieve(self):
+        gateway = RetrievePage(self)
+        response = gateway.execute()
+        parser = PageParser.parse_retrieve(response)
+        self.apply_page_parser(parser)
+
+    def execute(self):
+        response = self.gateway.execute()
+        if self.yet_not_created:
+            parser = PageParser.parse_create(response)
+            self.apply_page_parser(parser)
+            self.gateway = UpdatePage(self)
+
+    def apply_page_parser(self, parser: PageParser):
+        if parser.page_id:
+            self.master_id = parser.page_id
+        self.caller.title = parser.title
+        self._read_plain = parser.prop_values['title']
+        self._read_rich = parser.prop_rich_values['title']
+
+    def push_carrier(self, carrier: RichTextPropertyEncoder) \
+            -> Optional[RichTextPropertyEncoder]:
+        overwrite = self.enable_overwrite or eval_empty(self.read())
+        if overwrite:
+            return self.gateway.apply_prop(carrier)
+        else:
+            return carrier
+
+
+class PageContentsAsChildBlock(BlockContents, PageContentsWriterAsChildBlock):
     def __init__(self, caller: Editor, uncle: Optional[GroundEditor] = None):
         super().__init__(caller)
         self.caller = caller
@@ -105,51 +144,6 @@ class InlinePageContents(BlockContents, InlinePageContentsWriter):
         self._read_plain = parser.prop_values['title']
         self._read_rich = parser.prop_rich_values['title']
 
-    def push_carrier(self, carrier: RichTextContentsEncoder) -> RichTextContentsEncoder:
+    def push_carrier(self, carrier: RichTextContentsEncoder) \
+            -> RichTextContentsEncoder:
         return self.gateway.apply_contents(carrier)
-
-"""
-class InlinePageContents(BlockContents):
-    def __init__(self, caller: Editor):
-        super().__init__(caller)
-        self.caller = caller
-        if self.yet_not_created:
-            self.gateway = CreatePage(self, under_database=False)
-        else:
-            self.gateway = UpdatePage(self)
-
-    def retrieve(self):
-        gateway = RetrievePage(self)
-        response = gateway.execute()
-        parser = PageParser.parse_retrieve(response)
-        self.apply_page_parser(parser)
-
-    def execute(self):
-        response = self.gateway.execute()
-        if self.yet_not_created:
-            parser = PageParser.parse_create(response)
-            self.apply_page_parser(parser)
-            self.gateway = UpdatePage(self)
-
-    def apply_page_parser(self, parser: PageParser):
-        if parser.page_id:
-            self.master_id = parser.page_id
-        self.caller.title = parser.title
-        self._read_plain = parser.prop_values['title']
-        self._read_rich = parser.prop_rich_values['title']
-
-    def write_title(self, value: str):
-        writer = self.write_rich_title()
-        writer.write_text(value)
-        return writer
-
-    def write_rich_title(self):
-        writer = RichTextContentsEncoder('title')
-        pushed = self.push_carrier(writer)
-        return pushed if pushed is not None else writer
-
-    def push_carrier(self, carrier: PropertyEncoder) \
-            -> Optional[PropertyEncoder]:
-        if self.enable_overwrite or eval_empty(self.read()):
-            return self.gateway.apply_prop(carrier)
-        return None

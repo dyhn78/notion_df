@@ -3,7 +3,7 @@ from typing import Any
 from .stash import BlockChildrenStash, PagePropertyStash, ArchiveToggle
 from notion_py.interface.struct import Gateway, retry_request, drop_empty_request, \
     Editor
-from notion_py.interface.api_format.encode import ContentsEncoder
+from notion_py.interface.api_encode import ContentsEncoder
 from ...utility import stopwatch, page_id_to_url
 
 
@@ -115,10 +115,9 @@ class UpdateBlock(Gateway):
         return dict(**self._contents_value.unpack(),
                     block_id=self.target_id)
 
+    @drop_empty_request
     @retry_request
     def execute(self) -> dict:
-        """making a request with empty carrier
-        will <remove> the original read_plain of block"""
         if self._contents_value is None:
             return {}
         res = self.notion.blocks.update(**self.unpack())

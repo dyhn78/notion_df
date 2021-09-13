@@ -12,7 +12,7 @@ class AbstractEditor(Requestor, metaclass=ABCMeta):
         self.root_editor = root_editor
 
 
-class AbstractRootEditor(AbstractEditor, metaclass=ABCMeta):
+class AbstractRootEditor(AbstractEditor):
     @abstractmethod
     def __init__(self):
         super().__init__(self)
@@ -64,7 +64,7 @@ class Editor(AbstractEditor, metaclass=ABCMeta):
         pass
 
 
-class MasterEditor(Editor, metaclass=ABCMeta):
+class MasterEditor(Editor):
     def __init__(self, caller: Union[Editor, AbstractEditor], master_id: str):
         super().__init__(caller)
         self.agents: dict[str, Union[Editor]] = {}
