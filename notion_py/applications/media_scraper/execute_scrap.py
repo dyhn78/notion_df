@@ -1,7 +1,7 @@
 import re
 
 from .lib_entry import LibraryScraper
-from .property_frame import reading_database_frame
+from .prop_frame import reading_database_frame
 from .yes24_entry import Yes24Scraper
 from ..page_ids import DatabaseInfo
 from ...interface import RootEditor, TypeName
@@ -33,7 +33,7 @@ class MediaScraper(ReadingDBEditor):
             page.children.fetch()
             unit = PageHandler(self, page)
             unit.execute()
-            # pprint(page.preview())
+            # page.pprint()
             page.execute()
             unit.set_edit_status()
             page.execute()

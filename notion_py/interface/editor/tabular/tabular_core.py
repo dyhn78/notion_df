@@ -5,7 +5,7 @@ from typing import Optional, Union
 
 from .props import TabularProperty
 from ..inline.inline_core import ChildBearingBlock
-from notion_py.interface.api_parse import PageListParser, DatabaseParser
+from ...api_parse import PageListParser, DatabaseParser
 from ...gateway import RetrieveDatabase, Query
 from ...struct import Editor, PointEditor, BridgeEditor, PropertyFrame, MasterEditor
 
@@ -59,10 +59,6 @@ class PageList(PointEditor):
     def __iter__(self):
         return iter(self.values())
 
-    @property
-    def by_id(self) -> dict[str, TabularPageBlock]:
-        return self._normal.by_id
-
     def __getitem__(self, page_id: str):
         return self.by_id[page_id]
 
@@ -72,11 +68,19 @@ class PageList(PointEditor):
     def values(self) -> list[TabularPageBlock]:
         return self._normal.values + self._new.values
 
+    def set_overwrite_option(self, option: bool):
+        for child in self.values():
+            child.set_overwrite_option(option)
+
+    @property
+    def by_id(self) -> dict[str, TabularPageBlock]:
+        return self._normal.by_id
+
     @property
     def by_title(self) -> dict[str, TabularPageBlock]:
         return {**self._normal.by_title, **self._new.by_title}
 
-    def by_index(self, prop_name: str) -> dict[str, TabularPageBlock]:
+    def by_index_of(self, prop_name: str) -> dict[str, TabularPageBlock]:
         try:
             return {page.props.read_of(prop_name): page
                     for page in self.values()}
@@ -86,11 +90,17 @@ class PageList(PointEditor):
             pprint(f"value : {page_object.master_id}")
             raise TypeError
 
-    def by_prop(self, prop_name: str) -> dict[str, list[TabularPageBlock]]:
+    def by_index_at(self, prop_key: str):
+        return self.by_index_of(self.frame.name_at(prop_key))
+
+    def by_value_of(self, prop_name: str) -> dict[str, list[TabularPageBlock]]:
         res = defaultdict(list)
         for page in self.values():
             res[page.props.read_of(prop_name)].append(page)
         return res
+
+    def by_value_at(self, prop_key: str):
+        return self.by_value_of(self.frame.name_at(prop_key))
 
     def new_tabular_page(self):
         return self._new.new_tabular_page()
@@ -184,3 +194,6 @@ class TabularPageBlock(ChildBearingBlock):
         return {'type': 'page',
                 'tabular': self.props.read_rich_of_all(),
                 'children': self.children.reads_rich()}
+
+    def set_overwrite_option(self, option: bool):
+        self.props.set_overwrite_option(option)

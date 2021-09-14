@@ -365,7 +365,7 @@ class ContentsBlock(ChildBearingBlock, metaclass=ABCMeta):
 
 
 class TextBlock(ContentsBlock):
-    def __init__(self, caller: Union[PointEditor], block_id: str):
+    def __init__(self, caller: Union[Editor, PointEditor], block_id: str):
         super().__init__(caller=caller, block_id=block_id)
         if isinstance(caller, NewBlockChildrenContainerWithIndepInlinePage):
             self.contents = TextContents(self, caller)
@@ -392,7 +392,7 @@ class TextBlock(ContentsBlock):
 
 
 class InlinePageBlockAsIndep(ContentsBlock):
-    def __init__(self, caller: Union[PointEditor], page_id: str):
+    def __init__(self, caller: Union[Editor, PointEditor], page_id: str):
         super().__init__(caller, page_id)
         self.contents = PageContentsAsIndepPage(self)
         self.agents.update(contents=self.contents)
@@ -415,7 +415,7 @@ class InlinePageBlockAsIndep(ContentsBlock):
 
 
 class InlinePageBlockAsChild(ContentsBlock):
-    def __init__(self, caller: Union[PointEditor], page_id: str):
+    def __init__(self, caller: Union[Editor, PointEditor], page_id: str):
         super().__init__(caller, page_id)
         if isinstance(caller, NewBlockChildrenContainerWithChildInlinePage):
             self.contents = PageContentsAsChildBlock(self, caller)

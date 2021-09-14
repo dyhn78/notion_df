@@ -6,9 +6,10 @@ from notion_client import Client, AsyncClient
 
 from .inline.inline_core import TextBlock, InlinePageBlockAsIndep
 from .tabular import Database, TabularPageBlock
+from .tabular.tabular_core import PageList
 from ..gateway import Query
 from ..struct import MasterEditor, AbstractRootEditor, \
-    PropertyFrame, PropertyUnit, DateFormat
+    PropertyFrame, PropertyFrameUnit, DateFormat
 from ..utility import page_url_to_id
 
 
@@ -45,6 +46,14 @@ class NotionRootEditor(AbstractRootEditor):
         self.top_documents.append(document)
         return document
 
+    def open_pagelist(self, database_alias: str, database_id: str,
+                      frame: Optional[PropertyFrame] = None):
+        database_id = page_url_to_id(database_id)
+        database = Database(self, database_id, database_alias, frame)
+        document = database.pagelist
+        self.top_documents.append(document)
+        return document
+
     def open_tabular_page(self, page_id: str,
                           frame: Optional[PropertyFrame] = None):
         page_id = page_url_to_id(page_id)
@@ -71,8 +80,9 @@ class NotionTypeName:
     inline_page = InlinePageBlockAsIndep
     text_block = TextBlock
 
+    pagelist = PageList
     query = Query
 
     date_format = DateFormat
-    prop_frame = PropertyFrame
-    prop_unit = PropertyUnit
+    frame = PropertyFrame
+    frame_unit = PropertyFrameUnit

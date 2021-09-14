@@ -1,6 +1,8 @@
 import datetime
 from datetime import datetime as datetimeclass
 
+from notion_py.interface import TypeName
+
 
 class ProcessTimeProperty:
     korean_weekday = ["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"]
@@ -36,6 +38,30 @@ class ProcessTimeProperty:
         if weekday == 7:  # 일요일
             week, weekday = week + 1, weekday - 7
         return year, week, weekday
+
+
+class DatePageProcessor:
+    @staticmethod
+    def get_title(date: TypeName.date_format):
+        return ProcessTimeProperty(date.start, plain_date=True).strf_dig6_and_weekday()
+
+
+class PeriodPageProcessor:
+    @staticmethod
+    def get_title(date: TypeName.date_format):
+        base = ProcessTimeProperty(date.start, plain_date=True)
+        return base.strf_year_and_week()
+
+    @staticmethod
+    def writer(prop_key: str):
+        def wrapper(page: TypeName.tabular_page, index_value: TypeName.date_format):
+            base = ProcessTimeProperty(index_value.start, plain_date=True)
+            daterange = TypeName.date_format(
+                start_date=base.first_day_of_week(),
+                end_date=base.last_day_of_week()
+            )
+            page.props.write_date_at(prop_key, daterange)
+        return wrapper
 
 
 if __name__ == '__main__':

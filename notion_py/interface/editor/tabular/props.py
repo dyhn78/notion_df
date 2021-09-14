@@ -70,7 +70,7 @@ class TabularProperty(GroundEditor, TabularPropertybyKey):
 
     def read_of(self, prop_name: str, default=None):
         if not isinstance(prop_name, str):
-            raise TypeError
+            raise TypeError(f"<prop_name: {prop_name}>")
         try:
             value = self._read_plain[prop_name]
         except KeyError:

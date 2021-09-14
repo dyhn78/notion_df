@@ -36,4 +36,5 @@ class Query(LongGateway):
         self._filter_value = PlainFilter({})
 
     def push_filter(self, query_filter: QueryFilter):
-        self._filter_value = query_filter
+        if query_filter is not None:
+            self._filter_value = query_filter

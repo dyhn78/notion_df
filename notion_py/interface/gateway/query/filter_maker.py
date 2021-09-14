@@ -1,6 +1,6 @@
 from __future__ import annotations
 from .filter_unit import PlainFilter, OrFilter, AndFilter
-from ...struct import Gateway, PropertyFrame, PropertyUnit
+from ...struct import Gateway, PropertyFrame, PropertyFrameUnit
 
 # find types by api_parse
 FILTER_TYPES = {
@@ -98,9 +98,9 @@ class FilterMaker:
     def __init__(self, caller: QueryFilterAgent, prop_name):
         assert self.prop_type is not None
         self.prop_name: str = prop_name
-        self.frame_unit: PropertyUnit = \
+        self.frame_unit: PropertyFrameUnit = \
             caller.frame.by_name[prop_name] if prop_name in caller.frame.by_name \
-            else PropertyUnit(prop_name)
+            else PropertyFrameUnit(prop_name)
         self.values = self.frame_unit.values
         self.value_groups = self.frame_unit.value_groups
 

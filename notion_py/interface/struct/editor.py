@@ -74,7 +74,6 @@ class MasterEditor(PointEditor):
         super().__init__(caller)
         self.agents: dict[str, Union[PointEditor]] = {}
         self.master_id = master_id
-        self.set_overwrite_option(True)
         self.is_supported_type = False
         self.can_have_children = False
         self.has_children = False

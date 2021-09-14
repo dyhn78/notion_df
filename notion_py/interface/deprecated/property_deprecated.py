@@ -26,7 +26,7 @@ class PropertyUnitDeprecated:
         elif type(values) == str:
             prop_name, prop_values = values, None
         else:
-            raise TypeError(f'Invalid PropertyUnit: {values}')
+            raise TypeError(f'Invalid PropertyFrameUnit: {values}')
         self.name = prop_name
         self.values = prop_values
         self.type = None

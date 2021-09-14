@@ -77,12 +77,16 @@ class TabularPropertybyName(ABC):
         return self.push_carrier(prop_name,
                                  SimplePropertyEncoder.people(prop_name, value))
 
-    def write_multi_select(self, prop_name: str, values: list[str]):
+    def write_multi_select(self, prop_name: str, values: Union[list[str], str]):
+        if isinstance(values, str):
+            values = [values]
         return self.push_carrier(prop_name,
                                  SimplePropertyEncoder.multi_select(prop_name, values))
 
-    def write_relation(self, prop_name: str, values: list[str]):
+    def write_relation(self, prop_name: str, values: Union[list[str], str]):
         """ values: list of <page_id>"""
+        if isinstance(values, str):
+            values = [values]
         return self.push_carrier(prop_name,
                                  SimplePropertyEncoder.relation(prop_name, values))
 
@@ -152,10 +156,10 @@ class TabularPropertybyKey(TabularPropertybyName, metaclass=ABCMeta):
         prop_name = self._name_at(prop_key)
         return self.write_people(prop_name, value)
 
-    def write_multi_select_at(self, prop_key: str, values: list[str]):
+    def write_multi_select_at(self, prop_key: str, values: Union[list[str], str]):
         prop_name = self._name_at(prop_key)
         return self.write_multi_select(prop_name, values)
 
-    def write_relation_at(self, prop_key: str, values: list[str]):
+    def write_relation_at(self, prop_key: str, values: Union[list[str], str]):
         prop_name = self._name_at(prop_key)
         return self.write_relation(prop_name, values)
