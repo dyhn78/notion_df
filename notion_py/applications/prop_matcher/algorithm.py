@@ -142,7 +142,9 @@ class TernaryMatchAlgorithm:
 
     def _write_tar_id(self, dom, tar_id):
         values = dom.props.read_at(self.dom_to_tar)
-        if tar_id not in values:
+        if tar_id in values:
+            return
+        else:
             values.append(tar_id)
-        dom.set_overwrite_option(True)
-        dom.props.write_at(self.dom_to_tar, values)
+            dom.set_overwrite_option(True)
+            dom.props.write_at(self.dom_to_tar, values)
