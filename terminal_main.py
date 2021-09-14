@@ -2,7 +2,7 @@ from notion_py.interface.utility import stopwatch
 from notion_py.applications.prop_matcher import PropertyMatcher
 from notion_py.applications.media_scraper import MediaScraper
 
-PropertyMatcher(date_range=0).execute()
+PropertyMatcher(date_range=7).execute()
 # MediaScraper().execute(3)
 
 stopwatch('작업 완료')
