@@ -41,9 +41,6 @@ class PropertyMatcher:
             # self.query_maker.query_as_children(pagelist, 'index_as_domain',
             # 'to_periods')
             self.query_maker.query_as_parents(pagelist, 'index_as_domain')
-        for pagelist in [self.periods, self.dates, self.journals, self.memos, self.shots,
-                         self.writings]:
-            pagelist.set_overwrite_option(True)
 
     def apply_results(self):
         for pagelist in [self.periods, self.dates, self.journals, self.memos, self.shots,

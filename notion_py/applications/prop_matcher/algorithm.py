@@ -144,5 +144,4 @@ class TernaryMatchAlgorithm:
             return
         else:
             values.append(tar_id)
-            dom.set_overwrite_option(True)
             dom.props.write_at(self.dom_to_tar, values)
