@@ -5,13 +5,13 @@ from typing import Optional, Union
 
 from .props import TabularProperty
 from ..inline.inline_core import ChildBearingBlock
-from notion_py.interface.parse import PageListParser, DatabaseParser
+from notion_py.interface.api_parse import PageListParser, DatabaseParser
 from ...gateway import RetrieveDatabase, Query
-from ...struct import AbstractEditor, Editor, BridgeEditor, PropertyFrame, MasterEditor
+from ...struct import Editor, PointEditor, BridgeEditor, PropertyFrame, MasterEditor
 
 
 class Database(MasterEditor):
-    def __init__(self, caller: Union[Editor, AbstractEditor],
+    def __init__(self, caller: Union[PointEditor, Editor],
                  database_id: str,
                  database_alias='',
                  frame: Optional[PropertyFrame] = None):
@@ -44,7 +44,7 @@ class Database(MasterEditor):
         pass
 
 
-class PageList(Editor):
+class PageList(PointEditor):
     def __init__(self, caller: Database):
         super().__init__(caller)
         self.caller = caller
@@ -153,7 +153,7 @@ class NewPageListContainer(BridgeEditor):
 
 
 class TabularPageBlock(ChildBearingBlock):
-    def __init__(self, caller: Union[AbstractEditor, NormalPageListContainer],
+    def __init__(self, caller: Union[Editor, NormalPageListContainer],
                  page_id: str,
                  frame: Optional[PropertyFrame] = None):
         super().__init__(caller=caller, block_id=page_id)

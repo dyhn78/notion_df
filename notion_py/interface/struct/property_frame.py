@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import Optional, Iterable, Union
 
-from notion_py.interface.parse import PageParser, DatabaseParser
+from notion_py.interface.api_parse import PageParser, DatabaseParser
 
 
 class PropertyUnit:

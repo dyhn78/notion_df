@@ -1,8 +1,8 @@
-from notion_py.interface.struct import Gateway, retry_request, LongGateway, Editor
+from notion_py.interface.struct import Gateway, retry_request, LongGateway, PointEditor
 
 
 class RetrieveDatabase(Gateway):
-    def __init__(self, editor: Editor):
+    def __init__(self, editor: PointEditor):
         super().__init__(editor)
 
     def __bool__(self):
@@ -17,7 +17,7 @@ class RetrieveDatabase(Gateway):
 
 
 class RetrievePage(Gateway):
-    def __init__(self, editor: Editor):
+    def __init__(self, editor: PointEditor):
         super().__init__(editor)
 
     def __bool__(self):
@@ -32,7 +32,7 @@ class RetrievePage(Gateway):
 
 
 class RetrieveBlock(Gateway):
-    def __init__(self, editor: Editor):
+    def __init__(self, editor: PointEditor):
         super().__init__(editor)
 
     def __bool__(self):
@@ -47,7 +47,7 @@ class RetrieveBlock(Gateway):
 
 
 class GetBlockChildren(LongGateway):
-    def __init__(self, editor: Editor):
+    def __init__(self, editor: PointEditor):
         super().__init__(editor)
 
     def __bool__(self):

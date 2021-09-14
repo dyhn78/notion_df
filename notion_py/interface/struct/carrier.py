@@ -1,25 +1,29 @@
 from __future__ import annotations
 from abc import abstractmethod, ABC, ABCMeta
+from pprint import pprint
 
 
 class Requestor(ABC):
     @abstractmethod
-    def execute(self):
+    def __bool__(self):
         pass
 
     @abstractmethod
-    def __bool__(self):
+    def execute(self):
         pass
 
 
 class ValueCarrier(ABC):
     @abstractmethod
-    def unpack(self):
+    def __bool__(self):
         pass
 
     @abstractmethod
-    def __bool__(self):
+    def unpack(self):
         pass
+
+    def pprint(self, **kwargs):
+        pprint(self.unpack(), **kwargs)
 
 
 class Stash(ValueCarrier, metaclass=ABCMeta):

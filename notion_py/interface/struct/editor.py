@@ -1,5 +1,6 @@
 from __future__ import annotations
 from abc import ABCMeta, abstractmethod
+from pprint import pprint
 from typing import Union
 from notion_client import Client, AsyncClient
 
@@ -7,22 +8,29 @@ from .carrier import Requestor
 from ..utility import page_id_to_url
 
 
-class AbstractEditor(Requestor, metaclass=ABCMeta):
+class Editor(Requestor, metaclass=ABCMeta):
     def __init__(self, root_editor: AbstractRootEditor):
         self.root_editor = root_editor
 
 
-class AbstractRootEditor(AbstractEditor):
+class AbstractRootEditor(Editor):
     @abstractmethod
     def __init__(self):
         super().__init__(self)
         self.notion: Union[Client, AsyncClient, None] = None
 
 
-class Editor(AbstractEditor, metaclass=ABCMeta):
-    def __init__(self, caller: Union[Editor, AbstractEditor]):
+class PointEditor(Editor, metaclass=ABCMeta):
+    def __init__(self, caller: Union[PointEditor, Editor]):
         self.caller = caller
         super().__init__(caller.root_editor)
+
+    @abstractmethod
+    def preview(self):
+        pass
+
+    def pprint(self, **kwargs):
+        pprint(self.preview(), **kwargs)
 
     @property
     def master(self) -> MasterEditor:
@@ -60,14 +68,11 @@ class Editor(AbstractEditor, metaclass=ABCMeta):
             assert self.parent_id
             return True
 
-    def preview(self):
-        pass
 
-
-class MasterEditor(Editor):
-    def __init__(self, caller: Union[Editor, AbstractEditor], master_id: str):
+class MasterEditor(PointEditor):
+    def __init__(self, caller: Union[PointEditor, Editor], master_id: str):
         super().__init__(caller)
-        self.agents: dict[str, Union[Editor]] = {}
+        self.agents: dict[str, Union[PointEditor]] = {}
         self.master_id = master_id
         self.set_overwrite_option(True)
         self.is_supported_type = False
@@ -76,11 +81,6 @@ class MasterEditor(Editor):
 
     def __bool__(self):
         return any(agent for agent in self.agents.values())
-
-    def set_overwrite_option(self, option: bool):
-        for requestor in self.agents.values():
-            if hasattr(requestor, 'set_overwrite_option'):
-                requestor.set_overwrite_option(option)
 
     @property
     def master(self):
@@ -112,6 +112,11 @@ class MasterEditor(Editor):
                            f"{self.preview()}")
             raise AttributeError(message)
 
+    def set_overwrite_option(self, option: bool):
+        for requestor in self.agents.values():
+            if hasattr(requestor, 'set_overwrite_option'):
+                requestor.set_overwrite_option(option)
+
     @abstractmethod
     def preview(self):
         return {key: value.preview() for key, value in self.agents.items()}
@@ -129,8 +134,8 @@ class MasterEditor(Editor):
         pass
 
 
-class BridgeEditor(Editor, metaclass=ABCMeta):
-    def __init__(self, caller: Editor):
+class BridgeEditor(PointEditor, metaclass=ABCMeta):
+    def __init__(self, caller: PointEditor):
         super().__init__(caller)
         self.values: list[MasterEditor] = []
 

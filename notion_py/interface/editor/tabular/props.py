@@ -1,14 +1,14 @@
 from typing import Optional
 
 from notion_py.interface.api_encode import TabularPropertybyKey, PropertyEncoder
-from notion_py.interface.parse import PageParser
+from notion_py.interface.api_parse import PageParser
 from ...gateway import CreatePage, UpdatePage, RetrievePage
-from ...struct import GroundEditor, Editor, PropertyFrame, drop_empty_request
+from ...struct import GroundEditor, PointEditor, PropertyFrame, drop_empty_request
 from ...utility import eval_empty
 
 
 class TabularProperty(GroundEditor, TabularPropertybyKey):
-    def __init__(self, caller: Editor):
+    def __init__(self, caller: PointEditor):
         super().__init__(caller)
         self.caller = caller
         self.frame = caller.frame if hasattr(caller, 'frame') else PropertyFrame()
@@ -106,8 +106,8 @@ class TabularProperty(GroundEditor, TabularPropertybyKey):
 
 
 """
-class TabularProperty(Editor):
-    def __init__(self, caller: Editor):
+class TabularProperty(PointEditor):
+    def __init__(self, caller: PointEditor):
         super().__init__(caller)
         self.caller = caller
         self.frame = caller.frame if hasattr(caller, 'frame') else PropertyFrame()

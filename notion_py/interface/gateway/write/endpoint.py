@@ -2,13 +2,13 @@ from typing import Any
 
 from .stash import BlockChildrenStash, PagePropertyStash, ArchiveToggle
 from notion_py.interface.struct import Gateway, retry_request, drop_empty_request, \
-    Editor
+    PointEditor
 from notion_py.interface.api_encode import ContentsEncoder
 from ...utility import stopwatch, page_id_to_url
 
 
 class CreatePage(Gateway, PagePropertyStash, BlockChildrenStash, ArchiveToggle):
-    def __init__(self, editor: Editor, under_database: bool):
+    def __init__(self, editor: PointEditor, under_database: bool):
         Gateway.__init__(self, editor)
         PagePropertyStash.__init__(self)
         BlockChildrenStash.__init__(self)
@@ -45,7 +45,7 @@ class CreatePage(Gateway, PagePropertyStash, BlockChildrenStash, ArchiveToggle):
 
 
 class UpdatePage(Gateway, PagePropertyStash, ArchiveToggle):
-    def __init__(self, editor: Editor):
+    def __init__(self, editor: PointEditor):
         Gateway.__init__(self, editor)
         PagePropertyStash.__init__(self)
         ArchiveToggle.__init__(self)
@@ -73,7 +73,7 @@ class UpdatePage(Gateway, PagePropertyStash, ArchiveToggle):
 
 
 class AppendBlockChildren(Gateway, BlockChildrenStash):
-    def __init__(self, editor: Editor):
+    def __init__(self, editor: PointEditor):
         Gateway.__init__(self, editor)
         BlockChildrenStash.__init__(self)
 
@@ -97,7 +97,7 @@ class AppendBlockChildren(Gateway, BlockChildrenStash):
 
 
 class UpdateBlock(Gateway):
-    def __init__(self, editor: Editor):
+    def __init__(self, editor: PointEditor):
         Gateway.__init__(self, editor)
         self._contents_value = None
 

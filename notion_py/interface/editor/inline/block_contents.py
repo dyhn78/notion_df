@@ -5,14 +5,14 @@ from notion_py.interface.api_encode import \
     TextContentsWriter, RichTextContentsEncoder, \
     PageContentsWriterAsChildBlock, PageContentsWriterAsIndepPage, \
     RichTextPropertyEncoder
-from notion_py.interface.parse import BlockContentsParser, PageParser
+from notion_py.interface.api_parse import BlockContentsParser, PageParser
 from ...gateway import UpdateBlock, RetrieveBlock, UpdatePage, RetrievePage, CreatePage
-from ...struct import Editor, GroundEditor
+from ...struct import PointEditor, GroundEditor
 from ...utility import eval_empty
 
 
 class BlockContents(GroundEditor, metaclass=ABCMeta):
-    def __init__(self, caller: Editor):
+    def __init__(self, caller: PointEditor):
         super().__init__(caller)
         self.gateway: Optional[UpdateBlock] = None
         self._read_plain = ''
@@ -38,7 +38,7 @@ class BlockContents(GroundEditor, metaclass=ABCMeta):
 
 
 class TextContents(BlockContents, TextContentsWriter):
-    def __init__(self, caller: Editor, uncle: Optional[GroundEditor] = None):
+    def __init__(self, caller: PointEditor, uncle: Optional[GroundEditor] = None):
         super().__init__(caller)
         self.caller = caller
         self.uncle = uncle
@@ -69,7 +69,7 @@ class TextContents(BlockContents, TextContentsWriter):
 
 
 class PageContentsAsIndepPage(BlockContents, PageContentsWriterAsIndepPage):
-    def __init__(self, caller: Editor):
+    def __init__(self, caller: PointEditor):
         super().__init__(caller)
         self.caller = caller
         if self.yet_not_created:
@@ -107,7 +107,7 @@ class PageContentsAsIndepPage(BlockContents, PageContentsWriterAsIndepPage):
 
 
 class PageContentsAsChildBlock(BlockContents, PageContentsWriterAsChildBlock):
-    def __init__(self, caller: Editor, uncle: Optional[GroundEditor] = None):
+    def __init__(self, caller: PointEditor, uncle: Optional[GroundEditor] = None):
         super().__init__(caller)
         self.caller = caller
         self.uncle = uncle

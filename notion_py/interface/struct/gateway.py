@@ -1,18 +1,17 @@
 import time
 from abc import ABCMeta, abstractmethod
 from json import JSONDecodeError
-from pprint import pprint
 from typing import Callable, Optional
 
 from notion_client.errors import APIResponseError
 
 from notion_py.interface.utility import stopwatch
 from .carrier import Requestor, ValueCarrier
-from .editor import Editor
+from .editor import PointEditor
 
 
-class GroundEditor(Editor, metaclass=ABCMeta):
-    def __init__(self, caller: Editor):
+class GroundEditor(PointEditor, metaclass=ABCMeta):
+    def __init__(self, caller: PointEditor):
         super().__init__(caller)
         self.gateway: Optional[Gateway] = None
         self.enable_overwrite = True
@@ -31,12 +30,12 @@ class GroundEditor(Editor, metaclass=ABCMeta):
 
 
 class Gateway(Requestor, ValueCarrier, metaclass=ABCMeta):
-    def __init__(self, editor: Editor):
+    def __init__(self, editor: PointEditor):
         self.editor = editor
         self.notion = editor.root_editor.notion
 
     def __str__(self):
-        return f"{type(self).__name__} from {self.editor}"
+        return f"{type(self).__name__}"
 
     @property
     def target_id(self):
@@ -64,8 +63,9 @@ def retry_request(func: Callable, recursion_limit=1, time_to_sleep=1):
                 return response
             except (JSONDecodeError, APIResponseError) as e:
                 if recursion == recursion_limit:
-                    print('오류 발생. Requests 내용::')
-                    pprint(self.unpack())
+                    print(f'Error occurred while executing {str(self)}.'
+                          'Request Value:')
+                    self.pprint()
                     raise e
                 recursion += 1
                 stopwatch(f'응답 재시도 {recursion}/{recursion_limit}회')
@@ -77,7 +77,7 @@ class LongGateway(Gateway):
     MAX_PAGE_SIZE = 100
     INF = int(1e5) - 1
 
-    def __init__(self, editor: Editor):
+    def __init__(self, editor: PointEditor):
         super().__init__(editor)
 
     @abstractmethod

@@ -6,21 +6,21 @@ from typing import Optional, Union
 from .block_contents import BlockContents, TextContents, \
     PageContentsAsIndepPage, PageContentsAsChildBlock
 from notion_py.interface.api_encode import RichTextContentsEncoder
-from notion_py.interface.parse import BlockChildrenParser
+from notion_py.interface.api_parse import BlockChildrenParser
 from ...gateway import GetBlockChildren, AppendBlockChildren
-from ...struct import Editor, BridgeEditor, GroundEditor, MasterEditor, drop_empty_request
-from ...struct.editor import AbstractEditor
+from ...struct import PointEditor, BridgeEditor, GroundEditor, MasterEditor, drop_empty_request
+from ...struct.editor import Editor
 
 
 class SupportedBlock(MasterEditor, metaclass=ABCMeta):
     @classmethod
-    def create_new(cls, caller: Editor):
+    def create_new(cls, caller: PointEditor):
         return cls(caller, '')
 
 
 class ChildBearingBlock(SupportedBlock):
     @abstractmethod
-    def __init__(self, caller: Union[Editor, AbstractEditor], block_id: str):
+    def __init__(self, caller: Union[PointEditor, Editor], block_id: str):
         super().__init__(caller, block_id)
         self.is_supported_type = True
         self.can_have_children = True
@@ -58,7 +58,7 @@ class ChildBearingBlock(SupportedBlock):
         return
 
 
-class BlockChildren(Editor):
+class BlockChildren(PointEditor):
     def __init__(self, caller: ChildBearingBlock):
         super().__init__(caller)
         self.caller = caller
@@ -145,12 +145,12 @@ class BlockChildren(Editor):
         return self._new.push_carrier(carrier)
 
 
-class BlockChildrenContainer(Editor, metaclass=ABCMeta):
+class BlockChildrenContainer(PointEditor, metaclass=ABCMeta):
     pass
 
 
 class NormalBlockChildrenContainer(BridgeEditor, BlockChildrenContainer):
-    def __init__(self, caller: Editor):
+    def __init__(self, caller: PointEditor):
         super().__init__(caller)
         self.values: list[SupportedBlock] = []
 
@@ -177,7 +177,7 @@ class NormalBlockChildrenContainer(BridgeEditor, BlockChildrenContainer):
 
 
 class NewBlockChildrenContainerWithIndepInlinePage(GroundEditor, BlockChildrenContainer):
-    def __init__(self, caller: Editor):
+    def __init__(self, caller: PointEditor):
         super().__init__(caller)
         self._chunks: list[list[ContentsBlock]] = []
         self._requests: list[Union[AppendBlockChildren, InlinePageBlockAsIndep]] = []
@@ -261,7 +261,7 @@ class NewBlockChildrenContainerWithIndepInlinePage(GroundEditor, BlockChildrenCo
 
 class NewBlockChildrenContainerWithChildInlinePage(
         GroundEditor, BlockChildrenContainer):
-    def __init__(self, caller: Editor):
+    def __init__(self, caller: PointEditor):
         super().__init__(caller)
         self._chunks: list[list[ContentsBlock]] = []
         self._requests: list[Union[AppendBlockChildren, InlinePageBlockAsIndep]] = []
@@ -347,7 +347,7 @@ class NewBlockChildrenContainerWithChildInlinePage(
 
 
 class ContentsBlock(ChildBearingBlock, metaclass=ABCMeta):
-    def __init__(self, caller: Union[Editor], block_id: str):
+    def __init__(self, caller: Union[PointEditor], block_id: str):
         super().__init__(caller, block_id)
         self.contents: Optional[BlockContents] = None
 
@@ -365,7 +365,7 @@ class ContentsBlock(ChildBearingBlock, metaclass=ABCMeta):
 
 
 class TextBlock(ContentsBlock):
-    def __init__(self, caller: Union[Editor], block_id: str):
+    def __init__(self, caller: Union[PointEditor], block_id: str):
         super().__init__(caller=caller, block_id=block_id)
         if isinstance(caller, NewBlockChildrenContainerWithIndepInlinePage):
             self.contents = TextContents(self, caller)
@@ -392,7 +392,7 @@ class TextBlock(ContentsBlock):
 
 
 class InlinePageBlockAsIndep(ContentsBlock):
-    def __init__(self, caller: Union[Editor], page_id: str):
+    def __init__(self, caller: Union[PointEditor], page_id: str):
         super().__init__(caller, page_id)
         self.contents = PageContentsAsIndepPage(self)
         self.agents.update(contents=self.contents)
@@ -415,7 +415,7 @@ class InlinePageBlockAsIndep(ContentsBlock):
 
 
 class InlinePageBlockAsChild(ContentsBlock):
-    def __init__(self, caller: Union[Editor], page_id: str):
+    def __init__(self, caller: Union[PointEditor], page_id: str):
         super().__init__(caller, page_id)
         if isinstance(caller, NewBlockChildrenContainerWithChildInlinePage):
             self.contents = PageContentsAsChildBlock(self, caller)
@@ -448,7 +448,7 @@ class UnsupportedBlock(MasterEditor):
     def master_name(self):
         return self.master_url
 
-    def __init__(self, block_id: str, caller: Optional[Editor] = None):
+    def __init__(self, block_id: str, caller: Optional[PointEditor] = None):
         super().__init__(caller, block_id)
 
     @property

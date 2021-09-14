@@ -1,11 +1,11 @@
 from .filter_maker import QueryFilterAgent
 from .filter_unit import QueryFilter, PlainFilter
 from .sort import QuerySort
-from notion_py.interface.struct import LongGateway, retry_request, Editor, PropertyFrame
+from notion_py.interface.struct import LongGateway, retry_request, PointEditor, PropertyFrame
 
 
 class Query(LongGateway):
-    def __init__(self, editor: Editor):
+    def __init__(self, editor: PointEditor):
         super().__init__(editor)
         self._filter_value = PlainFilter({})
         self.sort = QuerySort()
