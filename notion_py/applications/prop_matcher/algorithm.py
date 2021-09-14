@@ -46,8 +46,6 @@ class TernaryMatchAlgorithm:
         self.dom_to_ref = dom_to_ref
         self.ref_to_tar = ref_to_tar
         for dom in self.domain:
-            if self._is_already_matched(dom):
-                continue
             self._try_multi_match_by_ref(dom)
 
     def by_index(self, dom_to_tar, index_func: Callable):
