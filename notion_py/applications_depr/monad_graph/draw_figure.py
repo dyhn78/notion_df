@@ -1,7 +1,7 @@
 import networkx as nx
 from plotly import graph_objects as go
 
-from notion_py.applications_deprecated.monad_graph.self_related_dataframe import \
+from notion_py.applications_depr.monad_graph.self_related_dataframe import \
     SelfRelatedDatabaseFrameDeprecated
 
 

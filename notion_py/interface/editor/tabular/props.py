@@ -1,5 +1,3 @@
-from typing import Optional
-
 from notion_py.interface.api_encode import TabularPropertybyKey, PropertyEncoder
 from notion_py.interface.api_parse import PageParser
 from ...gateway import CreatePage, UpdatePage, RetrievePage

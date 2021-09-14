@@ -48,16 +48,10 @@ class BlockContentsParser:
 
     @classmethod
     def parse_retrieve_frag(cls, response_frag):
-        # TODO if necessary
         return cls.parse_retrieve(response_frag)
 
     @classmethod
-    def parse_update(cls):
-        pass  # there is no response for 'update_page'
-
-    @classmethod
     def parse_create_frag(cls, response_frag):
-        # TODO if necessary
         return cls.parse_retrieve(response_frag)
 
     def parser_unit(self, rich_block_object):

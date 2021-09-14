@@ -1,4 +1,4 @@
-from notion_py.applications_deprecated.read_scraper.reading_dataframe import BookReadingQuerymaker
+from notion_py.applications_depr.read_scraper.reading_dataframe import BookReadingQuerymaker
 from notion_py.interface.utility import stopwatch
 
 

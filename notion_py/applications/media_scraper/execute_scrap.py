@@ -1,11 +1,10 @@
 import re
-from pprint import pprint
 
-from ...interface import RootEditor, TypeName
-from ..page_ids import DatabaseInfo
 from .lib_entry import LibraryScraper
-from .yes24_entry import Yes24Scraper
 from .property_frame import reading_database_frame
+from .yes24_entry import Yes24Scraper
+from ..page_ids import DatabaseInfo
+from ...interface import RootEditor, TypeName
 from ...interface.utility import stopwatch
 
 

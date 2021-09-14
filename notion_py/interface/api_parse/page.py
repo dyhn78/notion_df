@@ -1,7 +1,9 @@
 from __future__ import annotations
 from typing import Union, Any, Callable, Iterator
+from inspect import signature
 
 from .rich_text import parse_rich_texts
+
 
 # find types by api_parse
 from notion_py.interface.struct import DateFormat
@@ -57,17 +59,11 @@ class PageParser:
         return self
 
     @classmethod
-    def parse_update(cls):
-        pass  # there is no response for 'update'
-
-    @classmethod
     def parse_create(cls, response: dict):
-        # TODO if necessary
         return cls.parse_retrieve(response)
 
     @classmethod
     def parse_query_frag(cls, response_frag: dict):
-        # TODO if necessary
         return cls.parse_retrieve(response_frag)
 
     def parser_unit(self, rich_property_object, prop_name: str):
@@ -90,14 +86,10 @@ class PageParser:
         parser: Union[Callable[[Any], Any], Callable[[Any, str], Any],
                       Callable[[Any, str, str], Any]] \
             = getattr(self, parser_name, lambda x: x)
-        try:
-            # TODO > how to auto-fill arguments?
-            result = parser(prop_object)
-        except TypeError:
-            try:
-                result = parser(prop_object, prop_name)
-            except TypeError:
-                result = parser(prop_object, prop_name, prop_type)
+        sig = signature(parser)
+        length = len(sig.parameters)
+        args = [prop_object, prop_name, prop_type][:length]
+        result = parser(*args)
 
         self.prop_types[prop_name] = self._current_prop_type
         return result

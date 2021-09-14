@@ -1,11 +1,9 @@
 from abc import ABCMeta, abstractmethod
 from typing import Optional
 
-from notion_py.interface.api_encode import \
-    TextContentsWriter, RichTextContentsEncoder, \
-    PageContentsWriterAsChildBlock, PageContentsWriterAsIndepPage, \
-    RichTextPropertyEncoder
-from notion_py.interface.api_parse import BlockContentsParser, PageParser
+from ...api_encode import TextContentsWriter, RichTextContentsEncoder, \
+    PageContentsWriterAsChildBlock, PageContentsWriterAsIndepPage, RichTextPropertyEncoder
+from ...api_parse import BlockContentsParser, PageParser
 from ...gateway import UpdateBlock, RetrieveBlock, UpdatePage, RetrievePage, CreatePage
 from ...struct import PointEditor, GroundEditor
 from ...utility import eval_empty
@@ -46,7 +44,7 @@ class TextContents(BlockContents, TextContentsWriter):
 
     @property
     def gateway(self):
-        if self.uncle is not None:
+        if self.yet_not_created:
             return self.uncle.gateway
         else:
             return self._gateway
@@ -62,7 +60,12 @@ class TextContents(BlockContents, TextContentsWriter):
         self.apply_block_parser(parser)
 
     def execute(self):
-        self.gateway.execute()
+        if self.yet_not_created:
+            self.uncle.gateway.execute()
+        else:
+            self._gateway.execute()
+            # TODO: update {self._read};
+            #  consider making PageParser yourself without response
 
     def push_carrier(self, carrier: RichTextContentsEncoder) -> RichTextContentsEncoder:
         return self.gateway.apply_contents(carrier)
@@ -89,6 +92,10 @@ class PageContentsAsIndepPage(BlockContents, PageContentsWriterAsIndepPage):
             parser = PageParser.parse_create(response)
             self.apply_page_parser(parser)
             self.gateway = UpdatePage(self)
+        else:
+            pass
+            # TODO: update {self._read};
+            #  consider making PageParser yourself without response
 
     def apply_page_parser(self, parser: PageParser):
         if parser.page_id:

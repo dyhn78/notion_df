@@ -12,6 +12,13 @@ class Editor(Requestor, metaclass=ABCMeta):
     def __init__(self, root_editor: AbstractRootEditor):
         self.root_editor = root_editor
 
+    @abstractmethod
+    def preview(self):
+        pass
+
+    def pprint(self, **kwargs):
+        pprint(self.preview(), **kwargs)
+
 
 class AbstractRootEditor(Editor):
     @abstractmethod
@@ -24,13 +31,6 @@ class PointEditor(Editor, metaclass=ABCMeta):
     def __init__(self, caller: Union[PointEditor, Editor]):
         self.caller = caller
         super().__init__(caller.root_editor)
-
-    @abstractmethod
-    def preview(self):
-        pass
-
-    def pprint(self, **kwargs):
-        pprint(self.preview(), **kwargs)
 
     @property
     def master(self) -> MasterEditor:

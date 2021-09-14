@@ -1,6 +1,5 @@
 import time
 from abc import ABCMeta, abstractmethod
-from json import JSONDecodeError
 from typing import Callable, Optional
 
 from notion_client.errors import APIResponseError
@@ -61,7 +60,7 @@ def retry_request(func: Callable, recursion_limit=1, time_to_sleep=1):
             try:
                 response = func(self, **kwargs)
                 return response
-            except (JSONDecodeError, APIResponseError) as e:
+            except APIResponseError as e:
                 if recursion == recursion_limit:
                     print(f'Error occurred while executing {str(self)}.'
                           'Request Value:')
