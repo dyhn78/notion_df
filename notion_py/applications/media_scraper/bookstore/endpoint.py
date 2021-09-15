@@ -1,11 +1,12 @@
 import re
 
-from .yes24_requests import scrap_yes24_url, scrap_yes24_metadata
+from .yes24_url import scrap_yes24_url
+from .yes24_metadata import scrap_yes24_metadata
 from notion_py.interface import TypeName
 from notion_py.interface.utility import stopwatch
 
 
-class Yes24Scraper:
+class BookstoreScraper:
     # TODO : yes24에 자료 없을 경우 대비해 알라딘 등 추가 필요.
     def __init__(self, handler):
         self.handler = handler
@@ -21,15 +22,15 @@ class Yes24Scraper:
             url = scrap_yes24_url(self.handler.get_names())
             self.set_url(url)
         if url:
-            if 'yes24' in self.handler.targets:
+            if 'bookstore' in self.handler.targets:
                 metadata = scrap_yes24_metadata(url)
                 contents = self.set_metadata(metadata)
                 self.set_contents_data(contents)
-            stopwatch(f'yes24: {url}')
+            stopwatch(f'bookstore: {url}')
 
     def get_url(self):
         url = self.props.read_at('url', default='')
-        if 'yes24' in url:
+        if 'bookstore' in url:
             return url
         else:
             return ''

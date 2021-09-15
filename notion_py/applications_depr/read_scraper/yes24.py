@@ -22,7 +22,7 @@ def scrap_yes24_url(book_name) -> str:
 
     try:
         url_part = book.attrs['href']
-        if 'yes24' not in url_part:
+        if 'bookstore' not in url_part:
             url = url_main_page + url_part
         else:
             url = url_part

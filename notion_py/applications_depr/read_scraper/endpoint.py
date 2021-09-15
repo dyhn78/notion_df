@@ -47,7 +47,7 @@ class BookScraper:
 
         if url:
             stopwatch(url)
-            if 'yes24' in page.targets:
+            if 'bookstore' in page.targets:
                 metadata = scrap_yes24_metadata(url)
                 page.set_yes24_metadata(metadata)
 

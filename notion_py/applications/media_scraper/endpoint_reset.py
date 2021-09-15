@@ -1,4 +1,4 @@
-from notion_py.applications.media_scraper.execute_scrap import ReadingDBEditor
+from notion_py.applications.media_scraper.endpoint_scrap import ReadingDBEditor
 from notion_py.interface import TypeName
 
 

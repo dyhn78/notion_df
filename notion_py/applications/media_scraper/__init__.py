@@ -1,2 +1,2 @@
-from .execute_scrap import MediaScraper
-from .execute_reset import ScrapStatusResetter
+from .endpoint_scrap import MediaScraper
+from .endpoint_reset import ScrapStatusResetter

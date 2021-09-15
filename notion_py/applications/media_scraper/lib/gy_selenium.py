@@ -3,7 +3,8 @@ from typing import Optional
 from selenium.common.exceptions import StaleElementReferenceException, \
     NoSuchElementException, NoSuchWindowException
 
-from .lib_selenium import retry_webdriver, try_twice, remove_emoji, SeleniumScraper
+from notion_py.applications.media_scraper.selenium import retry_webdriver, SeleniumScraper
+from notion_py.applications.media_scraper.helpers import try_method_twice, remove_emoji
 
 tag_input_box = '#a_q'
 tag_search_button = '#sb1 > a'
@@ -20,7 +21,7 @@ class GoyangLibrary(SeleniumScraper):
     str_gajwa_lib = '가좌도서관'
     str_other_lib = '고양시 상호대차'
 
-    @try_twice
+    @try_method_twice
     @retry_webdriver
     def execute(self, book_name: str) -> Optional[dict]:
         book_name = remove_emoji(book_name)

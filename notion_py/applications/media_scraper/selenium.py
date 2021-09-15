@@ -1,10 +1,8 @@
 import os
-from typing import Callable, Any
-
-import emoji
+from typing import Callable
 from selenium import webdriver
-from selenium.common.exceptions import NoSuchElementException, \
-    StaleElementReferenceException
+from selenium.common.exceptions import \
+    NoSuchElementException, StaleElementReferenceException
 from selenium.webdriver.chrome.options import Options
 
 from notion_py.interface.utility import stopwatch
@@ -24,21 +22,6 @@ def retry_webdriver(method: Callable, recursion_limit=3) -> Callable:
             response = wrapper(self, recursion=recursion + 1)
         return response
     return wrapper
-
-
-def try_twice(function: Callable[[Any, str], Any]):
-    def wrapper(self, strings: tuple[str, str]):
-        first_str, second_str = strings
-        has_true_name = second_str and (second_str != first_str)
-        result = function(self, first_str)
-        if not result and has_true_name:
-            result = function(self, second_str)
-        return result
-    return wrapper
-
-
-def remove_emoji(text):
-    return emoji.get_emoji_regexp().sub(u'', text)
 
 
 class SeleniumScraper:

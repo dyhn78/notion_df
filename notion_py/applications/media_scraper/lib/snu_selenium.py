@@ -1,7 +1,8 @@
 from urllib import parse
 from selenium.common.exceptions import NoSuchElementException
 
-from .lib_selenium import retry_webdriver, try_twice, SeleniumScraper
+from ..selenium import retry_webdriver, SeleniumScraper
+from ..helpers import try_method_twice
 
 
 class SNULibrary(SeleniumScraper):
@@ -9,7 +10,7 @@ class SNULibrary(SeleniumScraper):
                    'div.search-result-availability-line-wrapper ' \
                    '> prm-search-result-availability-line > div > div > button '
 
-    @try_twice
+    @try_method_twice
     @retry_webdriver
     def execute(self, book_name: str) -> str:
 
@@ -39,35 +40,3 @@ class SNULibrary(SeleniumScraper):
         return lib_info
         # TODO 책 제목을 출력하고, 올바른 책을 선택한 게 맞는지 (화면에 출력해서?) 확인하는
         #  간단한 기능들을 구현할 것.
-
-
-"""
-import requests
-from bs4 import BeautifulSoup
-
-
-@try_twice
-def scrap_snu_library(book_name) -> str:
-    parsedname = parse.quote(book_name)
-    url = f'https://primoapac01.hosted.exlibrisgroup.com/primo-explore/search?query' \
-          f'=any,contains,{parsedname}&tab=all' \ 
-          f'&search_scope=ALL&vid=82SNU&mfacet=rtype,include,print_book,' \
-          f'1&mfacet=library,exclude,DPT,' \ 
-          f'1&mfacet=library,exclude,HD_CHEM_BIO,1&mfacet=library,exclude,HD_DIGIT,' \
-          f'1&mfacet=library,exclude,KYU,' \ 
-          f'1&mfacet=library,exclude,MUSEUM,1&offset=0&pcAvailability=false '
-    response = requests.post(url)
-    soup = BeautifulSoup(response.text, 'html5lib')
-
-    tag_lib_info = 'div.result-item-text.layout-fill.layout-column.flex >' \
-                   'div.search-result-availability-line_dict-wrapper > ' \
-                   'prm-search-result-availability-line_dict > div > div > button'
-
-    lib_info = ''
-    try:
-        lib_info = soup.select_one(tag_lib_info).text
-    except AttributeError:
-        pass
-    finally:
-        return lib_info
-"""

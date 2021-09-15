@@ -44,7 +44,7 @@ class ReadingPage(TabularPageDeprecated):
 
 class BookReadingPage(ReadingPage):
     MEDIA_TYPES = ['📖단행본', '☕연속간행물', '✒학습자료']
-    DEFAULT_SCRAPER_OPTION = {'yes24', 'gy_lib', 'snu_lib'}
+    DEFAULT_SCRAPER_OPTION = {'bookstore', 'gy_lib', 'snu_lib'}
     LOCAL_EDIT_OPTIONS = {'append': (False, 'a'),
                           'continue': (False, 'r'),
                           'overwrite': (True, 'w')}
@@ -66,7 +66,7 @@ class BookReadingPage(ReadingPage):
         self.props.set_overwrite(props_option)
         self.children.set_overwrite(children_option)
         if edit_option == 'continue':
-            self.targets.remove('yes24')
+            self.targets.remove('bookstore')
 
     def set_edit_status(self):
         self.set_overwrite_option()
@@ -88,7 +88,7 @@ class BookReadingPage(ReadingPage):
 
     def get_yes24_url(self):
         url = self.props.reads[self.PROP_NAME['url']]
-        if 'yes24' in url:
+        if 'bookstore' in url:
             return url
         return ''
 

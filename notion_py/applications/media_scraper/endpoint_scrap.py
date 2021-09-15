@@ -1,11 +1,10 @@
 import re
 
-from .lib_entry import LibraryScraper
 from .prop_frame import reading_database_frame
-from .yes24_entry import Yes24Scraper
+from .lib import LibraryScraper
+from .bookstore import BookstoreScraper
 from ..page_ids import DatabaseInfo
-from ...interface import RootEditor, TypeName
-from ...interface.utility import stopwatch
+from ...interface import RootEditor, TypeName, stopwatch
 
 
 class ReadingDBEditor:
@@ -22,8 +21,8 @@ class MediaScraper(ReadingDBEditor):
     def __init__(self, targets=None):
         super().__init__()
         if targets is None:
-            # targets = {'yes24', 'gy_lib', 'snu_lib'}
-            targets = {'yes24'}
+            # targets = {'bookstore', 'gy_lib', 'snu_lib'}
+            targets = {'bookstore'}
         self.targets = targets
 
     def execute(self, page_size=0):
@@ -61,15 +60,15 @@ class PageHandler:
         self.status = ''
         self.rich_overwrite_option = self.get_overwrite_option()
         if self.rich_overwrite_option == 'continue':
-            self.targets.remove('yes24')
+            self.targets.remove('bookstore')
 
     def execute(self):
         if not self.targets:
             return
         stopwatch(f'개시: {self.page.title}')
-        if 'yes24' in self.targets:
-            yes24 = Yes24Scraper(self)
-            yes24.execute()
+        if 'bookstore' in self.targets:
+            bkst = BookstoreScraper(self)
+            bkst.execute()
         if any(lib in self.targets for lib in ['snu_lib', 'gy_lib']):
             lib = LibraryScraper(self)
             lib.execute()
