@@ -104,6 +104,6 @@ class LongGateway(Gateway):
 
             comments = f'{page_retrieved} 개 완료'
             if self.target_name:
-                comments = f'{self.target_name} →' + comments
+                comments = f'{self.target_name} → ' + comments
             stopwatch(comments)
         return result

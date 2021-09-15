@@ -1,7 +1,7 @@
 from typing import Union
 
-from .lib_gy import GoyangLibrary
-from .lib_snu import SNULibrary
+from .gy_selenium import GoyangLibrary
+from .snu_selenium import SNULibrary
 from notion_py.interface import TypeName
 from notion_py.interface.utility import stopwatch
 
