@@ -47,7 +47,6 @@ class PropertyFrame:
                                    list[PropertyFrameUnit],
                                    PropertyFrame]]):
         self.values: list[PropertyFrameUnit] = []
-        self.key_to_name: dict[str, str] = {}
         self.by_key: dict[str, PropertyFrameUnit] = {}
         self.by_name: dict[str, PropertyFrameUnit] = {}
         units = []
@@ -68,6 +67,9 @@ class PropertyFrame:
     def type_of(self, prop_name: str):
         return self.by_name[prop_name].data_type
 
+    def keys(self):
+        return self.by_key.keys()
+
     def __iter__(self):
         return iter(self.values)
 
@@ -85,7 +87,6 @@ class PropertyFrame:
         self.values.append(frame_unit)
         self.by_name.update({frame_unit.name: frame_unit})
         if frame_unit.key:
-            self.key_to_name.update({frame_unit.key: frame_unit.name})
             self.by_key.update({frame_unit.key: frame_unit})
 
     def add_alias(self, original_key: str, new_key: str):

@@ -16,7 +16,7 @@ class MonoMatchAlgorithm:
 
 class TernaryMatchAlgorithm:
     def __init__(self, domain: TypeName.pagelist,
-                 target: TypeName.pagelist,
+                 target: TypeName.pagelist = None,
                  reference: TypeName.pagelist = None):
         self.domain = domain
         self.target = target
@@ -109,18 +109,6 @@ class TernaryMatchAlgorithm:
             return True
         self._write_tar_id(dom, tar_id)
 
-    def _try_multi_match_by_ref(self, dom: TypeName.tabular_page):
-        ref_ids = dom.props.read_at(self.dom_to_ref)
-        for ref_id in ref_ids:
-            if ref_id in self.reference.keys():
-                break
-        else:
-            return True
-        ref = self.reference.by_id[ref_id]
-        tar_ids = ref.props.read_at(self.ref_to_tar)
-        for tar_id in tar_ids:
-            self._write_tar_id(dom, tar_id)
-
     def _try_match_by_index(self, dom: TypeName.tabular_page):
         dom_index_value = dom.props.read_at(self.dom_index)
         tar_index_value = self.index_func(dom_index_value)
@@ -130,18 +118,41 @@ class TernaryMatchAlgorithm:
         tar_id = tar.master_id
         self._write_tar_id(dom, tar_id)
 
-    def _try_match_by_index_then_create(
-            self, dom: TypeName.tabular_page):
+    def _try_match_by_index_then_create(self, dom: TypeName.tabular_page):
         if not (tar_index_value := self._try_match_by_index(dom)):
             return False
         tar = self.target.new_tabular_page()
         tar.props.write_at(self.tar_index, tar_index_value)
         return [tar, tar_index_value]
 
-    def _write_tar_id(self, dom, tar_id):
+    def _write_tar_id(self, dom: TypeName.tabular_page, tar_id):
         values = dom.props.read_at(self.dom_to_tar)
         if tar_id in values:
             return
         else:
             values.append(tar_id)
+            dom.props.write_at(self.dom_to_tar, values)
+
+    def _try_multi_match_by_ref(self, dom: TypeName.tabular_page):
+        ref_ids = dom.props.read_at(self.dom_to_ref)
+        for ref_id in ref_ids:
+            if ref_id in self.reference.keys():
+                break
+        else:
+            return True
+        ref = self.reference.by_id[ref_id]
+        tar_ids = ref.props.read_at(self.ref_to_tar)
+
+        values: list = dom.props.read_at(self.dom_to_tar)
+        print(dom.master_name)
+        print(ref.master_name)
+        print(tar_ids)
+        diff = False
+        for tar_id in tar_ids:
+            if tar_id in values:
+                pass
+            else:
+                diff = True
+                values.append(tar_id)
+        if diff:
             dom.props.write_at(self.dom_to_tar, values)

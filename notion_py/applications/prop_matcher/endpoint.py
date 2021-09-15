@@ -55,8 +55,7 @@ class PropertyMatcher:
         TernaryMatchAlgorithm(self.journals, self.dates).by_index_then_create(
             'to_dates', DatePageProcessor.get_title)
         for pagelist in [self.shots, self.memos, self.writings]:
-            TernaryMatchAlgorithm(pagelist, self.dates,
-                                  self.journals).by_ref_then_index_then_create(
+            TernaryMatchAlgorithm(pagelist, self.dates, self.journals).by_ref_then_index_then_create(
                 'to_dates', 'to_journals', 'to_dates',
                 DatePageProcessor.get_title)
 
@@ -72,4 +71,5 @@ class PropertyMatcher:
     def match_to_projects(self):
         alg = TernaryMatchAlgorithm(self.writings, None, self.shots)
         for to_project in ['to_themes', 'to_readings', 'to_channels']:
+            print(to_project)
             alg.multi_by_ref(to_project, 'to_shots', to_project)

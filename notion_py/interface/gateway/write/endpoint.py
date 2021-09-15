@@ -39,7 +39,8 @@ class CreatePage(Gateway, PagePropertyStash, BlockChildrenStash, ArchiveToggle):
     @retry_request
     def execute(self) -> dict:
         res = self.notion.pages.create(**self.unpack())
-        stopwatch(' '.join(['create', page_id_to_url(res['id'])]))
+        stopwatch(' '.join(['create', page_id_to_url(res['id']),
+                            '\n\t', f"<{self.target_name}>"]))
         self.clear()
         return res
 
@@ -67,7 +68,8 @@ class UpdatePage(Gateway, PagePropertyStash, ArchiveToggle):
     @retry_request
     def execute(self) -> dict:
         res = self.notion.pages.update(**self.unpack())
-        stopwatch(' '.join(['update', page_id_to_url(self.target_id)]))
+        stopwatch(' '.join(['update', page_id_to_url(self.target_id),
+                            '\n\t', f"<{self.target_name}>"]))
         self.clear()
         return res
 
@@ -91,7 +93,8 @@ class AppendBlockChildren(Gateway, BlockChildrenStash):
     @retry_request
     def execute(self) -> dict:
         res = self.notion.blocks.children.append(**self.unpack())
-        stopwatch(' '.join(['append', page_id_to_url(self.target_id)]))
+        stopwatch(' '.join(['append', page_id_to_url(self.target_id),
+                            '\n\t', f"<{self.target_name}>"]))
         self.clear()
         return res
 
@@ -121,6 +124,7 @@ class UpdateBlock(Gateway):
         if self._contents_value is None:
             return {}
         res = self.notion.blocks.update(**self.unpack())
-        stopwatch(' '.join(['update', page_id_to_url(self.target_id)]))
+        stopwatch(' '.join(['update', page_id_to_url(self.target_id),
+                            '\n\t', f"<{self.target_name}>"]))
         self.clear()
         return res

@@ -14,7 +14,7 @@ class DateFormat:
         return self.__str__()
 
     def __str__(self):
-        return f"start: {str(self.start)}, end: {str(self.end)}"
+        return '{' + f"start: {str(self.start)}, end: {str(self.end)}" + '}'
 
     @classmethod
     def from_isoformat(cls, start_datestring: str,

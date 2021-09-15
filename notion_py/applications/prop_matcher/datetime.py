@@ -7,12 +7,10 @@ from notion_py.interface import TypeName
 class ProcessTimeProperty:
     korean_weekday = ["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"]
 
-    def __init__(self, date_time: datetimeclass, plain_date=False):
+    def __init__(self, date_time: datetimeclass, adjust_5_hours=False):
         self.datetime = date_time + datetime.timedelta(hours=9)
-        if plain_date:
-            self.date = self.datetime.date()
-        else:
-            self.date = (self.datetime + datetime.timedelta(hours=-5)).date()
+        timedelta = -5 if adjust_5_hours else 0
+        self.date = (self.datetime + datetime.timedelta(hours=timedelta)).date()
 
     def strf_dig6(self):
         return self.date.strftime("%y%m%d")
@@ -43,19 +41,19 @@ class ProcessTimeProperty:
 class DatePageProcessor:
     @staticmethod
     def get_title(date: TypeName.date_format):
-        return ProcessTimeProperty(date.start, plain_date=True).strf_dig6_and_weekday()
+        return ProcessTimeProperty(date.start).strf_dig6_and_weekday()
 
 
 class PeriodPageProcessor:
     @staticmethod
     def get_title(date: TypeName.date_format):
-        base = ProcessTimeProperty(date.start, plain_date=True)
+        base = ProcessTimeProperty(date.start)
         return base.strf_year_and_week()
 
     @staticmethod
     def writer(prop_key: str):
         def wrapper(page: TypeName.tabular_page, index_value: TypeName.date_format):
-            base = ProcessTimeProperty(index_value.start, plain_date=True)
+            base = ProcessTimeProperty(index_value.start)
             daterange = TypeName.date_format(
                 start_date=base.first_day_of_week(),
                 end_date=base.last_day_of_week()

@@ -59,6 +59,10 @@ class TabularProperty(GroundEditor, TabularPropertybyKey):
     def read_of_all(self):
         return self._read_plain
 
+    def read_at_all(self):
+        return {key: self._read_plain[self._name_at(key)]
+                for key in self.frame.keys()}
+
     def read_rich_of_all(self):
         return self._read_rich
 
@@ -66,7 +70,8 @@ class TabularProperty(GroundEditor, TabularPropertybyKey):
         return self._read_full
 
     def read_full_at_all(self):
-        return {key: self._read_full[self._name_at(key)] for key in self.frame}
+        return {key: self._read_full[self._name_at(key)]
+                for key in self.frame.keys()}
 
     def read_of(self, prop_name: str, default=None):
         if not isinstance(prop_name, str):
