@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from .algorithm import TernaryMatchAlgorithm, MonoMatchAlgorithm
-from .datetime import DatePageProcessor, PeriodPageProcessor
+from .date_index import DatePageProcessor, PeriodPageProcessor
 from .prop_frame import Frames
 from .query_maker import QueryMaker
 from ..page_ids import DatabaseInfo
@@ -52,12 +52,14 @@ class PropertyMatcher:
             MonoMatchAlgorithm(pagelist).to_itself('self_ref')
 
     def match_to_dates(self):
-        TernaryMatchAlgorithm(self.journals, self.dates).by_index_then_create(
-            'to_dates', DatePageProcessor.get_title)
+        algorithm = TernaryMatchAlgorithm(self.journals, self.dates)
+        algorithm.by_index_then_create('to_dates', DatePageProcessor.get_title)
         for pagelist in [self.shots, self.memos, self.writings]:
-            TernaryMatchAlgorithm(pagelist, self.dates, self.journals).by_ref_then_index_then_create(
+            algorithm = TernaryMatchAlgorithm(pagelist, self.dates, self.journals)
+            algorithm.by_ref_then_index_then_create(
                 'to_dates', 'to_journals', 'to_dates',
-                DatePageProcessor.get_title)
+                DatePageProcessor.get_title
+            )
 
     def match_to_periods(self):
         TernaryMatchAlgorithm(self.dates, self.periods).by_index_then_create(
@@ -65,11 +67,10 @@ class PropertyMatcher:
             tar_writer_func=PeriodPageProcessor.writer(
                 'manual_date_range'))
         for pagelist in [self.journals, self.shots, self.memos, self.writings]:
-            TernaryMatchAlgorithm(pagelist, self.periods, self.dates).by_ref(
-                'to_periods', 'to_dates', 'to_periods')
+            algorithm = TernaryMatchAlgorithm(pagelist, self.periods, self.dates)
+            algorithm.by_ref('to_periods', 'to_dates', 'to_periods')
 
     def match_to_projects(self):
-        alg = TernaryMatchAlgorithm(self.writings, None, self.shots)
+        algorithm = TernaryMatchAlgorithm(self.writings, None, self.shots)
         for to_project in ['to_themes', 'to_readings', 'to_channels']:
-            print(to_project)
-            alg.multi_by_ref(to_project, 'to_shots', to_project)
+            algorithm.multi_by_ref(to_project, 'to_shots', to_project)

@@ -57,7 +57,7 @@ class SelfRelatedPageListDeprecated(PageListDeprecated):
                 res.append(self.page_by_id(page_id))
             except KeyError:
                 # if not res:
-                #    from notion_py.others import page_id_to_url
+                #    from notion_py.utility import page_id_to_url
                 #    print(alien_page.title, prop_name, page_id_to_url(page_id))
                 continue
         return res

@@ -144,9 +144,6 @@ class TernaryMatchAlgorithm:
         tar_ids = ref.props.read_at(self.ref_to_tar)
 
         values: list = dom.props.read_at(self.dom_to_tar)
-        print(dom.master_name)
-        print(ref.master_name)
-        print(tar_ids)
         diff = False
         for tar_id in tar_ids:
             if tar_id in values:

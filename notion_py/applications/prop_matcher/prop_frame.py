@@ -7,8 +7,14 @@ class Frames:
 
     _TITLE = _Unit(key='title', name='📚제목')
     _AUTO_DATE_U = _Unit(key='auto_date', name='날짜값⏲️')
-    _AUTO_DATE = _Frame(_AUTO_DATE_U)
-    _AUTO_DATE.add_alias('auto_date', 'index_as_domain')
+    _AUTO_DATETIME_U = _Unit(key='auto_datetime', name='날짜⏲️')
+    _AUTO_DATE = _Frame(_AUTO_DATE_U, _AUTO_DATETIME_U)
+    _AUTO_DATE.add_alias('auto_datetime', 'index_as_domain')
+    """날짜값 속성은 무슨 그리니치 시간대를 기준으로 받아오는 건지,
+    노션 클라이언트에 뜨는 값과 API로 받아오는 값이 다르다.
+    웬만하면 노션 날짜 수식을 믿지 말고, raw data를 가져와서 이쪽 파이썬 코드에서
+    처리하는 식으로 움직이자.
+    """
 
     _TO_PERIODS = _Unit(key='to_periods', name='🧶기간')
     _TO_DATES = _Unit(key='to_dates', name='🧶날짜')
