@@ -62,8 +62,7 @@ def retry_request(func: Callable, recursion_limit=1, time_to_sleep=1):
                 return response
             except APIResponseError as e:
                 if recursion == recursion_limit:
-                    print(f'Error occurred while executing {str(self)}.'
-                          'Request Value:')
+                    print(f'Error occurred while executing {str(self)} ::\n')
                     self.pprint()
                     raise e
                 recursion += 1

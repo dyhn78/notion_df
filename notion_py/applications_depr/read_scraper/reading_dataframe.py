@@ -42,14 +42,14 @@ class BookReadingQuerymaker:
     def query_regulars(cls, page_size=0):
         query = cls.df.make_query()
         frame = query.make_filter.select_of(cls.df.frame['media_type'].name)
-        ft = frame.equals_to_any(*cls.df.frame['media_type'].values['book'])
+        ft = frame.equals_to_any(*cls.df.frame['media_type'].pagelist['book'])
         frame = query.make_filter.select_of(cls.df.frame['edit_status'].name)
         ft_status = frame.equals_to_any(
-            *[cls.df.frame['edit_status'].values[key]
+            *[cls.df.frame['edit_status'].pagelist[key]
               for key in ['append', 'overwrite', 'continue']])
         ft_status |= frame.is_empty()
         ft &= ft_status
-        ft &= frame.does_not_equal(cls.df.frame['edit_status'].values['done'])
+        ft &= frame.does_not_equal(cls.df.frame['edit_status'].pagelist['done'])
         query.push_filter(ft)
         pagelist = cls.df.send_query_deprecated(query, page_size=page_size)
         # TODO > pagelist.retrieve_childrens()
@@ -59,10 +59,10 @@ class BookReadingQuerymaker:
     def query_for_library_resets(cls, page_size=0):
         query = cls.df.make_query()
         frame = query.make_filter.select_of(cls.df.frame['media_type'].name)
-        ft = frame.equals_to_any(*cls.df.frame['media_type'].values)
+        ft = frame.equals_to_any(*cls.df.frame['media_type'].pagelist)
         frame = query.make_filter.select_of(cls.df.frame['edit_status'].name)
         ft &= frame.equals_to_any(
-            *[cls.df.frame['edit_status'].values[key]
+            *[cls.df.frame['edit_status'].pagelist[key]
               for key in ['url_missing', 'lib_missing']])
         # frame = query.make_filter.by_checkbox(
         #      cls.df._unit.dataframe.tabular['not_available'].name)

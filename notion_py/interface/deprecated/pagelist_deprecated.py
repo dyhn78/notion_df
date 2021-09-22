@@ -47,7 +47,7 @@ class PageListDeprecated:
         parsed_query = PageListParser.from_query_response(query_response)
         self.values: list[TabularPageDeprecated] \
             = [frame.unit(parsed_page, self.PROP_NAME, self.frame.database_id)
-               for parsed_page in parsed_query.values]
+               for parsed_page in parsed_query.pagelist]
 
         self._page_by_id = None
         self._id_by_title = None
@@ -72,7 +72,7 @@ class PageListDeprecated:
             page_id, response = result
             page = self.page_by_id(page_id)
             parsed_blocklist = BlockChildrenParser.from_response(response)
-            page.children.fetch(parsed_blocklist.children)
+            page.children.fetch_children(parsed_blocklist.children)
 
     def apply(self):
         result = []

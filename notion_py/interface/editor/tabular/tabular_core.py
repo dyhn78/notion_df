@@ -4,7 +4,7 @@ from pprint import pprint
 from typing import Optional, Union
 
 from .props import TabularProperty
-from ..inline.inline_core import ChildBearingBlock
+from ..inline.inline_core import ChildBearingBlock, SupportedBlock
 from ...api_parse import PageListParser, DatabaseParser
 from ...gateway import RetrieveDatabase, Query
 from ...struct import Editor, PointEditor, BridgeEditor, PropertyFrame, MasterEditor
@@ -49,27 +49,36 @@ class PageList(PointEditor):
         super().__init__(caller)
         self.caller = caller
         self.frame = caller.frame
-        self._normal = NormalPageListContainer(self)
-        self._new = NewPageListContainer(self)
+        self._normal = PageListUpdater(self)
+        self._new = PageListCreator(self)
         self.query_form = Query(self)
 
     def __bool__(self):
         any([self._normal, self._new])
 
     def __iter__(self):
-        return iter(self.values())
+        return iter(self.elements)
 
     def __getitem__(self, page_id: str):
         return self.by_id[page_id]
 
+    @property
+    def elements(self) -> list[TabularPageBlock]:
+        return self._normal.values + self._new.values
+
+    @property
+    def descendants(self) -> list[SupportedBlock]:
+        res = []
+        res.extend(self.elements)
+        for page in self.elements:
+            res.extend(page.sphere.descendants)
+        return res
+
     def keys(self):
         return self.by_id.keys()
 
-    def values(self) -> list[TabularPageBlock]:
-        return self._normal.values + self._new.values
-
     def set_overwrite_option(self, option: bool):
-        for child in self.values():
+        for child in self.elements:
             child.set_overwrite_option(option)
 
     @property
@@ -83,9 +92,9 @@ class PageList(PointEditor):
     def by_index_of(self, prop_name: str) -> dict[str, TabularPageBlock]:
         try:
             return {page.props.read_of(prop_name): page
-                    for page in self.values()}
+                    for page in self.elements}
         except TypeError:
-            page_object = self.values()[0]
+            page_object = self.elements[0]
             pprint(f"key : {page_object.props.read_of(prop_name)}")
             pprint(f"value : {page_object.master_id}")
             raise TypeError
@@ -95,7 +104,7 @@ class PageList(PointEditor):
 
     def by_value_of(self, prop_name: str) -> dict[str, list[TabularPageBlock]]:
         res = defaultdict(list)
-        for page in self.values():
+        for page in self.elements:
             res[page.props.read_of(prop_name)].append(page)
         return res
 
@@ -121,7 +130,7 @@ class PageList(PointEditor):
         self._normal.values.extend(response)
 
 
-class NormalPageListContainer(BridgeEditor):
+class PageListUpdater(BridgeEditor):
     def __init__(self, caller: PageList):
         super().__init__(caller)
         self.values: list[TabularPageBlock] = []
@@ -138,7 +147,7 @@ class NormalPageListContainer(BridgeEditor):
             self.by_title[page.title] = page
 
 
-class NewPageListContainer(BridgeEditor):
+class PageListCreator(BridgeEditor):
     def __init__(self, caller: PageList):
         super().__init__(caller)
         self.caller = caller
@@ -156,14 +165,14 @@ class NewPageListContainer(BridgeEditor):
 
     def execute(self):
         for child in self:
-            child.fetch()  # individual tabular_page will update themselves.
+            child.fetch_children()  # individual tabular_page will update themselves.
         res = self.values.copy()
         self.values.clear()
         return res
 
 
 class TabularPageBlock(ChildBearingBlock):
-    def __init__(self, caller: Union[Editor, NormalPageListContainer],
+    def __init__(self, caller: Union[Editor, PageListUpdater],
                  page_id: str,
                  frame: Optional[PropertyFrame] = None):
         super().__init__(caller=caller, block_id=page_id)
@@ -179,21 +188,21 @@ class TabularPageBlock(ChildBearingBlock):
 
     def preview(self):
         return {'tabular': self.props.preview(),
-                'children': self.children.preview()}
+                'children': self.sphere.preview()}
 
     def execute(self):
         self.props.execute()
-        self.children.execute()
+        self.sphere.execute()
 
     def fully_read(self):
         return {'type': 'page',
                 'tabular': self.props.read_of_all(),
-                'children': self.children.reads()}
+                'children': self.sphere.reads()}
 
     def fully_read_rich(self):
         return {'type': 'page',
                 'tabular': self.props.read_rich_of_all(),
-                'children': self.children.reads_rich()}
+                'children': self.sphere.reads_rich()}
 
     def set_overwrite_option(self, option: bool):
         self.props.set_overwrite_option(option)

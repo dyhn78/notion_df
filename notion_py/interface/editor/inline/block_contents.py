@@ -2,7 +2,7 @@ from abc import ABCMeta, abstractmethod
 from typing import Optional
 
 from ...api_encode import TextContentsWriter, RichTextContentsEncoder, \
-    PageContentsWriterAsChildBlock, PageContentsWriterAsIndepPage, RichTextPropertyEncoder
+    PageContentsWriterAsIndepPage, RichTextPropertyEncoder, PageContentsWriterAsChildBlock
 from ...api_parse import BlockContentsParser, PageParser
 from ...gateway import UpdateBlock, RetrieveBlock, UpdatePage, RetrievePage, CreatePage
 from ...struct import PointEditor, GroundEditor
@@ -60,12 +60,9 @@ class TextContents(BlockContents, TextContentsWriter):
         self.apply_block_parser(parser)
 
     def execute(self):
-        if self.yet_not_created:
-            self.uncle.gateway.execute()
-        else:
-            self._gateway.execute()
-            # TODO: update {self._read};
-            #  consider making PageParser yourself without response
+        return self.gateway.execute()
+        # TODO: update {self._read};
+        #  consider making PageParser yourself without response
 
     def push_carrier(self, carrier: RichTextContentsEncoder) -> RichTextContentsEncoder:
         return self.gateway.apply_contents(carrier)

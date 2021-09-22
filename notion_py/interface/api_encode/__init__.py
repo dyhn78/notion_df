@@ -1,5 +1,5 @@
 from .contents.maker import \
-    ContentsEncoder, RichTextContentsEncoder, PageContentsEncoderAsChildBlock
+    ContentsEncoder, RichTextContentsEncoder
 from .contents.wrapper import \
     TextContentsWriter, RichTextContentsWriter, PageContentsWriterAsChildBlock, \
     PageContentsWriterAsIndepPage

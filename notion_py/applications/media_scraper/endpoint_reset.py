@@ -6,7 +6,7 @@ class ScrapStatusResetter(ReadingDBEditor):
     def execute(self):
         self.make_query()
         self.pagelist.run_query()
-        for page in self.pagelist.values:
+        for page in self.pagelist.elements:
             self.edit(page)
 
     def edit(self, page: TypeName.tabular_page):

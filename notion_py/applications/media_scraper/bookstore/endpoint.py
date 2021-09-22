@@ -12,7 +12,7 @@ class BookstoreScraper:
         self.handler = handler
         self.page: TypeName.tabular_page = handler.page
         self.props = self.page.props
-        self.children = self.page.children
+        self.children = self.page.pagelist
         self.subpage_id = ''
 
     def execute(self):
@@ -57,18 +57,15 @@ class BookstoreScraper:
         writer.mention_page(subpage.master_id)
 
     def get_subpage(self) -> TypeName.inline_page:
-        for block in self.children.values:
+        for block in self.children.pagelist:
             if isinstance(block, TypeName.inline_page) and \
                     self.page.title in block.contents.read():
+                block.contents.write_title(f'={self.page.title}')
                 break
         else:
-            block1 = self.children.create_text_block()
-            block1.contents.write_heading_2('abc')
             block = self.children.create_inline_page()
-            block.contents.write_title(f'={self.page.title}')
-            self.children.execute()
-            print('yeah')
-        block.contents.write_title(f'={self.page.title}')
+            block.contents.write_title(f'x={self.page.title}')
+            block.execute()
         return block
 
     @staticmethod
@@ -83,7 +80,7 @@ class BookstoreScraper:
         small_chapter = re.compile(r"\d+[.:] ")
 
         for text_line in contents:
-            child = subpage.children.create_text_block()
+            child = subpage.pagelist.create_text_block()
             contents = child.contents
             if re.findall(section, text_line) or re.findall(section_eng, text_line):
                 contents.write_heading_2(text_line)

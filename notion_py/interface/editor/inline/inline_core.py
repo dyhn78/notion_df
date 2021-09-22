@@ -8,7 +8,8 @@ from .block_contents import BlockContents, TextContents, \
 from notion_py.interface.api_encode import RichTextContentsEncoder
 from notion_py.interface.api_parse import BlockChildrenParser
 from ...gateway import GetBlockChildren, AppendBlockChildren
-from ...struct import PointEditor, BridgeEditor, GroundEditor, MasterEditor, drop_empty_request
+from ...struct import PointEditor, BridgeEditor, GroundEditor, MasterEditor, \
+    drop_empty_request
 from ...struct.editor import Editor
 
 
@@ -26,13 +27,13 @@ class ChildBearingBlock(SupportedBlock):
         self.can_have_children = True
         self.has_children = False
 
-        self.children = BlockChildren(self)
-        self.agents.update(children=self.children)
+        self.sphere = BlockSphere(self)
+        self.agents.update(children=self.sphere)
 
     def goto_last_children(self) -> SupportedBlock:
         """if not possible, the cursor will stay at its position."""
         try:
-            cursor = self.children[-1]
+            cursor = self.sphere[-1]
         except IndexError:
             print('indentation not possible!')
             cursor = self
@@ -47,7 +48,7 @@ class ChildBearingBlock(SupportedBlock):
     @drop_empty_request
     def execute(self):
         """
-        1. since self.children go first than self.new_children,
+        1. since self.sphere go first than self.new_children,
             assigning a multi-indented structure will be executed top to bottom,
             regardless of indentation.
         2. the 'ground editors', self.contents or self.tabular,
@@ -58,26 +59,35 @@ class ChildBearingBlock(SupportedBlock):
         return
 
 
-class BlockChildren(PointEditor):
+class BlockSphere(PointEditor):
     def __init__(self, caller: ChildBearingBlock):
         super().__init__(caller)
         self.caller = caller
-        self._normal = NormalBlockChildrenContainer(self)
-        self._new = NewBlockChildrenContainerWithIndepInlinePage(self)
-        # self._new = NewBlockChildrenContainerWithChildInlinePage(self)
+        self._normal = BlockSphereUpdater(self)
+        # self._new = BlockSphereCreatorWithIndepInlinePage(self)
+        self._new = BlockSphereUpdaterWithChildInlinePage(self)
 
     @property
-    def values(self):
+    def children(self) -> list[SupportedBlock]:
         return self._normal.values + self._new.values
 
+    @property
+    def descendants(self) -> list[SupportedBlock]:
+        res = []
+        res.extend(self.children)
+        for child in self.children:
+            if isinstance(child, ChildBearingBlock):
+                res.extend(child.sphere.descendants)
+        return res
+
     def __iter__(self):
-        return iter(self.values)
+        return iter(self.children)
 
     def __getitem__(self, index: int):
-        return self.values[index]
+        return self.children[index]
 
     def __len__(self):
-        return len(self.values)
+        return len(self.children)
 
     def __bool__(self):
         return any([self._normal, self._new])
@@ -89,17 +99,17 @@ class BlockChildren(PointEditor):
             return parent
         raise ValueError
 
-    def fetch(self, page_size=0):
+    def fetch_children(self, page_size=0):
         gateway = GetBlockChildren(self)
         response = gateway.execute(page_size=page_size)
         parser = BlockChildrenParser(response)
         self._normal.apply_parser(parser)
 
     def fetch_descendants(self, page_size=0):
-        self.fetch(page_size)
+        self.fetch_children(page_size)
         for child in self._normal:
             if child.has_children and isinstance(child, ChildBearingBlock):
-                child.children.fetch_descendants(page_size)
+                child.sphere.fetch_descendants(page_size)
 
     def preview(self):
         return {'children': self._normal.preview(),
@@ -123,19 +133,19 @@ class BlockChildren(PointEditor):
     def create_inline_page(self) -> Union[InlinePageBlockAsIndep, InlinePageBlockAsChild]:
         return self._new.create_inline_page()
 
-    def indent_next_block(self) -> BlockChildren:
+    def indent_next_block(self) -> BlockSphere:
         """if not possible, the cursor will stay at its position."""
-        for child in reversed(self.values):
-            if hasattr(child, 'children') and isinstance(child, ChildBearingBlock):
-                return child.children
+        for child in reversed(self.children):
+            if isinstance(child, ChildBearingBlock):
+                return child.sphere
         else:
             print('indentation not possible!')
             return self
 
-    def exdent_next_block(self) -> BlockChildren:
+    def exdent_next_block(self) -> BlockSphere:
         """if not possible, the cursor will stay at its position."""
         try:
-            cursor = self.parent.children
+            cursor = self.parent.sphere
         except AttributeError:
             print('exdentation not possible!')
             cursor = self
@@ -145,11 +155,11 @@ class BlockChildren(PointEditor):
         return self._new.push_carrier(carrier)
 
 
-class BlockChildrenContainer(PointEditor, metaclass=ABCMeta):
+class BlockSphereAgent(PointEditor, metaclass=ABCMeta):
     pass
 
 
-class NormalBlockChildrenContainer(BridgeEditor, BlockChildrenContainer):
+class BlockSphereUpdater(BridgeEditor, BlockSphereAgent):
     def __init__(self, caller: PointEditor):
         super().__init__(caller)
         self.values: list[SupportedBlock] = []
@@ -176,10 +186,10 @@ class NormalBlockChildrenContainer(BridgeEditor, BlockChildrenContainer):
         return [child.fully_read_rich() for child in self]
 
 
-class NewBlockChildrenContainerWithIndepInlinePage(GroundEditor, BlockChildrenContainer):
+class BlockSphereCreatorWithIndepInlinePage(GroundEditor, BlockSphereAgent):
     def __init__(self, caller: PointEditor):
         super().__init__(caller)
-        self._chunks: list[list[ContentsBlock]] = []
+        self._chunks: list[list[ContentsBearingBlock]] = []
         self._requests: list[Union[AppendBlockChildren, InlinePageBlockAsIndep]] = []
         self.gateway = AppendBlockChildren(self)
         self._chunk_interrupted = True
@@ -197,7 +207,7 @@ class NewBlockChildrenContainerWithIndepInlinePage(GroundEditor, BlockChildrenCo
         return any(child for child in self)
 
     @property
-    def values(self) -> list[ContentsBlock]:
+    def values(self) -> list[ContentsBearingBlock]:
         res = []
         for chunk in self._chunks:
             if type(chunk) == list:
@@ -259,12 +269,11 @@ class NewBlockChildrenContainerWithIndepInlinePage(GroundEditor, BlockChildrenCo
         return self.gateway.apply_contents(carrier)
 
 
-class NewBlockChildrenContainerWithChildInlinePage(
-        GroundEditor, BlockChildrenContainer):
+class BlockSphereUpdaterWithChildInlinePage(
+        GroundEditor, BlockSphereAgent):
     def __init__(self, caller: PointEditor):
         super().__init__(caller)
-        self._chunks: list[list[ContentsBlock]] = []
-        self._requests: list[Union[AppendBlockChildren, InlinePageBlockAsIndep]] = []
+        self.values: list[ContentsBearingBlock] = []
         self.gateway = AppendBlockChildren(self)
         self._chunk_interrupted = True
 
@@ -280,94 +289,55 @@ class NewBlockChildrenContainerWithChildInlinePage(
     def __bool__(self):
         return any(child for child in self)
 
-    @property
-    def values(self) -> list[ContentsBlock]:
-        res = []
-        for chunk in self._chunks:
-            if type(chunk) == list:
-                res.extend(chunk)
-            else:
-                res.append(chunk)
-        return res
-
-    def preview(self):
-        res = []
-        for request in self._requests:
-            if isinstance(request, AppendBlockChildren):
-                res.append(request.unpack())
-            """elif isinstance(request, InlinePageBlockAsIndep):
-                res.append(request.preview())"""
-        return res
-
     def execute(self):
-        for request, chunk in zip(self._requests, self._chunks):
-            if isinstance(request, AppendBlockChildren):
-                response = request.execute()
-                if not response:
-                    continue
-                parsers = BlockChildrenParser(response)
-                for parser, new_child in zip(parsers, chunk):
-                    new_child.contents.apply_block_parser(parser)
-                """elif isinstance(request, InlinePageBlockAsIndep):
-                    request.execute()"""
-            else:
-                print('WHAT DID YOU DO?!')
-                pass
+        response = self.gateway.execute()
+        parsers = BlockChildrenParser(response)
+        for parser, new_child in zip(parsers, self.values):
+            new_child.contents.apply_block_parser(parser)
         for child in self.values:
             child.execute()
         res = self.values.copy()
         self.values.clear()
-        self._requests.clear()
         return res
 
     def create_text_block(self):
-        if self._chunk_interrupted:
-            self.gateway = AppendBlockChildren(self)
-            self._requests.append(self.gateway)
-            self._chunks.append([])
-            self._chunk_interrupted = False
         child = TextBlock.create_new(self)
-        self._chunks[-1].append(child)
-        assert (id(child) == id(self[-1]) == id(self._chunks[-1][-1]))
+        self.values.append(child)
+        assert id(child) == id(self[-1])
         return child
 
     def create_inline_page(self):
-        if self._chunk_interrupted:
-            self.gateway = AppendBlockChildren(self)
-            self._requests.append(self.gateway)
-            self._chunks.append([])
-            self._chunk_interrupted = False
         child = InlinePageBlockAsChild.create_new(self)
-        self._chunks[-1].append(child)
-        assert (id(child) == id(self[-1]) == id(self._chunks[-1][-1]))
+        self.values.append(child)
+        assert id(child) == id(self[-1])
         return child
 
     def push_carrier(self, carrier: RichTextContentsEncoder) -> RichTextContentsEncoder:
         return self.gateway.apply_contents(carrier)
 
 
-class ContentsBlock(ChildBearingBlock, metaclass=ABCMeta):
+class ContentsBearingBlock(ChildBearingBlock, metaclass=ABCMeta):
     def __init__(self, caller: Union[PointEditor], block_id: str):
         super().__init__(caller, block_id)
         self.contents: Optional[BlockContents] = None
 
     def fully_read(self):
         return {'contents': self.contents.read(),
-                'children': self.children.reads()}
+                'children': self.sphere.reads()}
 
     def fully_read_rich(self):
         return {'contents': self.contents.read_rich(),
-                'children': self.children.reads_rich()}
+                'children': self.sphere.reads_rich()}
 
     def preview(self):
         return {'contents': self.contents.preview(),
-                **self.children.preview()}
+                **self.sphere.preview()}
 
 
-class TextBlock(ContentsBlock):
+class TextBlock(ContentsBearingBlock):
     def __init__(self, caller: Union[Editor, PointEditor], block_id: str):
         super().__init__(caller=caller, block_id=block_id)
-        if isinstance(caller, NewBlockChildrenContainerWithIndepInlinePage):
+        if isinstance(caller, BlockSphereCreatorWithIndepInlinePage):
             self.contents = TextContents(self, caller)
         else:
             self.contents = TextContents(self)
@@ -382,7 +352,7 @@ class TextBlock(ContentsBlock):
             pass
         else:
             self.contents.execute()
-            self.children.execute()
+            self.sphere.execute()
 
     def fully_read(self):
         return dict(**super().fully_read(), type='text')
@@ -391,7 +361,7 @@ class TextBlock(ContentsBlock):
         return dict(**super().fully_read(), type='text')
 
 
-class InlinePageBlockAsIndep(ContentsBlock):
+class InlinePageBlockAsIndep(ContentsBearingBlock):
     def __init__(self, caller: Union[Editor, PointEditor], page_id: str):
         super().__init__(caller, page_id)
         self.contents = PageContentsAsIndepPage(self)
@@ -405,7 +375,7 @@ class InlinePageBlockAsIndep(ContentsBlock):
     @drop_empty_request
     def execute(self):
         self.contents.execute()
-        self.children.execute()
+        self.sphere.execute()
 
     def fully_read(self):
         return dict(**super().fully_read(), type='page')
@@ -414,10 +384,10 @@ class InlinePageBlockAsIndep(ContentsBlock):
         return dict(**super().fully_read(), type='page')
 
 
-class InlinePageBlockAsChild(ContentsBlock):
+class InlinePageBlockAsChild(ContentsBearingBlock):
     def __init__(self, caller: Union[Editor, PointEditor], page_id: str):
         super().__init__(caller, page_id)
-        if isinstance(caller, NewBlockChildrenContainerWithChildInlinePage):
+        if isinstance(caller, BlockSphereUpdaterWithChildInlinePage):
             self.contents = PageContentsAsChildBlock(self, caller)
         else:
             self.contents = PageContentsAsChildBlock(self)
@@ -434,7 +404,7 @@ class InlinePageBlockAsChild(ContentsBlock):
             self.caller.execute()
         else:
             self.contents.execute()
-            self.children.execute()
+            self.sphere.execute()
 
     def fully_read(self):
         return dict(**super().fully_read(), type='page')

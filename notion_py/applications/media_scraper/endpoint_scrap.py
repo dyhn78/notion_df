@@ -11,9 +11,8 @@ class ReadingDBEditor:
     def __init__(self):
         self.root_editor = RootEditor()
         self.frame = reading_database_frame
-        self.database = RootEditor().open_database(
+        self.pagelist = self.root_editor.open_pagelist(
             *DatabaseInfo.READINGS, self.frame)
-        self.pagelist = self.database.pagelist
         self.status_enum = self.frame.by_key['edit_status'].values
 
 
@@ -29,7 +28,7 @@ class MediaScraper(ReadingDBEditor):
         self.make_query()
         self.pagelist.run_query(page_size)
         for page in self.pagelist:
-            page.children.fetch()
+            page.pagelist.fetch_children()
             unit = PageHandler(self, page)
             unit.execute()
             # page.pprint()
@@ -56,7 +55,7 @@ class PageHandler:
 
         self.page = page
         self.props = page.props
-        self.children = page.children
+        self.children = page.pagelist
         self.status = ''
         self.rich_overwrite_option = self.get_overwrite_option()
         if self.rich_overwrite_option == 'continue':

@@ -34,6 +34,7 @@ class RichTextContentsEncoder(ContentsEncoder, RichTextPropertyEncoder):
         return contents
 
 
+"""
 class PageContentsEncoderAsChildBlock(ContentsEncoder):
     def __init__(self, title):
         super().__init__(block_type='title', block_name='child_page')
@@ -41,3 +42,4 @@ class PageContentsEncoderAsChildBlock(ContentsEncoder):
 
     def _unpack_contents(self):
         return {'child_page': {'title': self.title}}
+"""

@@ -38,8 +38,6 @@ class PropertyMatcher:
         for pagelist in [self.periods, self.dates, self.journals, self.shots]:
             self.query_maker.query_as_parents(pagelist, 'index_as_domain')
         for pagelist in [self.memos, self.writings]:
-            # self.query_maker.query_as_children(pagelist, 'index_as_domain',
-            # 'to_periods')
             self.query_maker.query_as_parents(pagelist, 'index_as_domain')
 
     def apply_results(self):

@@ -50,7 +50,7 @@ class TabularPageDeprecated(BasicPageDeprecated):
         self.prop_name = prop_name
         self._update_props = UpdateTabularPage(self.page_id)
         self.props = self._update_props.props
-        self.props.fetch(parsed_page.props)
+        self.props.fetch_children(parsed_page.props)
 
     @classmethod
     def retrieve(cls, page_id):
