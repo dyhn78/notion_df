@@ -38,12 +38,18 @@ class Stash(ValueCarrier, metaclass=ABCMeta):
 
 
 class ListStash(Stash, metaclass=ABCMeta):
-    def _unpack(self):
+    def unpack(self):
         return self._subdicts
+
+    def append(self, x):
+        self._subdicts.append(x)
+        
+    def insert(self, i, x):
+        self._subdicts.insert(i, x)
 
 
 class DictStash(Stash, metaclass=ABCMeta):
-    def _unpack(self):
+    def unpack(self):
         res = {}
         for subdict in self._subdicts:
             for key, value in subdict.items():

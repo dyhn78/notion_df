@@ -38,7 +38,7 @@ class PropertyFrameUnit:
                    })
 
     def __str__(self):
-        return f"{self.name} : {self.key}"
+        return f"{self.name} | {self.key} | {self.data_type}"
 
 
 class PropertyFrame:
@@ -77,7 +77,7 @@ class PropertyFrame:
         return len(self.values)
 
     def __str__(self):
-        return "##\n" + '\n'.join([str(unit) for unit in self.values]) + "\n##"
+        return "----\n" + '\n'.join([str(unit) for unit in self.values]) + "\n----"
 
     def extend(self, frame_units: Iterable[PropertyFrameUnit]):
         for unit in frame_units:

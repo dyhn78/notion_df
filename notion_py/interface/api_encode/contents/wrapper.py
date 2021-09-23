@@ -1,18 +1,31 @@
 from abc import ABC, abstractmethod, ABCMeta
 
-from .maker import ContentsEncoder, RichTextContentsEncoder
+from .maker import ContentsEncoder, RichTextContentsEncoder, \
+    PageContentsEncoderAsChildBlock
 from ..property.maker import RichTextPropertyEncoder
 from ..property.wrapper import PropertyEncoder
 
+"""
+class PageContentsWriterAsChild(ABC):
+    @abstractmethod
+    def push_carrier(self, carrier: ContentsEncoder) \
+            -> ContentsEncoder:
+        pass
 
-class PageContentsWriterAsChildBlock(ABC):
+    def write_title(self, value: str) -> ContentsEncoder:
+        writer = self.push_carrier(PageContentsEncoderAsChildBlock(value))
+        return writer
+"""
+
+
+class PageContentsWriterAsChild(ABC):
     @abstractmethod
     def push_carrier(self, carrier: ContentsEncoder) \
             -> RichTextContentsEncoder:
         pass
 
     def write_rich_title(self) -> RichTextContentsEncoder:
-        return self.push_carrier(RichTextContentsEncoder('title'))
+        return self.push_carrier(PageContentsEncoderAsChildBlock())
 
     def write_title(self, value: str) -> RichTextContentsEncoder:
         writer = self.write_rich_title()
@@ -20,7 +33,7 @@ class PageContentsWriterAsChildBlock(ABC):
         return writer
 
 
-class PageContentsWriterAsIndepPage(ABC):
+class PageContentsWriterAsIndep(ABC):
     @abstractmethod
     def push_carrier(self, carrier: PropertyEncoder):
         pass
@@ -33,17 +46,6 @@ class PageContentsWriterAsIndepPage(ABC):
         writer = self.write_rich_title()
         writer.write_text(value)
         return writer
-
-
-"""class PageContentsWriterAsChildBlock(ABC):
-    @abstractmethod
-    def push_carrier(self, carrier: PageContentsEncoderAsChildBlock) \
-            -> PageContentsEncoderAsChildBlock:
-        pass
-
-    def write_title(self, title: str) -> PageContentsEncoderAsChildBlock:
-        writer = PageContentsEncoderAsChildBlock(title)
-        return self.push_carrier(writer)"""
 
 
 class RichTextContentsWriter(ABC):

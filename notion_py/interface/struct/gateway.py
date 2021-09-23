@@ -60,11 +60,11 @@ def retry_request(func: Callable, recursion_limit=1, time_to_sleep=1):
             try:
                 response = func(self, **kwargs)
                 return response
-            except APIResponseError as e:
+            except APIResponseError as api_response_error:
                 if recursion == recursion_limit:
                     print(f'Error occurred while executing {str(self)} ::\n')
                     self.pprint()
-                    raise e
+                    raise api_response_error
                 recursion += 1
                 stopwatch(f'응답 재시도 {recursion}/{recursion_limit}회')
                 time.sleep(time_to_sleep * (1 ** recursion))

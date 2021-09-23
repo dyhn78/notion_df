@@ -1,76 +1,51 @@
 from __future__ import annotations
-from abc import ABCMeta
+from abc import ABCMeta, abstractmethod
 
-from notion_py.interface.struct import ValueCarrier, ListStash, DateFormat
+from notion_py.interface.api_encode.rich_text import RichTextObjectEncoder
+from notion_py.interface.struct import ValueCarrier, DateFormat
 
 
 class PropertyEncoder(ValueCarrier, metaclass=ABCMeta):
-    def __init__(self, prop_type, prop_name, prop_value):
+    def __init__(self, value_type, prop_name):
         super().__init__()
-        self.value_type = prop_type
         self.prop_name = prop_name
-        if prop_value is not None:
-            self.prop_value = prop_value
+        self.value_type = value_type
+
+    @property
+    @abstractmethod
+    def _prop_value(self):
+        pass
 
     def __bool__(self):
         return bool(self.unpack())
 
     def unpack(self):
-        return {self.prop_name: self._wrap_to_prop()}
+        props = {self.prop_name: {self.value_type: self._prop_value,
+                                  # 'type': self.value_type,
+                                  }
+                 }
+        return props
 
-    def _wrap_to_prop(self):
-        return {'type': self.value_type,
-                self.value_type: self.prop_value}
 
-
-class RichTextPropertyEncoder(PropertyEncoder, ListStash):
+class RichTextPropertyEncoder(PropertyEncoder, RichTextObjectEncoder):
     def __init__(self, prop_type, prop_name):
-        super().__init__(prop_type, prop_name, None)
+        PropertyEncoder.__init__(self, prop_type, prop_name)
+        RichTextObjectEncoder.__init__(self)
 
     @property
-    def prop_value(self):
-        res = self._unpack()
-        return res
-
-    @staticmethod
-    def _wrap_to_rich_text(prop_type, value):
-        return {
-            'type': prop_type,
-            prop_type: value,
-        }
-
-    def _mention_entity(self, target_id, target_class):
-        assert target_class in ["user", "page", "database"]
-        mention = {target_class: {'id': target_id},
-                   'type': target_class}
-        return self._wrap_to_rich_text('mention', mention)
-
-    def write_text(self, contents, link=None):
-        value = {'content': contents}
-        if link:
-            value[link] = link
-        self._subdicts.append(self._wrap_to_rich_text('text', value))
-
-    def write_equation(self, expression: str):
-        equation = {'expression': expression},
-        self._subdicts.append(self._wrap_to_rich_text('equation', equation))
-
-    def mention_date(self, date_value: DateFormat):
-        date = date_value.make_isoformat()
-        mention = {'type': 'date', 'date': date}
-        self._subdicts.append(self._wrap_to_rich_text('mention', mention))
-
-    def mention_page(self, page_id: str):
-        self._subdicts.append(self._mention_entity(page_id, 'page'))
-
-    def mention_database(self, database_id: str):
-        self._subdicts.append(self._mention_entity(database_id, 'database'))
-
-    def mention_user(self, user_id: str):
-        self._subdicts.append(self._mention_entity(user_id, 'user'))
+    def _prop_value(self):
+        return RichTextObjectEncoder.unpack(self)
 
 
 class SimplePropertyEncoder(PropertyEncoder):
+    def __init__(self, prop_type, prop_name, value):
+        super().__init__(prop_type, prop_name)
+        self._value = value
+
+    @property
+    def _prop_value(self):
+        return self._value
+
     @classmethod
     def number(cls, prop_name, value):
         return cls('number', prop_name, value)

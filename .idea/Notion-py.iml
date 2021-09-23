@@ -8,7 +8,6 @@
   <component name="PyNamespacePackagesService">
     <option name="namespacePackageFolders">
       <list>
-        <option value="$MODULE_DIR$/notion_py/applications_depr" />
         <option value="$MODULE_DIR$/notion_py/interface/gateway" />
       </list>
     </option>

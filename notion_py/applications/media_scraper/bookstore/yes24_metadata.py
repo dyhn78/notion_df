@@ -1,7 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 
-from .parse_contents import parse_contents
+from .contents_parse import parse_contents
 
 
 def scrap_yes24_metadata(url: str) -> dict:

@@ -1,2 +1,2 @@
-from .endpoint_scrap import MediaScraper
-from .endpoint_reset import ScrapStatusResetter
+from notion_py.applications.media_scraper.endpoints.regular_scrap import MediaScraper
+from notion_py.applications.media_scraper.endpoints.reset import ScrapStatusResetter

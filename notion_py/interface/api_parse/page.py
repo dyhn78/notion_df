@@ -54,8 +54,12 @@ class PageParser:
     def parse_retrieve(cls, response: dict):
         self = cls(response['id'])
         for prop_name, rich_property_object in response['properties'].items():
-            self.prop_values[prop_name] = \
-                self.parser_unit(rich_property_object, prop_name)
+            try:
+                self.prop_values[prop_name] = \
+                    self.parser_unit(rich_property_object, prop_name)
+            except TypeError as type_error:
+                print(rich_property_object)
+                raise type_error
         return self
 
     @classmethod
@@ -137,6 +141,8 @@ class PageParser:
 
     @staticmethod
     def _parse_select(prop_object):
+        if prop_object is None:
+            return None
         return prop_object['name']
 
     @staticmethod

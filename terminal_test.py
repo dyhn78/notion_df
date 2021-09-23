@@ -1,7 +1,9 @@
-from notion_py.applications.media_scraper import MediaScraper
-from notion_py.interface.utility import stopwatch
+from notion_py.interface import RootEditor
 
-MediaScraper().execute(3)
-
-stopwatch('작업 완료')
-# close_program = input("작업 완료. 아무 키나 누르십시오...")
+root = RootEditor()
+page = root.open_inline_page('56ce1823-d086-4a05-a85f-88e47ece7f72')
+"""block = page.sphere.create_text_block()
+block.contents.write_to_do('some_text', True)"""
+subpage = page.sphere.create_inline_page()
+subpage.contents.write_title('xyz')
+page.execute()

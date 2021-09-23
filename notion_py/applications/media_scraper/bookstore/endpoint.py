@@ -1,5 +1,4 @@
-import re
-
+from .contents_append import AppendContents
 from .yes24_url import scrap_yes24_url
 from .yes24_metadata import scrap_yes24_metadata
 from notion_py.interface import TypeName
@@ -12,7 +11,7 @@ class BookstoreScraper:
         self.handler = handler
         self.page: TypeName.tabular_page = handler.page
         self.props = self.page.props
-        self.children = self.page.pagelist
+        self.sphere = self.page.sphere
         self.subpage_id = ''
 
     def execute(self):
@@ -52,41 +51,18 @@ class BookstoreScraper:
 
     def set_contents_data(self, contents: list[str]):
         subpage = self.get_subpage()
-        self.append_contents(subpage, contents)
+        AppendContents(subpage, contents).execute()
         writer = self.props.write_rich_text_at('link_to_contents')
         writer.mention_page(subpage.master_id)
 
     def get_subpage(self) -> TypeName.inline_page:
-        for block in self.children.pagelist:
+        for block in self.sphere.children:
             if isinstance(block, TypeName.inline_page) and \
                     self.page.title in block.contents.read():
                 block.contents.write_title(f'={self.page.title}')
                 break
         else:
-            block = self.children.create_inline_page()
-            block.contents.write_title(f'x={self.page.title}')
+            block = self.sphere.create_inline_page()
+            block.contents.write_title(f'={self.page.title}')
             block.execute()
         return block
-
-    @staticmethod
-    def append_contents(subpage: TypeName.inline_page, contents: list[str]):
-        # TODO
-        section = re.compile(r"\d+부[.:]? ")
-        section_eng = re.compile(r"PART", re.IGNORECASE)
-
-        chapter = re.compile(r"\d+장[.:]? ")
-        chapter_eng = re.compile(r"CHAPTER", re.IGNORECASE)
-
-        small_chapter = re.compile(r"\d+[.:] ")
-
-        for text_line in contents:
-            child = subpage.pagelist.create_text_block()
-            contents = child.contents
-            if re.findall(section, text_line) or re.findall(section_eng, text_line):
-                contents.write_heading_2(text_line)
-            elif re.findall(chapter, text_line) or re.findall(chapter_eng, text_line):
-                contents.write_heading_3(text_line)
-            elif re.findall(small_chapter, text_line):
-                contents.write_paragraph(text_line)
-            else:
-                contents.write_toggle(text_line)
