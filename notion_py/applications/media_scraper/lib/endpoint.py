@@ -38,7 +38,7 @@ class LibraryScraper:
     def set_lib_datas(self):
         datastrings = []
         if 'gy' in self.datas.keys() and \
-                self.datas['gy']['lib_name'] == GoyangLibrary.str_gajwa_lib:
+                self.datas['gy']['lib_name'] == GoyangLibrary.GAJWA_LIB:
             first_lib = 'gy'
         elif 'snu' in self.datas.keys():
             first_lib = 'snu'
@@ -49,9 +49,9 @@ class LibraryScraper:
             return
 
         first_data = self.datas.pop(first_lib)
-        string, available = self.format_lib(first_lib, first_data)
+        string, available = self._parse_unit(first_data)
         datastrings.append(string)
-        datastrings.extend([self.format_lib(lib, data)[0]
+        datastrings.extend([self._parse_unit(data)[0]
                             for lib, data in self.datas.items()])
         joined_string = '; '.join(datastrings)
 
@@ -59,15 +59,21 @@ class LibraryScraper:
         self.props.write_text_at('location', joined_string)
         self.props.write_checkbox_at('not_available', not available)
 
+    def _parse_unit(self, res: Union[dict, str]) -> tuple[str, bool]:
+        if type(res) == dict:
+            return self._parse_dict(res)
+        elif type(res) == str:
+            return self._parse_str(res)
+
     @staticmethod
-    def format_lib(lib: str, res: Union[dict, str]) -> tuple[str, bool]:
-        if lib == 'gy':
-            string = f"{res['lib_name']}"
-            if book_code := res['book_code']:
-                string += f" {book_code}"
-            available = res['available']
-            return string, available
-        elif lib == 'snu':
-            return res, True
-        else:
-            return res, True
+    def _parse_dict(res: dict):
+        string = f"{res['lib_name']}"
+        if book_code := res['book_code']:
+            string += f" {book_code}"
+        available = res['available']
+        return string, available
+
+    @staticmethod
+    def _parse_str(res: str):
+        available = not ('불가능' not in res)
+        return res, available
