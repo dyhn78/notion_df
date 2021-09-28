@@ -4,7 +4,7 @@ Notion 편집을 자동화하세요. 에디터 도구를 이용해 여러분만�
 
 ### structure
 zap_routine (application)  
--> editor (interface.RootEditor)  
+-> editor (interface.editor)  
 -> request_builder (interface.gateway)  
 -> request_maker (python sdk)  
 -> http_request (Server)
