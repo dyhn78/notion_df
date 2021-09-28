@@ -7,4 +7,4 @@ zap_routine (application)
 -> editor (interface.RootEditor)  
 -> request_builder (interface.gateway)  
 -> request_maker (python sdk)  
--> NOTION SERVER  
+-> [NOTION SERVER]  
