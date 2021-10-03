@@ -80,40 +80,60 @@ class TabularProperty(GroundEditor, TabularPropertybyKey):
         return {key: self._read_full[self._name_at(key)]
                 for key in self.frame.keys()}
 
-    def read_of(self, prop_name: str, default=None):
-        if not isinstance(prop_name, str):
-            comment = f"<prop_name: {prop_name}>"
-            raise TypeError(comment)
+    def read_of(self, prop_name: str):
+        self._check_prop_name(prop_name)
         try:
             value = self._read_plain[prop_name]
         except KeyError:
-            value = default
+            raise KeyError(f"prop_name: {prop_name}")
+        return value
+
+    def read_rich_of(self, prop_name: str):
+        self._check_prop_name(prop_name)
+        try:
+            value = self._read_rich[prop_name]
+        except KeyError:
+            raise KeyError(f"prop_name: {prop_name}")
+        return value
+
+    def try_read_of(self, prop_name: str, default=None):
+        self._check_prop_name(prop_name)
+        value = self._read_plain.get(prop_name)
         if value is None:
             value = default
         return value
 
-    def read_rich_of(self, prop_name: str, default=None):
-        if not isinstance(prop_name, str):
-            raise TypeError
-        try:
-            value = self._read_plain[prop_name]
-        except KeyError:
-            value = default
+    def try_read_rich_of(self, prop_name: str, default=None):
+        self._check_prop_name(prop_name)
+        value = self._read_rich.get(prop_name)
         if value is None:
             value = default
         return value
 
-    def read_at(self, prop_key: str, default=None):
-        return self.read_of(self._name_at(prop_key), default)
+    def read_at(self, prop_key: str):
+        return self.read_of(self._name_at(prop_key))
 
-    def read_rich_at(self, prop_key: str, default=None):
-        return self.read_rich_of(self._name_at(prop_key), default)
+    def try_read_at(self, prop_key: str, default=None):
+        return self.try_read_of(self._name_at(prop_key), default)
+
+    def read_rich_at(self, prop_key: str):
+        return self.read_rich_of(self._name_at(prop_key))
+
+    def try_read_rich_at(self, prop_key: str, default=None):
+        return self.try_read_rich_of(self._name_at(prop_key), default)
 
     def _name_at(self, prop_key: str):
         return self.frame.name_at(prop_key)
 
     def _type_of(self, prop_name: str):
         return self.frame.type_of(prop_name)
+
+    @staticmethod
+    def _check_prop_name(prop_name):
+        if not isinstance(prop_name, str):
+            comment = f"<prop_name: {prop_name}>"
+            raise TypeError(comment)
+        return
 
 
 """
