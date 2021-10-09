@@ -21,13 +21,13 @@ class TernaryMatchAlgorithm:
         self.domain = domain
         self.target = target
         self.reference = reference
-        # prop_keys
+        # prop_tags
         self.dom_index = 'index_as_domain'
         self.tar_index = 'index_as_target'
         self.dom_to_tar = ''
         self.dom_to_ref = ''
         self.ref_to_tar = ''
-        # func by prop_key
+        # func by prop_tag
         self.index_func: Optional[Callable] = None
         # dict by prop_value
         self.tars_by_index: dict[str, TypeName.tabular_page] = {}
@@ -39,7 +39,16 @@ class TernaryMatchAlgorithm:
         for dom in self.domain:
             if self._is_already_matched(dom):
                 continue
-            self._try_match_by_ref(dom)
+            self._try_match_by_ref_with_archive_check(dom)
+
+    def by_naive_ref(self, dom_to_tar, dom_to_ref, ref_to_tar):
+        self.dom_to_tar = dom_to_tar
+        self.dom_to_ref = dom_to_ref
+        self.ref_to_tar = ref_to_tar
+        for dom in self.domain:
+            if self._is_already_matched(dom):
+                continue
+            self._try_match_by_ref_without_archive_check(dom)
 
     def multi_by_ref(self, dom_to_tar, dom_to_ref, ref_to_tar):
         self.dom_to_tar = dom_to_tar
@@ -51,7 +60,7 @@ class TernaryMatchAlgorithm:
     def by_index(self, dom_to_tar, index_func: Callable):
         self.dom_to_tar = dom_to_tar
         self.index_func = index_func
-        self.tars_by_index = self.target.by_index_at(self.tar_index)
+        self.tars_by_index = self.target.by_idx_value_at(self.tar_index)
         for dom in self.domain:
             if self._is_already_matched(dom):
                 continue
@@ -66,7 +75,7 @@ class TernaryMatchAlgorithm:
                              tar_writer_func: Optional[Callable] = None):
         self.dom_to_tar = dom_to_tar
         self.index_func = index_func
-        self.tars_by_index = self.target.by_index_at(self.tar_index)
+        self.tars_by_index = self.target.by_idx_value_at(self.tar_index)
         for dom in self.domain:
             if self._is_already_matched(dom):
                 continue
@@ -80,16 +89,10 @@ class TernaryMatchAlgorithm:
                 continue
             self._try_match_by_index(dom)
 
-    def by_ref_then_index_then_create(self, dom_to_tar, dom_to_ref, ref_to_tar,
-                                      index_func: Callable,
-                                      tar_writer_func: Optional[Callable] = None):
-        self.by_ref(dom_to_tar, dom_to_ref, ref_to_tar)
-        self.by_index_then_create(dom_to_tar, index_func, tar_writer_func)
-
     def _is_already_matched(self, dom: TypeName.tabular_page):
         return bool(dom.props.read_at(self.dom_to_tar))
 
-    def _try_match_by_ref(self, dom: TypeName.tabular_page):
+    def _try_match_by_ref_with_archive_check(self, dom: TypeName.tabular_page):
         """
         will return False if matching is done;
         will return True or some non-empty information to put to next algorithm.
@@ -108,6 +111,42 @@ class TernaryMatchAlgorithm:
         else:
             return True
         self._write_tar_id(dom, tar_id)
+
+    def _try_match_by_ref_without_archive_check(self, dom: TypeName.tabular_page):
+        ref_ids = dom.props.read_at(self.dom_to_ref)
+        for ref_id in ref_ids:
+            if ref_id in self.reference.keys():
+                break
+        else:
+            return True
+        ref = self.reference.by_id[ref_id]
+        tar_ids = ref.props.read_at(self.ref_to_tar)
+        if tar_ids:
+            tar_id = tar_ids[0]
+        else:
+            return True
+        self._write_tar_id(dom, tar_id)
+
+    def _try_multi_match_by_ref(self, dom: TypeName.tabular_page):
+        ref_ids = dom.props.read_at(self.dom_to_ref)
+        for ref_id in ref_ids:
+            if ref_id in self.reference.keys():
+                break
+        else:
+            return True
+        ref = self.reference.by_id[ref_id]
+        tar_ids = ref.props.read_at(self.ref_to_tar)
+
+        values: list = dom.props.read_at(self.dom_to_tar)
+        diff = False
+        for tar_id in tar_ids:
+            if tar_id in values:
+                pass
+            else:
+                diff = True
+                values.append(tar_id)
+        if diff:
+            dom.props.write_at(self.dom_to_tar, values)
 
     def _try_match_by_index(self, dom: TypeName.tabular_page):
         dom_index_value = dom.props.read_at(self.dom_index)
@@ -131,25 +170,4 @@ class TernaryMatchAlgorithm:
             return
         else:
             values.append(tar_id)
-            dom.props.write_at(self.dom_to_tar, values)
-
-    def _try_multi_match_by_ref(self, dom: TypeName.tabular_page):
-        ref_ids = dom.props.read_at(self.dom_to_ref)
-        for ref_id in ref_ids:
-            if ref_id in self.reference.keys():
-                break
-        else:
-            return True
-        ref = self.reference.by_id[ref_id]
-        tar_ids = ref.props.read_at(self.ref_to_tar)
-
-        values: list = dom.props.read_at(self.dom_to_tar)
-        diff = False
-        for tar_id in tar_ids:
-            if tar_id in values:
-                pass
-            else:
-                diff = True
-                values.append(tar_id)
-        if diff:
             dom.props.write_at(self.dom_to_tar, values)

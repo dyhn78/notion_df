@@ -7,7 +7,7 @@ from notion_py.interface.gateway import UpdatePage, RetrievePage, AppendBlockChi
 from notion_py.interface.struct import Editor, PointEditor, drop_empty_request
 from ..abs_supported.abs_child_bearing.abs_contents_bearing.master import \
     ContentsBearingBlock, BlockContents
-from ..abs_supported.abs_child_bearing.creater_page_as_child import \
+from ..abs_supported.abs_child_bearing.creater_with_page_as_child import \
     BlockSphereCreatorWithChildInlinePage
 
 
@@ -15,9 +15,9 @@ class InlinePageBlockAsChild(ContentsBearingBlock):
     def __init__(self, caller: Union[Editor, PointEditor], page_id: str):
         super().__init__(caller, page_id)
         if isinstance(caller, BlockSphereCreatorWithChildInlinePage):
-            self.contents = PageContentsAsChild(self, caller)
+            self.contents = InlinePageContentsAsChild(self, caller)
         else:
-            self.contents = PageContentsAsChild(self)
+            self.contents = InlinePageContentsAsChild(self)
         self.agents.update(contents=self.contents)
         self.title = ''
 
@@ -40,7 +40,7 @@ class InlinePageBlockAsChild(ContentsBearingBlock):
         return dict(**super().fully_read_rich(), type='page')
 
 
-class PageContentsAsChild(BlockContents, PageContentsWriterAsChild):
+class InlinePageContentsAsChild(BlockContents, PageContentsWriterAsChild):
     def __init__(self, caller: PointEditor,
                  uncle: Optional[BlockSphereCreatorWithChildInlinePage] = None):
         super().__init__(caller)

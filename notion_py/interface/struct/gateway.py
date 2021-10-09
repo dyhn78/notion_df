@@ -21,7 +21,7 @@ class GroundEditor(PointEditor, metaclass=ABCMeta):
     def set_overwrite_option(self, option: bool):
         self.enable_overwrite = option
 
-    def preview(self):
+    def make_preview(self):
         return self.gateway.unpack() if self.gateway else {}
 
     def execute(self):
@@ -43,32 +43,6 @@ class Gateway(Requestor, ValueCarrier, metaclass=ABCMeta):
     @property
     def target_name(self):
         return self.editor.master.master_name
-
-
-def drop_empty_request(method: Callable):
-    def wrapper(self, **kwargs):
-        if not bool(self):
-            return {}
-        return method(self, **kwargs)
-    return wrapper
-
-
-def retry_request(func: Callable, recursion_limit=1, time_to_sleep=1):
-    def wrapper(self: Gateway, **kwargs):
-        recursion = 0
-        while True:
-            try:
-                response = func(self, **kwargs)
-                return response
-            except APIResponseError as api_response_error:
-                if recursion == recursion_limit:
-                    print(f'Error occurred while executing {str(self)} ::\n')
-                    self.pprint()
-                    raise api_response_error
-                recursion += 1
-                stopwatch(f'응답 재시도 {recursion}/{recursion_limit}회')
-                time.sleep(time_to_sleep * (1 ** recursion))
-    return wrapper
 
 
 class LongGateway(Gateway):
@@ -106,3 +80,41 @@ class LongGateway(Gateway):
                 comments = f'{self.target_name} → ' + comments
             stopwatch(comments)
         return result
+
+
+def drop_empty_request(method: Callable):
+    def wrapper(self, **kwargs):
+        if not bool(self):
+            return {}
+        return method(self, **kwargs)
+    return wrapper
+
+
+def print_response_error(func: Callable):
+    def wrapper(self: Gateway, **kwargs):
+        try:
+            response = func(self, **kwargs)
+            return response
+        except APIResponseError as api_response_error:
+            print(f'Error occurred while executing {str(self)} ::\n')
+            self.pprint()
+            raise api_response_error
+    return wrapper
+
+
+def retry_request(func: Callable, recursion_limit=1, time_to_sleep=1):
+    def wrapper(self: Gateway, **kwargs):
+        recursion = 0
+        while True:
+            try:
+                response = func(self, **kwargs)
+                return response
+            except APIResponseError as api_response_error:
+                if recursion == recursion_limit:
+                    print(f'Error occurred while executing {str(self)} ::\n')
+                    self.pprint()
+                    raise api_response_error
+                recursion += 1
+                stopwatch(f'응답 재시도 {recursion}/{recursion_limit}회')
+                time.sleep(time_to_sleep * (1 ** recursion))
+    return wrapper

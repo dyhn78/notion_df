@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 from .contents_parse import parse_contents
 
 
-def scrap_yes24_metadata(url: str) -> dict:
+def scrap_yes24_main(url: str) -> dict:
     results = {}
 
     response = requests.get(url)

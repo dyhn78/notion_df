@@ -1,1 +1,1 @@
-from .endpoint import LibraryScraper
+from .lib_endpoint import LibraryScraper

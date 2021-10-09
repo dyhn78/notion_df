@@ -45,5 +45,5 @@ class SNULibrary(SeleniumScraper):
         tag_lib_info = 'div.result-item-text.layout-fill.layout-column.flex > ' \
                        'div.search-result-availability-line-wrapper ' \
                        '> prm-search-result-availability-line > div > div > button '
-        raws = self.driver.find_elements_by_css_selector(tag_lib_info)
-        return raws
+        elms_lib_info = self.driver.find_elements_by_css_selector(tag_lib_info)
+        return [elm.text for elm in elms_lib_info]

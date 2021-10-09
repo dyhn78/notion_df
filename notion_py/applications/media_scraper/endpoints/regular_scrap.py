@@ -1,6 +1,6 @@
 import re
 
-from notion_py.applications.media_scraper.prop_frame import reading_database_frame
+from notion_py.applications.media_scraper.prop_frame import ReadingDB_FRAME
 from notion_py.applications.media_scraper.lib import LibraryScraper
 from notion_py.applications.media_scraper.bookstore import BookstoreScraper
 from notion_py.applications.page_ids import DatabaseInfo
@@ -10,18 +10,17 @@ from notion_py.interface import RootEditor, TypeName, stopwatch
 class ReadingDBEditor:
     def __init__(self):
         self.root_editor = RootEditor()
-        self.frame = reading_database_frame
+        self.frame = ReadingDB_FRAME
         self.pagelist = self.root_editor.open_pagelist(
             *DatabaseInfo.READINGS, self.frame)
-        self.status_enum = self.frame.by_key['edit_status'].values
+        self.status_enum = self.frame.by_key['edit_status'].prop_values
 
 
-class MediaScraper(ReadingDBEditor):
+class ReadingDBRegularScraper(ReadingDBEditor):
     def __init__(self, targets=None):
         super().__init__()
         if targets is None:
             targets = {'bookstore', 'gy_lib', 'snu_lib'}
-            # targets = {'bookstore'}
         self.targets = targets
 
     def execute(self, page_size=0):
@@ -33,17 +32,17 @@ class MediaScraper(ReadingDBEditor):
             unit.execute()
 
     def make_query(self):
-        query = self.pagelist.query_form
+        query = self.pagelist.query
         maker = query.make_filter.select_at('media_type')
-        ft_media = maker.equals_to_any(maker.value_groups['book'])
+        ft_media = maker.equals_to_any(maker.prop_value_groups['book'])
         maker = query.make_filter.select_at('edit_status')
-        ft_status = maker.equals_to_any(maker.value_groups['regulars'])
+        ft_status = maker.equals_to_any(maker.prop_value_groups['regulars'])
         ft_status |= maker.is_empty()
         query.push_filter(ft_media & ft_status)
 
 
 class PageHandler:
-    def __init__(self, caller: MediaScraper, page: TypeName.tabular_page):
+    def __init__(self, caller: ReadingDBRegularScraper, page: TypeName.tabular_page):
         self.caller = caller
         self.frame = caller.frame
         self.targets = caller.targets.copy()
@@ -101,6 +100,6 @@ class PageHandler:
             return 'append'
 
     def get_names(self) -> tuple[str, str]:
-        docx_name = self.props.read_at('docx_name', '')
-        true_name = self.props.read_at('true_name', '')
+        docx_name = self.props.try_read_at('docx_name', '')
+        true_name = self.props.try_read_at('true_name', '')
         return docx_name, true_name

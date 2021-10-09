@@ -27,8 +27,8 @@ class Database(MasterEditor):
         parser = DatabaseParser(response)
         self.frame.fetch_parser(parser)
 
-    def preview(self):
-        return {**self.pagelist.preview()}
+    def make_preview(self):
+        return {**self.pagelist.make_preview()}
 
     def execute(self):
         self.pagelist.execute()

@@ -16,7 +16,7 @@ class PageList(PointEditor):
         self.frame: PropertyFrame = getattr(caller, 'frame', PropertyFrame())
         self._normal = PageListUpdater(self)
         self._new = PageListCreator(self)
-        self.query_form = Query(self)
+        self.query = Query(self)
 
     def __bool__(self):
         any([self._normal, self._new])
@@ -54,40 +54,40 @@ class PageList(PointEditor):
     def by_title(self) -> dict[str, TabularPageBlock]:
         return {**self._normal.by_title, **self._new.by_title}
 
-    def by_index_of(self, prop_name: str) -> dict[str, TabularPageBlock]:
+    def by_idx_value_of(self, prop_key: str) -> dict[str, TabularPageBlock]:
         try:
-            return {page.props.read_of(prop_name): page
+            return {page.props.read_of(prop_key): page
                     for page in self.elements}
         except TypeError:
             page_object = self.elements[0]
-            pprint(f"key : {page_object.props.read_of(prop_name)}")
+            pprint(f"key : {page_object.props.read_of(prop_key)}")
             pprint(f"value : {page_object.master_id}")
             raise TypeError
 
-    def by_index_at(self, prop_key: str):
-        return self.by_index_of(self.frame.name_at(prop_key))
+    def by_idx_value_at(self, prop_tag: str):
+        return self.by_idx_value_of(self.frame.key_at(prop_tag))
 
-    def by_value_of(self, prop_name: str) -> dict[str, list[TabularPageBlock]]:
+    def by_value_of(self, prop_key: str) -> dict[str, list[TabularPageBlock]]:
         res = defaultdict(list)
         for page in self.elements:
-            res[page.props.read_of(prop_name)].append(page)
+            res[page.props.read_of(prop_key)].append(page)
         return res
 
-    def by_value_at(self, prop_key: str):
-        return self.by_value_of(self.frame.name_at(prop_key))
+    def by_value_at(self, prop_tag: str):
+        return self.by_value_of(self.frame.key_at(prop_tag))
 
     def new_tabular_page(self):
         return self._new.new_tabular_page()
 
     def run_query(self, page_size=0):
-        response = self.query_form.execute(page_size=page_size)
+        response = self.query.execute(page_size=page_size)
         parser = PageListParser(response)
         self._normal.apply_parser(parser)
-        self.query_form = Query(self)
+        self.query = Query(self)
 
-    def preview(self):
-        return {'pages': self._normal.preview(),
-                'new_pages': self._new.preview()}
+    def make_preview(self):
+        return {'pages': self._normal.make_preview(),
+                'new_pages': self._new.make_preview()}
 
     def execute(self):
         self._normal.execute()

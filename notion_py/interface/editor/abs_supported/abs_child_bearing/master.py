@@ -9,8 +9,7 @@ from notion_py.interface.struct import PointEditor, Editor, drop_empty_request
 
 from ..master import SupportedBlock
 from .updater import BlockSphereUpdater
-from .creater_page_as_indep import BlockSphereCreatorWithIndepInlinePage
-from .creater_page_as_child import BlockSphereCreatorWithChildInlinePage
+from .creator import BlockSphereCreator
 
 
 class BlockSphere(PointEditor):
@@ -18,8 +17,7 @@ class BlockSphere(PointEditor):
         super().__init__(caller)
         self.caller = caller
         self._normal = BlockSphereUpdater(self)
-        self._new = BlockSphereCreatorWithIndepInlinePage(self)
-        # self._new = BlockSphereCreatorWithChildInlinePage(self)
+        self._new = BlockSphereCreator(self)
 
     @property
     def children(self) -> list[SupportedBlock]:
@@ -46,9 +44,9 @@ class BlockSphere(PointEditor):
     def __bool__(self):
         return any([self._normal, self._new])
 
-    def preview(self):
-        return {'children': self._normal.preview(),
-                'new_children': self._new.preview()}
+    def make_preview(self):
+        return {'children': self._normal.make_preview(),
+                'new_children': self._new.make_preview()}
 
     @drop_empty_request
     def execute(self):
@@ -62,11 +60,13 @@ class BlockSphere(PointEditor):
         parser = BlockChildrenParser(response)
         self._normal.apply_parser(parser)
 
-    def fetch_descendants(self, page_size=0):
+    def fetch_descendants(self, depth=-1, page_size=0):
+        if depth == 0:
+            return
         self.fetch_children(page_size)
         for child in self._normal:
             if child.has_children and isinstance(child, ChildBearingBlock):
-                child.sphere.fetch_descendants(page_size)
+                child.sphere.fetch_descendants(depth=depth - 1, page_size=page_size)
 
     def reads(self):
         return self._normal.reads()
@@ -78,7 +78,7 @@ class BlockSphere(PointEditor):
         return self._new.create_text_block()
 
     def create_inline_page(self):
-        return self._new.create_inline_page()
+        return self._new.create_page_block()
 
     def indent_next_block(self) -> BlockSphere:
         """if not possible, the cursor will stay at its position."""
@@ -114,7 +114,7 @@ class ChildBearingBlock(SupportedBlock):
         self.agents.update(children=self.sphere)
 
     @abstractmethod
-    def preview(self):
+    def make_preview(self):
         return {'contents': "unpack contents here",
                 'children': "unpack children here"}
 

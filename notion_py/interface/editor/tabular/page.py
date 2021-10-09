@@ -21,13 +21,14 @@ class TabularPageBlock(ChildBearingBlock):
     def master_name(self):
         return self.title
 
-    def preview(self):
-        return {'tabular': self.props.preview(),
-                'children': self.sphere.preview()}
+    def make_preview(self):
+        return {'tabular': self.props.make_preview(),
+                'children': self.sphere.make_preview()}
 
     def execute(self):
         self.props.execute()
-        self.sphere.execute()
+        if not self.archived:
+            self.sphere.execute()
 
     def fully_read(self):
         return {'type': 'page',

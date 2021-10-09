@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from .algorithm import TernaryMatchAlgorithm, MonoMatchAlgorithm
-from .date_index import DatePageProcessor, PeriodPageProcessor
-from .prop_frame import Frames
-from .query_maker import QueryMaker
+from notion_py.interface import RootEditor
 from ..page_ids import DatabaseInfo
-from ...interface import RootEditor
+from .tools.match_algorithms import TernaryMatchAlgorithm, MonoMatchAlgorithm
+from .tools.date_index import DatePageProcessor, PeriodPageProcessor
+from .prop_frame import Frames
+from .tools.query_maker import QueryMaker
 
 
 class PropertyMatcher:
@@ -46,17 +46,17 @@ class PropertyMatcher:
 
     def match_to_itself(self):
         for pagelist in [self.journals, self.memos, self.writings]:
-            MonoMatchAlgorithm(pagelist).to_itself('self_ref')
+            MonoMatchAlgorithm(pagelist).to_itself('to_itself')
 
     def match_to_dates(self):
-        algorithm = TernaryMatchAlgorithm(self.journals, self.dates)
-        algorithm.by_index_then_create('to_dates', DatePageProcessor.get_title)
+        for pagelist in [self.journals]:
+            algorithm = TernaryMatchAlgorithm(pagelist, self.dates, pagelist)
+            algorithm.by_ref('to_dates', 'up_self', 'to_dates')
+            algorithm.by_index_then_create('to_dates', DatePageProcessor.get_title)
         for pagelist in [self.memos, self.writings]:
             algorithm = TernaryMatchAlgorithm(pagelist, self.dates, self.journals)
-            algorithm.by_ref_then_index_then_create(
-                'to_dates', 'to_journals', 'to_dates',
-                DatePageProcessor.get_title
-            )
+            algorithm.by_ref('to_dates', 'to_journals', 'to_dates')
+            algorithm.by_index_then_create('to_dates', DatePageProcessor.get_title)
 
     def match_to_periods(self):
         TernaryMatchAlgorithm(self.dates, self.periods).by_index_then_create(
@@ -71,3 +71,6 @@ class PropertyMatcher:
         algorithm = TernaryMatchAlgorithm(self.writings, None, self.journals)
         for to_project in ['to_themes', 'to_readings', 'to_channels']:
             algorithm.multi_by_ref(to_project, 'to_journals', to_project)
+
+        # algorithm = TernaryMatchAlgorithm(self.journals, None, self.dates)
+        # algorithm.by_ref('to_themes', 'to_dates', 'to_themes')

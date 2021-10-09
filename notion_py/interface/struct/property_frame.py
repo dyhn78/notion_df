@@ -6,39 +6,41 @@ from notion_py.interface.api_parse import PageParser, DatabaseParser
 
 
 class PropertyFrameUnit:
-    def __init__(self, name: str,
-                 key: str = '',
+    def __init__(self, key: str,
+                 tag: str = '',
                  data_type: str = '',
+                 api_format: str = '',
                  values: Optional[dict] = None,
-                 value_groups_by_name: Optional[dict] = None,
                  value_groups_by_key: Optional[dict] = None,
-                 value_infos_by_name: Optional[dict] = None,
-                 value_infos_by_key: Optional[dict] = None):
-        self.name = name
-        self.key = key
-        self.data_type = data_type
-        self.values = values
+                 value_groups_by_tag: Optional[dict] = None,
+                 value_infos_by_key: Optional[dict] = None,
+                 value_infos_by_tag: Optional[dict] = None):
+        self.prop_key = key
+        self.prop_tag = tag
+        self.prop_type = data_type
+        self.prop_foramt = api_format
+        self.prop_values = values
 
-        self.value_groups = {}
-        if value_groups_by_name:
-            self.value_groups.update(**value_groups_by_name)
-        if values and value_groups_by_key:
-            self.value_groups.update(
+        self.prop_value_groups = {}
+        if value_groups_by_key:
+            self.prop_value_groups.update(**value_groups_by_key)
+        if values and value_groups_by_tag:
+            self.prop_value_groups.update(
                 **{value_group_name: [values[key] for key in value_group_by_key]
                    for value_group_name, value_group_by_key
-                   in value_groups_by_key.items()
+                   in value_groups_by_tag.items()
                    })
-        self.value_infos = {}
-        if value_infos_by_name:
-            self.value_infos.update(**value_infos_by_name)
-        if values and value_infos_by_key:
-            self.value_infos.update(
+        self.prop_value_infos = {}
+        if value_infos_by_key:
+            self.prop_value_infos.update(**value_infos_by_key)
+        if values and value_infos_by_tag:
+            self.prop_value_infos.update(
                 **{values[value_key]: value_comment
-                   for value_key, value_comment in value_infos_by_key.items()
+                   for value_key, value_comment in value_infos_by_tag.items()
                    })
 
     def __str__(self):
-        return f"{self.name} | {self.key} | {self.data_type}"
+        return f"{self.prop_key} | {self.prop_tag} | {self.prop_type}"
 
 
 class PropertyFrame:
@@ -58,14 +60,11 @@ class PropertyFrame:
                     units.append(fu)
         self.extend(units)
 
-    def name_at(self, prop_key: str):
-        try:
-            return self.by_key[prop_key].name
-        except KeyError:
-            print('')
+    def key_at(self, prop_tag: str):
+        return self.by_key[prop_tag].prop_key
 
-    def type_of(self, prop_name: str):
-        return self.by_name[prop_name].data_type
+    def type_of(self, prop_key: str):
+        return self.by_name[prop_key].prop_type
 
     def keys(self):
         return self.by_key.keys()
@@ -85,20 +84,20 @@ class PropertyFrame:
 
     def append(self, frame_unit: PropertyFrameUnit):
         self.values.append(frame_unit)
-        self.by_name.update({frame_unit.name: frame_unit})
-        if frame_unit.key:
-            self.by_key.update({frame_unit.key: frame_unit})
+        self.by_name.update({frame_unit.prop_key: frame_unit})
+        if frame_unit.prop_tag:
+            self.by_key.update({frame_unit.prop_tag: frame_unit})
 
-    def add_alias(self, original_key: str, new_key: str):
-        unit = self.by_key[original_key]
+    def add_alias(self, original_tag: str, new_tag: str):
+        unit = self.by_key[original_tag]
         new_unit = deepcopy(unit)
-        new_unit.key = new_key
+        new_unit.prop_tag = new_tag
         self.append(new_unit)
 
     def fetch_parser(self, parser: Union[PageParser, DatabaseParser]):
         for name, data_type in parser.prop_types.items():
             if name in self.by_name:
                 frame_unit = self.by_name[name]
-                frame_unit.data_type = data_type
+                frame_unit.prop_type = data_type
             else:
                 self.append(PropertyFrameUnit(name, data_type=data_type))

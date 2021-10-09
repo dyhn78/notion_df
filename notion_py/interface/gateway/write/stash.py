@@ -15,19 +15,19 @@ class TwofoldListStash(TwofoldStash, metaclass=ABCMeta):
 
 class BlockChildrenStash(ValueCarrier):
     def __init__(self):
-        self._block_value = TwofoldListStash()
+        self.block_value = TwofoldListStash()
 
     def __bool__(self):
-        return bool(self._block_value)
+        return bool(self.block_value)
 
     def clear(self):
-        self._block_value.clear()
+        self.block_value.clear()
 
     def unpack(self):
-        return {'children': self._block_value.unpack()}
+        return {'children': self.block_value.unpack()}
 
     def apply_contents(self, carrier: ContentsEncoder):
-        return self._block_value.apply(carrier)
+        return self.block_value.apply(carrier)
 
 
 class TwofoldDictStash(TwofoldStash, metaclass=ABCMeta):
@@ -40,36 +40,40 @@ class TwofoldDictStash(TwofoldStash, metaclass=ABCMeta):
 
 class PagePropertyStash(ValueCarrier):
     def __init__(self):
-        self._prop_value = TwofoldDictStash()
+        self.prop_value = TwofoldDictStash()
 
     def __bool__(self):
-        return bool(self._prop_value)
+        return bool(self.prop_value)
 
     def clear(self):
-        self._prop_value.clear()
+        self.prop_value.clear()
 
     def unpack(self) -> dict:
-        return {'properties': self._prop_value.unpack()}
+        return {'properties': self.prop_value.unpack()}
 
     def apply_prop(self, carrier: ValueCarrier):
-        return self._prop_value.apply(carrier)
+        return self.prop_value.apply(carrier)
 
 
 class ArchiveToggle(ValueCarrier):
     def __init__(self):
-        self._archive_value = None
+        self.archive_value = None
 
     def __bool__(self):
-        return self._archive_value is not None
+        return self.archive_value is not None
+
+    def is_archived(self):
+        return self.archive_value
 
     def clear(self):
-        self._archive_value = None
+        self.archive_value = None
 
     def archive(self):
-        self._archive_value = True
+        self.archive_value = True
 
     def un_archive(self):
-        self._archive_value = False
+        self.archive_value = False
 
     def unpack(self) -> dict:
-        return {'archived': self._archive_value} if self else {}
+        print({'archived': self.archive_value})
+        return {'archived': self.archive_value} if bool(self) else {}

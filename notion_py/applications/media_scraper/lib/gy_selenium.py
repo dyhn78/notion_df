@@ -68,10 +68,10 @@ class GoyangLibrary(SeleniumScraper):
                 return
             if not (lib_names := self.get_lib_names()):
                 return
-            for i, lib_name_raw in enumerate(lib_names):
-                needs_detail_info = '가좌' in lib_name_raw.text
+            for i, lib_name in enumerate(lib_names):
+                needs_detail_info = '가좌' in lib_name
                 available_here = self.get_availability(i)
-                if needs_detail_info:  # Use DRIV_CODE
+                if needs_detail_info:
                     self.load_detail_info(i)
                     self.DRIV_CODE.implicitly_wait(3)
                     book_code = self.get_book_code()
@@ -92,9 +92,9 @@ class GoyangLibrary(SeleniumScraper):
         return page_buttons
 
     def get_lib_names(self):
-        tag_lib_names = '#lists > ul > li > dl > dd:nth-child(3)'
-        lib_names = self.DRIV_AVAIL.find_elements_by_css_selector(tag_lib_names)
-        return lib_names
+        tag_lib_name = '#lists > ul > li > dl > dd:nth-child(3)'
+        elms_lib_name = self.DRIV_AVAIL.find_elements_by_css_selector(tag_lib_name)
+        return [lib_name.text for lib_name in elms_lib_name]
 
     def get_availability(self, i):
         """

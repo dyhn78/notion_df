@@ -1,6 +1,6 @@
 from .contents_append import AppendContents
 from .yes24_url import scrap_yes24_url
-from .yes24_metadata import scrap_yes24_metadata
+from .yes24_main import scrap_yes24_main
 from notion_py.interface import TypeName
 from notion_py.interface.utility import stopwatch
 
@@ -13,26 +13,25 @@ class BookstoreScraper:
         self.props = self.page.props
         self.sphere = self.page.sphere
         self.subpage_id = ''
+        self.data = {}
 
     def execute(self):
-        # pprint(self.props.read_full_of_all())
         url = self.get_url()
         if not url:
             url = scrap_yes24_url(self.handler.get_names())
             self.set_url(url)
-        if url:
-            if 'bookstore' in self.handler.targets:
-                metadata = scrap_yes24_metadata(url)
-                contents = self.set_metadata(metadata)
-                self.set_contents_data(contents)
+        if 'yes24' in url:
+            self.data = scrap_yes24_main(url)
+        elif 'aladin' in url:
+            pass
+        if self.data:
+            self.set_metadata()
+            self.set_contents_data()
             stopwatch(f'bookstore: {url}')
 
     def get_url(self):
-        url = self.props.read_at('url', default='')
-        if 'bookstore' in url:
-            return url
-        else:
-            return ''
+        url = self.props.try_read_at('url', default='')
+        return url
 
     def set_url(self, url):
         if url:
@@ -40,16 +39,20 @@ class BookstoreScraper:
         else:
             self.handler.status = self.handler.status_enum['url_missing']
 
-    def set_metadata(self, metadata: dict):
+    def set_metadata(self):
         self.handler.set_overwrite_option(False)
-        self.props.write_text_at('true_name', metadata['name'])
-        self.props.write_text_at('subname', metadata['subname'])
-        self.props.write_text_at('author', metadata['author'])
-        self.props.write_text_at('publisher', metadata['publisher'])
-        self.props.write_files_at('cover_image', 'cover_image')
-        return metadata['contents']
+        self.props.write_text_at('true_name', self.data['name'])
+        self.props.write_text_at('subname', self.data['subname'])
+        self.props.write_text_at('author', self.data['author'])
+        self.props.write_text_at('publisher', self.data['publisher'])
 
-    def set_contents_data(self, contents: list[str]):
+    def set_cover_image(self):
+        file_writer = self.props.write_files_at('cover_image')
+        file_writer.add_file(file_name=self.data['name'],
+                             file_url=self.data['cover_image'])
+
+    def set_contents_data(self):
+        contents = self.data['contents']
         subpage = self.get_subpage()
         AppendContents(subpage, contents).execute()
         writer = self.props.write_rich_text_at('link_to_contents')
@@ -62,7 +65,7 @@ class BookstoreScraper:
                 block.contents.write_title(f'={self.page.title}')
                 break
         else:
-            block = self.sphere.create_inline_page()
+            block = self.sphere.create_page_block()
             block.contents.write_title(f'={self.page.title}')
             block.execute()
         return block

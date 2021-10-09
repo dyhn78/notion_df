@@ -30,8 +30,8 @@ class NotionRootEditor(AbstractRootEditor):
     def token(self):
         return os.environ['NOTION_TOKEN'].strip("'").strip('"')
 
-    def preview(self, pprint_this=True):
-        preview = [document.preview() for document in self.top_documents]
+    def make_preview(self, pprint_this=True):
+        preview = [document.make_preview() for document in self.top_documents]
         if pprint_this:
             pprint(preview)
         return preview

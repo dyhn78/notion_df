@@ -7,7 +7,7 @@ class QueryMaker:
 
     def query_as_parents(self, pagelist: TypeName.pagelist,
                          key_at_date_index: str):
-        query_form = pagelist.query_form
+        query_form = pagelist.query
         if self.date_range:
             frame = query_form.make_filter.date_at(key_at_date_index)
             ft = None
@@ -22,7 +22,7 @@ class QueryMaker:
 
     def query_as_children(self, pagelist: TypeName.pagelist,
                           date_index: str, dom_to_tar: str):
-        query_form = pagelist.query_form
+        query_form = pagelist.query
         frame = query_form.make_filter.relation_at(dom_to_tar)
         ft = frame.is_empty()
         if self.date_range:

@@ -1,11 +1,9 @@
 from typing import Union, Optional
 
-from notion_py.interface.editor.abs_supported.abs_child_bearing.abs_contents_bearing.master import \
+from ..abs_supported.abs_child_bearing.abs_contents_bearing.master import \
     ContentsBearingBlock, BlockContents
-from ..abs_supported.abs_child_bearing.creater_page_as_indep import \
-    BlockSphereCreatorWithIndepInlinePage
-from ..abs_supported.abs_child_bearing.creater_page_as_child import \
-    BlockSphereCreatorWithChildInlinePage
+from ..abs_supported.abs_child_bearing.creator import \
+    BlockSphereCreator
 from notion_py.interface.struct import PointEditor, Editor, GroundEditor
 from ...api_encode import TextContentsWriter, RichTextContentsEncoder
 from ...api_parse import BlockContentsParser
@@ -15,8 +13,7 @@ from ...gateway import UpdateBlock, RetrieveBlock
 class TextBlock(ContentsBearingBlock):
     def __init__(self, caller: Union[Editor, PointEditor], block_id: str):
         super().__init__(caller=caller, block_id=block_id)
-        if isinstance(caller, BlockSphereCreatorWithChildInlinePage) or \
-                isinstance(caller, BlockSphereCreatorWithIndepInlinePage):
+        if isinstance(caller, BlockSphereCreator):
             self.contents = TextContents(self, caller)
         else:
             self.contents = TextContents(self)
@@ -24,10 +21,11 @@ class TextBlock(ContentsBearingBlock):
 
     @property
     def master_name(self):
-        return self.contents.read
+        return self.contents.read()
 
     def execute(self):
         if self.yet_not_created:
+            print(self.contents)
             self.caller.execute()
         else:
             self.contents.execute()

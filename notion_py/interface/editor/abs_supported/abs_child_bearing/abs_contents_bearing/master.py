@@ -3,7 +3,7 @@ from typing import Union, Optional
 
 from ..master import ChildBearingBlock
 from notion_py.interface.api_parse import BlockContentsParser
-from notion_py.interface.gateway import UpdateBlock
+from notion_py.interface.gateway import UpdateBlock, UpdatePage, CreatePage
 from notion_py.interface.struct import PointEditor, GroundEditor
 
 
@@ -20,21 +20,27 @@ class ContentsBearingBlock(ChildBearingBlock, metaclass=ABCMeta):
         return {'contents': self.contents.read_rich(),
                 'children': self.sphere.reads_rich()}
 
-    def preview(self):
-        return {'contents': self.contents.preview(),
-                **self.sphere.preview()}
+    def make_preview(self):
+        return {'contents': self.contents.make_preview(),
+                **self.sphere.make_preview()}
 
 
 class BlockContents(GroundEditor, metaclass=ABCMeta):
     def __init__(self, caller: PointEditor):
         super().__init__(caller)
-        self.gateway: Optional[UpdateBlock] = None
+        self.gateway: Union[UpdateBlock, UpdatePage, CreatePage, None] = None
         self._read_plain = ''
         self._read_rich = []
 
     @abstractmethod
     def retrieve(self):
         pass
+
+    def archive(self):
+        self.gateway.archive()
+
+    def un_archive(self):
+        self.gateway.un_archive()
 
     def apply_block_parser(self, parser: BlockContentsParser):
         if parser.block_id:

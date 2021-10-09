@@ -39,7 +39,7 @@ class PageContentsWriterAsIndep(ABC):
         pass
 
     def write_rich_title(self) -> RichTextPropertyEncoder:
-        writer = RichTextPropertyEncoder(prop_type='title', prop_name='title')
+        writer = RichTextPropertyEncoder(prop_name='title', prop_type='title')
         return self.push_carrier(writer)
 
     def write_title(self, value: str):

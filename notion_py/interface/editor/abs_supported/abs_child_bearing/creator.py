@@ -8,7 +8,7 @@ from notion_py.interface.gateway import AppendBlockChildren
 from notion_py.interface.struct import PointEditor, GroundEditor
 
 
-class BlockSphereCreatorWithIndepInlinePage(GroundEditor):
+class BlockSphereCreator(GroundEditor):
     def __init__(self, caller: PointEditor):
         from ...inline.page import InlinePageBlock
         from .abs_contents_bearing.master import ContentsBearingBlock
@@ -37,20 +37,18 @@ class BlockSphereCreatorWithIndepInlinePage(GroundEditor):
             res.extend(chunk)
         return res
 
-    def preview(self):
-        from notion_py.interface.editor.inline.page import \
-            InlinePageBlock
+    def make_preview(self):
+        from ...inline.page import InlinePageBlock
         res = []
         for request in self._requests:
             if isinstance(request, AppendBlockChildren):
                 res.append(request.unpack())
             elif isinstance(request, InlinePageBlock):
-                res.append(request.preview())
+                res.append(request.make_preview())
         return res
 
     def execute(self):
-        from notion_py.interface.editor.inline.page import \
-            InlinePageBlock
+        from ...inline.page import InlinePageBlock
         for request, chunk in zip(self._requests, self._chunks):
             if isinstance(request, AppendBlockChildren):
                 response = request.execute()
@@ -62,8 +60,7 @@ class BlockSphereCreatorWithIndepInlinePage(GroundEditor):
             elif isinstance(request, InlinePageBlock):
                 request.execute()
             else:
-                print('WHAT DID YOU DO?!')
-                pass
+                raise ValueError(request)
         for child in self.values:
             child.execute()
         res = self.values.copy()
@@ -83,9 +80,8 @@ class BlockSphereCreatorWithIndepInlinePage(GroundEditor):
         assert (id(child) == id(self[-1]) == id(self._chunks[-1][-1]))
         return child
 
-    def create_inline_page(self):
-        from notion_py.interface.editor.inline.page import \
-            InlinePageBlock
+    def create_page_block(self):
+        from ...inline.page import InlinePageBlock
         child = InlinePageBlock.create_new(self)
         self._requests.append(child)
         self._chunks.append([child])
@@ -93,5 +89,6 @@ class BlockSphereCreatorWithIndepInlinePage(GroundEditor):
         assert (id(child) == id(self[-1]) == id(self._chunks[-1][-1]))
         return child
 
-    def push_carrier(self, carrier: RichTextContentsEncoder) -> RichTextContentsEncoder:
+    def push_carrier(self, carrier: RichTextContentsEncoder) \
+            -> RichTextContentsEncoder:
         return self.gateway.apply_contents(carrier)

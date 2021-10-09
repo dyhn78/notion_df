@@ -41,8 +41,9 @@ class PageListParser:
 
 
 class PageParser:
-    def __init__(self, page_id: str):
+    def __init__(self, page_id: str, archived=False):
         self.page_id = page_id
+        self.archived = archived
         self.prop_types: dict[str, str] = {}  # {prop_name: prop_type for prop_name in _}
         self.prop_ids: dict[str, str] = {}  # {prop_name: prop_id for prop_name in _}
         self.prop_values: dict[str, Any] = {}  # {prop_name: prop_value for prop_name ..}
@@ -52,7 +53,7 @@ class PageParser:
 
     @classmethod
     def parse_retrieve(cls, response: dict):
-        self = cls(response['id'])
+        self = cls(response['id'], response['archived'])
         for prop_name, rich_property_object in response['properties'].items():
             try:
                 self.prop_values[prop_name] = \

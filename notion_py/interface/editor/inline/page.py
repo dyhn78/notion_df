@@ -4,7 +4,7 @@ from notion_py.interface.api_encode import PageContentsWriterAsIndep, \
     RichTextPropertyEncoder
 from notion_py.interface.api_parse import PageParser
 
-from notion_py.interface.editor.abs_supported.abs_child_bearing.abs_contents_bearing.master import \
+from ..abs_supported.abs_child_bearing.abs_contents_bearing.master import \
     ContentsBearingBlock, BlockContents
 from notion_py.interface.gateway import CreatePage, UpdatePage, RetrievePage
 from notion_py.interface.struct import Editor, PointEditor, drop_empty_request
@@ -20,13 +20,13 @@ class InlinePageBlock(ContentsBearingBlock):
 
     @property
     def master_name(self):
-        if self.title:
-            return self.title
         return self.title
 
     @drop_empty_request
     def execute(self):
         self.contents.execute()
+        if not self.archived:
+            self.sphere.execute()
         self.sphere.execute()
 
     def fully_read(self):
@@ -40,17 +40,11 @@ class InlinePageContents(BlockContents, PageContentsWriterAsIndep):
     def __init__(self, caller: PointEditor):
         super().__init__(caller)
         self.caller = caller
-        if self.yet_not_created:
-            gateway = CreatePage(self, under_database=False)
-        else:
+        if not self.yet_not_created:
             gateway = UpdatePage(self)
+        else:
+            gateway = CreatePage(self, under_database=False)
         self.gateway = gateway
-
-    def archive(self):
-        self.gateway.archive()
-
-    def un_archive(self):
-        self.gateway.un_archive()
 
     def retrieve(self):
         gateway = RetrievePage(self)

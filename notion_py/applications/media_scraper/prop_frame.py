@@ -1,8 +1,8 @@
 from notion_py.interface.struct import PropertyFrameUnit as Unit, PropertyFrame
 
-reading_database_frame = PropertyFrame([
+ReadingDB_FRAME = PropertyFrame([
     Unit('🔵유형', 'media_type',
-         value_groups_by_name={
+         value_groups_by_key={
              'book': ['📖단행본', '☕연속간행물', '✒학습자료']
          }),
     Unit('🏁준비', 'edit_status',
@@ -16,12 +16,12 @@ reading_database_frame = PropertyFrame([
              'lib_missing': '6️⃣🔍대출정보 직접 찾기',
              'completely_done': '7️⃣⛳스크랩 완료'
          },
-         value_groups_by_key={
+         value_groups_by_tag={
              'regulars': ['append', 'overwrite', 'continue'],
              'need_resets': ['url_missing', 'lib_missing'],
              'done': ['done', 'completely_done']
          },
-         value_infos_by_key={'append': (False, False),
+         value_infos_by_tag={'append': (False, False),
                              'continue': (False, False),
                              'overwrite': (True, True)}),
     Unit('📚제목', 'docx_name'),
@@ -36,3 +36,4 @@ reading_database_frame = PropertyFrame([
     Unit('📚위치', 'location'),
     Unit('📚대출중', 'not_available'),
 ])
+ReadingDB_FRAME.add_alias('docx_name', 'title')
