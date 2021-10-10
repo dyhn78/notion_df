@@ -1,4 +1,4 @@
-from .regular_scrap import ReadingDBEditor
+from .common.editor import ReadingDBEditor
 from notion_py.interface import TypeName
 
 

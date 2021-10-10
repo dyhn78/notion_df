@@ -35,7 +35,7 @@ class BlockSphereUpdater(BridgeEditor):
                 from ...inline.text_block import TextBlock
                 child = TextBlock
             else:
-                from ...inline.page import InlinePageBlock
+                from ...inline.page_block import InlinePageBlock
                 child = InlinePageBlock
         else:
             from ...inline.unsupported import UnsupportedBlock

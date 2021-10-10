@@ -5,7 +5,7 @@ from typing import Optional
 from notion_client import Client, AsyncClient
 
 from .inline.text_block import TextBlock
-from .inline.page import InlinePageBlock
+from .inline.page_block import InlinePageBlock
 from .tabular import Database, TabularPageBlock
 from .tabular.pagelist import PageList
 from ..gateway import Query
@@ -30,8 +30,8 @@ class NotionRootEditor(AbstractRootEditor):
     def token(self):
         return os.environ['NOTION_TOKEN'].strip("'").strip('"')
 
-    def make_preview(self, pprint_this=True):
-        preview = [document.make_preview() for document in self.top_documents]
+    def preview(self, pprint_this=True):
+        preview = [document.preview() for document in self.top_documents]
         if pprint_this:
             pprint(preview)
         return preview

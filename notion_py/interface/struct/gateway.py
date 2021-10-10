@@ -5,8 +5,8 @@ from typing import Callable, Optional
 from notion_client.errors import APIResponseError
 
 from notion_py.interface.utility import stopwatch
-from .carrier import Requestor, ValueCarrier
-from .editor import PointEditor
+from . import ValueCarrier, Requestor
+from .point_editor import PointEditor
 
 
 class GroundEditor(PointEditor, metaclass=ABCMeta):
@@ -21,7 +21,7 @@ class GroundEditor(PointEditor, metaclass=ABCMeta):
     def set_overwrite_option(self, option: bool):
         self.enable_overwrite = option
 
-    def make_preview(self):
+    def preview(self):
         return self.gateway.unpack() if self.gateway else {}
 
     def execute(self):

@@ -4,7 +4,7 @@ from notion_py.interface import RootEditor
 from ..page_ids import DatabaseInfo
 from .tools.match_algorithms import TernaryMatchAlgorithm, MonoMatchAlgorithm
 from .tools.date_index import DatePageProcessor, PeriodPageProcessor
-from .prop_frame import Frames
+from notion_py.applications.prop_matcher.frame import Frames
 from .tools.query_maker import QueryMaker
 
 

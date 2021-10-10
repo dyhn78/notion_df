@@ -1,3 +1,3 @@
-from .endpoints.regular_scrap import ReadingDBRegularScraper
-from .endpoints.status_resolve import ReadingDBStatusResolver
-from .endpoints.remove_duplicates import ReadingDBDuplicateRemover
+from .regular_scrap import ReadingDBRegularScraper
+from .status_resolve import ReadingDBStatusResolver
+from .remove_duplicates import ReadingDBDuplicateRemover

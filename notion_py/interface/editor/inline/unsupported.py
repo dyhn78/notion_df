@@ -19,7 +19,7 @@ class UnsupportedBlock(MasterEditor):
         return {'type': 'unsupported',
                 'id': self.master_url}
 
-    def make_preview(self):
+    def preview(self):
         return {}
 
     def execute(self):

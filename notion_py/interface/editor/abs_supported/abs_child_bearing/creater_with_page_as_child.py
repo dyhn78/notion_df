@@ -43,7 +43,7 @@ class BlockSphereCreatorWithChildInlinePage(GroundEditor):
         return child
 
     def create_inline_page(self):
-        from ...inline.page_as_child import InlinePageBlockAsChild
+        from ...inline.page_block_as_child import InlinePageBlockAsChild
         child = InlinePageBlockAsChild.create_new(self)
         self.values.append(child)
         assert id(child) == id(self[-1])

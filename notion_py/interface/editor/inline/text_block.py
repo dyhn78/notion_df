@@ -4,16 +4,20 @@ from ..abs_supported.abs_child_bearing.abs_contents_bearing.master import \
     ContentsBearingBlock, BlockContents
 from ..abs_supported.abs_child_bearing.creator import \
     BlockSphereCreator
-from notion_py.interface.struct import PointEditor, Editor, GroundEditor
+from notion_py.interface.struct import Editor
+from ..abs_supported.abs_child_bearing.updater import BlockSphereUpdater
 from ...api_encode import TextContentsWriter, RichTextContentsEncoder
 from ...api_parse import BlockContentsParser
 from ...gateway import UpdateBlock, RetrieveBlock
 
 
 class TextBlock(ContentsBearingBlock):
-    def __init__(self, caller: Union[Editor, PointEditor], block_id: str):
+    def __init__(self,
+                 caller: Union[Editor, BlockSphereUpdater, BlockSphereCreator],
+                 block_id: str):
         super().__init__(caller=caller, block_id=block_id)
         if isinstance(caller, BlockSphereCreator):
+            self.yet_not_created = True
             self.contents = TextContents(self, caller)
         else:
             self.contents = TextContents(self)
@@ -25,10 +29,12 @@ class TextBlock(ContentsBearingBlock):
 
     def execute(self):
         if self.yet_not_created:
-            print(self.contents)
             self.caller.execute()
+            self.yet_not_created = False
         else:
             self.contents.execute()
+            if self.archived:
+                return
             self.sphere.execute()
 
     def fully_read(self):
@@ -39,13 +45,23 @@ class TextBlock(ContentsBearingBlock):
 
 
 class TextContents(BlockContents, TextContentsWriter):
-    def __init__(self, caller: PointEditor, uncle: Optional[GroundEditor] = None):
+    def __init__(self, caller: TextBlock, uncle: Optional[BlockSphereCreator] = None):
         super().__init__(caller)
         self.caller = caller
         if self.yet_not_created:
-            self.gateway = uncle.gateway
+            self._gateway_before_created = uncle.gateway
+        self._gateway_after_created = UpdateBlock(self)
+
+    @property
+    def gateway(self):
+        if self.yet_not_created:
+            return self._gateway_before_created
         else:
-            self.gateway = UpdateBlock(self)
+            return self._gateway_after_created
+
+    @gateway.setter
+    def gateway(self, value):
+        self._gateway_after_created = value
 
     def retrieve(self):
         gateway = RetrieveBlock(self)
@@ -54,12 +70,21 @@ class TextContents(BlockContents, TextContentsWriter):
         self.apply_block_parser(parser)
 
     def execute(self):
-        response = self.gateway.execute()
         if self.yet_not_created:
+            self.master.execute()
+        else:
+            response = self.gateway.execute()
+            # TODO: update {self._read};
+            #  consider making BlockContentsParser yourself without response
             self.gateway = UpdateBlock(self)
-        return response
-        # TODO: update {self._read};
-        #  consider making BlockContentsParser yourself without response
+            return response
 
     def push_carrier(self, carrier: RichTextContentsEncoder) -> RichTextContentsEncoder:
+        # print(f"<{self.master_id}>")
+        # print(f"<{self.parent_id}>")
+        # print(self.yet_not_created)
+        # print(self.master.yet_not_created)
+        # print(self.master.caller.yet_not_created)
+        # print(self.parent.yet_not_created)
+        # print(carrier.unpack())
         return self.gateway.apply_contents(carrier)

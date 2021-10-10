@@ -1,30 +1,10 @@
 from __future__ import annotations
+
 from abc import ABCMeta, abstractmethod
-from pprint import pprint
 from typing import Union
-from notion_client import Client, AsyncClient
 
-from .carrier import Requestor
+from . import Editor
 from ..utility import page_id_to_url
-
-
-class Editor(Requestor, metaclass=ABCMeta):
-    def __init__(self, root_editor: AbstractRootEditor):
-        self.root_editor = root_editor
-
-    @abstractmethod
-    def make_preview(self):
-        pass
-
-    def preview(self, **kwargs):
-        pprint(self.make_preview(), **kwargs)
-
-
-class AbstractRootEditor(Editor):
-    @abstractmethod
-    def __init__(self):
-        super().__init__(self)
-        self.notion: Union[Client, AsyncClient, None] = None
 
 
 class PointEditor(Editor, metaclass=ABCMeta):
@@ -61,20 +41,20 @@ class PointEditor(Editor, metaclass=ABCMeta):
         return page_id_to_url(self.master_id)
 
     @property
-    def yet_not_created(self):
-        if self.master_id:
-            return False
-        else:
-            assert self.parent_id
-            return True
-
-    @property
     def archived(self):
         return self.master.archived
 
     @archived.setter
     def archived(self, value: bool):
         self.master.archived = value
+
+    @property
+    def yet_not_created(self):
+        return self.master.yet_not_created
+
+    @yet_not_created.setter
+    def yet_not_created(self, value: bool):
+        self.master.yet_not_created = value
 
 
 class MasterEditor(PointEditor):
@@ -83,12 +63,24 @@ class MasterEditor(PointEditor):
         self.agents: dict[str, Union[PointEditor]] = {}
         self.master_id = master_id
         self._archived = False
+        self._yet_not_created = False
+
         self.is_supported_type = False
         self.can_have_children = False
         self.has_children = False
 
     def __bool__(self):
         return any(agent for agent in self.agents.values())
+
+    @property
+    def yet_not_created(self):
+        return self._yet_not_created
+
+    @yet_not_created.setter
+    def yet_not_created(self, value: bool):
+        if value:
+            assert not self.master_id
+        self._yet_not_created = value
 
     @property
     def master(self):
@@ -117,7 +109,7 @@ class MasterEditor(PointEditor):
             else:
                 message = (f"ERROR: provide master_id or parent_id for this block;\n"
                            f"editor info:\n"
-                           f"{self.make_preview()}")
+                           f"{self.preview()}")
             raise AttributeError(message)
 
     @property
@@ -134,8 +126,8 @@ class MasterEditor(PointEditor):
                 requestor.set_overwrite_option(option)
 
     @abstractmethod
-    def make_preview(self):
-        return {key: value.make_preview() for key, value in self.agents.items()}
+    def preview(self):
+        return {key: value.preview() for key, value in self.agents.items()}
 
     @abstractmethod
     def execute(self):
@@ -171,8 +163,8 @@ class BridgeEditor(PointEditor, metaclass=ABCMeta):
         for child in self:
             child.set_overwrite_option(option)
 
-    def make_preview(self):
-        return [child.make_preview() for child in self.values]
+    def preview(self):
+        return [child.preview() for child in self.values]
 
     def execute(self):
         return [child.execute() for child in self.values]

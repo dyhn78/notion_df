@@ -37,7 +37,7 @@ class TabularProperty(GroundEditor, TabularPropertybyKey):
         if self.yet_not_created:
             parser = PageParser.parse_create(response)
             self.apply_page_parser(parser)
-            self.gateway = UpdatePage(self)
+        self.gateway = UpdatePage(self)
 
     def apply_page_parser(self, parser: PageParser):
         if parser.page_id:

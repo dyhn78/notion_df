@@ -33,7 +33,7 @@ class PageContentsWriterAsChild(ABC):
         return writer
 
 
-class PageContentsWriterAsIndep(ABC):
+class PageContentsWriter(ABC):
     @abstractmethod
     def push_carrier(self, carrier: PropertyEncoder):
         pass

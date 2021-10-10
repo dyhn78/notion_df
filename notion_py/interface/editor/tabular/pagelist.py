@@ -85,9 +85,9 @@ class PageList(PointEditor):
         self._normal.apply_parser(parser)
         self.query = Query(self)
 
-    def make_preview(self):
-        return {'pages': self._normal.make_preview(),
-                'new_pages': self._new.make_preview()}
+    def preview(self):
+        return {'pages': self._normal.preview(),
+                'new_pages': self._new.preview()}
 
     def execute(self):
         self._normal.execute()

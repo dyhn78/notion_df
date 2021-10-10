@@ -1,7 +1,7 @@
 from urllib import parse
 
-from ..selenium import retry_webdriver, SeleniumScraper
-from ..helpers import try_method_twice
+from notion_py.applications.media_scraper.common.selenium import retry_webdriver, SeleniumScraper
+from notion_py.applications.media_scraper.common.helpers import try_method_twice
 
 
 class SNULibrary(SeleniumScraper):

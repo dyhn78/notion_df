@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from .rich_text import parse_rich_texts
+from ..struct.root import Printable
 
 PAGE_TYPES = {"child_page"}
 CAN_HAVE_CHILDREN = {"paragraph", "bulleted_list_item",
@@ -26,7 +27,7 @@ class BlockChildrenParser:
         return iter(self.values)
 
 
-class BlockContentsParser:
+class BlockContentsParser(Printable):
     def __init__(self, block_id: str, block_type: str):
         self.block_id = block_id
         self.block_type = block_type
@@ -37,6 +38,16 @@ class BlockContentsParser:
 
         self.read_plain = ''
         self.read_rich = []
+
+    def pprint(self):
+        message = {
+            'block_id': self.block_id,
+            'block_type': self.block_type,
+            'has_children': self.has_children,
+            'read_plain': self.read_plain
+        }
+        from pprint import pprint
+        pprint(message)
 
     @classmethod
     def parse_retrieve(cls, response):

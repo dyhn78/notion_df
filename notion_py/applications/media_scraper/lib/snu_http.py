@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 from urllib import parse
 
-from ..helpers import try_func_twice
+from notion_py.applications.media_scraper.common.helpers import try_func_twice
 
 
 @try_func_twice

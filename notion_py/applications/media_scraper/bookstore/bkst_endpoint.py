@@ -3,6 +3,7 @@ from .yes24_url import scrap_yes24_url
 from .yes24_main import scrap_yes24_main
 from notion_py.interface import TypeName
 from notion_py.interface.utility import stopwatch
+from notion_py.applications.media_scraper.remove_duplicates import remove_dummy_blocks
 
 
 class BookstoreScraper:
@@ -22,12 +23,12 @@ class BookstoreScraper:
             self.set_url(url)
         if 'yes24' in url:
             self.data = scrap_yes24_main(url)
+            stopwatch(f'yes24: {url}')
         elif 'aladin' in url:
             pass
         if self.data:
             self.set_metadata()
             self.set_contents_data()
-            stopwatch(f'bookstore: {url}')
 
     def get_url(self):
         url = self.props.try_read_at('url', default='')
@@ -54,6 +55,7 @@ class BookstoreScraper:
     def set_contents_data(self):
         contents = self.data['contents']
         subpage = self.get_subpage()
+        remove_dummy_blocks(subpage)
         AppendContents(subpage, contents).execute()
         writer = self.props.write_rich_text_at('link_to_contents')
         writer.mention_page(subpage.master_id)
@@ -62,10 +64,14 @@ class BookstoreScraper:
         for block in self.sphere.children:
             if isinstance(block, TypeName.inline_page) and \
                     self.page.title in block.contents.read():
-                block.contents.write_title(f'={self.page.title}')
+                subpage = block
+                # print(block.master_name)
+                # print(block.master_url)
+                # print(f"<{block.master_id}>")
+                # continue
                 break
         else:
-            block = self.sphere.create_page_block()
-            block.contents.write_title(f'={self.page.title}')
-            block.execute()
-        return block
+            subpage = self.sphere.create_page_block()
+        subpage.contents.write_title(f'={self.page.title}')
+        # subpage.execute()
+        return subpage

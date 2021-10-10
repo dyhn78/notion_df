@@ -4,6 +4,6 @@ from .contents.maker import \
 from .contents.wrapper import \
     TextContentsWriter, RichTextContentsWriter, \
     PageContentsWriterAsChild, \
-    PageContentsWriterAsIndep
+    PageContentsWriter
 from .property.maker import PropertyEncoder, RichTextPropertyEncoder
 from .property.wrapper import TabularPropertybyKey

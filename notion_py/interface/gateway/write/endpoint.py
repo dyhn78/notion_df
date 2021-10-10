@@ -36,7 +36,6 @@ class CreatePage(Gateway, PagePropertyStash, BlockChildrenStash):
     @print_response_error
     def execute(self) -> dict:
         res = self.notion.pages.create(**self.unpack())
-        self.clear()
         self.print_comments(res)
         return res
 
@@ -81,7 +80,6 @@ class UpdatePage(Gateway, PagePropertyStash):
     @print_response_error
     def execute(self) -> dict:
         res = self.notion.pages.update(**self.unpack())
-        self.clear()
         self.print_comments()
         return res
 
@@ -128,7 +126,6 @@ class UpdateBlock(Gateway):
     @print_response_error
     def execute(self) -> dict:
         res = self.notion.blocks.update(**self.unpack())
-        self.clear()
         self.print_comments()
         return res
 
@@ -155,7 +152,6 @@ class AppendBlockChildren(Gateway, BlockChildrenStash):
     @print_response_error
     def execute(self) -> dict:
         res = self.notion.blocks.children.append(**self.unpack())
-        self.clear()
         self.print_comments()
         return res
 

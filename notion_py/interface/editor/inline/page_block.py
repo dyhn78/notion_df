@@ -1,6 +1,6 @@
 from typing import Union, Optional
 
-from notion_py.interface.api_encode import PageContentsWriterAsIndep, \
+from notion_py.interface.api_encode import PageContentsWriter, \
     RichTextPropertyEncoder
 from notion_py.interface.api_parse import PageParser
 
@@ -25,8 +25,8 @@ class InlinePageBlock(ContentsBearingBlock):
     @drop_empty_request
     def execute(self):
         self.contents.execute()
-        if not self.archived:
-            self.sphere.execute()
+        if self.archived:
+            return
         self.sphere.execute()
 
     def fully_read(self):
@@ -36,13 +36,14 @@ class InlinePageBlock(ContentsBearingBlock):
         return dict(**super().fully_read_rich(), type='page')
 
 
-class InlinePageContents(BlockContents, PageContentsWriterAsIndep):
+class InlinePageContents(BlockContents, PageContentsWriter):
     def __init__(self, caller: PointEditor):
         super().__init__(caller)
         self.caller = caller
-        if not self.yet_not_created:
+        if self.master_id:
             gateway = UpdatePage(self)
         else:
+            self.yet_not_created = True
             gateway = CreatePage(self, under_database=False)
         self.gateway = gateway
 
@@ -55,17 +56,19 @@ class InlinePageContents(BlockContents, PageContentsWriterAsIndep):
     def execute(self):
         response = self.gateway.execute()
         if self.yet_not_created:
+            self.yet_not_created = False
             parser = PageParser.parse_create(response)
             self.apply_page_parser(parser)
-            self.gateway = UpdatePage(self)
         else:
             pass
             # TODO: update {self._read};
             #  consider making PageParser yourself without response
+        self.gateway = UpdatePage(self)
 
     def apply_page_parser(self, parser: PageParser):
         if parser.page_id:
             self.master_id = parser.page_id
+            self.yet_not_created = False
         self.caller.title = parser.title
         self._read_plain = parser.prop_values['title']
         self._read_rich = parser.prop_rich_values['title']

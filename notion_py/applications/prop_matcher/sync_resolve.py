@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from .prop_frame import Frames
+from notion_py.applications.prop_matcher.frame import Frames
 from .tools.query_maker import QueryMaker
 from ..page_ids import DatabaseInfo
 from notion_py.interface import RootEditor, TypeName, stopwatch

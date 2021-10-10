@@ -44,9 +44,9 @@ class BlockSphere(PointEditor):
     def __bool__(self):
         return any([self._normal, self._new])
 
-    def make_preview(self):
-        return {'children': self._normal.make_preview(),
-                'new_children': self._new.make_preview()}
+    def preview(self):
+        return {'children': self._normal.preview(),
+                'new_children': self._new.preview()}
 
     @drop_empty_request
     def execute(self):
@@ -77,7 +77,7 @@ class BlockSphere(PointEditor):
     def create_text_block(self):
         return self._new.create_text_block()
 
-    def create_inline_page(self):
+    def create_page_block(self):
         return self._new.create_page_block()
 
     def indent_next_block(self) -> BlockSphere:
@@ -114,7 +114,7 @@ class ChildBearingBlock(SupportedBlock):
         self.agents.update(children=self.sphere)
 
     @abstractmethod
-    def make_preview(self):
+    def preview(self):
         return {'contents': "unpack contents here",
                 'children': "unpack children here"}
 

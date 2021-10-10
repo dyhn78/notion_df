@@ -75,9 +75,15 @@ class CompoundFilter(QueryFilter, metaclass=ABCMeta):
 
 class AndFilter(CompoundFilter):
     def unpack(self):
+        for e in self.elements:
+            if not isinstance(e, QueryFilter):
+                raise TypeError(e)
         return {'and': list(e.unpack() for e in self.elements)}
 
 
 class OrFilter(CompoundFilter):
     def unpack(self):
+        for e in self.elements:
+            if not isinstance(e, QueryFilter):
+                raise TypeError(e)
         return {'or': list(e.unpack() for e in self.elements)}

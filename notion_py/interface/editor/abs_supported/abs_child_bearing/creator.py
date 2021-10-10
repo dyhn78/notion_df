@@ -10,13 +10,15 @@ from notion_py.interface.struct import PointEditor, GroundEditor
 
 class BlockSphereCreator(GroundEditor):
     def __init__(self, caller: PointEditor):
-        from ...inline.page import InlinePageBlock
+        from ...inline.page_block import InlinePageBlock
         from .abs_contents_bearing.master import ContentsBearingBlock
         super().__init__(caller)
-        self._chunks: list[list[ContentsBearingBlock]] = []
-        self._requests: list[Union[AppendBlockChildren, InlinePageBlock]] = []
         self.gateway = AppendBlockChildren(self)
+        self._chunks: list[list[ContentsBearingBlock]] = []
+        self._requests: list[Union[AppendBlockChildren, InlinePageBlock]] \
+            = [self.gateway]
         self._chunk_interrupted = True
+        self._execute_in_process = False
 
     def __iter__(self):
         return iter(self.values)
@@ -37,18 +39,24 @@ class BlockSphereCreator(GroundEditor):
             res.extend(chunk)
         return res
 
-    def make_preview(self):
-        from ...inline.page import InlinePageBlock
+    def preview(self):
+        from ...inline.page_block import InlinePageBlock
         res = []
         for request in self._requests:
             if isinstance(request, AppendBlockChildren):
                 res.append(request.unpack())
             elif isinstance(request, InlinePageBlock):
-                res.append(request.make_preview())
+                res.append(request.preview())
         return res
 
     def execute(self):
-        from ...inline.page import InlinePageBlock
+        if self._execute_in_process:
+            return
+            # message = ("child block yet not created ::\n"
+            #            f"{[value.fully_read() for value in self.values]}")
+            # raise RecursionError(message)
+        self._execute_in_process = True
+        from ...inline.page_block import InlinePageBlock
         for request, chunk in zip(self._requests, self._chunks):
             if isinstance(request, AppendBlockChildren):
                 response = request.execute()
@@ -66,6 +74,7 @@ class BlockSphereCreator(GroundEditor):
         res = self.values.copy()
         self.values.clear()
         self._requests.clear()
+        self._execute_in_process = False
         return res
 
     def create_text_block(self):
@@ -81,7 +90,7 @@ class BlockSphereCreator(GroundEditor):
         return child
 
     def create_page_block(self):
-        from ...inline.page import InlinePageBlock
+        from ...inline.page_block import InlinePageBlock
         child = InlinePageBlock.create_new(self)
         self._requests.append(child)
         self._chunks.append([child])

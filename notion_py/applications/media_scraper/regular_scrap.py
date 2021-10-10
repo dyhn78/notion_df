@@ -1,27 +1,19 @@
 import re
+from typing import Optional
 
-from notion_py.applications.media_scraper.prop_frame import ReadingDB_FRAME
+from notion_py.applications.media_scraper.common.editor import ReadingDBEditor
 from notion_py.applications.media_scraper.lib import LibraryScraper
 from notion_py.applications.media_scraper.bookstore import BookstoreScraper
-from notion_py.applications.page_ids import DatabaseInfo
-from notion_py.interface import RootEditor, TypeName, stopwatch
-
-
-class ReadingDBEditor:
-    def __init__(self):
-        self.root_editor = RootEditor()
-        self.frame = ReadingDB_FRAME
-        self.pagelist = self.root_editor.open_pagelist(
-            *DatabaseInfo.READINGS, self.frame)
-        self.status_enum = self.frame.by_key['edit_status'].prop_values
+from notion_py.interface import TypeName, stopwatch
 
 
 class ReadingDBRegularScraper(ReadingDBEditor):
-    def __init__(self, targets=None):
+    def __init__(self, targets: Optional[dict] = None, title=''):
         super().__init__()
-        if targets is None:
+        if not targets:
             targets = {'bookstore', 'gy_lib', 'snu_lib'}
         self.targets = targets
+        self.title = title
 
     def execute(self, page_size=0):
         self.make_query()
@@ -38,7 +30,12 @@ class ReadingDBRegularScraper(ReadingDBEditor):
         maker = query.make_filter.select_at('edit_status')
         ft_status = maker.equals_to_any(maker.prop_value_groups['regulars'])
         ft_status |= maker.is_empty()
-        query.push_filter(ft_media & ft_status)
+        ft = ft_media & ft_status
+        if self.title:
+            maker = query.make_filter.text_at('title')
+            ft_title = maker.equals(self.title)
+            ft &= ft_title
+        query.push_filter(ft)
 
 
 class PageHandler:

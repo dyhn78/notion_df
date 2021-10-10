@@ -20,9 +20,9 @@ class ContentsBearingBlock(ChildBearingBlock, metaclass=ABCMeta):
         return {'contents': self.contents.read_rich(),
                 'children': self.sphere.reads_rich()}
 
-    def make_preview(self):
-        return {'contents': self.contents.make_preview(),
-                **self.sphere.make_preview()}
+    def preview(self):
+        return {'contents': self.contents.preview(),
+                **self.sphere.preview()}
 
 
 class BlockContents(GroundEditor, metaclass=ABCMeta):
@@ -43,6 +43,7 @@ class BlockContents(GroundEditor, metaclass=ABCMeta):
         self.gateway.un_archive()
 
     def apply_block_parser(self, parser: BlockContentsParser):
+        # parser.pprint()
         if parser.block_id:
             self.master_id = parser.block_id
         self.caller.has_children = parser.has_children
