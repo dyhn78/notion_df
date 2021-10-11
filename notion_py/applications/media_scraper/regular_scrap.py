@@ -15,16 +15,15 @@ class ReadingDBRegularScraper(ReadingDBEditor):
         self.targets = targets
         self.title = title
 
-    def execute(self, page_size=0):
-        self.make_query()
-        self.pagelist.run_query(page_size)
+    def execute(self, request_size=0):
+        self.make_query(request_size)
         for page in self.pagelist:
             page.sphere.fetch_children()
             unit = PageHandler(self, page)
             unit.execute()
 
-    def make_query(self):
-        query = self.pagelist.query
+    def make_query(self, request_size):
+        query = self.pagelist.open_query()
         maker = query.make_filter.select_at('media_type')
         ft_media = maker.equals_to_any(maker.prop_value_groups['book'])
         maker = query.make_filter.select_at('edit_status')
@@ -36,6 +35,7 @@ class ReadingDBRegularScraper(ReadingDBEditor):
             ft_title = maker.equals(self.title)
             ft &= ft_title
         query.push_filter(ft)
+        query.execute(request_size)
 
 
 class PageHandler:

@@ -1,1 +1,1 @@
-from .endpoint import UpdatePage, CreatePage, AppendBlockChildren, UpdateBlock
+from .write import UpdatePage, CreatePage, AppendBlockChildren, UpdateBlock

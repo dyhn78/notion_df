@@ -1,5 +1,4 @@
 from __future__ import annotations
-from typing import Union
 
 from notion_py.interface.common import PropertyFrame, PropertyFrameUnit
 
@@ -20,6 +19,9 @@ class NetworkPropertyFrameUnit(PropertyFrameUnit):
     @property
     def edge_target(self):
         return self.prop_tag.split('_')[1]
+
+    EDGE_ASPECTS = ['edge_type', 'edge_vertical',
+                    'edge_weight', 'edge_target']
 
     EDGE_VERTICALS = {
         'hi': 'up',
@@ -47,29 +49,34 @@ class NetworkPropertyFrame(PropertyFrame):
         for tag in self.tags():
             unit = self.by_tag[tag]
             if isinstance(unit, NetworkPropertyFrameUnit):
-                aspects = ['edge_type', 'edge_vertical',
-                           'edge_weight', 'edge_target']
-                for aspect in aspects:
-                    if getattr(unit, aspect) == keyword:
-                        res.append(unit)
-                        break
+                for aspect in unit.EDGE_ASPECTS:
+                    try:
+                        if getattr(unit, aspect) == keyword:
+                            res.append(unit)
+                            break
+                    except KeyError:
+                        pass
         return res
 
 
 class NetworkFrames:
     _Frame = NetworkPropertyFrame
-    _Unit = NetworkPropertyFrameUnit
+    _NUnit = NetworkPropertyFrameUnit
+    _Unit = PropertyFrameUnit
     _common = _Frame([
-        _Unit(tag='hi_self', key='✖️구성'),
-        _Unit(tag='in_self', key='➖속성'),
-        _Unit(tag='lo_self', key='➗요소'),
-        _Unit(tag='out_self', key='➕적용'),
+        _NUnit(tag='hi_self', key='✖️구성'),
+        _NUnit(tag='in_self', key='➖속성'),
+        _NUnit(tag='lo_self', key='➗요소'),
+        _NUnit(tag='out_self', key='➕적용'),
+        _NUnit(tag='front_self', key='⭕결산'),
+        _NUnit(tag='back_self', key='⭕경과'),
+        _Unit(tag='forbidden', key='🔵접근성=금지'),
     ])
     THEMES = _Frame(_common, [
-        _Unit(tag='in_ideas', key='📕속성'),
-        _Unit(tag='lo_ideas', key='📕요소'),
+        _NUnit(tag='in_ideas', key='📕속성'),
+        _NUnit(tag='lo_ideas', key='📕요소'),
     ])
     IDEAS = _Frame(_common, [
-        _Unit(tag='hi_themes', key='📕구성'),
-        _Unit(tag='out_themes', key='📕적용')
+        _NUnit(tag='hi_themes', key='📕구성'),
+        _NUnit(tag='out_themes', key='📕적용')
     ])

@@ -40,23 +40,18 @@ class LongRequestor(PointRequestor):
     def execute(self, request_size=0):
         self._execute_all(request_size, False)
 
-    @abstractmethod
-    def _execute_each(self, request_size, start_cursor=None):
-        pass
-
-    def _print_comments_each(self):
-        comments = f'→ {self.response_size} 개 완료'
-        stopwatch(comments)
-
     def _execute_all(self, request_size, print_comments_each: bool):
         res = []
         result = {'results': res}
         if request_size == 0:
             request_size = self.INF
-        while self.has_more:
+
+        while self.has_more and request_size > self.response_size:
+            req_size = min(request_size - self.response_size,
+                           self.MAX_PAGE_SIZE)
             # noinspection PyArgumentList
             response = self._execute_each(
-                request_size=min(request_size, self.MAX_PAGE_SIZE),
+                request_size=req_size,
                 start_cursor=self.start_cursor)
             res.extend(response['results'])
             resp_size = len(response['results'])
@@ -67,6 +62,14 @@ class LongRequestor(PointRequestor):
             if print_comments_each:
                 self._print_comments_each()
         return result
+
+    @abstractmethod
+    def _execute_each(self, request_size, start_cursor=None):
+        pass
+
+    def _print_comments_each(self):
+        comments = f'→ {self.response_size} 개 완료'
+        stopwatch(comments)
 
 
 def print_response_error(func: Callable):

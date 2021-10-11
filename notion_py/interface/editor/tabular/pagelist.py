@@ -10,13 +10,11 @@ from ...parser import PageListParser
 class PageList(PointEditor):
     def __init__(self, caller: Database):
         from .pagelist_agents import PageListUpdater, PageListCreator
-        from notion_py.interface.requestor import Query
         super().__init__(caller)
         self.caller = caller
         self.frame = caller.frame
         self._normal = PageListUpdater(self)
         self._new = PageListCreator(self)
-        self.query = Query(self, self.frame)
 
     def __bool__(self):
         any([self._normal, self._new])
@@ -26,6 +24,10 @@ class PageList(PointEditor):
 
     def __getitem__(self, page_id: str):
         return self.by_id[page_id]
+
+    def open_query(self):
+        from notion_py.interface.requestor import Query
+        return Query(self, self.frame)
 
     @property
     def by_id(self):
@@ -50,12 +52,9 @@ class PageList(PointEditor):
             res.extend(page.sphere.descendants)
         return res
 
-    def run_query(self, request_size=0):
-        from notion_py.interface.requestor import Query
-        response = self.query.execute(request_size=request_size)
+    def apply_query_response(self, response):
         parser = PageListParser(response)
         self._normal.apply_parser(parser)
-        self.query = Query(self, self.frame)
 
     def fetch_descendants(self, depth=-1):
         if depth == 0:

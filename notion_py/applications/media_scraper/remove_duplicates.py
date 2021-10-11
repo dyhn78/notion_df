@@ -3,20 +3,20 @@ from notion_py.interface import TypeName, stopwatch
 
 
 class ReadingDBDuplicateRemover(ReadingDBEditor):
-    def execute(self, page_size=0):
-        self.make_query(page_size)
+    def execute(self, request_size=0):
+        self.make_query(request_size)
         for page in self.pagelist.elements:
             page.sphere.fetch_children()
             remove_dummy_blocks(page)
 
-    def make_query(self, page_size):
-        query = self.pagelist.query
+    def make_query(self, request_size):
+        query = self.pagelist.open_query()
         maker = query.make_filter.select_at('media_type')
         ft_media = maker.equals_to_any(maker.prop_value_groups['book'])
         # maker = query.make_filter.text_at('title')
         # ft_media &= maker.starts_with('칸트의')
         query.push_filter(ft_media)
-        self.pagelist.run_query(page_size=page_size)
+        query.execute(request_size)
 
 
 def remove_dummy_blocks(page: TypeName.tabular_page):

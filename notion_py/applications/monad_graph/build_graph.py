@@ -26,12 +26,19 @@ class BuildGraph:
         return self.G
 
     def make_query(self, request_size):
-        for pagelist in self.all.values():
-            pagelist.run_query(request_size)
+        for pagelist in [self.themes]:
+            query = pagelist.open_query()
+            maker = query.make_filter.relation_at('front_self')
+            ft = maker.is_empty()
+            query.push_filter(ft)
+            query.execute(request_size)
+        for pagelist in [self.ideas]:
+            query = pagelist.open_query()
+            query.execute(request_size)
 
     def add_nodes(self):
         for i, page in enumerate(chain(*self.all.values())):
-            self.G.add_node(self.parse_title(page.title), page_id=page.page_id)
+            self.G.add_node(self.parse_title(page.master_name), page_id=page.master_id)
 
     @staticmethod
     def parse_title(page_title: str):

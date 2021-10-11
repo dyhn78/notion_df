@@ -42,37 +42,35 @@ class RootEditor(AbstractRootEditor):
             pprint(preview)
         return preview
 
-    def open_database(self, database_alias: str, id_or_url: str,
-                      frame: Optional[PropertyFrame] = None):
-        database_id = page_url_to_id(id_or_url)
-        editor = Database(self, database_id, database_alias, frame)
-        self.top_editors.append(editor)
-        return editor
-
-    def open_pagelist(self, database_alias: str, id_or_url: str,
-                      frame: Optional[PropertyFrame] = None):
-        database_id = page_url_to_id(id_or_url)
-        database = Database(self, database_id, database_alias, frame)
-        editor = database.pagelist
-        self.top_editors.append(editor)
-        return editor
-
-    def open_tabular_page(self, id_or_url: str,
-                          frame: Optional[PropertyFrame] = None):
-        page_id = page_url_to_id(id_or_url)
-        editor = TabularPageBlock(self, page_id, frame)
-        self.top_editors.append(editor)
-        return editor
-
     def execute(self):
         for editor in self.top_editors:
             editor.execute()
 
+    def open_database(self, database_alias: str, id_or_url: str,
+                      frame: Optional[PropertyFrame] = None):
+        database_id = page_url_to_id(id_or_url)
+        database = Database(self, database_id, database_alias, frame)
+        self.top_editors.append(database)
+        return database
+
+    def open_pagelist(self, database_alias: str, id_or_url: str,
+                      frame: Optional[PropertyFrame] = None):
+        database = self.open_database(database_alias, id_or_url, frame)
+        pagelist = database.pagelist
+        return pagelist
+
+    def open_tabular_page(self, id_or_url: str,
+                          frame: Optional[PropertyFrame] = None):
+        page_id = page_url_to_id(id_or_url)
+        page = TabularPageBlock(self, page_id, frame)
+        self.top_editors.append(page)
+        return page
+
     def open_inline_page(self, id_or_url: str):
         page_id = page_url_to_id(id_or_url)
-        editor = InlinePageBlock(self, page_id)
-        self.top_editors.append(editor)
-        return editor
+        page = InlinePageBlock(self, page_id)
+        self.top_editors.append(page)
+        return page
 
     @property
     def token(self):

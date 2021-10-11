@@ -1,1 +1,1 @@
-from .endpoint import Query
+from .query import Query

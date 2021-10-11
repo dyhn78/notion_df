@@ -3,14 +3,13 @@ from notion_py.interface import TypeName
 
 
 class ReadingDBStatusResolver(ReadingDBEditor):
-    def execute(self):
-        self.make_query()
-        self.pagelist.run_query()
+    def execute(self, request_size=0):
+        self.make_query(request_size)
         for page in self.pagelist.elements:
             self.edit(page)
 
-    def make_query(self):
-        query = self.pagelist.query
+    def make_query(self, request_size):
+        query = self.pagelist.open_query()
         maker = query.make_filter.select_at('media_type')
         ft = maker.equals_to_any(maker.prop_value_groups['book'])
         maker = query.make_filter.select_at('edit_status')
@@ -20,6 +19,7 @@ class ReadingDBStatusResolver(ReadingDBEditor):
         ft |= maker.equals(True)
         """
         query.push_filter(ft)
+        query.execute(request_size)
 
     def edit(self, page: TypeName.tabular_page):
         page.props.set_overwrite_option(True)

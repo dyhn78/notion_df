@@ -7,13 +7,15 @@ from ...utility import page_id_to_url, stopwatch
 
 class Query(LongRequestor):
     def __init__(self, editor: PointEditor, frame: PropertyFrame):
-        from .filter_maker import QueryFilterAgent
-        from .sort import QuerySort
         super().__init__(editor)
-        self._filter_value = PlainFilter({})
-        self.sort = QuerySort()
         self.frame = frame
+        self._filter_value = PlainFilter({})
+
+        from .filter_maker import QueryFilterAgent
         self.make_filter = QueryFilterAgent(self)
+
+        from .sort import QuerySort
+        self.sort = QuerySort()
 
     def __bool__(self):
         return True
@@ -37,7 +39,11 @@ class Query(LongRequestor):
 
     def execute(self, request_size=0):
         self.print_comments()
-        return self._execute_all(request_size, print_comments_each=True)
+        response = self._execute_all(request_size, print_comments_each=True)
+
+        from ...editor.tabular.pagelist import PageList
+        assert isinstance(self.editor, PageList)
+        self.editor.apply_query_response(response)
 
     @print_response_error
     def _execute_each(self, request_size, start_cursor=None):

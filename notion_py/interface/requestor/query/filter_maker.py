@@ -1,6 +1,6 @@
 from __future__ import annotations
 from .filter_unit import PlainFilter, OrFilter, AndFilter
-from .endpoint import Query
+from .query import Query
 from ...common import PropertyFrame, PropertyFrameUnit
 
 # find types by parser
