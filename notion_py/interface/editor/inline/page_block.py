@@ -3,19 +3,26 @@ from typing import Union, Optional
 from notion_py.interface.encoder import PageContentsWriter, \
     RichTextPropertyEncoder
 from notion_py.interface.parser import PageParser
+from notion_py.interface.requestor import \
+    CreatePage, UpdatePage, RetrievePage
+from ..abs_supported.abs_child_bearing.updater import BlockSphereUpdater
+from ...common.struct import drop_empty_request
+from notion_py.interface.utility import eval_empty
 
 from ..abs_supported.abs_child_bearing.abs_contents_bearing.master import \
     ContentsBearingBlock, BlockContents
-from notion_py.interface.requestor import CreatePage, UpdatePage, RetrievePage
-from notion_py.interface.struct import Editor
-from notion_py.interface.utility import eval_empty
-from ..editor_struct import PointEditor
-from ...requestor.requestor_struct import drop_empty_request
+from ..abs_supported.abs_child_bearing.creator import BlockSphereCreator
+from ...common.struct import AbstractRootEditor
 
 
 class InlinePageBlock(ContentsBearingBlock):
-    def __init__(self, caller: Union[Editor, PointEditor], page_id: str):
+    def __init__(self,
+                 caller: Union[AbstractRootEditor,
+                               BlockSphereUpdater,
+                               BlockSphereCreator],
+                 page_id: str):
         super().__init__(caller, page_id)
+        self.caller = caller
         self.contents = InlinePageContents(self)
         self.agents.update(contents=self.contents)
         self.title = ''
@@ -39,7 +46,7 @@ class InlinePageBlock(ContentsBearingBlock):
 
 
 class InlinePageContents(BlockContents, PageContentsWriter):
-    def __init__(self, caller: PointEditor):
+    def __init__(self, caller: InlinePageBlock):
         super().__init__(caller)
         self.caller = caller
         if self.master_id:

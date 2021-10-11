@@ -2,7 +2,8 @@ from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 
 from notion_py.interface.encoder.rich_text import RichTextObjectEncoder
-from notion_py.interface.struct import ValueCarrier, DateFormat
+from notion_py.interface.common import DateFormat
+from notion_py.interface.common.struct import ValueCarrier
 
 
 class PropertyEncoder(ValueCarrier, metaclass=ABCMeta):

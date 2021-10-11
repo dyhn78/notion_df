@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 from typing import Union, Optional
 
-from notion_py.interface.struct import Editor, Requestor
+from notion_py.interface.common.struct import Editor, Requestor
 from notion_py.interface.utility import page_id_to_url
 
 
@@ -27,6 +27,10 @@ class PointEditor(Editor, metaclass=ABCMeta):
     @master_id.setter
     def master_id(self, value: str):
         self.master.master_id = value
+
+    @property
+    def master_name(self) -> str:
+        return self.master.master_name
 
     @property
     def parent_id(self) -> str:
@@ -58,38 +62,24 @@ class PointEditor(Editor, metaclass=ABCMeta):
 
 
 class MasterEditor(PointEditor):
-    def __init__(self, caller: Union[PointEditor, Editor], master_id: str):
+    def __init__(self, caller: Editor, master_id: str):
         super().__init__(caller)
         self.agents: dict[str, Union[PointEditor]] = {}
+        self._master_id = ''
         self.master_id = master_id
-        self._archived = False
-        self._yet_not_created = False
 
         self.is_supported_type = False
         self.can_have_children = False
         self.has_children = False
+        self._archived = False
+        self._yet_not_created = False
 
     def __bool__(self):
         return any(agent for agent in self.agents.values())
 
     @property
-    def yet_not_created(self):
-        return self._yet_not_created
-
-    @yet_not_created.setter
-    def yet_not_created(self, value: bool):
-        if value:
-            assert not self.master_id
-        self._yet_not_created = value
-
-    @property
     def master(self):
         return self
-
-    @property
-    @abstractmethod
-    def master_name(self):
-        pass
 
     @property
     def master_id(self):
@@ -97,7 +87,15 @@ class MasterEditor(PointEditor):
 
     @master_id.setter
     def master_id(self, value):
+        if self._master_id:
+            self.root_editor.by_id.pop(self._master_id)
         self._master_id = value
+        self.root_editor.by_id[self._master_id] = self
+
+    @property
+    @abstractmethod
+    def master_name(self):
+        pass
 
     @property
     def parent_id(self):
@@ -111,6 +109,16 @@ class MasterEditor(PointEditor):
                            f"editor info:\n"
                            f"{self.preview()}")
             raise AttributeError(message)
+
+    @property
+    def yet_not_created(self):
+        return self._yet_not_created
+
+    @yet_not_created.setter
+    def yet_not_created(self, value: bool):
+        if value:
+            assert not self.master_id
+        self._yet_not_created = value
 
     @property
     def archived(self):
@@ -142,7 +150,7 @@ class MasterEditor(PointEditor):
         pass
 
 
-class BridgeEditor(PointEditor, metaclass=ABCMeta):
+class ListEditor(PointEditor, metaclass=ABCMeta):
     def __init__(self, caller: PointEditor):
         super().__init__(caller)
         self.values: list[MasterEditor] = []

@@ -4,13 +4,12 @@ from notion_py.interface.encoder import PageContentsWriterAsChild, \
     RichTextContentsEncoder
 from notion_py.interface.parser import PageParser
 from notion_py.interface.requestor import UpdatePage, RetrievePage, AppendBlockChildren
-from notion_py.interface.struct import Editor
+from notion_py.interface.common.struct import Editor, drop_empty_request
 from ..abs_supported.abs_child_bearing.abs_contents_bearing.master import \
     ContentsBearingBlock, BlockContents
 from ..abs_supported.abs_child_bearing.creater_with_page_as_child import \
     BlockSphereCreatorWithChildInlinePage
-from ..editor_struct import PointEditor
-from ...requestor.requestor_struct import drop_empty_request
+from ..struct import PointEditor
 
 
 class InlinePageBlockAsChild(ContentsBearingBlock):

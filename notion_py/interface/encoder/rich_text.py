@@ -1,6 +1,7 @@
 from abc import ABCMeta
 
-from notion_py.interface.struct import DateFormat, ValueCarrier
+from notion_py.interface.common import DateFormat
+from notion_py.interface.common.struct import ValueCarrier
 
 
 class RichTextObjectEncoder(ValueCarrier, metaclass=ABCMeta):

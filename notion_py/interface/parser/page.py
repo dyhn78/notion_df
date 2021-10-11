@@ -6,7 +6,7 @@ from .rich_text import parse_rich_texts
 
 
 # find types by parser
-from notion_py.interface.struct import DateFormat
+from notion_py.interface.common import DateFormat
 
 VALUE_TYPES = {
     'text': ['text', 'rich_text', 'title'],

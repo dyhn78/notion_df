@@ -1,18 +1,22 @@
 from typing import Union, Optional
 
-from ..abs_supported.abs_child_bearing.master import ChildBearingBlock
-from notion_py.interface.editor.tabular.page_props import TabularProperty
-from notion_py.interface.struct import Editor, PropertyFrame
-from ..editor_struct import BridgeEditor
+from notion_py.interface.common import PropertyFrame
+from notion_py.interface.common.struct import AbstractRootEditor
+from ..abs_supported.abs_child_bearing import ChildBearingBlock
+from .pagelist_agents import PageListUpdater, PageListCreator
 
 
 class TabularPageBlock(ChildBearingBlock):
-    def __init__(self, caller: Union[Editor, BridgeEditor],
+    def __init__(self, caller: Union[AbstractRootEditor,
+                                     PageListUpdater,
+                                     PageListCreator],
                  page_id: str,
                  frame: Optional[PropertyFrame] = None):
+        from .page_props import TabularProperty
         super().__init__(caller=caller, block_id=page_id)
+        self.caller = caller
         if not frame:
-            frame = getattr(caller, 'frame', PropertyFrame())
+            frame = caller.frame
         self.frame: PropertyFrame = frame
         self.props = TabularProperty(caller=self)
         self.agents.update(props=self.props)

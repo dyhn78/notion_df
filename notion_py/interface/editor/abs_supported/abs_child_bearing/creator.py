@@ -2,17 +2,19 @@ from __future__ import annotations
 
 from typing import Union
 
-from ...editor_struct import PointEditor, GroundEditor
+from .sphere import BlockSphere
+from ...struct import GroundEditor
 from notion_py.interface.encoder import RichTextContentsEncoder
 from notion_py.interface.parser import BlockChildrenParser
 from notion_py.interface.requestor import AppendBlockChildren
 
 
 class BlockSphereCreator(GroundEditor):
-    def __init__(self, caller: PointEditor):
+    def __init__(self, caller: BlockSphere):
         from ...inline.page_block import InlinePageBlock
         from .abs_contents_bearing.master import ContentsBearingBlock
         super().__init__(caller)
+        self.caller = caller
         self.gateway = AppendBlockChildren(self)
         self._chunks: list[list[ContentsBearingBlock]] = []
         self._requests: list[Union[AppendBlockChildren, InlinePageBlock]] \

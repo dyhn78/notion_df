@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 from notion_py.interface import RootEditor
-from ..page_ids import DatabaseInfo
+from ..database_info import DatabaseInfo
 from .common.match_algorithms import TernaryMatchAlgorithm, MonoMatchAlgorithm
 from .common.date_index import DatePageProcessor, PeriodPageProcessor
 from .common.query_maker import QueryMaker
-from .frame import Frames
+from .frame import MatchFrames
 
 
 class PropertyMatcher:
@@ -15,13 +15,13 @@ class PropertyMatcher:
         self.query_maker = QueryMaker(self.date_range)
 
         self.periods = self.root.open_pagelist(*DatabaseInfo.PERIODS,
-                                               frame=Frames.PERIODS)
-        self.dates = self.root.open_pagelist(*DatabaseInfo.DATES, frame=Frames.DATES)
+                                               frame=MatchFrames.PERIODS)
+        self.dates = self.root.open_pagelist(*DatabaseInfo.DATES, frame=MatchFrames.DATES)
         self.journals = self.root.open_pagelist(*DatabaseInfo.JOURNALS,
-                                                frame=Frames.JOURNALS)
-        self.memos = self.root.open_pagelist(*DatabaseInfo.MEMOS, frame=Frames.MEMOS)
+                                                frame=MatchFrames.JOURNALS)
+        self.memos = self.root.open_pagelist(*DatabaseInfo.MEMOS, frame=MatchFrames.MEMOS)
         self.writings = self.root.open_pagelist(*DatabaseInfo.WRITINGS,
-                                                frame=Frames.WRITINGS)
+                                                frame=MatchFrames.WRITINGS)
 
     def execute(self):
         self.make_query()

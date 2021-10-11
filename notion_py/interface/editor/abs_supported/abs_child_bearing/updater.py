@@ -1,14 +1,16 @@
 from typing import Union
 
+from .sphere import BlockSphere
 from ..master import SupportedBlock
-from ...editor_struct import BridgeEditor, PointEditor
-from ....parser import BlockChildrenParser, BlockContentsParser
+from ...struct import ListEditor
+from notion_py.interface.parser import BlockChildrenParser, BlockContentsParser
 
 
-class BlockSphereUpdater(BridgeEditor):
-    def __init__(self, caller: PointEditor):
+class BlockSphereUpdater(ListEditor):
+    def __init__(self, caller: BlockSphere):
         from ...inline.unsupported import UnsupportedBlock
         super().__init__(caller)
+        self.caller = caller
         self.values: list[Union[SupportedBlock, UnsupportedBlock]] = []
 
     def __iter__(self):

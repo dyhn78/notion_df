@@ -1,4 +1,5 @@
-from notion_py.interface import TypeName
+from notion_py.interface.common import \
+    PropertyFrame as Frame, PropertyFrameUnit as Unit
 
 """
 날짜 관련된 formula 속성의 값은
@@ -9,54 +10,54 @@ from notion_py.interface import TypeName
 """
 
 
-class Frames:
-    _Unit = TypeName.frame_unit
-    _Frame = TypeName.frame
-
-    _TITLE = _Unit(tag='title', key='📚제목')
-    _AUTO_DATE_U = _Unit(tag='auto_date', key='날짜값⏲️')
-    _AUTO_DATETIME_U = _Unit(tag='auto_datetime', key='날짜⏲️')
-    _AUTO_DATE = _Frame(_AUTO_DATE_U, _AUTO_DATETIME_U)
+class MatchFrames:
+    _title = Unit(tag='title', key='📚제목')
+    _auto_date = Unit(tag='auto_date', key='날짜값⏲️')
+    _auto_datetime = Unit(tag='auto_datetime', key='날짜⏲️')
+    _AUTO_DATE = Frame([_auto_date, _auto_datetime])
     _AUTO_DATE.add_alias('auto_datetime', 'index_as_domain')
 
-    _TO_PERIODS = _Unit(tag='to_periods', key='🧶기간')
-    _TO_DATES = _Unit(tag='to_dates', key='🧶날짜')
-    _TO_JOURNALS = _Unit(tag='to_journals', key='🧵일지')
-    _TO_READINGS = _Unit(tag='to_readings', key='📒읽기')
-    _TO_CHANNELS = _Unit(tag='to_channels', key='📒채널')
+    _to_periods = Unit(tag='to_periods', key='🧶기간')
+    _to_dates = Unit(tag='to_dates', key='🧶날짜')
+    _to_journals = Unit(tag='to_journals', key='🧵일지')
+    _to_readings = Unit(tag='to_readings', key='📒읽기')
+    _to_channels = Unit(tag='to_channels', key='📒채널')
 
-    PERIODS = _Frame(_TITLE,
-                     _Unit(tag='to_itself', key='🔁기간'),
-                     _Unit(tag='manual_date_range', key='📅날짜 범위'),
-                     )
+    PERIODS = Frame([_title,
+                     Unit(tag='to_itself', key='🔁기간'),
+                     Unit(tag='manual_date_range', key='📅날짜 범위'),
+                     ])
     PERIODS.add_alias('title', 'index_as_target')
     PERIODS.add_alias('manual_date_range', 'index_as_domain')
 
-    DATES = _Frame(_TITLE,
-                   _Unit(tag='to_itself', key='🔁날짜'),
-                   _Unit(tag='manual_date', key='📆날짜'),
-                   _Unit(tag='to_themes', key='📕수행'),
-                   )
+    DATES = Frame([_title,
+                   Unit(tag='to_itself', key='🔁날짜'),
+                   Unit(tag='manual_date', key='📆날짜'),
+                   Unit(tag='to_themes', key='📕수행'),
+                   ])
     DATES.add_alias('title', 'index_as_target')
     DATES.add_alias('manual_date', 'index_as_domain')
 
-    JOURNALS = _Frame(_TITLE, _AUTO_DATE, _TO_READINGS, _TO_CHANNELS,
-                      _Unit(tag='to_itself', key='🔁일지'),
-                      _Unit(tag='to_themes', key='📕수행'),
-                      _Unit(tag='up_self', key='🧵구성'),
-                      _Unit(tag='down_self', key='🧵요소'),
-                      )
-    MEMOS = _Frame(_TITLE, _AUTO_DATE, _TO_JOURNALS,
-                   _Unit(tag='to_itself', key='🔁메모'),
-                   )
-    WRITINGS = _Frame(_TITLE, _AUTO_DATE, _TO_JOURNALS, _TO_READINGS, _TO_CHANNELS,
-                      _Unit(tag='to_itself', key='🔁쓰기'),
-                      _Unit(tag='to_themes', key='📕요소'),
-                      )
+    JOURNALS = Frame(_AUTO_DATE,
+                     [_title, _to_readings, _to_channels,
+                      Unit(tag='to_itself', key='🔁일지'),
+                      Unit(tag='to_themes', key='📕수행'),
+                      Unit(tag='up_self', key='🧵구성'),
+                      Unit(tag='down_self', key='🧵요소'),
+                      ])
+    MEMOS = Frame(_AUTO_DATE,
+                  [_title, _to_journals,
+                   Unit(tag='to_itself', key='🔁메모'),
+                   ])
+    WRITINGS = Frame(_AUTO_DATE,
+                     [_title, _to_journals, _to_readings, _to_channels,
+                      Unit(tag='to_itself', key='🔁쓰기'),
+                      Unit(tag='to_themes', key='📕요소'),
+                      ])
 
     for _frame in [DATES, JOURNALS, MEMOS, WRITINGS]:
-        _frame.append(_TO_PERIODS)
+        _frame.append(_to_periods)
     for _frame in [JOURNALS, MEMOS, WRITINGS]:
-        _frame.append(_TO_DATES)
+        _frame.append(_to_dates)
     for _frame in [MEMOS, WRITINGS]:
-        _frame.append(_TO_JOURNALS)
+        _frame.append(_to_journals)

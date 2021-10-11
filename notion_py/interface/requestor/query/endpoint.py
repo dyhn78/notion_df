@@ -1,18 +1,18 @@
-from .filter_maker import QueryFilterAgent
 from .filter_unit import QueryFilter, PlainFilter
-from .sort import QuerySort
-from ..requestor_struct import LongRequestor, print_response_error
-from ...editor.editor_struct import PointEditor
-from ...struct import PropertyFrame
+from ..struct import LongRequestor, print_response_error
+from ...common import PropertyFrame
+from ...editor.struct import PointEditor
 from ...utility import page_id_to_url, stopwatch
 
 
 class Query(LongRequestor):
-    def __init__(self, editor: PointEditor):
+    def __init__(self, editor: PointEditor, frame: PropertyFrame):
+        from .filter_maker import QueryFilterAgent
+        from .sort import QuerySort
         super().__init__(editor)
         self._filter_value = PlainFilter({})
         self.sort = QuerySort()
-        self.frame = editor.frame if hasattr(editor, 'frame') else PropertyFrame()
+        self.frame = frame
         self.make_filter = QueryFilterAgent(self)
 
     def __bool__(self):
@@ -49,8 +49,8 @@ class Query(LongRequestor):
     def print_comments(self):
         target_url = page_id_to_url(self.target_id)
         if self.target_name:
-            form = ['query', f"< {self.target_name} >", '\n\t', target_url]
+            form = [f"{self.target_name}", target_url]
         else:
             form = ['query', target_url]
-        comments = ' '.join(form)
+        comments = '  '.join(form)
         stopwatch(comments)

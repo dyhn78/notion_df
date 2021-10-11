@@ -1,10 +1,10 @@
 from pprint import pprint
 
 from notion_py.interface.utility import stopwatch
-from notion_py.applications.monad_graph_depr.build_graph import BuildGraph
-from notion_py.applications.monad_graph_depr.optimize_position import GradientDescent, \
+from notion_py.applications.monad_graph.build_graph import BuildGraph
+from notion_py.applications.monad_graph.optimize_position import GradientDescent, \
     InitializeGraph
-from notion_py.applications.monad_graph_depr.draw_figure import DrawFigure
+from notion_py.applications.monad_graph.draw_figure import DrawFigure
 
 
 def print_nodes(gp):
@@ -29,8 +29,8 @@ def print_pages(builder: BuildGraph):
 
 
 if __name__ == '__main__':
-    build_monad_graph = BuildGraph(page_size=0)
-    graph = build_monad_graph.execute()
+    build_monad_graph = BuildGraph()
+    graph = build_monad_graph.execute(request_size=0)
 
     # print_edges(graph)
     # print_pages(build_monad_graph)

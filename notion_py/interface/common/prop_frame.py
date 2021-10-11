@@ -44,60 +44,70 @@ class PropertyFrameUnit:
 
 
 class PropertyFrame:
-    def __init__(self,
-                 *args: list[Union[PropertyFrameUnit,
-                                   list[PropertyFrameUnit],
-                                   PropertyFrame]]):
-        self.values: list[PropertyFrameUnit] = []
-        self.by_key: dict[str, PropertyFrameUnit] = {}
-        self.by_name: dict[str, PropertyFrameUnit] = {}
-        units = []
-        for u in args:
-            if isinstance(u, PropertyFrameUnit):
-                units.append(u)
-            elif isinstance(u, PropertyFrame) or isinstance(u, list):
-                for fu in u:
-                    units.append(fu)
-        self.extend(units)
+    def __init__(self, *args: Union[PropertyFrame, list[PropertyFrameUnit]]):
+        self.units: list[PropertyFrameUnit] = self._flatten(args)
+
+    @staticmethod
+    def _flatten(args):
+        res = []
+        for arg in args:
+            if isinstance(arg, PropertyFrame):
+                units = arg.units
+            else:
+                for a in arg:
+                    assert isinstance(a, PropertyFrameUnit)
+                units = arg
+            res.extend(units)
+        return res
+
+    @property
+    def by_key(self):
+        res = {}
+        for unit in self.units:
+            res.update({unit.prop_key: unit})
+        return res
+
+    @property
+    def by_tag(self):
+        res = {}
+        for unit in self.units:
+            res.update({unit.prop_tag: unit})
+        return res
 
     def key_at(self, prop_tag: str):
-        return self.by_key[prop_tag].prop_key
+        return self.by_tag[prop_tag].prop_key
 
     def type_of(self, prop_key: str):
-        return self.by_name[prop_key].prop_type
+        return self.by_key[prop_key].prop_type
 
     def keys(self):
         return self.by_key.keys()
 
+    def tags(self):
+        return self.by_tag.keys()
+
     def __iter__(self):
-        return iter(self.values)
+        return iter(self.units)
 
     def __len__(self):
-        return len(self.values)
+        return len(self.units)
 
     def __str__(self):
-        return "----\n" + '\n'.join([str(unit) for unit in self.values]) + "\n----"
+        return "----\n" + '\n'.join([str(unit) for unit in self.units]) + "\n----"
 
-    def extend(self, frame_units: Iterable[PropertyFrameUnit]):
-        for unit in frame_units:
-            self.append(unit)
+    def append(self, unit: PropertyFrameUnit):
+        self.units.append(unit)
 
-    def append(self, frame_unit: PropertyFrameUnit):
-        self.values.append(frame_unit)
-        self.by_name.update({frame_unit.prop_key: frame_unit})
-        if frame_unit.prop_tag:
-            self.by_key.update({frame_unit.prop_tag: frame_unit})
-
-    def add_alias(self, original_tag: str, new_tag: str):
-        unit = self.by_key[original_tag]
+    def add_alias(self, tag: str, new_tag: str):
+        unit = self.by_tag[tag]
         new_unit = deepcopy(unit)
         new_unit.prop_tag = new_tag
         self.append(new_unit)
 
     def fetch_parser(self, parser: Union[PageParser, DatabaseParser]):
         for name, data_type in parser.prop_types.items():
-            if name in self.by_name:
-                frame_unit = self.by_name[name]
+            if name in self.by_key:
+                frame_unit = self.by_key[name]
                 frame_unit.prop_type = data_type
             else:
                 self.append(PropertyFrameUnit(name, data_type=data_type))

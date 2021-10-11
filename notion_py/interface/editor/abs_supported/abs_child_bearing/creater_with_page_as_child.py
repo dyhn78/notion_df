@@ -1,4 +1,4 @@
-from ...editor_struct import GroundEditor, PointEditor
+from ...struct import GroundEditor, PointEditor
 from notion_py.interface.encoder import RichTextContentsEncoder
 from notion_py.interface.parser import BlockChildrenParser
 from notion_py.interface.requestor import AppendBlockChildren
@@ -6,8 +6,9 @@ from notion_py.interface.requestor import AppendBlockChildren
 
 class BlockSphereCreatorWithChildInlinePage(GroundEditor):
     def __init__(self, caller: PointEditor):
-        super().__init__(caller)
         from .abs_contents_bearing.master import ContentsBearingBlock
+        super().__init__(caller)
+        self.caller = caller
         self.values: list[ContentsBearingBlock] = []
         self.gateway = AppendBlockChildren(self)
         self._chunk_interrupted = True

@@ -1,4 +1,4 @@
-from notion_py.interface.editor.editor_struct import GroundEditor
+from notion_py.interface.editor.struct import GroundEditor
 
 
 class DatabaseSchema(GroundEditor):

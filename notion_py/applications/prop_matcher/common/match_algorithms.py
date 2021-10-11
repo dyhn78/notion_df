@@ -99,14 +99,14 @@ class TernaryMatchAlgorithm:
         """
         ref_ids = dom.props.read_at(self.dom_to_ref)
         for ref_id in ref_ids:
-            if ref_id in self.reference.keys():
+            if ref_id in self.reference.ids():
                 break
         else:
             return True
         ref = self.reference.by_id[ref_id]
         tar_ids = ref.props.read_at(self.ref_to_tar)
         for tar_id in tar_ids:
-            if tar_id in self.target.keys():
+            if tar_id in self.target.ids():
                 break
         else:
             return True
@@ -115,7 +115,7 @@ class TernaryMatchAlgorithm:
     def _try_match_by_ref_without_archive_check(self, dom: TypeName.tabular_page):
         ref_ids = dom.props.read_at(self.dom_to_ref)
         for ref_id in ref_ids:
-            if ref_id in self.reference.keys():
+            if ref_id in self.reference.ids():
                 break
         else:
             return True
@@ -130,7 +130,7 @@ class TernaryMatchAlgorithm:
     def _try_multi_match_by_ref(self, dom: TypeName.tabular_page):
         ref_ids = dom.props.read_at(self.dom_to_ref)
         for ref_id in ref_ids:
-            if ref_id in self.reference.keys():
+            if ref_id in self.reference.ids():
                 break
         else:
             return True
@@ -160,7 +160,7 @@ class TernaryMatchAlgorithm:
     def _try_match_by_index_then_create(self, dom: TypeName.tabular_page):
         if not (tar_index_value := self._try_match_by_index(dom)):
             return False
-        tar = self.target.new_tabular_page()
+        tar = self.target.create_tabular_page()
         tar.props.write_at(self.tar_index, tar_index_value)
         return [tar, tar_index_value]
 

@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 from notion_py.interface import RootEditor, TypeName, stopwatch
-from ..page_ids import DatabaseInfo
-from .frame import Frames
+from ..database_info import DatabaseInfo
+from .frame import MatchFrames
 from .common.query_maker import QueryMaker
 
 
@@ -13,7 +13,7 @@ class PropertySyncResolver:
         self.query_maker = QueryMaker(self.date_range)
 
         self.journals = self.root.open_pagelist(*DatabaseInfo.JOURNALS,
-                                                frame=Frames.JOURNALS)
+                                                frame=MatchFrames.JOURNALS)
 
     def execute(self):
         self.make_query()

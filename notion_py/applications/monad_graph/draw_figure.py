@@ -1,9 +1,6 @@
 import networkx as nx
 from plotly import graph_objects as go
 
-from notion_py.applications.monad_graph_depr.self_related_dataframe import \
-    SelfRelatedDatabaseFrameDeprecated
-
 
 class DrawFigure:
     def __init__(self, graph: nx.DiGraph):
@@ -57,11 +54,10 @@ class DrawFigure:
         trace['y'].apply_contents(ky.y)
         trace['text'].apply_contents(ky.name)
 
-    def add_followers_to(self, trace, lead_node: str, edge_type: str):
+    def add_followers_to(self, trace, lead_node: str, edge_weight: str):
         ky = self.node_info(lead_node)
         for follow_node in self.G.predecessors(lead_node):
-            relation_type = self.G.edges[follow_node, lead_node]['relation_type']
-            if SelfRelatedDatabaseFrameDeprecated.parse_edge_type(relation_type) == edge_type:
+            if self.G.edges[follow_node, lead_node]['edge_weight'] == edge_weight:
                 fo = self.node_info(follow_node)
                 trace['x'].extend([None, fo.x, ky.x])
                 trace['y'].extend([None, fo.y, ky.y])

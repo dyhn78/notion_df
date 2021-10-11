@@ -2,8 +2,9 @@ from typing import Any, Optional
 
 from .stash import BlockChildrenStash, PagePropertyStash
 from notion_py.interface.encoder import ContentsEncoder
-from ..requestor_struct import PointRequestor, drop_empty_request, print_response_error
-from ...editor.editor_struct import PointEditor
+from ..struct import PointRequestor, print_response_error
+from ...common.struct import drop_empty_request
+from ...editor.struct import PointEditor
 from ...utility import stopwatch, page_id_to_url
 
 

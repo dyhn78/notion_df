@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod, ABCMeta
 from typing import Union
 
-from notion_py.interface.struct import DateFormat
+from notion_py.interface.common import DateFormat
 from .maker import \
     PropertyEncoder, RichTextPropertyEncoder, SimplePropertyEncoder, FilesPropertyEncoder
 

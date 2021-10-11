@@ -1,17 +1,17 @@
 from notion_py.interface.encoder import TabularPropertybyKey, PropertyEncoder
 from notion_py.interface.parser import PageParser
-from ..editor_struct import GroundEditor, PointEditor
+from .page import TabularPageBlock
+from ..struct import GroundEditor
 from ...requestor import CreatePage, UpdatePage, RetrievePage
-from ...requestor.requestor_struct import drop_empty_request
-from ...struct import PropertyFrame
+from ...common.struct import drop_empty_request
 from ...utility import eval_empty
 
 
 class TabularProperty(GroundEditor, TabularPropertybyKey):
-    def __init__(self, caller: PointEditor):
+    def __init__(self, caller: TabularPageBlock):
         super().__init__(caller)
         self.caller = caller
-        self.frame = caller.frame if hasattr(caller, 'frame') else PropertyFrame()
+        self.frame = caller.frame
         if not self.yet_not_created:
             gateway = UpdatePage(self)
         else:
@@ -71,7 +71,7 @@ class TabularProperty(GroundEditor, TabularPropertybyKey):
 
     def read_at_all(self):
         return {key: self._read_plain[self._name_at(key)]
-                for key in self.frame.keys()}
+                for key in self.frame.tags()}
 
     def read_rich_of_all(self):
         return self._read_rich
@@ -81,7 +81,7 @@ class TabularProperty(GroundEditor, TabularPropertybyKey):
 
     def read_full_at_all(self):
         return {key: self._read_full[self._name_at(key)]
-                for key in self.frame.keys()}
+                for key in self.frame.tags()}
 
     def read_of(self, prop_key: str):
         self._raise_if_nonstring_key(prop_key)
@@ -150,7 +150,7 @@ class TabularProperty(PointEditor):
         self._read_rich = {}
         self._value_stash = {}
         self._type_stash = {}
-        self.by_key = {}
+        self.by_tag = {}
 
     def __getitem__(self, prop_key: str):
         return self._read_plain[prop_key]

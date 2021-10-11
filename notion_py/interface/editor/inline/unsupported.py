@@ -1,12 +1,13 @@
 from typing import Union
 
-from notion_py.interface.editor.editor_struct import MasterEditor, PointEditor
-from notion_py.interface.struct import Editor
+from notion_py.interface.editor.struct import MasterEditor
+from notion_py.interface.common.struct import Editor
 
 
 class UnsupportedBlock(MasterEditor):
-    def __init__(self, caller: Union[PointEditor, Editor], block_id: str):
+    def __init__(self, caller: Editor, block_id: str):
         super().__init__(caller, block_id)
+        self.caller = caller
 
     @property
     def master_name(self):

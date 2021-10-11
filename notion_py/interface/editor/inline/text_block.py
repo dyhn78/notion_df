@@ -4,18 +4,21 @@ from ..abs_supported.abs_child_bearing.abs_contents_bearing.master import \
     ContentsBearingBlock, BlockContents
 from ..abs_supported.abs_child_bearing.creator import \
     BlockSphereCreator
-from notion_py.interface.struct import Editor
 from ..abs_supported.abs_child_bearing.updater import BlockSphereUpdater
-from ...encoder import TextContentsWriter, RichTextContentsEncoder
-from ...parser import BlockContentsParser
-from ...requestor import UpdateBlock, RetrieveBlock
+from notion_py.interface.encoder import TextContentsWriter, RichTextContentsEncoder
+from notion_py.interface.parser import BlockContentsParser
+from notion_py.interface.requestor import UpdateBlock, RetrieveBlock
+from ...common.struct import AbstractRootEditor
 
 
 class TextBlock(ContentsBearingBlock):
     def __init__(self,
-                 caller: Union[Editor, BlockSphereUpdater, BlockSphereCreator],
+                 caller: Union[AbstractRootEditor,
+                               BlockSphereUpdater,
+                               BlockSphereCreator],
                  block_id: str):
         super().__init__(caller=caller, block_id=block_id)
+        self.caller = caller
         if isinstance(caller, BlockSphereCreator):
             self.yet_not_created = True
             self.contents = TextContents(self, caller)

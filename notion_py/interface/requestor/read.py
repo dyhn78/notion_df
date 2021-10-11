@@ -1,5 +1,5 @@
-from .requestor_struct import PointRequestor, print_response_error, LongRequestor
-from ..editor.editor_struct import PointEditor
+from .struct import PointRequestor, print_response_error, LongRequestor
+from ..editor.struct import PointEditor
 from ..utility import stopwatch
 
 

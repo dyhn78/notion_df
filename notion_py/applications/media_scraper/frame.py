@@ -1,4 +1,4 @@
-from notion_py.interface.struct import PropertyFrameUnit as Unit, PropertyFrame
+from notion_py.interface.common import PropertyFrameUnit as Unit, PropertyFrame
 
 ReadingDB_FRAME = PropertyFrame([
     Unit('🔵유형', 'media_type',

@@ -1,5 +1,5 @@
 from notion_py.applications.media_scraper.frame import ReadingDB_FRAME
-from notion_py.applications.page_ids import DatabaseInfo
+from notion_py.applications.database_info import DatabaseInfo
 from notion_py.interface import RootEditor
 
 
@@ -9,4 +9,4 @@ class ReadingDBEditor:
         self.frame = ReadingDB_FRAME
         self.pagelist = self.root_editor.open_pagelist(
             *DatabaseInfo.READINGS, self.frame)
-        self.status_enum = self.frame.by_key['edit_status'].prop_values
+        self.status_enum = self.frame.by_tag['edit_status'].prop_values

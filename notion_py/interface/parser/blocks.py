@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from .rich_text import parse_rich_texts
-from ..struct import Printable
+from ..common.struct import Printable
 
 PAGE_TYPES = {"child_page"}
 CAN_HAVE_CHILDREN = {"paragraph", "bulleted_list_item",

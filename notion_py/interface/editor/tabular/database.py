@@ -1,18 +1,24 @@
 from typing import Union, Optional
 
-from .pagelist import PageList
+from ..abs_supported.abs_child_bearing import \
+    BlockSphereCreator, BlockSphereUpdater
+from ..struct import MasterEditor
+from ...common.struct import AbstractRootEditor
+from notion_py.interface.common import PropertyFrame
 from notion_py.interface.parser import DatabaseParser
 from notion_py.interface.requestor import RetrieveDatabase
-from notion_py.interface.struct import Editor, PropertyFrame
-from ..editor_struct import MasterEditor, PointEditor
 
 
 class Database(MasterEditor):
-    def __init__(self, caller: Union[PointEditor, Editor],
+    def __init__(self, caller: Union[AbstractRootEditor,
+                                     BlockSphereUpdater,
+                                     BlockSphereCreator],
                  database_id: str,
                  database_alias='',
                  frame: Optional[PropertyFrame] = None):
+        from .pagelist import PageList
         super().__init__(caller, database_id)
+        self.caller = caller
         self.frame = frame if frame else PropertyFrame()
         self.alias = database_alias
         self.pagelist = PageList(self)

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod, ABCMeta
 from pprint import pprint
-from typing import Union
+from typing import Union, Callable
 
 from notion_client import Client, AsyncClient
 
@@ -58,3 +58,13 @@ class AbstractRootEditor(Editor):
     def __init__(self):
         super().__init__(self)
         self.notion: Union[Client, AsyncClient, None] = None
+        self.by_id = {}
+
+
+def drop_empty_request(method: Callable):
+    def wrapper(self, **kwargs):
+        if not bool(self):
+            return {}
+        return method(self, **kwargs)
+
+    return wrapper

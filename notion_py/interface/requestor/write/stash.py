@@ -1,6 +1,7 @@
 from abc import ABCMeta
 
-from notion_py.interface.struct import TwofoldStash, ValueCarrier
+from notion_py.interface.common.stash import TwofoldStash
+from notion_py.interface.common.struct import ValueCarrier
 from notion_py.interface.encoder import ContentsEncoder
 
 

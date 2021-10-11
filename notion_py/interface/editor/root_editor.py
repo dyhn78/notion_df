@@ -4,87 +4,76 @@ from typing import Optional
 
 from notion_client import Client, AsyncClient
 
-from .editor_struct import MasterEditor
+from ..common import PropertyFrame
+from ..common.struct import AbstractRootEditor
+from ..utility import page_url_to_id
+from .struct import MasterEditor
 from .inline.text_block import TextBlock
 from .inline.page_block import InlinePageBlock
-from .tabular import Database, TabularPageBlock
-from .tabular.pagelist import PageList
-from ..struct import PropertyFrame, DateFormat, PropertyFrameUnit
-from ..struct.core import AbstractRootEditor
-from ..requestor import Query
-from ..utility import page_url_to_id
+from .tabular.database import Database
+from .tabular.page import TabularPageBlock
 
 
-class NotionRootEditor(AbstractRootEditor):
+class RootEditor(AbstractRootEditor):
     def __init__(self, async_client=False):
         super().__init__()
-        self.top_documents: list[MasterEditor] = []
+        self.top_editors: list[MasterEditor] = []
+        self.by_id: dict[str, MasterEditor] = {}
         if async_client:
             self.notion = AsyncClient(auth=self.token)
         else:
             self.notion = Client(auth=self.token)
 
     def __bool__(self):
-        return any([bool(document) for document in self.top_documents])
+        return any([bool(editor) for editor in self.top_editors])
 
-    @property
-    def token(self):
-        return os.environ['NOTION_TOKEN'].strip("'").strip('"')
+    def ids(self):
+        return self.by_id.keys()
+
+    def open_text_block(self, id_or_url: str):
+        block_id = page_url_to_id(id_or_url)
+        editor = TextBlock(self, block_id)
+        self.top_editors.append(editor)
+        return editor
 
     def preview(self, pprint_this=True):
-        preview = [document.preview() for document in self.top_documents]
+        preview = [editor.preview() for editor in self.top_editors]
         if pprint_this:
             pprint(preview)
         return preview
 
-    def execute(self):
-        for document in self.top_documents:
-            document.execute()
-
-    def open_database(self, database_alias: str, database_id: str,
+    def open_database(self, database_alias: str, id_or_url: str,
                       frame: Optional[PropertyFrame] = None):
-        database_id = page_url_to_id(database_id)
-        document = Database(self, database_id, database_alias, frame)
-        self.top_documents.append(document)
-        return document
+        database_id = page_url_to_id(id_or_url)
+        editor = Database(self, database_id, database_alias, frame)
+        self.top_editors.append(editor)
+        return editor
 
-    def open_pagelist(self, database_alias: str, database_id: str,
+    def open_pagelist(self, database_alias: str, id_or_url: str,
                       frame: Optional[PropertyFrame] = None):
-        database_id = page_url_to_id(database_id)
+        database_id = page_url_to_id(id_or_url)
         database = Database(self, database_id, database_alias, frame)
-        document = database.pagelist
-        self.top_documents.append(document)
-        return document
+        editor = database.pagelist
+        self.top_editors.append(editor)
+        return editor
 
-    def open_tabular_page(self, page_id: str,
+    def open_tabular_page(self, id_or_url: str,
                           frame: Optional[PropertyFrame] = None):
-        page_id = page_url_to_id(page_id)
-        document = TabularPageBlock(self, page_id, frame)
-        self.top_documents.append(document)
-        return document
+        page_id = page_url_to_id(id_or_url)
+        editor = TabularPageBlock(self, page_id, frame)
+        self.top_editors.append(editor)
+        return editor
 
-    def open_inline_page(self, page_id: str):
-        page_id = page_url_to_id(page_id)
-        document = InlinePageBlock(self, page_id)
-        self.top_documents.append(document)
-        return document
+    def execute(self):
+        for editor in self.top_editors:
+            editor.execute()
 
-    def open_text_block(self, block_id: str):
-        block_id = page_url_to_id(block_id)
-        document = TextBlock(self, block_id)
-        self.top_documents.append(document)
-        return document
+    def open_inline_page(self, id_or_url: str):
+        page_id = page_url_to_id(id_or_url)
+        editor = InlinePageBlock(self, page_id)
+        self.top_editors.append(editor)
+        return editor
 
-
-class NotionTypeName:
-    database = Database
-    tabular_page = TabularPageBlock
-    inline_page = InlinePageBlock
-    text_block = TextBlock
-
-    pagelist = PageList
-    query = Query
-
-    date_format = DateFormat
-    frame = PropertyFrame
-    frame_unit = PropertyFrameUnit
+    @property
+    def token(self):
+        return os.environ['NOTION_TOKEN'].strip("'").strip('"')

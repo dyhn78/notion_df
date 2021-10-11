@@ -4,9 +4,9 @@ from typing import Callable
 
 from notion_client.errors import APIResponseError
 
-from notion_py.interface.struct import Requestor
+from notion_py.interface.common.struct import Requestor
+from notion_py.interface.editor.struct import PointEditor
 from notion_py.interface.utility import stopwatch
-from notion_py.interface.editor.editor_struct import PointEditor
 
 
 class PointRequestor(Requestor, metaclass=ABCMeta):
@@ -45,7 +45,7 @@ class LongRequestor(PointRequestor):
         pass
 
     def _print_comments_each(self):
-        comments = f' -- {self.response_size} 개 완료'
+        comments = f'→ {self.response_size} 개 완료'
         stopwatch(comments)
 
     def _execute_all(self, request_size, print_comments_each: bool):
@@ -67,15 +67,6 @@ class LongRequestor(PointRequestor):
             if print_comments_each:
                 self._print_comments_each()
         return result
-
-
-def drop_empty_request(method: Callable):
-    def wrapper(self, **kwargs):
-        if not bool(self):
-            return {}
-        return method(self, **kwargs)
-
-    return wrapper
 
 
 def print_response_error(func: Callable):

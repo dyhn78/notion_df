@@ -1,15 +1,17 @@
 from abc import ABCMeta, abstractmethod
 from typing import Union, Optional
 
-from notion_py.interface.editor.editor_struct import PointEditor, GroundEditor
+from notion_py.interface.common.struct import Editor
+from notion_py.interface.editor.struct import GroundEditor
 from ..master import ChildBearingBlock
 from notion_py.interface.parser import BlockContentsParser
 from notion_py.interface.requestor import UpdateBlock, UpdatePage, CreatePage
 
 
 class ContentsBearingBlock(ChildBearingBlock, metaclass=ABCMeta):
-    def __init__(self, caller: Union[PointEditor], block_id: str):
+    def __init__(self, caller: Editor, block_id: str):
         super().__init__(caller, block_id)
+        self.caller = caller
         self.contents: Optional[BlockContents] = None
 
     def fully_read(self):
@@ -26,8 +28,9 @@ class ContentsBearingBlock(ChildBearingBlock, metaclass=ABCMeta):
 
 
 class BlockContents(GroundEditor, metaclass=ABCMeta):
-    def __init__(self, caller: PointEditor):
+    def __init__(self, caller: ContentsBearingBlock):
         super().__init__(caller)
+        self.caller = caller
         self.gateway: Union[UpdateBlock, UpdatePage, CreatePage, None] = None
         self._read_plain = ''
         self._read_rich = []
@@ -43,7 +46,6 @@ class BlockContents(GroundEditor, metaclass=ABCMeta):
         self.gateway.un_archive()
 
     def apply_block_parser(self, parser: BlockContentsParser):
-        # parser.pprint()
         if parser.block_id:
             self.master_id = parser.block_id
         self.caller.has_children = parser.has_children
