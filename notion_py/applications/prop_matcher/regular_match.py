@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from notion_py.interface import RootEditor
 from ..page_ids import DatabaseInfo
-from .tools.match_algorithms import TernaryMatchAlgorithm, MonoMatchAlgorithm
-from .tools.date_index import DatePageProcessor, PeriodPageProcessor
-from notion_py.applications.prop_matcher.frame import Frames
-from .tools.query_maker import QueryMaker
+from .common.match_algorithms import TernaryMatchAlgorithm, MonoMatchAlgorithm
+from .common.date_index import DatePageProcessor, PeriodPageProcessor
+from .common.query_maker import QueryMaker
+from .frame import Frames
 
 
 class PropertyMatcher:

@@ -5,7 +5,7 @@ from inspect import signature
 from .rich_text import parse_rich_texts
 
 
-# find types by api_parse
+# find types by parser
 from notion_py.interface.struct import DateFormat
 
 VALUE_TYPES = {
@@ -19,7 +19,7 @@ VALUE_TYPES = {
     'relation': ['relation'],
     'rollup': ['rollup']
 }
-# find api_parse by type
+# find parser by type
 VALUE_FORMATS = {}
 for form, types in VALUE_TYPES.items():
     VALUE_FORMATS.update(**{typ: form for typ in types})

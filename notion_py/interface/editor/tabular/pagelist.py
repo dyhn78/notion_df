@@ -4,9 +4,10 @@ from pprint import pprint
 
 from .page import TabularPageBlock
 from ..abs_supported.master import SupportedBlock
-from ...api_parse import PageListParser
-from ...gateway import Query
-from ...struct import PointEditor, BridgeEditor, PropertyFrame, MasterEditor
+from ..editor_struct import MasterEditor, BridgeEditor, PointEditor
+from ...parser import PageListParser
+from ...requestor import Query
+from ...struct import PropertyFrame
 
 
 class PageList(PointEditor):
@@ -80,7 +81,7 @@ class PageList(PointEditor):
         return self._new.new_tabular_page()
 
     def run_query(self, page_size=0):
-        response = self.query.execute(page_size=page_size)
+        response = self.query.execute(request_size=page_size)
         parser = PageListParser(response)
         self._normal.apply_parser(parser)
         self.query = Query(self)

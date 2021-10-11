@@ -2,14 +2,16 @@ from __future__ import annotations
 from abc import abstractmethod
 from typing import Union
 
-from notion_py.interface.api_encode import RichTextContentsEncoder
-from notion_py.interface.api_parse import BlockChildrenParser
-from notion_py.interface.gateway import GetBlockChildren
-from notion_py.interface.struct import PointEditor, Editor, drop_empty_request
+from notion_py.interface.encoder import RichTextContentsEncoder
+from notion_py.interface.parser import BlockChildrenParser
+from notion_py.interface.requestor import GetBlockChildren
+from notion_py.interface.requestor.requestor_struct import drop_empty_request
+from notion_py.interface.struct import Editor
 
 from ..master import SupportedBlock
 from .updater import BlockSphereUpdater
 from .creator import BlockSphereCreator
+from ...editor_struct import PointEditor
 
 
 class BlockSphere(PointEditor):
@@ -56,7 +58,7 @@ class BlockSphere(PointEditor):
 
     def fetch_children(self, page_size=0):
         gateway = GetBlockChildren(self)
-        response = gateway.execute(page_size=page_size)
+        response = gateway.execute(request_size=page_size)
         parser = BlockChildrenParser(response)
         self._normal.apply_parser(parser)
 
@@ -126,7 +128,7 @@ class ChildBearingBlock(SupportedBlock):
             assigning a multi-indented structure will be executed top to bottom,
             regardless of indentation.
         2. the 'ground editors', self.contents or self.tabular,
-            have to refer to self.master_id if it want to 'reset gateway'.
+            have to refer to self.master_id if it want to 'reset requestor'.
             therefore, it first send the response without processing itself,
             so that the master deals with its reset task instead.
         """

@@ -1,6 +1,6 @@
 from abc import abstractmethod
 
-from notion_py.interface.api_encode.rich_text import RichTextObjectEncoder
+from notion_py.interface.encoder.rich_text import RichTextObjectEncoder
 from notion_py.interface.struct import ValueCarrier
 
 

@@ -1,7 +1,7 @@
-from notion_py.interface.api_encode import RichTextContentsEncoder
-from notion_py.interface.api_parse import BlockChildrenParser
-from notion_py.interface.gateway import AppendBlockChildren
-from notion_py.interface.struct import GroundEditor, PointEditor
+from ...editor_struct import GroundEditor, PointEditor
+from notion_py.interface.encoder import RichTextContentsEncoder
+from notion_py.interface.parser import BlockChildrenParser
+from notion_py.interface.requestor import AppendBlockChildren
 
 
 class BlockSphereCreatorWithChildInlinePage(GroundEditor):

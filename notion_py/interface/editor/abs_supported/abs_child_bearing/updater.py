@@ -1,8 +1,8 @@
 from typing import Union
 
 from ..master import SupportedBlock
-from ....api_parse import BlockChildrenParser, BlockContentsParser
-from ....struct import BridgeEditor, PointEditor
+from ...editor_struct import BridgeEditor, PointEditor
+from ....parser import BlockChildrenParser, BlockContentsParser
 
 
 class BlockSphereUpdater(BridgeEditor):

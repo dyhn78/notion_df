@@ -1,14 +1,16 @@
 from typing import Union, Optional
 
-from notion_py.interface.api_encode import PageContentsWriterAsChild, \
+from notion_py.interface.encoder import PageContentsWriterAsChild, \
     RichTextContentsEncoder
-from notion_py.interface.api_parse import PageParser
-from notion_py.interface.gateway import UpdatePage, RetrievePage, AppendBlockChildren
-from notion_py.interface.struct import Editor, PointEditor, drop_empty_request
+from notion_py.interface.parser import PageParser
+from notion_py.interface.requestor import UpdatePage, RetrievePage, AppendBlockChildren
+from notion_py.interface.struct import Editor
 from ..abs_supported.abs_child_bearing.abs_contents_bearing.master import \
     ContentsBearingBlock, BlockContents
 from ..abs_supported.abs_child_bearing.creater_with_page_as_child import \
     BlockSphereCreatorWithChildInlinePage
+from ..editor_struct import PointEditor
+from ...requestor.requestor_struct import drop_empty_request
 
 
 class InlinePageBlockAsChild(ContentsBearingBlock):

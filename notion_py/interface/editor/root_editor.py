@@ -4,13 +4,14 @@ from typing import Optional
 
 from notion_client import Client, AsyncClient
 
+from .editor_struct import MasterEditor
 from .inline.text_block import TextBlock
 from .inline.page_block import InlinePageBlock
 from .tabular import Database, TabularPageBlock
 from .tabular.pagelist import PageList
-from ..gateway import Query
-from ..struct import MasterEditor, AbstractRootEditor, \
-    PropertyFrame, PropertyFrameUnit, DateFormat
+from ..struct import PropertyFrame, DateFormat, PropertyFrameUnit
+from ..struct.core import AbstractRootEditor
+from ..requestor import Query
 from ..utility import page_url_to_id
 
 

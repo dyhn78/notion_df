@@ -13,6 +13,16 @@ class Printable(ABC):
         pass
 
 
+class Executable(Printable, metaclass=ABCMeta):
+    @abstractmethod
+    def __bool__(self):
+        pass
+
+    @abstractmethod
+    def execute(self):
+        pass
+
+
 class ValueCarrier(Printable, metaclass=ABCMeta):
     @abstractmethod
     def __bool__(self):
@@ -26,22 +36,12 @@ class ValueCarrier(Printable, metaclass=ABCMeta):
         pprint(self.unpack(), **kwargs)
 
 
-class Requestor(Printable, metaclass=ABCMeta):
-    @abstractmethod
-    def __bool__(self):
-        pass
-
-    @abstractmethod
-    def execute(self):
-        pass
-
-
-class AbstractGateway(Requestor, ValueCarrier, metaclass=ABCMeta):
+class Requestor(Executable, ValueCarrier, metaclass=ABCMeta):
     def pprint(self, **kwargs):
         return ValueCarrier.pprint(self, **kwargs)
 
 
-class Editor(Requestor, metaclass=ABCMeta):
+class Editor(Executable, metaclass=ABCMeta):
     def __init__(self, root_editor: AbstractRootEditor):
         self.root_editor = root_editor
 

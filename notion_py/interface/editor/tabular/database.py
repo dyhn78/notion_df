@@ -1,9 +1,10 @@
 from typing import Union, Optional
 
 from .pagelist import PageList
-from notion_py.interface.api_parse import DatabaseParser
-from notion_py.interface.gateway import RetrieveDatabase
-from notion_py.interface.struct import MasterEditor, PointEditor, Editor, PropertyFrame
+from notion_py.interface.parser import DatabaseParser
+from notion_py.interface.requestor import RetrieveDatabase
+from notion_py.interface.struct import Editor, PropertyFrame
+from ..editor_struct import MasterEditor, PointEditor
 
 
 class Database(MasterEditor):

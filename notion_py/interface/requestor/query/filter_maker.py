@@ -1,21 +1,22 @@
 from __future__ import annotations
 from .filter_unit import PlainFilter, OrFilter, AndFilter
-from ...struct import Gateway, PropertyFrame, PropertyFrameUnit
+from ..requestor_struct import PointRequestor
+from ...struct import PropertyFrame, PropertyFrameUnit
 
-# find types by api_parse
+# find types by parser
 FILTER_TYPES = {
     'text': ['text', 'title', 'rich_text', 'url', 'email', 'phone_number'],
     'date': ['date', 'created_time', 'last_edited_time'],
     'people': ['people', 'person', 'created_by', 'last_edited_by']
 }
-# find api_parse by type
+# find parser by type
 FILTER_FORMATS = {}
 for form, types in FILTER_TYPES.items():
     FILTER_FORMATS.update(**{typ: form for typ in types})
 
 
 class QueryFilterAgent:
-    def __init__(self, caller: Gateway):
+    def __init__(self, caller: PointRequestor):
         """특정한 데이터베이스 하나를 위한 query_filter 프레임을 만든다."""
         self.caller = caller
         self.frame = self.caller.frame if hasattr(self.caller, 'frame') \

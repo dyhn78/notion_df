@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from notion_py.applications.prop_matcher.frame import Frames
-from .tools.query_maker import QueryMaker
-from ..page_ids import DatabaseInfo
 from notion_py.interface import RootEditor, TypeName, stopwatch
+from ..page_ids import DatabaseInfo
+from .frame import Frames
+from .common.query_maker import QueryMaker
 
 
 class PropertySyncResolver:

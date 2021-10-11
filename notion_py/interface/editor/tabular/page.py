@@ -2,7 +2,8 @@ from typing import Union, Optional
 
 from ..abs_supported.abs_child_bearing.master import ChildBearingBlock
 from notion_py.interface.editor.tabular.page_props import TabularProperty
-from notion_py.interface.struct import Editor, BridgeEditor, PropertyFrame
+from notion_py.interface.struct import Editor, PropertyFrame
+from ..editor_struct import BridgeEditor
 
 
 class TabularPageBlock(ChildBearingBlock):

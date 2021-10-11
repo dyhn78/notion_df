@@ -1,1 +1,1 @@
-from .root import NotionRootEditor, NotionTypeName
+from .root_editor import NotionRootEditor, NotionTypeName

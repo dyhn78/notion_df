@@ -1,7 +1,7 @@
 from __future__ import annotations
 from abc import ABCMeta
 
-from .root import ValueCarrier
+from .core import ValueCarrier
 
 
 class Stash(ValueCarrier, metaclass=ABCMeta):

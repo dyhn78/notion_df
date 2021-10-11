@@ -6,9 +6,9 @@ from ..abs_supported.abs_child_bearing.creator import \
     BlockSphereCreator
 from notion_py.interface.struct import Editor
 from ..abs_supported.abs_child_bearing.updater import BlockSphereUpdater
-from ...api_encode import TextContentsWriter, RichTextContentsEncoder
-from ...api_parse import BlockContentsParser
-from ...gateway import UpdateBlock, RetrieveBlock
+from ...encoder import TextContentsWriter, RichTextContentsEncoder
+from ...parser import BlockContentsParser
+from ...requestor import UpdateBlock, RetrieveBlock
 
 
 class TextBlock(ContentsBearingBlock):

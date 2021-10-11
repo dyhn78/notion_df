@@ -1,10 +1,10 @@
 from abc import ABCMeta, abstractmethod
 from typing import Union, Optional
 
+from notion_py.interface.editor.editor_struct import PointEditor, GroundEditor
 from ..master import ChildBearingBlock
-from notion_py.interface.api_parse import BlockContentsParser
-from notion_py.interface.gateway import UpdateBlock, UpdatePage, CreatePage
-from notion_py.interface.struct import PointEditor, GroundEditor
+from notion_py.interface.parser import BlockContentsParser
+from notion_py.interface.requestor import UpdateBlock, UpdatePage, CreatePage
 
 
 class ContentsBearingBlock(ChildBearingBlock, metaclass=ABCMeta):

@@ -1,34 +1,15 @@
 import time
 from abc import ABCMeta, abstractmethod
-from typing import Callable, Optional
+from typing import Callable
 
 from notion_client.errors import APIResponseError
 
+from notion_py.interface.struct import Requestor
 from notion_py.interface.utility import stopwatch
-from . import ValueCarrier, Requestor
-from .point_editor import PointEditor
+from notion_py.interface.editor.editor_struct import PointEditor
 
 
-class GroundEditor(PointEditor, metaclass=ABCMeta):
-    def __init__(self, caller: PointEditor):
-        super().__init__(caller)
-        self.gateway: Optional[Gateway] = None
-        self.enable_overwrite = True
-
-    def __bool__(self):
-        return bool(self.gateway)
-
-    def set_overwrite_option(self, option: bool):
-        self.enable_overwrite = option
-
-    def preview(self):
-        return self.gateway.unpack() if self.gateway else {}
-
-    def execute(self):
-        return self.gateway.execute() if self.gateway else {}
-
-
-class Gateway(Requestor, ValueCarrier, metaclass=ABCMeta):
+class PointRequestor(Requestor, metaclass=ABCMeta):
     def __init__(self, editor: PointEditor):
         self.editor = editor
         self.notion = editor.root_editor.notion
@@ -45,40 +26,46 @@ class Gateway(Requestor, ValueCarrier, metaclass=ABCMeta):
         return self.editor.master.master_name
 
 
-class LongGateway(Gateway):
+class LongRequestor(PointRequestor):
     MAX_PAGE_SIZE = 100
     INF = int(1e5) - 1
 
     def __init__(self, editor: PointEditor):
         super().__init__(editor)
+        self.response_size = 0
+        self.has_more = True
+        self.start_cursor = None
 
     @abstractmethod
-    def _execute_once(self, page_size=None, start_cursor=None):
+    def execute(self, request_size=0):
+        self._execute_all(request_size, False)
+
+    @abstractmethod
+    def _execute_each(self, request_size, start_cursor=None):
         pass
 
-    def execute(self, page_size=0):
+    def _print_comments_each(self):
+        comments = f' -- {self.response_size} 개 완료'
+        stopwatch(comments)
+
+    def _execute_all(self, request_size, print_comments_each: bool):
         res = []
         result = {'results': res}
-        if page_size == 0:
-            page_size = self.INF
-        has_more = True
-        start_cursor = None
-        page_retrieved = 0
-        while has_more and page_size > 0:
+        if request_size == 0:
+            request_size = self.INF
+        while self.has_more:
             # noinspection PyArgumentList
-            response = self._execute_once(page_size=min(page_size, self.MAX_PAGE_SIZE),
-                                          start_cursor=start_cursor)
-            has_more = response['has_more']
-            start_cursor = response['next_cursor']
+            response = self._execute_each(
+                request_size=min(request_size, self.MAX_PAGE_SIZE),
+                start_cursor=self.start_cursor)
             res.extend(response['results'])
-
-            page_size -= self.MAX_PAGE_SIZE
-            page_retrieved += len(response['results'])
-
-            comments = f'{page_retrieved} 개 완료'
-            if self.target_name:
-                comments = f'{self.target_name} → ' + comments
-            stopwatch(comments)
+            resp_size = len(response['results'])
+            request_size -= resp_size
+            self.response_size += resp_size
+            self.has_more = response['has_more']
+            self.start_cursor = response['next_cursor']
+            if print_comments_each:
+                self._print_comments_each()
         return result
 
 
@@ -87,11 +74,12 @@ def drop_empty_request(method: Callable):
         if not bool(self):
             return {}
         return method(self, **kwargs)
+
     return wrapper
 
 
 def print_response_error(func: Callable):
-    def wrapper(self: Gateway, **kwargs):
+    def wrapper(self: PointRequestor, **kwargs):
         try:
             response = func(self, **kwargs)
             return response
@@ -99,11 +87,12 @@ def print_response_error(func: Callable):
             print(f'Error occurred while executing {str(self)} ::\n')
             self.pprint()
             raise api_response_error
+
     return wrapper
 
 
 def retry_request(func: Callable, recursion_limit=1, time_to_sleep=1):
-    def wrapper(self: Gateway, **kwargs):
+    def wrapper(self: PointRequestor, **kwargs):
         recursion = 0
         while True:
             try:
@@ -117,4 +106,5 @@ def retry_request(func: Callable, recursion_limit=1, time_to_sleep=1):
                 recursion += 1
                 stopwatch(f'응답 재시도 {recursion}/{recursion_limit}회')
                 time.sleep(time_to_sleep * (1 ** recursion))
+
     return wrapper

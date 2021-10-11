@@ -1,7 +1,9 @@
-from notion_py.interface.api_encode import TabularPropertybyKey, PropertyEncoder
-from notion_py.interface.api_parse import PageParser
-from ...gateway import CreatePage, UpdatePage, RetrievePage
-from ...struct import GroundEditor, PointEditor, PropertyFrame, drop_empty_request
+from notion_py.interface.encoder import TabularPropertybyKey, PropertyEncoder
+from notion_py.interface.parser import PageParser
+from ..editor_struct import GroundEditor, PointEditor
+from ...requestor import CreatePage, UpdatePage, RetrievePage
+from ...requestor.requestor_struct import drop_empty_request
+from ...struct import PropertyFrame
 from ...utility import eval_empty
 
 

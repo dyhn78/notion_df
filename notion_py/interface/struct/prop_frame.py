@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import Optional, Iterable, Union
 from copy import deepcopy
 
-from notion_py.interface.api_parse import PageParser, DatabaseParser
+from notion_py.interface.parser import PageParser, DatabaseParser
 
 
 class PropertyFrameUnit:

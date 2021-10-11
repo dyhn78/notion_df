@@ -1,15 +1,15 @@
 from typing import Any, Optional
 
 from .stash import BlockChildrenStash, PagePropertyStash
-from notion_py.interface.struct import Gateway, PointEditor,\
-    drop_empty_request, print_response_error
-from notion_py.interface.api_encode import ContentsEncoder
+from notion_py.interface.encoder import ContentsEncoder
+from ..requestor_struct import PointRequestor, drop_empty_request, print_response_error
+from ...editor.editor_struct import PointEditor
 from ...utility import stopwatch, page_id_to_url
 
 
-class CreatePage(Gateway, PagePropertyStash, BlockChildrenStash):
+class CreatePage(PointRequestor, PagePropertyStash, BlockChildrenStash):
     def __init__(self, editor: PointEditor, under_database: bool):
-        Gateway.__init__(self, editor)
+        PointRequestor.__init__(self, editor)
         PagePropertyStash.__init__(self)
         BlockChildrenStash.__init__(self)
         self.parent_type = 'database_id' if under_database else 'page_id'
@@ -26,6 +26,10 @@ class CreatePage(Gateway, PagePropertyStash, BlockChildrenStash):
         return any([PagePropertyStash.__bool__(self),
                     BlockChildrenStash.__bool__(self)])
 
+    def clear(self):
+        PagePropertyStash.clear(self)
+        BlockChildrenStash.clear(self)
+
     def unpack(self):
         res = dict(**PagePropertyStash.unpack(self),
                    **BlockChildrenStash.unpack(self),
@@ -39,19 +43,20 @@ class CreatePage(Gateway, PagePropertyStash, BlockChildrenStash):
         self.print_comments(res)
         return res
 
-    def clear(self):
-        PagePropertyStash.clear(self)
-        BlockChildrenStash.clear(self)
-
     def print_comments(self, res):
-        comments = ' '.join(
-            ['create', f"< {self.target_name} >", '\n\t', page_id_to_url(res['id'])])
+        target_url = page_id_to_url(res['id'])
+        if self.target_name:
+            form = ['create_page', f"< {self.target_name} >",
+                    '\n\t', target_url]
+        else:
+            form = ['create_page', target_url]
+        comments = ' '.join(form)
         stopwatch(comments)
 
 
-class UpdatePage(Gateway, PagePropertyStash):
+class UpdatePage(PointRequestor, PagePropertyStash):
     def __init__(self, editor: PointEditor):
-        Gateway.__init__(self, editor)
+        PointRequestor.__init__(self, editor)
         PagePropertyStash.__init__(self)
         self._archive_value = None
 
@@ -84,15 +89,19 @@ class UpdatePage(Gateway, PagePropertyStash):
         return res
 
     def print_comments(self):
-        comments = ' '.join(
-            ['update', f"< {self.target_name} >", '\n\t',
-             page_id_to_url(self.target_id)])
+        target_url = page_id_to_url(self.target_id)
+        if self.target_name:
+            form = ['update_page', f"< {self.target_name} >",
+                    '\n\t', target_url]
+        else:
+            form = ['update_page', target_url]
+        comments = ' '.join(form)
         stopwatch(comments)
 
 
-class UpdateBlock(Gateway):
+class UpdateBlock(PointRequestor):
     def __init__(self, editor: PointEditor):
-        Gateway.__init__(self, editor)
+        PointRequestor.__init__(self, editor)
         self._contents_value: Optional[ContentsEncoder] = None
         self._archive_value = None
 
@@ -130,15 +139,19 @@ class UpdateBlock(Gateway):
         return res
 
     def print_comments(self):
-        comments = ' '.join(
-            ['update', f"< {self.target_name} >", '\n\t',
-             page_id_to_url(self.target_id)])
+        target_url = page_id_to_url(self.target_id)
+        if self.target_name:
+            form = ['update_block', f"< {self.target_name} >",
+                    '\n\t', target_url]
+        else:
+            form = ['update_block', target_url]
+        comments = ' '.join(form)
         stopwatch(comments)
 
 
-class AppendBlockChildren(Gateway, BlockChildrenStash):
+class AppendBlockChildren(PointRequestor, BlockChildrenStash):
     def __init__(self, editor: PointEditor):
-        Gateway.__init__(self, editor)
+        PointRequestor.__init__(self, editor)
         BlockChildrenStash.__init__(self)
 
     def __bool__(self):
@@ -159,10 +172,11 @@ class AppendBlockChildren(Gateway, BlockChildrenStash):
         BlockChildrenStash.clear(self)
 
     def print_comments(self):
+        target_url = page_id_to_url(self.target_id)
         if self.target_name:
-            comments = ' '.join(
-                ['append', f"< {self.target_name} >", '\n\t',
-                 page_id_to_url(self.target_id)])
+            form = ['append_block', f"< {self.target_name} >",
+                    '\n\t', target_url]
         else:
-            comments = ' '.join(['append', page_id_to_url(self.target_id)])
+            form = ['append_block', target_url]
+        comments = ' '.join(form)
         stopwatch(comments)

@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
-from typing import Union
+from typing import Union, Optional
 
-from . import Editor
-from ..utility import page_id_to_url
+from notion_py.interface.struct import Editor, Requestor
+from notion_py.interface.utility import page_id_to_url
 
 
 class PointEditor(Editor, metaclass=ABCMeta):
@@ -170,11 +170,30 @@ class BridgeEditor(PointEditor, metaclass=ABCMeta):
         return [child.execute() for child in self.values]
 
 
+class GroundEditor(PointEditor, metaclass=ABCMeta):
+    def __init__(self, caller: PointEditor):
+        super().__init__(caller)
+        self.gateway: Optional[Requestor] = None
+        self.enable_overwrite = True
+
+    def __bool__(self):
+        return bool(self.gateway)
+
+    def set_overwrite_option(self, option: bool):
+        self.enable_overwrite = option
+
+    def preview(self):
+        return self.gateway.unpack() if self.gateway else {}
+
+    def execute(self):
+        return self.gateway.execute() if self.gateway else {}
+
+
 """
 from itertools import chain
 from typing import ValuesView, Mapping
 
-class AbstractMasterEditor(Requestor):
+class AbstractMasterEditor(Executable):
     def __init__(self, master_id: str):
         self.master_id = master_id
         self.set_overwrite_option(True)
