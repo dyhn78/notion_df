@@ -55,7 +55,6 @@ class LongRequestor(PointRequestor):
                 start_cursor=self.start_cursor)
             res.extend(response['results'])
             resp_size = len(response['results'])
-            request_size -= resp_size
             self.response_size += resp_size
             self.has_more = response['has_more']
             self.start_cursor = response['next_cursor']

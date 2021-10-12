@@ -1,5 +1,7 @@
 from .common.editor import ReadingDBEditor
-from notion_py.interface import TypeName, stopwatch
+from notion_py.interface.utility import stopwatch
+from ...interface.editor.inline import TextBlock, InlinePageBlock
+from ...interface.editor.tabular import TabularPageBlock
 
 
 class ReadingDBDuplicateRemover(ReadingDBEditor):
@@ -19,19 +21,19 @@ class ReadingDBDuplicateRemover(ReadingDBEditor):
         query.execute(request_size)
 
 
-def remove_dummy_blocks(page: TypeName.tabular_page):
+def remove_dummy_blocks(page: TabularPageBlock):
     duplicate = False
     removed = 0
     for block in page.sphere.children:
         if block.archived:
             continue
         # remove "blank" blocks
-        if isinstance(block, TypeName.text_block) and \
+        if isinstance(block, TextBlock) and \
                 block.contents.read().split() == '':
             block.contents.archive()
             removed += 1
         # remove duplicate contents (page_block)
-        if isinstance(block, TypeName.inline_page) and \
+        if isinstance(block, InlinePageBlock) and \
                 page.title in block.contents.read():
             if not duplicate:
                 duplicate = True

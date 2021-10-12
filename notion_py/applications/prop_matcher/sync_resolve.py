@@ -1,9 +1,11 @@
 from __future__ import annotations
 
-from notion_py.interface import RootEditor, TypeName, stopwatch
+from notion_py.interface import RootEditor
+from notion_py.interface.utility import stopwatch
 from ..database_info import DatabaseInfo
 from .frame import MatchFrames
 from .common.query_maker import QueryMaker
+from ...interface.editor.tabular import PageList, TabularPageBlock
 
 
 class PropertySyncResolver:
@@ -35,8 +37,8 @@ class PropertySyncResolver:
 
 
 class SyncResolveAlgorithm:
-    def __init__(self, fronts: TypeName.pagelist,
-                 backs: TypeName.pagelist,
+    def __init__(self, fronts: PageList,
+                 backs: PageList,
                  tag_forward: str,
                  tag_backward: str):
         self.fronts = fronts
@@ -49,7 +51,7 @@ class SyncResolveAlgorithm:
             front_id = front.master_id
             back_ids = front.props.read_at(self.tag_forward)
             for back_id in back_ids:
-                back: TypeName.tabular_page = self.backs.by_id[back_id]
+                back: TabularPageBlock = self.backs.by_id[back_id]
                 front_ids = back.props.read_at(self.tag_backward)
                 if front_id not in front_ids:
                     front_ids.append(front_id)

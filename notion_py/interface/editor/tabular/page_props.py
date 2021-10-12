@@ -1,4 +1,4 @@
-from notion_py.interface.encoder import TabularPropertybyKey, PropertyEncoder
+from notion_py.interface.encoder import TabularPagePropertybyKey, PropertyEncoder
 from notion_py.interface.parser import PageParser
 from .page import TabularPageBlock
 from ..struct import GroundEditor
@@ -7,7 +7,7 @@ from ...common.struct import drop_empty_request
 from ...utility import eval_empty
 
 
-class TabularProperty(GroundEditor, TabularPropertybyKey):
+class TabularPageProperty(GroundEditor, TabularPagePropertybyKey):
     def __init__(self, caller: TabularPageBlock):
         super().__init__(caller)
         self.caller = caller
@@ -140,7 +140,7 @@ class TabularProperty(GroundEditor, TabularPropertybyKey):
 
 
 """
-class TabularProperty(PointEditor):
+class TabularPageProperty(PointEditor):
     def __init__(self, caller: PointEditor):
         super().__init__(caller)
         self.caller = caller

@@ -6,7 +6,7 @@ from .maker import \
     PropertyEncoder, RichTextPropertyEncoder, SimplePropertyEncoder, FilesPropertyEncoder
 
 
-class TabularPropertybyName(ABC):
+class TabularPagePropertybyName(ABC):
     @abstractmethod
     def _type_of(self, prop_key: str):
         pass
@@ -92,7 +92,7 @@ class TabularPropertybyName(ABC):
                                  SimplePropertyEncoder.relation(prop_key, values))
 
 
-class TabularPropertybyKey(TabularPropertybyName, metaclass=ABCMeta):
+class TabularPagePropertybyKey(TabularPagePropertybyName, metaclass=ABCMeta):
     @abstractmethod
     def _name_at(self, prop_tag: str):
         pass

@@ -1,33 +1,38 @@
-from notion_py.interface.utility import stopwatch
-from notion_py.applications.monad_graph.build_graph import BuildGraph
-from notion_py.applications.monad_graph.optimize_position import GradientDescent, \
-    InitializeGraph
-from notion_py.applications.monad_graph.draw_figure import DrawFigure
+from notion_py.applications.monad_graph.add_nodes import TopologyBuilder
+from notion_py.applications.monad_graph.graph_handler.initalize import \
+    DualCircularInitializer
+from notion_py.applications.monad_graph.graph_handler.positioning \
+    import GradientDescent
+from notion_py.applications.monad_graph.graph_handler.draw_figure import FigureDrawer
+from notion_py.interface import stopwatch
+
+
+class MonadGraphHandler:
+    request_size = 500
+    epochs_each = 1000
+    mid_views = 5
+    mid_stopwatchs = 5
+
+    def execute(self):
+        try:
+            self._execute()
+        except KeyboardInterrupt:
+            pass
+        stopwatch('작업 완료')
+
+    def _execute(self):
+        topology_builder = TopologyBuilder(request_size=self.request_size)
+        graph = topology_builder.execute()
+        subgps = DualCircularInitializer(graph).execute()
+        position_handler = GradientDescent(graph, subgps,
+                                           epochs=self.epochs_each * self.mid_views,
+                                           mid_views=self.mid_views,
+                                           mid_stopwatchs=self.mid_stopwatchs)
+        graph_gen = position_handler.execute()
+        for graph in graph_gen:
+            FigureDrawer(graph).execute()
+
 
 if __name__ == '__main__':
-    REQUEST_SIZE = 500
-    EPOCHS = 20000
-    VIEWS = 5
-    STOPWATCHS = 5
-    LEARNING_RATE = 0.015
-
-    build_monad_graph = BuildGraph()
-    graph = build_monad_graph.execute(request_size=REQUEST_SIZE)
-
-    # print_edges(graph)
-    # print_pages(build_monad_graph)
-
-    initialize_graph = InitializeGraph(graph)
-    graph = initialize_graph.execute()
-
-    try:
-        for _ in range(VIEWS):
-            optimize_position = GradientDescent(
-                graph, epochs=EPOCHS // VIEWS, learning_rate=LEARNING_RATE)
-            graph = optimize_position.execute(stopwatchs=STOPWATCHS)
-            draw_monad_graph = DrawFigure(graph)
-            figure = draw_monad_graph.execute()
-    except KeyboardInterrupt:
-        pass
-
-    stopwatch('작업 완료')
+    handler = MonadGraphHandler()
+    handler.execute()

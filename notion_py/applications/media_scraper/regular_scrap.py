@@ -4,7 +4,8 @@ from typing import Optional
 from notion_py.applications.media_scraper.common.editor import ReadingDBEditor
 from notion_py.applications.media_scraper.lib import LibraryScraper
 from notion_py.applications.media_scraper.bookstore import BookstoreScraper
-from notion_py.interface import TypeName, stopwatch
+from notion_py.interface.utility import stopwatch
+from notion_py.interface.editor.tabular import TabularPageBlock
 
 
 class ReadingDBRegularScraper(ReadingDBEditor):
@@ -39,7 +40,7 @@ class ReadingDBRegularScraper(ReadingDBEditor):
 
 
 class PageHandler:
-    def __init__(self, caller: ReadingDBRegularScraper, page: TypeName.tabular_page):
+    def __init__(self, caller: ReadingDBRegularScraper, page: TabularPageBlock):
         self.caller = caller
         self.frame = caller.frame
         self.targets = caller.targets.copy()

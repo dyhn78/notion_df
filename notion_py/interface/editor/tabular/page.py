@@ -12,13 +12,13 @@ class TabularPageBlock(ChildBearingBlock):
                                      PageListCreator],
                  page_id: str,
                  frame: Optional[PropertyFrame] = None):
-        from .page_props import TabularProperty
+        from .page_props import TabularPageProperty
         super().__init__(caller=caller, block_id=page_id)
         self.caller = caller
         if not frame:
             frame = caller.frame
         self.frame: PropertyFrame = frame
-        self.props = TabularProperty(caller=self)
+        self.props = TabularPageProperty(caller=self)
         self.agents.update(props=self.props)
         self.title = ''
 
