@@ -1,6 +1,6 @@
 from pprint import pprint
 
-from notion_py.applications.monad_graph.add_nodes import TopologyBuilder
+from notion_py.applications.monad_graph.common.add_nodes import TopologyBuilder
 
 
 def print_nodes(gp):
@@ -20,5 +20,5 @@ def print_edges(gp):
 
 def print_pages(builder: TopologyBuilder):
     for pagelist in builder.all.values():
-        for page in pagelist.values:
+        for page in pagelist.elements:
             pprint(page.props.reads)

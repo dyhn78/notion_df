@@ -1,5 +1,5 @@
 # import numpy
-from itertools import product
+# from itertools import product
 from random import random
 import networkx as nx
 
@@ -11,8 +11,6 @@ class GradientDescent(GraphHandler):
     learning_rate = 0.05
     distraction_cycle = 20
     shrink_cycle = 20
-    attraction_range = 0.1
-    repulsion_range = 0.5
 
     # parameters relative to learning_rate
     attractive_strengths = {'strong': 1,
@@ -20,7 +18,6 @@ class GradientDescent(GraphHandler):
     repulsive_strength = 0.6
     distractive_strength = 0.002
     shrink_strength = 0.04
-    shrink_exponent = 1.2
 
     def __init__(self, graph: nx.DiGraph, subgps: list[Point, nx.Graph],
                  epochs, mid_views, mid_stopwatchs=5,
@@ -40,8 +37,8 @@ class GradientDescent(GraphHandler):
                 self.apply_tri_repulsions()
                 if epoch % self.distraction_cycle == 0:
                     self.apply_distraction()
-                if epoch % self.shrink_cycle == 0:
-                    self.apply_uniform_shrink()
+                # if epoch % self.shrink_cycle == 0:
+                #     self.apply_uniform_shrink()
                 for node in self.G.nodes:
                     self.get_pos(node).apply_changes()
                 if (epoch + 1) % self.stopwatch_intervals == 0:
@@ -52,7 +49,7 @@ class GradientDescent(GraphHandler):
         for edge in self.G.edges:
             dr = \
                 self.positive_exponential(
-                    edge[0], edge[1], self.attraction_range, 0.5) * \
+                    edge[0], edge[1], x_intercept=0.1, exponent=0.5) * \
                 self.get_edge_strength(edge)
             self.displace_radially(edge[0], edge[1], 2., -1, dr)
 
@@ -61,44 +58,35 @@ class GradientDescent(GraphHandler):
 
     def apply_pair_repulsions(self):
         rel_mass_to_child = 7
-        rel_mass_to_grandchild = 15
-        rel_mass_to_nephew = 4
+        # rel_mass_to_grandchild = 15
+        # rel_mass_to_nephew = 4
         for node in self.G.nodes:
             nodex = list(self.G.successors(node))
             for node1 in nodex:
+                min_dist = 0.1 * (self.get_degree_of(node)
+                                  + self.get_degree_of(node1)) ** 0.5
                 dr = self.negative_exponential(
-                    node, node1, self.repulsion_range, 0.5
+                    node, node1, x_intercept=min_dist, exponent=0.5
                 )
                 self.displace_radially(node, node1, rel_mass_to_child, +1, dr)
 
                 for node2 in nodex:
+                    min_dist = 0.15 * (self.get_degree_of(node1)
+                                       + self.get_degree_of(node2)) ** 0.5
                     dr = \
                         self.negative_exponential(
-                            node1, node2, self.repulsion_range, 0.5) * \
+                            node1, node2, x_intercept=min_dist, exponent=0.5) * \
                         self.repulsive_strength
                     self.displace_radially(node1, node2, 1, +1, dr)
-
-                node1x = list(self.G.successors(node1))
-                for node11 in node1x:
-                    dr = \
-                        self.negative_exponential(
-                            node1, node11, self.repulsion_range, 0.5) * \
-                        self.repulsive_strength
-                    self.displace_radially(node, node11, rel_mass_to_grandchild, +1, dr)
-
-                for node2, node11 in product(nodex, node1x):
-                    dr = \
-                        self.negative_exponential(
-                            node2, node11, self.repulsion_range, 0.5) * \
-                        self.repulsive_strength
-                    self.displace_radially(node2, node11, rel_mass_to_nephew, +1, dr)
 
             nodey = list(self.G.predecessors(node))
             for node7 in nodey:
                 for node8 in nodey:
+                    min_dist = 0.25 * (self.get_degree_of(node7)
+                                       + self.get_degree_of(node8)) ** 0.5
                     dr = \
                         self.negative_exponential(
-                            node7, node8, self.repulsion_range, 0.5) * \
+                            node7, node8, min_dist, 0.5) * \
                         self.repulsive_strength
                     self.displace_radially(node7, node8, 1, +1, dr)
 
@@ -129,23 +117,38 @@ class GradientDescent(GraphHandler):
     def apply_distraction(self):
         amplitude = (self.graph_size * self.learning_rate * self.distractive_strength *
                      self.distraction_cycle)
-        for node in self.G.nodes:
-            pos = self.get_pos(node)
-            pos.dx += (2 * random() - 1) * amplitude
-            pos.dy += (2 * random() - 1) * amplitude
+        for pos_center, subgp in self.subgps:
+            assert isinstance(pos_center, Point)
+            dx_total = dy_total = 0
+            for node in subgp:
+                pos = self.get_pos(node)
+                dx = (2 * random() - 1) * amplitude
+                dy = (2 * random() - 1) * amplitude
+                pos.dx += dx
+                pos.dy += dy
+                dx_total += dx
+                dy_total += dy
+            dx_total /= len(subgp)
+            dy_total /= len(subgp)
+            for node in subgp:
+                pos = self.get_pos(node)
+                pos.dx -= dx_total
+                pos.dy -= dy_total
 
     def apply_uniform_shrink(self):
         shrink_speed_base = self.shrink_strength * self.shrink_cycle
         for pos_center, subgp in self.subgps:
             assert isinstance(pos_center, Point)
-            shrink_speed = 1 - (1 - shrink_speed_base) ** (
-                    self.shrink_exponent * (len(subgp) ** 0.5 - 1))
-            if not (0 <= shrink_speed < 1):
+            shrink_speed = 1 - (1 - shrink_speed_base) ** (len(subgp) ** 0.5 - 1)
+            if not (0 <= shrink_speed <= 1):
                 raise ValueError(shrink_speed)
             for node in subgp:
                 pos = self.get_pos(node)
                 pos.dx -= shrink_speed * (pos.x - pos_center.x)
                 pos.dy -= shrink_speed * (pos.y - pos_center.y)
+
+    def get_degree_of(self, node: str):
+        return len(self.G.successors(node)) + len(self.G.predecessors(node))
 
     def get_edge_strength(self, edge):
         ed = self.get_edge(edge)
