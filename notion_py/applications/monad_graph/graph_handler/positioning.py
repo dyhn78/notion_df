@@ -34,7 +34,7 @@ class GradientDescent(GraphHandler):
             for epoch in range(self.epochs_each):
                 self.apply_pair_attractions()
                 self.apply_pair_repulsions()
-                self.apply_tri_repulsions()
+                # self.apply_tri_repulsions()
                 if epoch % self.distraction_cycle == 0:
                     self.apply_distraction()
                 # if epoch % self.shrink_cycle == 0:
@@ -50,45 +50,38 @@ class GradientDescent(GraphHandler):
             dr = \
                 self.positive_exponential(
                     edge[0], edge[1], x_intercept=0.1, exponent=0.5) * \
-                self.get_edge_strength(edge)
+                self.get_strength_of(edge)
             self.displace_radially(edge[0], edge[1], 2., -1, dr)
 
-    def apply_tri_repulsions(self):
-        pass
-
     def apply_pair_repulsions(self):
-        rel_mass_to_child = 7
+        # rel_mass_to_child = 7
         # rel_mass_to_grandchild = 15
         # rel_mass_to_nephew = 4
         for node in self.G.nodes:
             nodex = list(self.G.successors(node))
             for node1 in nodex:
-                min_dist = 0.1 * (self.get_degree_of(node)
-                                  + self.get_degree_of(node1)) ** 0.5
-                dr = self.negative_exponential(
-                    node, node1, x_intercept=min_dist, exponent=0.5
-                )
-                self.displace_radially(node, node1, rel_mass_to_child, +1, dr)
-
                 for node2 in nodex:
-                    min_dist = 0.15 * (self.get_degree_of(node1)
-                                       + self.get_degree_of(node2)) ** 0.5
+                    repulsion_range = 0.05 * (self.get_degree_of(node1)
+                                              + self.get_degree_of(node2)) ** 0.5
                     dr = \
                         self.negative_exponential(
-                            node1, node2, x_intercept=min_dist, exponent=0.5) * \
+                            node1, node2, x_intercept=repulsion_range, exponent=0.5) * \
                         self.repulsive_strength
                     self.displace_radially(node1, node2, 1, +1, dr)
 
             nodey = list(self.G.predecessors(node))
             for node7 in nodey:
                 for node8 in nodey:
-                    min_dist = 0.25 * (self.get_degree_of(node7)
-                                       + self.get_degree_of(node8)) ** 0.5
+                    repulsion_range = 0.35 * (self.get_degree_of(node7)
+                                              + self.get_degree_of(node8)) ** 0.5
                     dr = \
                         self.negative_exponential(
-                            node7, node8, min_dist, 0.5) * \
+                            node7, node8, repulsion_range, 0.5) * \
                         self.repulsive_strength
                     self.displace_radially(node7, node8, 1, +1, dr)
+
+    def apply_tri_repulsions(self):
+        pass
 
     def displace_radially(
             self, node1, node2, node1_rel_mass: float, sign, dr: float):
@@ -148,9 +141,10 @@ class GradientDescent(GraphHandler):
                 pos.dy -= shrink_speed * (pos.y - pos_center.y)
 
     def get_degree_of(self, node: str):
-        return len(self.G.successors(node)) + len(self.G.predecessors(node))
+        return len(list(self.G.successors(node))) \
+               + len(list(self.G.predecessors(node)))
 
-    def get_edge_strength(self, edge):
+    def get_strength_of(self, edge):
         ed = self.get_edge(edge)
         edge_weight = ed['edge_weight']
         edge_strength = self.attractive_strengths[edge_weight]
