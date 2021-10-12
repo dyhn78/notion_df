@@ -8,7 +8,7 @@ from notion_py.interface.utility import stopwatch
 
 
 class GradientDescent(GraphHandler):
-    learning_rate = 0.05
+    learning_rate = 0.08
     distraction_cycle = 20
     shrink_cycle = 20
 
@@ -32,9 +32,9 @@ class GradientDescent(GraphHandler):
     def execute(self):
         for _ in range(self.mid_views):
             for epoch in range(self.epochs_each):
-                self.apply_pair_attractions()
-                self.apply_pair_repulsions()
-                # self.apply_tri_repulsions()
+                self.add_pair_attractions()
+                self.add_pair_repulsions()
+                # self.add_tri_repulsions()
                 if epoch % self.distraction_cycle == 0:
                     self.apply_distraction()
                 # if epoch % self.shrink_cycle == 0:
@@ -45,15 +45,15 @@ class GradientDescent(GraphHandler):
                     stopwatch(f'{epoch + 1}회 최적화')
             yield self.G
 
-    def apply_pair_attractions(self):
+    def add_pair_attractions(self):
         for edge in self.G.edges:
             dr = \
-                self.positive_exponential(
-                    edge[0], edge[1], x_intercept=0.1, exponent=0.5) * \
+                self.displace_with_lower_bound(edge[0], edge[1], x_intercept=0.1,
+                                               exponent=0.5) * \
                 self.get_strength_of(edge)
-            self.displace_radially(edge[0], edge[1], 2., -1, dr)
+            self.apply_radial_displacements(edge[0], edge[1], 2., -1, dr)
 
-    def apply_pair_repulsions(self):
+    def add_pair_repulsions(self):
         # rel_mass_to_child = 7
         # rel_mass_to_grandchild = 15
         # rel_mass_to_nephew = 4
@@ -64,10 +64,10 @@ class GradientDescent(GraphHandler):
                     repulsion_range = 0.05 * (self.get_degree_of(node1)
                                               + self.get_degree_of(node2)) ** 0.5
                     dr = \
-                        self.negative_exponential(
+                        self.displace_with_upper_bound(
                             node1, node2, x_intercept=repulsion_range, exponent=0.5) * \
                         self.repulsive_strength
-                    self.displace_radially(node1, node2, 1, +1, dr)
+                    self.apply_radial_displacements(node1, node2, 1, +1, dr)
 
             nodey = list(self.G.predecessors(node))
             for node7 in nodey:
@@ -75,15 +75,15 @@ class GradientDescent(GraphHandler):
                     repulsion_range = 0.35 * (self.get_degree_of(node7)
                                               + self.get_degree_of(node8)) ** 0.5
                     dr = \
-                        self.negative_exponential(
+                        self.displace_with_upper_bound(
                             node7, node8, repulsion_range, 0.5) * \
                         self.repulsive_strength
-                    self.displace_radially(node7, node8, 1, +1, dr)
+                    self.apply_radial_displacements(node7, node8, 1, +1, dr)
 
-    def apply_tri_repulsions(self):
+    def add_tri_repulsions(self):
         pass
 
-    def displace_radially(
+    def apply_radial_displacements(
             self, node1, node2, node1_rel_mass: float, sign, dr: float):
         """strength: attraction if negative, repulsion if positive"""
         dist = self.get_dist(node1, node2)
@@ -150,12 +150,12 @@ class GradientDescent(GraphHandler):
         edge_strength = self.attractive_strengths[edge_weight]
         return edge_strength
 
-    def positive_exponential(self, node1, node2, x_intercept, exponent=1.):
+    def displace_with_lower_bound(self, node1, node2, x_intercept, exponent=1.):
         dist = self.get_dist(node1, node2)
         rel_rate = max(0, (dist / x_intercept) ** exponent - 1)
         return rel_rate * self.learning_rate
 
-    def negative_exponential(self, node1, node2, x_intercept, exponent=1.):
+    def displace_with_upper_bound(self, node1, node2, x_intercept, exponent=1.):
         dist = self.get_dist(node1, node2)
         rel_rate = max(0, 1 - (dist / x_intercept) ** exponent)
         return rel_rate * self.learning_rate

@@ -41,12 +41,11 @@ class MonadGraphHandler:
                                            epochs=self.epochs_each * self.mid_views,
                                            mid_views=self.mid_views,
                                            mid_stopwatchs=self.mid_stopwatchs)
-        print(timeit(lambda: position_handler.apply_pair_attractions(), number=50))
-        print(timeit(lambda: position_handler.apply_pair_repulsions(), number=50))
+        print(timeit(lambda: position_handler.add_pair_attractions(), number=50))
+        print(timeit(lambda: position_handler.add_pair_repulsions(), number=50))
         # print(timeit(lambda: position_handler.apply_uniform_shrink(), number=50))
 
 
 if __name__ == '__main__':
     handler = MonadGraphHandler()
     handler.execute()
-    handler.timeit()
