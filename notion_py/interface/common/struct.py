@@ -42,8 +42,9 @@ class Requestor(Executable, ValueCarrier, metaclass=ABCMeta):
 
 
 class Editor(Executable, metaclass=ABCMeta):
-    def __init__(self, root_editor: AbstractRootEditor):
-        self.root_editor = root_editor
+    def __init__(self, root_editor):
+        from notion_py.interface import RootEditor
+        self.root_editor: RootEditor = root_editor
 
     @abstractmethod
     def preview(self):
@@ -51,14 +52,6 @@ class Editor(Executable, metaclass=ABCMeta):
 
     def pprint(self, **kwargs):
         pprint(self.preview(), **kwargs)
-
-
-class AbstractRootEditor(Editor):
-    @abstractmethod
-    def __init__(self):
-        super().__init__(self)
-        self.notion: Union[Client, AsyncClient, None] = None
-        self.by_id = {}
 
 
 def drop_empty_request(method: Callable):

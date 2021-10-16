@@ -1,6 +1,7 @@
 from __future__ import annotations
-from typing import Optional, Iterable, Union
+
 from copy import deepcopy
+from typing import Optional, Union
 
 from notion_py.interface.parser import PageParser, DatabaseParser
 

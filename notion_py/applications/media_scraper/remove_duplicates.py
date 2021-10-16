@@ -1,7 +1,7 @@
 from .common.editor import ReadingDBEditor
 from notion_py.interface.utility import stopwatch
+from ...interface.editor.abs_supported.abs_child_bearing import ChildBearingBlock
 from ...interface.editor.inline import TextBlock, InlinePageBlock
-from ...interface.editor.tabular import TabularPageBlock
 
 
 class ReadingDBDuplicateRemover(ReadingDBEditor):
@@ -9,7 +9,11 @@ class ReadingDBDuplicateRemover(ReadingDBEditor):
         self.make_query(request_size)
         for page in self.pagelist.elements:
             page.sphere.fetch_children()
-            remove_dummy_blocks(page)
+            removed = remove_dummy_blocks(page)
+            if removed:
+                page.props.write_text_at('link_to_contents', '')
+                stopwatch(f'중복 {removed} 개 제거: {page.title}')
+                page.execute()
 
     def make_query(self, request_size):
         query = self.pagelist.open_query()
@@ -21,7 +25,7 @@ class ReadingDBDuplicateRemover(ReadingDBEditor):
         query.execute(request_size)
 
 
-def remove_dummy_blocks(page: TabularPageBlock):
+def remove_dummy_blocks(page: ChildBearingBlock):
     duplicate = False
     removed = 0
     for block in page.sphere.children:
@@ -34,13 +38,10 @@ def remove_dummy_blocks(page: TabularPageBlock):
             removed += 1
         # remove duplicate contents (page_block)
         if isinstance(block, InlinePageBlock) and \
-                page.title in block.contents.read():
+                page.master_name in block.contents.read():
             if not duplicate:
                 duplicate = True
             else:
                 block.contents.archive()
                 removed += 1
-    if removed:
-        page.props.write_text_at('link_to_contents', '')
-        stopwatch(f'중복 {removed} 개 제거: {page.title}')
-        page.execute()
+    return removed

@@ -1,7 +1,7 @@
 from typing import Union
 
 from .sphere import BlockSphere
-from ..master import SupportedBlock
+from ..supported import SupportedBlock
 from ...struct import ListEditor
 from notion_py.interface.parser import BlockChildrenParser, BlockContentsParser
 

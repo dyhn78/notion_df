@@ -2,9 +2,12 @@ from __future__ import annotations
 from collections import defaultdict
 from pprint import pprint
 
+from notion_client import APIResponseError
+
 from .database import Database
 from ..struct import PointEditor
 from ...parser import PageListParser
+from ...requestor import Query
 
 
 class PageList(PointEditor):
@@ -25,8 +28,7 @@ class PageList(PointEditor):
     def __getitem__(self, page_id: str):
         return self.by_id[page_id]
 
-    def open_query(self):
-        from notion_py.interface.requestor import Query
+    def open_query(self) -> Query:
         return Query(self, self.frame)
 
     @property
@@ -54,7 +56,18 @@ class PageList(PointEditor):
 
     def apply_query_response(self, response):
         parser = PageListParser(response)
-        self._normal.apply_parser(parser)
+        self._normal.apply_pagelist_parser(parser)
+
+    def fetch_a_child(self, page_id: str):
+        """returns child page if succeed; returns None if there isn't one."""
+        page = self._normal.make_dangling_page(page_id)
+        try:
+            page.props.retrieve()
+        except APIResponseError:
+            del page
+            return None
+        self._normal.bind_dangling_page(page)
+        return page
 
     def fetch_descendants(self, depth=-1):
         if depth == 0:

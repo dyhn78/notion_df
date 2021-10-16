@@ -13,6 +13,10 @@ class TwofoldListStash(TwofoldStash, metaclass=ABCMeta):
         self._subcarriers.insert(0, carrier)
         return self._subcarriers[0]
 
+    def insert(self, i: int, carrier: ValueCarrier):
+        self._subcarriers.insert(i, carrier)
+        return self._subcarriers[i]
+
 
 class BlockChildrenStash(ValueCarrier):
     def __init__(self):
@@ -27,8 +31,8 @@ class BlockChildrenStash(ValueCarrier):
     def unpack(self):
         return {'children': self.block_value.unpack()}
 
-    def apply_contents(self, carrier: ContentsEncoder):
-        return self.block_value.apply(carrier)
+    def apply_contents(self, i: int, carrier: ContentsEncoder):
+        return self.block_value.insert(i, carrier)
 
 
 class TwofoldDictStash(TwofoldStash, metaclass=ABCMeta):

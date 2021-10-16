@@ -1,1 +1,1 @@
-from .master import ContentsBearingBlock, BlockContents
+from .contents_bearing import ContentsBearingBlock, BlockContents

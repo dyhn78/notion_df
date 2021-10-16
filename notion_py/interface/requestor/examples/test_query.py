@@ -1,7 +1,7 @@
 # import os
 # from notion_client import AsyncClient, Client
 #
-# from notion_py.interface.requestor.query import Query
+# from notion_py.interface.gateway.query import Query
 # from notion_py.interface.utility import stopwatch
 #
 #

@@ -31,7 +31,7 @@ class BookstoreScraper:
             self.set_contents_data()
 
     def get_url(self):
-        url = self.props.try_read_at('url', default='')
+        url = self.props.get_at('url', default='')
         return url
 
     def set_url(self, url):
@@ -73,5 +73,5 @@ class BookstoreScraper:
         else:
             subpage = self.sphere.create_page_block()
         subpage.contents.write_title(f'={self.page.title}')
-        # subpage.execute()
+        subpage.execute()
         return subpage

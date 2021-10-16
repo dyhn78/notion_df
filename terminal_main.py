@@ -1,8 +1,8 @@
 from notion_py.interface.utility import stopwatch
-from notion_py.applications.prop_matcher import PropertyMatcher
+from notion_py.applications.prop_matcher import MatchController
 from notion_py.applications.media_scraper import ReadingDBRegularScraper
 
-PropertyMatcher(date_range=7).execute()
+MatchController(date_range=7).execute()
 ReadingDBRegularScraper().execute(request_size=5)
 
 stopwatch('작업 완료')

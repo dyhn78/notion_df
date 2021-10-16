@@ -1,53 +1,35 @@
 from notion_py.interface.encoder import TabularPagePropertybyKey, PropertyEncoder
 from notion_py.interface.parser import PageParser
 from .page import TabularPageBlock
-from ..struct import GroundEditor
-from ...requestor import CreatePage, UpdatePage, RetrievePage
-from ...common.struct import drop_empty_request
+from ..abs_page_property import PageProperty
+from ...requestor import CreatePage, UpdatePage
 from ...utility import eval_empty
 
 
-class TabularPageProperty(GroundEditor, TabularPagePropertybyKey):
+class TabularPageProperty(PageProperty, TabularPagePropertybyKey):
     def __init__(self, caller: TabularPageBlock):
         super().__init__(caller)
         self.caller = caller
         self.frame = caller.frame
-        if not self.yet_not_created:
-            gateway = UpdatePage(self)
+        if self.yet_not_created:
+            self._requestor = CreatePage(self, under_database=True)
         else:
-            gateway = CreatePage(self, under_database=True)
-        self.gateway = gateway
+            self._requestor = UpdatePage(self)
         self._read_plain = {}
         self._read_rich = {}
         self._read_full = {}
 
-    def archive(self):
-        self.gateway.archive()
+    @property
+    def gateway(self):
+        return self._requestor
 
-    def un_archive(self):
-        self.gateway.un_archive()
-
-    def retrieve(self):
-        gateway = RetrievePage(self)
-        response = gateway.execute()
-        parser = PageParser.parse_retrieve(response)
-        self.apply_page_parser(parser)
-
-    @drop_empty_request
-    def execute(self):
-        response = self.gateway.execute()
-        if self.yet_not_created:
-            parser = PageParser.parse_create(response)
-            self.apply_page_parser(parser)
-        self.gateway = UpdatePage(self)
+    @gateway.setter
+    def gateway(self, value):
+        self._requestor = value
 
     def apply_page_parser(self, parser: PageParser):
-        if parser.page_id:
-            self.master_id = parser.page_id
+        super().apply_page_parser(parser)
         self.frame.fetch_parser(parser)
-        self.caller.title = parser.title
-        self.archived = parser.archived
-
         self._read_plain = parser.prop_values
         self._read_rich = parser.prop_rich_values
         for name in self._read_plain:
@@ -66,25 +48,8 @@ class TabularPageProperty(GroundEditor, TabularPagePropertybyKey):
         else:
             return carrier
 
-    def read_of_all(self):
-        return self._read_plain
-
-    def read_at_all(self):
-        return {key: self._read_plain[self._name_at(key)]
-                for key in self.frame.tags()}
-
-    def read_rich_of_all(self):
-        return self._read_rich
-
-    def read_full_of_all(self):
-        return self._read_full
-
-    def read_full_at_all(self):
-        return {key: self._read_full[self._name_at(key)]
-                for key in self.frame.tags()}
-
     def read_of(self, prop_key: str):
-        self._raise_if_nonstring_key(prop_key)
+        self._assert_string_key(prop_key)
         try:
             value = self._read_plain[prop_key]
         except KeyError:
@@ -92,22 +57,22 @@ class TabularPageProperty(GroundEditor, TabularPagePropertybyKey):
         return value
 
     def read_rich_of(self, prop_key: str):
-        self._raise_if_nonstring_key(prop_key)
+        self._assert_string_key(prop_key)
         try:
             value = self._read_rich[prop_key]
         except KeyError:
             raise KeyError(f"prop_key: {prop_key}")
         return value
 
-    def try_read_of(self, prop_key: str, default=None):
-        self._raise_if_nonstring_key(prop_key)
+    def get_of(self, prop_key: str, default=None):
+        self._assert_string_key(prop_key)
         value = self._read_plain.get(prop_key)
         if value is None:
             value = default
         return value
 
-    def try_read_rich_of(self, prop_key: str, default=None):
-        self._raise_if_nonstring_key(prop_key)
+    def get_rich_of(self, prop_key: str, default=None):
+        self._assert_string_key(prop_key)
         value = self._read_rich.get(prop_key)
         if value is None:
             value = default
@@ -116,14 +81,21 @@ class TabularPageProperty(GroundEditor, TabularPagePropertybyKey):
     def read_at(self, prop_tag: str):
         return self.read_of(self._name_at(prop_tag))
 
-    def try_read_at(self, prop_tag: str, default=None):
-        return self.try_read_of(self._name_at(prop_tag), default)
-
     def read_rich_at(self, prop_tag: str):
         return self.read_rich_of(self._name_at(prop_tag))
 
-    def try_read_rich_at(self, prop_tag: str, default=None):
-        return self.try_read_rich_of(self._name_at(prop_tag), default)
+    def get_at(self, prop_tag: str, default=None):
+        return self.get_of(self._name_at(prop_tag), default)
+
+    def get_rich_at(self, prop_tag: str, default=None):
+        return self.get_rich_of(self._name_at(prop_tag), default)
+
+    @staticmethod
+    def _assert_string_key(prop_key):
+        if not isinstance(prop_key, str):
+            comment = f"<prop_key: {prop_key}>"
+            raise TypeError(comment)
+        return
 
     def _name_at(self, prop_tag: str):
         return self.frame.key_at(prop_tag)
@@ -131,12 +103,22 @@ class TabularPageProperty(GroundEditor, TabularPagePropertybyKey):
     def _type_of(self, prop_key: str):
         return self.frame.type_of(prop_key)
 
-    @staticmethod
-    def _raise_if_nonstring_key(prop_key):
-        if not isinstance(prop_key, str):
-            comment = f"<prop_key: {prop_key}>"
-            raise TypeError(comment)
-        return
+    def all_plain_keys(self):
+        return self._read_plain
+
+    def all_plain_tags(self):
+        return {key: self._read_plain[self._name_at(key)]
+                for key in self.frame.tags()}
+
+    def all_rich_keys(self):
+        return self._read_rich
+
+    def all_keys(self):
+        return self._read_full
+
+    def all_tags(self):
+        return {key: self._read_full[self._name_at(key)]
+                for key in self.frame.tags()}
 
 
 """

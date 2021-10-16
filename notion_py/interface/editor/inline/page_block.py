@@ -4,25 +4,26 @@ from notion_py.interface.encoder import PageContentsWriter, \
     RichTextPropertyEncoder
 from notion_py.interface.parser import PageParser
 from notion_py.interface.requestor import \
-    CreatePage, UpdatePage, RetrievePage
-from ..abs_supported.abs_child_bearing.updater import BlockSphereUpdater
-from ...common.struct import drop_empty_request
+    CreatePage, UpdatePage
 from notion_py.interface.utility import eval_empty
-
-from ..abs_supported.abs_child_bearing.abs_contents_bearing.master import \
+from ..abs_page_property import PageProperty
+from ..abs_supported.abs_child_bearing.abs_contents_bearing.contents_bearing import \
     ContentsBearingBlock, BlockContents
 from ..abs_supported.abs_child_bearing.creator import BlockSphereCreator
-from ...common.struct import AbstractRootEditor
+from ..abs_supported.abs_child_bearing.updater import BlockSphereUpdater
+from ...common.struct import drop_empty_request, Editor
 
 
 class InlinePageBlock(ContentsBearingBlock):
     def __init__(self,
-                 caller: Union[AbstractRootEditor,
+                 caller: Union[Editor,
                                BlockSphereUpdater,
                                BlockSphereCreator],
                  page_id: str):
         super().__init__(caller, page_id)
         self.caller = caller
+        if isinstance(caller, BlockSphereCreator):
+            self.yet_not_created = True
         self.contents = InlinePageContents(self)
         self.agents.update(contents=self.contents)
         self.title = ''
@@ -45,40 +46,26 @@ class InlinePageBlock(ContentsBearingBlock):
         return dict(**super().fully_read_rich(), type='page')
 
 
-class InlinePageContents(BlockContents, PageContentsWriter):
+class InlinePageContents(PageProperty, BlockContents, PageContentsWriter):
     def __init__(self, caller: InlinePageBlock):
         super().__init__(caller)
         self.caller = caller
-        if self.master_id:
-            gateway = UpdatePage(self)
-        else:
-            self.yet_not_created = True
-            gateway = CreatePage(self, under_database=False)
-        self.gateway = gateway
-
-    def retrieve(self):
-        gateway = RetrievePage(self)
-        response = gateway.execute()
-        parser = PageParser.parse_retrieve(response)
-        self.apply_page_parser(parser)
-
-    def execute(self):
-        response = self.gateway.execute()
         if self.yet_not_created:
-            self.yet_not_created = False
-            parser = PageParser.parse_create(response)
-            self.apply_page_parser(parser)
+            requestor = CreatePage(self, under_database=False)
         else:
-            pass
-            # TODO: update {self._read};
-            #  consider making PageParser yourself without response
-        self.gateway = UpdatePage(self)
+            requestor = UpdatePage(self)
+        self._requestor = requestor
+
+    @property
+    def gateway(self) -> Union[UpdatePage, CreatePage]:
+        return self._requestor
+
+    @gateway.setter
+    def gateway(self, value):
+        self._requestor = value
 
     def apply_page_parser(self, parser: PageParser):
-        if parser.page_id:
-            self.master_id = parser.page_id
-            self.yet_not_created = False
-        self.caller.title = parser.title
+        super().apply_page_parser(parser)
         self._read_plain = parser.prop_values['title']
         self._read_rich = parser.prop_rich_values['title']
 

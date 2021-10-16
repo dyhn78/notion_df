@@ -1,7 +1,8 @@
 import datetime
 from datetime import datetime as datetimeclass
 
-from notion_py.interface import TypeName
+from notion_py.interface.common import DateFormat
+from notion_py.interface.editor.tabular import TabularPageBlock
 
 
 class ProcessTimeProperty:
@@ -43,7 +44,7 @@ class ProcessTimeProperty:
 
 class DatePageProcessor:
     @staticmethod
-    def get_title(date_index: TypeName.date_format):
+    def get_title(date_index: DateFormat):
         date_handler = ProcessTimeProperty(date_index.start)
         date_handler.add_timedelta(-5)
         return date_handler.strf_dig6_and_weekday()
@@ -51,22 +52,20 @@ class DatePageProcessor:
 
 class PeriodPageProcessor:
     @staticmethod
-    def get_title(date_index: TypeName.date_format):
-        date_handler = ProcessTimeProperty(date_index.start)
+    def get_title(dom_date_value: DateFormat):
+        date_handler = ProcessTimeProperty(dom_date_value.start)
         date_handler.add_timedelta(-5)
         return date_handler.strf_year_and_week()
 
     @staticmethod
-    def writer(prop_key: str):
-        def wrapper(page: TypeName.tabular_page, date_index: TypeName.date_format):
-            date_handler = ProcessTimeProperty(date_index.start)
-            date_handler.add_timedelta(-5)
-            date_range = TypeName.date_format(
-                start_date=date_handler.first_day_of_week(),
-                end_date=date_handler.last_day_of_week()
-            )
-            page.props.write_date_at(prop_key, date_range)
-        return wrapper
+    def get_date_range(tar_date_value: DateFormat):
+        date_handler = ProcessTimeProperty(tar_date_value.start)
+        date_handler.add_timedelta(-5)
+        date_range = DateFormat(
+            start_date=date_handler.first_day_of_week(),
+            end_date=date_handler.last_day_of_week()
+        )
+        return date_range
 
 
 if __name__ == '__main__':

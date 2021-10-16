@@ -98,6 +98,6 @@ class PageHandler:
             return 'append'
 
     def get_names(self) -> tuple[str, str]:
-        docx_name = self.props.try_read_at('docx_name', '')
-        true_name = self.props.try_read_at('true_name', '')
+        docx_name = self.props.get_at('docx_name', '')
+        true_name = self.props.get_at('true_name', '')
         return docx_name, true_name

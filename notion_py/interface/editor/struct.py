@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
-from typing import Union, Optional
+from typing import Union
 
 from notion_py.interface.common.struct import Editor, Requestor
 from notion_py.interface.utility import page_id_to_url
@@ -181,8 +181,12 @@ class ListEditor(PointEditor, metaclass=ABCMeta):
 class GroundEditor(PointEditor, metaclass=ABCMeta):
     def __init__(self, caller: PointEditor):
         super().__init__(caller)
-        self.gateway: Optional[Requestor] = None
         self.enable_overwrite = True
+
+    @property
+    @abstractmethod
+    def gateway(self) -> Union[Requestor, PointEditor]:
+        pass
 
     def __bool__(self):
         return bool(self.gateway)
@@ -191,7 +195,11 @@ class GroundEditor(PointEditor, metaclass=ABCMeta):
         self.enable_overwrite = option
 
     def preview(self):
-        return self.gateway.unpack() if self.gateway else {}
+        if isinstance(self.gateway, Requestor):
+            return self.gateway.unpack()
+        elif isinstance(self.gateway, PointEditor):
+            return self.gateway.preview()
+        return {}
 
     def execute(self):
         return self.gateway.execute() if self.gateway else {}

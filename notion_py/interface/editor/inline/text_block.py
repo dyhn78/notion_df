@@ -1,25 +1,25 @@
 from typing import Union, Optional
 
-from ..abs_supported.abs_child_bearing.abs_contents_bearing.master import \
-    ContentsBearingBlock, BlockContents
-from ..abs_supported.abs_child_bearing.creator import \
-    BlockSphereCreator
-from ..abs_supported.abs_child_bearing.updater import BlockSphereUpdater
 from notion_py.interface.encoder import TextContentsWriter, RichTextContentsEncoder
 from notion_py.interface.parser import BlockContentsParser
 from notion_py.interface.requestor import UpdateBlock, RetrieveBlock
-from ...common.struct import AbstractRootEditor
+from ..abs_supported.abs_child_bearing.abs_contents_bearing.contents_bearing import \
+    ContentsBearingBlock, BlockContents
+from ..abs_supported.abs_child_bearing.creator import \
+    TextBlocksCreator
+from ..abs_supported.abs_child_bearing.updater import BlockSphereUpdater
+from ...common.struct import Editor
 
 
 class TextBlock(ContentsBearingBlock):
     def __init__(self,
-                 caller: Union[AbstractRootEditor,
+                 caller: Union[Editor,
                                BlockSphereUpdater,
-                               BlockSphereCreator],
+                               TextBlocksCreator],
                  block_id: str):
         super().__init__(caller=caller, block_id=block_id)
         self.caller = caller
-        if isinstance(caller, BlockSphereCreator):
+        if isinstance(caller, TextBlocksCreator):
             self.yet_not_created = True
             self.contents = TextContents(self, caller)
         else:
@@ -48,27 +48,30 @@ class TextBlock(ContentsBearingBlock):
 
 
 class TextContents(BlockContents, TextContentsWriter):
-    def __init__(self, caller: TextBlock, uncle: Optional[BlockSphereCreator] = None):
+    def __init__(self, caller: TextBlock,
+                 creator: Optional[TextBlocksCreator] = None):
         super().__init__(caller)
         self.caller = caller
-        if self.yet_not_created:
-            self._gateway_before_created = uncle.gateway
-        self._gateway_after_created = UpdateBlock(self)
+        self.creator = creator
+        self._requestor = UpdateBlock(self)
 
     @property
-    def gateway(self):
-        if self.yet_not_created:
-            return self._gateway_before_created
-        else:
-            return self._gateway_after_created
+    def gateway(self) -> UpdateBlock:
+        return self._requestor
 
     @gateway.setter
     def gateway(self, value):
-        self._gateway_after_created = value
+        self._requestor = value
+
+    def archive(self):
+        self.gateway.archive()
+
+    def un_archive(self):
+        self.gateway.un_archive()
 
     def retrieve(self):
-        gateway = RetrieveBlock(self)
-        response = gateway.execute()
+        requestor = RetrieveBlock(self)
+        response = requestor.execute()
         parser = BlockContentsParser.parse_retrieve(response)
         self.apply_block_parser(parser)
 
@@ -76,11 +79,11 @@ class TextContents(BlockContents, TextContentsWriter):
         if self.yet_not_created:
             self.master.execute()
         else:
-            response = self.gateway.execute()
+            self.gateway.execute()
             # TODO: update {self._read};
-            #  consider making BlockContentsParser yourself without response
-            self.gateway = UpdateBlock(self)
-            return response
+            #  1. use the <response> = self.gateway.execute()
+            #  2. update BlockContentsParser yourself without response
+        self.gateway = UpdateBlock(self)
 
     def push_carrier(self, carrier: RichTextContentsEncoder) -> RichTextContentsEncoder:
         # print(f"<{self.master_id}>")
@@ -90,4 +93,7 @@ class TextContents(BlockContents, TextContentsWriter):
         # print(self.master.caller.yet_not_created)
         # print(self.parent.yet_not_created)
         # print(carrier.unpack())
-        return self.gateway.apply_contents(carrier)
+        if self.yet_not_created:
+            return self.creator.push_carrier(self, carrier)
+        else:
+            return self.gateway.apply_contents(carrier)

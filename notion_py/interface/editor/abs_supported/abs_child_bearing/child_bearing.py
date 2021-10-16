@@ -4,7 +4,7 @@ from typing import Union
 
 from notion_py.interface.common.struct import Editor, drop_empty_request
 
-from ..master import SupportedBlock
+from ..supported import SupportedBlock
 from ...struct import PointEditor
 
 
@@ -34,7 +34,7 @@ class ChildBearingBlock(SupportedBlock):
             assigning a multi-indented structure will be executed top to bottom,
             regardless of indentation.
         2. the 'ground editors', self.contents or self.tabular,
-            have to refer to self.master_id if it want to 'reset requestor'.
+            have to refer to self.master_id if it want to 'reset gateway'.
             therefore, it first send the response without processing itself,
             so that the master deals with its reset task instead.
         """

@@ -5,7 +5,7 @@ from typing import Optional
 from notion_client import Client, AsyncClient
 
 from ..common import PropertyFrame
-from ..common.struct import AbstractRootEditor
+from ..common.struct import Editor
 from ..utility import page_url_to_id
 from .struct import MasterEditor
 from .inline.text_block import TextBlock
@@ -14,9 +14,9 @@ from .tabular.database import Database
 from .tabular.page import TabularPageBlock
 
 
-class RootEditor(AbstractRootEditor):
+class RootEditor(Editor):
     def __init__(self, async_client=False):
-        super().__init__()
+        super().__init__(root_editor=self)
         self.top_editors: list[MasterEditor] = []
         self.by_id: dict[str, MasterEditor] = {}
         if async_client:
