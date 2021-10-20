@@ -9,20 +9,20 @@ from notion_py.interface.utility import eval_empty
 from ..abs_page_property import PageProperty
 from ..abs_supported.abs_child_bearing.abs_contents_bearing.contents_bearing import \
     ContentsBearingBlock, BlockContents
-from ..abs_supported.abs_child_bearing.creator import BlockSphereCreator
+from ..abs_supported.abs_child_bearing.creator import InlinePageBlockCreator
 from ..abs_supported.abs_child_bearing.updater import BlockSphereUpdater
-from ...common.struct import drop_empty_request, Editor
+from ...common.struct import Editor
 
 
 class InlinePageBlock(ContentsBearingBlock):
     def __init__(self,
                  caller: Union[Editor,
                                BlockSphereUpdater,
-                               BlockSphereCreator],
+                               InlinePageBlockCreator],
                  page_id: str):
         super().__init__(caller, page_id)
         self.caller = caller
-        if isinstance(caller, BlockSphereCreator):
+        if isinstance(caller, InlinePageBlockCreator):
             self.yet_not_created = True
         self.contents = InlinePageContents(self)
         self.agents.update(contents=self.contents)
@@ -32,18 +32,17 @@ class InlinePageBlock(ContentsBearingBlock):
     def master_name(self):
         return self.title
 
-    @drop_empty_request
     def execute(self):
         self.contents.execute()
         if self.archived:
             return
         self.sphere.execute()
 
-    def fully_read(self):
-        return dict(**super().fully_read(), type='page')
+    def reads(self):
+        return dict(**super().reads(), type='page')
 
-    def fully_read_rich(self):
-        return dict(**super().fully_read_rich(), type='page')
+    def reads_rich(self):
+        return dict(**super().reads_rich(), type='page')
 
 
 class InlinePageContents(PageProperty, BlockContents, PageContentsWriter):
@@ -57,11 +56,11 @@ class InlinePageContents(PageProperty, BlockContents, PageContentsWriter):
         self._requestor = requestor
 
     @property
-    def gateway(self) -> Union[UpdatePage, CreatePage]:
+    def requestor(self) -> Union[UpdatePage, CreatePage]:
         return self._requestor
 
-    @gateway.setter
-    def gateway(self, value):
+    @requestor.setter
+    def requestor(self, value):
         self._requestor = value
 
     def apply_page_parser(self, parser: PageParser):
@@ -71,8 +70,8 @@ class InlinePageContents(PageProperty, BlockContents, PageContentsWriter):
 
     def push_carrier(self, carrier: RichTextPropertyEncoder) \
             -> Optional[RichTextPropertyEncoder]:
-        overwrite = self.enable_overwrite or eval_empty(self.read())
+        overwrite = self.root.enable_overwrite or eval_empty(self.reads())
         if overwrite:
-            return self.gateway.apply_prop(carrier)
+            return self.requestor.apply_prop(carrier)
         else:
             return carrier

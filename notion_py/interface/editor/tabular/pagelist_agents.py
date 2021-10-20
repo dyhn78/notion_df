@@ -1,6 +1,6 @@
 from ..struct import ListEditor
 from .pagelist import PageList
-from notion_py.interface.parser import PageListParser, PageParser
+from notion_py.interface.parser import PageListParser
 
 
 class PageListUpdater(ListEditor):
@@ -9,16 +9,23 @@ class PageListUpdater(ListEditor):
         super().__init__(caller)
         self.caller = caller
         self.frame = caller.frame
-        self.values: list[TabularPageBlock] = []
+        self._values: list[TabularPageBlock] = []
         self.by_id: dict[str, TabularPageBlock] = {}
         self.by_title: dict[str, TabularPageBlock] = {}
 
+    @property
+    def values(self):
+        return self._values
+
     def apply_pagelist_parser(self, parser: PageListParser):
         from .page import TabularPageBlock
+        res = []
         for page_parser in parser:
             page: TabularPageBlock = self.make_dangling_page(page_parser.page_id)
             page.props.apply_page_parser(page_parser)
             self.bind_dangling_page(page)
+            res.append(page)
+        return res
 
     def make_dangling_page(self, page_id: str):
         from .page import TabularPageBlock
@@ -37,7 +44,11 @@ class PageListCreator(ListEditor):
         super().__init__(caller)
         self.caller = caller
         self.frame = self.caller.frame
-        self.values: list[TabularPageBlock] = []
+        self._values: list[TabularPageBlock] = []
+
+    @property
+    def values(self):
+        return self._values
 
     @property
     def by_title(self):
@@ -55,7 +66,6 @@ class PageListCreator(ListEditor):
 
     def execute(self):
         for child in self.values:
-            # individual tabular_page will update themselves.
             child.execute()
         res = self.values.copy()
         self.values.clear()

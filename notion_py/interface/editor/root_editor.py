@@ -17,14 +17,15 @@ from .tabular.page import TabularPageBlock
 class RootEditor(Editor):
     def __init__(self, async_client=False):
         super().__init__(root_editor=self)
-        self.top_editors: list[MasterEditor] = []
-        self.by_id: dict[str, MasterEditor] = {}
         if async_client:
             self.notion = AsyncClient(auth=self.token)
         else:
             self.notion = Client(auth=self.token)
+        self.top_editors: list[MasterEditor] = []
+        self.by_id: dict[str, MasterEditor] = {}
+        self.enable_overwrite = True
 
-    def __bool__(self):
+    def has_updates(self):
         return any([bool(editor) for editor in self.top_editors])
 
     def ids(self):

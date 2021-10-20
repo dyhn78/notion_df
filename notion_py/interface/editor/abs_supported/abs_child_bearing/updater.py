@@ -3,24 +3,28 @@ from typing import Union
 from .sphere import BlockSphere
 from ..supported import SupportedBlock
 from ...struct import ListEditor
+from ...inline.unsupported import UnsupportedBlock
 from notion_py.interface.parser import BlockChildrenParser, BlockContentsParser
 
 
 class BlockSphereUpdater(ListEditor):
     def __init__(self, caller: BlockSphere):
-        from ...inline.unsupported import UnsupportedBlock
         super().__init__(caller)
         self.caller = caller
-        self.values: list[Union[SupportedBlock, UnsupportedBlock]] = []
+        self._values = []
+
+    @property
+    def values(self) -> list[Union[SupportedBlock, UnsupportedBlock]]:
+        return self._values
 
     def __iter__(self):
         return iter(self.values)
 
     def reads(self):
-        return [child.fully_read for child in self]
+        return [child.reads for child in self]
 
     def reads_rich(self):
-        return [child.fully_read_rich() for child in self]
+        return [child.reads_rich() for child in self]
 
     def apply_parser(self, children_parser: BlockChildrenParser):
         for child_parser in children_parser:

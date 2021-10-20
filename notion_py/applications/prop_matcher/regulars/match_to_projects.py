@@ -1,4 +1,4 @@
-from .struct import Matcher
+from .base import Matcher
 from ..common.helpers import find_all_unarchived_id_from_relation, \
     append_prop
 

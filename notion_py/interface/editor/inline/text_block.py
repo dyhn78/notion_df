@@ -28,7 +28,7 @@ class TextBlock(ContentsBearingBlock):
 
     @property
     def master_name(self):
-        return self.contents.read()
+        return self.contents.reads()
 
     def execute(self):
         if self.yet_not_created:
@@ -40,11 +40,11 @@ class TextBlock(ContentsBearingBlock):
                 return
             self.sphere.execute()
 
-    def fully_read(self):
-        return dict(**super().fully_read(), type='text')
+    def reads(self):
+        return dict(**super().reads(), type='text')
 
-    def fully_read_rich(self):
-        return dict(**super().fully_read_rich(), type='text')
+    def reads_rich(self):
+        return dict(**super().reads_rich(), type='text')
 
 
 class TextContents(BlockContents, TextContentsWriter):
@@ -56,18 +56,18 @@ class TextContents(BlockContents, TextContentsWriter):
         self._requestor = UpdateBlock(self)
 
     @property
-    def gateway(self) -> UpdateBlock:
+    def requestor(self) -> UpdateBlock:
         return self._requestor
 
-    @gateway.setter
-    def gateway(self, value):
+    @requestor.setter
+    def requestor(self, value):
         self._requestor = value
 
     def archive(self):
-        self.gateway.archive()
+        self.requestor.archive()
 
     def un_archive(self):
-        self.gateway.un_archive()
+        self.requestor.un_archive()
 
     def retrieve(self):
         requestor = RetrieveBlock(self)
@@ -79,11 +79,11 @@ class TextContents(BlockContents, TextContentsWriter):
         if self.yet_not_created:
             self.master.execute()
         else:
-            self.gateway.execute()
+            self.requestor.execute()
             # TODO: update {self._read};
             #  1. use the <response> = self.gateway.execute()
             #  2. update BlockContentsParser yourself without response
-        self.gateway = UpdateBlock(self)
+        self.requestor = UpdateBlock(self)
 
     def push_carrier(self, carrier: RichTextContentsEncoder) -> RichTextContentsEncoder:
         # print(f"<{self.master_id}>")
@@ -94,6 +94,6 @@ class TextContents(BlockContents, TextContentsWriter):
         # print(self.parent.yet_not_created)
         # print(carrier.unpack())
         if self.yet_not_created:
-            return self.creator.push_carrier(self, carrier)
+            return self.creator.push_carrier(self.master, carrier)
         else:
-            return self.gateway.apply_contents(carrier)
+            return self.requestor.apply_contents(carrier)

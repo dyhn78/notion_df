@@ -2,8 +2,7 @@ from typing import Any, Optional
 
 from .stash import BlockChildrenStash, PagePropertyStash
 from notion_py.interface.encoder import ContentsEncoder
-from ..struct import PointRequestor, print_response_error
-from ...common.struct import drop_empty_request
+from ..struct import PointRequestor, print_response_error, drop_empty_request
 from ...editor.struct import PointEditor
 from ...utility import stopwatch, page_id_to_url
 
@@ -62,8 +61,8 @@ class UpdatePage(PointRequestor, PagePropertyStash):
         self._archive_value = None
 
     def __bool__(self):
-        return PagePropertyStash.__bool__(self) \
-               or self._archive_value is not None
+        return any([PagePropertyStash.__bool__(self),
+                    self._archive_value is not None])
 
     def clear(self):
         PagePropertyStash.clear(self)
@@ -107,8 +106,8 @@ class UpdateBlock(PointRequestor):
         self._archive_value = None
 
     def __bool__(self):
-        return self._contents_value is not None \
-               or self._archive_value is not None
+        return any([self._contents_value is not None,
+                    self._archive_value is not None])
 
     def clear(self):
         self._contents_value = None

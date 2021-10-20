@@ -4,7 +4,7 @@ from typing import Callable
 
 from notion_client.errors import APIResponseError
 
-from notion_py.interface.common.struct import Requestor
+from notion_py.interface.common.struct import Requestor, Executable
 from notion_py.interface.editor.struct import PointEditor
 from notion_py.interface.utility import stopwatch
 
@@ -12,7 +12,7 @@ from notion_py.interface.utility import stopwatch
 class PointRequestor(Requestor, metaclass=ABCMeta):
     def __init__(self, editor: PointEditor):
         self.editor = editor
-        self.notion = editor.root_editor.notion
+        self.notion = editor.root.notion
 
     def __str__(self):
         return f"{type(self).__name__}"
@@ -24,6 +24,11 @@ class PointRequestor(Requestor, metaclass=ABCMeta):
     @property
     def target_name(self):
         return self.editor.master.master_name
+
+
+class TruthyPointRequestor(PointRequestor, metaclass=ABCMeta):
+    def __bool__(self):
+        return True
 
 
 class LongRequestor(PointRequestor):
@@ -71,6 +76,20 @@ class LongRequestor(PointRequestor):
         stopwatch(comments)
 
 
+class TruthyLongRequestor(LongRequestor, metaclass=ABCMeta):
+    def __bool__(self):
+        return True
+
+
+def drop_empty_request(method: Callable):
+    def wrapper(self: Requestor, **kwargs):
+        if self.__bool__():
+            return method(self, **kwargs)
+        return {'results': f'dropped_empty_request_at_{self}'}
+
+    return wrapper
+
+
 def print_response_error(func: Callable):
     def wrapper(self: PointRequestor, **kwargs):
         try:
@@ -84,7 +103,7 @@ def print_response_error(func: Callable):
     return wrapper
 
 
-def retry_request(func: Callable, recursion_limit=1, time_to_sleep=1):
+def retry_then_print_response_error(func: Callable, recursion_limit=1, time_to_sleep=1):
     def wrapper(self: PointRequestor, **kwargs):
         recursion = 0
         while True:

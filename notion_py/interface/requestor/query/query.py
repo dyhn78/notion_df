@@ -1,11 +1,11 @@
 from .filter_unit import QueryFilter, PlainFilter
-from ..struct import LongRequestor, print_response_error
+from ..struct import TruthyLongRequestor, print_response_error
 from ...common import PropertyFrame
 from ...editor.struct import PointEditor
 from ...utility import page_id_to_url, stopwatch
 
 
-class Query(LongRequestor):
+class Query(TruthyLongRequestor):
     def __init__(self, editor: PointEditor, frame: PropertyFrame):
         super().__init__(editor)
         self.frame = frame
@@ -16,9 +16,6 @@ class Query(LongRequestor):
 
         from .sort import QuerySort
         self.sort = QuerySort()
-
-    def __bool__(self):
-        return True
 
     def clear_filter(self):
         self._filter_value = PlainFilter({})
@@ -43,7 +40,8 @@ class Query(LongRequestor):
 
         from ...editor.tabular.pagelist import PageList
         assert isinstance(self.editor, PageList)
-        self.editor.apply_query_response(response)
+        pages = self.editor.apply_query_response(response)
+        return pages
 
     @print_response_error
     def _execute_each(self, request_size, start_cursor=None):

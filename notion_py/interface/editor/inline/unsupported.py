@@ -13,11 +13,11 @@ class UnsupportedBlock(MasterEditor):
     def master_name(self):
         return self.master_url
 
-    def fully_read(self) -> dict[str, Union[str, list]]:
+    def reads(self) -> dict[str, Union[str, list]]:
         return {'type': 'unsupported',
                 'id': self.master_url}
 
-    def fully_read_rich(self) -> dict[str, Union[str, list]]:
+    def reads_rich(self) -> dict[str, Union[str, list]]:
         return {'type': 'unsupported',
                 'id': self.master_url}
 

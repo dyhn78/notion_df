@@ -24,7 +24,7 @@ class QueryMaker:
                           date_index: str, dom_to_tar: str):
         query = pagelist.open_query()
         frame = query.make_filter.relation_at(dom_to_tar)
-        ft = frame.is_empty()
+        ft = frame.__bool__()
         if self.date_range:
             frame = query.make_filter.date_at(date_index)
             if self.date_range == 7:

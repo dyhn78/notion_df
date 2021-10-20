@@ -2,7 +2,7 @@ from __future__ import annotations
 from abc import abstractmethod
 from typing import Union
 
-from notion_py.interface.common.struct import Editor, drop_empty_request
+from notion_py.interface.common.struct import Editor
 
 from ..supported import SupportedBlock
 from ...struct import PointEditor
@@ -27,7 +27,6 @@ class ChildBearingBlock(SupportedBlock):
                 'children': "unpack children here"}
 
     @abstractmethod
-    @drop_empty_request
     def execute(self):
         """
         1. since self.sphere go first than self.new_children,
@@ -39,5 +38,3 @@ class ChildBearingBlock(SupportedBlock):
             so that the master deals with its reset task instead.
         """
         return
-
-

@@ -43,8 +43,8 @@ class Database(MasterEditor):
     def execute(self):
         self.pagelist.execute()
 
-    def fully_read_rich(self):
+    def reads_rich(self):
         pass
 
-    def fully_read(self):
+    def reads(self):
         pass

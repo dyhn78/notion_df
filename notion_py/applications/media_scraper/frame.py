@@ -30,7 +30,7 @@ ReadingDB_FRAME = PropertyFrame([
     Unit('📚링크', 'url'),
     Unit('📚만든이', 'author'),
     Unit('📚만든곳', 'publisher'),
-    Unit('📚N(쪽+)', 'page'),
+    Unit('📚N(쪽+)', 'volume'),
     Unit('📚표지', 'cover_image'),
     Unit('📦이동', 'link_to_contents'),
     Unit('📚위치', 'location'),

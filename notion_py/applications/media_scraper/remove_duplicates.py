@@ -1,10 +1,10 @@
-from .common.editor import ReadingDBEditor
+from .common.struct import ReadingDBController
 from notion_py.interface.utility import stopwatch
 from ...interface.editor.abs_supported.abs_child_bearing import ChildBearingBlock
 from ...interface.editor.inline import TextBlock, InlinePageBlock
 
 
-class ReadingDBDuplicateRemover(ReadingDBEditor):
+class ReadingDBDuplicateRemover(ReadingDBController):
     def execute(self, request_size=0):
         self.make_query(request_size)
         for page in self.pagelist.elements:
@@ -33,12 +33,12 @@ def remove_dummy_blocks(page: ChildBearingBlock):
             continue
         # remove "blank" blocks
         if isinstance(block, TextBlock) and \
-                block.contents.read().split() == '':
+                block.contents.reads().split() == '':
             block.contents.archive()
             removed += 1
         # remove duplicate contents (page_block)
         if isinstance(block, InlinePageBlock) and \
-                page.master_name in block.contents.read():
+                page.master_name in block.contents.reads():
             if not duplicate:
                 duplicate = True
             else:

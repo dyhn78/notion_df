@@ -1,1 +1,1 @@
-from .bkst_endpoint import BookstoreScraper
+from .bkst_endpoint import BookstoreScrapManager

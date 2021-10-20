@@ -20,11 +20,11 @@ class TabularPageProperty(PageProperty, TabularPagePropertybyKey):
         self._read_full = {}
 
     @property
-    def gateway(self):
+    def requestor(self):
         return self._requestor
 
-    @gateway.setter
-    def gateway(self, value):
+    @requestor.setter
+    def requestor(self, value):
         self._requestor = value
 
     def apply_page_parser(self, parser: PageParser):
@@ -42,9 +42,9 @@ class TabularPageProperty(PageProperty, TabularPagePropertybyKey):
 
     def push_carrier(self, prop_key: str, carrier: PropertyEncoder) \
             -> PropertyEncoder:
-        overwrite = self.enable_overwrite or eval_empty(self.read_of(prop_key))
+        overwrite = self.root.enable_overwrite or eval_empty(self.read_of(prop_key))
         if overwrite:
-            return self.gateway.apply_prop(carrier)
+            return self.requestor.apply_prop(carrier)
         else:
             return carrier
 

@@ -35,19 +35,20 @@ class TabularPageBlock(ChildBearingBlock):
                 'children': self.sphere.preview()}
 
     def execute(self):
+        # print('#######'
+        #       f'{self.title}  '
+        #       f'self.props: {self.props.has_updates()}  '
+        #       f'self.sphere: {self.sphere.has_updates()}  ')
         self.props.execute()
         if not self.archived:
             self.sphere.execute()
 
-    def fully_read(self):
+    def reads(self):
         return {'type': 'page',
                 'tabular': self.props.all_plain_keys(),
                 'children': self.sphere.reads()}
 
-    def fully_read_rich(self):
+    def reads_rich(self):
         return {'type': 'page',
                 'tabular': self.props.all_rich_keys(),
                 'children': self.sphere.reads_rich()}
-
-    def set_overwrite_option(self, option: bool):
-        self.props.set_overwrite_option(option)

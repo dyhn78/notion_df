@@ -19,14 +19,14 @@ class PageList(PointEditor):
         self._normal = PageListUpdater(self)
         self._new = PageListCreator(self)
 
-    def __bool__(self):
-        any([self._normal, self._new])
-
     def __iter__(self):
         return iter(self.elements)
 
     def __getitem__(self, page_id: str):
         return self.by_id[page_id]
+
+    def has_updates(self):
+        any([self._normal, self._new])
 
     def open_query(self) -> Query:
         return Query(self, self.frame)
@@ -54,10 +54,6 @@ class PageList(PointEditor):
             res.extend(page.sphere.descendants)
         return res
 
-    def apply_query_response(self, response):
-        parser = PageListParser(response)
-        self._normal.apply_pagelist_parser(parser)
-
     def fetch_a_child(self, page_id: str):
         """returns child page if succeed; returns None if there isn't one."""
         page = self._normal.make_dangling_page(page_id)
@@ -69,14 +65,16 @@ class PageList(PointEditor):
         self._normal.bind_dangling_page(page)
         return page
 
+    def apply_query_response(self, response):
+        parser = PageListParser(response)
+        pages = self._normal.apply_pagelist_parser(parser)
+        return pages
+
     def fetch_descendants(self, depth=-1):
         if depth == 0:
             return
         for child in self.elements:
             child.sphere.fetch_descendants(depth=depth - 1)
-
-    def create_tabular_page(self):
-        return self._new.create_tabular_page()
 
     def preview(self):
         return {'pages': self._normal.preview(),
@@ -86,6 +84,9 @@ class PageList(PointEditor):
         self._normal.execute()
         response = self._new.execute()
         self._normal.values.extend(response)
+
+    def create_tabular_page(self):
+        return self._new.create_tabular_page()
 
     def by_idx_value_of(self, prop_key: str):
         try:
@@ -110,7 +111,3 @@ class PageList(PointEditor):
 
     def by_value_at(self, prop_tag: str):
         return self.by_value_of(self.frame.key_at(prop_tag))
-
-    def set_overwrite_option(self, option: bool):
-        for child in self.elements:
-            child.set_overwrite_option(option)

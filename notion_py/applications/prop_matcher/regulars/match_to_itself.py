@@ -1,4 +1,4 @@
-from notion_py.applications.prop_matcher.regulars.struct import Matcher
+from notion_py.applications.prop_matcher.regulars.base import Matcher
 
 
 class MatchertoItself(Matcher):

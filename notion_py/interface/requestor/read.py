@@ -1,9 +1,9 @@
-from .struct import PointRequestor, print_response_error, LongRequestor
+from .struct import TruthyPointRequestor, TruthyLongRequestor, print_response_error
 from ..editor.struct import PointEditor
 from ..utility import stopwatch
 
 
-class RetrieveDatabase(PointRequestor):
+class RetrieveDatabase(TruthyPointRequestor):
     def __init__(self, editor: PointEditor):
         super().__init__(editor)
 
@@ -27,12 +27,9 @@ class RetrieveDatabase(PointRequestor):
         stopwatch(comments)
 
 
-class RetrievePage(PointRequestor):
+class RetrievePage(TruthyPointRequestor):
     def __init__(self, editor: PointEditor):
         super().__init__(editor)
-
-    def __bool__(self):
-        return bool(self.target_id)
 
     def unpack(self):
         return dict(page_id=self.target_id)
@@ -53,7 +50,7 @@ class RetrievePage(PointRequestor):
         stopwatch(comments)
 
 
-class RetrieveBlock(PointRequestor):
+class RetrieveBlock(TruthyPointRequestor):
     def __init__(self, editor: PointEditor):
         super().__init__(editor)
 
@@ -79,7 +76,7 @@ class RetrieveBlock(PointRequestor):
         stopwatch(comments)
 
 
-class GetBlockChildren(LongRequestor):
+class GetBlockChildren(TruthyLongRequestor):
     def __init__(self, editor: PointEditor):
         super().__init__(editor)
 

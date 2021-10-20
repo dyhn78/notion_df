@@ -1,69 +1,94 @@
-from .contents_append import AppendContents
 from .yes24_url import scrap_yes24_url
 from .yes24_main import scrap_yes24_main
-from notion_py.interface import TypeName
+from .contents_append import AppendContents
+from ..regular_scrap import ReadingDBScrapController, ReadingPageScrapController
+from ..remove_duplicates import remove_dummy_blocks
+from notion_py.interface.editor.inline import InlinePageBlock
 from notion_py.interface.utility import stopwatch
-from notion_py.applications.media_scraper.remove_duplicates import remove_dummy_blocks
 
 
-class BookstoreScraper:
+class BookstoreScrapManager:
     # TODO : yes24에 자료 없을 경우 대비해 알라딘 등 추가 필요.
-    def __init__(self, handler):
-        self.handler = handler
-        self.page: TypeName.tabular_page = handler.page
-        self.props = self.page.props
-        self.sphere = self.page.sphere
+    def __init__(self, caller: ReadingDBScrapController):
+        self.caller = caller
         self.subpage_id = ''
         self.data = {}
 
+    def execute(self, page_cont: ReadingPageScrapController):
+        scraper = BookstoreScraper(self, page_cont)
+        scraper.execute()
+
+
+class BookstoreScraper:
+    def __init__(self, caller: BookstoreScrapManager,
+                 page_cont: ReadingPageScrapController):
+        self.caller = caller
+        self.cont = page_cont
+        self.page = self.cont.page
+
     def execute(self):
-        url = self.get_url()
-        if not url:
-            url = scrap_yes24_url(self.handler.get_names())
-            self.set_url(url)
-        if 'yes24' in url:
-            self.data = scrap_yes24_main(url)
-            stopwatch(f'yes24: {url}')
-        elif 'aladin' in url:
-            pass
-        if self.data:
-            self.set_metadata()
-            self.set_contents_data()
+        url = self.get_or_scrap_url()
+        data = self.scrap_bkst_data(url)
+        if data:
+            self.set_metadata(data)
+            self.set_cover_image(data)
+            self.set_contents_data(data)
 
-    def get_url(self):
-        url = self.props.get_at('url', default='')
-        return url
-
-    def set_url(self, url):
-        if url:
-            self.props.write_url_at('url', url)
+    def get_or_scrap_url(self):
+        if url := self.page.props.get_at('url', default=''):
+            return url
+        if url := scrap_yes24_url(self.cont.get_names()):
+            self.page.props.write_url_at('url', url)
+            return url
         else:
-            self.handler.status = self.handler.status_enum['url_missing']
+            self.cont.set_as_url_missing()
 
-    def set_metadata(self):
-        self.handler.set_overwrite_option(False)
-        self.props.write_text_at('true_name', self.data['name'])
-        self.props.write_text_at('subname', self.data['subname'])
-        self.props.write_text_at('author', self.data['author'])
-        self.props.write_text_at('publisher', self.data['publisher'])
+    @staticmethod
+    def scrap_bkst_data(url):
+        if 'yes24' in url:
+            data = scrap_yes24_main(url)
+            stopwatch(f'yes24: {url}')
+            return data
+        if 'aladin' in url:
+            pass
 
-    def set_cover_image(self):
-        file_writer = self.props.write_files_at('cover_image')
-        file_writer.add_file(file_name=self.data['name'],
-                             file_url=self.data['cover_image'])
+    def set_metadata(self, data: dict):
+        if self.cont.can_disable_overwrite:
+            self.page.root.enable_overwrite = False
 
-    def set_contents_data(self):
-        contents = self.data['contents']
+        if true_name := data.get('name'):
+            self.page.props.write_text_at('true_name', true_name)
+        if subname := data.get('subname'):
+            self.page.props.write_text_at('subname', subname)
+        if author := data.get('author'):
+            self.page.props.write_text_at('author', author)
+        if publisher := data.get('publisher'):
+            self.page.props.write_text_at('publisher', publisher)
+        if volume := data.get('page_count'):
+            self.page.props.write_text_at('volume', volume)
+
+        self.page.root.enable_overwrite = True
+
+    def set_cover_image(self, data: dict):
+        if cover_image := data.get('cover_image'):
+            true_name = data['name']
+            file_writer = self.page.props.write_files_at('cover_image')
+            file_writer.add_file(file_name=true_name,
+                                 file_url=cover_image)
+
+    def set_contents_data(self, data: dict):
+        contents = data['contents']
         subpage = self.get_subpage()
         remove_dummy_blocks(subpage)
         AppendContents(subpage, contents).execute()
-        writer = self.props.write_rich_text_at('link_to_contents')
+        writer = self.page.props.write_rich_text_at('link_to_contents')
         writer.mention_page(subpage.master_id)
 
-    def get_subpage(self) -> TypeName.inline_page:
-        for block in self.sphere.children:
-            if isinstance(block, TypeName.inline_page) and \
-                    self.page.title in block.contents.read():
+    def get_subpage(self) -> InlinePageBlock:
+        self.page.sphere.fetch_children()
+        for block in self.page.sphere.children:
+            if isinstance(block, InlinePageBlock) and \
+                    self.page.title in block.contents.reads():
                 subpage = block
                 # print(block.master_name)
                 # print(block.master_url)
@@ -71,7 +96,7 @@ class BookstoreScraper:
                 # continue
                 break
         else:
-            subpage = self.sphere.create_page_block()
+            subpage = self.page.sphere.create_page_block()
         subpage.contents.write_title(f'={self.page.title}')
         subpage.execute()
         return subpage

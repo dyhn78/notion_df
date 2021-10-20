@@ -5,34 +5,26 @@ from notion_py.interface.common.struct import ValueCarrier
 from notion_py.interface.encoder import ContentsEncoder
 
 
-class TwofoldListStash(TwofoldStash, metaclass=ABCMeta):
-    def unpack(self):
-        return [carrier.unpack() for carrier in self._subcarriers]
-
-    def apply_left(self, carrier: ValueCarrier):
-        self._subcarriers.insert(0, carrier)
-        return self._subcarriers[0]
-
-    def insert(self, i: int, carrier: ValueCarrier):
-        self._subcarriers.insert(i, carrier)
-        return self._subcarriers[i]
-
-
 class BlockChildrenStash(ValueCarrier):
     def __init__(self):
-        self.block_value = TwofoldListStash()
+        self.subcarriers = []
 
     def __bool__(self):
-        return bool(self.block_value)
+        return bool(self.subcarriers)
 
     def clear(self):
-        self.block_value.clear()
+        self.subcarriers.clear()
 
     def unpack(self):
-        return {'children': self.block_value.unpack()}
+        stash = [carrier.unpack() for carrier in self.subcarriers]
+        return {'children': stash}
 
     def apply_contents(self, i: int, carrier: ContentsEncoder):
-        return self.block_value.insert(i, carrier)
+        self.subcarriers[i] = carrier
+        return self.subcarriers[i]
+
+    def append_space(self):
+        self.subcarriers.append(None)
 
 
 class TwofoldDictStash(TwofoldStash, metaclass=ABCMeta):

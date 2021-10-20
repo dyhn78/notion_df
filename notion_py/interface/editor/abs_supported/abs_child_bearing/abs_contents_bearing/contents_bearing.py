@@ -13,12 +13,12 @@ class ContentsBearingBlock(ChildBearingBlock, metaclass=ABCMeta):
         self.caller = caller
         self.contents: Optional[BlockContents] = None
 
-    def fully_read(self):
-        return {'contents': self.contents.read(),
+    def reads(self):
+        return {'contents': self.contents.reads(),
                 'children': self.sphere.reads()}
 
-    def fully_read_rich(self):
-        return {'contents': self.contents.read_rich(),
+    def reads_rich(self):
+        return {'contents': self.contents.reads_rich(),
                 'children': self.sphere.reads_rich()}
 
     def preview(self):
@@ -33,15 +33,16 @@ class BlockContents(GroundEditor, metaclass=ABCMeta):
         self._read_plain = ''
         self._read_rich = []
 
-    def read(self) -> str:
+    def reads(self) -> str:
         return self._read_plain
 
-    def read_rich(self) -> list:
+    def reads_rich(self) -> list:
         return self._read_rich
 
     def apply_block_parser(self, parser: BlockContentsParser):
         if parser.block_id:
             self.master_id = parser.block_id
+            self.yet_not_created = False
         self.caller.has_children = parser.has_children
         self.caller.can_have_children = parser.can_have_children
         self._read_plain = parser.read_plain

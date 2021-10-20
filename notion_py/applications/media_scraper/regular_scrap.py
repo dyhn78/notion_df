@@ -1,26 +1,29 @@
 import re
 from typing import Optional
 
-from notion_py.applications.media_scraper.common.editor import ReadingDBEditor
-from notion_py.applications.media_scraper.lib import LibraryScraper
-from notion_py.applications.media_scraper.bookstore import BookstoreScraper
+from .common.struct import ReadingDBController, ReadingPageController
 from notion_py.interface.utility import stopwatch
 from notion_py.interface.editor.tabular import TabularPageBlock
 
 
-class ReadingDBRegularScraper(ReadingDBEditor):
-    def __init__(self, targets: Optional[dict] = None, title=''):
+class ReadingDBScrapController(ReadingDBController):
+    def __init__(self, tasks: Optional[set] = None, title=''):
         super().__init__()
-        if not targets:
-            targets = {'bookstore', 'gy_lib', 'snu_lib'}
-        self.targets = targets
+        if not tasks:
+            tasks = {'bookstore', 'gy_lib', 'snu_lib'}
+        self.tasks = tasks
         self.title = title
+
+        from .bookstore import BookstoreScrapManager
+        self.bkst = BookstoreScrapManager(self)
+
+        from .lib import LibraryScrapManager
+        self.lib = LibraryScrapManager(self)
 
     def execute(self, request_size=0):
         self.make_query(request_size)
         for page in self.pagelist:
-            page.sphere.fetch_children()
-            unit = PageHandler(self, page)
+            unit = ReadingPageScrapController(self, page)
             unit.execute()
 
     def make_query(self, request_size):
@@ -33,63 +36,51 @@ class ReadingDBRegularScraper(ReadingDBEditor):
         ft = ft_media & ft_status
         if self.title:
             maker = query.make_filter.text_at('title')
-            ft_title = maker.equals(self.title)
+            ft_title = maker.starts_with(self.title)
             ft &= ft_title
         query.push_filter(ft)
         query.execute(request_size)
 
 
-class PageHandler:
-    def __init__(self, caller: ReadingDBRegularScraper, page: TabularPageBlock):
+class ReadingPageScrapController(ReadingPageController):
+    def __init__(self, caller: ReadingDBScrapController, page: TabularPageBlock):
+        super().__init__(caller, page)
         self.caller = caller
-        self.frame = caller.frame
-        self.targets = caller.targets.copy()
-        self.status_enum = caller.status_enum
+        self.tasks = caller.tasks.copy()
 
         self.page = page
-        self.props = page.props
-        self.sphere = page.sphere
-        self.status = ''
+        self._status = ''
         self.rich_overwrite_option = self.get_overwrite_option()
         if self.rich_overwrite_option == 'continue':
-            self.targets.remove('bookstore')
+            self.tasks.remove('bookstore')
 
     def execute(self):
-        if not self.targets:
+        if not self.tasks:
             return
         stopwatch(f'개시: {self.page.title}')
-        if 'bookstore' in self.targets:
-            bkst = BookstoreScraper(self)
-            bkst.execute()
-        if any(lib in self.targets for lib in ['snu_lib', 'gy_lib']):
-            lib = LibraryScraper(self)
-            lib.execute()
-        self.set_edit_status()
+        if 'bookstore' in self.tasks:
+            self.caller.bkst.execute(self)
+        if any(lib_str in self.tasks for lib_str in ['snu_lib', 'gy_lib']):
+            self.caller.lib.execute(self)
+        if not self._status:
+            self.set_as_done()
+        self.page.props.write_select_at('edit_status', self._status)
         self.page.execute()
 
-    def set_overwrite_option(self, option: bool):
-        if option:
-            self.props.set_overwrite_option(True)
-        else:
-            if self.rich_overwrite_option in ['append', 'continue']:
-                self.props.set_overwrite_option(False)
-            elif self.rich_overwrite_option == ['overwrite']:
-                pass
+    def get_names(self) -> tuple[str, str]:
+        docx_name = self.page.props.get_at('docx_name', '')
+        true_name = self.page.props.get_at('true_name', '')
+        return docx_name, true_name
 
-    def set_edit_status(self):
-        if not self.status:
-            if self.rich_overwrite_option == 'append':
-                self.status = self.status_enum['done']
-            elif self.rich_overwrite_option == 'continue':
-                self.status = self.status_enum['done']
-            elif self.rich_overwrite_option == 'overwrite':
-                self.status = self.status_enum['completely_done']
-        self.set_overwrite_option(True)
-        self.props.write_select_at('edit_status', self.status)
-        self.set_overwrite_option(False)
+    @property
+    def can_disable_overwrite(self):
+        if self.rich_overwrite_option in ['append', 'continue']:
+            return True
+        elif self.rich_overwrite_option == ['overwrite']:
+            return False
 
     def get_overwrite_option(self):
-        edit_status = self.props.read_at('edit_status')
+        edit_status = self.page.props.read_at('edit_status')
         try:
             charref = re.compile(r'(?<=\().+(?=\))')
             return re.findall(charref, edit_status)[0]
@@ -97,7 +88,16 @@ class PageHandler:
                 IndexError):  # findall() 가 빈 리스트를 반환할 경우
             return 'append'
 
-    def get_names(self) -> tuple[str, str]:
-        docx_name = self.props.get_at('docx_name', '')
-        true_name = self.props.get_at('true_name', '')
-        return docx_name, true_name
+    def set_as_url_missing(self):
+        self._status = self.caller.status_enum['url_missing']
+
+    def set_as_lib_missing(self):
+        self._status = self.caller.status_enum['lib_missing']
+
+    def set_as_done(self):
+        if self.rich_overwrite_option == 'append':
+            self._status = self.caller.status_enum['done']
+        elif self.rich_overwrite_option == 'continue':
+            self._status = self.caller.status_enum['done']
+        elif self.rich_overwrite_option == 'overwrite':
+            self._status = self.caller.status_enum['completely_done']

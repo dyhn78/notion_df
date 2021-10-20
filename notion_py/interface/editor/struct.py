@@ -10,7 +10,7 @@ from notion_py.interface.utility import page_id_to_url
 class PointEditor(Editor, metaclass=ABCMeta):
     def __init__(self, caller: Union[PointEditor, Editor]):
         self.caller = caller
-        super().__init__(caller.root_editor)
+        super().__init__(caller.root)
 
     @property
     def master(self) -> MasterEditor:
@@ -74,7 +74,7 @@ class MasterEditor(PointEditor):
         self._archived = False
         self._yet_not_created = False
 
-    def __bool__(self):
+    def has_updates(self):
         return any(agent for agent in self.agents.values())
 
     @property
@@ -88,9 +88,9 @@ class MasterEditor(PointEditor):
     @master_id.setter
     def master_id(self, value):
         if self._master_id:
-            self.root_editor.by_id.pop(self._master_id)
+            self.root.by_id.pop(self._master_id)
         self._master_id = value
-        self.root_editor.by_id[self._master_id] = self
+        self.root.by_id[self._master_id] = self
 
     @property
     @abstractmethod
@@ -128,11 +128,6 @@ class MasterEditor(PointEditor):
     def archived(self, value: bool):
         self._archived = value
 
-    def set_overwrite_option(self, option: bool):
-        for requestor in self.agents.values():
-            if hasattr(requestor, 'set_overwrite_option'):
-                requestor.set_overwrite_option(option)
-
     @abstractmethod
     def preview(self):
         return {key: value.preview() for key, value in self.agents.items()}
@@ -142,18 +137,31 @@ class MasterEditor(PointEditor):
         return {key: value.execute() for key, value in self.agents.items()}
 
     @abstractmethod
-    def fully_read(self):
+    def reads(self):
         pass
 
     @abstractmethod
-    def fully_read_rich(self):
+    def reads_rich(self):
         pass
 
 
 class ListEditor(PointEditor, metaclass=ABCMeta):
     def __init__(self, caller: PointEditor):
         super().__init__(caller)
-        self.values: list[MasterEditor] = []
+
+    @property
+    @abstractmethod
+    def values(self):
+        pass
+
+    def preview(self):
+        return [child.preview() for child in self.values]
+
+    def execute(self):
+        return [child.execute() for child in self.values]
+
+    def has_updates(self):
+        return any([child for child in self.values])
 
     def __iter__(self):
         return iter(self.values)
@@ -164,19 +172,6 @@ class ListEditor(PointEditor, metaclass=ABCMeta):
     def __len__(self):
         return len(self.values)
 
-    def __bool__(self):
-        return any([child for child in self.values])
-
-    def set_overwrite_option(self, option: bool):
-        for child in self:
-            child.set_overwrite_option(option)
-
-    def preview(self):
-        return [child.preview() for child in self.values]
-
-    def execute(self):
-        return [child.execute() for child in self.values]
-
 
 class GroundEditor(PointEditor, metaclass=ABCMeta):
     def __init__(self, caller: PointEditor):
@@ -185,24 +180,37 @@ class GroundEditor(PointEditor, metaclass=ABCMeta):
 
     @property
     @abstractmethod
-    def gateway(self) -> Union[Requestor, PointEditor]:
+    def requestor(self) -> Requestor:
         pass
 
-    def __bool__(self):
-        return bool(self.gateway)
-
-    def set_overwrite_option(self, option: bool):
-        self.enable_overwrite = option
-
     def preview(self):
-        if isinstance(self.gateway, Requestor):
-            return self.gateway.unpack()
-        elif isinstance(self.gateway, PointEditor):
-            return self.gateway.preview()
-        return {}
+        return self.requestor.unpack()
 
     def execute(self):
-        return self.gateway.execute() if self.gateway else {}
+        return self.requestor.execute()
+
+    def has_updates(self):
+        return self.requestor.__bool__()
+
+
+class AdaptiveEditor(PointEditor, metaclass=ABCMeta):
+    def __init__(self, caller: PointEditor):
+        super().__init__(caller)
+        self.enable_overwrite = True
+
+    @property
+    @abstractmethod
+    def value(self) -> PointEditor:
+        pass
+
+    def preview(self):
+        return self.value.preview()
+
+    def execute(self):
+        return self.value.execute()
+
+    def has_updates(self):
+        return self.value.has_updates()
 
 
 """

@@ -31,7 +31,7 @@ class TopologyBuilder:
         for pagelist in [self.themes]:
             query = pagelist.open_query()
             maker = query.make_filter.relation_at('front_self')
-            ft = maker.is_empty()
+            ft = maker.__bool__()
             query.push_filter(ft)
             query.execute(self.request_size)
         for pagelist in [self.ideas]:
