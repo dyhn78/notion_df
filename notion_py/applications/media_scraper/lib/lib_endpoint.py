@@ -29,7 +29,12 @@ class LibraryScraper:
 
     def execute(self):
         data = self.scrap()
-        self.set_lib_data(data)
+        try:
+            first_lib = self.prioritize_data(data)
+        except ValueError:
+            self.cont.set_as_lib_missing()
+        else:
+            self.set_lib_data(data, first_lib)
 
     def scrap(self):
         data = {}
@@ -47,44 +52,50 @@ class LibraryScraper:
                 data.update(gy=gy_lib)
         return data
 
-    def set_lib_data(self, data):
-        datastrings = []
+    @staticmethod
+    def prioritize_data(data: dict):
         if 'gy' in data.keys() and \
                 data['gy']['lib_name'] == GoyangLibrary.GAJWA_LIB:
-            first_lib = 'gy'
+            return 'gy'
         elif 'snu' in data.keys():
-            first_lib = 'snu'
+            return 'snu'
         elif 'gy' in data.keys():
-            first_lib = 'gy'
-        else:
-            self.cont.set_as_lib_missing()
-            return
+            return 'gy'
+        raise ValueError
 
+    def set_lib_data(self, data, first_lib):
+        datastrings = []
         first_data = data.pop(first_lib)
-        string, available = self._parse_unit(first_data)
+        string, available = self._parse_mixed_datum(first_data)
         datastrings.append(string)
-        datastrings.extend([self._parse_unit(data)[0]
+        datastrings.extend([self._parse_mixed_datum(data)[0]
                             for lib, data in data.items()])
         joined_string = '; '.join(datastrings)
 
         self.page.props.write_text_at('location', joined_string)
         self.page.props.write_checkbox_at('not_available', not available)
 
-    def _parse_unit(self, res: Union[dict, str]) -> tuple[str, bool]:
+    @staticmethod
+    def _parse_mixed_datum(res: Union[dict, str]) -> tuple[str, bool]:
         if type(res) == dict:
-            return self._parse_dict(res)
+            string = f"{res['lib_name']}"
+            if book_code := res['book_code']:
+                string += f" {book_code}"
+            available = res['available']
+            return string, available
         elif type(res) == str:
-            return self._parse_str(res)
+            available = not ('불가능' not in res)
+            return res, available
 
-    @staticmethod
-    def _parse_dict(res: dict):
-        string = f"{res['lib_name']}"
-        if book_code := res['book_code']:
-            string += f" {book_code}"
-        available = res['available']
-        return string, available
-
-    @staticmethod
-    def _parse_str(res: str):
-        available = not ('불가능' not in res)
-        return res, available
+    # @staticmethod
+    # def _parse_dict(res: dict):
+    #     string = f"{res['lib_name']}"
+    #     if book_code := res['book_code']:
+    #         string += f" {book_code}"
+    #     available = res['available']
+    #     return string, available
+    #
+    # @staticmethod
+    # def _parse_str(res: str):
+    #     available = not ('불가능' not in res)
+    #     return res, available

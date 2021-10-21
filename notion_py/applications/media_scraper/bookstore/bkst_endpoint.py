@@ -27,12 +27,21 @@ class BookstoreScraper:
         self.page = self.cont.page
 
     def execute(self):
+        try:
+            self._execute_naive()
+        except ValueError:
+            self.cont.set_as_url_missing()
+
+    def _execute_naive(self):
         url = self.get_or_scrap_url()
+        if not url:
+            raise ValueError
         data = self.scrap_bkst_data(url)
-        if data:
-            self.set_metadata(data)
-            self.set_cover_image(data)
-            self.set_contents_data(data)
+        if not data:
+            raise ValueError
+        self.set_metadata(data)
+        self.set_cover_image(data)
+        self.set_contents_data(data)
 
     def get_or_scrap_url(self):
         if url := self.page.props.get_at('url', default=''):
@@ -40,8 +49,7 @@ class BookstoreScraper:
         if url := scrap_yes24_url(self.cont.get_names()):
             self.page.props.write_url_at('url', url)
             return url
-        else:
-            self.cont.set_as_url_missing()
+        return ''
 
     @staticmethod
     def scrap_bkst_data(url):
