@@ -72,5 +72,8 @@ class PeriodMatcherType2(PeriodMatcherAbs):
         tar_idx = self.idx_parser(dom_idx)
         if tar := self.tars_by_index.get(tar_idx):
             return tar
+        if tar := query_target_by_idx(self.target, tar_idx, 'text'):
+            self.tars_by_index.update({tar_idx: tar})
+            return tar
         message = f"Failed to connect <{tar_idx}> to targets :: {self.tars_by_index}"
         raise AssertionError(message)
