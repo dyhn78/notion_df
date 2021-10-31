@@ -1,4 +1,4 @@
-from notion_py.interface.editor.tabular import PageList, TabularPageBlock
+from notion_py.interface.editor.tabular import PageList, PageRow
 
 
 def overwrite_prop(dom, prop_tag: str, value: str):
@@ -19,22 +19,22 @@ def append_prop(dom, prop_tag: str, values: list[str]):
     return True
 
 
-def find_unique_unarchived_id_from_relation(dom: TabularPageBlock, targets: PageList,
+def find_unique_unarchived_id_from_relation(dom: PageRow, targets: PageList,
                                             to_tar: str) -> str:
     tar_ids = dom.props.read_at(to_tar)
     for tar_id in tar_ids:
         if tar_id in targets.ids():
             break
-        tar = targets.fetch_a_child(tar_id)
-        if tar is not None and not tar.archived:
-            tar_id = tar.master_id
-            break
+        # tar = targets.fetch_a_child(tar_id)
+        # if tar is not None and not tar.archived:
+        #     tar_id = tar.master_id
+        #     break
     else:
         return ''
     return tar_id
 
 
-def find_all_unarchived_id_from_relation(dom: TabularPageBlock, targets: PageList,
+def find_all_unarchived_id_from_relation(dom: PageRow, targets: PageList,
                                          to_tar: str) -> list[str]:
     tar_ids = dom.props.read_at(to_tar)
     res = []

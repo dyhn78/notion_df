@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 from .base import LocalBase, Matcher
-from .match_to_itself import MatchertoItself
 from .match_to_dates import DateMatcherType1, DateMatcherType2
+from .match_to_itself import MatchertoItself
 from .match_to_periods import PeriodMatcherType1, PeriodMatcherType2
 
 

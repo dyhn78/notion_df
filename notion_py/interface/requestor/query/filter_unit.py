@@ -23,6 +23,18 @@ class QueryFilter(ValueCarrier):
         return OrFilter([self, other])
 
 
+class EmptyFilter(QueryFilter):
+    def __bool__(self):
+        return False
+
+    @property
+    def nesting(self):
+        return 0
+
+    def encode(self):
+        return {}
+
+
 class PlainFilter(QueryFilter):
     def __init__(self, plain_filter: dict):
         self._value = plain_filter
@@ -34,15 +46,19 @@ class PlainFilter(QueryFilter):
     def nesting(self):
         return 0
 
-    def unpack(self):
+    def encode(self):
         return self._value
 
 
 class CompoundFilter(QueryFilter, metaclass=ABCMeta):
     def __init__(self, elements: list[QueryFilter]):
-        self.elements: list[QueryFilter] = []
         self._nesting = 0
+        self.elements: list[QueryFilter] = []
         self.extend(elements)
+
+    @property
+    def nesting(self):
+        return self._nesting
 
     def __iter__(self):
         return iter(self.elements)
@@ -50,40 +66,41 @@ class CompoundFilter(QueryFilter, metaclass=ABCMeta):
     def __bool__(self):
         return bool(self.elements)
 
-    @property
-    def nesting(self):
-        return self._nesting
+    def append(self, ft: QueryFilter):
+        self._append(ft)
+        self._check_nesting()
 
-    def append(self, element: QueryFilter):
-        return self.extend([element])
+    def extend(self, fts: list[QueryFilter]):
+        for ft in fts:
+            self._append(ft)
+        self._check_nesting()
 
-    def extend(self, elements: list[QueryFilter]):
-        homos = [e for e in elements if type(e) == type(self)]
-        heteros = [e for e in elements if type(e) != type(self)]
-        for e in homos:
-            assert isinstance(e, CompoundFilter)
-            self.elements.extend(e.elements)
-            self._nesting = max(self._nesting, e.nesting)
-        for e in heteros:
-            self.elements.append(e)
-            self._nesting = max(self._nesting, 1 + e.nesting)
+    def _append(self, ft: QueryFilter):
+        if not isinstance(ft, QueryFilter):
+            raise TypeError(ft)
+        if isinstance(ft, EmptyFilter):
+            return
+        if type(ft) == type(self):
+            assert isinstance(ft, CompoundFilter)
+            self.elements.extend(ft.elements)
+            self._nesting = max(self._nesting, ft.nesting)
+        else:
+            self.elements.append(ft)
+            self._nesting = max(self._nesting, 1 + ft.nesting)
+
+    def _check_nesting(self):
         if self.nesting > 2:
             # TODO: AssertionError 대신 커스텀 에러클래스 정의
-            pprint(self.unpack())
-            raise ValueError('Nesting greater than 2!')
+            print("following CompoundFilter has nesting > 2 ::")
+            pprint(self.encode())
+            raise ValueError
 
 
 class AndFilter(CompoundFilter):
-    def unpack(self):
-        for e in self.elements:
-            if not isinstance(e, QueryFilter):
-                raise TypeError(e)
-        return {'and': list(e.unpack() for e in self.elements)}
+    def encode(self):
+        return {'and': list(e.encode() for e in self.elements)}
 
 
 class OrFilter(CompoundFilter):
-    def unpack(self):
-        for e in self.elements:
-            if not isinstance(e, QueryFilter):
-                raise TypeError(e)
-        return {'or': list(e.unpack() for e in self.elements)}
+    def encode(self):
+        return {'or': list(e.encode() for e in self.elements)}

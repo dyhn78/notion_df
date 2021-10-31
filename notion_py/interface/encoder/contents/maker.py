@@ -1,7 +1,7 @@
 from abc import abstractmethod
 
-from notion_py.interface.encoder.rich_text import RichTextObjectEncoder
 from notion_py.interface.common.struct import ValueCarrier
+from notion_py.interface.encoder.rich_text import RichTextObjectEncoder
 
 
 class ContentsEncoder(ValueCarrier):
@@ -16,7 +16,7 @@ class ContentsEncoder(ValueCarrier):
     def _contents_value(self):
         pass
 
-    def unpack(self):
+    def encode(self):
         return dict(**self._contents_value(),
                     object='block',
                     type=self.block_name)
@@ -32,7 +32,7 @@ class RichTextContentsEncoder(ContentsEncoder, RichTextObjectEncoder):
 
     def _contents_value(self):
         contents = {
-            self.block_name: {self.value_type: RichTextObjectEncoder.unpack(self),
+            self.block_name: {self.value_type: RichTextObjectEncoder.encode(self),
                               **self._kwargs},
             # dict(type = self.block_name)  -- prior to 2021-08-16
         }
@@ -46,7 +46,7 @@ class PageContentsEncoderAsChildBlock(ContentsEncoder, RichTextObjectEncoder):
 
     def _contents_value(self):
         contents = {
-            'child_page': {self.value_type: RichTextObjectEncoder.unpack(self)},
+            'child_page': {self.value_type: RichTextObjectEncoder.encode(self)},
             # dict(type = 'child_page')  -- prior to 2021-08-16
         }
         return contents

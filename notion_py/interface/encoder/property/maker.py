@@ -1,9 +1,10 @@
 from __future__ import annotations
+
 from abc import ABCMeta, abstractmethod
 
-from notion_py.interface.encoder.rich_text import RichTextObjectEncoder
 from notion_py.interface.common import DateFormat
 from notion_py.interface.common.struct import ValueCarrier
+from notion_py.interface.encoder.rich_text import RichTextObjectEncoder
 
 
 class PropertyEncoder(ValueCarrier, metaclass=ABCMeta):
@@ -18,9 +19,9 @@ class PropertyEncoder(ValueCarrier, metaclass=ABCMeta):
         pass
 
     def __bool__(self):
-        return bool(self.unpack())
+        return bool(self.encode())
 
-    def unpack(self):
+    def encode(self):
         props = {self.prop_name: {self.value_type: self.prop_value,
                                   # 'type': self.value_type <- prior to 2021-08-16,
                                   }
@@ -35,7 +36,7 @@ class RichTextPropertyEncoder(PropertyEncoder, RichTextObjectEncoder):
 
     @property
     def prop_value(self):
-        return RichTextObjectEncoder.unpack(self)
+        return RichTextObjectEncoder.encode(self)
 
 
 class FilesPropertyEncoder(PropertyEncoder):

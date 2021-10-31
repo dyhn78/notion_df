@@ -1,72 +1,71 @@
-from ..struct import ListEditor
+from notion_py.interface.parser import PageListParser, PageParser
 from .pagelist import PageList
-from notion_py.interface.parser import PageListParser
+from ..common.struct.agents import ListEditor
 
 
 class PageListUpdater(ListEditor):
     def __init__(self, caller: PageList):
-        from .page import TabularPageBlock
         super().__init__(caller)
         self.caller = caller
         self.frame = caller.frame
-        self._values: list[TabularPageBlock] = []
-        self.by_id: dict[str, TabularPageBlock] = {}
-        self.by_title: dict[str, TabularPageBlock] = {}
+
+        from .page import PageRow
+        self._values: list[PageRow] = []
 
     @property
-    def values(self):
+    def blocks(self):
         return self._values
 
     def apply_pagelist_parser(self, parser: PageListParser):
-        from .page import TabularPageBlock
-        res = []
+        pages = []
         for page_parser in parser:
-            page: TabularPageBlock = self.make_dangling_page(page_parser.page_id)
-            page.props.apply_page_parser(page_parser)
-            self.bind_dangling_page(page)
-            res.append(page)
-        return res
+            pages.append(self.apply_page_parser(page_parser))
+        return pages
 
-    def make_dangling_page(self, page_id: str):
-        from .page import TabularPageBlock
-        page = TabularPageBlock(caller=self, page_id=page_id)
+    def apply_page_parser(self, parser: PageParser):
+        page_id = parser.page_id
+        if not (page := self.caller.by_id.get(page_id)):
+            page = self.open_page(page_id)
+        page.props.apply_page_parser(parser)
         return page
 
-    def bind_dangling_page(self, page):
-        self.values.append(page)
-        self.by_id[page.master_id] = page
-        self.by_title[page.title] = page
+    def open_page(self, page_id: str):
+        from .page import PageRow
+        page = PageRow(caller=self, page_id=page_id, frame=self.frame)
+        self.blocks.append(page)
+        return page
+
+    def close_page(self, page):
+        from .page import PageRow
+        assert isinstance(page, PageRow)
+        # this will de-register the page from the pagelist.
+        page.title = ''
+        page.master_id = ''
+        self.blocks.remove(page)
 
 
 class PageListCreator(ListEditor):
     def __init__(self, caller: PageList):
-        from .page import TabularPageBlock
+        from .page import PageRow
         super().__init__(caller)
         self.caller = caller
         self.frame = self.caller.frame
-        self._values: list[TabularPageBlock] = []
+        self._values: list[PageRow] = []
 
     @property
-    def values(self):
+    def blocks(self):
         return self._values
 
-    @property
-    def by_title(self):
-        res = {}
-        for page in self.values:
-            res[page.title] = page
-        return res
-
-    def create_tabular_page(self):
-        from .page import TabularPageBlock
-        page = TabularPageBlock.create_new(self)
-        self.values.append(page)
-        assert id(page) == id(self.values[-1])
+    def create_page_row(self):
+        from .page import PageRow
+        page = PageRow.create_new(self)
+        self.blocks.append(page)
+        assert id(page) == id(self.blocks[-1])
         return page
 
-    def execute(self):
-        for child in self.values:
-            child.execute()
-        res = self.values.copy()
-        self.values.clear()
+    def save(self):
+        for child in self.blocks:
+            child.save()
+        res = self.blocks.copy()
+        self.blocks.clear()
         return res

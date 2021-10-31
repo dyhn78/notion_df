@@ -1,10 +1,10 @@
-from .yes24_url import scrap_yes24_url
-from .yes24_main import scrap_yes24_main
+from notion_py.interface.editor.inline import PageItem
+from notion_py.interface.utility import stopwatch
 from .contents_append import AppendContents
+from .yes24_main import scrap_yes24_main
+from .yes24_url import scrap_yes24_url
 from ..regular_scrap import ReadingDBScrapController, ReadingPageScrapController
 from ..remove_duplicates import remove_dummy_blocks
-from notion_py.interface.editor.inline import InlinePageBlock
-from notion_py.interface.utility import stopwatch
 
 
 class BookstoreScrapManager:
@@ -92,10 +92,10 @@ class BookstoreScraper:
         writer = self.page.props.write_rich_text_at('link_to_contents')
         writer.mention_page(subpage.master_id)
 
-    def get_subpage(self) -> InlinePageBlock:
-        self.page.sphere.fetch_children()
-        for block in self.page.sphere.children:
-            if isinstance(block, InlinePageBlock) and \
+    def get_subpage(self) -> PageItem:
+        self.page.attachments.fetch_children()
+        for block in self.page.attachments:
+            if isinstance(block, PageItem) and \
                     self.page.title in block.contents.reads():
                 subpage = block
                 # print(block.master_name)
@@ -104,7 +104,7 @@ class BookstoreScraper:
                 # continue
                 break
         else:
-            subpage = self.page.sphere.create_page_block()
+            subpage = self.page.attachments.create_page_item()
         subpage.contents.write_title(f'={self.page.title}')
-        subpage.execute()
+        subpage.save()
         return subpage

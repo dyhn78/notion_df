@@ -1,9 +1,9 @@
 from typing import Any, Optional
 
-from .stash import BlockChildrenStash, PagePropertyStash
+from notion_py.interface.editor.common.struct import PointEditor
 from notion_py.interface.encoder import ContentsEncoder
+from .stash import BlockChildrenStash, PagePropertyStash
 from ..struct import PointRequestor, print_response_error, drop_empty_request
-from ...editor.struct import PointEditor
 from ...utility import stopwatch, page_id_to_url
 
 
@@ -30,16 +30,16 @@ class CreatePage(PointRequestor, PagePropertyStash, BlockChildrenStash):
         PagePropertyStash.clear(self)
         BlockChildrenStash.clear(self)
 
-    def unpack(self):
-        res = dict(**PagePropertyStash.unpack(self),
-                   **BlockChildrenStash.unpack(self),
+    def encode(self):
+        res = dict(**PagePropertyStash.encode(self),
+                   **BlockChildrenStash.encode(self),
                    parent={self.parent_type: self.target_id})
         return res
 
     @drop_empty_request
     @print_response_error
     def execute(self) -> dict:
-        res = self.notion.pages.create(**self.unpack())
+        res = self.notion.pages.create(**self.encode())
         self.print_comments(res)
         return res
 
@@ -74,9 +74,9 @@ class UpdatePage(PointRequestor, PagePropertyStash):
     def un_archive(self):
         self._archive_value = False
 
-    def unpack(self):
+    def encode(self):
         res = dict(page_id=self.target_id,
-                   **PagePropertyStash.unpack(self))
+                   **PagePropertyStash.encode(self))
         if self._archive_value is not None:
             res.update(archived=self._archive_value)
         return res
@@ -84,7 +84,7 @@ class UpdatePage(PointRequestor, PagePropertyStash):
     @drop_empty_request
     @print_response_error
     def execute(self) -> dict:
-        res = self.notion.pages.update(**self.unpack())
+        res = self.notion.pages.update(**self.encode())
         self.print_comments()
         return res
 
@@ -123,10 +123,10 @@ class UpdateBlock(PointRequestor):
         self._contents_value = carrier
         return carrier
 
-    def unpack(self):
+    def encode(self):
         res = dict(block_id=self.target_id)
         if self._contents_value is not None:
-            res.update(**self._contents_value.unpack())
+            res.update(**self._contents_value.encode())
         if self._archive_value is not None:
             res.update(archived=self._archive_value)
         return res
@@ -134,7 +134,7 @@ class UpdateBlock(PointRequestor):
     @drop_empty_request
     @print_response_error
     def execute(self) -> dict:
-        res = self.notion.blocks.update(**self.unpack())
+        res = self.notion.blocks.update(**self.encode())
         self.print_comments()
         return res
 
@@ -157,14 +157,14 @@ class AppendBlockChildren(PointRequestor, BlockChildrenStash):
     def __bool__(self):
         return BlockChildrenStash.__bool__(self)
 
-    def unpack(self) -> dict[str, Any]:
-        return dict(**BlockChildrenStash.unpack(self),
+    def encode(self) -> dict[str, Any]:
+        return dict(**BlockChildrenStash.encode(self),
                     block_id=self.target_id)
 
     @drop_empty_request
     @print_response_error
     def execute(self) -> dict:
-        res = self.notion.blocks.children.append(**self.unpack())
+        res = self.notion.blocks.children.append(**self.encode())
         self.print_comments()
         return res
 

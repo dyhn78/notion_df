@@ -1,9 +1,9 @@
 import re
 from typing import Optional
 
-from .common.struct import ReadingDBController, ReadingPageController
+from notion_py.interface.editor.tabular import PageRow
 from notion_py.interface.utility import stopwatch
-from notion_py.interface.editor.tabular import TabularPageBlock
+from .common.struct import ReadingDBController, ReadingPageController
 
 
 class ReadingDBScrapController(ReadingDBController):
@@ -43,7 +43,7 @@ class ReadingDBScrapController(ReadingDBController):
 
 
 class ReadingPageScrapController(ReadingPageController):
-    def __init__(self, caller: ReadingDBScrapController, page: TabularPageBlock):
+    def __init__(self, caller: ReadingDBScrapController, page: PageRow):
         super().__init__(caller, page)
         self.caller = caller
         self.tasks = caller.tasks.copy()
@@ -65,7 +65,7 @@ class ReadingPageScrapController(ReadingPageController):
         if not self._status:
             self.set_as_done()
         self.page.props.write_select_at('edit_status', self._status)
-        self.page.execute()
+        self.page.save()
 
     def get_names(self) -> tuple[str, str]:
         docx_name = self.page.props.get_at('docx_name', '')

@@ -1,4 +1,3 @@
-from .rich_text import RichTextObjectEncoder
 from .contents.maker import \
     ContentsEncoder, RichTextContentsEncoder
 from .contents.wrapper import \
@@ -6,4 +5,5 @@ from .contents.wrapper import \
     PageContentsWriterAsChild, \
     PageContentsWriter
 from .property.maker import PropertyEncoder, RichTextPropertyEncoder
-from .property.wrapper import TabularPagePropertybyKey
+from .property.wrapper import PageRowPropertybyKey
+from .rich_text import RichTextObjectEncoder

@@ -2,34 +2,51 @@ from __future__ import annotations
 
 from typing import Union
 
+from notion_py.interface.editor.common.struct import (
+    PointEditor)
 from notion_py.interface.encoder import RichTextContentsEncoder
 from notion_py.interface.parser import BlockChildrenParser
 from notion_py.interface.requestor import AppendBlockChildren
-from .sphere import BlockSphere
-from ...struct import GroundEditor, PointEditor, AdaptiveEditor
+from .bearer import ItemAttachments
+from ..struct.agents import GroundEditor, AdaptiveEditor
 
 
-class BlockSphereCreator(PointEditor):
-    def __init__(self, caller: BlockSphere):
+class ItemsCreator(PointEditor):
+    def __init__(self, caller: ItemAttachments):
         super().__init__(caller)
         self.caller = caller
-        self.agents: list[Union[TextBlocksCreator, InlinePageBlockCreator]] = []
+        self.agents: list[Union[TextItemsCreateAgent,
+                                PageItemCreateAgent]] = []
         self._execute_in_process = False
         self.enable_overwrite = True
+
+    def create_text_item(self):
+        if (self.agents and
+                isinstance(self.agents[-1], TextItemsCreateAgent)):
+            agent = self.agents[-1]
+        else:
+            agent = TextItemsCreateAgent(self)
+            self.agents.append(agent)
+        return agent.add()
+
+    def create_page_item(self):
+        agent = PageItemCreateAgent(self)
+        self.agents.append(agent)
+        return agent.block
 
     def clear(self):
         self.agents = []
 
-    def has_updates(self):
+    def save_required(self):
         return bool(self.agents)
 
-    def preview(self):
+    def save_info(self):
         res = []
         for unit in self.agents:
-            res.append(unit.preview())
+            res.append(unit.save_info())
         return res
 
-    def execute(self):
+    def save(self):
         if self._execute_in_process:
             # message = ("child block yet not created ::\n"
             #            f"{[value.fully_read() for value in self.blocks]}")
@@ -37,7 +54,7 @@ class BlockSphereCreator(PointEditor):
             return []
         self._execute_in_process = True
         for agent in self.agents:
-            agent.execute()
+            agent.save()
         self._execute_in_process = False
         return self.blocks
 
@@ -54,38 +71,24 @@ class BlockSphereCreator(PointEditor):
     def __len__(self):
         return len(self.blocks)
 
-    def create_text_block(self):
-        if self.agents and isinstance(self.agents[-1], TextBlocksCreator):
-            agent = self.agents[-1]
-        else:
-            agent = TextBlocksCreator(self)
-            self.agents.append(agent)
-        return agent.add()
 
-    def create_page_block(self):
-        agent = InlinePageBlockCreator(self)
-        self.agents.append(agent)
-        return agent.block
-
-
-class TextBlocksCreator(GroundEditor):
-    def __init__(self, caller: BlockSphereCreator):
+class TextItemsCreateAgent(GroundEditor):
+    def __init__(self, caller: ItemsCreator):
         super().__init__(caller)
         self._requestor = AppendBlockChildren(self)
 
-        from ...inline.text_block import TextBlock
-        self.blocks: list[TextBlock] = []
+        from ...inline.text_block import TextItem
+        self.blocks: list[TextItem] = []
 
     @property
     def requestor(self) -> AppendBlockChildren:
         return self._requestor
 
     def add(self):
-        from ...inline.text_block import TextBlock
-        child = TextBlock.create_new(self)
+        from ...inline.text_block import TextItem
+        child = TextItem.create_new(self)
         self.blocks.append(child)
         self.requestor.append_space()
-        child.contents.write_paragraph('')
         return child
 
     def push_carrier(self, child, carrier: RichTextContentsEncoder) \
@@ -93,21 +96,21 @@ class TextBlocksCreator(GroundEditor):
         i = self.blocks.index(child)
         return self.requestor.apply_contents(i, carrier)
 
-    def execute(self):
+    def save(self):
         response = self.requestor.execute()
         parsers = BlockChildrenParser(response)
         for child, parser in zip(self.blocks, parsers):
             child.contents.apply_block_parser(parser)
-            child.execute()
+            child.save()
 
 
-class InlinePageBlockCreator(AdaptiveEditor):
-    def __init__(self, caller: BlockSphereCreator):
+class PageItemCreateAgent(AdaptiveEditor):
+    def __init__(self, caller: ItemsCreator):
         super().__init__(caller)
         self.caller = caller
 
-        from ...inline.page_block import InlinePageBlock
-        self.block = InlinePageBlock.create_new(self)
+        from ...inline.page_item import PageItem
+        self.block = PageItem.create_new(self)
 
     @property
     def value(self):

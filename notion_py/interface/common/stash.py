@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from abc import ABCMeta
 
 from .struct import ValueCarrier
@@ -16,18 +17,18 @@ class Stash(ValueCarrier, metaclass=ABCMeta):
 
 
 class ListStash(Stash, metaclass=ABCMeta):
-    def unpack(self):
+    def encode(self):
         return self._subdicts
 
     def append(self, x):
         self._subdicts.append(x)
-        
+
     def insert(self, i, x):
         self._subdicts.insert(i, x)
 
 
 class DictStash(Stash, metaclass=ABCMeta):
-    def unpack(self):
+    def encode(self):
         res = {}
         for subdict in self._subdicts:
             for key, value in subdict.items():

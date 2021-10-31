@@ -1,5 +1,5 @@
-import networkx as nx
 import matplotlib.pyplot as plt
+import networkx as nx
 
 G = nx.cubical_graph()
 G.add_edge(3, 9)

@@ -1,5 +1,6 @@
 import os
 from typing import Callable
+
 from selenium import webdriver
 from selenium.common.exceptions import \
     NoSuchElementException, StaleElementReferenceException
@@ -19,6 +20,7 @@ def retry_webdriver(function: Callable, recursion_limit=1) -> Callable:
             except (NoSuchElementException, StaleElementReferenceException):
                 if recursion == recursion_limit:
                     return None
+
     return wrapper
 
 

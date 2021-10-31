@@ -1,14 +1,14 @@
-from notion_py.interface.editor.tabular import PageList, TabularPageBlock
+from notion_py.interface.editor.tabular import PageList, PageRow
 from ..common.helpers import find_unique_unarchived_id_from_relation
 
 
 def find_unique_target_id_by_homo_ref(
-        dom: TabularPageBlock, domain: PageList, target: PageList, to_tar: str):
+        dom: PageRow, domain: PageList, target: PageList, to_tar: str):
     return find_unique_target_id_by_ref(dom, domain, target, 'up_self', to_tar)
 
 
 def find_unique_target_id_by_ref(
-        dom: TabularPageBlock, reference: PageList, target: PageList,
+        dom: PageRow, reference: PageList, target: PageList,
         to_ref: str, to_tar: str):
     if ref_id := find_unique_unarchived_id_from_relation(dom, reference, to_ref):
         ref = reference.by_id[ref_id]
@@ -32,6 +32,6 @@ def query_target_by_idx(
 
 
 def create_unique_tar_by_idx(target: PageList, tar_idx):
-    tar = target.create_tabular_page()
+    tar = target.create_page_row()
     tar.props.write_at('index_as_target', tar_idx)
     return tar

@@ -1,12 +1,11 @@
 from __future__ import annotations
-from typing import Union, Any, Callable, Iterator
+
 from inspect import signature
-
-from .rich_text import parse_rich_texts
-
+from typing import Union, Any, Callable, Iterator
 
 # find types by parser
 from notion_py.interface.common import DateFormat
+from .rich_text import parse_rich_texts
 
 VALUE_TYPES = {
     'text': ['text', 'rich_text', 'title'],

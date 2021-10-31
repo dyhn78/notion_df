@@ -11,6 +11,7 @@ def try_func_twice(function: Callable[[str], Any]):
         if not result and has_true_name:
             result = function(second_str)
         return result
+
     return wrapper
 
 
@@ -22,6 +23,7 @@ def try_method_twice(function: Callable[[Any, str], Any]):
         if not result and has_true_name:
             result = function(self, second_str)
         return result
+
     return wrapper
 
 

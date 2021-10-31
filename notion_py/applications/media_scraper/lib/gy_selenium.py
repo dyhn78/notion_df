@@ -1,10 +1,13 @@
 from __future__ import annotations
+
 from typing import Optional
+
 from selenium.common.exceptions import StaleElementReferenceException, \
     NoSuchElementException
 
+from notion_py.applications.media_scraper.common.helpers import try_method_twice, \
+    remove_emoji
 from notion_py.applications.media_scraper.common.selenium import SeleniumScraper
-from notion_py.applications.media_scraper.common.helpers import try_method_twice, remove_emoji
 
 
 class GoyangLibrary(SeleniumScraper):

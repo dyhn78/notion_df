@@ -1,6 +1,7 @@
+from urllib import parse
+
 import requests
 from bs4 import BeautifulSoup
-from urllib import parse
 
 from notion_py.applications.media_scraper.common.helpers import try_func_twice
 

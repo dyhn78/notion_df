@@ -6,7 +6,7 @@ from .maker import \
     PropertyEncoder, RichTextPropertyEncoder, SimplePropertyEncoder, FilesPropertyEncoder
 
 
-class TabularPagePropertybyName(ABC):
+class PageRowPropertybyName(ABC):
     @abstractmethod
     def _type_of(self, prop_key: str):
         pass
@@ -85,14 +85,14 @@ class TabularPagePropertybyName(ABC):
                                  SimplePropertyEncoder.multi_select(prop_key, values))
 
     def write_relation(self, prop_key: str, values: Union[list[str], str]):
-        """ values: list of <page_id>"""
+        """ blocks: list of <page_id>"""
         if isinstance(values, str):
             values = [values]
         return self.push_carrier(prop_key,
                                  SimplePropertyEncoder.relation(prop_key, values))
 
 
-class TabularPagePropertybyKey(TabularPagePropertybyName, metaclass=ABCMeta):
+class PageRowPropertybyKey(PageRowPropertybyName, metaclass=ABCMeta):
     @abstractmethod
     def _name_at(self, prop_tag: str):
         pass

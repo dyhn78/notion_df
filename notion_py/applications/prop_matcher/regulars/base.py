@@ -1,10 +1,11 @@
 from __future__ import annotations
+
 from abc import ABC, abstractmethod
 
-from ..common.query_maker import QueryMaker
+from notion_py.interface import RootEditor
+from ..common.query_maker import query_within_date_range
 from ..frame import MatchFrames
 from ...database_info import DatabaseInfo
-from notion_py.interface import RootEditor
 
 
 class Matcher(ABC):
@@ -19,7 +20,7 @@ class Matcher(ABC):
 class LocalBase:
     def __init__(self, date_range: int):
         self.root = RootEditor()
-        self.query_maker = QueryMaker(date_range)
+        self.date_range = date_range
         self.periods = self.root.open_pagelist(*DatabaseInfo.PERIODS,
                                                frame=MatchFrames.PERIODS)
         self.dates = self.root.open_pagelist(*DatabaseInfo.DATES,
@@ -32,12 +33,16 @@ class LocalBase:
                                                 frame=MatchFrames.WRITINGS)
 
     def fetch(self):
-        for pagelist in [self.periods, self.dates, self.journals]:
-            self.query_maker.query_as_parents(pagelist, 'index_as_domain')
-        for pagelist in [self.memos, self.writings]:
-            self.query_maker.query_as_parents(pagelist, 'index_as_domain')
+        for pagelist in [self.periods, self.dates]:
+            query_within_date_range(pagelist, 'index_as_domain', self.date_range)
+        for pagelist in [self.journals, self.memos, self.writings]:
+            query = pagelist.open_query()
+            frame = query.make_filter.relation_at('to_periods')
+            ft = frame.is_empty()
+            frame = query.make_filter.relation_at('to_dates')
+            ft &= frame.is_empty()
+            query.push_filter(ft)
+            query.execute()
 
     def apply_results(self):
-        for pagelist in [self.periods, self.dates, self.journals, self.memos,
-                         self.writings]:
-            pagelist.execute()
+        self.root.save()

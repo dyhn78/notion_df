@@ -1,17 +1,13 @@
 import os
+from collections import defaultdict
 from pprint import pprint
 from typing import Optional
 
 from notion_client import Client, AsyncClient
 
-from ..common import PropertyFrame
-from ..common.struct import Editor
-from ..utility import page_url_to_id
-from .struct import MasterEditor
-from .inline.text_block import TextBlock
-from .inline.page_block import InlinePageBlock
-from .tabular.database import Database
-from .tabular.page import TabularPageBlock
+from notion_py.interface.common import PropertyFrame
+from notion_py.interface.utility import page_url_to_id
+from .common.struct import MasterEditor, Editor
 
 
 class RootEditor(Editor):
@@ -23,32 +19,28 @@ class RootEditor(Editor):
             self.notion = Client(auth=self.token)
         self.top_editors: list[MasterEditor] = []
         self.by_id: dict[str, MasterEditor] = {}
+        self.by_title: dict[str, list[MasterEditor]] = defaultdict(list)
         self.enable_overwrite = True
 
-    def has_updates(self):
+    def save_required(self):
         return any([bool(editor) for editor in self.top_editors])
 
     def ids(self):
         return self.by_id.keys()
 
-    def open_text_block(self, id_or_url: str):
-        block_id = page_url_to_id(id_or_url)
-        editor = TextBlock(self, block_id)
-        self.top_editors.append(editor)
-        return editor
-
-    def preview(self, pprint_this=True):
-        preview = [editor.preview() for editor in self.top_editors]
+    def save_info(self, pprint_this=True):
+        preview = [editor.save_info() for editor in self.top_editors]
         if pprint_this:
             pprint(preview)
         return preview
 
-    def execute(self):
+    def save(self):
         for editor in self.top_editors:
-            editor.execute()
+            editor.save()
 
     def open_database(self, database_alias: str, id_or_url: str,
                       frame: Optional[PropertyFrame] = None):
+        from .tabular.database import Database
         database_id = page_url_to_id(id_or_url)
         database = Database(self, database_id, database_alias, frame)
         self.top_editors.append(database)
@@ -62,17 +54,38 @@ class RootEditor(Editor):
 
     def open_tabular_page(self, id_or_url: str,
                           frame: Optional[PropertyFrame] = None):
+        from .tabular.page import PageRow
         page_id = page_url_to_id(id_or_url)
-        page = TabularPageBlock(self, page_id, frame)
+        page = PageRow(self, page_id, frame=frame)
         self.top_editors.append(page)
         return page
 
     def open_inline_page(self, id_or_url: str):
+        from .inline.page_item import PageItem
         page_id = page_url_to_id(id_or_url)
-        page = InlinePageBlock(self, page_id)
+        page = PageItem(self, page_id)
         self.top_editors.append(page)
         return page
+
+    def open_text_block(self, id_or_url: str):
+        from .inline.text_block import TextItem
+        block_id = page_url_to_id(id_or_url)
+        editor = TextItem(self, block_id)
+        self.top_editors.append(editor)
+        return editor
 
     @property
     def token(self):
         return os.environ['NOTION_TOKEN'].strip("'").strip('"')
+
+    @property
+    def master(self):
+        return self
+
+    @property
+    def parent(self):
+        return self
+
+    @property
+    def entry_ancestor(self):
+        return self

@@ -1,7 +1,7 @@
-from notion_py.applications.media_scraper.frame import ReadingDB_FRAME
 from notion_py.applications.database_info import DatabaseInfo
+from notion_py.applications.media_scraper.frame import ReadingDB_FRAME
 from notion_py.interface import RootEditor
-from notion_py.interface.editor.tabular import TabularPageBlock
+from notion_py.interface.editor.tabular import PageRow
 
 
 class ReadingDBController:
@@ -13,7 +13,7 @@ class ReadingDBController:
 
 
 class ReadingPageController:
-    def __init__(self, caller: ReadingDBController, page: TabularPageBlock):
+    def __init__(self, caller: ReadingDBController, page: PageRow):
         self.caller = caller
         self.page = page
         self.root = page.root

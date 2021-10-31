@@ -1,10 +1,10 @@
 import re
 
-from notion_py.interface import TypeName
+from notion_py.interface.editor.inline import PageItem
 
 
 class AppendContents:
-    def __init__(self, subpage: TypeName.inline_page, contents: list[str]):
+    def __init__(self, subpage: PageItem, contents: list[str]):
         self.page = subpage
         self.contents = contents
 
@@ -15,7 +15,7 @@ class AppendContents:
             if depth != 0:
                 max_depth = max(max_depth, depth)
         for text_line in self.contents:
-            block = self.page.sphere.create_text_block()
+            block = self.page.attachments.create_text_item()
             depth = self.get_depth(text_line)
             if depth != 0:
                 depth += (4 - max_depth)

@@ -1,10 +1,10 @@
 from abc import ABCMeta
 
-from ..common.date_index import PeriodPageProcessor
-from ..common.helpers import overwrite_prop
+from .base import Matcher
 from .helpers import create_unique_tar_by_idx, query_target_by_idx, \
     find_unique_target_id_by_ref
-from .base import Matcher
+from ..common.date_index import PeriodPageProcessor
+from ..common.helpers import overwrite_prop
 
 
 class PeriodMatcherAbs(Matcher, metaclass=ABCMeta):
@@ -42,7 +42,7 @@ class PeriodMatcherType1(PeriodMatcherAbs):
             self.tars_by_index.update({tar_idx: tar})
             date_range = PeriodPageProcessor.get_date_range(tar_idx)
             tar.props.write_date_at('manual_date_range', date_range)
-            tar.execute()
+            tar.save()
             return tar
 
 

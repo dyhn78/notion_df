@@ -8,7 +8,7 @@ class RichTextObjectEncoder(ValueCarrier, metaclass=ABCMeta):
     def __init__(self):
         self._list_stash = []
 
-    def unpack(self):
+    def encode(self):
         return self._list_stash
 
     @staticmethod

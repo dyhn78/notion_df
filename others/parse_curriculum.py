@@ -13,4 +13,4 @@ while True:
     except IndexError:
         rights.append('')
 
-print(*lefts, '\n'*3, *rights, sep='\n')
+print(*lefts, '\n' * 3, *rights, sep='\n')

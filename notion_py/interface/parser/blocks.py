@@ -39,7 +39,7 @@ class BlockContentsParser(Printable):
         self.read_plain = ''
         self.read_rich = []
 
-    def pprint(self):
+    def preview(self):
         message = {
             'block_id': self.block_id,
             'block_type': self.block_type,

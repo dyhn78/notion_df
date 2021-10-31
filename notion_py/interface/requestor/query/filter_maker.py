@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from .filter_unit import PlainFilter, OrFilter, AndFilter
 from .query import Query
 from ...common import PropertyFrame, PropertyFrameUnit
@@ -101,7 +102,7 @@ class FilterMaker:
         self.prop_key: str = prop_key
         self.frame_unit: PropertyFrameUnit = \
             caller.frame.by_key[prop_key] if prop_key in caller.frame.by_key \
-            else PropertyFrameUnit(prop_key)
+                else PropertyFrameUnit(prop_key)
         self.prop_values = self.frame_unit.prop_values
         self.prop_value_groups = self.frame_unit.prop_value_groups
 

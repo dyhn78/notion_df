@@ -1,7 +1,7 @@
-from .filter_unit import QueryFilter, PlainFilter
+from notion_py.interface.editor.common.struct import PointEditor
+from .filter_unit import QueryFilter, EmptyFilter
 from ..struct import TruthyLongRequestor, print_response_error
 from ...common import PropertyFrame
-from ...editor.struct import PointEditor
 from ...utility import page_id_to_url, stopwatch
 
 
@@ -9,7 +9,7 @@ class Query(TruthyLongRequestor):
     def __init__(self, editor: PointEditor, frame: PropertyFrame):
         super().__init__(editor)
         self.frame = frame
-        self._filter_value = PlainFilter({})
+        self._filter_value = EmptyFilter()
 
         from .filter_maker import QueryFilterAgent
         self.make_filter = QueryFilterAgent(self)
@@ -17,19 +17,22 @@ class Query(TruthyLongRequestor):
         from .sort import QuerySort
         self.sort = QuerySort()
 
-    def clear_filter(self):
-        self._filter_value = PlainFilter({})
+    @staticmethod
+    def open_filter():
+        return EmptyFilter()
 
     def push_filter(self, query_filter: QueryFilter):
-        if query_filter is not None:
-            self._filter_value = query_filter
+        self._filter_value = query_filter
 
-    def unpack(self, page_size=None, start_cursor=None):
+    def clear_filter(self):
+        self._filter_value = EmptyFilter()
+
+    def encode(self, request_size=None, start_cursor=None):
         args = dict(**self.sort.unpack(),
                     database_id=self.target_id,
-                    page_size=page_size if page_size else self.MAX_PAGE_SIZE)
+                    page_size=request_size if request_size else self.MAX_PAGE_SIZE)
         if self._filter_value:
-            args.update(filter=self._filter_value.unpack())
+            args.update(filter=self._filter_value.encode())
         if start_cursor:
             args.update(start_cursor=start_cursor)
         return args
@@ -46,7 +49,7 @@ class Query(TruthyLongRequestor):
     @print_response_error
     def _execute_each(self, request_size, start_cursor=None):
         response = self.notion.databases.query(
-            **self.unpack(page_size=request_size, start_cursor=start_cursor)
+            **self.encode()
         )
         return response
 

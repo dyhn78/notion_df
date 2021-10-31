@@ -1,58 +1,78 @@
-from typing import Union, Optional
+from typing import Union
 
-from notion_py.interface.encoder import TextContentsWriter, RichTextContentsEncoder
+from notion_py.interface.encoder import (
+    TextContentsWriter, RichTextContentsEncoder)
 from notion_py.interface.parser import BlockContentsParser
 from notion_py.interface.requestor import UpdateBlock, RetrieveBlock
-from ..abs_supported.abs_child_bearing.abs_contents_bearing.contents_bearing import \
-    ContentsBearingBlock, BlockContents
-from ..abs_supported.abs_child_bearing.creator import \
-    TextBlocksCreator
-from ..abs_supported.abs_child_bearing.updater import BlockSphereUpdater
-from ...common.struct import Editor
+from ..common.with_contents import (
+    ContentsBearer, BlockContents)
+from ..common.with_items import (
+    ItemsBearer, ItemsUpdater, TextItemsCreateAgent)
+from ..root_editor import RootEditor
 
 
-class TextBlock(ContentsBearingBlock):
+# TODO > Can-Have-Children 을 동적으로 바꿀 수 있을까?
+class TextItem(ContentsBearer, ItemsBearer):
     def __init__(self,
-                 caller: Union[Editor,
-                               BlockSphereUpdater,
-                               TextBlocksCreator],
-                 block_id: str):
-        super().__init__(caller=caller, block_id=block_id)
+                 caller: Union[RootEditor,
+                               ItemsUpdater,
+                               TextItemsCreateAgent],
+                 block_id: str,
+                 yet_not_created=False):
+        super().__init__(caller, block_id)
         self.caller = caller
-        if isinstance(caller, TextBlocksCreator):
-            self.yet_not_created = True
-            self.contents = TextContents(self, caller)
-        else:
-            self.contents = TextContents(self)
-        self.agents.update(contents=self.contents)
+        self.yet_not_created = yet_not_created
+        self.contents = TextContents(self)
+
+    def save_required(self) -> bool:
+        return (self.contents.save_required() or
+                self.attachments.save_required())
+
+    @classmethod
+    def create_new(cls, caller: TextItemsCreateAgent):
+        self = cls(caller, '', yet_not_created=True)
+        return self
 
     @property
     def master_name(self):
         return self.contents.reads()
 
-    def execute(self):
+    def save(self):
         if self.yet_not_created:
-            self.caller.execute()
+            self.caller.save()
             self.yet_not_created = False
         else:
-            self.contents.execute()
-            if self.archived:
-                return
-            self.sphere.execute()
+            self.save_this()
+
+    def save_this(self):
+        self.contents.save()
+        if self.archived:
+            return
+        self.attachments.save()
 
     def reads(self):
-        return dict(**super().reads(), type='text')
+        return {'contents': self.contents.reads(),
+                'children': self.attachments.reads(),
+                'type': 'text'}
 
     def reads_rich(self):
-        return dict(**super().reads_rich(), type='text')
+        return {'contents': self.contents.reads_rich(),
+                'children': self.attachments.reads_rich(),
+                'type': 'text'}
+
+    def save_info(self):
+        return {'contents': self.contents.save_info(),
+                **self.attachments.save_info(),
+                'type': 'text'}
+
+    def push_contents_carrier(self, carrier):
+        return self.caller.push_carrier(self, carrier)
 
 
 class TextContents(BlockContents, TextContentsWriter):
-    def __init__(self, caller: TextBlock,
-                 creator: Optional[TextBlocksCreator] = None):
+    def __init__(self, caller: TextItem):
         super().__init__(caller)
         self.caller = caller
-        self.creator = creator
         self._requestor = UpdateBlock(self)
 
     @property
@@ -75,9 +95,9 @@ class TextContents(BlockContents, TextContentsWriter):
         parser = BlockContentsParser.parse_retrieve(response)
         self.apply_block_parser(parser)
 
-    def execute(self):
+    def save(self):
         if self.yet_not_created:
-            self.master.execute()
+            self.master.save()
         else:
             self.requestor.execute()
             # TODO: update {self._read};
@@ -85,15 +105,9 @@ class TextContents(BlockContents, TextContentsWriter):
             #  2. update BlockContentsParser yourself without response
         self.requestor = UpdateBlock(self)
 
-    def push_carrier(self, carrier: RichTextContentsEncoder) -> RichTextContentsEncoder:
-        # print(f"<{self.master_id}>")
-        # print(f"<{self.parent_id}>")
-        # print(self.yet_not_created)
-        # print(self.master.yet_not_created)
-        # print(self.master.caller.yet_not_created)
-        # print(self.parent.yet_not_created)
-        # print(carrier.unpack())
+    def push_carrier(self, carrier: RichTextContentsEncoder) \
+            -> RichTextContentsEncoder:
         if self.yet_not_created:
-            return self.creator.push_carrier(self.master, carrier)
+            return self.caller.push_contents_carrier(carrier)
         else:
             return self.requestor.apply_contents(carrier)

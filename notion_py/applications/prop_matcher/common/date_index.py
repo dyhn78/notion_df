@@ -2,7 +2,6 @@ import datetime
 from datetime import datetime as datetimeclass
 
 from notion_py.interface.common import DateFormat
-from notion_py.interface.editor.tabular import TabularPageBlock
 
 
 class ProcessTimeProperty:

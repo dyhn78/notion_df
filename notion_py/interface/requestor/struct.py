@@ -4,9 +4,9 @@ from typing import Callable
 
 from notion_client.errors import APIResponseError
 
-from notion_py.interface.common.struct import Requestor, Executable
-from notion_py.interface.editor.struct import PointEditor
-from notion_py.interface.utility import stopwatch
+from notion_py.interface.common.struct import Requestor
+from notion_py.interface.editor.common.struct import PointEditor
+from notion_py.interface.utility import stopwatch, page_id_to_url
 
 
 class PointRequestor(Requestor, metaclass=ABCMeta):
@@ -24,6 +24,10 @@ class PointRequestor(Requestor, metaclass=ABCMeta):
     @property
     def target_name(self):
         return self.editor.master.master_name
+
+    @property
+    def target_url(self):
+        return page_id_to_url(self.target_id)
 
 
 class TruthyPointRequestor(PointRequestor, metaclass=ABCMeta):
@@ -97,7 +101,7 @@ def print_response_error(func: Callable):
             return response
         except APIResponseError as api_response_error:
             print(f'Error occurred while executing {str(self)} ::\n')
-            self.pprint()
+            self.preview()
             raise api_response_error
 
     return wrapper
@@ -113,7 +117,7 @@ def retry_then_print_response_error(func: Callable, recursion_limit=1, time_to_s
             except APIResponseError as api_response_error:
                 if recursion == recursion_limit:
                     print(f'Error occurred while executing {str(self)} ::\n')
-                    self.pprint()
+                    self.preview()
                     raise api_response_error
                 recursion += 1
                 stopwatch(f'응답 재시도 {recursion}/{recursion_limit}회')

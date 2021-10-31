@@ -15,8 +15,8 @@ class BlockChildrenStash(ValueCarrier):
     def clear(self):
         self.subcarriers.clear()
 
-    def unpack(self):
-        stash = [carrier.unpack() for carrier in self.subcarriers]
+    def encode(self):
+        stash = [carrier.encode() for carrier in self.subcarriers]
         return {'children': stash}
 
     def apply_contents(self, i: int, carrier: ContentsEncoder):
@@ -28,10 +28,10 @@ class BlockChildrenStash(ValueCarrier):
 
 
 class TwofoldDictStash(TwofoldStash, metaclass=ABCMeta):
-    def unpack(self):
+    def encode(self):
         res = {}
         for carrier in self._subcarriers:
-            res.update(**{key: value for key, value in carrier.unpack().items()})
+            res.update(**{key: value for key, value in carrier.encode().items()})
         return res
 
 
@@ -45,8 +45,8 @@ class PagePropertyStash(ValueCarrier):
     def clear(self):
         self.prop_value.clear()
 
-    def unpack(self) -> dict:
-        return {'properties': self.prop_value.unpack()}
+    def encode(self) -> dict:
+        return {'properties': self.prop_value.encode()}
 
     def apply_prop(self, carrier: ValueCarrier):
         return self.prop_value.apply(carrier)
@@ -71,6 +71,6 @@ class ArchiveToggle(ValueCarrier):
     def un_archive(self):
         self.archive_value = False
 
-    def unpack(self) -> dict:
+    def encode(self) -> dict:
         print({'archived': self.archive_value})
         return {'archived': self.archive_value} if bool(self) else {}

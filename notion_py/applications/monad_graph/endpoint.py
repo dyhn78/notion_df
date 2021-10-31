@@ -1,9 +1,9 @@
 from notion_py.applications.monad_graph.common.add_nodes import TopologyBuilder
+from notion_py.applications.monad_graph.graph_handler.draw_figure import FigureDrawer
 from notion_py.applications.monad_graph.graph_handler.initalize import \
     DualCircularInitializer
 from notion_py.applications.monad_graph.graph_handler.positioning \
     import GradientDescent
-from notion_py.applications.monad_graph.graph_handler.draw_figure import FigureDrawer
 from notion_py.interface import stopwatch
 
 

@@ -13,18 +13,18 @@
 #         super().__init__(caller)
 #         self.caller = caller
 #         self.requestor = requestor
-#         from .abs_contents_bearing.contents_bearing import ContentsBearingBlock
-#         self.values: list[ContentsBearingBlock] = []
+#         from .with_contents.contents_bearing import ContentsBearer
+#         self.blocks: list[ContentsBearer] = []
 #         self._chunk_interrupted = True
 #
 #     def __iter__(self):
-#         return iter(self.values)
+#         return iter(self.blocks)
 #
 #     def __getitem__(self, index: int):
-#         return self.values[index]
+#         return self.blocks[index]
 #
 #     def __len__(self):
-#         return len(self.values)
+#         return len(self.blocks)
 #
 #     def __bool__(self):
 #         return any(child for child in self)
@@ -36,25 +36,25 @@
 #     def execute(self):
 #         response = self.gateway.execute()
 #         parsers = BlockChildrenParser(response)
-#         for parser, new_child in zip(parsers, self.values):
+#         for parser, new_child in zip(parsers, self.blocks):
 #             new_child.contents.apply_block_parser(parser)
-#         for child in self.values:
+#         for child in self.blocks:
 #             child.execute()
-#         res = self.values.copy()
-#         self.values.clear()
+#         res = self.blocks.copy()
+#         self.blocks.clear()
 #         return res
 #
 #     def create_text_block(self):
-#         from ...inline.text_block import TextBlock
-#         child = TextBlock.create_new(self)
-#         self.values.append(child)
+#         from ...inline.text_block import TextItem
+#         child = TextItem.create_new(self)
+#         self.blocks.append(child)
 #         assert id(child) == id(self[-1])
 #         return child
 #
 #     def create_inline_page(self):
 #         from ...inline.page_block_as_child import InlinePageBlockAsChild
 #         child = InlinePageBlockAsChild.create_new(self)
-#         self.values.append(child)
+#         self.blocks.append(child)
 #         assert id(child) == id(self[-1])
 #         return child
 #

@@ -1,13 +1,13 @@
-from notion_py.interface.encoder import TabularPagePropertybyKey, PropertyEncoder
+from notion_py.interface.editor.common.pages import PagePayload
+from notion_py.interface.encoder import PageRowPropertybyKey, PropertyEncoder
 from notion_py.interface.parser import PageParser
-from .page import TabularPageBlock
-from ..abs_page_property import PageProperty
+from .page import PageRow
 from ...requestor import CreatePage, UpdatePage
 from ...utility import eval_empty
 
 
-class TabularPageProperty(PageProperty, TabularPagePropertybyKey):
-    def __init__(self, caller: TabularPageBlock):
+class PageRowProperty(PagePayload, PageRowPropertybyKey):
+    def __init__(self, caller: PageRow):
         super().__init__(caller)
         self.caller = caller
         self.frame = caller.frame
@@ -122,7 +122,7 @@ class TabularPageProperty(PageProperty, TabularPagePropertybyKey):
 
 
 """
-class TabularPageProperty(PointEditor):
+class PageRowProperty(PointEditor):
     def __init__(self, caller: PointEditor):
         super().__init__(caller)
         self.caller = caller

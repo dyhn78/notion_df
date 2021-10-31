@@ -1,10 +1,11 @@
 import re
 from itertools import chain
+
 import networkx as nx
 
-from notion_py.interface import RootEditor, TypeName
 from notion_py.applications.database_info import DatabaseInfo
 from notion_py.applications.monad_graph.frame import NetworkFrames, NetworkPropertyFrame
+from notion_py.interface import RootEditor, TypeName
 
 
 class TopologyBuilder:
@@ -33,10 +34,10 @@ class TopologyBuilder:
             maker = query.make_filter.relation_at('front_self')
             ft = maker.__bool__()
             query.push_filter(ft)
-            query.execute(self.request_size)
+            query.save()
         for pagelist in [self.ideas]:
             query = pagelist.open_query()
-            query.execute(self.request_size)
+            query.save()
 
     def add_nodes(self):
         for i, page in enumerate(chain(*self.all.values())):

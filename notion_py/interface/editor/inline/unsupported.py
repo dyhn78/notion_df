@@ -1,13 +1,19 @@
 from typing import Union
 
-from notion_py.interface.editor.struct import MasterEditor
-from notion_py.interface.common.struct import Editor
+from notion_py.interface.editor.common.struct import MasterEditor, Editor
 
 
 class UnsupportedBlock(MasterEditor):
     def __init__(self, caller: Editor, block_id: str):
         super().__init__(caller, block_id)
         self.caller = caller
+
+    @property
+    def payload(self):
+        return None
+
+    def save_required(self) -> bool:
+        return False
 
     @property
     def master_name(self):
@@ -21,8 +27,8 @@ class UnsupportedBlock(MasterEditor):
         return {'type': 'unsupported',
                 'id': self.master_url}
 
-    def preview(self):
+    def save(self):
         return {}
 
-    def execute(self):
+    def save_info(self):
         return {}

@@ -1,6 +1,7 @@
 # import numpy
 # from itertools import product
 from random import random
+
 import networkx as nx
 
 from notion_py.applications.monad_graph.graph_handler.struct import GraphHandler, Point

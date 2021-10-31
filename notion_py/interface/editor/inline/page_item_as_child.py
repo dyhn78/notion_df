@@ -5,14 +5,14 @@
 # from notion_py.interface.parser import PageParser
 # from notion_py.interface.requestor import UpdatePage, RetrievePage, AppendBlockChildren
 # from notion_py.interface.common.struct import Editor, drop_empty_request
-# from ..abs_supported.abs_child_bearing.abs_contents_bearing.contents_bearing import \
-#     ContentsBearingBlock, BlockContents
-# from ..abs_supported.abs_child_bearing.creater_with_page_as_child import \
+# from ..supported.with_items.with_contents.contents_bearing import \
+#     ContentsBearer, BlockContents
+# from ..supported.with_items.creater_with_page_as_child import \
 #     BlockSphereCreatorWithChildInlinePage
 # from ..struct import PointEditor
 #
 #
-# class InlinePageBlockAsChild(ContentsBearingBlock):
+# class InlinePageBlockAsChild(ContentsBearer):
 #     def __init__(self, caller: Union[Editor, PointEditor], page_id: str):
 #         super().__init__(caller, page_id)
 #         if isinstance(caller, BlockSphereCreatorWithChildInlinePage):
@@ -32,7 +32,7 @@
 #             self.caller.execute()
 #         else:
 #             self.contents.execute()
-#             self.sphere.execute()
+#             self.attachments.execute()
 #
 #     def fully_read(self):
 #         return dict(**super().fully_read(), type='page')
@@ -42,7 +42,7 @@
 #
 #
 # class InlinePageContentsAsChild(BlockContents, PageContentsWriterAsChild):
-#     def __init__(self, caller: ContentsBearingBlock,
+#     def __init__(self, caller: ContentsBearer,
 #                  uncle: Optional[BlockSphereCreatorWithChildInlinePage] = None):
 #         super().__init__(caller)
 #         self.caller = caller

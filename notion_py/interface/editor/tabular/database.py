@@ -1,18 +1,17 @@
 from typing import Union, Optional
 
-from ..abs_supported.abs_child_bearing import \
-    BlockSphereCreator, BlockSphereUpdater
-from ..struct import MasterEditor
 from notion_py.interface.common import PropertyFrame
 from notion_py.interface.parser import DatabaseParser
 from notion_py.interface.requestor import RetrieveDatabase
-from ...common.struct import Editor
+from ..common.with_children import ChildrenBearer, BlockChildren
+from ..common.with_items import ItemsCreator, ItemsUpdater
+from ..root_editor import RootEditor
 
 
-class Database(MasterEditor):
-    def __init__(self, caller: Union[Editor,
-                                     BlockSphereUpdater,
-                                     BlockSphereCreator],
+class Database(ChildrenBearer):
+    def __init__(self, caller: Union[RootEditor,
+                                     ItemsUpdater,
+                                     ItemsCreator],
                  database_id: str,
                  database_alias='',
                  frame: Optional[PropertyFrame] = None):
@@ -23,9 +22,21 @@ class Database(MasterEditor):
 
         from .database_schema import DatabaseSchema
         self.schema = DatabaseSchema(self)
+
         from .pagelist import PageList
         self.pagelist = PageList(self)
-        self.agents.update(pagelist=self.pagelist)
+
+    @property
+    def payload(self):
+        return self.schema
+
+    @property
+    def children(self) -> BlockChildren:
+        return self.pagelist
+
+    def save_required(self) -> bool:
+        return (self.payload.save_required()
+                or self.children.save_required())
 
     @property
     def master_name(self):
@@ -37,14 +48,14 @@ class Database(MasterEditor):
         parser = DatabaseParser(response)
         self.frame.fetch_parser(parser)
 
-    def preview(self):
-        return {**self.pagelist.preview()}
+    def save_info(self):
+        return {**self.pagelist.save_info()}
 
-    def execute(self):
-        self.pagelist.execute()
-
-    def reads_rich(self):
-        pass
+    def save(self):
+        self.pagelist.save()
 
     def reads(self):
-        pass
+        return {'pagelist': self.pagelist.by_title}
+
+    def reads_rich(self):
+        return self.reads()

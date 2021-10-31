@@ -1,2 +1,2 @@
-from .page_block import InlinePageBlock, InlinePageContents
-from .text_block import TextBlock, TextContents
+from .page_item import PageItem, PageItemContents
+from .text_block import TextItem, TextContents
