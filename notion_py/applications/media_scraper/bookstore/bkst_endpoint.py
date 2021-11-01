@@ -93,7 +93,7 @@ class BookstoreScraper:
         writer.mention_page(subpage.master_id)
 
     def get_subpage(self) -> PageItem:
-        self.page.attachments.fetch_children()
+        self.page.attachments.fetch()
         for block in self.page.attachments:
             if isinstance(block, PageItem) and \
                     self.page.title in block.contents.reads():

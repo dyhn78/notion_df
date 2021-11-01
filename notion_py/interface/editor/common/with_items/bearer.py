@@ -75,13 +75,13 @@ class ItemAttachments(BlockChildren):
     def reads_rich(self):
         return self._updater.reads_rich()
 
-    def create_text_block(self):
+    def create_text_item(self):
         return self.creator.create_text_item()
 
-    def create_page_block(self):
+    def create_page_item(self):
         return self.creator.create_page_item()
 
-    def indent_next_block(self) -> ItemAttachments:
+    def indent_next_item(self) -> ItemAttachments:
         """if not possible, the cursor will stay at its position."""
         for child in reversed(self.list_all()):
             if isinstance(child, ItemsBearer):
@@ -90,7 +90,7 @@ class ItemAttachments(BlockChildren):
             print('indentation not possible!')
             return self
 
-    def exdent_next_block(self) -> ItemAttachments:
+    def exdent_next_item(self) -> ItemAttachments:
         """if not possible, the cursor will stay at its position."""
         parent = self.parent
         if isinstance(parent, ItemsBearer):
