@@ -7,9 +7,15 @@ from notion_py.interface.common.struct import ValueCarrier
 class RichTextObjectEncoder(ValueCarrier, metaclass=ABCMeta):
     def __init__(self):
         self._list_stash = []
+        self._plain_form = []
 
     def encode(self):
         return self._list_stash
+
+    def plain_form(self):
+        """this ignores anything other than texts:
+        for example, mentions of pages, dates or users, math equations, ..."""
+        return ''.join(self._plain_form)
 
     @staticmethod
     def _wrap_unit(prop_type, value):
@@ -23,6 +29,7 @@ class RichTextObjectEncoder(ValueCarrier, metaclass=ABCMeta):
         if link:
             value[link] = link
         self._list_stash.append(self._wrap_unit('text', value))
+        self._plain_form.append(contents)
 
     def write_equation(self, expression: str):
         equation = {'expression': expression},

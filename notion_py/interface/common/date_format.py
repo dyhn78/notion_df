@@ -6,18 +6,19 @@ from typing import Optional, Union
 class DateFormat:
     TIME_ZONE = 9  # SEOUL
 
-    def __init__(self, start_date: Optional[Union[datetimeclass, dateclass]] = None,
-                 end_date: Optional[Union[datetimeclass, dateclass]] = None):
+    def __init__(self, start_date: Union[datetimeclass, dateclass, None] = None,
+                 end_date: Union[datetimeclass, dateclass, None] = None):
         if start_date is None and end_date is not None:
             start_date, end_date = end_date, start_date
-        if start_date is not None:
-            self.start = start_date + datetime.timedelta(hours=self.TIME_ZONE)
+        self.start = self.__encode(start_date)
+        self.end = self.__encode(end_date)
+
+    def __encode(self, date: Union[datetimeclass, dateclass, None])\
+            -> Union[datetimeclass, dateclass, None]:
+        if date is not None:
+            return date + datetime.timedelta(hours=self.TIME_ZONE)
         else:
-            self.start = None
-        if end_date is not None:
-            self.end = end_date + datetime.timedelta(hours=self.TIME_ZONE)
-        else:
-            self.end = None
+            return None
 
     def __repr__(self):
         return self.__str__()

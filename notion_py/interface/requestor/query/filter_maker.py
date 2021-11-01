@@ -1,4 +1,6 @@
 from __future__ import annotations
+from typing import Union
+from datetime import datetime as datetimeclass, date as dateclass
 
 from .filter_unit import PlainFilter, OrFilter, AndFilter
 from .query import Query
@@ -16,14 +18,14 @@ for form, types in FILTER_TYPES.items():
     FILTER_FORMATS.update(**{typ: form for typ in types})
 
 
-class QueryFilterAgent:
+class QueryFilterMaker:
     def __init__(self, caller: Query):
         """특정한 데이터베이스 하나를 위한 query_filter 프레임을 만든다."""
         self.caller = caller
         self.frame = self.caller.frame if hasattr(self.caller, 'frame') \
             else PropertyFrame()
 
-    def of(self, prop_key: str, prop_type=None) -> FilterMaker:
+    def of(self, prop_key: str, prop_type=None) -> QueryFilterAgent:
         if prop_type == 'formula':
             format_type = prop_type
             assert prop_type in ['text', 'checkbox', 'number', 'date']
@@ -40,31 +42,31 @@ class QueryFilterAgent:
         return self.of(self.frame.key_at(prop_tag), prop_type)
 
     def text_of(self, prop_key: str):
-        return TextFilterMaker(self, prop_key)
+        return TextFilterAgent(self, prop_key)
 
     def relation_of(self, prop_key: str):
-        return RelationFilterMaker(self, prop_key)
+        return RelationFilterAgent(self, prop_key)
 
     def number_of(self, prop_key: str):
-        return NumberFilterMaker(self, prop_key)
+        return NumberFilterAgent(self, prop_key)
 
     def checkbox_of(self, prop_key: str):
-        return CheckboxFilterMaker(self, prop_key)
+        return CheckboxFilterAgent(self, prop_key)
 
     def select_of(self, prop_key: str):
-        return SelectFilterMaker(self, prop_key)
+        return SelectFilterAgent(self, prop_key)
 
     def multi_select_of(self, prop_key: str):
-        return MultiselectFilterMaker(self, prop_key)
+        return MultiselectFilterAgent(self, prop_key)
 
     def files_of(self, prop_key: str):
-        return FilesFilterMaker(self, prop_key)
+        return FilesFilterAgent(self, prop_key)
 
     def date_of(self, prop_key: str):
-        return DateFilterMaker(self, prop_key)
+        return DateFilterAgent(self, prop_key)
 
     def people_of(self, prop_key: str):
-        return PeopleFilterMaker(self, prop_key)
+        return PeopleFilterAgent(self, prop_key)
 
     def text_at(self, prop_tag: str):
         return self.text_of(self.frame.key_at(prop_tag))
@@ -94,15 +96,17 @@ class QueryFilterAgent:
         return self.people_of(self.frame.key_at(prop_tag))
 
 
-class FilterMaker:
+class QueryFilterAgent:
     prop_type = None
 
-    def __init__(self, caller: QueryFilterAgent, prop_key):
+    def __init__(self, caller: QueryFilterMaker, prop_key):
         assert self.prop_type is not None
         self.prop_key: str = prop_key
-        self.frame_unit: PropertyFrameUnit = \
-            caller.frame.by_key[prop_key] if prop_key in caller.frame.by_key \
-                else PropertyFrameUnit(prop_key)
+        self.frame_unit: PropertyFrameUnit = (
+            caller.frame.by_key[prop_key]
+            if prop_key in caller.frame.by_key
+            else PropertyFrameUnit(prop_key)
+        )
         self.prop_values = self.frame_unit.prop_values
         self.prop_value_groups = self.frame_unit.prop_value_groups
 
@@ -119,7 +123,7 @@ class FilterMaker:
         return self._wrap_as_filter('is_not_empty', True)
 
 
-class EqualtypeFilterMaker(FilterMaker):
+class EqualtypeFilterAgent(QueryFilterAgent):
     def equals(self, value):
         return self._wrap_as_filter('equals', value)
 
@@ -133,7 +137,7 @@ class EqualtypeFilterMaker(FilterMaker):
         return AndFilter([self.does_not_equal(value) for value in values])
 
 
-class ContaintypeFilterMaker(FilterMaker):
+class ContaintypeFilterAgent(QueryFilterAgent):
     def contains(self, value):
         return self._wrap_as_filter('contains', str(value))
 
@@ -153,27 +157,27 @@ class ContaintypeFilterMaker(FilterMaker):
         return OrFilter([self.does_not_contain(value) for value in values])
 
 
-class SelectFilterMaker(EqualtypeFilterMaker):
+class SelectFilterAgent(EqualtypeFilterAgent):
     prop_type = 'select'
 
 
-class MultiselectFilterMaker(EqualtypeFilterMaker, ContaintypeFilterMaker):
+class MultiselectFilterAgent(EqualtypeFilterAgent, ContaintypeFilterAgent):
     prop_type = 'multi_select'
 
 
-class PeopleFilterMaker(EqualtypeFilterMaker, ContaintypeFilterMaker):
+class PeopleFilterAgent(EqualtypeFilterAgent, ContaintypeFilterAgent):
     prop_type = 'people'
 
 
-class FilesFilterMaker(FilterMaker):
+class FilesFilterAgent(QueryFilterAgent):
     prop_type = 'files'
 
 
-class RelationFilterMaker(ContaintypeFilterMaker):
+class RelationFilterAgent(ContaintypeFilterAgent):
     prop_type = 'relation'
 
 
-class TextFilterMaker(EqualtypeFilterMaker, ContaintypeFilterMaker):
+class TextFilterAgent(EqualtypeFilterAgent, ContaintypeFilterAgent):
     prop_type = 'text'
 
     def starts_with(self, value):
@@ -189,7 +193,7 @@ class TextFilterMaker(EqualtypeFilterMaker, ContaintypeFilterMaker):
         return AndFilter([self.ends_with(value) for value in values])
 
 
-class NumberFilterMaker(EqualtypeFilterMaker):
+class NumberFilterAgent(EqualtypeFilterAgent):
     prop_type = 'number'
 
     def greater_than(self, value):
@@ -205,7 +209,7 @@ class NumberFilterMaker(EqualtypeFilterMaker):
         return self._wrap_as_filter('less_than_or_equal_to', value)
 
 
-class CheckboxFilterMaker(EqualtypeFilterMaker):
+class CheckboxFilterAgent(EqualtypeFilterAgent):
     prop_type = 'checkbox'
 
     def is_empty(self):
@@ -215,23 +219,27 @@ class CheckboxFilterMaker(EqualtypeFilterMaker):
         return self.equals(True)
 
 
-class DateFilterMaker(EqualtypeFilterMaker):
+class DateFilterAgent(EqualtypeFilterAgent):
     prop_type = 'date'
 
-    def does_not_equal(self, value):
+    def does_not_equal(self, value: Union[datetimeclass, dateclass]):
         return OrFilter([self.before(value), self.after(value)])
 
-    def before(self, value: str):
-        return self._wrap_as_filter('before', value)
+    def before(self, value: Union[datetimeclass, dateclass]):
+        value_str = value.isoformat()
+        return self._wrap_as_filter('before', value_str)
 
-    def after(self, value: str):
-        return self._wrap_as_filter('after', value)
+    def after(self, value: Union[datetimeclass, dateclass]):
+        value_str = value.isoformat()
+        return self._wrap_as_filter('after', value_str)
 
-    def on_or_before(self, value: str):
-        return self._wrap_as_filter('on_or_before', value)
+    def on_or_before(self, value: Union[datetimeclass, dateclass]):
+        value_str = value.isoformat()
+        return self._wrap_as_filter('on_or_before', value_str)
 
-    def on_or_after(self, value: str):
-        return self._wrap_as_filter('on_or_after', value)
+    def on_or_after(self, value: Union[datetimeclass, dateclass]):
+        value_str = value.isoformat()
+        return self._wrap_as_filter('on_or_after', value_str)
 
     def within_past_week(self):
         return self._wrap_as_filter('past_week', {})

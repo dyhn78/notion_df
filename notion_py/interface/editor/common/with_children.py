@@ -3,8 +3,8 @@ from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 from typing import Iterator, Union, Iterable
 
-from notion_py.interface.editor.common.struct import PointEditor, MasterEditor, Editor
-from notion_py.interface.editor.common.supported import SupportedBlock
+from .struct import PointEditor, MasterEditor, Editor
+from .supported import SupportedBlock
 
 
 class ChildrenBearer(SupportedBlock):
@@ -13,6 +13,7 @@ class ChildrenBearer(SupportedBlock):
                  block_id: str):
         super().__init__(caller, block_id)
         self.caller = caller
+        self.has_children = True
 
     @property
     @abstractmethod
@@ -25,7 +26,11 @@ class ChildrenBearer(SupportedBlock):
 
     @property
     def has_children(self) -> bool:
-        return bool(self.children.iter_all)
+        return self._has_children
+
+    @has_children.setter
+    def has_children(self, value: bool):
+        self._has_children = value
 
     def iter_descendants_with(self, exact_rank_diff: int) \
             -> Iterable[Union[ChildrenBearer, MasterEditor]]:

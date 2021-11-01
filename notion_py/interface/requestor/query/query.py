@@ -11,8 +11,8 @@ class Query(TruthyLongRequestor):
         self.frame = frame
         self._filter_value = EmptyFilter()
 
-        from .filter_maker import QueryFilterAgent
-        self.make_filter = QueryFilterAgent(self)
+        from .filter_maker import QueryFilterMaker
+        self.filter_maker = QueryFilterMaker(self)
 
         from .sort import QuerySort
         self.sort = QuerySort()
@@ -21,8 +21,8 @@ class Query(TruthyLongRequestor):
     def open_filter():
         return EmptyFilter()
 
-    def push_filter(self, query_filter: QueryFilter):
-        self._filter_value = query_filter
+    def push_filter(self, ft: QueryFilter):
+        self._filter_value = ft
 
     def clear_filter(self):
         self._filter_value = EmptyFilter()
@@ -49,7 +49,7 @@ class Query(TruthyLongRequestor):
     @print_response_error
     def _execute_each(self, request_size, start_cursor=None):
         response = self.notion.databases.query(
-            **self.encode()
+            **self.encode(request_size, start_cursor)
         )
         return response
 

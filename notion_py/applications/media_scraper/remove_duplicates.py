@@ -17,9 +17,9 @@ class ReadingDBDuplicateRemover(ReadingDBController):
 
     def make_query(self, request_size):
         query = self.pagelist.open_query()
-        maker = query.make_filter.select_at('media_type')
+        maker = query.filter_maker.select_at('media_type')
         ft_media = maker.equals_to_any(maker.prop_value_groups['book'])
-        # maker = query.make_filter.text_at('title')
+        # maker = query.filter_maker.text_at('title')
         # ft_media &= maker.starts_with('칸트의')
         query.push_filter(ft_media)
         query.save()

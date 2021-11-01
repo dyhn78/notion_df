@@ -1,7 +1,7 @@
 from .inline.page_item import PageItem
-from .inline.text_block import TextItem
+from .inline.text_item import TextItem
 from .tabular.database import Database
-from .tabular.page import PageRow
+from .tabular.page_row import PageRow
 from .tabular.pagelist import PageList
 from ..common import DateFormat, PropertyFrame, PropertyFrameUnit
 from ..requestor import Query

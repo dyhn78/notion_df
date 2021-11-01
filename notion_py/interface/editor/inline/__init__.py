@@ -1,2 +1,2 @@
 from .page_item import PageItem, PageItemContents
-from .text_block import TextItem, TextContents
+from .text_item import TextItem, TextContents

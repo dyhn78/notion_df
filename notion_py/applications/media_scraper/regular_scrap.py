@@ -28,14 +28,14 @@ class ReadingDBScrapController(ReadingDBController):
 
     def make_query(self, request_size):
         query = self.pagelist.open_query()
-        maker = query.make_filter.select_at('media_type')
+        maker = query.filter_maker.select_at('media_type')
         ft_media = maker.equals_to_any(maker.prop_value_groups['book'])
-        maker = query.make_filter.select_at('edit_status')
+        maker = query.filter_maker.select_at('edit_status')
         ft_status = maker.equals_to_any(maker.prop_value_groups['regulars'])
         ft_status |= maker.is_empty()
         ft = ft_media & ft_status
         if self.title:
-            maker = query.make_filter.text_at('title')
+            maker = query.filter_maker.text_at('title')
             ft_title = maker.starts_with(self.title)
             ft &= ft_title
         query.push_filter(ft)

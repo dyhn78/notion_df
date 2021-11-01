@@ -47,6 +47,7 @@ class PropertyFrameUnit:
 class PropertyFrame:
     def __init__(self, *args: Union[PropertyFrame, list[PropertyFrameUnit]]):
         self.units: list[PropertyFrameUnit] = self._flatten(args)
+        self.title_key = ''
 
     @staticmethod
     def _flatten(args):
@@ -105,6 +106,12 @@ class PropertyFrame:
         new_unit.prop_tag = new_tag
         self.append(new_unit)
 
+    def assign_title_key(self, key: str):
+        self.title_key = key
+
+    def assign_title_tag(self, tag: str):
+        self.title_key = self.key_at(tag)
+
     def fetch_parser(self, parser: Union[PageParser, DatabaseParser]):
         for name, data_type in parser.prop_types.items():
             if name in self.by_key:
@@ -112,3 +119,5 @@ class PropertyFrame:
                 frame_unit.prop_type = data_type
             else:
                 self.append(PropertyFrameUnit(name, data_type=data_type))
+        if isinstance(parser, PageParser):
+            self.assign_title_key(parser.title_key)

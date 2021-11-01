@@ -77,7 +77,7 @@ class TextItemsCreateAgent(GroundEditor):
         super().__init__(caller)
         self._requestor = AppendBlockChildren(self)
 
-        from ...inline.text_block import TextItem
+        from ...inline.text_item import TextItem
         self.blocks: list[TextItem] = []
 
     @property
@@ -85,7 +85,7 @@ class TextItemsCreateAgent(GroundEditor):
         return self._requestor
 
     def add(self):
-        from ...inline.text_block import TextItem
+        from ...inline.text_item import TextItem
         child = TextItem.create_new(self)
         self.blocks.append(child)
         self.requestor.append_space()

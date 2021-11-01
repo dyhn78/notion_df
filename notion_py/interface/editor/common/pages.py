@@ -100,5 +100,5 @@ class PagePayload(GroundEditor, metaclass=ABCMeta):
         if parser.page_id:
             self.master_id = parser.page_id
             self.yet_not_created = False
-        self.master.title = parser.title
+        self.caller.title = parser.title
         self.archived = parser.archived

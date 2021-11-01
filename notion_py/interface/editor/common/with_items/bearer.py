@@ -26,15 +26,14 @@ class ItemAttachments(BlockChildren):
     def __init__(self, caller: ItemsBearer):
         super().__init__(caller)
         self.caller = caller
-
-        from .updater import ItemsUpdater
-        self._normal = ItemsUpdater(self)
-
-        from .creator import ItemsCreator
-        self._new = ItemsCreator(self)
-
         self._by_id = {}
         self._by_title = defaultdict(list)
+
+        from .updater import ItemsUpdater
+        self._updater = ItemsUpdater(self)
+
+        from .creator import ItemsCreator
+        self.creator = ItemsCreator(self)
 
     @property
     def by_id(self) -> dict[str, MasterEditor]:
@@ -45,7 +44,7 @@ class ItemAttachments(BlockChildren):
         return self._by_title
 
     def list_all(self) -> list[SupportedBlock]:
-        return self._normal.blocks + self._new.blocks
+        return self._updater.blocks + self.creator.blocks
 
     def iter_all(self) -> Iterator[MasterEditor]:
         return iter(self.list_all())
@@ -54,33 +53,33 @@ class ItemAttachments(BlockChildren):
         gateway = GetBlockChildren(self)
         response = gateway.execute(request_size)
         parser = BlockChildrenParser(response)
-        self._normal.apply_parser(parser)
+        self._updater.apply_parser(parser)
 
     def save_required(self):
-        return (self._normal.save_required()
-                or self._new.save_required())
+        return (self._updater.save_required()
+                or self.creator.save_required())
 
     def save_info(self):
-        return {'children': self._normal.save_info(),
-                'new_children': self._new.save_info()}
+        return {'children': self._updater.save_info(),
+                'new_children': self.creator.save_info()}
 
     def save(self):
-        self._normal.save()
-        new_children = self._new.save()
-        self._normal.blocks.extend(new_children)
-        self._new.clear()
+        self._updater.save()
+        new_children = self.creator.save()
+        self._updater.blocks.extend(new_children)
+        self.creator.clear()
 
     def reads(self):
-        return self._normal.reads()
+        return self._updater.reads()
 
     def reads_rich(self):
-        return self._normal.reads_rich()
+        return self._updater.reads_rich()
 
     def create_text_block(self):
-        return self._new.create_text_item()
+        return self.creator.create_text_item()
 
     def create_page_block(self):
-        return self._new.create_page_item()
+        return self.creator.create_page_item()
 
     def indent_next_block(self) -> ItemAttachments:
         """if not possible, the cursor will stay at its position."""

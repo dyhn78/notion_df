@@ -6,7 +6,7 @@ from typing import Iterator
 
 from notion_client import APIResponseError
 
-from .page import PageRow
+from .page_row import PageRow
 from .database import Database
 from ..common.struct import MasterEditor
 from ..common.with_children import BlockChildren
@@ -21,8 +21,8 @@ class PageList(BlockChildren):
         self.frame = caller.frame
 
         from .pagelist_agents import PageListUpdater, PageListCreator
-        self._normal = PageListUpdater(self)
-        self._new = PageListCreator(self)
+        self._updater = PageListUpdater(self)
+        self._creator = PageListCreator(self)
 
         self._by_id = {}
         self._by_title = defaultdict(list)
@@ -36,7 +36,7 @@ class PageList(BlockChildren):
         return self._by_title
 
     def list_all(self):
-        return self._normal.blocks + self._new.blocks
+        return self._updater.blocks + self._creator.blocks
 
     def iter_all(self) -> Iterator[MasterEditor]:
         return iter(self.list_all())
@@ -50,35 +50,37 @@ class PageList(BlockChildren):
 
     def apply_query_response(self, response):
         parser = PageListParser(response)
-        pages = self._normal.apply_pagelist_parser(parser)
+        pages = self._updater.apply_pagelist_parser(parser)
         return pages
 
     def fetch_a_child(self, page_id: str):
         """returns child page if succeed; returns None if there isn't one."""
-        page = self._normal.open_page(page_id)
+        if page := self.by_id.get(page_id):
+            return page
+        page = self._updater.open_page(page_id)
         try:
             page.props.retrieve()
             return page
         except APIResponseError:
-            self._normal.close_page(page)
+            self._updater.close_page(page)
             del page
             return None
 
     def save_required(self):
-        return (self._normal.save_required()
-                or self._new.save_required())
+        return (self._updater.save_required()
+                or self._creator.save_required())
 
     def save_info(self):
-        return {'pages': self._normal.save_info(),
-                'new_pages': self._new.save_info()}
+        return {'pages': self._updater.save_info(),
+                'new_pages': self._creator.save_info()}
 
     def save(self):
-        self._normal.save()
-        response = self._new.save()
-        self._normal.blocks.extend(response)
+        self._updater.save()
+        response = self._creator.save()
+        self._updater.blocks.extend(response)
 
     def create_page_row(self):
-        return self._new.create_page_row()
+        return self._creator.create_page_row()
 
     def by_idx_value_of(self, prop_key: str):
         try:

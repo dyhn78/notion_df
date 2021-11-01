@@ -1,0 +1,3 @@
+<component name="DependencyValidationManager">
+  <scope name="editor" pattern="file[Notion-py]:notion_py/interface/editor/*||file[Notion-py]:notion_py/interface/editor//*" />
+</component>

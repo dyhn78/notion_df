@@ -1,21 +1,30 @@
-from abc import ABCMeta
-from typing import Optional
+from __future__ import annotations
+from abc import ABCMeta, abstractmethod
 
-from notion_py.interface.editor.common.struct import Editor
-from notion_py.interface.editor.common.struct.agents import GroundEditor
-from notion_py.interface.editor.common.supported import SupportedBlock
 from notion_py.interface.parser import BlockContentsParser
+from .struct import Editor, GroundEditor
+from .supported import SupportedBlock
+from .with_children import ChildrenBearer
 
 
 class ContentsBearer(SupportedBlock, metaclass=ABCMeta):
     def __init__(self, caller: Editor, block_id: str):
         super().__init__(caller, block_id)
         self.caller = caller
-        self.contents: Optional[BlockContents] = None
 
     @property
     def payload(self):
         return self.contents
+
+    @property
+    @abstractmethod
+    def contents(self) -> BlockContents:
+        pass
+
+    @contents.setter
+    @abstractmethod
+    def contents(self, value):
+        pass
 
     def reads(self):
         return {'contents': self.contents.reads()}
@@ -46,3 +55,6 @@ class BlockContents(GroundEditor, metaclass=ABCMeta):
             self.yet_not_created = False
         self._read_plain = parser.read_plain
         self._read_rich = parser.read_rich
+        master = self.master
+        if isinstance(master, ChildrenBearer):
+            master.has_children = parser.has_children

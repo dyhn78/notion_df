@@ -3,7 +3,7 @@ from __future__ import annotations
 from notion_py.interface import RootEditor
 from notion_py.interface.utility import stopwatch
 from .common.query_maker import query_within_date_range
-from .frame import MatchFrames
+from notion_py.applications.prop_matcher.common.frame import MatchFrames
 from ..database_info import DatabaseInfo
 from ...interface.editor.tabular import PageList, PageRow
 
@@ -18,15 +18,11 @@ class PropertySyncResolver:
     def execute(self):
         self.make_query()
         self.edit()
-        self.apply_results()
+        self.root.save()
 
     def make_query(self):
         for pagelist in [self.journals]:
             query_within_date_range(pagelist, 'index_as_domain', self.date_range)
-
-    def apply_results(self):
-        for pagelist in [self.journals]:
-            pagelist.save()
 
     def edit(self):
         for pagelist in [self.journals]:

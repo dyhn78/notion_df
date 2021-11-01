@@ -98,7 +98,7 @@ class GetBlockChildren(TruthyLongRequestor):
     @print_response_error
     def _execute_each(self, request_size, start_cursor=None):
         return self.notion.blocks.children.list(
-            **self.encode()
+            **self.encode(request_size, start_cursor)
         )
 
     def print_comments(self):

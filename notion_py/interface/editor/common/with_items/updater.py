@@ -3,8 +3,9 @@ from typing import Union
 from notion_py.interface.editor.common.supported import SupportedBlock
 from notion_py.interface.editor.inline.unsupported import UnsupportedBlock
 from notion_py.interface.parser import BlockChildrenParser
-from . import ItemAttachments
+from .bearer import ItemAttachments
 from ..struct.agents import ListEditor
+from ..with_contents import ContentsBearer
 
 
 class ItemsUpdater(ListEditor):
@@ -31,6 +32,6 @@ class ItemsUpdater(ListEditor):
         for parser in children_parser:
             block_type = get_type_of_block_parser(parser)
             child = block_type(self, parser.block_id)
-            if child.is_supported_type:
+            if isinstance(child, ContentsBearer):
                 child.contents.apply_block_parser(parser)
             self.blocks.append(child)

@@ -18,6 +18,10 @@ class PropertyEncoder(ValueCarrier, metaclass=ABCMeta):
     def prop_value(self):
         pass
 
+    @abstractmethod
+    def plain_form(self) -> str:
+        pass
+
     def __bool__(self):
         return bool(self.encode())
 
@@ -38,11 +42,18 @@ class RichTextPropertyEncoder(PropertyEncoder, RichTextObjectEncoder):
     def prop_value(self):
         return RichTextObjectEncoder.encode(self)
 
+    def plain_form(self):
+        return RichTextObjectEncoder.plain_form(self)
+
 
 class FilesPropertyEncoder(PropertyEncoder):
     def __init__(self, prop_name):
         PropertyEncoder.__init__(self, prop_name=prop_name, value_type='files')
         self._prop_value = []
+        self._plain_form = []
+
+    def plain_form(self):
+        return ''.join(self._plain_form)
 
     def add_file(self, file_name: str, file_url: str):
         new_value = {
@@ -51,6 +62,7 @@ class FilesPropertyEncoder(PropertyEncoder):
             "external": {'url': file_url}
         }
         self._prop_value.append(new_value)
+        self._plain_form.append(file_name)
 
     @property
     def prop_value(self):
@@ -64,6 +76,9 @@ class SimplePropertyEncoder(PropertyEncoder):
 
     @property
     def prop_value(self):
+        return self._prop_value
+
+    def plain_form(self):
         return self._prop_value
 
     @classmethod
@@ -112,4 +127,4 @@ class SimplePropertyEncoder(PropertyEncoder):
     @classmethod
     def date(cls, prop_name, value: DateFormat):
         prop_value = value.make_isoformat()
-        return cls('date', prop_name, prop_value)
+        return cls(prop_name, 'date', prop_value)

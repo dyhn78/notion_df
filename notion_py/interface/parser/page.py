@@ -43,20 +43,21 @@ class PageParser:
     def __init__(self, page_id: str, archived=False):
         self.page_id = page_id
         self.archived = archived
-        self.prop_types: dict[str, str] = {}  # {prop_name: prop_type for prop_name in _}
-        self.prop_ids: dict[str, str] = {}  # {prop_name: prop_id for prop_name in _}
-        self.prop_values: dict[str, Any] = {}  # {prop_name: prop_value for prop_name ..}
+        self.prop_types: dict[str, str] = {}  # {prop_key: prop_type for prop_key in _}
+        self.prop_ids: dict[str, str] = {}  # {prop_key: prop_id for prop_key in _}
+        self.prop_values: dict[str, Any] = {}  # {prop_key: prop_value for prop_key ..}
         self.prop_rich_values = {}
         self.title = ''
+        self.title_key = ''
         self._current_prop_type = ''
 
     @classmethod
     def parse_retrieve(cls, response: dict):
         self = cls(response['id'], response['archived'])
-        for prop_name, rich_property_object in response['properties'].items():
+        for prop_key, rich_property_object in response['properties'].items():
             try:
-                self.prop_values[prop_name] = \
-                    self.parser_unit(rich_property_object, prop_name)
+                self.prop_values[prop_key] = \
+                    self.parser_unit(rich_property_object, prop_key)
             except TypeError as type_error:
                 print(rich_property_object)
                 raise type_error
@@ -70,9 +71,9 @@ class PageParser:
     def parse_query_frag(cls, response_frag: dict):
         return cls.parse_retrieve(response_frag)
 
-    def parser_unit(self, rich_property_object, prop_name: str):
+    def parser_unit(self, rich_property_object, prop_key: str):
         try:
-            self.prop_ids[prop_name] = rich_property_object['id']
+            self.prop_ids[prop_key] = rich_property_object['id']
         except (KeyError, AttributeError):
             """
             this mainly deals with formulas.
@@ -92,14 +93,14 @@ class PageParser:
             = getattr(self, parser_name, lambda x: x)
         sig = signature(parser)
         length = len(sig.parameters)
-        args = [prop_object, prop_name, prop_type][:length]
+        args = [prop_object, prop_key, prop_type][:length]
         result = parser(*args)
 
-        self.prop_types[prop_name] = self._current_prop_type
+        self.prop_types[prop_key] = self._current_prop_type
         return result
 
-    def _parse_formula(self, prop_object, prop_name):
-        return self.parser_unit(prop_object, prop_name)
+    def _parse_formula(self, prop_object, prop_key):
+        return self.parser_unit(prop_object, prop_key)
 
     @staticmethod
     def _parse_auto_date(prop_object):
@@ -114,15 +115,16 @@ class PageParser:
             return DateFormat()
         return DateFormat.from_isoformat(prop_object['start'], prop_object['end'])
 
-    def _parse_text(self, prop_object, prop_name, prop_type):
+    def _parse_text(self, prop_object, prop_key, prop_type):
         plain_text, rich_text = parse_rich_texts(prop_object)
-        self.prop_rich_values[prop_name] = rich_text
+        self.prop_rich_values[prop_key] = rich_text
         if prop_type == 'title':
             self.title = plain_text
+            self.title_key = prop_key
             self._current_prop_type = 'title'
         return plain_text
 
-    def _parse_rollup(self, prop_object, prop_name):
+    def _parse_rollup(self, prop_object, prop_key):
         value_type = prop_object['type']
 
         try:
@@ -131,7 +133,7 @@ class PageParser:
             return None
 
         try:
-            result = [self.parser_unit(rollup_element, prop_name)
+            result = [self.parser_unit(rollup_element, prop_key)
                       for rollup_element in rollup_merged]
             return sorted(result)
             # result.sort(key=lambda x: x[sorted(x.keys())[0]])

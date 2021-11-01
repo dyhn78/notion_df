@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typing import Union
 
 from notion_py.interface.encoder import (
@@ -18,14 +19,22 @@ class PageItem(PageBlock, ContentsBearer):
                                PageItemCreateAgent],
                  page_id: str,
                  yet_not_created=False):
-        super().__init__(caller, page_id)
+        PageBlock.__init__(self, caller, page_id, yet_not_created)
+        ContentsBearer.__init__(self, caller, page_id)
+        self._contents = PageItemContents(self)
         self.caller = caller
-        self.yet_not_created = yet_not_created
-        self.contents = PageItemContents(self)
 
     @property
-    def payload(self):
+    def payload(self) -> PageItemContents:
         return self.contents
+
+    @property
+    def contents(self) -> PageItemContents:
+        return self._contents
+
+    @contents.setter
+    def contents(self, value: PageItemContents):
+        self._contents = value
 
     @classmethod
     def create_new(cls, caller: PageItemCreateAgent):
@@ -76,6 +85,8 @@ class PageItemContents(PagePayload, BlockContents, PageContentsWriter):
             -> RichTextPropertyEncoder:
         overwrite = self.root.enable_overwrite or eval_empty(self.reads())
         if overwrite:
+            # this is always title
+            self.caller.title = carrier.plain_form()
             return self.requestor.apply_prop(carrier)
         else:
             return carrier

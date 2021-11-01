@@ -54,7 +54,7 @@ class RootEditor(Editor):
 
     def open_tabular_page(self, id_or_url: str,
                           frame: Optional[PropertyFrame] = None):
-        from .tabular.page import PageRow
+        from .tabular.page_row import PageRow
         page_id = page_url_to_id(id_or_url)
         page = PageRow(self, page_id, frame=frame)
         self.top_editors.append(page)
@@ -68,7 +68,7 @@ class RootEditor(Editor):
         return page
 
     def open_text_block(self, id_or_url: str):
-        from .inline.text_block import TextItem
+        from .inline.text_item import TextItem
         block_id = page_url_to_id(id_or_url)
         editor = TextItem(self, block_id)
         self.top_editors.append(editor)

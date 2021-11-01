@@ -9,7 +9,7 @@ class PageListUpdater(ListEditor):
         self.caller = caller
         self.frame = caller.frame
 
-        from .page import PageRow
+        from .page_row import PageRow
         self._values: list[PageRow] = []
 
     @property
@@ -30,13 +30,13 @@ class PageListUpdater(ListEditor):
         return page
 
     def open_page(self, page_id: str):
-        from .page import PageRow
+        from .page_row import PageRow
         page = PageRow(caller=self, page_id=page_id, frame=self.frame)
         self.blocks.append(page)
         return page
 
     def close_page(self, page):
-        from .page import PageRow
+        from .page_row import PageRow
         assert isinstance(page, PageRow)
         # this will de-register the page from the pagelist.
         page.title = ''
@@ -46,7 +46,7 @@ class PageListUpdater(ListEditor):
 
 class PageListCreator(ListEditor):
     def __init__(self, caller: PageList):
-        from .page import PageRow
+        from .page_row import PageRow
         super().__init__(caller)
         self.caller = caller
         self.frame = self.caller.frame
@@ -57,7 +57,7 @@ class PageListCreator(ListEditor):
         return self._values
 
     def create_page_row(self):
-        from .page import PageRow
+        from .page_row import PageRow
         page = PageRow.create_new(self)
         self.blocks.append(page)
         assert id(page) == id(self.blocks[-1])

@@ -31,7 +31,7 @@ class TopologyBuilder:
     def make_query(self):
         for pagelist in [self.themes]:
             query = pagelist.open_query()
-            maker = query.make_filter.relation_at('front_self')
+            maker = query.filter_maker.relation_at('front_self')
             ft = maker.__bool__()
             query.push_filter(ft)
             query.save()

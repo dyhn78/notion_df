@@ -55,7 +55,7 @@ class LongRequestor(PointRequestor):
         if request_size == 0:
             request_size = self.INF
 
-        while self.has_more and request_size > self.response_size:
+        while self.has_more and (request_size > self.response_size):
             req_size = min(request_size - self.response_size,
                            self.MAX_PAGE_SIZE)
             # noinspection PyArgumentList
@@ -93,7 +93,7 @@ def drop_empty_request(method: Callable):
 
     return wrapper
 
-
+# JSONDecodeError 처리 로직 추가
 def print_response_error(func: Callable):
     def wrapper(self: PointRequestor, **kwargs):
         try:

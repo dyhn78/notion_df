@@ -10,12 +10,12 @@ class ReadingDBStatusResolver(ReadingDBController):
 
     def make_query(self, request_size):
         query = self.pagelist.open_query()
-        maker = query.make_filter.select_at('media_type')
+        maker = query.filter_maker.select_at('media_type')
         ft = maker.equals_to_any(maker.prop_value_groups['book'])
-        maker = query.make_filter.select_at('edit_status')
+        maker = query.filter_maker.select_at('edit_status')
         ft &= maker.equals_to_any(maker.prop_value_groups['need_resets'])
         """
-        maker = query.make_filter.checkbox_at('not_available')
+        maker = query.filter_maker.checkbox_at('not_available')
         ft |= maker.equals(True)
         """
         query.push_filter(ft)
