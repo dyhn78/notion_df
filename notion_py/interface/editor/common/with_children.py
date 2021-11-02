@@ -4,16 +4,19 @@ from abc import ABCMeta, abstractmethod
 from typing import Iterator, Union, Iterable
 
 from .struct import PointEditor, MasterEditor, Editor
-from .supported import SupportedBlock
 
 
-class ChildrenBearer(SupportedBlock):
+class ChildrenBearer(MasterEditor):
     @abstractmethod
     def __init__(self, caller: Union[PointEditor, Editor],
                  block_id: str):
         super().__init__(caller, block_id)
         self.caller = caller
         self.has_children = True
+
+    @property
+    def is_supported_type(self) -> bool:
+        return True
 
     @property
     @abstractmethod

@@ -35,11 +35,6 @@ class PageItem(PageBlock, ContentsBearer):
     def contents(self, value: PageItemContents):
         self._contents = value
 
-    @classmethod
-    def create_new(cls, caller: PageItemCreateAgent):
-        self = cls(caller, '')
-        return self
-
     @property
     def master_name(self):
         return self.title

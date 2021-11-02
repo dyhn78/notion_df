@@ -17,13 +17,6 @@ class PageRow(PageBlock):
         from .page_row_props import PageRowProperty
         self.props = PageRowProperty(caller=self)
 
-    @classmethod
-    def create_new(cls, caller):
-        from .pagelist_agents import PageListCreator
-        assert isinstance(caller, PageListCreator)
-        self = cls(caller, '', caller.frame)
-        return self
-
     @property
     def payload(self):
         return self.props

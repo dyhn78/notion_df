@@ -1,9 +1,8 @@
 from typing import Union
 
-from notion_py.interface.editor.common.supported import SupportedBlock
-from notion_py.interface.editor.inline.unsupported import UnsupportedBlock
 from notion_py.interface.parser import BlockChildrenParser
 from .bearer import ItemAttachments
+from ..struct import MasterEditor
 from ..struct.agents import ListEditor
 from ..with_contents import ContentsBearer
 
@@ -15,7 +14,7 @@ class ItemsUpdater(ListEditor):
         self._values = []
 
     @property
-    def blocks(self) -> list[Union[SupportedBlock, UnsupportedBlock]]:
+    def blocks(self) -> list[Union[MasterEditor]]:
         return self._values
 
     def __iter__(self):

@@ -58,7 +58,7 @@ class PageListCreator(ListEditor):
 
     def create_page_row(self):
         from .page_row import PageRow
-        page = PageRow.create_new(self)
+        page = PageRow(self, '', self.frame)
         self.blocks.append(page)
         assert id(page) == id(self.blocks[-1])
         return page

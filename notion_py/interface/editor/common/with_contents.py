@@ -4,16 +4,19 @@ from abc import ABCMeta, abstractmethod
 from typing import Union
 
 from notion_py.interface.parser import BlockContentsParser
-from .struct import GroundEditor, PointEditor
-from .supported import SupportedBlock
+from .struct import GroundEditor, PointEditor, MasterEditor
 from .with_children import ChildrenBearer
 from ..root_editor import RootEditor
 
 
-class ContentsBearer(SupportedBlock, metaclass=ABCMeta):
+class ContentsBearer(MasterEditor, metaclass=ABCMeta):
     def __init__(self, caller: Union[RootEditor, PointEditor], block_id: str):
         super().__init__(caller, block_id)
         self.caller = caller
+
+    @property
+    def is_supported_type(self) -> bool:
+        return True
 
     @property
     def payload(self):

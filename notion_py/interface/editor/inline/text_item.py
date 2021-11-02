@@ -13,13 +13,14 @@ from ..root_editor import RootEditor
 
 
 # TODO > Can-Have-Children 을 동적으로 바꿀 수 있을까?
-class TextItem(ContentsBearer, ItemsBearer):
+class TextItem(ItemsBearer, ContentsBearer):
     def __init__(self,
                  caller: Union[TextItemsCreateAgent,
                                ItemsUpdater,
                                RootEditor],
                  block_id: str):
-        super().__init__(caller, block_id)
+        ItemsBearer.__init__(self, caller, block_id)
+        ContentsBearer.__init__(self, caller, block_id)
         self.caller = caller
         self.contents = TextContents(self)
 
@@ -34,11 +35,6 @@ class TextItem(ContentsBearer, ItemsBearer):
     def save_required(self) -> bool:
         return (self.contents.save_required() or
                 self.attachments.save_required())
-
-    @classmethod
-    def create_new(cls, caller: TextItemsCreateAgent):
-        self = cls(caller, '')
-        return self
 
     @property
     def master_name(self):
@@ -80,6 +76,8 @@ class TextContents(BlockContents, TextContentsWriter):
         super().__init__(caller)
         self.caller = caller
         self._requestor = UpdateBlock(self)
+        if self.yet_not_created:
+            self.write_paragraph('')
 
     @property
     def requestor(self) -> UpdateBlock:

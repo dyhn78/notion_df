@@ -8,7 +8,6 @@ from notion_py.interface.editor.common.with_children import ChildrenBearer, Bloc
 from notion_py.interface.parser import BlockChildrenParser
 from notion_py.interface.requestor import GetBlockChildren
 from ..struct import PointEditor, MasterEditor, Editor
-from ..supported import SupportedBlock
 
 
 class ItemsBearer(ChildrenBearer, metaclass=ABCMeta):
@@ -43,7 +42,7 @@ class ItemAttachments(BlockChildren):
     def by_title(self) -> dict[str, list[MasterEditor]]:
         return self._by_title
 
-    def list_all(self) -> list[SupportedBlock]:
+    def list_all(self) -> list[MasterEditor]:
         return self._updater.blocks + self.creator.blocks
 
     def iter_all(self) -> Iterator[MasterEditor]:

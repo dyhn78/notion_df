@@ -75,8 +75,9 @@ class MasterEditor(PointEditor):
         pass
 
     @property
+    @abstractmethod
     def is_supported_type(self) -> bool:
-        return False
+        pass
 
     @property
     def can_have_children(self) -> bool:

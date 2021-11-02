@@ -86,7 +86,7 @@ class TextItemsCreateAgent(GroundEditor):
 
     def add(self):
         from ...inline.text_item import TextItem
-        child = TextItem.create_new(self)
+        child = TextItem(self, '')
         self.blocks.append(child)
         self.requestor.append_space()
         return child
@@ -110,7 +110,7 @@ class PageItemCreateAgent(AdaptiveEditor):
         self.caller = caller
 
         from ...inline.page_item import PageItem
-        self.block = PageItem.create_new(self)
+        self.block = PageItem(self, '')
 
     @property
     def value(self):
