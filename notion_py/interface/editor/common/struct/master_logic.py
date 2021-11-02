@@ -56,20 +56,18 @@ class PointEditor(Editor, metaclass=ABCMeta):
     @property
     def yet_not_created(self):
         return self.master.yet_not_created
-
-    @yet_not_created.setter
-    def yet_not_created(self, value: bool):
-        self.master.yet_not_created = value
+    #
+    # @yet_not_created.setter
+    # def yet_not_created(self, value: bool):
+    #     self.master.yet_not_created = value
 
 
 class MasterEditor(PointEditor):
     def __init__(self, caller: Editor, master_id: str):
         super().__init__(caller)
-        self._master_id = ''
         self.master_id = master_id
-
-        self._archived = False
-        self._yet_not_created = False
+        self.archived = False
+        # self._yet_not_created = None
 
     @property
     @abstractmethod
@@ -98,7 +96,10 @@ class MasterEditor(PointEditor):
 
     @master_id.setter
     def master_id(self, value: str):
-        old_value = self.master_id
+        try:
+            old_value = self.master_id
+        except AttributeError:
+            old_value = ''
         self._master_id = value
 
         # register to root
@@ -164,13 +165,20 @@ class MasterEditor(PointEditor):
 
     @property
     def yet_not_created(self):
-        return self._yet_not_created
+        return self.master_id == ''
 
-    @yet_not_created.setter
-    def yet_not_created(self, value: bool):
-        if value:
-            assert not self.master_id
-        self._yet_not_created = value
+    # @property
+    # def yet_not_created(self):
+    #     res = self._yet_not_created
+    #     return False if res is None else res
+    #
+    # @yet_not_created.setter
+    # def yet_not_created(self, value: Optional[bool]):
+    #     if value is None:
+    #         return
+    #     if value:
+    #         assert not self.master_id
+    #     self._yet_not_created = value
 
     @archived.setter
     def archived(self, value: bool):

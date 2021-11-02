@@ -101,7 +101,7 @@ class TextItemsCreateAgent(GroundEditor):
         parsers = BlockChildrenParser(response)
         for child, parser in zip(self.blocks, parsers):
             child.contents.apply_block_parser(parser)
-            child.save()
+            child.save_this()
 
 
 class PageItemCreateAgent(AdaptiveEditor):

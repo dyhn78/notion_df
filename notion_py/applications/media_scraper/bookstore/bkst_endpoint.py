@@ -85,7 +85,7 @@ class BookstoreScraper:
                                  file_url=cover_image)
 
     def set_contents_data(self, data: dict):
-        contents = data['contents']
+        contents = data.get('contents', [])
         subpage = self.get_subpage()
         remove_dummy_blocks(subpage)
         AppendContents(subpage, contents).execute()
@@ -98,10 +98,6 @@ class BookstoreScraper:
             if isinstance(block, PageItem) and \
                     self.page.title in block.contents.reads():
                 subpage = block
-                # print(block.master_name)
-                # print(block.master_url)
-                # print(f"<{block.master_id}>")
-                # continue
                 break
         else:
             subpage = self.page.attachments.create_page_item()

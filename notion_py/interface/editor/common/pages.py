@@ -12,11 +12,9 @@ from ..root_editor import RootEditor
 
 class PageBlock(ItemsBearer):
     def __init__(self, caller: Union[RootEditor, PointEditor],
-                 page_id: str,
-                 yet_not_created=False):
+                 page_id: str):
         super().__init__(caller, page_id)
         self.caller = caller
-        self.yet_not_created = yet_not_created
         self._title = ''
 
     @property
@@ -72,17 +70,17 @@ class PagePayload(GroundEditor, metaclass=ABCMeta):
     def requestor(self, value):
         pass
 
-    def archive(self):
-        self.requestor.archive()
-
-    def un_archive(self):
-        self.requestor.un_archive()
-
     def retrieve(self):
         requestor = RetrievePage(self)
         response = requestor.execute()
         parser = PageParser.parse_retrieve(response)
         self.apply_page_parser(parser)
+
+    def apply_page_parser(self, parser: PageParser):
+        if parser.page_id:
+            self.master_id = parser.page_id
+        self.caller.title = parser.title
+        self.archived = parser.archived
 
     def save(self):
         if self.yet_not_created:
@@ -96,9 +94,8 @@ class PagePayload(GroundEditor, metaclass=ABCMeta):
             #  2. update PageParser yourself without response
         self.requestor = UpdatePage(self)
 
-    def apply_page_parser(self, parser: PageParser):
-        if parser.page_id:
-            self.master_id = parser.page_id
-            self.yet_not_created = False
-        self.caller.title = parser.title
-        self.archived = parser.archived
+    def archive(self):
+        self.requestor.archive()
+
+    def un_archive(self):
+        self.requestor.un_archive()

@@ -17,12 +17,11 @@ class PageItem(PageBlock, ContentsBearer):
                  caller: Union[RootEditor,
                                ItemsUpdater,
                                PageItemCreateAgent],
-                 page_id: str,
-                 yet_not_created=False):
-        PageBlock.__init__(self, caller, page_id, yet_not_created)
+                 page_id: str):
+        PageBlock.__init__(self, caller, page_id)
         ContentsBearer.__init__(self, caller, page_id)
-        self._contents = PageItemContents(self)
         self.caller = caller
+        self._contents = PageItemContents(self)
 
     @property
     def payload(self) -> PageItemContents:
@@ -38,7 +37,7 @@ class PageItem(PageBlock, ContentsBearer):
 
     @classmethod
     def create_new(cls, caller: PageItemCreateAgent):
-        self = cls(caller, '', yet_not_created=True)
+        self = cls(caller, '')
         return self
 
     @property

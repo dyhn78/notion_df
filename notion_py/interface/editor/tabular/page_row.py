@@ -9,12 +9,10 @@ from ..root_editor import RootEditor
 class PageRow(PageBlock):
     def __init__(self, caller: Union[RootEditor, PointEditor],
                  page_id: str,
-                 yet_not_created=False,
                  frame: Optional[PropertyFrame] = None):
-        super().__init__(caller, page_id, yet_not_created)
+        super().__init__(caller, page_id)
         self.caller = caller
         self.frame = frame if frame else PropertyFrame()
-        self.title = ''
 
         from .page_row_props import PageRowProperty
         self.props = PageRowProperty(caller=self)
@@ -23,7 +21,7 @@ class PageRow(PageBlock):
     def create_new(cls, caller):
         from .pagelist_agents import PageListCreator
         assert isinstance(caller, PageListCreator)
-        self = cls(caller, '', True, caller.frame)
+        self = cls(caller, '', caller.frame)
         return self
 
     @property
@@ -39,13 +37,10 @@ class PageRow(PageBlock):
                 'children': self.attachments.save_info()}
 
     def save(self):
-        # print('#######'
-        #       f'{self.title}  '
-        #       f'self.props: {self.props.has_updates()}  '
-        #       f'self.attachments: {self.attachments.has_updates()}  ')
         self.props.save()
-        if not self.archived:
-            self.attachments.save()
+        if self.archived:
+            return
+        self.attachments.save()
 
     def reads(self):
         return {'type': 'page',
