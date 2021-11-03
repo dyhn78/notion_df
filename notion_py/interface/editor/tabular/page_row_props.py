@@ -42,13 +42,12 @@ class PageRowProperty(PagePayload, PageRowPropertybyKey):
 
     def push_carrier(self, prop_key: str, carrier: PropertyEncoder) \
             -> PropertyEncoder:
-        overwrite = self.root.enable_overwrite or eval_empty(self.read_of(prop_key))
-        if overwrite:
-            if prop_key == self.frame.title_key:
-                self.caller.title = carrier.plain_form()
-            return self.requestor.apply_prop(carrier)
-        else:
+        writeable = self.root.enable_overwrite or eval_empty(self.read_of(prop_key))
+        if not writeable:
             return carrier
+        if prop_key == self.frame.title_key:
+            self._set_title(carrier.plain_form())
+        return self.requestor.apply_prop(carrier)
 
     def read_of(self, prop_key: str):
         self._assert_string_key(prop_key)
@@ -124,8 +123,8 @@ class PageRowProperty(PagePayload, PageRowPropertybyKey):
 
 
 """
-class PageRowProperty(PointEditor):
-    def __init__(self, caller: PointEditor):
+class PageRowProperty(BlockEditor):
+    def __init__(self, caller: BlockEditor):
         super().__init__(caller)
         self.caller = caller
         self.frame = caller.frame if hasattr(caller, 'frame') else PropertyFrame()

@@ -43,9 +43,12 @@ class PageParser:
     def __init__(self, page_id: str, archived=False):
         self.page_id = page_id
         self.archived = archived
-        self.prop_types: dict[str, str] = {}  # {prop_key: prop_type for prop_key in _}
-        self.prop_ids: dict[str, str] = {}  # {prop_key: prop_id for prop_key in _}
-        self.prop_values: dict[str, Any] = {}  # {prop_key: prop_value for prop_key ..}
+        self.prop_types \
+            : dict[str, str] = {}  # {prop_key: prop_type for prop_key in _}
+        self.prop_ids \
+            : dict[str, str] = {}  # {prop_key: prop_id for prop_key in _}
+        self.prop_values \
+            : dict[str, Any] = {}  # {prop_key: prop_value for prop_key in _}
         self.prop_rich_values = {}
         self.title = ''
         self.title_key = ''

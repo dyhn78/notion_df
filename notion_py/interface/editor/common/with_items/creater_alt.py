@@ -1,14 +1,14 @@
 # from typing import Union
 #
 # from notion_py.interface.common.struct import Requestor
-# from ...struct import GroundEditor, PointEditor
+# from ...struct import GroundEditor, BlockEditor
 # from notion_py.interface.encoder import RichTextContentsEncoder
 # from notion_py.interface.parser import BlockChildrenParser
 # from notion_py.interface.requestor import AppendBlockChildren
 #
 #
 # class BlockSphereCreatorWithChildInlinePage(GroundEditor):
-#     def __init__(self, caller: PointEditor):
+#     def __init__(self, caller: BlockEditor):
 #         requestor = AppendBlockChildren(self)
 #         super().__init__(caller)
 #         self.caller = caller

@@ -7,8 +7,8 @@ from notion_py.interface.utility import page_id_to_url
 from .base import Editor
 
 
-class PointEditor(Editor, metaclass=ABCMeta):
-    def __init__(self, caller: Union[PointEditor, Editor]):
+class BlockEditor(Editor, metaclass=ABCMeta):
+    def __init__(self, caller: Union[BlockEditor, Editor]):
         self.caller = caller
         super().__init__(caller.root)
 
@@ -49,10 +49,6 @@ class PointEditor(Editor, metaclass=ABCMeta):
     def archived(self):
         return self.master.archived
 
-    @archived.setter
-    def archived(self, value: bool):
-        self.master.archived = value
-
     @property
     def yet_not_created(self):
         return self.master.yet_not_created
@@ -62,16 +58,15 @@ class PointEditor(Editor, metaclass=ABCMeta):
     #     self.master.yet_not_created = value
 
 
-class MasterEditor(PointEditor):
+class MasterEditor(BlockEditor):
     def __init__(self, caller: Editor, master_id: str):
         super().__init__(caller)
         self.master_id = master_id
-        self.archived = False
         # self._yet_not_created = None
 
     @property
     @abstractmethod
-    def payload(self):
+    def payload(self) -> PayloadEditor:
         pass
 
     @property
@@ -162,28 +157,11 @@ class MasterEditor(PointEditor):
 
     @property
     def archived(self):
-        return self._archived
+        return self.payload.archived
 
     @property
     def yet_not_created(self):
         return self.master_id == ''
-
-    # @property
-    # def yet_not_created(self):
-    #     res = self._yet_not_created
-    #     return False if res is None else res
-    #
-    # @yet_not_created.setter
-    # def yet_not_created(self, value: Optional[bool]):
-    #     if value is None:
-    #         return
-    #     if value:
-    #         assert not self.master_id
-    #     self._yet_not_created = value
-
-    @archived.setter
-    def archived(self, value: bool):
-        self._archived = value
 
     @abstractmethod
     def reads(self):
@@ -211,3 +189,16 @@ class MasterEditor(PointEditor):
             therefore, it first send the response without processing itself,
             so that the master deals with its reset task instead.
         """
+
+
+class PayloadEditor(BlockEditor, metaclass=ABCMeta):
+    def __init__(self, caller: Union[BlockEditor, Editor]):
+        super().__init__(caller)
+        self._archived = None
+
+    @property
+    def archived(self):
+        return self._archived if self._archived is not None else False
+
+    def _set_archived(self, value: bool):
+        self._archived = value

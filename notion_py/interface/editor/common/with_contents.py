@@ -4,13 +4,13 @@ from abc import ABCMeta, abstractmethod
 from typing import Union
 
 from notion_py.interface.parser import BlockContentsParser
-from .struct import GroundEditor, PointEditor, MasterEditor
+from .struct import GroundEditor, BlockEditor, MasterEditor, PayloadEditor
 from .with_children import ChildrenBearer
 from ..root_editor import RootEditor
 
 
 class ContentsBearer(MasterEditor, metaclass=ABCMeta):
-    def __init__(self, caller: Union[RootEditor, PointEditor], block_id: str):
+    def __init__(self, caller: Union[RootEditor, BlockEditor], block_id: str):
         super().__init__(caller, block_id)
         self.caller = caller
 
@@ -42,7 +42,7 @@ class ContentsBearer(MasterEditor, metaclass=ABCMeta):
         return {'contents': self.contents.save_info()}
 
 
-class BlockContents(GroundEditor, metaclass=ABCMeta):
+class BlockContents(PayloadEditor, GroundEditor, metaclass=ABCMeta):
     def __init__(self, caller: ContentsBearer):
         super().__init__(caller)
         self.caller = caller

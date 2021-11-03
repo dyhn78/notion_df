@@ -5,17 +5,17 @@ from typing import Union
 
 from notion_py.interface.parser import PageParser
 from notion_py.interface.requestor import CreatePage, UpdatePage, RetrievePage
-from .struct import PointEditor, GroundEditor
+from .struct import BlockEditor, GroundEditor
+from .struct.master_logic import PayloadEditor
 from .with_items import ItemsBearer
 from ..root_editor import RootEditor
 
 
 class PageBlock(ItemsBearer):
-    def __init__(self, caller: Union[RootEditor, PointEditor],
+    def __init__(self, caller: Union[RootEditor, BlockEditor],
                  page_id: str):
         super().__init__(caller, page_id)
         self.caller = caller
-        self._title = ''
 
     @property
     @abstractmethod
@@ -32,33 +32,14 @@ class PageBlock(ItemsBearer):
 
     @property
     def title(self):
-        return self._title
-
-    @title.setter
-    def title(self, value: str):
-        old_value = self.title
-        self._title = value
-
-        # register to root
-        register_point = self.root.by_title
-        if old_value:
-            register_point[old_value].remove(self)
-        if value:
-            register_point[value].append(self)
-
-        # register to parent
-        if self.parent:
-            register_point = self.parent.children.by_title
-            if old_value:
-                register_point[old_value].remove(self)
-            if value:
-                register_point[value].append(self)
+        return self.payload.title
 
 
-class PagePayload(GroundEditor, metaclass=ABCMeta):
+class PagePayload(PayloadEditor, GroundEditor, metaclass=ABCMeta):
     def __init__(self, caller: PageBlock):
         super().__init__(caller)
         self.caller = caller
+        self._title = ''
 
     @property
     @abstractmethod
@@ -76,12 +57,6 @@ class PagePayload(GroundEditor, metaclass=ABCMeta):
         parser = PageParser.parse_retrieve(response)
         self.apply_page_parser(parser)
 
-    def apply_page_parser(self, parser: PageParser):
-        if parser.page_id:
-            self.master_id = parser.page_id
-        self.caller.title = parser.title
-        self.archived = parser.archived
-
     def save(self):
         if self.yet_not_created:
             response = self.requestor.execute()
@@ -94,8 +69,37 @@ class PagePayload(GroundEditor, metaclass=ABCMeta):
             #  2. update PageParser yourself without response
         self.requestor = UpdatePage(self)
 
+    def apply_page_parser(self, parser: PageParser):
+        if parser.page_id:
+            self.master_id = parser.page_id
+        self._set_title(parser.title)
+        self._set_archived(parser.archived)
+
     def archive(self):
         self.requestor.archive()
 
     def un_archive(self):
         self.requestor.un_archive()
+
+    @property
+    def title(self):
+        return self._title
+
+    def _set_title(self, value: str):
+        old_value = self.title
+        self._title = value
+
+        # register to root
+        register_point = self.root.by_title
+        if old_value:
+            register_point[old_value].remove(self)
+        if value:
+            register_point[value].append(self)
+
+        # register to parent
+        if self.parent:
+            register_point = self.parent.children.by_title
+            if old_value:
+                register_point[old_value].remove(self)
+            if value:
+                register_point[value].append(self)

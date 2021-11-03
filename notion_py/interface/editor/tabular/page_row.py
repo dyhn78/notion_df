@@ -2,12 +2,12 @@ from typing import Union, Optional
 
 from notion_py.interface.common import PropertyFrame
 from ..common.pages import PageBlock
-from ..common.struct import PointEditor
+from ..common.struct import BlockEditor
 from ..root_editor import RootEditor
 
 
 class PageRow(PageBlock):
-    def __init__(self, caller: Union[RootEditor, PointEditor],
+    def __init__(self, caller: Union[RootEditor, BlockEditor],
                  page_id: str,
                  frame: Optional[PropertyFrame] = None):
         super().__init__(caller, page_id)

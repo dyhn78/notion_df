@@ -77,10 +77,9 @@ class PageItemContents(PagePayload, BlockContents, PageContentsWriter):
 
     def push_carrier(self, carrier: RichTextPropertyEncoder) \
             -> RichTextPropertyEncoder:
-        overwrite = self.root.enable_overwrite or eval_empty(self.reads())
-        if overwrite:
-            # this is always title
-            self.caller.title = carrier.plain_form()
-            return self.requestor.apply_prop(carrier)
-        else:
+        writeable = self.root.enable_overwrite or eval_empty(self.reads())
+        if not writeable:
             return carrier
+        # this is always title
+        self._set_title(carrier.plain_form())
+        return self.requestor.apply_prop(carrier)

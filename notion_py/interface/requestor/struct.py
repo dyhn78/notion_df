@@ -5,12 +5,12 @@ from typing import Callable
 from notion_client.errors import APIResponseError
 
 from notion_py.interface.common.struct import Requestor
-from notion_py.interface.editor.common.struct import PointEditor
+from notion_py.interface.editor.common.struct import BlockEditor
 from notion_py.interface.utility import stopwatch, page_id_to_url
 
 
 class PointRequestor(Requestor, metaclass=ABCMeta):
-    def __init__(self, editor: PointEditor):
+    def __init__(self, editor: BlockEditor):
         self.editor = editor
         self.notion = editor.root.notion
 
@@ -39,7 +39,7 @@ class LongRequestor(PointRequestor):
     MAX_PAGE_SIZE = 100
     INF = int(1e5) - 1
 
-    def __init__(self, editor: PointEditor):
+    def __init__(self, editor: BlockEditor):
         super().__init__(editor)
         self.response_size = 0
         self.has_more = True
@@ -89,9 +89,16 @@ def drop_empty_request(method: Callable):
     def wrapper(self: Requestor, **kwargs):
         if self.__bool__():
             return method(self, **kwargs)
-        return {'results': f'dropped_empty_request_at_{self}'}
+        else:
+            if isinstance(self, LongRequestor):
+                placeholder = []
+            else:
+                placeholder = {}
+            return {'results': placeholder,
+                    'context': f'dropped_empty_request_at_{self}'}
 
     return wrapper
+
 
 # JSONDecodeError 처리 로직 추가
 def print_response_error(func: Callable):

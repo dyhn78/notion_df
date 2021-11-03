@@ -87,12 +87,6 @@ class TextContents(BlockContents, TextContentsWriter):
     def requestor(self, value):
         self._requestor = value
 
-    def archive(self):
-        self.requestor.archive()
-
-    def un_archive(self):
-        self.requestor.un_archive()
-
     def retrieve(self):
         requestor = RetrieveBlock(self)
         response = requestor.execute()
@@ -115,3 +109,9 @@ class TextContents(BlockContents, TextContentsWriter):
             return self.caller.push_contents_carrier(carrier)
         else:
             return self.requestor.apply_contents(carrier)
+
+    def archive(self):
+        self.requestor.archive()
+
+    def un_archive(self):
+        self.requestor.un_archive()

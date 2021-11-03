@@ -1,0 +1,2 @@
+class NoURLFoundError(Exception):
+    pass

@@ -1,12 +1,12 @@
-from notion_py.interface.editor.common.struct import PointEditor
+from notion_py.interface.editor.common.struct import BlockEditor
 from .filter_unit import QueryFilter, EmptyFilter
-from ..struct import TruthyLongRequestor, print_response_error
+from ..struct import LongRequestor, print_response_error
 from ...common import PropertyFrame
 from ...utility import page_id_to_url, stopwatch
 
 
-class Query(TruthyLongRequestor):
-    def __init__(self, editor: PointEditor, frame: PropertyFrame):
+class Query(LongRequestor):
+    def __init__(self, editor: BlockEditor, frame: PropertyFrame):
         super().__init__(editor)
         self.frame = frame
         self._filter_value = EmptyFilter()
@@ -16,6 +16,9 @@ class Query(TruthyLongRequestor):
 
         from .sort import QuerySort
         self.sort = QuerySort()
+
+    def __bool__(self):
+        return True
 
     @staticmethod
     def open_filter():

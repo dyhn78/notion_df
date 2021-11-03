@@ -7,11 +7,11 @@ from typing import Union, Iterator
 from notion_py.interface.editor.common.with_children import ChildrenBearer, BlockChildren
 from notion_py.interface.parser import BlockChildrenParser
 from notion_py.interface.requestor import GetBlockChildren
-from ..struct import PointEditor, MasterEditor, Editor
+from ..struct import BlockEditor, MasterEditor, Editor
 
 
 class ItemsBearer(ChildrenBearer, metaclass=ABCMeta):
-    def __init__(self, caller: Union[PointEditor, Editor], block_id: str):
+    def __init__(self, caller: Union[BlockEditor, Editor], block_id: str):
         super().__init__(caller, block_id)
         self.caller = caller
         self.attachments = ItemAttachments(self)

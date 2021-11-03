@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Union
 
 from notion_py.interface.editor.common.struct import (
-    PointEditor)
+    BlockEditor)
 from notion_py.interface.encoder import RichTextContentsEncoder
 from notion_py.interface.parser import BlockChildrenParser
 from notion_py.interface.requestor import AppendBlockChildren
@@ -11,7 +11,7 @@ from .bearer import ItemAttachments
 from ..struct.agents import GroundEditor, AdaptiveEditor
 
 
-class ItemsCreator(PointEditor):
+class ItemsCreator(BlockEditor):
     def __init__(self, caller: ItemAttachments):
         super().__init__(caller)
         self.caller = caller
@@ -87,14 +87,18 @@ class TextItemsCreateAgent(GroundEditor):
     def add(self):
         from ...inline.text_item import TextItem
         child = TextItem(self, '')
-        self.blocks.append(child)
-        self.requestor.append_space()
         return child
 
     def push_carrier(self, child, carrier: RichTextContentsEncoder) \
             -> RichTextContentsEncoder:
-        i = self.blocks.index(child)
-        return self.requestor.apply_contents(i, carrier)
+        try:
+            i = self.blocks.index(child)
+        except ValueError:
+            self.blocks.append(child)
+            self.requestor.append_space()
+            i = self.blocks.index(child)
+        ret = self.requestor.apply_contents(i, carrier)
+        return ret
 
     def save(self):
         response = self.requestor.execute()

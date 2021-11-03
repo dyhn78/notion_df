@@ -1,11 +1,11 @@
 from abc import ABCMeta, abstractmethod
 
 from notion_py.interface.common.struct import Requestor
-from .master_logic import PointEditor
+from .master_logic import BlockEditor
 
 
-class ListEditor(PointEditor, metaclass=ABCMeta):
-    def __init__(self, caller: PointEditor):
+class ListEditor(BlockEditor, metaclass=ABCMeta):
+    def __init__(self, caller: BlockEditor):
         super().__init__(caller)
 
     @property
@@ -33,8 +33,8 @@ class ListEditor(PointEditor, metaclass=ABCMeta):
         return self.blocks[index]
 
 
-class GroundEditor(PointEditor, metaclass=ABCMeta):
-    def __init__(self, caller: PointEditor):
+class GroundEditor(BlockEditor, metaclass=ABCMeta):
+    def __init__(self, caller: BlockEditor):
         super().__init__(caller)
         self.enable_overwrite = True
 
@@ -53,14 +53,14 @@ class GroundEditor(PointEditor, metaclass=ABCMeta):
         return self.requestor.__bool__()
 
 
-class AdaptiveEditor(PointEditor, metaclass=ABCMeta):
-    def __init__(self, caller: PointEditor):
+class AdaptiveEditor(BlockEditor, metaclass=ABCMeta):
+    def __init__(self, caller: BlockEditor):
         super().__init__(caller)
         self.enable_overwrite = True
 
     @property
     @abstractmethod
-    def value(self) -> PointEditor:
+    def value(self) -> BlockEditor:
         pass
 
     def save_info(self):

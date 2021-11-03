@@ -16,6 +16,10 @@ class UnsupportedBlock(MasterEditor):
         return False
 
     @property
+    def is_supported_type(self) -> bool:
+        return False
+
+    @property
     def master_name(self):
         return self.master_url
 

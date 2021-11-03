@@ -1,6 +1,6 @@
 from typing import Any, Optional
 
-from notion_py.interface.editor.common.struct import PointEditor
+from notion_py.interface.editor.common.struct import BlockEditor
 from notion_py.interface.encoder import ContentsEncoder
 from .stash import BlockChildrenStash, PagePropertyStash
 from ..struct import PointRequestor, print_response_error, drop_empty_request
@@ -8,7 +8,7 @@ from ...utility import stopwatch, page_id_to_url
 
 
 class CreatePage(PointRequestor, PagePropertyStash, BlockChildrenStash):
-    def __init__(self, editor: PointEditor, under_database: bool):
+    def __init__(self, editor: BlockEditor, under_database: bool):
         PointRequestor.__init__(self, editor)
         PagePropertyStash.__init__(self)
         BlockChildrenStash.__init__(self)
@@ -55,7 +55,7 @@ class CreatePage(PointRequestor, PagePropertyStash, BlockChildrenStash):
 
 
 class UpdatePage(PointRequestor, PagePropertyStash):
-    def __init__(self, editor: PointEditor):
+    def __init__(self, editor: BlockEditor):
         PointRequestor.__init__(self, editor)
         PagePropertyStash.__init__(self)
         self._archive_value = None
@@ -100,7 +100,7 @@ class UpdatePage(PointRequestor, PagePropertyStash):
 
 
 class UpdateBlock(PointRequestor):
-    def __init__(self, editor: PointEditor):
+    def __init__(self, editor: BlockEditor):
         PointRequestor.__init__(self, editor)
         self._contents_value: Optional[ContentsEncoder] = None
         self._archive_value = None
@@ -150,7 +150,7 @@ class UpdateBlock(PointRequestor):
 
 
 class AppendBlockChildren(PointRequestor, BlockChildrenStash):
-    def __init__(self, editor: PointEditor):
+    def __init__(self, editor: BlockEditor):
         PointRequestor.__init__(self, editor)
         BlockChildrenStash.__init__(self)
 

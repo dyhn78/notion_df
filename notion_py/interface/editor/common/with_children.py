@@ -3,12 +3,12 @@ from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 from typing import Iterator, Union, Iterable
 
-from .struct import PointEditor, MasterEditor, Editor
+from .struct import BlockEditor, MasterEditor, Editor
 
 
 class ChildrenBearer(MasterEditor):
     @abstractmethod
-    def __init__(self, caller: Union[PointEditor, Editor],
+    def __init__(self, caller: Union[BlockEditor, Editor],
                  block_id: str):
         super().__init__(caller, block_id)
         self.caller = caller
@@ -91,7 +91,7 @@ class ChildrenBearer(MasterEditor):
                 child.fetch_descendants(request_size)
 
 
-class BlockChildren(PointEditor, metaclass=ABCMeta):
+class BlockChildren(BlockEditor, metaclass=ABCMeta):
     def __init__(self, caller: ChildrenBearer):
         super().__init__(caller)
         self.caller = caller

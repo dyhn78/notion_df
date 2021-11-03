@@ -1,14 +1,14 @@
-from notion_py.interface.editor.common.struct import PointEditor
-from .struct import TruthyPointRequestor, TruthyLongRequestor, print_response_error
+from notion_py.interface.editor.common.struct import BlockEditor
+from .struct import PointRequestor, LongRequestor, print_response_error
 from ..utility import stopwatch
 
 
-class RetrieveDatabase(TruthyPointRequestor):
-    def __init__(self, editor: PointEditor):
+class RetrieveDatabase(PointRequestor):
+    def __init__(self, editor: BlockEditor):
         super().__init__(editor)
 
     def __bool__(self):
-        return bool(self.target_id)
+        return True
 
     def encode(self):
         return dict(database_id=self.target_id)
@@ -27,9 +27,12 @@ class RetrieveDatabase(TruthyPointRequestor):
         stopwatch(comments)
 
 
-class RetrievePage(TruthyPointRequestor):
-    def __init__(self, editor: PointEditor):
+class RetrievePage(PointRequestor):
+    def __init__(self, editor: BlockEditor):
         super().__init__(editor)
+
+    def __bool__(self):
+        return True
 
     def encode(self):
         return dict(page_id=self.target_id)
@@ -50,12 +53,12 @@ class RetrievePage(TruthyPointRequestor):
         stopwatch(comments)
 
 
-class RetrieveBlock(TruthyPointRequestor):
-    def __init__(self, editor: PointEditor):
+class RetrieveBlock(PointRequestor):
+    def __init__(self, editor: BlockEditor):
         super().__init__(editor)
 
     def __bool__(self):
-        return bool(self.target_id)
+        return True
 
     def encode(self):
         return dict(block_id=self.target_id)
@@ -76,12 +79,12 @@ class RetrieveBlock(TruthyPointRequestor):
         stopwatch(comments)
 
 
-class GetBlockChildren(TruthyLongRequestor):
-    def __init__(self, editor: PointEditor):
+class GetBlockChildren(LongRequestor):
+    def __init__(self, editor: BlockEditor):
         super().__init__(editor)
 
     def __bool__(self):
-        return bool(self.target_id)
+        return True
 
     def encode(self, page_size=None, start_cursor=None):
         args = dict(block_id=self.target_id,
