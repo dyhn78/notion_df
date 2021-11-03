@@ -1,4 +1,4 @@
-from notion_py.interface import TypeName
+from notion_py.interface.editor.tabular import PageRow
 from .common.struct import ReadingDBController
 
 
@@ -21,7 +21,7 @@ class ReadingDBStatusResolver(ReadingDBController):
         query.push_filter(ft)
         query.execute(request_size)
 
-    def edit(self, page: TypeName.tabular_page):
+    def edit(self, page: PageRow):
         page.props.write_select_at('edit_status', self.status_enum['append'])
         page.props.write_checkbox_at('not_available', False)
         page.save()

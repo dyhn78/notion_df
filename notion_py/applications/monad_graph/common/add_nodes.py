@@ -5,7 +5,8 @@ import networkx as nx
 
 from notion_py.applications.database_info import DatabaseInfo
 from notion_py.applications.monad_graph.frame import NetworkFrames, NetworkPropertyFrame
-from notion_py.interface import RootEditor, TypeName
+from notion_py.interface import RootEditor
+from notion_py.interface.editor.tabular import PageList
 
 
 class TopologyBuilder:
@@ -17,7 +18,7 @@ class TopologyBuilder:
                                               NetworkFrames.THEMES)
         self.ideas = self.root.open_pagelist(*DatabaseInfo.IDEAS,
                                              NetworkFrames.IDEAS)
-        self.all: dict[str, TypeName.pagelist] = {
+        self.all: dict[str, PageList] = {
             'themes': self.themes,
             'ideas': self.ideas
         }
