@@ -23,7 +23,7 @@
 #         self.title = ''
 #
 #     @property
-#     def master_name(self):
+#     def block_name(self):
 #         return self.title
 #
 #     @drop_empty_request
@@ -73,7 +73,7 @@
 #
 #     def apply_page_parser(self, parser: PageParser):
 #         if parser.page_id:
-#             self.master_id = parser.page_id
+#             self.block_id = parser.page_id
 #         self.caller.title = parser.title
 #         self._read_plain = parser.prop_values['title']
 #         self._read_rich = parser.prop_rich_values['title']

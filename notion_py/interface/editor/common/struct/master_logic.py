@@ -17,20 +17,16 @@ class BlockEditor(Editor, metaclass=ABCMeta):
         return self.caller.master
 
     @property
-    def master_id(self) -> str:
-        return self.master.master_id
-
-    @master_id.setter
-    def master_id(self, value: str):
-        self.master.master_id = value
+    def block_id(self) -> str:
+        return self.master.block_id
 
     @property
-    def master_url(self):
-        return page_id_to_url(self.master_id)
+    def block_url(self):
+        return page_id_to_url(self.block_id)
 
     @property
-    def master_name(self) -> str:
-        return self.master.master_name
+    def block_name(self) -> str:
+        return self.master.block_name
 
     @property
     def parent(self):
@@ -40,10 +36,6 @@ class BlockEditor(Editor, metaclass=ABCMeta):
     @property
     def parent_id(self) -> str:
         return self.master.parent_id
-
-    @parent_id.setter
-    def parent_id(self, value: str):
-        self.master.parent_id = value
 
     @property
     def archived(self):
@@ -59,15 +51,8 @@ class BlockEditor(Editor, metaclass=ABCMeta):
 
 
 class MasterEditor(BlockEditor):
-    def __init__(self, caller: Editor, master_id: str):
+    def __init__(self, caller: Editor):
         super().__init__(caller)
-        self.master_id = master_id
-        # self._yet_not_created = None
-
-    @property
-    @abstractmethod
-    def payload(self) -> PayloadEditor:
-        pass
 
     @property
     @abstractmethod
@@ -75,47 +60,37 @@ class MasterEditor(BlockEditor):
         pass
 
     @property
-    def can_have_children(self) -> bool:
-        return False
+    @abstractmethod
+    def payload(self) -> PayloadEditor:
+        pass
+
+    @property
+    def archived(self):
+        return self.payload.archived
 
     @property
     def has_children(self) -> bool:
-        return False
+        return self.payload.has_children
+
+    @property
+    def can_have_children(self) -> bool:
+        return self.payload.can_have_children
+
+    @property
+    def yet_not_created(self):
+        return self.payload.yet_not_created
 
     @property
     def master(self):
         return self
 
     @property
-    def master_id(self):
-        return self._master_id
-
-    @master_id.setter
-    def master_id(self, value: str):
-        try:
-            old_value = self.master_id
-        except AttributeError:
-            old_value = ''
-        self._master_id = value
-
-        # register to root
-        register_point = self.root.by_id
-        if old_value:
-            register_point.pop(old_value)
-        if value:
-            register_point[value] = self
-
-        # register to parent
-        if self.parent is not None:
-            register_point = self.parent.children.by_id
-            if old_value:
-                register_point.pop(old_value)
-            if value:
-                register_point[value] = self
+    def block_id(self):
+        return self.payload.block_id
 
     @property
     @abstractmethod
-    def master_name(self):
+    def block_name(self):
         pass
 
     @property
@@ -130,38 +105,20 @@ class MasterEditor(BlockEditor):
 
     @property
     def parent_id(self):
-        # TODO  아래의 세터와 일관성 갖추기.
-        if self.parent is not None:
-            return self.parent.master_id
-        else:
-            if self.master_url:
-                message = f'cannot find parent_id at: {self.master_url}'
-            else:
-                message = (f"ERROR: provide master_id or parent_id for this block;\n"
-                           f"editor info:\n"
-                           f"{self.save_info()}")
-            raise AttributeError(message)
-
-    @parent_id.setter
-    def parent_id(self, value: str):
-        if self.parent is not None:
-            self.parent.master_id = value
-        else:
-            raise AttributeError('you tried setting uuid of root_editor!')
+        from ..with_children import ChildrenBearer
+        parent = self.parent
+        try:
+            assert isinstance(parent, ChildrenBearer)
+            return self.parent.block_id
+        except AssertionError:
+            from ..exceptions import NoParentFoundError
+            raise NoParentFoundError(self.master)
 
     @property
     def entry_ancestor(self):
         if self.yet_not_created:
             return self.parent.entry_ancestor
         return self
-
-    @property
-    def archived(self):
-        return self.payload.archived
-
-    @property
-    def yet_not_created(self):
-        return self.master_id == ''
 
     @abstractmethod
     def reads(self):
@@ -185,20 +142,69 @@ class MasterEditor(BlockEditor):
             saving a multi-rank structure will be executed top to bottom,
             regardless of indentation.
         2. the 'ground editors', self.contents or self.tabular,
-            have to refer to self.master_id if it want to 'reset gateway'.
+            have to refer to self.block_id if it want to 'reset gateway'.
             therefore, it first send the response without processing itself,
             so that the master deals with its reset task instead.
         """
 
 
 class PayloadEditor(BlockEditor, metaclass=ABCMeta):
-    def __init__(self, caller: Union[BlockEditor, Editor]):
+    def __init__(self, caller: Union[BlockEditor, Editor], block_id: str):
         super().__init__(caller)
+        self.__block_id = ''
+        self._set_block_id(block_id)
         self._archived = None
+        self._has_children = None
+        self._can_have_children = None
 
     @property
     def archived(self):
-        return self._archived if self._archived is not None else False
+        return False if self._archived is None else self._archived
 
-    def _set_archived(self, value: bool):
-        self._archived = value
+    @property
+    def yet_not_created(self):
+        return self.block_id == ''
+
+    @property
+    def has_children(self):
+        return self.can_have_children \
+            if self._has_children is None else self._has_children
+
+    @property
+    def can_have_children(self):
+        return True \
+            if self._can_have_children is None else self._can_have_children
+
+    @property
+    def block_id(self) -> str:
+        return self.__block_id
+
+    def _set_block_id(self, value):
+        self._unregister_id()
+        self.__block_id = value
+        self._register_id()
+
+    def unregister_all(self):
+        self._unregister_id()
+
+    def _register_id(self):
+        if self.block_id == '':
+            return
+        # register to root
+        register_point = self.root.by_id
+        register_point[self.block_id] = self.master
+        # register to parent
+        if self.parent is not None:
+            register_point = self.parent.children.by_id
+            register_point[self.block_id] = self.master
+
+    def _unregister_id(self):
+        if self.block_id == '':
+            return
+        # detach from root
+        register_point = self.root.by_id
+        register_point.pop(self.block_id)
+        # detach from parent
+        if self.parent is not None:
+            register_point = self.parent.children.by_id
+            register_point.pop(self.block_id)

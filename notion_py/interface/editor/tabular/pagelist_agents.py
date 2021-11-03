@@ -38,9 +38,7 @@ class PageListUpdater(ListEditor):
     def close_page(self, page):
         from .page_row import PageRow
         assert isinstance(page, PageRow)
-        # this will de-register the page from the pagelist.
-        page.title = ''
-        page.master_id = ''
+        page.payload.unregister_all()
         self.blocks.remove(page)
 
 

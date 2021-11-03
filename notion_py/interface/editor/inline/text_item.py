@@ -1,12 +1,14 @@
 from __future__ import annotations
+
 from typing import Union
 
 from notion_py.interface.encoder import (
     TextContentsWriter, RichTextContentsEncoder)
 from notion_py.interface.parser import BlockContentsParser
 from notion_py.interface.requestor import UpdateBlock, RetrieveBlock
+from ..common.with_cc import ChildrenBearersContents
 from ..common.with_contents import (
-    ContentsBearer, BlockContents)
+    ContentsBearer)
 from ..common.with_items import (
     ItemsBearer, ItemsUpdater, TextItemsCreateAgent)
 from ..root_editor import RootEditor
@@ -19,26 +21,23 @@ class TextItem(ItemsBearer, ContentsBearer):
                                ItemsUpdater,
                                RootEditor],
                  block_id: str):
-        ItemsBearer.__init__(self, caller, block_id)
-        ContentsBearer.__init__(self, caller, block_id)
+        ItemsBearer.__init__(self, caller)
+        ContentsBearer.__init__(self, caller)
         self.caller = caller
-        self.contents = TextContents(self)
+        self._contents = TextContents(self, block_id)
 
-    @property
-    def contents(self) -> TextContents:
-        return self._contents
-
-    @contents.setter
-    def contents(self, value: TextContents):
-        self._contents = value
+    def push_contents_carrier(self, carrier):
+        return self.caller.push_carrier(self, carrier)
 
     def save_required(self) -> bool:
         return (self.contents.save_required() or
                 self.attachments.save_required())
 
-    @property
-    def master_name(self):
-        return self.contents.reads()
+    def save_this(self):
+        self.contents.save()
+        if self.archived:
+            return
+        self.attachments.save()
 
     def save(self):
         if self.yet_not_created:
@@ -46,11 +45,13 @@ class TextItem(ItemsBearer, ContentsBearer):
         else:
             self.save_this()
 
-    def save_this(self):
-        self.contents.save()
-        if self.archived:
-            return
-        self.attachments.save()
+    @property
+    def contents(self) -> TextContents:
+        return self._contents
+
+    @property
+    def block_name(self):
+        return self.contents.reads()
 
     def reads(self):
         return {'contents': self.contents.reads(),
@@ -67,25 +68,24 @@ class TextItem(ItemsBearer, ContentsBearer):
                 **self.attachments.save_info(),
                 'type': 'text'}
 
-    def push_contents_carrier(self, carrier):
-        return self.caller.push_carrier(self, carrier)
 
-
-class TextContents(BlockContents, TextContentsWriter):
-    def __init__(self, caller: TextItem):
-        super().__init__(caller)
+class TextContents(ChildrenBearersContents, TextContentsWriter):
+    """
+    when the master is called from TextItemsCreateAgent and thereby it is yet_not_created,
+    they will insert blank paragraph as a default.
+    """
+    def __init__(self, caller: TextItem, block_id: str):
+        super().__init__(caller, block_id)
         self.caller = caller
         self._requestor = UpdateBlock(self)
+
+    def push_carrier(self, carrier: RichTextContentsEncoder) \
+            -> RichTextContentsEncoder:
+        self._can_have_children = carrier.can_have_children
         if self.yet_not_created:
-            self.write_paragraph('')
-
-    @property
-    def requestor(self) -> UpdateBlock:
-        return self._requestor
-
-    @requestor.setter
-    def requestor(self, value):
-        self._requestor = value
+            return self.caller.push_contents_carrier(carrier)
+        else:
+            return self.requestor.apply_contents(carrier)
 
     def retrieve(self):
         requestor = RetrieveBlock(self)
@@ -101,14 +101,14 @@ class TextContents(BlockContents, TextContentsWriter):
             # TODO: update {self._read};
             #  1. use the <response> = self.gateway.execute()
             #  2. update BlockContentsParser yourself without response
-        self.requestor = UpdateBlock(self)
+        self.clear_requestor()
 
-    def push_carrier(self, carrier: RichTextContentsEncoder) \
-            -> RichTextContentsEncoder:
-        if self.yet_not_created:
-            return self.caller.push_contents_carrier(carrier)
-        else:
-            return self.requestor.apply_contents(carrier)
+    @property
+    def requestor(self) -> UpdateBlock:
+        return self._requestor
+
+    def clear_requestor(self):
+        self._requestor = UpdateBlock(self)
 
     def archive(self):
         self.requestor.archive()

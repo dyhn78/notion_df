@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-from ..common.base import Matcher, LocalBase
 from .match_to_dates import DateMatcherType1, DateMatcherType2
 from .match_to_itself import MatchertoItself
 from .match_to_periods import PeriodMatcherType1, PeriodMatcherType2
-from ..common.query_maker import query_within_date_range
+from ..common.base import Matcher, LocalBase
 
 
 class MatchController:

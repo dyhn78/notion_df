@@ -8,11 +8,8 @@ from .struct import BlockEditor, MasterEditor, Editor
 
 class ChildrenBearer(MasterEditor):
     @abstractmethod
-    def __init__(self, caller: Union[BlockEditor, Editor],
-                 block_id: str):
-        super().__init__(caller, block_id)
-        self.caller = caller
-        self.has_children = True
+    def __init__(self, caller: Union[BlockEditor, Editor]):
+        super().__init__(caller)
 
     @property
     def is_supported_type(self) -> bool:
@@ -22,18 +19,6 @@ class ChildrenBearer(MasterEditor):
     @abstractmethod
     def children(self) -> BlockChildren:
         pass
-
-    @property
-    def can_have_children(self) -> bool:
-        return False
-
-    @property
-    def has_children(self) -> bool:
-        return self._has_children
-
-    @has_children.setter
-    def has_children(self, value: bool):
-        self._has_children = value
 
     def iter_descendants_with(self, exact_rank_diff: int) \
             -> Iterable[Union[ChildrenBearer, MasterEditor]]:

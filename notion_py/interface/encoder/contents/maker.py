@@ -5,9 +5,10 @@ from notion_py.interface.encoder.rich_text import RichTextObjectEncoder
 
 
 class ContentsEncoder(ValueCarrier):
-    def __init__(self, value_type, block_name):
+    def __init__(self, value_type, block_name, can_have_children: bool):
         self.value_type = value_type
         self.block_name = block_name
+        self.can_have_children = can_have_children
 
     def __bool__(self):
         return True
@@ -25,8 +26,9 @@ class ContentsEncoder(ValueCarrier):
 class RichTextContentsEncoder(ContentsEncoder, RichTextObjectEncoder):
     prop_type = 'text'
 
-    def __init__(self, block_name, **kwargs):
-        ContentsEncoder.__init__(self, value_type='text', block_name=block_name)
+    def __init__(self, block_name, can_have_children, **kwargs):
+        ContentsEncoder.__init__(self, value_type='text', block_name=block_name,
+                                 can_have_children=can_have_children)
         RichTextObjectEncoder.__init__(self)
         self._kwargs = kwargs
 
@@ -41,7 +43,8 @@ class RichTextContentsEncoder(ContentsEncoder, RichTextObjectEncoder):
 
 class PageContentsEncoderAsChildBlock(ContentsEncoder, RichTextObjectEncoder):
     def __init__(self):
-        ContentsEncoder.__init__(self, value_type='text', block_name='child_page')
+        ContentsEncoder.__init__(self, value_type='text', block_name='child_page',
+                                 can_have_children=True)
         RichTextObjectEncoder.__init__(self)
 
     def _contents_value(self):

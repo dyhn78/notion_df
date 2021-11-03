@@ -39,7 +39,7 @@ def find_all_unarchived_id_from_relation(dom: PageRow, targets: PageList,
             continue
         tar = targets.fetch_a_child(tar_id)
         if tar is not None and not tar.archived:
-            res.append(tar.master_id)
+            res.append(tar.block_id)
             continue
     return res
 

@@ -34,10 +34,6 @@ class ListEditor(BlockEditor, metaclass=ABCMeta):
 
 
 class GroundEditor(BlockEditor, metaclass=ABCMeta):
-    def __init__(self, caller: BlockEditor):
-        super().__init__(caller)
-        self.enable_overwrite = True
-
     @property
     @abstractmethod
     def requestor(self) -> Requestor:
@@ -78,8 +74,8 @@ from itertools import chain
 from typing import ValuesView, Mapping
 
 class AbstractMasterEditor(Executable):
-    def __init__(self, master_id: str):
-        self.master_id = master_id
+    def __init__(self, block_id: str):
+        self.block_id = block_id
         self.set_overwrite_option(True)
 
     @abstractmethod
@@ -102,8 +98,8 @@ class EditorComponentStash(dict):
 
 
 class StackEditor(AbstractMainEditor):
-    def __init__(self, master_id: str):
-        super().__init__(master_id)
+    def __init__(self, block_id: str):
+        super().__init__(block_id)
         self.rows: list[MainEditor] = []
 
     def __iter__(self) -> list[MainEditor]:

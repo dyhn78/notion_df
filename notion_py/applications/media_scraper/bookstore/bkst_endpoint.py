@@ -93,7 +93,7 @@ class BookstoreScraper:
         remove_dummy_blocks(subpage)
         AppendContents(subpage, contents).execute()
         writer = self.page.props.write_rich_text_at('link_to_contents')
-        writer.mention_page(subpage.master_id)
+        writer.mention_page(subpage.block_id)
 
     def get_subpage(self) -> PageItem:
         self.page.attachments.fetch()

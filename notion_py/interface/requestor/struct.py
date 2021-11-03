@@ -19,11 +19,11 @@ class PointRequestor(Requestor, metaclass=ABCMeta):
 
     @property
     def target_id(self):
-        return self.editor.master_id
+        return self.editor.block_id
 
     @property
     def target_name(self):
-        return self.editor.master.master_name
+        return self.editor.master.block_name
 
     @property
     def target_url(self):

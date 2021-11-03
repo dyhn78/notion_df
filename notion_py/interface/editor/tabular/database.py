@@ -15,13 +15,13 @@ class Database(ChildrenBearer):
                  database_id: str,
                  database_alias='',
                  frame: Optional[PropertyFrame] = None):
-        super().__init__(caller, database_id)
+        super().__init__(caller)
         self.caller = caller
         self.frame = frame if frame else PropertyFrame()
         self.alias = database_alias
 
         from .database_schema import DatabaseSchema
-        self.schema = DatabaseSchema(self)
+        self.schema = DatabaseSchema(self, database_id)
 
         from .pagelist import PageList
         self.pagelist = PageList(self)
@@ -39,7 +39,7 @@ class Database(ChildrenBearer):
                 or self.children.save_required())
 
     @property
-    def master_name(self):
+    def block_name(self):
         return self.alias
 
     def retrieve(self):

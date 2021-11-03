@@ -7,8 +7,8 @@ from ...utility import eval_empty
 
 
 class PageRowProperty(PagePayload, PageRowPropertybyKey):
-    def __init__(self, caller: PageRow):
-        super().__init__(caller)
+    def __init__(self, caller: PageRow, page_id: str):
+        PagePayload.__init__(self, caller, page_id)
         self.caller = caller
         self.frame = caller.frame
         if self.yet_not_created:
@@ -19,13 +19,15 @@ class PageRowProperty(PagePayload, PageRowPropertybyKey):
         self._read_rich = {}
         self._read_full = {}
 
+    def clear_requestor(self):
+        if self.yet_not_created:
+            self._requestor = CreatePage(self, under_database=True)
+        else:
+            self._requestor = UpdatePage(self)
+
     @property
     def requestor(self):
         return self._requestor
-
-    @requestor.setter
-    def requestor(self, value):
-        self._requestor = value
 
     def apply_page_parser(self, parser: PageParser):
         super().apply_page_parser(parser)

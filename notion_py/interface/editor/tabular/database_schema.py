@@ -1,11 +1,16 @@
-from typing import Union
-
-from notion_py.interface.common.struct import Requestor
-from notion_py.interface.editor.common.struct import BlockEditor
-from notion_py.interface.editor.common.struct.agents import GroundEditor
+from .database import Database
+from ..common.struct import PayloadEditor
 
 
-class DatabaseSchema(GroundEditor):
-    @property
-    def requestor(self) -> Union[Requestor, BlockEditor]:
-        return None
+class DatabaseSchema(PayloadEditor):
+    def __init__(self, caller: Database, database_id: str):
+        super().__init__(caller, database_id)
+
+    def save_required(self) -> bool:
+        pass
+
+    def save_info(self):
+        pass
+
+    def save(self):
+        pass

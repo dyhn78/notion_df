@@ -5,13 +5,12 @@ from typing import Union
 
 from notion_py.interface.parser import BlockContentsParser
 from .struct import GroundEditor, BlockEditor, MasterEditor, PayloadEditor
-from .with_children import ChildrenBearer
 from ..root_editor import RootEditor
 
 
 class ContentsBearer(MasterEditor, metaclass=ABCMeta):
-    def __init__(self, caller: Union[RootEditor, BlockEditor], block_id: str):
-        super().__init__(caller, block_id)
+    def __init__(self, caller: Union[RootEditor, BlockEditor]):
+        super().__init__(caller)
         self.caller = caller
 
     @property
@@ -43,9 +42,10 @@ class ContentsBearer(MasterEditor, metaclass=ABCMeta):
 
 
 class BlockContents(PayloadEditor, GroundEditor, metaclass=ABCMeta):
-    def __init__(self, caller: ContentsBearer):
+    def __init__(self, caller: ContentsBearer, block_id: str):
         super().__init__(caller)
         self.caller = caller
+        self._set_block_id(block_id)
         self._read_plain = ''
         self._read_rich = []
 
@@ -57,9 +57,6 @@ class BlockContents(PayloadEditor, GroundEditor, metaclass=ABCMeta):
 
     def apply_block_parser(self, parser: BlockContentsParser):
         if parser.block_id:
-            self.master_id = parser.block_id
+            self._set_block_id(parser.block_id)
         self._read_plain = parser.read_plain
         self._read_rich = parser.read_rich
-        master = self.master
-        if isinstance(master, ChildrenBearer):
-            master.has_children = parser.has_children

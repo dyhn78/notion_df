@@ -2,7 +2,7 @@ from abc import ABCMeta
 
 from notion_py.interface.common import DateFormat
 from ..common.base import Matcher
-from ..common.date_index import ProcessTimeProperty
+from ..common.date_index import DateHandler
 from ..common.helpers import overwrite_prop, find_unique_target_id_by_ref, \
     query_target_by_idx
 
@@ -14,7 +14,7 @@ class PeriodMatcherAbs(Matcher, metaclass=ABCMeta):
         self.to_tar = 'to_periods'
         self.tars_by_index = self.target.by_idx_value_at('index_as_target')
 
-    def match_period_by_idx(self, date_handler: ProcessTimeProperty):
+    def match_period_by_idx(self, date_handler: DateHandler):
         tar_idx = date_handler.strf_year_and_week()
         if tar := self.tars_by_index.get(tar_idx):
             return tar
@@ -23,7 +23,7 @@ class PeriodMatcherAbs(Matcher, metaclass=ABCMeta):
             return tar
         return self.create_period_by_idx(date_handler, tar_idx)
 
-    def create_period_by_idx(self, date_handler: ProcessTimeProperty, tar_idx):
+    def create_period_by_idx(self, date_handler: DateHandler, tar_idx):
         tar = self.target.create_page_row()
         tar.props.write_title_at('index_as_target', tar_idx)
         self.tars_by_index.update({tar_idx: tar})
@@ -47,11 +47,11 @@ class PeriodMatcherType1(PeriodMatcherAbs):
 
     def determine_tar_id(self, dom):
         tar = self.determine_tar(dom)
-        return tar.master_id
+        return tar.block_id
 
     def determine_tar(self, dom):
         dom_idx: DateFormat = dom.props.read_at('index_as_domain')
-        date_handler = ProcessTimeProperty(dom_idx.start)
+        date_handler = DateHandler(dom_idx.start)
         return self.match_period_by_idx(date_handler)
 
 
@@ -74,12 +74,12 @@ class PeriodMatcherType2(PeriodMatcherAbs):
                 dom, self.reference, self.target, self.to_ref, self.to_tar):
             return tar_id
         tar = self.determine_tar(dom)
-        return tar.master_id
-        # message = f"Failed to connect <{dom.master_name}> to targets :: " \
+        return tar.block_id
+        # message = f"Failed to connect <{dom.block_name}> to targets :: " \
         #           f"{self.tars_by_index}"
         # raise AssertionError(message)
 
     def determine_tar(self, dom):
         dom_idx: DateFormat = dom.props.read_at('index_as_domain')
-        date_handler = ProcessTimeProperty(dom_idx.start, add_timedelta=-5)
+        date_handler = DateHandler(dom_idx.start, add_timedelta=-5)
         return self.match_period_by_idx(date_handler)

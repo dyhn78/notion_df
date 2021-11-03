@@ -41,7 +41,7 @@ class TopologyBuilder:
 
     def add_nodes(self):
         for i, page in enumerate(chain(*self.all.values())):
-            self.G.add_node(self.parse_title(page.master_name), page_id=page.master_id)
+            self.G.add_node(self.parse_title(page.block_name), page_id=page.block_id)
 
     def add_edges(self):
         for down_pagelist in self.all.values():
@@ -60,8 +60,8 @@ class TopologyBuilder:
                             continue
                         up_page = up_pagelist.by_id[up_id]
                         self.G.add_edge(
-                            self.parse_title(up_page.master_name),
-                            self.parse_title(down_page.master_name),
+                            self.parse_title(up_page.block_name),
+                            self.parse_title(down_page.block_name),
                             edge_type=unit.edge_type,
                             edge_weight=unit.edge_weight,
                         )
@@ -78,8 +78,8 @@ class TopologyBuilder:
                             continue
                         up_page = self.root.by_id[up_id]
                         self.G.add_edge(
-                            self.parse_title(up_page.master_name),
-                            self.parse_title(down_page.master_name),
+                            self.parse_title(up_page.block_name),
+                            self.parse_title(down_page.block_name),
                             edge_type=unit.edge_type,
                             edge_weight=unit.edge_weight,
                         )

@@ -2,11 +2,10 @@ import datetime
 from datetime import datetime as datetimeclass, date as dateclass
 from typing import Union
 
-from notion_py.interface.common import DateFormat
 
-
-class ProcessTimeProperty:
-    korean_weekday = ["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"]
+class DateHandler:
+    korean_weekday = \
+        ["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"]
 
     def __init__(self, date_time: Union[datetimeclass, dateclass],
                  add_timedelta=0):

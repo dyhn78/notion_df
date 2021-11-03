@@ -20,7 +20,7 @@ class CreatePage(PointRequestor, PagePropertyStash, BlockChildrenStash):
 
     @property
     def target_name(self):
-        return self.editor.parent.master_name
+        return self.editor.parent.block_name
 
     def __bool__(self):
         return any([PagePropertyStash.__bool__(self),

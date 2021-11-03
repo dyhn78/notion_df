@@ -10,19 +10,19 @@ class PageRow(PageBlock):
     def __init__(self, caller: Union[RootEditor, BlockEditor],
                  page_id: str,
                  frame: Optional[PropertyFrame] = None):
-        super().__init__(caller, page_id)
+        super().__init__(caller)
         self.caller = caller
         self.frame = frame if frame else PropertyFrame()
 
         from .page_row_props import PageRowProperty
-        self.props = PageRowProperty(caller=self)
+        self.props = PageRowProperty(self, page_id)
 
     @property
     def payload(self):
         return self.props
 
     @property
-    def master_name(self):
+    def block_name(self):
         return self.title
 
     def save_info(self):

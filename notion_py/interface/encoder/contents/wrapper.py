@@ -55,28 +55,28 @@ class RichTextContentsWriter(ABC):
         pass
 
     def write_rich_paragraph(self) -> RichTextContentsEncoder:
-        return self.push_carrier(RichTextContentsEncoder('paragraph'))
+        return self.push_carrier(RichTextContentsEncoder('paragraph', True))
 
     def write_rich_heading_1(self) -> RichTextContentsEncoder:
-        return self.push_carrier(RichTextContentsEncoder('heading_1'))
+        return self.push_carrier(RichTextContentsEncoder('heading_1', False))
 
     def write_rich_heading_2(self) -> RichTextContentsEncoder:
-        return self.push_carrier(RichTextContentsEncoder('heading_2'))
+        return self.push_carrier(RichTextContentsEncoder('heading_2', False))
 
     def write_rich_heading_3(self) -> RichTextContentsEncoder:
-        return self.push_carrier(RichTextContentsEncoder('heading_3'))
+        return self.push_carrier(RichTextContentsEncoder('heading_3', False))
 
     def write_rich_bulleted_list(self) -> RichTextContentsEncoder:
-        return self.push_carrier(RichTextContentsEncoder('bulleted_list_item'))
+        return self.push_carrier(RichTextContentsEncoder('bulleted_list_item', True))
 
     def write_rich_numbered_list(self) -> RichTextContentsEncoder:
-        return self.push_carrier(RichTextContentsEncoder('numbered_list_item'))
+        return self.push_carrier(RichTextContentsEncoder('numbered_list_item', True))
 
     def write_rich_to_do(self, checked=False) -> RichTextContentsEncoder:
-        return self.push_carrier(RichTextContentsEncoder('to_do', checked=checked))
+        return self.push_carrier(RichTextContentsEncoder('to_do', True, checked=checked))
 
     def write_rich_toggle(self) -> RichTextContentsEncoder:
-        return self.push_carrier(RichTextContentsEncoder('toggle'))
+        return self.push_carrier(RichTextContentsEncoder('toggle', True))
 
 
 class TextContentsWriter(RichTextContentsWriter, metaclass=ABCMeta):

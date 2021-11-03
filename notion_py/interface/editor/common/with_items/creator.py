@@ -87,16 +87,14 @@ class TextItemsCreateAgent(GroundEditor):
     def add(self):
         from ...inline.text_item import TextItem
         child = TextItem(self, '')
+        self.blocks.append(child)
+        self.requestor.append_space()
+        child.contents.write_paragraph('')
         return child
 
     def push_carrier(self, child, carrier: RichTextContentsEncoder) \
             -> RichTextContentsEncoder:
-        try:
-            i = self.blocks.index(child)
-        except ValueError:
-            self.blocks.append(child)
-            self.requestor.append_space()
-            i = self.blocks.index(child)
+        i = self.blocks.index(child)
         ret = self.requestor.apply_contents(i, carrier)
         return ret
 

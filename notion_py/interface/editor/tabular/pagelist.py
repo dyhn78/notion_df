@@ -54,7 +54,9 @@ class PageList(BlockChildren):
         return pages
 
     def fetch_a_child(self, page_id: str):
-        """returns child page if succeed; returns None if there isn't one."""
+        """this will first try to search the page in local base,
+        then make a request (RetrievePage).
+        returns child_page if succeed, otherwise returns None."""
         if page := self.by_id.get(page_id):
             return page
         page = self._updater.open_page(page_id)
@@ -66,21 +68,21 @@ class PageList(BlockChildren):
             del page
             return None
 
-    def save_required(self):
-        return (self._updater.save_required()
-                or self._creator.save_required())
-
-    def save_info(self):
-        return {'pages': self._updater.save_info(),
-                'new_pages': self._creator.save_info()}
+    def create_page_row(self):
+        return self._creator.create_page_row()
 
     def save(self):
         self._updater.save()
         response = self._creator.save()
         self._updater.blocks.extend(response)
 
-    def create_page_row(self):
-        return self._creator.create_page_row()
+    def save_info(self):
+        return {'pages': self._updater.save_info(),
+                'new_pages': self._creator.save_info()}
+
+    def save_required(self):
+        return (self._updater.save_required()
+                or self._creator.save_required())
 
     def by_idx_value_of(self, prop_key: str):
         try:
@@ -91,7 +93,7 @@ class PageList(BlockChildren):
         except TypeError:
             page_object = self.list_all()[0]
             pprint(f"key : {page_object.props.read_of(prop_key)}")
-            pprint(f"value : {page_object.master_id}")
+            pprint(f"value : {page_object.block_id}")
             raise TypeError
 
     def by_value_of(self, prop_key: str):

@@ -38,7 +38,7 @@ def remove_dummy_blocks(page: ItemsBearer):
             removed += 1
         # remove duplicate contents (page_block)
         if isinstance(block, PageItem) and \
-                page.master_name in block.contents.reads():
+                page.block_name in block.contents.reads():
             if not duplicate:
                 duplicate = True
             else:

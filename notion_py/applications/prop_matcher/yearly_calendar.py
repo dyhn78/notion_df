@@ -2,7 +2,7 @@ from datetime import date as dateclass, timedelta
 
 from notion_py.interface import RootEditor
 from .common.base import LocalBase
-from .common.date_index import ProcessTimeProperty
+from .common.date_index import DateHandler
 from .regulars.match_to_periods import PeriodMatcherType1
 
 
@@ -67,6 +67,6 @@ class DatePagesCreator:
 
     @staticmethod
     def encode_title(date: dateclass):
-        date_handler = ProcessTimeProperty(date)
+        date_handler = DateHandler(date)
         title = date_handler.strf_dig6_and_weekday()
         return title

@@ -12,9 +12,8 @@ from ..root_editor import RootEditor
 
 
 class PageBlock(ItemsBearer):
-    def __init__(self, caller: Union[RootEditor, BlockEditor],
-                 page_id: str):
-        super().__init__(caller, page_id)
+    def __init__(self, caller: Union[RootEditor, BlockEditor]):
+        super().__init__(caller)
         self.caller = caller
 
     @property
@@ -27,7 +26,7 @@ class PageBlock(ItemsBearer):
                 or self.attachments.save_required())
 
     @property
-    def master_name(self):
+    def block_name(self):
         return self.title
 
     @property
@@ -36,20 +35,66 @@ class PageBlock(ItemsBearer):
 
 
 class PagePayload(PayloadEditor, GroundEditor, metaclass=ABCMeta):
-    def __init__(self, caller: PageBlock):
-        super().__init__(caller)
+    def __init__(self, caller: PageBlock, block_id):
+        PayloadEditor.__init__(self, caller, block_id)
         self.caller = caller
-        self._title = ''
+        self.__title = ''
 
     @property
     @abstractmethod
     def requestor(self) -> Union[CreatePage, UpdatePage]:
         pass
 
-    @requestor.setter
     @abstractmethod
-    def requestor(self, value):
+    def clear_requestor(self):
         pass
+
+    @property
+    def title(self):
+        return self.__title
+
+    def _set_title(self, value: str):
+        self._unregister_title()
+        self.__title = value
+        self._register_title()
+
+    def _register_title(self):
+        if self.title == '':
+            return
+        # register to root
+        register_point = self.root.by_title
+        register_point[self.title].append(self)
+        # register to parent
+        if self.parent:
+            register_point = self.parent.children.by_title
+            register_point[self.title].append(self)
+
+    def unregister_all(self):
+        self._unregister_id()
+        self._unregister_title()
+
+    def _unregister_title(self):
+        if self.title == '':
+            return
+        # detach from root
+        register_point = self.root.by_title
+        register_point[self.title].remove(self)
+        # detach from parent
+        if self.parent:
+            register_point = self.parent.children.by_title
+            register_point[self.title].remove(self)
+
+    def archive(self):
+        self.requestor.archive()
+
+    def un_archive(self):
+        self.requestor.un_archive()
+
+    def apply_page_parser(self, parser: PageParser):
+        if parser.page_id != '':
+            self._set_block_id(parser.page_id)
+        self._set_title(parser.title)
+        self._archived = parser.archived
 
     def retrieve(self):
         requestor = RetrievePage(self)
@@ -67,39 +112,4 @@ class PagePayload(PayloadEditor, GroundEditor, metaclass=ABCMeta):
             # TODO: update {self._read};
             #  1. use the <response> = self.gateway.execute()
             #  2. update PageParser yourself without response
-        self.requestor = UpdatePage(self)
-
-    def apply_page_parser(self, parser: PageParser):
-        if parser.page_id:
-            self.master_id = parser.page_id
-        self._set_title(parser.title)
-        self._set_archived(parser.archived)
-
-    def archive(self):
-        self.requestor.archive()
-
-    def un_archive(self):
-        self.requestor.un_archive()
-
-    @property
-    def title(self):
-        return self._title
-
-    def _set_title(self, value: str):
-        old_value = self.title
-        self._title = value
-
-        # register to root
-        register_point = self.root.by_title
-        if old_value:
-            register_point[old_value].remove(self)
-        if value:
-            register_point[value].append(self)
-
-        # register to parent
-        if self.parent:
-            register_point = self.parent.children.by_title
-            if old_value:
-                register_point[old_value].remove(self)
-            if value:
-                register_point[value].append(self)
+        self.clear_requestor()

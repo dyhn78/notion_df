@@ -42,7 +42,7 @@ class SyncResolveAlgorithm:
 
     def execute(self):
         for front in self.fronts:
-            front_id = front.master_id
+            front_id = front.block_id
             back_ids = front.props.read_at(self.tag_forward)
             for back_id in back_ids:
                 back: PageRow = self.backs.by_id[back_id]
@@ -50,4 +50,4 @@ class SyncResolveAlgorithm:
                 if front_id not in front_ids:
                     front_ids.append(front_id)
                     back.props.write_at(self.tag_backward, front_id)
-                    stopwatch(f"{back.master_name} -> {front.master_name}")
+                    stopwatch(f"{back.block_name} -> {front.block_name}")
