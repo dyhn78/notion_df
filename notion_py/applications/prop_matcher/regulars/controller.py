@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from .match_to_dates import DateMatcherType1, DateMatcherType2
-from .match_to_itself import MatchertoItself
+from .match_to_itself import SelfMatcher
 from .match_to_periods import PeriodMatcherType1, PeriodMatcherType2
+from .match_to_projects import ProjectMatcher
 from ..common.base import Matcher, LocalBase
 
 
@@ -12,13 +13,15 @@ class MatchController:
         self.date_range = date_range
 
     def execute(self):
-        self.bs.fetch(self.date_range)
+        self.bs.fetch()
+        # self.bs.fetch(self.date_range)
         agents: list[Matcher] = [
-            MatchertoItself(self.bs),
+            SelfMatcher(self.bs),
             DateMatcherType1(self.bs),
             DateMatcherType2(self.bs),
             PeriodMatcherType1(self.bs),
-            PeriodMatcherType2(self.bs)
+            PeriodMatcherType2(self.bs),
+            ProjectMatcher(self.bs),
         ]
         for agent in agents:
             agent.execute()
@@ -28,7 +31,7 @@ class MatchController:
 class RegularLocalBase(LocalBase):
     MAX_REQUEST_SIZE = 100
 
-    def fetch(self, date_range: int):
+    def fetch(self):
         # for pagelist in [self.periods, self.dates]:
         #     query_within_date_range(pagelist, 'index_as_domain', date_range)
         for pagelist in [self.dates]:

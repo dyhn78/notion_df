@@ -1,7 +1,7 @@
 from notion_py.applications.prop_matcher.common.base import Matcher
 
 
-class MatchertoItself(Matcher):
+class SelfMatcher(Matcher):
     def execute(self):
         for pagelist in [self.bs.dates,
                          self.bs.journals, self.bs.memos, self.bs.writings]:

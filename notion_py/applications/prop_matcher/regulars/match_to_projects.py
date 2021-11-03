@@ -3,7 +3,7 @@ from ..common.helpers import find_all_unarchived_id_from_relation, \
     append_prop
 
 
-class MatchtoProjects(Matcher):
+class ProjectMatcher(Matcher):
     def execute(self):
         domain = self.bs.writings
         reference = self.bs.journals

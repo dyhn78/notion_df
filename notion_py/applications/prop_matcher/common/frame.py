@@ -52,7 +52,7 @@ class MatchFrames:
     WRITINGS = Frame(_AUTO_DATE,
                      [_title, _to_journals, _to_readings, _to_channels,
                       Unit(tag='to_itself', key='🔁쓰기'),
-                      Unit(tag='to_themes', key='📕요소'),
+                      Unit(tag='to_themes', key='📕맥락'),
                       ])
 
     for _frame in [DATES, JOURNALS, MEMOS, WRITINGS]:
