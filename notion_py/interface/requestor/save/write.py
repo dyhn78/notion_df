@@ -15,11 +15,11 @@ class CreatePage(PointRequestor, PagePropertyStash, BlockChildrenStash):
         self.parent_type = 'database_id' if under_database else 'page_id'
 
     @property
-    def target_id(self):
+    def parent_id(self):
         return self.editor.parent_id
 
     @property
-    def target_name(self):
+    def parent_name(self):
         return self.editor.parent.block_name
 
     def __bool__(self):
@@ -33,7 +33,7 @@ class CreatePage(PointRequestor, PagePropertyStash, BlockChildrenStash):
     def encode(self):
         res = dict(**PagePropertyStash.encode(self),
                    **BlockChildrenStash.encode(self),
-                   parent={self.parent_type: self.target_id})
+                   parent={self.parent_type: self.parent_id})
         return res
 
     @drop_empty_request
@@ -49,7 +49,8 @@ class CreatePage(PointRequestor, PagePropertyStash, BlockChildrenStash):
             form = ['create_page', f"< {self.target_name} >",
                     '\n\t', target_url]
         else:
-            form = ['create_page', target_url]
+            form = ['create_page_at', f"< {self.parent_name} >",
+                    '\n\t', target_url]
         comments = ' '.join(form)
         stopwatch(comments)
 
@@ -89,12 +90,11 @@ class UpdatePage(PointRequestor, PagePropertyStash):
         return res
 
     def print_comments(self):
-        target_url = page_id_to_url(self.target_id)
         if self.target_name:
             form = ['update_page', f"< {self.target_name} >",
-                    '\n\t', target_url]
+                    '\n\t', self.target_url]
         else:
-            form = ['update_page', target_url]
+            form = ['update_page', self.target_url]
         comments = ' '.join(form)
         stopwatch(comments)
 
@@ -139,12 +139,11 @@ class UpdateBlock(PointRequestor):
         return res
 
     def print_comments(self):
-        target_url = page_id_to_url(self.target_id)
         if self.target_name:
             form = ['update_block', f"< {self.target_name} >",
-                    '\n\t', target_url]
+                    '\n\t', self.target_url]
         else:
-            form = ['update_block', target_url]
+            form = ['update_block', self.target_url]
         comments = ' '.join(form)
         stopwatch(comments)
 
@@ -172,11 +171,10 @@ class AppendBlockChildren(PointRequestor, BlockChildrenStash):
         BlockChildrenStash.clear(self)
 
     def print_comments(self):
-        target_url = page_id_to_url(self.target_id)
         if self.target_name:
             form = ['append_block', f"< {self.target_name} >",
-                    '\n\t', target_url]
+                    '\n\t', self.target_url]
         else:
-            form = ['append_block', target_url]
+            form = ['append_block', self.target_url]
         comments = ' '.join(form)
         stopwatch(comments)

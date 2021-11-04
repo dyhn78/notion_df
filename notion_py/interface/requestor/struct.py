@@ -23,16 +23,11 @@ class PointRequestor(Requestor, metaclass=ABCMeta):
 
     @property
     def target_name(self):
-        return self.editor.master.block_name
+        return self.editor.block_name
 
     @property
     def target_url(self):
         return page_id_to_url(self.target_id)
-
-
-class TruthyPointRequestor(PointRequestor, metaclass=ABCMeta):
-    def __bool__(self):
-        return True
 
 
 class LongRequestor(PointRequestor):
@@ -78,11 +73,6 @@ class LongRequestor(PointRequestor):
     def _print_comments_each(self):
         comments = f'→ {self.response_size} 개 완료'
         stopwatch(comments)
-
-
-class TruthyLongRequestor(LongRequestor, metaclass=ABCMeta):
-    def __bool__(self):
-        return True
 
 
 def drop_empty_request(method: Callable):

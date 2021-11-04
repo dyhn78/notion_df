@@ -43,9 +43,8 @@ class ContentsBearer(MasterEditor, metaclass=ABCMeta):
 
 class BlockContents(PayloadEditor, GroundEditor, metaclass=ABCMeta):
     def __init__(self, caller: ContentsBearer, block_id: str):
-        super().__init__(caller)
+        PayloadEditor.__init__(self, caller, block_id)
         self.caller = caller
-        self._set_block_id(block_id)
         self._read_plain = ''
         self._read_rich = []
 

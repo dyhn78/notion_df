@@ -20,9 +20,9 @@ class RetrieveDatabase(PointRequestor):
     def print_comments(self):
         if self.target_name:
             form = ['retrieve_database', f"< {self.target_name} >",
-                    '\n\t', self.target_id]
+                    '\n\t', self.target_url]
         else:
-            form = ['retrieve_database', self.target_id]
+            form = ['retrieve_database', self.target_url]
         comments = ' '.join(form)
         stopwatch(comments)
 
@@ -72,9 +72,9 @@ class RetrieveBlock(PointRequestor):
     def print_comments(self):
         if self.target_name:
             form = ['retrieve_block', f"< {self.target_name} >",
-                    '\n\t', self.target_id]
+                    '\n\t', self.target_url]
         else:
-            form = ['retrieve_block', self.target_id]
+            form = ['retrieve_block', self.target_url]
         comments = ' '.join(form)
         stopwatch(comments)
 
@@ -87,9 +87,11 @@ class GetBlockChildren(LongRequestor):
         return True
 
     def encode(self, page_size=None, start_cursor=None):
+        if page_size is None:
+            page_size = self.MAX_PAGE_SIZE
         args = dict(block_id=self.target_id,
-                    page_size=(page_size if page_size else self.MAX_PAGE_SIZE))
-        if start_cursor:
+                    page_size=page_size)
+        if start_cursor is not None:
             args.update(start_cursor=start_cursor)
         return args
 
@@ -107,8 +109,8 @@ class GetBlockChildren(LongRequestor):
     def print_comments(self):
         if self.target_name:
             form = ['fetch_children', f"< {self.target_name} >",
-                    '\n\t', self.target_id]
+                    '\n\t', self.target_url]
         else:
-            form = ['fetch_children', self.target_id]
+            form = ['fetch_children', self.target_url]
         comments = ' '.join(form)
         stopwatch(comments)

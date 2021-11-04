@@ -26,7 +26,7 @@ class PageItem(PageBlock, ChildrenAndContentsBearer):
 
     @property
     def payload(self) -> PageItemContents:
-        return self.contents
+        return self._contents
 
     @property
     def contents(self) -> PageItemContents:
@@ -58,6 +58,10 @@ class PageItemContents(PagePayload, ChildrenBearersContents, PageContentsWriter)
         else:
             requestor = UpdatePage(self)
         self._requestor = requestor
+
+    # @property
+    # def can_have_children(self):
+    #     return True
 
     @property
     def requestor(self) -> Union[UpdatePage, CreatePage]:
