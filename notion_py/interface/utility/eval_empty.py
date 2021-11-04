@@ -1,5 +1,6 @@
 def eval_empty(value):
-    if type(value) in [bool, list, dict]:
+    if type(value) in [list, dict]:
         return bool(value)
     else:
-        return str(value) in ['', '.', '-', '0', '1']
+        falsey = ['', '.', '-', '0', '1', 'None', 'False']
+        return str(value) in falsey

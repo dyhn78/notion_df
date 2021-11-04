@@ -75,8 +75,8 @@ class BookstoreScraper:
             self.page.props.write_text_at('publisher', publisher)
         if volume := data.get('page_count'):
             self.page.props.write_number_at('volume', volume)
-
         self.page.root.enable_overwrite = True
+        self.page.save_preview()
 
     def set_cover_image(self, data: dict):
         if cover_image := data.get('cover_image'):
@@ -86,8 +86,6 @@ class BookstoreScraper:
                                  file_url=cover_image)
 
     def set_contents_data(self, data: dict):
-        # from pprint import pprint
-        # pprint(data)
         contents = data.get('contents', [])
         subpage = self.get_subpage()
         remove_dummy_blocks(subpage)
