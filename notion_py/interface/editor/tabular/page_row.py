@@ -2,12 +2,12 @@ from typing import Union, Optional
 
 from notion_py.interface.common import PropertyFrame
 from ..common.pages import PageBlock
-from ..common.struct import BlockEditor
+from ..common.with_children import BlockChildren
 from ..root_editor import RootEditor
 
 
 class PageRow(PageBlock):
-    def __init__(self, caller: Union[RootEditor, BlockEditor],
+    def __init__(self, caller: Union[RootEditor, BlockChildren],
                  page_id: str,
                  frame: Optional[PropertyFrame] = None):
         super().__init__(caller)
@@ -16,6 +16,10 @@ class PageRow(PageBlock):
 
         from .page_row_props import PageRowProperty
         self.props = PageRowProperty(self, page_id)
+
+        from .pagelist import PageList
+        if isinstance(self.caller, PageList):
+            self.caller.attach_page(self)
 
     @property
     def payload(self):

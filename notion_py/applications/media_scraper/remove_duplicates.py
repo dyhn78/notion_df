@@ -22,7 +22,7 @@ class ReadingDBDuplicateRemover(ReadingDBController):
         # maker = query.filter_maker.text_at('title')
         # ft_media &= maker.starts_with('칸트의')
         query.push_filter(ft_media)
-        query.save()
+        query.execute(request_size)
 
 
 def remove_dummy_blocks(page: ItemsBearer):

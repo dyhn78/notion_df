@@ -1,24 +1,21 @@
 from __future__ import annotations
 
-from typing import Union
+from typing import Union, Callable
 
 from notion_py.interface.encoder import (
-    TextContentsWriter, RichTextContentsEncoder)
+    TextContentsWriter, RichTextContentsEncoder, ContentsEncoder)
 from notion_py.interface.parser import BlockContentsParser
 from notion_py.interface.requestor import UpdateBlock, RetrieveBlock
 from ..common.with_cc import ChildrenBearersContents
-from ..common.with_contents import (
-    ContentsBearer)
-from ..common.with_items import (
-    ItemsBearer, ItemsUpdater, TextItemsCreateAgent)
+from ..common.with_contents import ContentsBearer
+from ..common.with_items import ItemsBearer, ItemAttachments
 from ..root_editor import RootEditor
 
 
 # TODO > Can-Have-Children 을 동적으로 바꿀 수 있을까?
 class TextItem(ItemsBearer, ContentsBearer):
     def __init__(self,
-                 caller: Union[TextItemsCreateAgent,
-                               ItemsUpdater,
+                 caller: Union[ItemAttachments,
                                RootEditor],
                  block_id: str):
         ItemsBearer.__init__(self, caller)
@@ -26,8 +23,8 @@ class TextItem(ItemsBearer, ContentsBearer):
         self.caller = caller
         self._contents = TextContents(self, block_id)
 
-    def push_contents_carrier(self, carrier):
-        return self.caller.push_carrier(self, carrier)
+        if isinstance(self.caller, ItemAttachments):
+            self.caller.attach_text(self)
 
     def save_required(self) -> bool:
         return (self.contents.save_required() or
@@ -74,18 +71,32 @@ class TextContents(ChildrenBearersContents, TextContentsWriter):
     when the master is called from TextItemsCreateAgent and thereby it is yet_not_created,
     they will insert blank paragraph as a default.
     """
+
     def __init__(self, caller: TextItem, block_id: str):
         super().__init__(caller, block_id)
         self.caller = caller
         self._requestor = UpdateBlock(self)
+        self._callback = None
 
     def push_carrier(self, carrier: RichTextContentsEncoder) \
             -> RichTextContentsEncoder:
         self._can_have_children = carrier.can_have_children
         if self.yet_not_created:
-            return self.caller.push_contents_carrier(carrier)
+            return self.callback(carrier)
         else:
             return self.requestor.apply_contents(carrier)
+
+    @property
+    def callback(self) -> Callable[[RichTextContentsEncoder],
+                                   RichTextContentsEncoder]:
+        return self._callback
+
+    def set_callback(
+            self, value: Callable[[ContentsEncoder], ContentsEncoder]):
+        self._callback = value
+
+    def set_placeholder(self):
+        self.write_paragraph('')
 
     def retrieve(self):
         requestor = RetrieveBlock(self)

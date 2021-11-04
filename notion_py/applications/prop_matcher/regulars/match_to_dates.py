@@ -25,7 +25,7 @@ class DateMatcherAbs(Matcher, metaclass=ABCMeta):
         return self.create_date_by_idx(tar_idx)
 
     def create_date_by_idx(self, tar_idx):
-        tar = self.target.create_page_row()
+        tar = self.target.create_page()
         tar.props.write_at('index_as_target', tar_idx)
         self.tars_by_index.update({tar_idx: tar})
         tar.save()

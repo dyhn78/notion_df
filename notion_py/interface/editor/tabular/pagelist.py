@@ -6,12 +6,11 @@ from typing import Iterator
 
 from notion_client import APIResponseError
 
-from .page_row import PageRow
 from .database import Database
+from .page_row import PageRow
 from ..common.struct import MasterEditor
 from ..common.with_children import BlockChildren
-from ...parser import PageListParser
-from ...requestor import Query
+from ...requestor.query.query import QueryWithCallback
 
 
 class PageList(BlockChildren):
@@ -21,11 +20,67 @@ class PageList(BlockChildren):
         self.frame = caller.frame
 
         from .pagelist_agents import PageListUpdater, PageListCreator
-        self._updater = PageListUpdater(self)
-        self._creator = PageListCreator(self)
+        self.update = PageListUpdater(self)
+        self.create = PageListCreator(self)
 
         self._by_id = {}
         self._by_title = defaultdict(list)
+
+    def open_page(self, page_id: str):
+        return PageRow(caller=self, page_id=page_id, frame=self.frame)
+
+    def create_page(self):
+        return PageRow(caller=self, page_id='', frame=self.frame)
+
+    def attach_page(self, page: PageRow):
+        if page.yet_not_created:
+            self.create.attach_page(page)
+        else:
+            self.update.attach_page(page)
+
+    def detach_page(self, page: PageRow):
+        if page.yet_not_created:
+            self.create.detach_page(page)
+        else:
+            self.update.detach_page(page)
+
+    def open_query(self):
+        def callback(response):
+            return self.update.apply_query_response(response)
+
+        return QueryWithCallback(self, self.frame, callback)
+
+    def fetch(self, request_size=0):
+        """randomly query with the amount of <request_size>."""
+        query = self.open_query()
+        query.execute(request_size)
+
+    def fetch_one(self, page_id: str):
+        """this will first try to search the page in local base,
+        then make a request (RetrievePage).
+        returns child_page if succeed, otherwise returns None."""
+        if page := self.by_id.get(page_id):
+            return page
+        page = self.open_page(page_id)
+        try:
+            page.props.retrieve()
+            return page
+        except APIResponseError:
+            self.detach_page(page)
+            return None
+
+    def save(self):
+        self.update.save()
+        response = self.create.save()
+        self.update.blocks.extend(response)
+
+    def save_info(self):
+        return {'pages': self.update.save_info(),
+                'new_pages': self.create.save_info()}
+
+    def save_required(self):
+        return (self.update.save_required()
+                or self.create.save_required())
 
     @property
     def by_id(self) -> dict[str, PageRow]:
@@ -36,53 +91,19 @@ class PageList(BlockChildren):
         return self._by_title
 
     def list_all(self):
-        return self._updater.blocks + self._creator.blocks
+        return self.update.blocks + self.create.blocks
 
     def iter_all(self) -> Iterator[MasterEditor]:
         return iter(self.list_all())
 
-    def fetch(self, request_size=0):
-        query = self.open_query()
-        query.execute(request_size)
+    def by_value_of(self, prop_key: str):
+        res = defaultdict(list)
+        for page in self.list_all():
+            res[page.props.read_of(prop_key)].append(page)
+        return res
 
-    def open_query(self) -> Query:
-        return Query(self, self.frame)
-
-    def apply_query_response(self, response):
-        parser = PageListParser(response)
-        pages = self._updater.apply_pagelist_parser(parser)
-        return pages
-
-    def fetch_a_child(self, page_id: str):
-        """this will first try to search the page in local base,
-        then make a request (RetrievePage).
-        returns child_page if succeed, otherwise returns None."""
-        if page := self.by_id.get(page_id):
-            return page
-        page = self._updater.open_page(page_id)
-        try:
-            page.props.retrieve()
-            return page
-        except APIResponseError:
-            self._updater.close_page(page)
-            del page
-            return None
-
-    def create_page_row(self):
-        return self._creator.create_page_row()
-
-    def save(self):
-        self._updater.save()
-        response = self._creator.save()
-        self._updater.blocks.extend(response)
-
-    def save_info(self):
-        return {'pages': self._updater.save_info(),
-                'new_pages': self._creator.save_info()}
-
-    def save_required(self):
-        return (self._updater.save_required()
-                or self._creator.save_required())
+    def by_value_at(self, prop_tag: str):
+        return self.by_value_of(self.frame.key_at(prop_tag))
 
     def by_idx_value_of(self, prop_key: str):
         try:
@@ -96,14 +117,5 @@ class PageList(BlockChildren):
             pprint(f"value : {page_object.block_id}")
             raise TypeError
 
-    def by_value_of(self, prop_key: str):
-        res = defaultdict(list)
-        for page in self.list_all():
-            res[page.props.read_of(prop_key)].append(page)
-        return res
-
     def by_idx_value_at(self, prop_tag: str):
         return self.by_idx_value_of(self.frame.key_at(prop_tag))
-
-    def by_value_at(self, prop_tag: str):
-        return self.by_value_of(self.frame.key_at(prop_tag))

@@ -15,7 +15,7 @@ class AppendContents:
             if depth != 0:
                 max_depth = max(max_depth, depth)
         for text_line in self.contents:
-            block = self.page.attachments.create_text_item()
+            block = self.page.attachments.create_text()
             depth = self.get_depth(text_line)
             if depth != 0:
                 depth += (4 - max_depth)

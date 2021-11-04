@@ -103,7 +103,7 @@ class BookstoreScraper:
                 subpage = block
                 break
         else:
-            subpage = self.page.attachments.create_page_item()
+            subpage = self.page.attachments.create_page()
         subpage.contents.write_title(f'={self.page.title}')
         subpage.save()
         return subpage

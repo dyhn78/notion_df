@@ -9,20 +9,21 @@ from notion_py.interface.requestor import CreatePage, UpdatePage
 from notion_py.interface.utility import eval_empty
 from ..common.pages import PageBlock, PagePayload
 from ..common.with_cc import ChildrenAndContentsBearer, ChildrenBearersContents
-from ..common.with_items import ItemsUpdater, PageItemCreateAgent
+from ..common.with_items import ItemAttachments
 from ..root_editor import RootEditor
 
 
 class PageItem(PageBlock, ChildrenAndContentsBearer):
     def __init__(self,
-                 caller: Union[RootEditor,
-                               ItemsUpdater,
-                               PageItemCreateAgent],
+                 caller: Union[ItemAttachments, RootEditor],
                  page_id: str):
         PageBlock.__init__(self, caller)
         ChildrenAndContentsBearer.__init__(self, caller)
         self.caller = caller
         self._contents = PageItemContents(self, page_id)
+
+        if isinstance(self.caller, ItemAttachments):
+            self.caller.attach_page(self)
 
     @property
     def payload(self) -> PageItemContents:

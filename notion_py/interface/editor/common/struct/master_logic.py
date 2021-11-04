@@ -53,6 +53,12 @@ class BlockEditor(Editor, metaclass=ABCMeta):
 class MasterEditor(BlockEditor):
     def __init__(self, caller: Editor):
         super().__init__(caller)
+        """implementations:
+        1. declare payload, make it register to parent/root (.by_id, .by_title):
+            this allows to search and read specific page from the collection.
+        2. attach self to pagelist (.update.blocks, .create.blocks):
+            this determine the order of saving process of the collection.
+        """
 
     @property
     @abstractmethod

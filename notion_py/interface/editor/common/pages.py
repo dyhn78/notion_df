@@ -69,10 +69,6 @@ class PagePayload(PayloadEditor, GroundEditor, metaclass=ABCMeta):
             register_point = self.parent.children.by_title
             register_point[self.title].append(self)
 
-    def unregister_all(self):
-        self._unregister_id()
-        self._unregister_title()
-
     def _unregister_title(self):
         if self.title == '':
             return
@@ -83,6 +79,10 @@ class PagePayload(PayloadEditor, GroundEditor, metaclass=ABCMeta):
         if self.parent:
             register_point = self.parent.children.by_title
             register_point[self.title].remove(self)
+
+    def unregister_all(self):
+        self._unregister_id()
+        self._unregister_title()
 
     def archive(self):
         self.requestor.archive()

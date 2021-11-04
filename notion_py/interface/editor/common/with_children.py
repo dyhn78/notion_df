@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
+from collections import defaultdict
 from typing import Iterator, Union, Iterable
 
 from .struct import BlockEditor, MasterEditor, Editor
@@ -80,30 +81,34 @@ class BlockChildren(BlockEditor, metaclass=ABCMeta):
     def __init__(self, caller: ChildrenBearer):
         super().__init__(caller)
         self.caller = caller
+        self._by_id = {}
+        self._by_title = defaultdict(list)
+
+    @abstractmethod
+    def fetch(self, request_size=0):
+        pass
+
+    @abstractmethod
+    def iter_all(self) -> Iterator[MasterEditor]:
+        pass
 
     @property
-    @abstractmethod
     def by_id(self) -> dict[str, MasterEditor]:
         # will be auto-updated by child blocks.
-        pass
+        return self._by_id
 
     def ids(self):
         return self.by_id.keys()
 
     @property
-    @abstractmethod
     def by_title(self) -> dict[str, list[MasterEditor]]:
         # will be auto-updated by child blocks.
-        pass
+        return self._by_title
 
     def __iter__(self):
         """this will return ALL child blocks, even if
         block.yet_not_created or block.archived."""
         return self.iter_all()
-
-    @abstractmethod
-    def iter_all(self) -> Iterator[MasterEditor]:
-        pass
 
     def iter_valids(self, exclude_archived_blocks=True,
                     exclude_yet_not_created_blocks=True) \
@@ -114,7 +119,3 @@ class BlockChildren(BlockEditor, metaclass=ABCMeta):
             if exclude_yet_not_created_blocks and child.yet_not_created:
                 continue
             yield child
-
-    @abstractmethod
-    def fetch(self, request_size=0):
-        pass

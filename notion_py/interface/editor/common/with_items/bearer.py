@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from abc import ABCMeta
-from collections import defaultdict
 from typing import Union, Iterator
 
 from notion_py.interface.editor.common.with_children import ChildrenBearer, BlockChildren
@@ -26,39 +25,74 @@ class ItemAttachments(BlockChildren):
     def __init__(self, caller: ItemsBearer):
         super().__init__(caller)
         self.caller = caller
-        self._by_id = {}
-        self._by_title = defaultdict(list)
 
         from .updater import ItemsUpdater
-        self._updater = ItemsUpdater(self)
+        self.update = ItemsUpdater(self)
 
         from .creator import ItemsCreator
-        self.creator = ItemsCreator(self)
+        self.create = ItemsCreator(self)
 
-    def create_text_item(self):
+    def create_text(self):
+        from ...inline import TextItem
+        return TextItem(self, '')
+
+    def create_page(self):
+        from ...inline import PageItem
+        return PageItem(self, '')
+
+    def attach_text(self, child):
+        from ...inline import TextItem
+        assert isinstance(child, TextItem)
         if not self.master.can_have_children:
             raise BlockTypeError(self.master)
-        return self.creator.create_text_item()
+        if child.yet_not_created:
+            self.create.attach_text_item(child)
+        else:
+            self.update.attach_item(child)
 
-    def create_page_item(self):
+    def attach_page(self, child):
+        from ...inline import PageItem
+        assert isinstance(child, PageItem)
         if not self.master.can_have_children:
             raise BlockTypeError(self.master)
-        return self.creator.create_page_item()
+        if child.yet_not_created:
+            self.create.attach_page_item(child)
+        else:
+            self.update.attach_item(child)
 
-    def indent_next_item(self) -> ItemAttachments:
+    # def create_page_alt(self):
+    #     if not self.master.can_have_children:
+    #         raise BlockTypeError(self.master)
+    #     from ...inline.page_item import PageItem
+    #     space = self.create.make_space_for_page_item()
+    #     item = PageItem(space, '')
+
+    def fetch(self, request_size=0):
+        gateway = GetBlockChildren(self)
+        response = gateway.execute(request_size)
+        parser = BlockChildrenParser(response)
+        self.update.apply_children_parser(parser)
+
+    def indent_cursor(self) -> ItemAttachments:
+        """this returns new 'cursor' where you can use of create_xx method.
+        raises BlockTypeError if no child can_have_children."""
         for child in reversed(self.list_all()):
-            if isinstance(child, ItemsBearer):
+            if isinstance(child, ItemsBearer) and child.can_have_children:
                 return child.attachments
         else:
             raise BlockTypeError(self.master)
 
-    def try_indent_next_item(self):
+    def try_indent_cursor(self):
+        """this returns new 'cursor' where you can use of create_xx method.
+        returns <self> if no child can_have_children."""
         try:
-            return self.indent_next_item()
+            return self.indent_cursor()
         except BlockTypeError:
             return self
 
-    def exdent_next_item(self) -> ItemAttachments:
+    def exdent_cursor(self) -> ItemAttachments:
+        """this returns new 'cursor' where you can use of create_xx method.
+        raises NoParentFoundError if failed."""
         parent = self.parent
         try:
             assert isinstance(parent, ItemsBearer)
@@ -66,48 +100,36 @@ class ItemAttachments(BlockChildren):
         except AssertionError:
             raise NoParentFoundError(self.master)
 
-    def try_exdent_next_item(self):
+    def try_exdent_cursor(self):
+        """this returns new 'cursor' where you can use of create_xx method.
+        returns <self> if failed."""
         try:
-            return self.exdent_next_item()
+            return self.exdent_cursor()
         except NoParentFoundError:
             return self
 
-    def fetch(self, request_size=0):
-        gateway = GetBlockChildren(self)
-        response = gateway.execute(request_size)
-        parser = BlockChildrenParser(response)
-        self._updater.apply_parser(parser)
-
     def save(self):
-        self._updater.save()
-        new_children = self.creator.save()
-        self._updater.blocks.extend(new_children)
-        self.creator.clear()
+        self.update.save()
+        new_children = self.create.save()
+        self.update.blocks.extend(new_children)
+        self.create.clear()
 
     def save_info(self):
-        return {'children': self._updater.save_info(),
-                'new_children': self.creator.save_info()}
+        return {'children': self.update.save_info(),
+                'new_children': self.create.save_info()}
 
     def save_required(self):
-        return (self._updater.save_required()
-                or self.creator.save_required())
-
-    @property
-    def by_id(self) -> dict[str, MasterEditor]:
-        return self._by_id
-
-    @property
-    def by_title(self) -> dict[str, list[MasterEditor]]:
-        return self._by_title
+        return (self.update.save_required()
+                or self.create.save_required())
 
     def list_all(self) -> list[MasterEditor]:
-        return self._updater.blocks + self.creator.blocks
+        return self.update.blocks + self.create.blocks
 
     def iter_all(self) -> Iterator[MasterEditor]:
         return iter(self.list_all())
 
     def reads(self):
-        return self._updater.reads()
+        return self.update.reads()
 
     def reads_rich(self):
-        return self._updater.reads_rich()
+        return self.update.reads_rich()

@@ -23,7 +23,7 @@ def find_unique_unarchived_id_from_relation(dom: PageRow, targets: PageList,
                                             to_tar: str) -> str:
     tar_ids = dom.props.read_at(to_tar)
     for tar_id in tar_ids:
-        tar = targets.fetch_a_child(tar_id)
+        tar = targets.fetch_one(tar_id)
         if tar is not None and not tar.archived:
             return tar_id
     return ''
@@ -37,7 +37,7 @@ def find_all_unarchived_id_from_relation(dom: PageRow, targets: PageList,
         if tar_id in targets.ids():
             res.append(tar_id)
             continue
-        tar = targets.fetch_a_child(tar_id)
+        tar = targets.fetch_one(tar_id)
         if tar is not None and not tar.archived:
             res.append(tar.block_id)
             continue

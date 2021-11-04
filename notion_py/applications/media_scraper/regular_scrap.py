@@ -46,13 +46,14 @@ class ReadingPageScrapController(ReadingPageController):
     def __init__(self, caller: ReadingDBScrapController, page: PageRow):
         super().__init__(caller, page)
         self.caller = caller
-        self.tasks = caller.tasks.copy()
-
         self.page = page
-        self._status = ''
         self.rich_overwrite_option = self.get_overwrite_option()
+
+        self.tasks = caller.tasks.copy()
         if self.rich_overwrite_option == 'continue':
             self.tasks.remove('bookstore')
+        self._status = ''
+        self._status_finalized = False
 
     def execute(self):
         if not self.tasks:
@@ -89,10 +90,16 @@ class ReadingPageScrapController(ReadingPageController):
             return 'append'
 
     def set_as_url_missing(self):
+        if self._status_finalized:
+            return
         self._status = self.caller.status_enum['url_missing']
+        self._status_finalized = True
 
     def set_as_lib_missing(self):
+        if self._status_finalized:
+            return
         self._status = self.caller.status_enum['lib_missing']
+        self._status_finalized = True
 
     def set_as_done(self):
         if self.rich_overwrite_option == 'append':

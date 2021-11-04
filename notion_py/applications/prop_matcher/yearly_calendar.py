@@ -56,7 +56,7 @@ class DatePagesCreator:
             title = self.encode_title(date)
             if self.target.by_title[title]:
                 continue
-            tar = self.target.create_page_row()
+            tar = self.target.create_page()
             tar.props.write_title_at('index_as_target')
 
     def range_date(self):

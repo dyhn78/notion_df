@@ -19,7 +19,7 @@ class BlockChildrenStash(ValueCarrier):
         stash = [carrier.encode() for carrier in self.subcarriers]
         return {'children': stash}
 
-    def apply_contents(self, i: int, carrier: ContentsEncoder):
+    def apply_contents(self, i: int, carrier: ContentsEncoder) -> ContentsEncoder:
         self.subcarriers[i] = carrier
         return self.subcarriers[i]
 

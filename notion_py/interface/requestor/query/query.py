@@ -1,3 +1,5 @@
+from typing import Callable
+
 from notion_py.interface.editor.common.struct import BlockEditor
 from .filter_unit import QueryFilter, EmptyFilter
 from ..struct import LongRequestor, print_response_error
@@ -43,11 +45,11 @@ class Query(LongRequestor):
     def execute(self, request_size=0):
         self.print_comments()
         response = self._execute_all(request_size, print_comments_each=True)
-
-        from ...editor.tabular.pagelist import PageList
-        assert isinstance(self.editor, PageList)
-        pages = self.editor.apply_query_response(response)
-        return pages
+        return response
+        # from ...editor.tabular.pagelist_agents import PageListUpdater
+        # assert isinstance(self.editor, PageListUpdater)
+        # pages = self.editor.apply_query_response(response)
+        # return pages
 
     @print_response_error
     def _execute_each(self, request_size, start_cursor=None):
@@ -64,3 +66,14 @@ class Query(LongRequestor):
             form = ['query', target_url]
         comments = '  '.join(form)
         stopwatch(comments)
+
+
+class QueryWithCallback(Query):
+    def __init__(self, editor: BlockEditor, frame: PropertyFrame,
+                 execute_callback: Callable):
+        super().__init__(editor, frame)
+        self.callback = execute_callback
+
+    def execute(self, request_size=0):
+        response = super().execute(request_size)
+        self.callback(response)
