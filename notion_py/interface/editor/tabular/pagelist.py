@@ -2,15 +2,16 @@ from __future__ import annotations
 
 from collections import defaultdict
 from pprint import pprint
-from typing import Iterator
+from typing import Iterator, Callable, Any
 
 from notion_client import APIResponseError
 
 from .database import Database
 from .page_row import PageRow
-from ..common.struct import MasterEditor
+from ..common.struct import MasterEditor, BlockEditor
 from ..common.with_children import BlockChildren
-from ...requestor.query.query import QueryWithCallback
+from ...common import PropertyFrame
+from ...requestor import Query
 
 
 class PageList(BlockChildren):
@@ -119,3 +120,15 @@ class PageList(BlockChildren):
 
     def by_idx_value_at(self, prop_tag: str):
         return self.by_idx_value_of(self.frame.key_at(prop_tag))
+
+
+class QueryWithCallback(Query):
+    def __init__(self, editor: BlockEditor, frame: PropertyFrame,
+                 execute_callback: Callable[[Any], list[PageRow]]):
+        super().__init__(editor, frame)
+        self.callback = execute_callback
+
+    def execute(self, request_size=0):
+        response = super().execute(request_size)
+        pages = self.callback(response)
+        return pages

@@ -67,6 +67,7 @@ def query_target_by_idx(
     ft = maker.equals(tar_idx)
     tar_query.push_filter(ft)
     tars = tar_query.execute()
+    tars = [tar for tar in tars if not tar.archived]
     if tars:
         assert len(tars) == 1
         return tars[0]

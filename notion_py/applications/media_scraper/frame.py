@@ -17,7 +17,7 @@ ReadingDB_FRAME = PropertyFrame([
              'completely_done': '7️⃣⛳스크랩 완료'
          },
          value_groups_by_tag={
-             'regulars': ['append', 'overwrite', 'continue'],
+             'matchers': ['append', 'overwrite', 'continue'],
              'need_resets': ['url_missing', 'lib_missing'],
              'done': ['done', 'completely_done']
          },

@@ -4,14 +4,12 @@ from notion_py.interface.common import PropertyFrame
 from notion_py.interface.parser import DatabaseParser
 from notion_py.interface.requestor import RetrieveDatabase
 from ..common.with_children import ChildrenBearer, BlockChildren
-from ..common.with_items import ItemsCreator, ItemsUpdater
+from ..common.with_items import ItemAttachments
 from ..root_editor import RootEditor
 
 
 class Database(ChildrenBearer):
-    def __init__(self, caller: Union[RootEditor,
-                                     ItemsUpdater,
-                                     ItemsCreator],
+    def __init__(self, caller: Union[RootEditor, ItemAttachments],
                  database_id: str,
                  database_alias='',
                  frame: Optional[PropertyFrame] = None):
@@ -19,16 +17,25 @@ class Database(ChildrenBearer):
         self.caller = caller
         self.frame = frame if frame else PropertyFrame()
         self.alias = database_alias
+        self.root.by_alias[self.alias] = self
 
         from .database_schema import DatabaseSchema
         self.schema = DatabaseSchema(self, database_id)
 
         from .pagelist import PageList
-        self.pagelist = PageList(self)
+        self._pagelist = PageList(self)
 
     @property
     def payload(self):
         return self.schema
+
+    @property
+    def pagelist(self):
+        return self._pagelist
+
+    @property
+    def pl(self):
+        return self.pagelist
 
     @property
     def children(self) -> BlockChildren:

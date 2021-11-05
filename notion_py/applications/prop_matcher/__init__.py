@@ -1,2 +1,2 @@
-from notion_py.applications.prop_matcher.regulars.controller import MatchController
+from notion_py.applications.prop_matcher.regular_match import MatchController
 from .sync_resolve import PropertySyncResolver

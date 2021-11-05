@@ -19,9 +19,10 @@ class DateMatcherAbs(Matcher, metaclass=ABCMeta):
         tar_idx = date_handler.strf_dig6_and_weekday()
         if tar := self.tars_by_index.get(tar_idx):
             return tar
-        if tar := query_target_by_idx(self.target, tar_idx, 'text'):
+        if tar := query_target_by_idx(self.target, tar_idx, 'title'):
             self.tars_by_index.update({tar_idx: tar})
             return tar
+        # raise AssertionError(date_handler.date, tar_idx)
         return self.create_date_by_idx(tar_idx)
 
     def create_date_by_idx(self, tar_idx):

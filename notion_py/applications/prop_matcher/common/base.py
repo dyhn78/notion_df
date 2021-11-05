@@ -18,16 +18,16 @@ class Matcher(ABC):
 class LocalBase:
     def __init__(self):
         self.root = RootEditor()
-        self.periods = self.root.open_pagelist(*DatabaseInfo.PERIODS,
-                                               frame=MatchFrames.PERIODS)
-        self.dates = self.root.open_pagelist(*DatabaseInfo.DATES,
-                                             frame=MatchFrames.DATES)
-        self.journals = self.root.open_pagelist(*DatabaseInfo.JOURNALS,
-                                                frame=MatchFrames.JOURNALS)
-        self.memos = self.root.open_pagelist(*DatabaseInfo.MEMOS,
-                                             frame=MatchFrames.MEMOS)
-        self.writings = self.root.open_pagelist(*DatabaseInfo.WRITINGS,
-                                                frame=MatchFrames.WRITINGS)
+        self.periods = self.root.open_database(*DatabaseInfo.PERIODS,
+                                               frame=MatchFrames.PERIODS).pagelist
+        self.dates = self.root.open_database(*DatabaseInfo.DATES,
+                                             frame=MatchFrames.DATES).pagelist
+        self.journals = self.root.open_database(*DatabaseInfo.JOURNALS,
+                                                frame=MatchFrames.JOURNALS).pagelist
+        self.memos = self.root.open_database(*DatabaseInfo.MEMOS,
+                                             frame=MatchFrames.MEMOS).pagelist
+        self.writings = self.root.open_database(*DatabaseInfo.WRITINGS,
+                                                frame=MatchFrames.WRITINGS).pagelist
 
     def save(self):
         self.root.save()

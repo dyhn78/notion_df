@@ -31,7 +31,7 @@ class ReadingDBScrapController(ReadingDBController):
         maker = query.filter_maker.select_at('media_type')
         ft_media = maker.equals_to_any(maker.prop_value_groups['book'])
         maker = query.filter_maker.select_at('edit_status')
-        ft_status = maker.equals_to_any(maker.prop_value_groups['regulars'])
+        ft_status = maker.equals_to_any(maker.prop_value_groups['matchers'])
         ft_status |= maker.is_empty()
         ft = ft_media & ft_status
         if self.title:

@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-from .match_to_dates import DateMatcherType1, DateMatcherType2
-from .match_to_itself import SelfMatcher
-from .match_to_periods import PeriodMatcherType1, PeriodMatcherType2
-from .match_to_projects import ProjectMatcher
-from ..common.base import Matcher, LocalBase
+from .matchers.match_to_dates import DateMatcherType1, DateMatcherType2
+from .matchers.match_to_itself import SelfMatcher
+from .matchers.match_to_periods import PeriodMatcherType1, PeriodMatcherType2
+from .matchers.match_to_projects import ProjectMatcher
+from .common.base import Matcher, LocalBase
+from ...interface.editor.tabular import Database
 
 
 class MatchController:
@@ -30,6 +31,10 @@ class MatchController:
 
 class RegularLocalBase(LocalBase):
     MAX_REQUEST_SIZE = 100
+
+    def __init__(self):
+        super().__init__()
+        self.root.exclude_archived = True
 
     def fetch(self):
         # for pagelist in [self.periods, self.dates]:

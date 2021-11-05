@@ -1,5 +1,3 @@
-from typing import Callable
-
 from notion_py.interface.editor.common.struct import BlockEditor
 from .filter_unit import QueryFilter, EmptyFilter
 from ..struct import LongRequestor, print_response_error
@@ -66,14 +64,3 @@ class Query(LongRequestor):
             form = ['query', target_url]
         comments = '  '.join(form)
         stopwatch(comments)
-
-
-class QueryWithCallback(Query):
-    def __init__(self, editor: BlockEditor, frame: PropertyFrame,
-                 execute_callback: Callable):
-        super().__init__(editor, frame)
-        self.callback = execute_callback
-
-    def execute(self, request_size=0):
-        response = super().execute(request_size)
-        self.callback(response)

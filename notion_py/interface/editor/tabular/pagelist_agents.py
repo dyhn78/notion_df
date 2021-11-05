@@ -36,12 +36,18 @@ class PageListUpdater(ListEditor):
     def apply_pagelist_parser(self, parser: PageListParser):
         pages = []
         for page_parser in parser:
-            pages.append(self.apply_page_parser(page_parser))
+            page = self.apply_page_parser(page_parser)
+            if page is not None:
+                pages.append(page)
         return pages
 
     def apply_page_parser(self, parser: PageParser):
         page_id = parser.page_id
-        if not (page := self.caller.by_id.get(page_id)):
+        if page_id in self.caller.ids():
+            page = self.caller.by_id[page_id]
+        else:
+            if self.root.exclude_archived and parser.archived:
+                return None
             page = self.caller.open_page(page_id)
         page.props.apply_page_parser(parser)
         return page
