@@ -37,8 +37,11 @@ class SeleniumScraper:
             driver = webdriver.Chrome(self.chromedriver_path, options=options,
                                       service_log_path=os.devnull)
             driver.minimize_window()
-            driver.start_client()
             self.drivers.append(driver)
+
+    def start(self):
+        for driver in self.drivers:
+            driver.start_client()
 
     @property
     def chromedriver_path(self):

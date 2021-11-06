@@ -4,18 +4,35 @@ from notion_py.interface.utility import stopwatch
 from .gy_selenium import GoyangLibrary
 from .snu_selenium import SNULibrary
 from ..regular_scrap import ReadingDBScrapController, ReadingPageScrapController
+from ..common.selenium import SeleniumScraper
 
 
 class LibraryScrapManager:
     def __init__(self, caller: ReadingDBScrapController):
         self.caller = caller
         self.tasks = caller.tasks
-        self.gylib = GoyangLibrary() if 'gy_lib' in self.tasks else None
-        self.snulib = SNULibrary() if 'snu_lib' in self.tasks else None
+        self.drivers: list[SeleniumScraper] = []
+        if 'gy_lib' in self.tasks:
+            self.gylib = GoyangLibrary()
+            self.drivers.append(self.gylib)
+        if 'snu_lib' in self.tasks:
+            self.snulib = SNULibrary()
+            self.drivers.append(self.snulib)
+
+    def start(self):
+        for browser in self.drivers:
+            browser.start()
 
     def execute(self, page_cont: ReadingPageScrapController):
         scraper = LibraryScraper(self, page_cont)
         scraper.execute()
+
+    def __del__(self):
+        self.quit()
+
+    def quit(self):
+        for browser in self.drivers:
+            browser.quit()
 
 
 class LibraryScraper:

@@ -7,10 +7,13 @@ from .common.struct import ReadingDBController, ReadingPageController
 
 
 class ReadingDBScrapController(ReadingDBController):
+    BKST = {'bookstore'}
+    LIBS = {'gy_lib', 'snu_lib'}
+
     def __init__(self, tasks: Optional[set] = None, title=''):
         super().__init__()
         if not tasks:
-            tasks = {'bookstore', 'gy_lib', 'snu_lib'}
+            tasks = self.BKST | self.LIBS
         self.tasks = tasks
         self.title = title
 
@@ -20,11 +23,21 @@ class ReadingDBScrapController(ReadingDBController):
         from .lib import LibraryScrapManager
         self.lib = LibraryScrapManager(self)
 
+    @property
+    def lib_in_task(self):
+        return any(lib in self.tasks for lib in self.LIBS)
+
     def execute(self, request_size=0):
-        self.make_query(request_size)
+        pages = self.make_query(request_size)
+        if not pages:
+            return
+        if self.lib_in_task:
+            self.lib.start()
         for page in self.pagelist:
             unit = ReadingPageScrapController(self, page)
             unit.execute()
+        if self.lib_in_task:
+            self.lib.quit()
 
     def make_query(self, request_size):
         query = self.pagelist.open_query()
@@ -39,7 +52,8 @@ class ReadingDBScrapController(ReadingDBController):
             ft_title = maker.starts_with(self.title)
             ft &= ft_title
         query.push_filter(ft)
-        query.execute(request_size)
+        pages = query.execute(request_size)
+        return pages
 
 
 class ReadingPageScrapController(ReadingPageController):
