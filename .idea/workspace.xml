@@ -4,124 +4,152 @@
     <option name="GROUP_BY_SEVERITY" value="true" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="620c4a01-5f58-49ef-a421-f45c53b9d9e6" name="새 변경 목록" comment="chromedriver 다 끝나고 닫히지 않는 오류 수정">
-      <change afterPath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/examples/response/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/Notion-py.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Notion-py.iml" afterDir="false" />
+    <list default="true" id="620c4a01-5f58-49ef-a421-f45c53b9d9e6" name="새 변경 목록" comment="* 장고 스타일로 폴더링: &lt;editor.struct.MasterEditor&gt;, &lt;gateway.parsers.PageParser&gt; 식으로 쓸 수 있게 위계 조정.&#10;* GUI 추가 대비이기도 함.">
+      <change beforePath="$PROJECT_DIR$/.idea/Notion-py.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Notion-zap.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/applications/media_scraper/bookstore/bkst_endpoint.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/media_scraper/bookstore/bkst_endpoint.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/applications/media_scraper/bookstore/contents_append.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/media_scraper/bookstore/contents_append.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/applications/media_scraper/common/exceptions.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/media_scraper/common/exceptions.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/applications/media_scraper/common/selenium.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/media_scraper/common/selenium.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/applications/media_scraper/common/struct.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/media_scraper/common/struct.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/applications/media_scraper/lib/lib_endpoint.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/media_scraper/lib/lib_endpoint.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/applications/media_scraper/regular_scrap.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/media_scraper/regular_scrap.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/applications/media_scraper/remove_duplicates.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/media_scraper/remove_duplicates.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/applications/media_scraper/resolve_status.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/media_scraper/resolve_status.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/applications/monad_graph/backups/optimize_position_prototype.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/monad_graph/backups/optimize_position_prototype.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/applications/monad_graph/common/add_nodes.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/monad_graph/common/add_nodes.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/applications/monad_graph/endpoint.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/monad_graph/endpoint.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/applications/monad_graph/frame.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/monad_graph/frame.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/applications/monad_graph/graph_handler/positioning.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/monad_graph/graph_handler/positioning.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/applications/prop_matcher/common/base.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/prop_matcher/common/struct.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/applications/prop_matcher/common/helpers.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/prop_matcher/common/helpers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/applications/prop_matcher/common/query_maker.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/prop_matcher/common/query_maker.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/applications/prop_matcher/matchers/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/prop_matcher/matchers/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/applications/prop_matcher/matchers/match_to_dates.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/prop_matcher/matchers/match_to_dates.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/applications/prop_matcher/matchers/match_to_itself.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/prop_matcher/matchers/match_to_itself.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/applications/prop_matcher/matchers/match_to_periods.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/prop_matcher/matchers/match_to_periods.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/applications/prop_matcher/matchers/match_to_projects.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/prop_matcher/matchers/match_to_projects.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/applications/prop_matcher/regular_match.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/prop_matcher/regular_match.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/applications/prop_matcher/sync_resolve.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/prop_matcher/sync_resolve.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/applications/prop_matcher/yearly_calendar.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/prop_matcher/yearly_calendar.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/common/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/common/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/common/date_format.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/common/date_field.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/common/prop_frame.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/common/frame.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/common/stash.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/common/struct.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/carriers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/editor/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/common/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/editor/common/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/common/exceptions.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/editor/editor_exceptions.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/common/pages.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/editor/common/pages.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/common/struct/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/editor/struct/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/common/struct/agents.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/editor/struct/agents.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/common/struct/base.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/editor/struct/base.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/common/struct/master_logic.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/editor/struct/master_logic.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/common/with_cc.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/editor/common/with_cc.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/common/with_children.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/editor/common/with_children.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/common/with_contents.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/editor/common/with_contents.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/common/with_items/bearer.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/editor/common/with_items/bearer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/common/with_items/creater_alt.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/editor/common/with_items/creater_alt.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/common/with_items/creator.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/editor/common/with_items/creator.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/common/with_items/updater.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/editor/common/with_items/updater.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/inline/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/editor/inline/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/inline/page_item.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/editor/inline/page_item.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/inline/page_item_as_child.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/editor/inline/page_item_as_child.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/inline/parser_logic.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/editor/inline/parser_logic.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/inline/text_item.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/editor/inline/text_item.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/inline/unsupported.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/editor/inline/unsupported.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/root_editor.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/editor/root_editor.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/tabular/database.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/editor/tabular/database.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/tabular/database_schema.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/editor/tabular/database_schema.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/tabular/page_row.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/editor/tabular/page_row.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/tabular/page_row_props.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/editor/tabular/page_row_props.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/tabular/pagelist.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/editor/tabular/pagelist.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/tabular/pagelist_agents.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/editor/tabular/pagelist_agents.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/type_name.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/encoder/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/encoders/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/encoder/contents/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/common/snippets/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/encoder/contents/maker.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/encoders/contents/maker.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/encoder/contents/wrapper.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/encoders/contents/wrapper.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/encoder/property/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/encoder/property/maker.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/encoders/property/maker.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/encoder/property/wrapper.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/encoders/property/wrapper.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/encoder/rich_text.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/encoders/rich_text.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/parser/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/parsers/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/parser/blocks.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/parsers/blocks.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/parser/database.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/parsers/database.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/parser/page.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/parsers/page.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/parser/rich_text.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/parsers/rich_text.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/requestor/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/requestor/examples/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/encoders/contents/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/requestor/examples/requests/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/encoders/property/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/requestor/examples/requests/blocks.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/examples/requests/blocks.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/requestor/examples/requests/create.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/examples/requests/create.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/requestor/examples/requests/property.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/examples/requests/property.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/requestor/examples/requests/query_filter.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/examples/requests/query_filter.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/requestor/examples/response/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/examples/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/requestor/examples/response/blocklist_children.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/examples/response/blocklist_children.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/requestor/examples/response/query.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/examples/response/query.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/requestor/examples/response/query_parsed.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/examples/response/query_parsed.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/requestor/examples/response/query_일지.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/examples/response/query_일지.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/requestor/examples/response/retrieve_page.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/examples/response/retrieve_page.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/requestor/examples/test_blocklist.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/examples/test_blocklist.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/requestor/examples/test_query.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/examples/test_query.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/requestor/examples/test_retrieve.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/examples/test_retrieve.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/requestor/query/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/query/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/requestor/query/filter_maker.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/query/filter_maker.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/requestor/query/filter_unit.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/query/filter_unit.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/requestor/query/query.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/query/query.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/requestor/query/sort.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/query/sort.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/requestor/retrieve.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/retrieve.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/requestor/save/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/save/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/requestor/save/stash.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/save/stash.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/requestor/save/write.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/save/write.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/requestor/struct.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/struct.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/utility/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/common/utility/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/utility/eval_empty.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/utility/page_id_to_url.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/common/utility/page_id_to_url.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/utility/snippets/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/examples/requests/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/utility/snippets/avoid_selenium_console_screen.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/common/snippets/avoid_selenium_console_screen.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/utility/snippets/print_http_request_body.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/common/snippets/print_http_request_body.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_py/interface/utility/stopwatch.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/common/utility/stopwatch.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/applications/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/chromedriver.exe" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/applications/chromedriver.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/database_info.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/applications/database_info.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/media_scraper/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/applications/media_scraper/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/media_scraper/bookstore/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/applications/media_scraper/bookstore/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/media_scraper/bookstore/bkst_endpoint.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/applications/media_scraper/bookstore/bkst_endpoint.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/media_scraper/bookstore/contents_append.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/applications/media_scraper/bookstore/contents_append.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/media_scraper/bookstore/contents_parse.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/applications/media_scraper/bookstore/contents_parse.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/media_scraper/bookstore/yes24_main.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/applications/media_scraper/bookstore/yes24_main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/media_scraper/bookstore/yes24_url.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/applications/media_scraper/bookstore/yes24_url.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/media_scraper/common/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/applications/media_scraper/common/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/media_scraper/common/exceptions.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/applications/media_scraper/common/exceptions.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/media_scraper/common/helpers.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/applications/media_scraper/common/helpers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/media_scraper/common/selenium.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/applications/media_scraper/common/selenium.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/media_scraper/common/struct.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/applications/media_scraper/common/struct.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/media_scraper/frame.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/applications/media_scraper/frame.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/media_scraper/lib/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/applications/media_scraper/lib/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/media_scraper/lib/gy_selenium.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/applications/media_scraper/lib/gy_selenium.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/media_scraper/lib/lib_endpoint.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/applications/media_scraper/lib/lib_endpoint.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/media_scraper/lib/snu_http.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/applications/media_scraper/lib/snu_http.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/media_scraper/lib/snu_selenium.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/applications/media_scraper/lib/snu_selenium.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/media_scraper/regular_scrap.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/applications/media_scraper/regular_scrap.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/media_scraper/remove_duplicates.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/applications/media_scraper/remove_duplicates.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/media_scraper/resolve_status.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/applications/media_scraper/resolve_status.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/monad_graph/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/applications/monad_graph/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/monad_graph/backups/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/applications/monad_graph/backups/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/monad_graph/backups/networkx_test.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/applications/monad_graph/backups/networkx_test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/monad_graph/backups/optimize_position_prototype.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/applications/monad_graph/backups/optimize_position_prototype.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/monad_graph/common/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/applications/monad_graph/common/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/monad_graph/common/add_nodes.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/applications/monad_graph/common/add_nodes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/monad_graph/common/helpers.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/applications/monad_graph/common/helpers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/monad_graph/endpoint.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/applications/monad_graph/endpoint.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/monad_graph/frame.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/applications/monad_graph/frame.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/monad_graph/graph_handler/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/applications/monad_graph/graph_handler/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/monad_graph/graph_handler/draw_figure.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/applications/monad_graph/graph_handler/draw_figure.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/monad_graph/graph_handler/initalize.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/applications/monad_graph/graph_handler/initalize.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/monad_graph/graph_handler/positioning.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/applications/monad_graph/graph_handler/positioning.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/monad_graph/graph_handler/struct.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/applications/monad_graph/graph_handler/struct.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/monad_graph/speed_test.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/applications/monad_graph/speed_test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/prop_matcher/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/applications/prop_matcher/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/prop_matcher/common/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/applications/prop_matcher/common/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/prop_matcher/common/date_index.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/applications/prop_matcher/common/date_index.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/prop_matcher/common/frame.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/applications/prop_matcher/common/frame.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/prop_matcher/common/helpers.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/applications/prop_matcher/common/helpers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/prop_matcher/common/query_maker.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/applications/prop_matcher/common/query_maker.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/prop_matcher/common/struct.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/applications/prop_matcher/common/struct.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/prop_matcher/matchers/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/applications/prop_matcher/matchers/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/prop_matcher/matchers/match_to_dates.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/applications/prop_matcher/matchers/match_to_dates.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/prop_matcher/matchers/match_to_itself.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/applications/prop_matcher/matchers/match_to_itself.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/prop_matcher/matchers/match_to_periods.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/applications/prop_matcher/matchers/match_to_periods.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/prop_matcher/matchers/match_to_projects.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/applications/prop_matcher/matchers/match_to_projects.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/prop_matcher/regular_match.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/applications/prop_matcher/regular_match.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/prop_matcher/sync_resolve.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/applications/prop_matcher/sync_resolve.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/prop_matcher/yearly_calendar.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/applications/prop_matcher/yearly_calendar.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/common/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/common/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/common/block_types.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/common/block_types.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/common/date_field.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/common/date_field.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/common/frame.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/common/frame.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/common/snippets/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/common/snippets/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/common/snippets/avoid_selenium_console_screen.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/common/snippets/avoid_selenium_console_screen.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/common/snippets/print_http_request_body.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/common/snippets/print_http_request_body.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/common/utility/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/common/utility/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/common/utility/page_id_to_url.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/common/utility/page_id_to_url.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/common/utility/stopwatch.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/common/utility/stopwatch.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/editor/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/common/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/editor/common/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/common/pages.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/editor/common/pages.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/common/with_cc.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/editor/common/with_cc.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/common/with_children.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/editor/common/with_children.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/common/with_contents.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/editor/common/with_contents.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/common/with_items/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/editor/common/with_items/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/common/with_items/bearer.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/editor/common/with_items/bearer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/common/with_items/creater_alt.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/editor/common/with_items/creater_alt.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/common/with_items/creator.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/editor/common/with_items/creator.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/common/with_items/updater.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/editor/common/with_items/updater.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/editor_exceptions.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/editor/editor_exceptions.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/inline/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/editor/inline/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/inline/page_item.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/editor/inline/page_item.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/inline/page_item_as_child.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/editor/inline/page_item_as_child.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/inline/parser_logic.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/editor/inline/parser_logic.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/inline/text_item.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/editor/inline/text_item.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/inline/unsupported.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/editor/inline/unsupported.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/root_editor.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/editor/root_editor.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/struct/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/editor/struct/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/struct/agents.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/editor/struct/agents.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/struct/base.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/editor/struct/base.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/struct/master_logic.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/editor/struct/master_logic.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/tabular/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/editor/tabular/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/tabular/database.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/editor/tabular/database.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/tabular/database_schema.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/editor/tabular/database_schema.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/tabular/page_row.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/editor/tabular/page_row.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/tabular/page_row_props.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/editor/tabular/page_row_props.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/tabular/pagelist.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/editor/tabular/pagelist.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/tabular/pagelist_agents.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/editor/tabular/pagelist_agents.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/gateway/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/gateway/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/gateway/carriers.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/gateway/carriers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/gateway/encoders/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/gateway/encoders/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/gateway/encoders/contents/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/gateway/encoders/contents/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/gateway/encoders/contents/maker.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/gateway/encoders/contents/maker.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/gateway/encoders/contents/wrapper.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/gateway/encoders/contents/wrapper.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/gateway/encoders/property/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/gateway/encoders/property/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/gateway/encoders/property/maker.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/gateway/encoders/property/maker.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/gateway/encoders/property/wrapper.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/gateway/encoders/property/wrapper.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/gateway/encoders/rich_text.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/gateway/encoders/rich_text.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/gateway/parsers/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/gateway/parsers/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/gateway/parsers/blocks.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/gateway/parsers/blocks.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/gateway/parsers/database.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/gateway/parsers/database.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/gateway/parsers/page.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/gateway/parsers/page.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/gateway/parsers/rich_text.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/gateway/parsers/rich_text.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/gateway/requestors/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/examples/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/gateway/requestors/examples/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/examples/requests/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/gateway/requestors/examples/requests/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/examples/requests/blocks.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/gateway/requestors/examples/requests/blocks.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/examples/requests/create.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/gateway/requestors/examples/requests/create.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/examples/requests/property.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/gateway/requestors/examples/requests/property.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/examples/requests/query_filter.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/gateway/requestors/examples/requests/query_filter.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/examples/response/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/gateway/requestors/examples/response/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/examples/response/blocklist_children.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/gateway/requestors/examples/response/blocklist_children.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/examples/response/query.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/gateway/requestors/examples/response/query.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/examples/response/query_parsed.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/gateway/requestors/examples/response/query_parsed.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/examples/response/query_일지.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/gateway/requestors/examples/response/query_일지.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/examples/response/retrieve_page.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/gateway/requestors/examples/response/retrieve_page.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/examples/test_blocklist.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/gateway/requestors/examples/test_blocklist.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/examples/test_query.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/gateway/requestors/examples/test_query.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/examples/test_retrieve.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/gateway/requestors/examples/test_retrieve.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/query/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/gateway/requestors/query/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/query/filter_maker.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/gateway/requestors/query/filter_maker.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/query/filter_unit.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/gateway/requestors/query/filter_unit.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/query/query.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/gateway/requestors/query/query.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/query/sort.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/gateway/requestors/query/sort.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/retrieve.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/gateway/requestors/retrieve.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/save/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/gateway/requestors/save/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/save/stash.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/gateway/requestors/save/stash.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/save/write.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/gateway/requestors/save/write.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/struct.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/interface/gateway/requestors/struct.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/terminal_main.py" beforeDir="false" afterPath="$PROJECT_DIR$/terminal_main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/terminal_manual.py" beforeDir="false" afterPath="$PROJECT_DIR$/terminal_manual.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/terminal_wait.py" beforeDir="false" afterPath="$PROJECT_DIR$/terminal_wait.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/terminal_manual.py" beforeDir="false" afterPath="$PROJECT_DIR$/manual.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/terminal_wait.py" beforeDir="false" afterPath="$PROJECT_DIR$/test.py" afterDir="false" />
     </list>
     <list id="2a8a7209-1ffb-43f2-969c-0ddf95281e08" name="무시" comment="무시">
       <change afterPath="$PROJECT_DIR$/.env" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -174,45 +202,11 @@
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$PROJECT_DIR$/../venv/Lib/site-packages/notion_client/client.py" root0="FORCE_HIGHLIGHTING" />
   </component>
-  <component name="LineStatusTrackerManager">
-    <file path="$PROJECT_DIR$/.idea/workspace.xml">
-      <ranges>
-        <range start1="2" end1="2" start2="2" end2="5" changelist="2a8a7209-1ffb-43f2-969c-0ddf95281e08" />
-        <range start1="3" end1="4" start2="6" end2="10" changelist="620c4a01-5f58-49ef-a421-f45c53b9d9e6" />
-        <range start1="5" end1="6" start2="11" end2="109" changelist="620c4a01-5f58-49ef-a421-f45c53b9d9e6" />
-        <range start1="7" end1="8" start2="110" end2="111" changelist="620c4a01-5f58-49ef-a421-f45c53b9d9e6" />
-        <range start1="9" end1="10" start2="112" end2="113" changelist="620c4a01-5f58-49ef-a421-f45c53b9d9e6" />
-        <range start1="59" end1="59" start2="162" end2="205" changelist="620c4a01-5f58-49ef-a421-f45c53b9d9e6" />
-        <range start1="63" end1="63" start2="209" end2="210" changelist="620c4a01-5f58-49ef-a421-f45c53b9d9e6" />
-        <range start1="69" end1="69" start2="216" end2="217" changelist="620c4a01-5f58-49ef-a421-f45c53b9d9e6" />
-        <range start1="71" end1="71" start2="219" end2="220" changelist="620c4a01-5f58-49ef-a421-f45c53b9d9e6" />
-        <range start1="78" end1="80" start2="227" end2="230" changelist="620c4a01-5f58-49ef-a421-f45c53b9d9e6" />
-        <range start1="85" end1="85" start2="235" end2="241" changelist="620c4a01-5f58-49ef-a421-f45c53b9d9e6" />
-        <range start1="86" end1="91" start2="242" end2="247" changelist="620c4a01-5f58-49ef-a421-f45c53b9d9e6" />
-        <range start1="93" end1="95" start2="249" end2="251" changelist="2a8a7209-1ffb-43f2-969c-0ddf95281e08" />
-        <range start1="102" end1="103" start2="258" end2="259" changelist="2a8a7209-1ffb-43f2-969c-0ddf95281e08" />
-        <range start1="106" end1="107" start2="262" end2="263" changelist="2a8a7209-1ffb-43f2-969c-0ddf95281e08" />
-        <range start1="115" end1="116" start2="271" end2="272" changelist="2a8a7209-1ffb-43f2-969c-0ddf95281e08" />
-        <range start1="123" end1="124" start2="279" end2="280" changelist="2a8a7209-1ffb-43f2-969c-0ddf95281e08" />
-        <range start1="127" end1="128" start2="283" end2="295" changelist="2a8a7209-1ffb-43f2-969c-0ddf95281e08" />
-        <range start1="136" end1="137" start2="303" end2="304" changelist="2a8a7209-1ffb-43f2-969c-0ddf95281e08" />
-        <range start1="148" end1="160" start2="315" end2="337" changelist="2a8a7209-1ffb-43f2-969c-0ddf95281e08" />
-        <range start1="168" end1="169" start2="345" end2="346" changelist="2a8a7209-1ffb-43f2-969c-0ddf95281e08" />
-        <range start1="180" end1="181" start2="357" end2="358" changelist="2a8a7209-1ffb-43f2-969c-0ddf95281e08" />
-        <range start1="189" end1="190" start2="366" end2="367" changelist="2a8a7209-1ffb-43f2-969c-0ddf95281e08" />
-        <range start1="197" end1="198" start2="374" end2="375" changelist="2a8a7209-1ffb-43f2-969c-0ddf95281e08" />
-        <range start1="201" end1="202" start2="378" end2="379" changelist="2a8a7209-1ffb-43f2-969c-0ddf95281e08" />
-        <range start1="212" end1="216" start2="389" end2="394" changelist="2a8a7209-1ffb-43f2-969c-0ddf95281e08" />
-        <range start1="219" end1="224" start2="397" end2="402" changelist="2a8a7209-1ffb-43f2-969c-0ddf95281e08" />
-        <range start1="236" end1="348" start2="414" end2="414" changelist="2a8a7209-1ffb-43f2-969c-0ddf95281e08" />
-        <range start1="355" end1="418" start2="421" end2="421" changelist="2a8a7209-1ffb-43f2-969c-0ddf95281e08" />
-        <range start1="489" end1="490" start2="492" end2="759" changelist="2a8a7209-1ffb-43f2-969c-0ddf95281e08" />
-        <range start1="510" end1="528" start2="779" end2="805" changelist="2a8a7209-1ffb-43f2-969c-0ddf95281e08" />
-      </ranges>
-    </file>
-  </component>
   <component name="NamedScopeManager">
-    <scope name="editor" pattern="file[Notion-py]:notion_py/interface/editor/*||file[Notion-py]:notion_py/interface/editor//*" />
+    <scope name="editor" pattern="file[Notion-zap]:notion_py/interface/editor/*||file[Notion-zap]:notion_py/interface/editor//*" />
+    <order>
+      <scope name="editor" />
+    </order>
   </component>
   <component name="ProblemsViewState">
     <hideBySeverity>
@@ -259,8 +253,29 @@
     </key>
   </component>
   <component name="RunManager" selected="Python.terminal_main">
+    <configuration default="true" type="PythonConfigurationType" factoryName="Python">
+      <module name="Notion-zap" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="requestor_struct" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="Notion-py" />
+      <module name="Notion-zap" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
@@ -281,7 +296,7 @@
       <method v="2" />
     </configuration>
     <configuration name="terminal" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
-      <module name="Notion-py" />
+      <module name="Notion-zap" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
@@ -313,7 +328,7 @@
       <method v="2" />
     </configuration>
     <configuration name="terminal_main" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="Notion-py" />
+      <module name="Notion-zap" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
@@ -334,7 +349,7 @@
       <method v="2" />
     </configuration>
     <configuration name="terminal_test (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="Notion-py" />
+      <module name="Notion-zap" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
@@ -355,7 +370,7 @@
       <method v="2" />
     </configuration>
     <configuration name="terminal_test" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="Notion-py" />
+      <module name="Notion-zap" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
@@ -375,8 +390,8 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="terminal_wait (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="Notion-py" />
+    <configuration name="test" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="Notion-zap" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
@@ -387,7 +402,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/terminal_wait.py" />
+      <option name="SCRIPT_NAME" value="C:\Users\윤영훈\Documents\Workspace\Notion-py\test.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -396,18 +411,93 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration default="true" type="Tox" factoryName="Tox">
+      <module name="Notion-zap" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="docs" factoryName="Docutils task">
+      <module name="Notion-zap" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="docutils_input_file" value="" />
+      <option name="docutils_output_file" value="" />
+      <option name="docutils_params" value="" />
+      <option name="docutils_task" value="" />
+      <option name="docutils_open_in_browser" value="false" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="docs" factoryName="Sphinx task">
+      <module name="Notion-zap" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="docutils_input_file" value="" />
+      <option name="docutils_output_file" value="" />
+      <option name="docutils_params" value="" />
+      <option name="docutils_task" value="" />
+      <option name="docutils_open_in_browser" value="false" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="tests" factoryName="Autodetect">
+      <module name="Notion-zap" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;&quot;" />
+      <option name="_new_targetType" value="&quot;PATH&quot;" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="tests" factoryName="Doctests">
+      <module name="Notion-zap" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="CLASS_NAME" value="" />
+      <option name="METHOD_NAME" value="" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_SCRIPT" />
+      <option name="PATTERN" value="" />
+      <option name="USE_PATTERN" value="false" />
+      <method v="2" />
+    </configuration>
     <list>
       <item itemvalue="Python.terminal" />
       <item itemvalue="Python.requestor_struct" />
       <item itemvalue="Python.terminal_main" />
       <item itemvalue="Python.terminal_test (1)" />
       <item itemvalue="Python.terminal_test" />
-      <item itemvalue="Python.terminal_wait (1)" />
+      <item itemvalue="Python.test" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="Python.terminal_main" />
-        <item itemvalue="Python.terminal_wait (1)" />
+        <item itemvalue="Python.test" />
         <item itemvalue="Python.terminal_test (1)" />
         <item itemvalue="Python.terminal_test" />
         <item itemvalue="Python.requestor_struct" />
@@ -429,13 +519,6 @@
       <option name="presentableId" value="LOCAL-00017" />
       <option name="project" value="LOCAL" />
       <updated>1626501790788</updated>
-    </task>
-    <task id="LOCAL-00027" summary="Read Scraper 디버깅; BlockEditor 클래스 창설">
-      <created>1626287783285</created>
-      <option name="number" value="00027" />
-      <option name="presentableId" value="LOCAL-00027" />
-      <option name="project" value="LOCAL" />
-      <updated>1626287783285</updated>
     </task>
     <task id="LOCAL-00028" summary="Read Scraper 디버깅; BlockEditor 클래스 창설">
       <created>1626288184525</created>
@@ -767,7 +850,14 @@
       <option name="project" value="LOCAL" />
       <updated>1636188150990</updated>
     </task>
-    <option name="localTasksCounter" value="75" />
+    <task id="LOCAL-00075" summary="* 장고 스타일로 폴더링: &lt;editor.struct.MasterEditor&gt;, &lt;gateway.parsers.PageParser&gt; 식으로 쓸 수 있게 위계 조정.&#10;* GUI 추가 대비이기도 함.">
+      <created>1636531855279</created>
+      <option name="number" value="00075" />
+      <option name="presentableId" value="LOCAL-00075" />
+      <option name="project" value="LOCAL" />
+      <updated>1636531855279</updated>
+    </task>
+    <option name="localTasksCounter" value="76" />
     <option name="trackContextForNewChangelist" value="true" />
     <servers />
   </component>
@@ -788,7 +878,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
-    <MESSAGE value="driver.quit 명시적으로 추가" />
     <MESSAGE value="메모 추가; endpoint.py 클래스 기반 리팩토링" />
     <MESSAGE value="draw_graph" />
     <MESSAGE value="PageParser, PageListParser, TabularPage 등 백업한 뒤 복사본 위에서 새로 만들기 시작" />
@@ -813,7 +902,8 @@
     <MESSAGE value="* eval_empty 가 None 값을 Truthy 로 인식하는 오류 수정&#10;* status_finalized 추가: set_lib_missing 이 set_url_missing 가리지 않도록." />
     <MESSAGE value="* Root.exclude_archived (전역 옵션) 추가&#10;* QueryWithCallback.execute 이 pages 아닌 None 값을 반환하는 오류 수정" />
     <MESSAGE value="chromedriver 다 끝나고 닫히지 않는 오류 수정" />
-    <option name="LAST_COMMIT_MESSAGE" value="chromedriver 다 끝나고 닫히지 않는 오류 수정" />
+    <MESSAGE value="* 장고 스타일로 폴더링: &lt;editor.struct.MasterEditor&gt;, &lt;gateway.parsers.PageParser&gt; 식으로 쓸 수 있게 위계 조정.&#10;* GUI 추가 대비이기도 함." />
+    <option name="LAST_COMMIT_MESSAGE" value="* 장고 스타일로 폴더링: &lt;editor.struct.MasterEditor&gt;, &lt;gateway.parsers.PageParser&gt; 식으로 쓸 수 있게 위계 조정.&#10;* GUI 추가 대비이기도 함." />
     <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="true" />
   </component>
   <component name="XDebuggerManager">

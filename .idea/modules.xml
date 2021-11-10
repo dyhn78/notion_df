@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/Notion-py.iml" filepath="$PROJECT_DIR$/.idea/Notion-py.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/Notion-zap.iml" filepath="$PROJECT_DIR$/.idea/Notion-zap.iml" />
     </modules>
   </component>
 </project>
