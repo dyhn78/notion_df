@@ -3,7 +3,7 @@ from typing import Union, Optional
 from notion_py.interface.common import PropertyFrame
 from ..common.pages import PageBlock
 from ..common.with_children import BlockChildren
-from ..root_editor import RootEditor
+from notion_py.interface.editor.root_editor import RootEditor
 
 
 class PageRow(PageBlock):

@@ -1,6 +1,6 @@
 from typing import Union
 
-from notion_py.interface.editor.common.struct import MasterEditor, Editor, PayloadEditor
+from ..struct import Editor, MasterEditor, PayloadEditor
 
 
 class UnsupportedBlock(MasterEditor):

@@ -3,12 +3,10 @@ from __future__ import annotations
 from abc import abstractmethod, ABCMeta
 from typing import Union
 
-from notion_py.interface.parser import PageParser
-from notion_py.interface.requestor import CreatePage, UpdatePage, RetrievePage
-from .struct import BlockEditor, GroundEditor
-from .struct.master_logic import PayloadEditor
 from .with_items import ItemsBearer
-from ..root_editor import RootEditor
+from notion_py.interface.editor.root_editor import RootEditor
+from ..struct import BlockEditor, PayloadEditor, GroundEditor
+from notion_py.interface.gateway import parsers, requestors
 
 
 class PageBlock(ItemsBearer):
@@ -42,7 +40,7 @@ class PagePayload(PayloadEditor, GroundEditor, metaclass=ABCMeta):
 
     @property
     @abstractmethod
-    def requestor(self) -> Union[CreatePage, UpdatePage]:
+    def requestor(self) -> Union[requestors.CreatePage, requestors.UpdatePage]:
         pass
 
     @abstractmethod
@@ -90,22 +88,22 @@ class PagePayload(PayloadEditor, GroundEditor, metaclass=ABCMeta):
     def un_archive(self):
         self.requestor.un_archive()
 
-    def apply_page_parser(self, parser: PageParser):
+    def apply_page_parser(self, parser: parsers.PageParser):
         if parser.page_id != '':
             self._set_block_id(parser.page_id)
         self._set_title(parser.title)
         self._archived = parser.archived
 
     def retrieve(self):
-        requestor = RetrievePage(self)
+        requestor = requestors.RetrievePage(self)
         response = requestor.execute()
-        parser = PageParser.parse_retrieve(response)
+        parser = parsers.PageParser.parse_retrieve(response)
         self.apply_page_parser(parser)
 
     def save(self):
         if self.yet_not_created:
             response = self.requestor.execute()
-            parser = PageParser.parse_create(response)
+            parser = parsers.PageParser.parse_create(response)
             self.apply_page_parser(parser)
         else:
             self.requestor.execute()

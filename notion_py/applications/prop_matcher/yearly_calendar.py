@@ -1,14 +1,14 @@
 from datetime import date as dateclass, timedelta
 
-from notion_py.interface import RootEditor
-from .common.base import LocalBase
+from notion_py.interface import editor
+from .common.struct import LocalBase
 from .common.date_index import DateHandler
 from .matchers.match_to_periods import PeriodMatcherType1
 
 
 class YearlyCalendarCreator:
     def __init__(self, year: int):
-        self.root = RootEditor()
+        self.root = editor.RootEditor()
         self.bs = LocalBase()
 
         self.year = year

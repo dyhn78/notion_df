@@ -1,7 +1,7 @@
 from abc import ABCMeta
 
-from notion_py.interface.common import DateFormat
-from ..common.base import Matcher
+from notion_py.interface import common
+from ..common.struct import Matcher
 from ..common.date_index import DateHandler
 from ..common.helpers import overwrite_prop, find_unique_target_id_by_ref, \
     query_target_by_idx
@@ -27,7 +27,7 @@ class PeriodMatcherAbs(Matcher, metaclass=ABCMeta):
         tar = self.target.create_page()
         tar.props.write_title_at('index_as_target', tar_idx)
         self.tars_by_index.update({tar_idx: tar})
-        date_range = DateFormat(
+        date_range = common.DateFormat(
             start_date=date_handler.first_day_of_week(),
             end_date=date_handler.last_day_of_week()
         )
@@ -50,7 +50,7 @@ class PeriodMatcherType1(PeriodMatcherAbs):
         return tar.block_id
 
     def determine_tar(self, dom):
-        dom_idx: DateFormat = dom.props.read_at('index_as_domain')
+        dom_idx: common.DateFormat = dom.props.read_at('index_as_domain')
         date_handler = DateHandler(dom_idx.start)
         return self.match_period_by_idx(date_handler)
 
@@ -80,6 +80,6 @@ class PeriodMatcherType2(PeriodMatcherAbs):
         # raise AssertionError(message)
 
     def determine_tar(self, dom):
-        dom_idx: DateFormat = dom.props.read_at('index_as_domain')
+        dom_idx: common.DateFormat = dom.props.read_at('index_as_domain')
         date_handler = DateHandler(dom_idx.start, add_timedelta=-5)
         return self.match_period_by_idx(date_handler)

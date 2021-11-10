@@ -1,35 +1,33 @@
-from notion_py.interface.editor.common.pages import PagePayload
-from notion_py.interface.encoder import PageRowPropertybyKey, PropertyEncoder
-from notion_py.interface.parser import PageParser
+
+from ..common.pages import PagePayload
 from .page_row import PageRow
-from ...requestor import CreatePage, UpdatePage
-from ...utility import eval_empty
+from notion_py.interface.gateway import encoders, requestors, parsers
 
 
-class PageRowProperty(PagePayload, PageRowPropertybyKey):
+class PageRowProperty(PagePayload, encoders.PageRowPropertybyKey):
     def __init__(self, caller: PageRow, page_id: str):
         PagePayload.__init__(self, caller, page_id)
         self.caller = caller
         self.frame = caller.frame
         if self.yet_not_created:
-            self._requestor = CreatePage(self, under_database=True)
+            self._requestor = requestors.CreatePage(self, under_database=True)
         else:
-            self._requestor = UpdatePage(self)
+            self._requestor = requestors.UpdatePage(self)
         self._read_plain = {}
         self._read_rich = {}
         self._read_full = {}
 
     def clear_requestor(self):
         if self.yet_not_created:
-            self._requestor = CreatePage(self, under_database=True)
+            self._requestor = requestors.CreatePage(self, under_database=True)
         else:
-            self._requestor = UpdatePage(self)
+            self._requestor = requestors.UpdatePage(self)
 
     @property
     def requestor(self):
         return self._requestor
 
-    def apply_page_parser(self, parser: PageParser):
+    def apply_page_parser(self, parser: parsers.PageParser):
         super().apply_page_parser(parser)
         self.frame.fetch_parser(parser)
         self._read_plain = parser.prop_values
@@ -42,10 +40,11 @@ class PageRowProperty(PagePayload, PageRowPropertybyKey):
                 value = self._read_plain[name]
             self._read_full[name] = value
 
-    def push_carrier(self, prop_key: str, carrier: PropertyEncoder) \
-            -> PropertyEncoder:
-        writeable = self.root.enable_overwrite or eval_empty(self.read_of(prop_key))
-        if not writeable:
+    def push_carrier(self, prop_key: str, carrier: encoders.PropertyEncoder) \
+            -> encoders.PropertyEncoder:
+        cannot_overwrite = (self.root.disable_overwrite and
+                            self.root.is_emptylike(self.read_of(prop_key)))
+        if cannot_overwrite:
             return carrier
         if prop_key == self.frame.title_key:
             self._set_title(carrier.plain_form())

@@ -1,8 +1,8 @@
 import re
 from typing import Optional
 
-from notion_py.interface.editor.tabular import PageRow
-from notion_py.interface.utility import stopwatch
+from notion_py.interface import editor
+from notion_py.interface.common.utility import stopwatch
 from .common.struct import ReadingDBController, ReadingPageController
 
 
@@ -57,7 +57,7 @@ class ReadingDBScrapController(ReadingDBController):
 
 
 class ReadingPageScrapController(ReadingPageController):
-    def __init__(self, caller: ReadingDBScrapController, page: PageRow):
+    def __init__(self, caller: ReadingDBScrapController, page: editor.PageRow):
         super().__init__(caller, page)
         self.caller = caller
         self.page = page

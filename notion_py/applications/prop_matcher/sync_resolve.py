@@ -1,16 +1,15 @@
 from __future__ import annotations
 
-from notion_py.interface import RootEditor
-from notion_py.interface.utility import stopwatch
+from notion_py.interface import editor
+from ...interface.common import utility
+from .common.frame import MatchFrames
 from .common.query_maker import query_within_date_range
-from notion_py.applications.prop_matcher.common.frame import MatchFrames
 from ..database_info import DatabaseInfo
-from ...interface.editor.tabular import PageList, PageRow
 
 
 class PropertySyncResolver:
     def __init__(self, date_range=0):
-        self.root = RootEditor()
+        self.root = editor.RootEditor()
         self.date_range = date_range
         self.journals = self.root.open_database(*DatabaseInfo.JOURNALS,
                                                 frame=MatchFrames.JOURNALS).pagelist
@@ -31,8 +30,8 @@ class PropertySyncResolver:
 
 
 class SyncResolveAlgorithm:
-    def __init__(self, fronts: PageList,
-                 backs: PageList,
+    def __init__(self, fronts: editor.PageList,
+                 backs: editor.PageList,
                  tag_forward: str,
                  tag_backward: str):
         self.fronts = fronts
@@ -45,9 +44,9 @@ class SyncResolveAlgorithm:
             front_id = front.block_id
             back_ids = front.props.read_at(self.tag_forward)
             for back_id in back_ids:
-                back: PageRow = self.backs.by_id[back_id]
+                back: editor.PageRow = self.backs.by_id[back_id]
                 front_ids = back.props.read_at(self.tag_backward)
                 if front_id not in front_ids:
                     front_ids.append(front_id)
                     back.props.write_at(self.tag_backward, front_id)
-                    stopwatch(f"{back.block_name} -> {front.block_name}")
+                    utility.stopwatch(f"{back.block_name} -> {front.block_name}")

@@ -6,12 +6,12 @@ from typing import Iterator, Callable, Any
 
 from notion_client import APIResponseError
 
+from notion_py.interface.common import PropertyFrame
+from notion_py.interface.gateway import requestors
 from .database import Database
 from .page_row import PageRow
-from ..common.struct import MasterEditor, BlockEditor
+from ..struct import MasterEditor, BlockEditor
 from ..common.with_children import BlockChildren
-from ...common import PropertyFrame
-from ...requestor import Query
 
 
 class PageList(BlockChildren):
@@ -122,7 +122,7 @@ class PageList(BlockChildren):
         return self.by_idx_value_of(self.frame.key_at(prop_tag))
 
 
-class QueryWithCallback(Query):
+class QueryWithCallback(requestors.Query):
     def __init__(self, editor: BlockEditor, frame: PropertyFrame,
                  execute_callback: Callable[[Any], list[PageRow]]):
         super().__init__(editor, frame)

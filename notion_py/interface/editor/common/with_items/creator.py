@@ -2,13 +2,12 @@ from __future__ import annotations
 
 from typing import Union
 
-from notion_py.interface.editor.common.struct import (
-    BlockEditor)
-from notion_py.interface.encoder import ContentsEncoder
-from notion_py.interface.parser import BlockChildrenParser
-from notion_py.interface.requestor import AppendBlockChildren
+from notion_py.interface.gateway.encoders import ContentsEncoder
+from notion_py.interface.gateway.parsers import BlockChildrenParser
+from notion_py.interface.gateway.requestors import AppendBlockChildren
 from .bearer import ItemAttachments
-from ..struct.agents import GroundEditor, AdaptiveEditor
+from notion_py.interface.editor.struct import (
+    BlockEditor, GroundEditor, AdaptiveEditor)
 
 
 class ItemsCreator(BlockEditor):
@@ -87,7 +86,7 @@ class TextItemsCreateAgent(GroundEditor):
         self.blocks: list[TextItem] = []
 
     @property
-    def requestor(self) -> AppendBlockChildren:
+    def requestor(self):
         return self._requestor
 
     def attach(self, child):
@@ -95,7 +94,6 @@ class TextItemsCreateAgent(GroundEditor):
         assert isinstance(child, TextItem)
 
         self.blocks.append(child)
-        self.requestor.append_space()
         child.contents.set_callback(self.get_callback_func(child))
         child.contents.set_placeholder()
 

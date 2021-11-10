@@ -1,11 +1,7 @@
 from __future__ import annotations
-
 from typing import Union, Callable
 
-from notion_py.interface.encoder import (
-    TextContentsWriter, RichTextContentsEncoder, ContentsEncoder)
-from notion_py.interface.parser import BlockContentsParser
-from notion_py.interface.requestor import UpdateBlock, RetrieveBlock
+from notion_py.interface.gateway import encoders, parsers, requestors
 from ..common.with_cc import ChildrenBearersContents
 from ..common.with_contents import ContentsBearer
 from ..common.with_items import ItemsBearer, ItemAttachments
@@ -21,7 +17,7 @@ class TextItem(ItemsBearer, ContentsBearer):
         ItemsBearer.__init__(self, caller)
         ContentsBearer.__init__(self, caller)
         self.caller = caller
-        self._contents = TextContents(self, block_id)
+        self._contents = TextItemContents(self, block_id)
 
         if isinstance(self.caller, ItemAttachments):
             self.caller.attach_text(self)
@@ -43,7 +39,7 @@ class TextItem(ItemsBearer, ContentsBearer):
             self.save_this()
 
     @property
-    def contents(self) -> TextContents:
+    def contents(self) -> TextItemContents:
         return self._contents
 
     @property
@@ -66,7 +62,7 @@ class TextItem(ItemsBearer, ContentsBearer):
                 'type': 'text'}
 
 
-class TextContents(ChildrenBearersContents, TextContentsWriter):
+class TextItemContents(ChildrenBearersContents, encoders.TextContentsWriter):
     """
     when the master is called from TextItemsCreateAgent and thereby it is yet_not_created,
     they will insert blank paragraph as a default.
@@ -75,11 +71,11 @@ class TextContents(ChildrenBearersContents, TextContentsWriter):
     def __init__(self, caller: TextItem, block_id: str):
         super().__init__(caller, block_id)
         self.caller = caller
-        self._requestor = UpdateBlock(self)
+        self._requestor = requestors.UpdateBlock(self)
         self._callback = None
 
-    def push_carrier(self, carrier: RichTextContentsEncoder) \
-            -> RichTextContentsEncoder:
+    def push_carrier(self, carrier: encoders.RichTextContentsEncoder) \
+            -> encoders.RichTextContentsEncoder:
         self._can_have_children = carrier.can_have_children
         if self.yet_not_created:
             return self.callback(carrier)
@@ -87,21 +83,21 @@ class TextContents(ChildrenBearersContents, TextContentsWriter):
             return self.requestor.apply_contents(carrier)
 
     @property
-    def callback(self) -> Callable[[RichTextContentsEncoder],
-                                   RichTextContentsEncoder]:
+    def callback(self) -> Callable[[encoders.RichTextContentsEncoder],
+                                   encoders.RichTextContentsEncoder]:
         return self._callback
 
     def set_callback(
-            self, value: Callable[[ContentsEncoder], ContentsEncoder]):
+            self, value: Callable[[encoders.ContentsEncoder], encoders.ContentsEncoder]):
         self._callback = value
 
     def set_placeholder(self):
         self.write_paragraph('')
 
     def retrieve(self):
-        requestor = RetrieveBlock(self)
+        requestor = requestors.RetrieveBlock(self)
         response = requestor.execute()
-        parser = BlockContentsParser.parse_retrieve(response)
+        parser = parsers.BlockContentsParser.parse_retrieve(response)
         self.apply_block_parser(parser)
 
     def save(self):
@@ -115,11 +111,11 @@ class TextContents(ChildrenBearersContents, TextContentsWriter):
         self.clear_requestor()
 
     @property
-    def requestor(self) -> UpdateBlock:
+    def requestor(self) -> requestors.UpdateBlock:
         return self._requestor
 
     def clear_requestor(self):
-        self._requestor = UpdateBlock(self)
+        self._requestor = requestors.UpdateBlock(self)
 
     def archive(self):
         self.requestor.archive()

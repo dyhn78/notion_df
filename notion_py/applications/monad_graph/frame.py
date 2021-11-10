@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from notion_py.interface.common import PropertyFrame, PropertyFrameUnit
+from notion_py.interface.common import PropertyFrameUnit, PropertyFrame
 
 
 class NetworkPropertyFrameUnit(PropertyFrameUnit):

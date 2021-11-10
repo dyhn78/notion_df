@@ -6,30 +6,46 @@ from typing import Optional
 from notion_client import Client, AsyncClient
 
 from notion_py.interface.common import PropertyFrame
-from notion_py.interface.utility import page_url_to_id, stopwatch
-from .common.struct import MasterEditor, Editor
+from notion_py.interface.common.utility import page_url_to_id, stopwatch
+from .struct import Editor, MasterEditor
 
 
 class RootEditor(Editor):
-    def __init__(self, async_client=False):
+    def __init__(
+            self,
+            async_client=False,
+            exclude_archived=False,
+            disable_overwrite=False,
+            emptylike_strings=None,
+    ):
         super().__init__(root_editor=self)
         if async_client:
-            self.notion = AsyncClient(auth=self.token)
+            client = AsyncClient(auth=self.token)
         else:
-            self.notion = Client(auth=self.token)
+            client = Client(auth=self.token)
+        self.client = client
+
         self._top_editors: list[MasterEditor] = []
         self._by_id = {}
         self._by_title = defaultdict(list)
         self._by_alias = {}
 
-        # TODO : settings 클래스로 분리, 각각을 property 로 표현.
-        # these settings applies uniformly to all sub-editors.
-        self.enable_overwrite = True
-        self.exclude_archived = False
+        # global settings, will be applied uniformly to all child-editors.
+        self.disable_overwrite = disable_overwrite
+        self.exclude_archived = exclude_archived
+        if emptylike_strings is None:
+            emptylike_strings = ['', '.', '-', '0', '1', 'None', 'False', '[]', '{}']
+        self.emptylike_strings = emptylike_strings
+
+    def is_emptylike(self, value):
+        return str(value) in self.emptylike_strings
 
     @property
     def by_id(self) -> dict[str, MasterEditor]:
         return self._by_id
+
+    def ids(self):
+        return self.by_id.keys()
 
     @property
     def by_title(self) -> dict[str, list[MasterEditor]]:
@@ -40,10 +56,7 @@ class RootEditor(Editor):
         return self._by_alias
 
     def save_required(self):
-        return any([bool(editor) for editor in self._top_editors])
-
-    def ids(self):
-        return self.by_id.keys()
+        return any([editor.save_required() for editor in self._top_editors])
 
     def save_info(self, pprint_this=True):
         preview = [editor.save_info() for editor in self._top_editors]
@@ -58,29 +71,29 @@ class RootEditor(Editor):
 
     def open_database(self, database_alias: str, id_or_url: str,
                       frame: Optional[PropertyFrame] = None):
-        from .tabular.database import Database
+        from . import Database
         database_id = page_url_to_id(id_or_url)
         database = Database(self, database_id, database_alias, frame)
         self._top_editors.append(database)
         return database
 
-    def open_tabular_page(self, id_or_url: str,
-                          frame: Optional[PropertyFrame] = None):
-        from .tabular.page_row import PageRow
+    def open_page_row(self, id_or_url: str,
+                      frame: Optional[PropertyFrame] = None):
+        from . import PageRow
         page_id = page_url_to_id(id_or_url)
         page = PageRow(self, page_id, frame=frame)
         self._top_editors.append(page)
         return page
 
-    def open_inline_page(self, id_or_url: str):
-        from .inline.page_item import PageItem
+    def open_page_item(self, id_or_url: str):
+        from . import PageItem
         page_id = page_url_to_id(id_or_url)
         page = PageItem(self, page_id)
         self._top_editors.append(page)
         return page
 
-    def open_text_block(self, id_or_url: str):
-        from .inline.text_item import TextItem
+    def open_text_item(self, id_or_url: str):
+        from . import TextItem
         block_id = page_url_to_id(id_or_url)
         editor = TextItem(self, block_id)
         self._top_editors.append(editor)
@@ -89,19 +102,3 @@ class RootEditor(Editor):
     @property
     def token(self):
         return os.environ['NOTION_TOKEN'].strip("'").strip('"')
-
-    @property
-    def master(self):
-        return self
-
-    @property
-    def parent(self):
-        return self
-
-    @property
-    def entry_ancestor(self):
-        return self
-
-
-class RootEditorSettings:
-    pass

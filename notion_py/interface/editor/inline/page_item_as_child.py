@@ -1,10 +1,10 @@
 # from typing import Union, Optional
 #
-# from notion_py.interface.encoder import PageContentsWriterAsChild, \
+# from notion_py.gateway.encoders import PageContentsWriterAsChild, \
 #     RichTextContentsEncoder
-# from notion_py.interface.parser import PageParser
-# from notion_py.interface.requestor import UpdatePage, RetrievePage, AppendBlockChildren
-# from notion_py.interface.common.struct import Editor, drop_empty_request
+# from notion_py.gateway.parsers import PageParser
+# from notion_py.gateway.requestors import UpdatePage, RetrievePage, AppendBlockChildren
+# from notion_py.gateway.struct.struct import Editor, drop_empty_request
 # from ..supported.with_items.with_contents.contents_bearing import \
 #     ContentsBearer, BlockContents
 # from ..supported.with_items.creater_with_page_as_child import \
@@ -47,40 +47,40 @@
 #         super().__init__(caller)
 #         self.caller = caller
 #         if self.yet_not_created:
-#             requestor = uncle.requestor
+#             requestors = uncle.requestors
 #         else:
-#             requestor = UpdatePage(self)
-#         self.requestor: Union[AppendBlockChildren, UpdatePage] = requestor
+#             requestors = UpdatePage(self)
+#         self.requestors: Union[AppendBlockChildren, UpdatePage] = requestors
 #
 #     def archive(self):
-#         self.requestor.archive()
+#         self.requestors.archive()
 #
 #     def un_archive(self):
-#         self.requestor.un_archive()
+#         self.requestors.un_archive()
 #
 #     def retrieve(self):
-#         requestor = RetrievePage(self)
-#         response = requestor.execute()
-#         parser = PageParser.parse_retrieve(response)
-#         self.apply_page_parser(parser)
+#         requestors = RetrievePage(self)
+#         response = requestors.execute()
+#         parsers = PageParser.parse_retrieve(response)
+#         self.apply_page_parser(parsers)
 #
 #     def execute(self):
-#         response = self.requestor.execute()
+#         response = self.requestors.execute()
 #         if self.yet_not_created:
-#             parser = PageParser.parse_create(response)
-#             self.apply_page_parser(parser)
-#             self.requestor = UpdatePage(self)
+#             parsers = PageParser.parse_create(response)
+#             self.apply_page_parser(parsers)
+#             self.requestors = UpdatePage(self)
 #
-#     def apply_page_parser(self, parser: PageParser):
-#         if parser.page_id:
-#             self.block_id = parser.page_id
-#         self.caller.title = parser.title
-#         self._read_plain = parser.prop_values['title']
-#         self._read_rich = parser.prop_rich_values['title']
+#     def apply_page_parser(self, parsers: PageParser):
+#         if parsers.page_id:
+#             self.block_id = parsers.page_id
+#         self.caller.title = parsers.title
+#         self._read_plain = parsers.prop_values['title']
+#         self._read_rich = parsers.prop_rich_values['title']
 #
 #     def push_carrier(self, carrier: RichTextContentsEncoder) \
 #             -> RichTextContentsEncoder:
 #         if self.yet_not_created:
-#             return self.requestor.apply_contents(, carrier
+#             return self.requestors.apply_contents(, carrier
 #         else:
-#             return self.requestor.apply_prop(carrier)
+#             return self.requestors.apply_prop(carrier)

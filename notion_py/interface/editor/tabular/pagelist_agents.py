@@ -1,6 +1,6 @@
-from notion_py.interface.parser import PageListParser, PageParser
 from .pagelist import PageList
-from ..common.struct.agents import ListEditor
+from ..struct import ListEditor
+from notion_py.interface.gateway import parsers
 
 
 class PageListUpdater(ListEditor):
@@ -29,11 +29,11 @@ class PageListUpdater(ListEditor):
         del page
 
     def apply_query_response(self, response):
-        parser = PageListParser(response)
+        parser = parsers.PageListParser(response)
         pages = self.apply_pagelist_parser(parser)
         return pages
 
-    def apply_pagelist_parser(self, parser: PageListParser):
+    def apply_pagelist_parser(self, parser: parsers.PageListParser):
         pages = []
         for page_parser in parser:
             page = self.apply_page_parser(page_parser)
@@ -41,7 +41,7 @@ class PageListUpdater(ListEditor):
                 pages.append(page)
         return pages
 
-    def apply_page_parser(self, parser: PageParser):
+    def apply_page_parser(self, parser: parsers.PageParser):
         page_id = parser.page_id
         if page_id in self.caller.ids():
             page = self.caller.by_id[page_id]

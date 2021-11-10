@@ -1,4 +1,4 @@
-from notion_py.interface.editor.tabular import PageList, PageRow
+from notion_py.interface import editor
 
 
 def overwrite_prop(dom, prop_tag: str, value: str):
@@ -19,8 +19,8 @@ def append_prop(dom, prop_tag: str, values: list[str]):
     return True
 
 
-def find_unique_unarchived_id_from_relation(dom: PageRow, targets: PageList,
-                                            to_tar: str) -> str:
+def find_unique_unarchived_id_from_relation(
+        dom: editor.PageRow, targets: editor.PageList, to_tar: str) -> str:
     tar_ids = dom.props.read_at(to_tar)
     for tar_id in tar_ids:
         tar = targets.fetch_one(tar_id)
@@ -29,8 +29,8 @@ def find_unique_unarchived_id_from_relation(dom: PageRow, targets: PageList,
     return ''
 
 
-def find_all_unarchived_id_from_relation(dom: PageRow, targets: PageList,
-                                         to_tar: str) -> list[str]:
+def find_all_unarchived_id_from_relation(
+        dom: editor.PageRow, targets: editor.PageList, to_tar: str) -> list[str]:
     tar_ids = dom.props.read_at(to_tar)
     res = []
     for tar_id in tar_ids:
@@ -45,12 +45,12 @@ def find_all_unarchived_id_from_relation(dom: PageRow, targets: PageList,
 
 
 def find_unique_target_id_by_homo_ref(
-        dom: PageRow, domain: PageList, target: PageList, to_tar: str):
+        dom: editor.PageRow, domain: editor.PageList, target: editor.PageList, to_tar: str):
     return find_unique_target_id_by_ref(dom, domain, target, 'up_self', to_tar)
 
 
 def find_unique_target_id_by_ref(
-        dom: PageRow, reference: PageList, target: PageList,
+        dom: editor.PageRow, reference: editor.PageList, target: editor.PageList,
         to_ref: str, to_tar: str):
     if ref_id := find_unique_unarchived_id_from_relation(dom, reference, to_ref):
         ref = reference.by_id[ref_id]
@@ -60,7 +60,7 @@ def find_unique_target_id_by_ref(
 
 
 def query_target_by_idx(
-        target: PageList, tar_idx,
+        target: editor.PageList, tar_idx,
         idx_data_type='text'):
     tar_query = target.open_query()
     maker = tar_query.filter_maker.at('index_as_target', idx_data_type)

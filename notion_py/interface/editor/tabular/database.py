@@ -1,11 +1,10 @@
 from typing import Union, Optional
 
-from notion_py.interface.common import PropertyFrame
-from notion_py.interface.parser import DatabaseParser
-from notion_py.interface.requestor import RetrieveDatabase
+from notion_py.interface.gateway import parsers, requestors
+from notion_py.interface.common.frame import PropertyFrame
 from ..common.with_children import ChildrenBearer, BlockChildren
 from ..common.with_items import ItemAttachments
-from ..root_editor import RootEditor
+from notion_py.interface.editor.root_editor import RootEditor
 
 
 class Database(ChildrenBearer):
@@ -50,9 +49,9 @@ class Database(ChildrenBearer):
         return self.alias
 
     def retrieve(self):
-        gateway = RetrieveDatabase(self)
+        gateway = requestors.RetrieveDatabase(self)
         response = gateway.execute()
-        parser = DatabaseParser(response)
+        parser = parsers.DatabaseParser(response)
         self.frame.fetch_parser(parser)
 
     def save_info(self):

@@ -1,4 +1,4 @@
-from notion_py.interface.utility import stopwatch
+from notion_py.interface.common.utility import stopwatch
 from notion_py.applications.media_scraper import ReadingDBScrapController
 from notion_py.applications.prop_matcher import MatchController
 

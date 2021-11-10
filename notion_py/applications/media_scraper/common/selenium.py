@@ -6,7 +6,7 @@ from selenium.common.exceptions import \
     NoSuchElementException, StaleElementReferenceException
 from selenium.webdriver.chrome.options import Options
 
-from notion_py.interface.utility import stopwatch
+from notion_py.interface.common.utility import stopwatch
 
 
 def retry_webdriver(function: Callable, recursion_limit=1) -> Callable:

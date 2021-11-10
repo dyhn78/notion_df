@@ -3,22 +3,21 @@ from itertools import chain
 
 import networkx as nx
 
-from notion_py.applications.database_info import DatabaseInfo
-from notion_py.applications.monad_graph.frame import NetworkFrames, NetworkPropertyFrame
-from notion_py.interface import RootEditor
-from notion_py.interface.editor.tabular import PageList
+from notion_py.interface import editor
+from ...database_info import DatabaseInfo
+from ..frame import NetworkFrames, NetworkPropertyFrame
 
 
 class TopologyBuilder:
     def __init__(self, request_size=0):
         self.request_size = request_size
         self.G = nx.DiGraph()
-        self.root = RootEditor()
+        self.root = editor.RootEditor()
         self.themes = self.root.open_database(*DatabaseInfo.THEMES,
                                               NetworkFrames.THEMES).pagelist
         self.ideas = self.root.open_database(*DatabaseInfo.IDEAS,
                                              NetworkFrames.IDEAS).pagelist
-        self.all: dict[str, PageList] = {
+        self.all: dict[str, editor.PageList] = {
             'themes': self.themes,
             'ideas': self.ideas
         }
@@ -87,7 +86,7 @@ class TopologyBuilder:
 
     @staticmethod
     def parse_title(page_title: str):
-        code = re.compile('(?<=\[).+(?=\])')  # ex) '[cdit.html_css] ....'
+        code = re.compile(r'(?<=\[).+(?=\])')  # ex) '[cdit.html_css] ....'
         if flag := code.search(page_title):
             return flag.group()
         return page_title

@@ -1,5 +1,5 @@
 from notion_py.applications.media_scraper.regular_scrap import ReadingDBScrapController
-from notion_py.interface.utility import stopwatch
+from notion_py.interface.common.utility import stopwatch
 
 ReadingDBScrapController(tasks={'bookstore'}, title='대서울길').execute(request_size=1)
 

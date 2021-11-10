@@ -1,7 +1,7 @@
 # import numpy
 import networkx as nx
 
-from notion_py.interface.utility import stopwatch
+from notion_py.interface.common.utility import stopwatch
 
 
 def edge_weight(relation: str):

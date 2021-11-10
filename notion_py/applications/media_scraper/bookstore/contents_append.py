@@ -1,10 +1,10 @@
 import re
 
-from notion_py.interface.editor.inline import PageItem
+from notion_py.interface import editor
 
 
 class AppendContents:
-    def __init__(self, subpage: PageItem, contents: list[str]):
+    def __init__(self, subpage: editor.PageItem, contents: list[str]):
         self.page = subpage
         self.contents = contents
 

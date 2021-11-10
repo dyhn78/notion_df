@@ -1,13 +1,127 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AnalysisUIOptions">
+    <option name="GROUP_BY_SEVERITY" value="true" />
+  </component>
   <component name="ChangeListManager">
-    <list default="true" id="620c4a01-5f58-49ef-a421-f45c53b9d9e6" name="새 변경 목록" comment="env 파일">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/terminal.py" beforeDir="false" afterPath="$PROJECT_DIR$/terminal.py" afterDir="false" />
-    </list>
-    <list id="2a8a7209-1ffb-43f2-969c-0ddf95281e08" name="무시" comment="">
-      <change afterPath="$PROJECT_DIR$/.env" afterDir="false" />
+    <list default="true" id="620c4a01-5f58-49ef-a421-f45c53b9d9e6" name="새 변경 목록" comment="chromedriver 다 끝나고 닫히지 않는 오류 수정">
+      <change afterPath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/examples/response/__init__.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/Notion-py.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Notion-py.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/media_scraper/bookstore/bkst_endpoint.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/media_scraper/bookstore/bkst_endpoint.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/media_scraper/bookstore/contents_append.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/media_scraper/bookstore/contents_append.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/media_scraper/common/exceptions.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/media_scraper/common/exceptions.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/media_scraper/common/selenium.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/media_scraper/common/selenium.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/media_scraper/common/struct.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/media_scraper/common/struct.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/media_scraper/lib/lib_endpoint.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/media_scraper/lib/lib_endpoint.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/media_scraper/regular_scrap.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/media_scraper/regular_scrap.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/media_scraper/remove_duplicates.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/media_scraper/remove_duplicates.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/media_scraper/resolve_status.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/media_scraper/resolve_status.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/monad_graph/backups/optimize_position_prototype.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/monad_graph/backups/optimize_position_prototype.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/monad_graph/common/add_nodes.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/monad_graph/common/add_nodes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/monad_graph/endpoint.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/monad_graph/endpoint.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/monad_graph/frame.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/monad_graph/frame.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/monad_graph/graph_handler/positioning.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/monad_graph/graph_handler/positioning.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/prop_matcher/common/base.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/prop_matcher/common/struct.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/prop_matcher/common/helpers.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/prop_matcher/common/helpers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/prop_matcher/common/query_maker.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/prop_matcher/common/query_maker.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/prop_matcher/matchers/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/prop_matcher/matchers/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/prop_matcher/matchers/match_to_dates.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/prop_matcher/matchers/match_to_dates.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/prop_matcher/matchers/match_to_itself.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/prop_matcher/matchers/match_to_itself.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/prop_matcher/matchers/match_to_periods.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/prop_matcher/matchers/match_to_periods.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/prop_matcher/matchers/match_to_projects.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/prop_matcher/matchers/match_to_projects.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/prop_matcher/regular_match.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/prop_matcher/regular_match.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/prop_matcher/sync_resolve.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/prop_matcher/sync_resolve.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/applications/prop_matcher/yearly_calendar.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/applications/prop_matcher/yearly_calendar.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/common/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/common/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/common/date_format.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/common/date_field.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/common/prop_frame.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/common/frame.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/common/stash.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/common/struct.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/carriers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/editor/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/common/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/editor/common/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/common/exceptions.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/editor/editor_exceptions.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/common/pages.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/editor/common/pages.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/common/struct/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/editor/struct/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/common/struct/agents.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/editor/struct/agents.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/common/struct/base.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/editor/struct/base.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/common/struct/master_logic.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/editor/struct/master_logic.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/common/with_cc.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/editor/common/with_cc.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/common/with_children.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/editor/common/with_children.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/common/with_contents.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/editor/common/with_contents.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/common/with_items/bearer.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/editor/common/with_items/bearer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/common/with_items/creater_alt.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/editor/common/with_items/creater_alt.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/common/with_items/creator.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/editor/common/with_items/creator.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/common/with_items/updater.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/editor/common/with_items/updater.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/inline/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/editor/inline/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/inline/page_item.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/editor/inline/page_item.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/inline/page_item_as_child.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/editor/inline/page_item_as_child.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/inline/parser_logic.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/editor/inline/parser_logic.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/inline/text_item.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/editor/inline/text_item.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/inline/unsupported.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/editor/inline/unsupported.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/root_editor.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/editor/root_editor.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/tabular/database.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/editor/tabular/database.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/tabular/database_schema.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/editor/tabular/database_schema.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/tabular/page_row.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/editor/tabular/page_row.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/tabular/page_row_props.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/editor/tabular/page_row_props.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/tabular/pagelist.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/editor/tabular/pagelist.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/tabular/pagelist_agents.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/editor/tabular/pagelist_agents.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/editor/type_name.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/encoder/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/encoders/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/encoder/contents/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/common/snippets/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/encoder/contents/maker.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/encoders/contents/maker.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/encoder/contents/wrapper.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/encoders/contents/wrapper.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/encoder/property/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/encoder/property/maker.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/encoders/property/maker.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/encoder/property/wrapper.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/encoders/property/wrapper.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/encoder/rich_text.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/encoders/rich_text.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/parser/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/parsers/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/parser/blocks.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/parsers/blocks.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/parser/database.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/parsers/database.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/parser/page.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/parsers/page.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/parser/rich_text.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/parsers/rich_text.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/requestor/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/requestor/examples/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/encoders/contents/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/requestor/examples/requests/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/encoders/property/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/requestor/examples/requests/blocks.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/examples/requests/blocks.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/requestor/examples/requests/create.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/examples/requests/create.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/requestor/examples/requests/property.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/examples/requests/property.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/requestor/examples/requests/query_filter.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/examples/requests/query_filter.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/requestor/examples/response/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/examples/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/requestor/examples/response/blocklist_children.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/examples/response/blocklist_children.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/requestor/examples/response/query.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/examples/response/query.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/requestor/examples/response/query_parsed.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/examples/response/query_parsed.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/requestor/examples/response/query_일지.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/examples/response/query_일지.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/requestor/examples/response/retrieve_page.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/examples/response/retrieve_page.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/requestor/examples/test_blocklist.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/examples/test_blocklist.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/requestor/examples/test_query.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/examples/test_query.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/requestor/examples/test_retrieve.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/examples/test_retrieve.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/requestor/query/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/query/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/requestor/query/filter_maker.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/query/filter_maker.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/requestor/query/filter_unit.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/query/filter_unit.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/requestor/query/query.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/query/query.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/requestor/query/sort.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/query/sort.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/requestor/retrieve.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/retrieve.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/requestor/save/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/save/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/requestor/save/stash.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/save/stash.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/requestor/save/write.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/save/write.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/requestor/struct.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/struct.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/utility/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/common/utility/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/utility/eval_empty.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/utility/page_id_to_url.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/common/utility/page_id_to_url.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/utility/snippets/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/gateway/requestors/examples/requests/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/utility/snippets/avoid_selenium_console_screen.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/common/snippets/avoid_selenium_console_screen.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/utility/snippets/print_http_request_body.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/common/snippets/print_http_request_body.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_py/interface/utility/stopwatch.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_py/interface/common/utility/stopwatch.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/terminal_main.py" beforeDir="false" afterPath="$PROJECT_DIR$/terminal_main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/terminal_manual.py" beforeDir="false" afterPath="$PROJECT_DIR$/terminal_manual.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/terminal_wait.py" beforeDir="false" afterPath="$PROJECT_DIR$/terminal_wait.py" afterDir="false" />
+    </list>
+    <list id="2a8a7209-1ffb-43f2-969c-0ddf95281e08" name="무시" comment="무시">
+      <change afterPath="$PROJECT_DIR$/.env" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -57,18 +171,64 @@
       <filtered-out-file-type name="COMMIT_BY_MESSAGE" />
     </file-type-list>
   </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/../venv/Lib/site-packages/notion_client/client.py" root0="FORCE_HIGHLIGHTING" />
+  </component>
+  <component name="LineStatusTrackerManager">
+    <file path="$PROJECT_DIR$/.idea/workspace.xml">
+      <ranges>
+        <range start1="2" end1="2" start2="2" end2="5" changelist="2a8a7209-1ffb-43f2-969c-0ddf95281e08" />
+        <range start1="3" end1="4" start2="6" end2="10" changelist="620c4a01-5f58-49ef-a421-f45c53b9d9e6" />
+        <range start1="5" end1="6" start2="11" end2="109" changelist="620c4a01-5f58-49ef-a421-f45c53b9d9e6" />
+        <range start1="7" end1="8" start2="110" end2="111" changelist="620c4a01-5f58-49ef-a421-f45c53b9d9e6" />
+        <range start1="9" end1="10" start2="112" end2="113" changelist="620c4a01-5f58-49ef-a421-f45c53b9d9e6" />
+        <range start1="59" end1="59" start2="162" end2="205" changelist="620c4a01-5f58-49ef-a421-f45c53b9d9e6" />
+        <range start1="63" end1="63" start2="209" end2="210" changelist="620c4a01-5f58-49ef-a421-f45c53b9d9e6" />
+        <range start1="69" end1="69" start2="216" end2="217" changelist="620c4a01-5f58-49ef-a421-f45c53b9d9e6" />
+        <range start1="71" end1="71" start2="219" end2="220" changelist="620c4a01-5f58-49ef-a421-f45c53b9d9e6" />
+        <range start1="78" end1="80" start2="227" end2="230" changelist="620c4a01-5f58-49ef-a421-f45c53b9d9e6" />
+        <range start1="85" end1="85" start2="235" end2="241" changelist="620c4a01-5f58-49ef-a421-f45c53b9d9e6" />
+        <range start1="86" end1="91" start2="242" end2="247" changelist="620c4a01-5f58-49ef-a421-f45c53b9d9e6" />
+        <range start1="93" end1="95" start2="249" end2="251" changelist="2a8a7209-1ffb-43f2-969c-0ddf95281e08" />
+        <range start1="102" end1="103" start2="258" end2="259" changelist="2a8a7209-1ffb-43f2-969c-0ddf95281e08" />
+        <range start1="106" end1="107" start2="262" end2="263" changelist="2a8a7209-1ffb-43f2-969c-0ddf95281e08" />
+        <range start1="115" end1="116" start2="271" end2="272" changelist="2a8a7209-1ffb-43f2-969c-0ddf95281e08" />
+        <range start1="123" end1="124" start2="279" end2="280" changelist="2a8a7209-1ffb-43f2-969c-0ddf95281e08" />
+        <range start1="127" end1="128" start2="283" end2="295" changelist="2a8a7209-1ffb-43f2-969c-0ddf95281e08" />
+        <range start1="136" end1="137" start2="303" end2="304" changelist="2a8a7209-1ffb-43f2-969c-0ddf95281e08" />
+        <range start1="148" end1="160" start2="315" end2="337" changelist="2a8a7209-1ffb-43f2-969c-0ddf95281e08" />
+        <range start1="168" end1="169" start2="345" end2="346" changelist="2a8a7209-1ffb-43f2-969c-0ddf95281e08" />
+        <range start1="180" end1="181" start2="357" end2="358" changelist="2a8a7209-1ffb-43f2-969c-0ddf95281e08" />
+        <range start1="189" end1="190" start2="366" end2="367" changelist="2a8a7209-1ffb-43f2-969c-0ddf95281e08" />
+        <range start1="197" end1="198" start2="374" end2="375" changelist="2a8a7209-1ffb-43f2-969c-0ddf95281e08" />
+        <range start1="201" end1="202" start2="378" end2="379" changelist="2a8a7209-1ffb-43f2-969c-0ddf95281e08" />
+        <range start1="212" end1="216" start2="389" end2="394" changelist="2a8a7209-1ffb-43f2-969c-0ddf95281e08" />
+        <range start1="219" end1="224" start2="397" end2="402" changelist="2a8a7209-1ffb-43f2-969c-0ddf95281e08" />
+        <range start1="236" end1="348" start2="414" end2="414" changelist="2a8a7209-1ffb-43f2-969c-0ddf95281e08" />
+        <range start1="355" end1="418" start2="421" end2="421" changelist="2a8a7209-1ffb-43f2-969c-0ddf95281e08" />
+        <range start1="489" end1="490" start2="492" end2="759" changelist="2a8a7209-1ffb-43f2-969c-0ddf95281e08" />
+        <range start1="510" end1="528" start2="779" end2="805" changelist="2a8a7209-1ffb-43f2-969c-0ddf95281e08" />
+      </ranges>
+    </file>
+  </component>
+  <component name="NamedScopeManager">
+    <scope name="editor" pattern="file[Notion-py]:notion_py/interface/editor/*||file[Notion-py]:notion_py/interface/editor//*" />
+  </component>
   <component name="ProblemsViewState">
     <hideBySeverity>
       <option value="15" />
     </hideBySeverity>
+    <option name="selectedIndex" value="1" />
   </component>
   <component name="ProjectId" id="1u3aBpl0esiLDIYwdfd7vlaKHwg" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true">
     <ConfirmationsSetting value="2" id="Add" />
   </component>
   <component name="ProjectViewState">
+    <option name="compactDirectories" value="true" />
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
+    <option name="showMembers" value="true" />
   </component>
   <component name="PropertiesComponent">
     <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
@@ -76,23 +236,30 @@
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="TODO_SCOPE" value="모든 위치" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/.env" />
-    <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/notion_py/interface/editor/tabular/pagelist.py" />
+    <property name="run.code.analysis.last.selected.profile" value="aDefault" />
+    <property name="settings.editor.selected.configurable" value="project.scopes" />
   </component>
   <component name="ReaderModeSettings">
     <option name="enabled" value="false" />
   </component>
   <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\윤영훈\Documents\Workspace\Notion-py\notion_py\interface\edit" />
+      <recent name="C:\Users\윤영훈\Documents\Workspace\Notion-py\notion_py\interface\frame" />
+      <recent name="C:\Users\윤영훈\Documents\Workspace\Notion-py\notion_py\gateway" />
+      <recent name="C:\Users\윤영훈\Documents\Workspace\Notion-py\notion_py\interface" />
+    </key>
     <key name="MoveFile.RECENT_KEYS">
-      <recent name="D:\Dev\Workspace\Notion-py\notion_py\interface\editor" />
-      <recent name="D:\Dev\Workspace\Notion-py\notion_py\interface\read" />
-      <recent name="D:\Dev\Workspace\Notion-py\notion_py\applications\log_editor" />
-      <recent name="D:\Dev\Workspace\Notion-py\notion_py\interface\write" />
-      <recent name="D:\Dev\Workspace\Notion-py\notion_py\interface" />
+      <recent name="C:\Users\윤영훈\Documents\Workspace\Notion-py\notion_py\interface\common" />
+      <recent name="C:\Users\윤영훈\Documents\Workspace\Notion-py\notion_py\interface\editor" />
+      <recent name="C:\Users\윤영훈\Documents\Workspace\Notion-py\notion_py\interface\gateway" />
+      <recent name="C:\Users\윤영훈\Documents\Workspace\Notion-py\notion_py\interface\editor\common" />
+      <recent name="C:\Users\윤영훈\Documents\Workspace\Notion-py\notion_py\interface\struct" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.terminal">
-    <configuration name="regular_request" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+  <component name="RunManager" selected="Python.terminal_main">
+    <configuration name="requestor_struct" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Notion-py" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -100,32 +267,11 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/notion_py/applications/read_scraper" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/notion_py/interface/struct" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="D:\Dev\Workspace\Notion-py\notion_py\applications\read_scraper\regular_request.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="request" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="Notion-py" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/notion_py/interface/write" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/notion_py/interface/write/request.py" />
+      <option name="SCRIPT_NAME" value="C:\Users\윤영훈\Documents\Workspace\Notion-py\notion_py\interface\requestor\requestor_struct.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -166,7 +312,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="test" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="terminal_main" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Notion-py" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -178,7 +324,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/test.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/terminal_main.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -187,7 +333,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="test_retrieve" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="terminal_test (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Notion-py" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -195,11 +341,53 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/notion_py/base_interface/examples" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/notion_py/base_interface/examples/test_retrieve.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/terminal_test.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="terminal_test" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="Notion-py" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="C:\Users\윤영훈\Documents\Workspace\Notion-py\terminal_test.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="terminal_wait (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="Notion-py" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/terminal_wait.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -210,18 +398,19 @@
     </configuration>
     <list>
       <item itemvalue="Python.terminal" />
-      <item itemvalue="Python.request" />
-      <item itemvalue="Python.test" />
-      <item itemvalue="Python.test_retrieve" />
-      <item itemvalue="Python.regular_request" />
+      <item itemvalue="Python.requestor_struct" />
+      <item itemvalue="Python.terminal_main" />
+      <item itemvalue="Python.terminal_test (1)" />
+      <item itemvalue="Python.terminal_test" />
+      <item itemvalue="Python.terminal_wait (1)" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.regular_request" />
-        <item itemvalue="Python.test_retrieve" />
-        <item itemvalue="Python.test" />
-        <item itemvalue="Python.request" />
-        <item itemvalue="Python.test" />
+        <item itemvalue="Python.terminal_main" />
+        <item itemvalue="Python.terminal_wait (1)" />
+        <item itemvalue="Python.terminal_test (1)" />
+        <item itemvalue="Python.terminal_test" />
+        <item itemvalue="Python.requestor_struct" />
       </list>
     </recent_temporary>
   </component>
@@ -234,187 +423,12 @@
       <option name="presentableId" value="Default" />
       <updated>1626501912911</updated>
     </task>
-    <task id="LOCAL-00001" summary="DatabaseQueryFilterFrameMaker (이하 FilterFrameMaker) 만들었다.&#10;FilterFrameMaker 에서는 다음 두 가지 조작이 가능하다.&#10;1. FilterFrameMaker -(Property 하나 선택)-&gt;&#10;PropertyFilterFrame (이하 FilterFrame)&#10;-(조건 및 인자 선택)-&gt; QueryFilter (이하 Filter)&#10;2. FilterFrameMaker.all 또는 .any (*arg: Filter)&#10;&#10;&#10;다음으로, Filter 클래스에도 두 종류의 이항연산자를 추가하였다.&#10;1. &amp;, | (*arg: Filter)&#10;2. all, any 메소드 (*arg: 조건 및 인자)">
-      <created>1623928649123</created>
-      <option name="number" value="00001" />
-      <option name="presentableId" value="LOCAL-00001" />
-      <option name="project" value="LOCAL" />
-      <updated>1623928649123</updated>
-    </task>
-    <task id="LOCAL-00002" summary="query filter 의 dict 형태를 친절하게 조립해주는 filter_maker.py 모듈을 만들었다.&#10;다음 두 가지 방식으로 복잡한 필터를 구현할 수 있다.&#10;1. QueryFrameMaker -(Property 하나 선택)-&gt;&#10;FilterFrame -(조건 및 인자 선택)-&gt; QueryFilter&#10;2. AndFilter 또는 OrFilter(인자: *QueryFilter) -&gt; QueryFilter&#10;&#10;또한 QueryFilter 클래스에도 &amp;, | 이항연산자를 구현하였다.&#10;&#10;여러모로 추상클래스의 활용 방법에 대해 많이 깨닫는 시간이었다.">
-      <created>1623939815581</created>
-      <option name="number" value="00002" />
-      <option name="presentableId" value="LOCAL-00002" />
-      <option name="project" value="LOCAL" />
-      <updated>1623939815581</updated>
-    </task>
-    <task id="LOCAL-00003" summary="query filter 의 dict 형태를 친절하게 조립해주는 filter_maker.py 모듈을 만들었다.&#10;다음 두 가지 방식으로 복잡한 필터를 구현할 수 있다.&#10;1. QueryFrameMaker -(Property 하나 선택)-&gt;&#10;FilterFrame -(조건 및 인자 선택)-&gt; QueryFilter&#10;2. AndFilter 또는 OrFilter(인자: *QueryFilter) -&gt; QueryFilter&#10;&#10;또한 QueryFilter 클래스에도 &amp;, | 이항연산자를 구현하였다.&#10;&#10;여러모로 추상클래스의 활용 방법에 대해 많이 깨닫는 시간이었다.">
-      <created>1623940509174</created>
-      <option name="number" value="00003" />
-      <option name="presentableId" value="LOCAL-00003" />
-      <option name="project" value="LOCAL" />
-      <updated>1623940509174</updated>
-    </task>
-    <task id="LOCAL-00004" summary="Property Stack 클래스 거의 정비됨">
-      <created>1625232627667</created>
-      <option name="number" value="00004" />
-      <option name="presentableId" value="LOCAL-00004" />
-      <option name="project" value="LOCAL" />
-      <updated>1625232627667</updated>
-    </task>
-    <task id="LOCAL-00005" summary="DB-Handler (Filter 리팩토링 제외하고) 완료">
-      <created>1625459512990</created>
-      <option name="number" value="00005" />
-      <option name="presentableId" value="LOCAL-00005" />
-      <option name="project" value="LOCAL" />
-      <updated>1625459512990</updated>
-    </task>
-    <task id="LOCAL-00006" summary="DB-Handler (Filter 리팩토링 제외하고) 완료">
-      <created>1625461641049</created>
-      <option name="number" value="00006" />
-      <option name="presentableId" value="LOCAL-00006" />
-      <option name="project" value="LOCAL" />
-      <updated>1625461641049</updated>
-    </task>
-    <task id="LOCAL-00007" summary="Match-Relations 에 클래스 씌우기">
-      <created>1625492042079</created>
-      <option name="number" value="00007" />
-      <option name="presentableId" value="LOCAL-00007" />
-      <option name="project" value="LOCAL" />
-      <updated>1625492042079</updated>
-    </task>
-    <task id="LOCAL-00008" summary="Match-Relations 첫 성공. 일지-&gt;날짜">
-      <created>1625519027669</created>
-      <option name="number" value="00008" />
-      <option name="presentableId" value="LOCAL-00008" />
-      <option name="project" value="LOCAL" />
-      <updated>1625519027669</updated>
-    </task>
-    <task id="LOCAL-00009" summary="Match-Relations 첫 성공. 일지-&gt;날짜">
-      <created>1625519206657</created>
-      <option name="number" value="00009" />
-      <option name="presentableId" value="LOCAL-00009" />
-      <option name="project" value="LOCAL" />
-      <updated>1625519206657</updated>
-    </task>
-    <task id="LOCAL-00010" summary="일지-&gt;진도-&gt;날짜 성공">
-      <created>1625586651867</created>
-      <option name="number" value="00010" />
-      <option name="presentableId" value="LOCAL-00010" />
-      <option name="project" value="LOCAL" />
-      <updated>1625586651867</updated>
-    </task>
-    <task id="LOCAL-00011" summary="일지-&gt;진도-&gt;날짜-&gt;기간 성공">
-      <created>1625769766946</created>
-      <option name="number" value="00011" />
-      <option name="presentableId" value="LOCAL-00011" />
-      <option name="project" value="LOCAL" />
-      <updated>1625769766946</updated>
-    </task>
-    <task id="LOCAL-00012" summary="일지-&gt;진도-&gt;날짜-&gt;기간 성공">
-      <created>1625769857290</created>
-      <option name="number" value="00012" />
-      <option name="presentableId" value="LOCAL-00012" />
-      <option name="project" value="LOCAL" />
-      <updated>1625769857290</updated>
-    </task>
-    <task id="LOCAL-00013" summary="일지-&gt;진도-&gt;날짜-&gt;기간 성공">
-      <created>1625845919666</created>
-      <option name="number" value="00013" />
-      <option name="presentableId" value="LOCAL-00013" />
-      <option name="project" value="LOCAL" />
-      <updated>1625845919667</updated>
-    </task>
-    <task id="LOCAL-00014" summary="일지-&gt;진도-&gt;날짜-&gt;기간 성공">
-      <created>1625846585361</created>
-      <option name="number" value="00014" />
-      <option name="presentableId" value="LOCAL-00014" />
-      <option name="project" value="LOCAL" />
-      <updated>1625846585361</updated>
-    </task>
-    <task id="LOCAL-00015" summary="변경 목록">
-      <created>1625850827299</created>
-      <option name="number" value="00015" />
-      <option name="presentableId" value="LOCAL-00015" />
-      <option name="project" value="LOCAL" />
-      <updated>1625850976700</updated>
-    </task>
-    <task id="LOCAL-00016" summary="일지-&gt;진도-&gt;날짜-&gt;기간 성공">
-      <created>1625850902941</created>
-      <option name="number" value="00016" />
-      <option name="presentableId" value="LOCAL-00016" />
-      <option name="project" value="LOCAL" />
-      <updated>1625850902941</updated>
-    </task>
     <task id="LOCAL-00017" summary="새 변경 목록">
       <created>1625850976691</created>
       <option name="number" value="00017" />
       <option name="presentableId" value="LOCAL-00017" />
       <option name="project" value="LOCAL" />
       <updated>1626501790788</updated>
-    </task>
-    <task id="LOCAL-00018" summary="새 변경 목록">
-      <created>1625851016334</created>
-      <option name="number" value="00018" />
-      <option name="presentableId" value="LOCAL-00018" />
-      <option name="project" value="LOCAL" />
-      <updated>1625851016334</updated>
-    </task>
-    <task id="LOCAL-00019" summary="일지-&gt;진도-&gt;날짜-&gt;기간 성공">
-      <created>1625851183752</created>
-      <option name="number" value="00019" />
-      <option name="presentableId" value="LOCAL-00019" />
-      <option name="project" value="LOCAL" />
-      <updated>1625851183752</updated>
-    </task>
-    <task id="LOCAL-00020" summary="날짜-&gt;기간 리팩토링">
-      <created>1625974774966</created>
-      <option name="number" value="00020" />
-      <option name="presentableId" value="LOCAL-00020" />
-      <option name="project" value="LOCAL" />
-      <updated>1625974774966</updated>
-    </task>
-    <task id="LOCAL-00021" summary="notion_py 패키지로 모든 파일 모으기.&#10;terminal.py 파일에 작업 스케줄러 연결.">
-      <created>1625983248578</created>
-      <option name="number" value="00021" />
-      <option name="presentableId" value="LOCAL-00021" />
-      <option name="project" value="LOCAL" />
-      <updated>1625983248578</updated>
-    </task>
-    <task id="LOCAL-00022" summary="Page Document 클래스">
-      <created>1626097013316</created>
-      <option name="number" value="00022" />
-      <option name="presentableId" value="LOCAL-00022" />
-      <option name="project" value="LOCAL" />
-      <updated>1626097013316</updated>
-    </task>
-    <task id="LOCAL-00023" summary="Page Document 클래스">
-      <created>1626097983429</created>
-      <option name="number" value="00023" />
-      <option name="presentableId" value="LOCAL-00023" />
-      <option name="project" value="LOCAL" />
-      <updated>1626097983429</updated>
-    </task>
-    <task id="LOCAL-00024" summary="Page Document 클래스">
-      <created>1626099302003</created>
-      <option name="number" value="00024" />
-      <option name="presentableId" value="LOCAL-00024" />
-      <option name="project" value="LOCAL" />
-      <updated>1626099302003</updated>
-    </task>
-    <task id="LOCAL-00025" summary="Page Document 클래스">
-      <created>1626099986476</created>
-      <option name="number" value="00025" />
-      <option name="presentableId" value="LOCAL-00025" />
-      <option name="project" value="LOCAL" />
-      <updated>1626099986476</updated>
-    </task>
-    <task id="LOCAL-00026" summary="Read Scraper 패키지">
-      <created>1626176205020</created>
-      <option name="number" value="00026" />
-      <option name="presentableId" value="LOCAL-00026" />
-      <option name="project" value="LOCAL" />
-      <updated>1626176205020</updated>
     </task>
     <task id="LOCAL-00027" summary="Read Scraper 디버깅; BlockEditor 클래스 창설">
       <created>1626287783285</created>
@@ -487,7 +501,273 @@
       <option name="project" value="LOCAL" />
       <updated>1626502613347</updated>
     </task>
-    <option name="localTasksCounter" value="37" />
+    <task id="LOCAL-00037" summary="env 파일">
+      <created>1626502635638</created>
+      <option name="number" value="00037" />
+      <option name="presentableId" value="LOCAL-00037" />
+      <option name="project" value="LOCAL" />
+      <updated>1626502635638</updated>
+    </task>
+    <task id="LOCAL-00038" summary="gy_lib가 실패해도 '고양시 상호대차'를 반환했던 오류 수정.">
+      <created>1627027936214</created>
+      <option name="number" value="00038" />
+      <option name="presentableId" value="LOCAL-00038" />
+      <option name="project" value="LOCAL" />
+      <updated>1627027936214</updated>
+    </task>
+    <task id="LOCAL-00039" summary="retry_request 데코레이터 오류 수정 (execute_once에서 self를 바보같이 두 번씩 호출하고 있었다)">
+      <created>1627032032390</created>
+      <option name="number" value="00039" />
+      <option name="presentableId" value="LOCAL-00039" />
+      <option name="project" value="LOCAL" />
+      <updated>1627032032390</updated>
+    </task>
+    <task id="LOCAL-00040" summary="lib_snu를 셀레늄으로 다시 짜기">
+      <created>1627039675904</created>
+      <option name="number" value="00040" />
+      <option name="presentableId" value="LOCAL-00040" />
+      <option name="project" value="LOCAL" />
+      <updated>1627039675904</updated>
+    </task>
+    <task id="LOCAL-00041" summary="lib_snu를 셀레늄으로 다시 짜기">
+      <created>1627040924253</created>
+      <option name="number" value="00041" />
+      <option name="presentableId" value="LOCAL-00041" />
+      <option name="project" value="LOCAL" />
+      <updated>1627040924253</updated>
+    </task>
+    <task id="LOCAL-00042" summary="버그픽스">
+      <created>1627110238839</created>
+      <option name="number" value="00042" />
+      <option name="presentableId" value="LOCAL-00042" />
+      <option name="project" value="LOCAL" />
+      <updated>1627110238839</updated>
+    </task>
+    <task id="LOCAL-00043" summary="버그픽스">
+      <created>1627111195379</created>
+      <option name="number" value="00043" />
+      <option name="presentableId" value="LOCAL-00043" />
+      <option name="project" value="LOCAL" />
+      <updated>1627111195380</updated>
+    </task>
+    <task id="LOCAL-00044" summary="driver.quit 명시적으로 추가">
+      <created>1627436738125</created>
+      <option name="number" value="00044" />
+      <option name="presentableId" value="LOCAL-00044" />
+      <option name="project" value="LOCAL" />
+      <updated>1627436738125</updated>
+    </task>
+    <task id="LOCAL-00045" summary="메모 추가; endpoint.py 클래스 기반 리팩토링">
+      <created>1627984052070</created>
+      <option name="number" value="00045" />
+      <option name="presentableId" value="LOCAL-00045" />
+      <option name="project" value="LOCAL" />
+      <updated>1627984052070</updated>
+    </task>
+    <task id="LOCAL-00046" summary="draw_graph">
+      <created>1628311946157</created>
+      <option name="number" value="00046" />
+      <option name="presentableId" value="LOCAL-00046" />
+      <option name="project" value="LOCAL" />
+      <updated>1628311946157</updated>
+    </task>
+    <task id="LOCAL-00047" summary="PageParser, PageListParser, TabularPage 등 백업한 뒤 복사본 위에서 새로 만들기 시작">
+      <created>1629194393548</created>
+      <option name="number" value="00047" />
+      <option name="presentableId" value="LOCAL-00047" />
+      <option name="project" value="LOCAL" />
+      <updated>1629194393548</updated>
+    </task>
+    <task id="LOCAL-00048" summary="- &lt;TabularPage&gt;: PropertyAgent 와 Editor 사이의 딜레마 적당히 해결&#10;- &lt;PageList&gt;: deprecated 대체할 준비 거의 다 됨&#10;- &lt;ChildrenParser&gt;: 사전작업만 하려다 보니 반쯤 끝냄&#10;- &lt;DatabaseFrame 및 PropertyFrame&gt;: deprecated 처리하고 다시 만들기&#10;- DateFormat 클래스를 만들어 날짜 정보를 읽고 쓰는 유일한 인터페이스로 지정함&#10;- Requestor 에 bool 값 추가">
+      <created>1629275848702</created>
+      <option name="number" value="00048" />
+      <option name="presentableId" value="LOCAL-00048" />
+      <option name="project" value="LOCAL" />
+      <updated>1629275848702</updated>
+    </task>
+    <task id="LOCAL-00049" summary="- &lt;TabularPageProps&gt;: 완성&#10;- &lt;BlockChildren&gt;: TabularPageProps 보면서 똑같이 따라하는 중. 시도에 비해 성과가 (굉장히 간만에) 잘 나오고 있다. &#10;- &lt;DatabaseFrame 및 PropertyFrame&gt;: 다시 만들기 끝. 구버전 처리는 조금 나중에.">
+      <created>1629280302997</created>
+      <option name="number" value="00049" />
+      <option name="presentableId" value="LOCAL-00049" />
+      <option name="project" value="LOCAL" />
+      <updated>1629280302997</updated>
+    </task>
+    <task id="LOCAL-00050" summary="폴더링">
+      <created>1629886626640</created>
+      <option name="number" value="00050" />
+      <option name="presentableId" value="LOCAL-00050" />
+      <option name="project" value="LOCAL" />
+      <updated>1629886626640</updated>
+    </task>
+    <task id="LOCAL-00051" summary="- Query.unpack(), QueryFilterMaker&#10;- UpdateBlock, RetrieveBlock">
+      <created>1629945292418</created>
+      <option name="number" value="00051" />
+      <option name="presentableId" value="LOCAL-00051" />
+      <option name="project" value="LOCAL" />
+      <updated>1629945292418</updated>
+    </task>
+    <task id="LOCAL-00052" summary="Abstractmethod 구현하지 않은 문제 수정">
+      <created>1629945541466</created>
+      <option name="number" value="00052" />
+      <option name="presentableId" value="LOCAL-00052" />
+      <option name="project" value="LOCAL" />
+      <updated>1629945541466</updated>
+    </task>
+    <task id="LOCAL-00053" summary=".">
+      <created>1630932667639</created>
+      <option name="number" value="00053" />
+      <option name="presentableId" value="LOCAL-00053" />
+      <option name="project" value="LOCAL" />
+      <updated>1630932667639</updated>
+    </task>
+    <task id="LOCAL-00054" summary="type hinting redundancy 수정">
+      <created>1630996612260</created>
+      <option name="number" value="00054" />
+      <option name="presentableId" value="LOCAL-00054" />
+      <option name="project" value="LOCAL" />
+      <updated>1630996612260</updated>
+    </task>
+    <task id="LOCAL-00055" summary="디버깅&#10;* PageParser 가 공식 DateFormat 이 아니라 dict[datetime]을 뱉는 것 수정.&#10;* ArchiveToggle 이 None 값이면 unpack에 반영 안 되게 수정.">
+      <created>1631011031492</created>
+      <option name="number" value="00055" />
+      <option name="presentableId" value="LOCAL-00055" />
+      <option name="project" value="LOCAL" />
+      <updated>1631011031494</updated>
+    </task>
+    <task id="LOCAL-00056" summary="디버깅&#10;* DateFormat 에 __str__ 추가.">
+      <created>1631011625876</created>
+      <option name="number" value="00056" />
+      <option name="presentableId" value="LOCAL-00056" />
+      <option name="project" value="LOCAL" />
+      <updated>1631011625878</updated>
+    </task>
+    <task id="LOCAL-00057" summary="media_scraper 폴더링">
+      <created>1631688281024</created>
+      <option name="number" value="00057" />
+      <option name="presentableId" value="LOCAL-00057" />
+      <option name="project" value="LOCAL" />
+      <updated>1631688281024</updated>
+    </task>
+    <task id="LOCAL-00058" summary="media_scraper 폴더링">
+      <created>1631688310194</created>
+      <option name="number" value="00058" />
+      <option name="presentableId" value="LOCAL-00058" />
+      <option name="project" value="LOCAL" />
+      <updated>1631688310194</updated>
+    </task>
+    <task id="LOCAL-00059" summary="match_to_projects 디버깅">
+      <created>1631690433117</created>
+      <option name="number" value="00059" />
+      <option name="presentableId" value="LOCAL-00059" />
+      <option name="project" value="LOCAL" />
+      <updated>1631690433117</updated>
+    </task>
+    <task id="LOCAL-00060" summary="sphere, elements 등 속성값 수정">
+      <created>1632299322590</created>
+      <option name="number" value="00060" />
+      <option name="presentableId" value="LOCAL-00060" />
+      <option name="project" value="LOCAL" />
+      <updated>1632299322592</updated>
+    </task>
+    <task id="LOCAL-00061" summary="# editor&#10;API create_inline_page 오류 수정&#10;editor 패키지 새로 폴더링: 추상&lt;-&gt;구체로 먼저 나누고, 상속 관계에 따라 세분 &#10;&#10;# prop_matcher&#10;일지-진도 합병 반영&#10;&#10;# media_scraper&#10;remove_duplicate 유닛 추가&#10;append_contents 별도의 클래스로 분리해 보강">
+      <created>1632401061097</created>
+      <option name="number" value="00061" />
+      <option name="presentableId" value="LOCAL-00061" />
+      <option name="project" value="LOCAL" />
+      <updated>1632401061101</updated>
+    </task>
+    <task id="LOCAL-00062" summary=".">
+      <created>1632472585274</created>
+      <option name="number" value="00062" />
+      <option name="presentableId" value="LOCAL-00062" />
+      <option name="project" value="LOCAL" />
+      <updated>1632472585274</updated>
+    </task>
+    <task id="LOCAL-00063" summary=".">
+      <created>1633865371003</created>
+      <option name="number" value="00063" />
+      <option name="presentableId" value="LOCAL-00063" />
+      <option name="project" value="LOCAL" />
+      <updated>1633865371003</updated>
+    </task>
+    <task id="LOCAL-00064" summary=".">
+      <created>1633952759434</created>
+      <option name="number" value="00064" />
+      <option name="presentableId" value="LOCAL-00064" />
+      <option name="project" value="LOCAL" />
+      <updated>1633952759434</updated>
+    </task>
+    <task id="LOCAL-00065" summary="unit_scraper (LibraryScraper, BkstScraper) flag -&gt; error 로 바꾸기">
+      <created>1634819492795</created>
+      <option name="number" value="00065" />
+      <option name="presentableId" value="LOCAL-00065" />
+      <option name="project" value="LOCAL" />
+      <updated>1634819492796</updated>
+    </task>
+    <task id="LOCAL-00066" summary=".">
+      <created>1635067099673</created>
+      <option name="number" value="00066" />
+      <option name="presentableId" value="LOCAL-00066" />
+      <option name="project" value="LOCAL" />
+      <updated>1635067099673</updated>
+    </task>
+    <task id="LOCAL-00067" summary="1. editor 새로 폴더링: .common 패키지에 다 모으다.&#10;2. PEP 자동 적용">
+      <created>1635688287034</created>
+      <option name="number" value="00067" />
+      <option name="presentableId" value="LOCAL-00067" />
+      <option name="project" value="LOCAL" />
+      <updated>1635688287034</updated>
+    </task>
+    <task id="LOCAL-00068" summary=".">
+      <created>1635688311416</created>
+      <option name="number" value="00068" />
+      <option name="presentableId" value="LOCAL-00068" />
+      <option name="project" value="LOCAL" />
+      <updated>1635688311416</updated>
+    </task>
+    <task id="LOCAL-00069" summary="* 커스텀 예외 클래스 (최초로) 정의&#10;* with_children_and_contents 분리. apply_block_parser 메소드가 훨씬 깔끔해짐(isinstance 를 부르지 않아도 됨)&#10;* 다음을 PayloadEditor 로 이관하고 퍼블릭 세터 삭제(만약 있었다면):&#10;&#9;* yet_not_created&#10;&#9;* can_have_children&#10;&#9;* has_children&#10;&#9;* block_id&#10;&#9;* contents&#10;&#9;* requestor&#10;* can_have_children 이 False 이면 item_creator 가 에러 띄우도록 강제">
+      <created>1635946696468</created>
+      <option name="number" value="00069" />
+      <option name="presentableId" value="LOCAL-00069" />
+      <option name="project" value="LOCAL" />
+      <updated>1635946696484</updated>
+    </task>
+    <task id="LOCAL-00070" summary="* prop_matcher: controller 에 wiring 빼먹음">
+      <created>1635947501231</created>
+      <option name="number" value="00070" />
+      <option name="presentableId" value="LOCAL-00070" />
+      <option name="project" value="LOCAL" />
+      <updated>1635947501239</updated>
+    </task>
+    <task id="LOCAL-00071" summary="* BlockChildren 에 Block 결합(attach)하는 과정을 자식 클래스에서 호출하도록 설정.&#10;* 이는 커스텀 클래스 사용을 위한 사전준비( MyPageList(PageList), MyPageRow(PageRow) 등등).&#10;* 부모 클래스를 건드리지 않고 &quot;__init__(caller=root_editor)&quot; 만으로 커스텀 자식 클래스의 __init__이 가능해야 하기 때문임.">
+      <created>1636026687986</created>
+      <option name="number" value="00071" />
+      <option name="presentableId" value="LOCAL-00071" />
+      <option name="project" value="LOCAL" />
+      <updated>1636026687993</updated>
+    </task>
+    <task id="LOCAL-00072" summary="* eval_empty 가 None 값을 Truthy 로 인식하는 오류 수정&#10;* status_finalized 추가: set_lib_missing 이 set_url_missing 가리지 않도록.">
+      <created>1636027504873</created>
+      <option name="number" value="00072" />
+      <option name="presentableId" value="LOCAL-00072" />
+      <option name="project" value="LOCAL" />
+      <updated>1636027504873</updated>
+    </task>
+    <task id="LOCAL-00073" summary="* Root.exclude_archived (전역 옵션) 추가&#10;* QueryWithCallback.execute 이 pages 아닌 None 값을 반환하는 오류 수정">
+      <created>1636100753203</created>
+      <option name="number" value="00073" />
+      <option name="presentableId" value="LOCAL-00073" />
+      <option name="project" value="LOCAL" />
+      <updated>1636100753203</updated>
+    </task>
+    <task id="LOCAL-00074" summary="chromedriver 다 끝나고 닫히지 않는 오류 수정">
+      <created>1636188150990</created>
+      <option name="number" value="00074" />
+      <option name="presentableId" value="LOCAL-00074" />
+      <option name="project" value="LOCAL" />
+      <updated>1636188150990</updated>
+    </task>
+    <option name="localTasksCounter" value="75" />
     <option name="trackContextForNewChangelist" value="true" />
     <servers />
   </component>
@@ -508,24 +788,32 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
-    <MESSAGE value="DatabaseQueryFilterFrameMaker (이하 FilterFrameMaker) 만들었다.&#10;FilterFrameMaker에서는 다음 두 가지 조작이 가능하다.&#10;1. FilterFrameMaker -(Property 하나 선택)-&gt;&#10;PropertyFilterFrame (이하 FilterFrame)&#10;-(조건 선택)-&gt; QueryFilter (이하 Filter)&#10;2. FilterFrameMaker.any/all(*arg: QueryFilter)&#10;또한 Filter 클래스에서도 any/all 연산,&#10;또는 이와 동치인 &amp;, | 연산을 수행할 수 있다." />
-    <MESSAGE value="DatabaseQueryFilterFrameMaker (이하 FilterFrameMaker) 만들었다.&#10;FilterFrameMaker 에서는 다음 두 가지 조작이 가능하다.&#10;1. FilterFrameMaker -(Property 하나 선택)-&gt;&#10;PropertyFilterFrame (이하 FilterFrame)&#10;-(조건 및 인자 선택)-&gt; QueryFilter (이하 Filter)&#10;2. FilterFrameMaker.all 또는 .any (*arg: Filter)&#10;&#10;&#10;다음으로, Filter 클래스에도 두 종류의 이항연산자를 추가하였다.&#10;1. &amp;, | (*arg: Filter)&#10;2. all, any 메소드 (*arg: 조건 및 인자)" />
-    <MESSAGE value="query filter 의 dict 형태를 친절하게 조립해주는 filter_maker.py 모듈을 만들었다.&#10;다음 두 가지 방식으로 복잡한 필터를 구현할 수 있다.&#10;1. QueryFrameMaker -(Property 하나 선택)-&gt;&#10;FilterFrame -(조건 및 인자 선택)-&gt; QueryFilter&#10;2. AndFilter 또는 OrFilter(인자: *QueryFilter) -&gt; QueryFilter&#10;&#10;또한 QueryFilter 클래스에도 &amp;, | 이항연산자를 구현하였다.&#10;&#10;여러모로 추상클래스의 활용 방법에 대해 많이 깨닫는 시간이었다." />
-    <MESSAGE value="Property Stack 클래스 거의 정비됨" />
-    <MESSAGE value="DB-Handler (Filter 리팩토링 제외하고) 완료" />
-    <MESSAGE value="Match-Relations 에 클래스 씌우기" />
-    <MESSAGE value="Match-Relations 첫 성공. 일지-&gt;날짜" />
-    <MESSAGE value="일지-&gt;진도-&gt;날짜 성공" />
-    <MESSAGE value="새 변경 목록" />
-    <MESSAGE value="일지-&gt;진도-&gt;날짜-&gt;기간 성공" />
-    <MESSAGE value="날짜-&gt;기간 리팩토링" />
-    <MESSAGE value="notion_py 패키지로 모든 파일 모으기.&#10;terminal.py 파일에 작업 스케줄러 연결." />
-    <MESSAGE value="Page Document 클래스" />
-    <MESSAGE value="Read Scraper 패키지" />
-    <MESSAGE value="Read Scraper 디버깅; BlockEditor 클래스 창설" />
-    <MESSAGE value="Read Scraper 완료" />
-    <MESSAGE value="env 파일" />
-    <option name="LAST_COMMIT_MESSAGE" value="env 파일" />
+    <MESSAGE value="driver.quit 명시적으로 추가" />
+    <MESSAGE value="메모 추가; endpoint.py 클래스 기반 리팩토링" />
+    <MESSAGE value="draw_graph" />
+    <MESSAGE value="PageParser, PageListParser, TabularPage 등 백업한 뒤 복사본 위에서 새로 만들기 시작" />
+    <MESSAGE value="- &lt;TabularPage&gt;: PropertyAgent 와 Editor 사이의 딜레마 적당히 해결&#10;- &lt;PageList&gt;: deprecated 대체할 준비 거의 다 됨&#10;- &lt;ChildrenParser&gt;: 사전작업만 하려다 보니 반쯤 끝냄&#10;- &lt;DatabaseFrame 및 PropertyFrame&gt;: deprecated 처리하고 다시 만들기&#10;- DateFormat 클래스를 만들어 날짜 정보를 읽고 쓰는 유일한 인터페이스로 지정함&#10;- Requestor 에 bool 값 추가" />
+    <MESSAGE value="- &lt;TabularPageProps&gt;: 완성&#10;- &lt;BlockChildren&gt;: TabularPageProps 보면서 똑같이 따라하는 중. 시도에 비해 성과가 (굉장히 간만에) 잘 나오고 있다. &#10;- &lt;DatabaseFrame 및 PropertyFrame&gt;: 다시 만들기 끝. 구버전 처리는 조금 나중에." />
+    <MESSAGE value="폴더링" />
+    <MESSAGE value="- Query.unpack(), QueryFilterMaker&#10;- UpdateBlock, RetrieveBlock" />
+    <MESSAGE value="Abstractmethod 구현하지 않은 문제 수정" />
+    <MESSAGE value="type hinting redundancy 수정" />
+    <MESSAGE value="디버깅&#10;* PageParser 가 공식 DateFormat 이 아니라 dict[datetime]을 뱉는 것 수정.&#10;* ArchiveToggle 이 None 값이면 unpack에 반영 안 되게 수정." />
+    <MESSAGE value="디버깅&#10;* DateFormat 에 __str__ 추가." />
+    <MESSAGE value="media_scraper 폴더링" />
+    <MESSAGE value="match_to_projects 디버깅" />
+    <MESSAGE value="sphere, elements 등 속성값 수정" />
+    <MESSAGE value="# editor&#10;API create_inline_page 오류 수정&#10;editor 패키지 새로 폴더링: 추상&lt;-&gt;구체로 먼저 나누고, 상속 관계에 따라 세분 &#10;&#10;# prop_matcher&#10;일지-진도 합병 반영&#10;&#10;# media_scraper&#10;remove_duplicate 유닛 추가&#10;append_contents 별도의 클래스로 분리해 보강" />
+    <MESSAGE value="unit_scraper (LibraryScraper, BkstScraper) flag -&gt; error 로 바꾸기" />
+    <MESSAGE value="1. editor 새로 폴더링: .common 패키지에 다 모으다.&#10;2. PEP 자동 적용" />
+    <MESSAGE value="." />
+    <MESSAGE value="* 커스텀 예외 클래스 (최초로) 정의&#10;* with_children_and_contents 분리. apply_block_parser 메소드가 훨씬 깔끔해짐(isinstance 를 부르지 않아도 됨)&#10;* 다음을 PayloadEditor 로 이관하고 퍼블릭 세터 삭제(만약 있었다면):&#10;&#9;* yet_not_created&#10;&#9;* can_have_children&#10;&#9;* has_children&#10;&#9;* block_id&#10;&#9;* contents&#10;&#9;* requestor&#10;* can_have_children 이 False 이면 item_creator 가 에러 띄우도록 강제" />
+    <MESSAGE value="* prop_matcher: controller 에 wiring 빼먹음" />
+    <MESSAGE value="* BlockChildren 에 Block 결합(attach)하는 과정을 자식 클래스에서 호출하도록 설정.&#10;* 이는 커스텀 클래스 사용을 위한 사전준비( MyPageList(PageList), MyPageRow(PageRow) 등등).&#10;* 부모 클래스를 건드리지 않고 &quot;__init__(caller=root_editor)&quot; 만으로 커스텀 자식 클래스의 __init__이 가능해야 하기 때문임." />
+    <MESSAGE value="* eval_empty 가 None 값을 Truthy 로 인식하는 오류 수정&#10;* status_finalized 추가: set_lib_missing 이 set_url_missing 가리지 않도록." />
+    <MESSAGE value="* Root.exclude_archived (전역 옵션) 추가&#10;* QueryWithCallback.execute 이 pages 아닌 None 값을 반환하는 오류 수정" />
+    <MESSAGE value="chromedriver 다 끝나고 닫히지 않는 오류 수정" />
+    <option name="LAST_COMMIT_MESSAGE" value="chromedriver 다 끝나고 닫히지 않는 오류 수정" />
     <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="true" />
   </component>
   <component name="XDebuggerManager">

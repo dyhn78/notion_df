@@ -1,18 +1,18 @@
 # from typing import Union
 #
-# from notion_py.interface.common.struct import Requestor
+# from notion_py.gateway.struct.struct import Requestor
 # from ...struct import GroundEditor, BlockEditor
-# from notion_py.interface.encoder import RichTextContentsEncoder
-# from notion_py.interface.parser import BlockChildrenParser
-# from notion_py.interface.requestor import AppendBlockChildren
+# from notion_py.gateway.encoders import RichTextContentsEncoder
+# from notion_py.gateway.parsers import BlockChildrenParser
+# from notion_py.gateway.requestors import AppendBlockChildren
 #
 #
 # class BlockSphereCreatorWithChildInlinePage(GroundEditor):
 #     def __init__(self, caller: BlockEditor):
-#         requestor = AppendBlockChildren(self)
+#         requestors = AppendBlockChildren(self)
 #         super().__init__(caller)
 #         self.caller = caller
-#         self.requestor = requestor
+#         self.requestors = requestors
 #         from .with_contents.contents_bearing import ContentsBearer
 #         self.blocks: list[ContentsBearer] = []
 #         self._chunk_interrupted = True
@@ -31,13 +31,13 @@
 #
 #     @property
 #     def gateway(self):
-#         return self.requestor
+#         return self.requestors
 #
 #     def execute(self):
 #         response = self.gateway.execute()
 #         parsers = BlockChildrenParser(response)
-#         for parser, new_child in zip(parsers, self.blocks):
-#             new_child.contents.apply_block_parser(parser)
+#         for parsers, new_child in zip(parsers, self.blocks):
+#             new_child.contents.apply_block_parser(parsers)
 #         for child in self.blocks:
 #             child.execute()
 #         res = self.blocks.copy()

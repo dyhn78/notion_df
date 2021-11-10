@@ -1,7 +1,7 @@
-from notion_py.interface.editor.tabular import PageList
+from notion_py.interface import editor
 
 
-def query_within_date_range(pagelist: PageList,
+def query_within_date_range(pagelist: editor.PageList,
                             date_index_tag: str, date_range=0):
     query = pagelist.open_query()
     if date_range:
@@ -18,7 +18,7 @@ def query_within_date_range(pagelist: PageList,
     query.execute()
 
 
-def query_danglings(pagelist: PageList, relation_tag: str):
+def query_danglings(pagelist: editor.PageList, relation_tag: str):
     query = pagelist.open_query()
     frame = query.filter_maker.relation_at(relation_tag)
     ft = frame.is_empty()

@@ -1,5 +1,5 @@
 from .database import Database
-from ..common.struct import PayloadEditor
+from ..struct import PayloadEditor
 
 
 class DatabaseSchema(PayloadEditor):

@@ -3,9 +3,9 @@ from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 from typing import Union
 
-from notion_py.interface.parser import BlockContentsParser
-from .struct import GroundEditor, BlockEditor, MasterEditor, PayloadEditor
-from ..root_editor import RootEditor
+from notion_py.interface.editor.root_editor import RootEditor
+from ..struct import MasterEditor, BlockEditor, PayloadEditor, GroundEditor
+from notion_py.interface.gateway import parsers
 
 
 class ContentsBearer(MasterEditor, metaclass=ABCMeta):
@@ -54,7 +54,7 @@ class BlockContents(PayloadEditor, GroundEditor, metaclass=ABCMeta):
     def reads_rich(self) -> list:
         return self._read_rich
 
-    def apply_block_parser(self, parser: BlockContentsParser):
+    def apply_block_parser(self, parser: parsers.BlockContentsParser):
         if parser.block_id:
             self._set_block_id(parser.block_id)
         self._read_plain = parser.read_plain

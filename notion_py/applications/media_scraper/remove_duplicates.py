@@ -1,7 +1,6 @@
-from notion_py.interface.editor.common.with_items import ItemsBearer
-from notion_py.interface.utility import stopwatch
+from notion_py.interface import editor
+from ...interface.common import utility
 from .common.struct import ReadingDBController
-from ...interface.editor.inline import TextItem, PageItem
 
 
 class ReadingDBDuplicateRemover(ReadingDBController):
@@ -12,7 +11,7 @@ class ReadingDBDuplicateRemover(ReadingDBController):
             removed = remove_dummy_blocks(page)
             if removed:
                 page.props.write_text_at('link_to_contents', '')
-                stopwatch(f'중복 {removed} 개 제거: {page.title}')
+                utility.stopwatch(f'중복 {removed} 개 제거: {page.title}')
                 page.save()
 
     def make_query(self, request_size):
@@ -25,19 +24,19 @@ class ReadingDBDuplicateRemover(ReadingDBController):
         query.execute(request_size)
 
 
-def remove_dummy_blocks(page: ItemsBearer):
+def remove_dummy_blocks(page: editor.common.ItemsBearer):
     duplicate = False
     removed = 0
     for block in page.attachments:
         if block.archived:
             continue
         # remove "blank" blocks
-        if isinstance(block, TextItem) and \
+        if isinstance(block, editor.TextItem) and \
                 block.contents.reads().split() == '':
             block.contents.archive()
             removed += 1
         # remove duplicate contents (page_block)
-        if isinstance(block, PageItem) and \
+        if isinstance(block, editor.PageItem) and \
                 page.block_name in block.contents.reads():
             if not duplicate:
                 duplicate = True

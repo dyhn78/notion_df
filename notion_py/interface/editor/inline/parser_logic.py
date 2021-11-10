@@ -1,9 +1,10 @@
-from notion_py.interface.parser import BlockContentsParser
-from . import PageItem, TextItem
+from notion_py.interface.gateway import parsers
+from .page_item import PageItem
+from .text_item import TextItem
 from .unsupported import UnsupportedBlock
 
 
-def get_type_of_block_parser(parser: BlockContentsParser):
+def get_type_of_block_parser(parser: parsers.BlockContentsParser):
     if not parser.is_supported_type:
         return UnsupportedBlock
     elif parser.is_page_block:

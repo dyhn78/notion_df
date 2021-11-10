@@ -1,11 +1,7 @@
 from __future__ import annotations
 
-from .matchers.match_to_dates import DateMatcherType1, DateMatcherType2
-from .matchers.match_to_itself import SelfMatcher
-from .matchers.match_to_periods import PeriodMatcherType1, PeriodMatcherType2
-from .matchers.match_to_projects import ProjectMatcher
-from .common.base import Matcher, LocalBase
-from ...interface.editor.tabular import Database
+from .matchers import *
+from .common.struct import Matcher, LocalBase
 
 
 class MatchController:

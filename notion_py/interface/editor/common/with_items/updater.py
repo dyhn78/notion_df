@@ -1,10 +1,9 @@
 from typing import Union
 
-from notion_py.interface.parser import BlockChildrenParser
+from notion_py.interface.gateway import parsers
 from .bearer import ItemAttachments
-from ..struct import MasterEditor
-from ..struct.agents import ListEditor
 from ..with_contents import ContentsBearer
+from ...struct import ListEditor, MasterEditor
 
 
 class ItemsUpdater(ListEditor):
@@ -13,7 +12,7 @@ class ItemsUpdater(ListEditor):
         self.caller = caller
         self._values = []
 
-    def apply_children_parser(self, children_parser: BlockChildrenParser):
+    def apply_children_parser(self, children_parser: parsers.BlockChildrenParser):
         from ...inline.parser_logic import get_type_of_block_parser
         for parser in children_parser:
             block_type = get_type_of_block_parser(parser)

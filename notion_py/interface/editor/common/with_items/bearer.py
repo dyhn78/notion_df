@@ -3,11 +3,10 @@ from __future__ import annotations
 from abc import ABCMeta
 from typing import Union, Iterator
 
-from notion_py.interface.editor.common.with_children import ChildrenBearer, BlockChildren
-from notion_py.interface.parser import BlockChildrenParser
-from notion_py.interface.requestor import GetBlockChildren
-from ..exceptions import BlockTypeError, NoParentFoundError
-from ..struct import BlockEditor, MasterEditor, Editor
+from notion_py.interface.gateway import requestors, parsers
+from ..with_children import ChildrenBearer, BlockChildren
+from ...editor_exceptions import BlockTypeError, NoParentFoundError
+from ...struct import BlockEditor, MasterEditor, Editor
 
 
 class ItemsBearer(ChildrenBearer, metaclass=ABCMeta):
@@ -68,9 +67,9 @@ class ItemAttachments(BlockChildren):
     #     item = PageItem(space, '')
 
     def fetch(self, request_size=0):
-        gateway = GetBlockChildren(self)
-        response = gateway.execute(request_size)
-        parser = BlockChildrenParser(response)
+        requestor = requestors.GetBlockChildren(self)
+        response = requestor.execute(request_size)
+        parser = parsers.BlockChildrenParser(response)
         self.update.apply_children_parser(parser)
 
     def indent_cursor(self) -> ItemAttachments:

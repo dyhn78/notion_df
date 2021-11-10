@@ -1,5 +1,5 @@
-from notion_py.interface.editor.inline import PageItem
-from notion_py.interface.utility import stopwatch
+from notion_py.interface import editor
+from notion_py.interface.common import utility
 from .contents_append import AppendContents
 from .yes24_main import scrap_yes24_main
 from .yes24_url import scrap_yes24_url
@@ -56,14 +56,14 @@ class BookstoreScraper:
     def scrap_bkst_data(url):
         if 'yes24' in url:
             data = scrap_yes24_main(url)
-            stopwatch(f'yes24: {url}')
+            utility.stopwatch(f'yes24: {url}')
             return data
         if 'aladin' in url:
             pass
 
     def set_metadata(self, data: dict):
         if self.cont.can_disable_overwrite:
-            self.page.root.enable_overwrite = False
+            self.page.root.disable_overwrite = True
 
         if true_name := data.get('name'):
             self.page.props.write_text_at('true_name', true_name)
@@ -75,7 +75,7 @@ class BookstoreScraper:
             self.page.props.write_text_at('publisher', publisher)
         if volume := data.get('page_count'):
             self.page.props.write_number_at('volume', volume)
-        self.page.root.enable_overwrite = True
+        self.page.root.disable_overwrite = False
 
     def set_cover_image(self, data: dict):
         if cover_image := data.get('cover_image'):
@@ -92,10 +92,10 @@ class BookstoreScraper:
         writer = self.page.props.write_rich_text_at('link_to_contents')
         writer.mention_page(subpage.block_id)
 
-    def get_subpage(self) -> PageItem:
+    def get_subpage(self) -> editor.PageItem:
         self.page.attachments.fetch()
         for block in self.page.attachments:
-            if isinstance(block, PageItem) and \
+            if isinstance(block, editor.PageItem) and \
                     self.page.title in block.contents.reads():
                 subpage = block
                 break
