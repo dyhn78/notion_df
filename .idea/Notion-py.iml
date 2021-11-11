@@ -8,7 +8,7 @@
   <component name="PyNamespacePackagesService">
     <option name="namespacePackageFolders">
       <list>
-        <option value="$MODULE_DIR$/notion_zap/interface/gateway/requestors" />
+        <option value="$MODULE_DIR$/notion_zap/cli/gateway/requestors" />
       </list>
     </option>
   </component>

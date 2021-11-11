@@ -1,8 +1,7 @@
-from notion_zap.interface.utility import stopwatch
-from notion_zap.applications.prop_matcher.yearly_calendar import YearlyCalendarCreator
-# from notion_zap.applications.media_scraper import \
+from notion_zap.apps.prop_matcher.yearly_calendar import YearlyCalendarCreator
+# from notion_zap.apps.media_scraper import \
 #     ReadingDBStatusResolver, ReadingDBDuplicateRemover
-# from notion_zap.applications.prop_matcher import PropertySyncResolver
+# from notion_zap.apps.prop_matcher import PropertySyncResolver
 
 YearlyCalendarCreator(year=2024).execute()
 #

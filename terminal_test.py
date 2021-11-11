@@ -1,4 +1,4 @@
-from notion_zap.applications.media_scraper.regular_scrap \
+from notion_zap.apps.media_scraper.regular_scrap \
     import ReadingDBScrapController
 
 
