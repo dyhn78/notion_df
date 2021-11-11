@@ -1,1 +1,1 @@
-from .config import *
+TIME_ZONE = 9  # SEOUL
