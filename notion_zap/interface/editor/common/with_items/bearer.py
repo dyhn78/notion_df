@@ -6,7 +6,7 @@ from typing import Union, Iterator
 from notion_zap.interface.gateway import requestors, parsers
 from ..with_children import ChildrenBearer, BlockChildren
 from ...editor_exceptions import BlockTypeError, NoParentFoundError
-from ...struct import BlockEditor, MasterEditor, Editor
+from ...base import BlockEditor, MasterEditor, Editor
 
 
 class ItemsBearer(ChildrenBearer, metaclass=ABCMeta):

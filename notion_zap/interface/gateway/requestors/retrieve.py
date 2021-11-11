@@ -1,6 +1,6 @@
-from notion_zap.interface.editor.struct import BlockEditor
-from notion_zap.interface.common.utility import stopwatch
-from .struct import PointRequestor, LongRequestor, print_response_error
+from notion_zap.interface.editor.base import BlockEditor
+from notion_zap.interface.utility import stopwatch
+from .base import PointRequestor, LongRequestor, print_response_error
 
 
 class RetrieveDatabase(PointRequestor):

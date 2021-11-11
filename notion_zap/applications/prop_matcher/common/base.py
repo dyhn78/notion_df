@@ -1,8 +1,8 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
 
-from notion_zap.applications.database_info import DatabaseInfo
-from notion_zap.applications.prop_matcher.common.frame import MatchFrames
+from notion_zap.applications.config.common import DatabaseInfo
+from notion_zap.applications.config.prop_matcher import MatchFrames
 from notion_zap.interface import editor
 
 

@@ -1,5 +1,5 @@
-from notion_zap.interface.common import \
-    PropertyFrame as Frame, PropertyFrameUnit as Unit
+from notion_zap.interface.struct import \
+    PropertyFrame as Frame, PropertyColumn as Cl
 
 """
 날짜 관련된 formula 속성의 값은
@@ -11,48 +11,48 @@ from notion_zap.interface.common import \
 
 
 class MatchFrames:
-    _title = Unit(tag='title', key='📚제목')
-    _auto_date = Unit(tag='auto_date', key='날짜값⏲️')
-    _auto_datetime = Unit(tag='auto_datetime', key='날짜⏲️')
+    _title = Cl(tag='title', key='📚제목')
+    _auto_date = Cl(tag='auto_date', key='날짜값⏲️')
+    _auto_datetime = Cl(tag='auto_datetime', key='날짜⏲️')
     _AUTO_DATE = Frame([_auto_date, _auto_datetime])
     _AUTO_DATE.add_alias('auto_datetime', 'index_as_domain')
 
-    _to_periods = Unit(tag='to_periods', key='🧶기간')
-    _to_dates = Unit(tag='to_dates', key='🧶날짜')
-    _to_journals = Unit(tag='to_journals', key='🧵일지')
-    _to_readings = Unit(tag='to_readings', key='📒읽기')
-    _to_channels = Unit(tag='to_channels', key='📒채널')
+    _to_periods = Cl(tag='to_periods', key='🧶기간')
+    _to_dates = Cl(tag='to_dates', key='🧶날짜')
+    _to_journals = Cl(tag='to_journals', key='🧵일지')
+    _to_readings = Cl(tag='to_readings', key='📒읽기')
+    _to_channels = Cl(tag='to_channels', key='📒채널')
 
     PERIODS = Frame([_title,
-                     Unit(tag='to_itself', key='🔁기간'),
-                     Unit(tag='manual_date_range', key='📅날짜 범위'),
+                     Cl(tag='to_itself', key='🔁기간'),
+                     Cl(tag='manual_date_range', key='📅날짜 범위'),
                      ])
     PERIODS.add_alias('title', 'index_as_target')
     PERIODS.add_alias('manual_date_range', 'index_as_domain')
 
     DATES = Frame([_title,
-                   Unit(tag='to_itself', key='🔁날짜'),
-                   Unit(tag='manual_date', key='🕧날짜'),
-                   Unit(tag='to_themes', key='📕수행'),
+                   Cl(tag='to_itself', key='🔁날짜'),
+                   Cl(tag='manual_date', key='🕧날짜'),
+                   Cl(tag='to_themes', key='📕수행'),
                    ])
     DATES.add_alias('title', 'index_as_target')
     DATES.add_alias('manual_date', 'index_as_domain')
 
     JOURNALS = Frame(_AUTO_DATE,
                      [_title, _to_readings, _to_channels,
-                      Unit(tag='to_itself', key='🔁일지'),
-                      Unit(tag='to_themes', key='📕수행'),
-                      Unit(tag='up_self', key='🧵구성'),
-                      Unit(tag='down_self', key='🧵요소'),
+                      Cl(tag='to_itself', key='🔁일지'),
+                      Cl(tag='to_themes', key='📕수행'),
+                      Cl(tag='up_self', key='🧵구성'),
+                      Cl(tag='down_self', key='🧵요소'),
                       ])
     MEMOS = Frame(_AUTO_DATE,
                   [_title, _to_journals,
-                   Unit(tag='to_itself', key='🔁메모'),
+                   Cl(tag='to_itself', key='🔁메모'),
                    ])
     WRITINGS = Frame(_AUTO_DATE,
                      [_title, _to_journals, _to_readings, _to_channels,
-                      Unit(tag='to_itself', key='🔁쓰기'),
-                      Unit(tag='to_themes', key='📕맥락'),
+                      Cl(tag='to_itself', key='🔁쓰기'),
+                      Cl(tag='to_themes', key='📕참조'),
                       ])
 
     for _frame in [DATES, JOURNALS, MEMOS, WRITINGS]:

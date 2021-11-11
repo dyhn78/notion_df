@@ -1,7 +1,7 @@
 from typing import Union, Optional
 
 from notion_zap.interface.gateway import parsers, requestors
-from notion_zap.interface.common.frame import PropertyFrame
+from notion_zap.interface.struct import PropertyFrame
 from ..common.with_children import ChildrenBearer, BlockChildren
 from ..common.with_items import ItemAttachments
 from notion_zap.interface.editor.root_editor import RootEditor

@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 from typing import Union
 
-from notion_zap.interface.common.utility import page_id_to_url
+from notion_zap.interface.utility import page_id_to_url
 from .base import Editor
 
 

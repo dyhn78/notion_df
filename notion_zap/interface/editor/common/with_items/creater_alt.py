@@ -1,7 +1,7 @@
 # from typing import Union
 #
-# from notion_zap.gateway.struct.struct import Requestor
-# from ...struct import GroundEditor, BlockEditor
+# from notion_zap.gateway.base.base import Requestor
+# from ...base import GroundEditor, BlockEditor
 # from notion_zap.gateway.encoders import RichTextContentsEncoder
 # from notion_zap.gateway.parsers import BlockChildrenParser
 # from notion_zap.gateway.requestors import AppendBlockChildren

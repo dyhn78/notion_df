@@ -6,11 +6,11 @@ from typing import Iterator, Callable, Any
 
 from notion_client import APIResponseError
 
-from notion_zap.interface.common import PropertyFrame
+from notion_zap.interface.struct import PropertyFrame
 from notion_zap.interface.gateway import requestors
 from .database import Database
 from .page_row import PageRow
-from ..struct import MasterEditor, BlockEditor
+from ..base import MasterEditor, BlockEditor
 from ..common.with_children import BlockChildren
 
 

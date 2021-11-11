@@ -4,12 +4,12 @@
 #     RichTextContentsEncoder
 # from notion_zap.gateway.parsers import PageParser
 # from notion_zap.gateway.requestors import UpdatePage, RetrievePage, AppendBlockChildren
-# from notion_zap.gateway.struct.struct import Editor, drop_empty_request
+# from notion_zap.gateway.base.base import Editor, drop_empty_request
 # from ..supported.with_items.with_contents.contents_bearing import \
 #     ContentsBearer, BlockContents
 # from ..supported.with_items.creater_with_page_as_child import \
 #     BlockSphereCreatorWithChildInlinePage
-# from ..struct import BlockEditor
+# from ..base import BlockEditor
 #
 #
 # class InlinePageBlockAsChild(ContentsBearer):

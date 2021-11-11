@@ -1,5 +1,5 @@
 from .pagelist import PageList
-from ..struct import ListEditor
+from ..base import ListEditor
 from notion_zap.interface.gateway import parsers
 
 

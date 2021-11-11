@@ -1,4 +1,4 @@
-from notion_zap.interface.editor.struct import MasterEditor
+from notion_zap.interface.editor.base import MasterEditor
 
 
 class BlockTypeError(TypeError):

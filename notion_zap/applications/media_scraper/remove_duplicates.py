@@ -1,5 +1,4 @@
-from notion_zap.interface import editor
-from ...interface.common import utility
+from notion_zap.interface import editor, utility
 from .common.struct import ReadingDBController
 
 

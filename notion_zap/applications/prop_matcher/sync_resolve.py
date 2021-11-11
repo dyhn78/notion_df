@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-from notion_zap.interface import editor
-from ...interface.common import utility
-from .common.frame import MatchFrames
+from notion_zap.interface import editor, utility
+from notion_zap.applications.config.prop_matcher import MatchFrames
 from .common.query_maker import query_within_date_range
-from ..database_info import DatabaseInfo
+from notion_zap.applications.config.common import DatabaseInfo
 
 
 class PropertySyncResolver:

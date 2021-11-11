@@ -4,7 +4,7 @@ from abc import ABCMeta, abstractmethod
 from collections import defaultdict
 from typing import Iterator, Union, Iterable
 
-from notion_zap.interface.editor.struct import BlockEditor, MasterEditor, Editor
+from notion_zap.interface.editor.base import BlockEditor, MasterEditor, Editor
 
 
 class ChildrenBearer(MasterEditor):

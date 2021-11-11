@@ -1,6 +1,6 @@
 from typing import Union, Optional
 
-from notion_zap.interface.common import PropertyFrame
+from notion_zap.interface.struct import PropertyFrame
 from ..common.pages import PageBlock
 from ..common.with_children import BlockChildren
 from notion_zap.interface.editor.root_editor import RootEditor

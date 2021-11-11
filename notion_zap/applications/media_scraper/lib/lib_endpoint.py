@@ -1,6 +1,6 @@
 from typing import Union
 
-from notion_zap.interface.common.utility import stopwatch
+from notion_zap.interface.utility import stopwatch
 from .gy_selenium import GoyangLibrary
 from .snu_selenium import SNULibrary
 from ..regular_scrap import ReadingDBScrapController, ReadingPageScrapController

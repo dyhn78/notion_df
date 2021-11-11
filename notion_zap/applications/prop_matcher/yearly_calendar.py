@@ -1,7 +1,7 @@
 from datetime import date as dateclass, timedelta
 
 from notion_zap.interface import editor
-from .common.struct import LocalBase
+from .common.base import LocalBase
 from .common.date_index import DateHandler
 from .matchers.match_to_periods import PeriodMatcherType1
 

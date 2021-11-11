@@ -5,7 +5,7 @@ from random import random
 import networkx as nx
 
 from notion_zap.applications.monad_graph.graph_handler.struct import GraphHandler, Point
-from notion_zap.interface.common.utility import stopwatch
+from notion_zap.interface.utility import stopwatch
 
 
 class GradientDescent(GraphHandler):

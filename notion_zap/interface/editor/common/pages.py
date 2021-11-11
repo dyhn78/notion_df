@@ -5,7 +5,7 @@ from typing import Union
 
 from .with_items import ItemsBearer
 from notion_zap.interface.editor.root_editor import RootEditor
-from ..struct import BlockEditor, PayloadEditor, GroundEditor
+from ..base import BlockEditor, PayloadEditor, GroundEditor
 from notion_zap.interface.gateway import parsers, requestors
 
 

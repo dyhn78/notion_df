@@ -6,7 +6,7 @@ from notion_zap.interface.gateway.encoders import ContentsEncoder
 from notion_zap.interface.gateway.parsers import BlockChildrenParser
 from notion_zap.interface.gateway.requestors import AppendBlockChildren
 from .bearer import ItemAttachments
-from notion_zap.interface.editor.struct import (
+from notion_zap.interface.editor.base import (
     BlockEditor, GroundEditor, AdaptiveEditor)
 
 

@@ -1,5 +1,4 @@
-from notion_zap.interface import editor
-from notion_zap.interface.common import utility
+from notion_zap.interface import editor, utility
 from .contents_append import AppendContents
 from .yes24_main import scrap_yes24_main
 from .yes24_url import scrap_yes24_url

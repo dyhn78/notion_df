@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from notion_zap.interface.common import PropertyFrameUnit, PropertyFrame
+from notion_zap.interface.struct import PropertyColumn, PropertyFrame
 
 
-class NetworkPropertyFrameUnit(PropertyFrameUnit):
+class NetworkPropertyColumn(PropertyColumn):
     @property
     def edge_type(self):
         return self.prop_tag.split('_')[0]
@@ -48,7 +48,7 @@ class NetworkPropertyFrame(PropertyFrame):
         res = []
         for tag in self.tags():
             unit = self.by_tag[tag]
-            if isinstance(unit, NetworkPropertyFrameUnit):
+            if isinstance(unit, NetworkPropertyColumn):
                 for aspect in unit.EDGE_ASPECTS:
                     try:
                         if getattr(unit, aspect) == keyword:
@@ -61,22 +61,22 @@ class NetworkPropertyFrame(PropertyFrame):
 
 class NetworkFrames:
     _Frame = NetworkPropertyFrame
-    _NUnit = NetworkPropertyFrameUnit
-    _Unit = PropertyFrameUnit
+    _NCl = NetworkPropertyColumn
+    _Cl = PropertyColumn
     _common = _Frame([
-        _NUnit(tag='hi_self', key='✖️구성'),
-        _NUnit(tag='in_self', key='➖속성'),
-        _NUnit(tag='lo_self', key='➗요소'),
-        _NUnit(tag='out_self', key='➕적용'),
-        _NUnit(tag='front_self', key='⭕결산'),
-        _NUnit(tag='back_self', key='⭕경과'),
-        _Unit(tag='forbidden', key='🔵접근성=금지'),
+        _NCl(tag='hi_self', key='✖️구성'),
+        _NCl(tag='in_self', key='➖속성'),
+        _NCl(tag='lo_self', key='➗요소'),
+        _NCl(tag='out_self', key='➕적용'),
+        _NCl(tag='front_self', key='⭕결산'),
+        _NCl(tag='back_self', key='⭕경과'),
+        _Cl(tag='forbidden', key='🔵접근성=금지'),
     ])
     THEMES = _Frame(_common, [
-        _NUnit(tag='in_ideas', key='📕속성'),
-        _NUnit(tag='lo_ideas', key='📕요소'),
+        _NCl(tag='in_ideas', key='📕속성'),
+        _NCl(tag='lo_ideas', key='📕요소'),
     ])
     IDEAS = _Frame(_common, [
-        _NUnit(tag='hi_themes', key='📕구성'),
-        _NUnit(tag='out_themes', key='📕적용')
+        _NCl(tag='hi_themes', key='📕구성'),
+        _NCl(tag='out_themes', key='📕적용')
     ])

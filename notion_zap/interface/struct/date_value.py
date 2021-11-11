@@ -3,7 +3,7 @@ from datetime import datetime as datetimeclass, date as dateclass
 from typing import Union
 
 
-class DateFormat:
+class DateValue:
     TIME_ZONE = 9  # SEOUL
 
     def __init__(self, start_date: Union[datetimeclass, dateclass, None] = None,

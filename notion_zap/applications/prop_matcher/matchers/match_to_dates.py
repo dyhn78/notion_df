@@ -1,7 +1,7 @@
 from abc import ABCMeta
 
-from notion_zap.interface import common
-from ..common.struct import Matcher
+from notion_zap.interface.struct import DateValue
+from ..common.base import Matcher
 from ..common.date_index import DateHandler
 from ..common.helpers import overwrite_prop, find_unique_target_id_by_homo_ref, \
     find_unique_target_id_by_ref, query_target_by_idx
@@ -76,7 +76,7 @@ class DateMatcherType2(DateMatcherAbs):
         return tar.block_id
 
     def determine_tar(self, dom):
-        dom_idx: common.DateFormat = dom.props.read_at('index_as_domain')
+        dom_idx: DateValue = dom.props.read_at('index_as_domain')
         date_handler = DateHandler(dom_idx.start, add_timedelta=-5)
         return self.match_date_by_idx(date_handler)
 

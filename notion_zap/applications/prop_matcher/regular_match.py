@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from .matchers import *
-from .common.struct import Matcher, LocalBase
+from .common.base import Matcher, LocalBase
 
 
 class MatchController:

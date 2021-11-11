@@ -1,4 +1,4 @@
-from notion_zap.interface.common.utility import stopwatch
+from notion_zap.interface.utility import stopwatch
 
 from notion_zap.applications.monad_graph.common.add_nodes import TopologyBuilder
 from notion_zap.applications.monad_graph.graph_handler.draw_figure import FigureDrawer

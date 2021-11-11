@@ -6,7 +6,7 @@ from typing import Optional, Union
 from notion_zap.interface.gateway import parsers
 
 
-class PropertyFrameUnit:
+class PropertyColumn:
     def __init__(self, key: str,
                  tag: str = '',
                  data_type: str = '',
@@ -45,8 +45,8 @@ class PropertyFrameUnit:
 
 
 class PropertyFrame:
-    def __init__(self, *args: Union[PropertyFrame, list[PropertyFrameUnit]]):
-        self.units: list[PropertyFrameUnit] = self._flatten(args)
+    def __init__(self, *args: Union[PropertyFrame, list[PropertyColumn]]):
+        self.units: list[PropertyColumn] = self._flatten(args)
         self.title_key = ''
 
     @staticmethod
@@ -57,7 +57,7 @@ class PropertyFrame:
                 units = arg.units
             else:
                 for a in arg:
-                    assert isinstance(a, PropertyFrameUnit)
+                    assert isinstance(a, PropertyColumn)
                 units = arg
             res.extend(units)
         return res
@@ -97,7 +97,7 @@ class PropertyFrame:
     def __str__(self):
         return "----\n" + '\n'.join([str(unit) for unit in self.units]) + "\n----"
 
-    def append(self, unit: PropertyFrameUnit):
+    def append(self, unit: PropertyColumn):
         self.units.append(unit)
 
     def add_alias(self, tag: str, new_tag: str):
@@ -118,6 +118,6 @@ class PropertyFrame:
                 frame_unit = self.by_key[name]
                 frame_unit.prop_type = data_type
             else:
-                self.append(PropertyFrameUnit(name, data_type=data_type))
+                self.append(PropertyColumn(name, data_type=data_type))
         if isinstance(parser, parsers.PageParser):
             self.assign_title_key(parser.title_key)

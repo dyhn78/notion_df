@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
 
-from notion_zap.interface import common
+from notion_zap.interface.struct import DateValue
 from ..rich_text import RichTextObjectEncoder
 from ...carriers import ValueCarrier
 
@@ -125,6 +125,6 @@ class SimplePropertyEncoder(PropertyEncoder):
         return cls(prop_name, 'relation', prop_value)
 
     @classmethod
-    def date(cls, prop_name, value: common.DateFormat):
+    def date(cls, prop_name, value: DateValue):
         prop_value = value.make_isoformat()
         return cls(prop_name, 'date', prop_value)

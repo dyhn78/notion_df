@@ -2,7 +2,7 @@ import re
 from typing import Optional
 
 from notion_zap.interface import editor
-from notion_zap.interface.common.utility import stopwatch
+from notion_zap.interface.utility import stopwatch
 from .common.struct import ReadingDBController, ReadingPageController
 
 

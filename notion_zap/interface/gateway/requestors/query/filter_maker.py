@@ -2,11 +2,11 @@ from __future__ import annotations
 from typing import Union
 from datetime import datetime as datetimeclass, date as dateclass
 
-from notion_zap.interface import common
+from notion_zap.interface.struct import PropertyFrame, PropertyColumn
 from .filter_unit import PlainFilter, OrFilter, AndFilter
 from .query import Query
 
-# find types by parsers
+# find config by parsers
 FILTER_TYPES = {
     'text': ['text', 'title', 'rich_text', 'url', 'email', 'phone_number'],
     'date': ['date', 'created_time', 'last_edited_time'],
@@ -23,7 +23,7 @@ class QueryFilterMaker:
         """특정한 데이터베이스 하나를 위한 query_filter 프레임을 만든다."""
         self.caller = caller
         self.frame = self.caller.frame if hasattr(self.caller, 'frame') \
-            else common.PropertyFrame()
+            else PropertyFrame()
 
     def of(self, prop_key: str, prop_type=None) -> QueryFilterAgent:
         if prop_type == 'formula':
@@ -102,10 +102,10 @@ class QueryFilterAgent:
     def __init__(self, caller: QueryFilterMaker, prop_key):
         assert self.prop_type is not None
         self.prop_key: str = prop_key
-        self.frame_unit: common.PropertyFrameUnit = (
+        self.frame_unit: PropertyColumn = (
             caller.frame.by_key[prop_key]
             if prop_key in caller.frame.by_key
-            else common.PropertyFrameUnit(prop_key)
+            else PropertyColumn(prop_key)
         )
         self.prop_values = self.frame_unit.prop_values
         self.prop_value_groups = self.frame_unit.prop_value_groups

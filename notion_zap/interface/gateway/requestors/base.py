@@ -4,8 +4,8 @@ from typing import Callable
 
 from notion_client.errors import APIResponseError
 
-from ...common import utility
-from notion_zap.interface.editor.struct import BlockEditor
+from ... import utility
+from notion_zap.interface.editor.base import BlockEditor
 from ..carriers import Executable, ValueCarrier
 
 

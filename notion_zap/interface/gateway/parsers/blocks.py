@@ -2,14 +2,9 @@ from __future__ import annotations
 
 from .rich_text import parse_rich_texts
 from ..carriers import Printable
-
-PAGE_TYPES = {"child_page"}
-DOCUMENT_TYPES = {"paragraph", "bulleted_list_item",
-                  "numbered_list_item", "toggle", "to_do"}
-TEXT_TYPES = DOCUMENT_TYPES | {"heading_1", "heading_2", "heading_3"}
-CAN_HAVE_CHILDREN = PAGE_TYPES | DOCUMENT_TYPES
-SUPPORTED = TEXT_TYPES | PAGE_TYPES
-UNSUPPORTED = {"unsupported"}
+from notion_zap.interface.config.blocks import (
+    PAGE_TYPES, TEXT_TYPES, CAN_HAVE_CHILDREN, SUPPORTED, UNSUPPORTED
+)
 
 
 class BlockChildrenParser:

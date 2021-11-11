@@ -5,9 +5,9 @@ from typing import Optional
 
 from notion_client import Client, AsyncClient
 
-from notion_zap.interface.common import PropertyFrame
-from notion_zap.interface.common.utility import page_url_to_id, stopwatch
-from .struct import Editor, MasterEditor
+from notion_zap.interface.struct import PropertyFrame
+from notion_zap.interface.utility import page_url_to_id, stopwatch
+from .base import Editor, MasterEditor
 
 
 class RootEditor(Editor):

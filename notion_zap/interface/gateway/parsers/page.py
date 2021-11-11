@@ -1,27 +1,10 @@
 from __future__ import annotations
-
 from inspect import signature
 from typing import Union, Any, Callable, Iterator
 
-# find types by parsers
-from notion_zap.interface import common
+from notion_zap.interface.struct import DateValue
+from notion_zap.interface.config.props import VALUE_FORMATS
 from .rich_text import parse_rich_texts
-
-VALUE_TYPES = {
-    'text': ['text', 'rich_text', 'title'],
-    'select': ['select'],
-    'multi_select': ['multi_select'],
-    'person': ['people', 'person', 'created_by', 'last_edited_by'],
-    'manual_date': ['date'],
-    'auto_date': ['created_time', 'last_edited_time'],
-    'formula': ['formula'],
-    'relation': ['relation'],
-    'rollup': ['rollup']
-}
-# find parsers by type
-VALUE_FORMATS = {}
-for form, types in VALUE_TYPES.items():
-    VALUE_FORMATS.update(**{typ: form for typ in types})
 
 
 class PageListParser:
@@ -43,12 +26,9 @@ class PageParser:
     def __init__(self, page_id: str, archived=False):
         self.page_id = page_id
         self.archived = archived
-        self.prop_types \
-            : dict[str, str] = {}  # {prop_key: prop_type for prop_key in _}
-        self.prop_ids \
-            : dict[str, str] = {}  # {prop_key: prop_id for prop_key in _}
-        self.prop_values \
-            : dict[str, Any] = {}  # {prop_key: prop_value for prop_key in _}
+        self.prop_types: dict[str, str] = {}  # {prop_key: prop_type for prop_key in _}
+        self.prop_ids: dict[str, str] = {}  # {prop_key: prop_id for prop_key in _}
+        self.prop_values: dict[str, Any] = {}  # {prop_key: prop_value for prop_key in _}
         self.prop_rich_values = {}
         self.title = ''
         self.title_key = ''
@@ -110,13 +90,13 @@ class PageParser:
         if type(prop_object) != str:
             raise ValueError
         start = prop_object[:-1]
-        return common.DateFormat.from_isoformat(start)
+        return DateValue.from_isoformat(start)
 
     @staticmethod
     def _parse_manual_date(prop_object):
         if prop_object is None:
-            return common.DateFormat()
-        return common.DateFormat.from_isoformat(prop_object['start'], prop_object['end'])
+            return DateValue()
+        return DateValue.from_isoformat(prop_object['start'], prop_object['end'])
 
     def _parse_text(self, prop_object, prop_key, prop_type):
         plain_text, rich_text = parse_rich_texts(prop_object)

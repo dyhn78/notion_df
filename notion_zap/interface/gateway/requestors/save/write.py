@@ -1,9 +1,9 @@
 from typing import Any, Optional
 
-from notion_zap.interface.editor.struct import BlockEditor
-from notion_zap.interface.common import utility
+from notion_zap.interface.editor.base import BlockEditor
+from notion_zap.interface import utility
 from .stash import BlockChildrenStash, PagePropertyStash
-from ..struct import PointRequestor, print_response_error, drop_empty_request
+from ..base import PointRequestor, print_response_error, drop_empty_request
 from ...encoders import ContentsEncoder
 
 

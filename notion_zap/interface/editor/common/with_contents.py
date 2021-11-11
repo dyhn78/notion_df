@@ -4,7 +4,7 @@ from abc import ABCMeta, abstractmethod
 from typing import Union
 
 from notion_zap.interface.editor.root_editor import RootEditor
-from ..struct import MasterEditor, BlockEditor, PayloadEditor, GroundEditor
+from ..base import MasterEditor, BlockEditor, PayloadEditor, GroundEditor
 from notion_zap.interface.gateway import parsers
 
 

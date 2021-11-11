@@ -3,7 +3,7 @@ from typing import Union
 from notion_zap.interface.gateway import parsers
 from .bearer import ItemAttachments
 from ..with_contents import ContentsBearer
-from ...struct import ListEditor, MasterEditor
+from ...base import ListEditor, MasterEditor
 
 
 class ItemsUpdater(ListEditor):

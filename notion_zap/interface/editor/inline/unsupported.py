@@ -1,6 +1,6 @@
 from typing import Union
 
-from ..struct import Editor, MasterEditor, PayloadEditor
+from ..base import Editor, MasterEditor, PayloadEditor
 
 
 class UnsupportedBlock(MasterEditor):

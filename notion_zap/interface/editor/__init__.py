@@ -1,4 +1,4 @@
-from . import common, struct
+from . import common, base
 from .root_editor import RootEditor
 from .common.with_children import BlockChildren
 from .inline.page_item import PageItem, PageItemContents

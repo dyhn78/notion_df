@@ -1,6 +1,6 @@
 from notion_zap.interface import editor
-from ...database_info import DatabaseInfo
-from ..frame import ReadingDB_FRAME
+from notion_zap.applications.config.common import DatabaseInfo
+from notion_zap.applications.config.media_scraper import ReadingDB_FRAME
 
 
 class ReadingDBController:
