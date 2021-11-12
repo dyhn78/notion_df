@@ -63,6 +63,7 @@ class NetworkFrames:
     _Frame = NetworkPropertyFrame
     _NCl = NetworkPropertyColumn
     _Cl = PropertyColumn
+    # TODO
     _common = _Frame([
         _NCl(tag='hi_self', key='✖️구성'),
         _NCl(tag='in_self', key='➖속성'),

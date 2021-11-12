@@ -3,7 +3,7 @@ from notion_zap.apps.prop_matcher.yearly_calendar import YearlyCalendarCreator
 #     ReadingDBStatusResolver, ReadingDBDuplicateRemover
 # from notion_zap.apps.prop_matcher import PropertySyncResolver
 
-YearlyCalendarCreator(year=2024).execute()
+YearlyCalendarCreator(year=2025).execute()
 #
 # ReadingDBDuplicateRemover().execute(request_size=0)
 # ReadingDBStatusResolver().execute()

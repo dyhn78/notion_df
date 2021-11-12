@@ -8,7 +8,10 @@ from notion_zap.apps.media_scraper.common.selenium import retry_webdriver, \
 class SNULibrary(SeleniumScraper):
     def __init__(self):
         super().__init__()
-        self.driver = self.drivers[0]
+
+    @property
+    def driver(self):
+        return self.drivers[0]
 
     @try_method_twice
     @retry_webdriver

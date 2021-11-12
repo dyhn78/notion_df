@@ -36,9 +36,9 @@ class LibraryScrapManager:
 
 
 class LibraryScraper:
-    def __init__(self, caller: LibraryScrapManager,
+    def __init__(self, manager: LibraryScrapManager,
                  cont: ReadingPageScrapController):
-        self.caller = caller
+        self.manager = manager
         self.cont = cont
         self.page = self.cont.page
         self.tasks = self.cont.tasks
@@ -57,13 +57,13 @@ class LibraryScraper:
         data = {}
         if 'snu_lib' in self.tasks:
             # noinspection PyTypeChecker
-            snu_lib = self.caller.snulib.execute(self.book_names)
+            snu_lib = self.manager.snulib.execute(self.book_names)
             if snu_lib:
                 stopwatch(f'서울대: {snu_lib}')
                 data.update(snu=snu_lib)
         if 'gy_lib' in self.tasks:
             # noinspection PyTypeChecker
-            gy_lib = self.caller.gylib.execute(self.book_names)
+            gy_lib = self.manager.gylib.execute(self.book_names)
             if gy_lib:
                 stopwatch(f"고양시: {gy_lib['lib_name']}  {gy_lib['book_code']}")
                 data.update(gy=gy_lib)

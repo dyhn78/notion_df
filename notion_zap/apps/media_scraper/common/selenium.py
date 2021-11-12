@@ -29,19 +29,22 @@ class SeleniumScraper:
 
     def __init__(self):
         self.drivers = []
+
+    def start(self):
+        for i in range(self.DRIVER_CNT):
+            driver = webdriver.Chrome(self.chromedriver_path, options=self.options,
+                                      service_log_path=os.devnull)
+            self.drivers.append(driver)
+            # driver.minimize_window()
+            driver.start_client()
+
+    @property
+    def options(self):
         options = Options()
         options.add_argument('--headless')
         options.add_argument('--disable-dev-shm-usage')
         options.add_argument('--no-sandbox')
-        for i in range(self.DRIVER_CNT):
-            driver = webdriver.Chrome(self.chromedriver_path, options=options,
-                                      service_log_path=os.devnull)
-            driver.minimize_window()
-            self.drivers.append(driver)
-
-    def start(self):
-        for driver in self.drivers:
-            driver.start_client()
+        return options
 
     @property
     def chromedriver_path(self):
