@@ -3,7 +3,7 @@ from .contents_append import AppendContents
 from .yes24_main import scrap_yes24_main
 from .yes24_url import scrap_yes24_url
 from ..common.exceptions import NoURLFoundError
-from ..regular_scrap import ReadingDBScrapController, ReadingPageScrapController
+from ..regulars import ReadingDBScrapController, ReadingPageScrapController
 from ..remove_duplicates import remove_dummy_blocks
 
 
@@ -92,7 +92,7 @@ class BookstoreScraper:
         writer.mention_page(subpage.block_id)
 
     def get_subpage(self) -> editors.PageItem:
-        self.page.attachments.fetch()
+        self.page.attachments.fetch_all()
         for block in self.page.attachments:
             if isinstance(block, editors.PageItem) and \
                     self.page.title in block.contents.reads():

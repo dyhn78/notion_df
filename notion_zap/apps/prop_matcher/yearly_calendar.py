@@ -32,7 +32,7 @@ class YearlyCalendarCreator:
         query.push_filter(ft)
         query.execute()
         if not self.bs.dates.list_all():
-            self.bs.dates.fetch(1)
+            self.bs.dates.fetch_all()
 
         query = self.bs.periods.open_query()
         frame = query.filter_maker.date_at('manual_date_range')
@@ -41,7 +41,7 @@ class YearlyCalendarCreator:
         query.push_filter(ft)
         query.execute()
         if not self.bs.periods.list_all():
-            self.bs.periods.fetch(1)
+            self.bs.periods.fetch_all()
 
 
 class DatePagesCreator:

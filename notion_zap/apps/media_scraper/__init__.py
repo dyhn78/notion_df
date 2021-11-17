@@ -1,3 +1,3 @@
-from .regular_scrap import ReadingDBScrapController
+from .regulars import ReadingDBScrapController
 from .remove_duplicates import ReadingDBDuplicateRemover
 from .resolve_status import ReadingDBStatusResolver

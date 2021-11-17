@@ -1,6 +1,7 @@
+from __future__ import annotations
 import datetime
-from datetime import datetime as datetimeclass, date as dateclass
-from typing import Union
+from datetime import datetime as datetimecl, date as datecl
+from typing import Union, Optional
 
 from ..config import TIME_ZONE
 
@@ -8,17 +9,20 @@ from ..config import TIME_ZONE
 class DateValue:
     TIME_ZONE = TIME_ZONE
 
-    def __init__(self, start_date: Union[datetimeclass, dateclass, None] = None,
-                 end_date: Union[datetimeclass, dateclass, None] = None):
+    def __init__(self, start_date: Optional[Union[datetimecl, datecl]] = None,
+                 end_date: Optional[Union[datetimecl, datecl]] = None):
         if start_date is None and end_date is not None:
             start_date, end_date = end_date, start_date
         self.start = self.__encode(start_date)
         self.end = self.__encode(end_date)
 
-    def __encode(self, date: Union[datetimeclass, dateclass, None])\
-            -> Union[datetimeclass, dateclass, None]:
-        if date is not None:
+    def __encode(self, date: Optional[Union[datetimecl, datecl]])\
+            -> Union[datetimecl, datecl, None]:
+        # noinspection PyTypeChecker
+        if isinstance(date, datetimecl):
             return date + datetime.timedelta(hours=self.TIME_ZONE)
+        elif isinstance(date, datecl):
+            return datetimecl.combine(date, datetimecl.min.time())
         else:
             return None
 
@@ -28,12 +32,21 @@ class DateValue:
     def __str__(self):
         return '{' + f"start: {str(self.start)}, end: {str(self.end)}" + '}'
 
+    def __gt__(self, other: DateValue):
+        return (self.start, self.end) > (other.start, other.end)
+
+    def __eq__(self, other: DateValue):
+        return (self.start, self.end) == (other.start, other.end)
+
+    def __lt__(self, other: DateValue):
+        return (self.start, self.end) < (other.start, other.end)
+
     @classmethod
     def from_isoformat(cls, start_datestring: str,
                        end_datestring=''):
-        start = datetimeclass.fromisoformat(start_datestring)
+        start = datetimecl.fromisoformat(start_datestring)
         if end_datestring:
-            end = datetimeclass.fromisoformat(end_datestring)
+            end = datetimecl.fromisoformat(end_datestring)
         else:
             end = None
         return cls(start, end)

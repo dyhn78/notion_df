@@ -55,6 +55,10 @@ class RootEditor(Editor):
     def by_alias(self) -> dict[str, MasterEditor]:
         return self._by_alias
 
+    @property
+    def databases(self):
+        return self._by_alias.values()
+
     def save_required(self):
         return any([editor.save_required() for editor in self._top_editors])
 

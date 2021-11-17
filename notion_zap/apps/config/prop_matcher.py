@@ -9,55 +9,81 @@ from notion_zap.cli.struct import \
 처리하는 식으로 움직이자.
 """
 
+_title = Cl(tag='title', key='📚제목')
+
+_to_itself = Cl(tag='to_itself', key='🔁재귀')
+_to_periods = Cl(tag='to_periods', key='🧶기간')
+_to_dates = Cl(tag='to_dates', key='🧶날짜')
+_to_journals = Cl(tag='to_journals', key='🧵일지')
+
+_to_themes = Cl(tag='to_themes', key='📕수행')
+_to_channels = Cl(tag='to_channels', key='📒채널')
+_to_readings = Cl(tag='to_readings', key='📒읽기')
+
+_auto_date = Cl(tag='auto_date', key='날짜값⏲️')
+_auto_time = Cl(tag='auto_datetime', key='날짜⏲️')
+_AUTO_DATE = Frame([_auto_date, _auto_time])
+_AUTO_DATE.add_alias('auto_datetime', 'index_as_domain')
+
 
 class MatchFrames:
-    _title = Cl(tag='title', key='📚제목')
-    _auto_date = Cl(tag='auto_date', key='날짜값⏲️')
-    _auto_datetime = Cl(tag='auto_datetime', key='날짜⏲️')
-    _AUTO_DATE = Frame([_auto_date, _auto_datetime])
-    _AUTO_DATE.add_alias('auto_datetime', 'index_as_domain')
-
-    _to_periods = Cl(tag='to_periods', key='🧶기간')
-    _to_dates = Cl(tag='to_dates', key='🧶날짜')
-    _to_journals = Cl(tag='to_journals', key='🧵일지')
-    _to_readings = Cl(tag='to_readings', key='📒읽기')
-    _to_channels = Cl(tag='to_channels', key='📒채널')
-
-    PERIODS = Frame([_title,
-                     Cl(tag='to_itself', key='🔁기간'),
-                     Cl(tag='manual_date_range', key='📅날짜 범위'),
-                     ])
+    PERIODS = Frame(
+        [
+            _title, _to_itself,
+            Cl(tag='manual_date_range', key='📅날짜 범위')
+        ]
+    )
     PERIODS.add_alias('title', 'index_as_target')
     PERIODS.add_alias('manual_date_range', 'index_as_domain')
 
-    DATES = Frame([_title,
-                   Cl(tag='to_itself', key='🔁날짜'),
-                   Cl(tag='manual_date', key='🕧날짜'),
-                   Cl(tag='to_themes', key='📕수행'),
-                   ])
+    DATES = Frame(
+        [
+            _title, _to_itself,
+            _to_periods,
+            Cl(tag='manual_date', key='🕧날짜'),
+            Cl(tag='to_themes', key='📕수행'),
+        ]
+    )
     DATES.add_alias('title', 'index_as_target')
     DATES.add_alias('manual_date', 'index_as_domain')
 
-    JOURNALS = Frame(_AUTO_DATE,
-                     [_title, _to_readings, _to_channels,
-                      Cl(tag='to_itself', key='🔁일지'),
-                      Cl(tag='to_themes', key='📕수행'),
-                      Cl(tag='up_self', key='🧵구성'),
-                      Cl(tag='down_self', key='🧵요소'),
-                      ])
-    MEMOS = Frame(_AUTO_DATE,
-                  [_title, _to_journals,
-                   Cl(tag='to_itself', key='🔁메모'),
-                   ])
-    WRITINGS = Frame(_AUTO_DATE,
-                     [_title, _to_journals, _to_readings, _to_channels,
-                      Cl(tag='to_itself', key='🔁쓰기'),
-                      Cl(tag='to_themes', key='📕참조'),
-                      ])
+    JOURNALS = Frame(
+        _AUTO_DATE,
+        [
+            _title, _to_itself,
+            _to_periods, _to_dates,
+            _to_themes, _to_readings, _to_channels,
+            Cl(tag='up_self', key='🧵구성'),
+            Cl(tag='down_self', key='🧵요소'),
+        ]
+    )
+    WRITINGS = Frame(
+        _AUTO_DATE,
+        [
+            _title, _to_itself,
+            _to_periods, _to_dates, _to_journals,
+            _to_readings, _to_channels,
+            Cl(tag='to_themes', key='📕참조'),
+        ]
+    )
+    MEMOS = Frame(
+        _AUTO_DATE,
+        [
+            _title, _to_itself,
+            _to_periods, _to_dates, _to_journals,
+        ]
+    )
+    SCHEDULES = MEMOS
 
-    for _frame in [DATES, JOURNALS, MEMOS, WRITINGS]:
-        _frame.append(_to_periods)
-    for _frame in [JOURNALS, MEMOS, WRITINGS]:
-        _frame.append(_to_dates)
-    for _frame in [MEMOS, WRITINGS]:
-        _frame.append(_to_journals)
+    READINGS = Frame(
+        _AUTO_DATE,
+        [
+            _title, _to_itself,
+            Cl(tag='status_exclude', key='🏁버킷<-경과'),
+            Cl(tag='to_periods', key='🧶기간_시작'),
+            Cl(tag='to_dates', key='🧶날짜_시작'),
+            _to_journals,
+            _to_themes, _to_channels,
+        ]
+    )
+    # READINGS_STATUS_EXCLUDE = '🔍'

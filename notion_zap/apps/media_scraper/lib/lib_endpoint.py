@@ -3,7 +3,7 @@ from typing import Union
 from notion_zap.cli.utility import stopwatch
 from .gy_selenium import GoyangLibrary
 from .snu_selenium import SNULibrary
-from ..regular_scrap import ReadingDBScrapController, ReadingPageScrapController
+from ..regulars import ReadingDBScrapController, ReadingPageScrapController
 from ..common.selenium import SeleniumScraper
 
 

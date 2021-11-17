@@ -4,9 +4,11 @@ from abc import abstractmethod, ABCMeta
 from typing import Union
 
 from .with_items import ItemsBearer
-from notion_zap.cli.editors.root_editor import RootEditor
 from ..base import BlockEditor, PayloadEditor, GroundEditor
+from ..root_editor import RootEditor
 from notion_zap.cli.gateway import parsers, requestors
+from notion_zap.cli.gateway.requestors import print_response_error
+from notion_zap.cli.utility import stopwatch
 
 
 class PageBlock(ItemsBearer):
@@ -99,6 +101,7 @@ class PagePayload(PayloadEditor, GroundEditor, metaclass=ABCMeta):
         response = requestor.execute()
         parser = parsers.PageParser.parse_retrieve(response)
         self.apply_page_parser(parser)
+        requestor.print_comments()
 
     def save(self):
         if self.yet_not_created:

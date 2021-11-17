@@ -99,6 +99,7 @@ class TextItemContents(ChildrenBearersContents, encoders.TextContentsWriter):
         response = requestor.execute()
         parser = parsers.BlockContentsParser.parse_retrieve(response)
         self.apply_block_parser(parser)
+        requestor.print_comments()
 
     def save(self):
         if self.yet_not_created:

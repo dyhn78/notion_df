@@ -24,10 +24,14 @@ class LocalBase:
                                              frame=MatchFrames.DATES).pagelist
         self.journals = self.root.open_database(*DatabaseInfo.JOURNALS,
                                                 frame=MatchFrames.JOURNALS).pagelist
-        self.memos = self.root.open_database(*DatabaseInfo.MEMOS,
-                                             frame=MatchFrames.MEMOS).pagelist
         self.writings = self.root.open_database(*DatabaseInfo.WRITINGS,
                                                 frame=MatchFrames.WRITINGS).pagelist
+        self.memos = self.root.open_database(*DatabaseInfo.MEMOS,
+                                             frame=MatchFrames.MEMOS).pagelist
+        self.schedules = self.root.open_database(*DatabaseInfo.SCHEDULES,
+                                                 frame=MatchFrames.SCHEDULES).pagelist
+        self.readings = self.root.open_database(*DatabaseInfo.READINGS,
+                                                frame=MatchFrames.READINGS).pagelist
 
     def save(self):
         self.root.save()

@@ -6,7 +6,7 @@ class ReadingDBDuplicateRemover(ReadingDBController):
     def execute(self, request_size=0):
         self.make_query(request_size)
         for page in self.pagelist:
-            page.attachments.fetch()
+            page.attachments.fetch_all()
             removed = remove_dummy_blocks(page)
             if removed:
                 page.props.write_text_at('link_to_contents', '')

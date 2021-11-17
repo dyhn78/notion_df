@@ -9,7 +9,7 @@ class DateHandler:
 
     def __init__(self, date_time: Union[datetimeclass, dateclass],
                  add_timedelta=0):
-        """add_timedelta has effect only when argument was datetimeclass."""
+        """add_timedelta has effect only when argument was datetimecl."""
         if isinstance(date_time, datetimeclass):
             date_time += datetime.timedelta(hours=add_timedelta)
             self.date = date_time.date()
@@ -48,5 +48,5 @@ class DateHandler:
 if __name__ == '__main__':
     print(datetimeclass.fromisocalendar(2021, 1, 1))
 
-    # someday = datetimeclass.fromisoformat('2021-07-01T00:00:00.000+09:00')
+    # someday = datetimecl.fromisoformat('2021-07-01T00:00:00.000+09:00')
     # print(someday.hour)

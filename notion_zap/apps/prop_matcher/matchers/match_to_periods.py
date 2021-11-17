@@ -3,8 +3,11 @@ from abc import ABCMeta
 from notion_zap.cli.struct import DateValue
 from ..common.base import Matcher
 from ..common.date_index import DateHandler
-from ..common.helpers import overwrite_prop, find_unique_target_id_by_ref, \
+from ..common.helpers import (
+    overwrite_prop,
+    fetch_unique_page_from_relation,
     query_target_by_idx
+)
 
 
 class PeriodMatcherAbs(Matcher, metaclass=ABCMeta):
@@ -37,13 +40,17 @@ class PeriodMatcherAbs(Matcher, metaclass=ABCMeta):
 
 
 class PeriodMatcherType1(PeriodMatcherAbs):
+    def __init__(self, bs):
+        super().__init__(bs)
+        self.domains = [self.bs.dates]
+
     def execute(self):
-        domain = self.bs.dates
-        for dom in domain:
-            if dom.props.read_at(self.to_tar):
-                continue
-            tar_id = self.determine_tar_id(dom)
-            overwrite_prop(dom, self.to_tar, tar_id)
+        for domain in self.domains:
+            for dom in domain:
+                if dom.props.read_at(self.to_tar):
+                    continue
+                tar_id = self.determine_tar_id(dom)
+                overwrite_prop(dom, self.to_tar, tar_id)
 
     def determine_tar_id(self, dom):
         tar = self.determine_tar(dom)
@@ -60,26 +67,35 @@ class PeriodMatcherType2(PeriodMatcherAbs):
         super().__init__(bs)
         self.reference = self.bs.dates
         self.to_ref = 'to_dates'
+        self.domains = [
+            self.bs.journals, self.bs.writings, self.bs.memos, self.bs.schedules,
+            self.bs.readings
+        ]
 
     def execute(self):
-        for domain in [self.bs.journals, self.bs.memos, self.bs.writings]:
+        for domain in self.domains:
             for dom in domain:
                 if dom.props.read_at(self.to_tar):
                     continue
-                tar_id = self.determine_tar_id(dom)
-                overwrite_prop(dom, self.to_tar, tar_id)
+                if tar_id := self.determine_tar_id(dom):
+                    overwrite_prop(dom, self.to_tar, tar_id)
 
     def determine_tar_id(self, dom):
-        if tar_id := find_unique_target_id_by_ref(
-                dom, self.reference, self.target, self.to_ref, self.to_tar):
-            return tar_id
-        tar = self.determine_tar(dom)
-        return tar.block_id
+        if ref := fetch_unique_page_from_relation(dom, self.reference, self.to_ref):
+            if tar := fetch_unique_page_from_relation(ref, self.target, self.to_tar):
+                return tar.block_id
+        return ''
+        # if tar_id := find_unique_target_id_by_ref(
+        #         dom, self.reference, self.target, self.to_ref, self.to_tar):
+        #     return tar_id
+        # return ''
+        # tar = self.determine_tar(dom)
+        # return tar.block_id
         # message = f"Failed to connect <{dom.block_name}> to targets :: " \
         #           f"{self.tars_by_index}"
         # raise AssertionError(message)
 
-    def determine_tar(self, dom):
-        dom_idx: DateValue = dom.props.read_at('index_as_domain')
-        date_handler = DateHandler(dom_idx.start, add_timedelta=-5)
-        return self.match_period_by_idx(date_handler)
+    # def determine_tar(self, dom):
+    #     dom_idx: DateValue = dom.props.read_at('index_as_domain')
+    #     date_handler = DateHandler(dom_idx.start, add_timedelta=-5)
+    #     return self.match_period_by_idx(date_handler)

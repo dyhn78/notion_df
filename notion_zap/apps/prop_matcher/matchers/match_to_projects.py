@@ -1,6 +1,5 @@
 from ..common.base import Matcher
-from ..common.helpers import find_all_unarchived_id_from_relation, \
-    append_prop
+from ..common.helpers import append_prop, fetch_all_pages_from_relation
 
 
 class ProjectMatcher(Matcher):
@@ -8,13 +7,13 @@ class ProjectMatcher(Matcher):
         domain = self.bs.writings
         reference = self.bs.journals
         to_ref = 'to_journals'
+        to_tars = ['to_themes', 'to_channels', 'to_readings']
         for dom in domain:
-            for to_tar in ['to_themes', 'to_channels', 'to_readings']:
+            for to_tar in to_tars:
                 if bool(dom.props.read_at(to_tar)):
                     continue
-                ref_ids = find_all_unarchived_id_from_relation(dom, reference, to_ref)
+                refs = fetch_all_pages_from_relation(dom, reference, to_ref)
                 tar_ids = []
-                for ref_id in ref_ids:
-                    ref = reference.by_id[ref_id]
+                for ref in refs:
                     tar_ids.extend(ref.props.read_at(to_tar))
                 append_prop(dom, to_tar, tar_ids)

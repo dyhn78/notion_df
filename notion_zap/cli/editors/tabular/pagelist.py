@@ -129,6 +129,7 @@ class QueryWithCallback(requestors.Query):
         self.callback = execute_callback
 
     def execute(self, request_size=0):
+        # TODO: 수가 적으면 페이지 제목을 모두 (리스트 형태로) 프린트하게 수정
         response = super().execute(request_size)
         pages = self.callback(response)
         return pages

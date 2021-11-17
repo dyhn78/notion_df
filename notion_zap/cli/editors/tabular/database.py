@@ -49,10 +49,11 @@ class Database(ChildrenBearer):
         return self.alias
 
     def retrieve(self):
-        gateway = requestors.RetrieveDatabase(self)
-        response = gateway.execute()
+        requestor = requestors.RetrieveDatabase(self)
+        response = requestor.execute()
         parser = parsers.DatabaseParser(response)
         self.frame.fetch_parser(parser)
+        requestor.print_comments()
 
     def save_info(self):
         return {**self.pagelist.save_info()}

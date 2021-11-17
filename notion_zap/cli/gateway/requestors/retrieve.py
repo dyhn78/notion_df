@@ -40,10 +40,10 @@ class RetrievePage(PointRequestor):
     @print_response_error
     def execute(self):
         res = self.client.pages.retrieve(**self.encode())
-        self.print_comments()
         return res
 
     def print_comments(self):
+        # TODO
         if self.target_name:
             form = ['retrieve_page', f"< {self.target_name} >",
                     '\n\t', self.target_url]
@@ -66,7 +66,6 @@ class RetrieveBlock(PointRequestor):
     @print_response_error
     def execute(self):
         res = self.client.blocks.retrieve(**self.encode())
-        self.print_comments()
         return res
 
     def print_comments(self):

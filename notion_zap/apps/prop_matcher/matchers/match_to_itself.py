@@ -3,8 +3,11 @@ from notion_zap.apps.prop_matcher.common.base import Matcher
 
 class SelfMatcher(Matcher):
     def execute(self):
-        for pagelist in [self.bs.dates,
-                         self.bs.journals, self.bs.memos, self.bs.writings]:
+        for pagelist in [
+            self.bs.periods, self.bs.dates, self.bs.journals,
+            self.bs.writings, self.bs.memos, self.bs.schedules,
+            self.bs.readings
+        ]:
             for dom in pagelist:
                 if dom.props.read_at('to_itself'):
                     continue
