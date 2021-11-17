@@ -5,6 +5,7 @@ ReadingDB_FRAME = PropertyFrame([
        value_groups_by_key={
            'book': ['📖단행본', '☕연속간행물', '✒학습자료']
        }),
+    Cl('🔵도서<-유형', 'is_book'),
     Cl('🏁준비', 'edit_status',
        values={
            'pass': '0️⃣⛳정보 없음',

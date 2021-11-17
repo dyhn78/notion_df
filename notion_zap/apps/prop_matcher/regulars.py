@@ -19,7 +19,8 @@ class MatchController:
             DateMatcherType3(self.bs),
             PeriodMatcherType1(self.bs),
             PeriodMatcherType2(self.bs),
-            ProjectMatcher(self.bs),
+            ProgressMatcherType1(self.bs),
+            ProgressMatcherType2(self.bs),
         ]
         for agent in agents_1:
             agent.execute()
@@ -48,17 +49,29 @@ class RegularLocalBase(LocalBase):
 
     def fetch(self, pagelist: editors.PageList):
         query = pagelist.open_query()
+        maker = query.filter_maker
         ft = query.open_filter()
-        frame = query.filter_maker.relation_at('to_itself')
+
+        # OR clauses
+        frame = maker.relation_at('to_itself')
         ft |= frame.is_empty()
         if pagelist is not self.periods:
-            frame = query.filter_maker.relation_at('to_periods')
+            frame = maker.relation_at('to_periods')
             ft |= frame.is_empty()
         if pagelist not in [self.periods, self.dates]:
-            frame = query.filter_maker.relation_at('to_dates')
+            frame = maker.relation_at('to_dates')
             ft |= frame.is_empty()
+        if pagelist is self.dates:
+            frame_sync = maker.checkbox_at('sync_status')
+            ft_sync = frame_sync.is_empty()
+            frame_date = maker.date_at('manual_date')
+            ft_date = frame_date.on_or_before(datetime.date.today())
+            ft |= (ft_sync & ft_date)
+
+        # AND clauses
         if pagelist is self.readings:
-            frame = query.filter_maker.checkbox_at('status_exclude')
+            frame = maker.checkbox_at('status_exclude')
             ft &= frame.is_empty()
+
         query.push_filter(ft)
         query.execute(self.MAX_REQUEST_SIZE)

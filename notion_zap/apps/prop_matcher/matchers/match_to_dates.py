@@ -2,7 +2,7 @@ from abc import ABCMeta
 from typing import Optional
 
 from notion_zap.cli import editors
-from notion_zap.cli.struct import DateValue
+from notion_zap.cli.struct import DateRange
 from ..common.base import Matcher
 from ..common.date_index import DateHandler
 from ..common.helpers import (
@@ -20,7 +20,7 @@ class DateMatcherAbs(Matcher, metaclass=ABCMeta):
         self.to_ref = 'to_journals'
         self.tars_by_index = self.bs.dates.by_idx_value_at('index_as_target')
 
-    def match_date_by_idx(self, date_handler: DateHandler):
+    def find_date_by_idx(self, date_handler: DateHandler):
         tar_idx = date_handler.strf_dig6_and_weekday()
         if tar := self.tars_by_index.get(tar_idx):
             return tar
@@ -48,24 +48,20 @@ class DateMatcherType1(DateMatcherAbs):
             for dom in domain:
                 if bool(dom.props.read_at(self.to_tar)):
                     continue
-                tar_id = self.determine_tar_id(dom, domain)
-                overwrite_prop(dom, self.to_tar, tar_id)
+                tar = self.determine_tar(dom, domain)
+                overwrite_prop(dom, self.to_tar, tar.block_id)
 
-    def determine_tar_id(self, dom, domain):
-        # if tar_id := find_unique_target_id_by_homo_ref(
-        #         dom, domain, self.target, self.to_tar):
-        #     return tar_id
+    def determine_tar(self, dom: editors.PageRow, domain: editors.PageList):
         if ref := fetch_unique_page_from_relation(dom, domain, 'up_self'):
             if tar := fetch_unique_page_from_relation(ref, self.target, self.to_tar):
-                return tar.block_id
-            return ''
-        tar = self.determine_tar(dom)
-        return tar.block_id
+                return tar
+            return None
+        return self.determine_tar_from_auto_date(dom)
 
-    def determine_tar(self, dom):
+    def determine_tar_from_auto_date(self, dom: editors.PageRow):
         dom_idx = dom.props.read_at('index_as_domain')
         date_handler = DateHandler(dom_idx.start, add_timedelta=-5)
-        return self.match_date_by_idx(date_handler)
+        return self.find_date_by_idx(date_handler)
 
 
 class DateMatcherType2(DateMatcherAbs):
@@ -82,17 +78,17 @@ class DateMatcherType2(DateMatcherAbs):
                 if tar := self.determine_tar(dom):
                     overwrite_prop(dom, self.to_tar, tar.block_id)
 
-    def determine_tar(self, dom):
+    def determine_tar(self, dom: editors.PageRow):
         if ref := fetch_unique_page_from_relation(dom, self.reference, self.to_ref):
             if tar := fetch_unique_page_from_relation(ref, self.target, self.to_tar):
                 return tar
             return ''
         return self.determine_tar_from_auto_date(dom)
 
-    def determine_tar_from_auto_date(self, dom):
-        dom_idx: DateValue = dom.props.read_at('index_as_domain')
+    def determine_tar_from_auto_date(self, dom: editors.PageRow):
+        dom_idx: DateRange = dom.props.read_at('index_as_domain')
         date_handler = DateHandler(dom_idx.start, add_timedelta=-5)
-        return self.match_date_by_idx(date_handler)
+        return self.find_date_by_idx(date_handler)
 
 
 class DateMatcherType3(DateMatcherAbs):
@@ -109,12 +105,8 @@ class DateMatcherType3(DateMatcherAbs):
                 if tar := self.determine_tar(dom):
                     overwrite_prop(dom, self.to_tar, tar.block_id)
 
-    @staticmethod
-    def exclude(dom: editors.PageRow):
-        return dom.props.read_at('status_exclude')
-
     def determine_tar(self, dom: editors.PageRow):
-        if self.exclude(dom):
+        if dom.props.read_at('status_exclude'):
             return None
         if tar := self.determine_tar_from_ref(dom):
             return tar
@@ -142,7 +134,7 @@ class DateMatcherType3(DateMatcherAbs):
     def determine_tar_from_auto_date(self, dom: editors.PageRow):
         dom_idx = dom.props.read_at('index_as_domain')
         date_handler = DateHandler(dom_idx.start, add_timedelta=-5)
-        return self.match_date_by_idx(date_handler)
+        return self.find_date_by_idx(date_handler)
 
 
 class DateMatcherType4(DateMatcherAbs):

@@ -1,6 +1,7 @@
 from abc import ABCMeta
 
-from notion_zap.cli.struct import DateValue
+from notion_zap.cli import editors
+from notion_zap.cli.struct import DateRange
 from ..common.base import Matcher
 from ..common.date_index import DateHandler
 from ..common.helpers import (
@@ -17,7 +18,7 @@ class PeriodMatcherAbs(Matcher, metaclass=ABCMeta):
         self.to_tar = 'to_periods'
         self.tars_by_index = self.target.by_idx_value_at('index_as_target')
 
-    def match_period_by_idx(self, date_handler: DateHandler):
+    def find_period_by_idx(self, date_handler: DateHandler):
         tar_idx = date_handler.strf_year_and_week()
         if tar := self.tars_by_index.get(tar_idx):
             return tar
@@ -30,7 +31,7 @@ class PeriodMatcherAbs(Matcher, metaclass=ABCMeta):
         tar = self.target.create_page()
         tar.props.write_title_at('index_as_target', tar_idx)
         self.tars_by_index.update({tar_idx: tar})
-        date_range = DateValue(
+        date_range = DateRange(
             start_date=date_handler.first_day_of_week(),
             end_date=date_handler.last_day_of_week()
         )
@@ -49,17 +50,13 @@ class PeriodMatcherType1(PeriodMatcherAbs):
             for dom in domain:
                 if dom.props.read_at(self.to_tar):
                     continue
-                tar_id = self.determine_tar_id(dom)
-                overwrite_prop(dom, self.to_tar, tar_id)
+                tar = self.determine_tar(dom)
+                overwrite_prop(dom, self.to_tar, tar.block_id)
 
-    def determine_tar_id(self, dom):
-        tar = self.determine_tar(dom)
-        return tar.block_id
-
-    def determine_tar(self, dom):
-        dom_idx: DateValue = dom.props.read_at('index_as_domain')
+    def determine_tar(self, dom: editors.PageRow):
+        dom_idx: DateRange = dom.props.read_at('index_as_domain')
         date_handler = DateHandler(dom_idx.start)
-        return self.match_period_by_idx(date_handler)
+        return self.find_period_by_idx(date_handler)
 
 
 class PeriodMatcherType2(PeriodMatcherAbs):
@@ -77,14 +74,15 @@ class PeriodMatcherType2(PeriodMatcherAbs):
             for dom in domain:
                 if dom.props.read_at(self.to_tar):
                     continue
-                if tar_id := self.determine_tar_id(dom):
-                    overwrite_prop(dom, self.to_tar, tar_id)
+                if tar := self.determine_tar(dom):
+                    overwrite_prop(dom, self.to_tar, tar.block_id)
 
-    def determine_tar_id(self, dom):
+    def determine_tar(self, dom: editors.PageRow):
         if ref := fetch_unique_page_from_relation(dom, self.reference, self.to_ref):
             if tar := fetch_unique_page_from_relation(ref, self.target, self.to_tar):
-                return tar.block_id
-        return ''
+                return tar
+        return None
+
         # if tar_id := find_unique_target_id_by_ref(
         #         dom, self.reference, self.target, self.to_ref, self.to_tar):
         #     return tar_id
@@ -96,6 +94,6 @@ class PeriodMatcherType2(PeriodMatcherAbs):
         # raise AssertionError(message)
 
     # def determine_tar(self, dom):
-    #     dom_idx: DateValue = dom.props.read_at('index_as_domain')
+    #     dom_idx: DateRange = dom.props.read_at('index_as_domain')
     #     date_handler = DateHandler(dom_idx.start, add_timedelta=-5)
     #     return self.match_period_by_idx(date_handler)

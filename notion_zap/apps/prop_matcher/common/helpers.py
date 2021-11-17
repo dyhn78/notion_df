@@ -12,10 +12,13 @@ def overwrite_prop(dom, prop_tag: str, value: str):
 
 def append_prop(dom, prop_tag: str, values: list[str]):
     old_values = dom.props.read_at(prop_tag)
+    changed = False
     for value in values:
         if value not in old_values:
             old_values.append(value)
-    dom.props.write_at(prop_tag, old_values)
+            changed = True
+    if changed:
+        dom.props.write_at(prop_tag, old_values)
     return True
 
 

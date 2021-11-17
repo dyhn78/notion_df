@@ -17,6 +17,7 @@ _to_dates = Cl(tag='to_dates', key='🧶날짜')
 _to_journals = Cl(tag='to_journals', key='🧵일지')
 
 _to_themes = Cl(tag='to_themes', key='📕수행')
+_to_locations = Cl(tag='to_locations', key='📙장소')
 _to_channels = Cl(tag='to_channels', key='📒채널')
 _to_readings = Cl(tag='to_readings', key='📒읽기')
 
@@ -40,8 +41,10 @@ class MatchFrames:
         [
             _title, _to_itself,
             _to_periods,
+            _to_locations, _to_channels,
             Cl(tag='manual_date', key='🕧날짜'),
-            Cl(tag='to_themes', key='📕수행'),
+            Cl(tag='to_journals', key='📉일지'),
+            Cl(tag='sync_status', key='🏁최신'),
         ]
     )
     DATES.add_alias('title', 'index_as_target')
@@ -52,7 +55,7 @@ class MatchFrames:
         [
             _title, _to_itself,
             _to_periods, _to_dates,
-            _to_themes, _to_readings, _to_channels,
+            _to_themes, _to_locations, _to_readings, _to_channels,
             Cl(tag='up_self', key='🧵구성'),
             Cl(tag='down_self', key='🧵요소'),
         ]
@@ -80,10 +83,10 @@ class MatchFrames:
         [
             _title, _to_itself,
             Cl(tag='status_exclude', key='🏁버킷<-경과'),
+            Cl(tag='is_book', key='🔵도서<-유형'),
             Cl(tag='to_periods', key='🧶기간_시작'),
             Cl(tag='to_dates', key='🧶날짜_시작'),
             _to_journals,
             _to_themes, _to_channels,
         ]
     )
-    # READINGS_STATUS_EXCLUDE = '🔍'

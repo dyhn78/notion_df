@@ -41,15 +41,23 @@ class ReadingDBScrapController(ReadingDBController):
 
     def make_query(self, request_size):
         query = self.pagelist.open_query()
-        maker = query.filter_maker.select_at('media_type')
-        ft_media = maker.equals_to_any(maker.prop_value_groups['book'])
-        maker = query.filter_maker.select_at('edit_status')
-        ft_status = maker.equals_to_any(maker.prop_value_groups['matchers'])
-        ft_status |= maker.is_empty()
-        ft = ft_media & ft_status
+        maker = query.filter_maker
+        ft = query.open_filter()
+
+        frame = maker.checkbox_at('is_book')
+        ft &= frame.is_not_empty()
+        # frame = maker.select_at('media_type')
+        # ft &= frame.equals_to_any(frame.prop_value_groups['book'])
+
+        frame = maker.select_at('edit_status')
+        ft &= (
+            frame.equals_to_any(frame.prop_value_groups['matchers'])
+            | frame.is_empty()
+        )
+
         if self.title:
-            maker = query.filter_maker.text_at('title')
-            ft_title = maker.starts_with(self.title)
+            frame = maker.text_at('title')
+            ft_title = frame.starts_with(self.title)
             ft &= ft_title
         query.push_filter(ft)
         pages = query.execute(request_size)

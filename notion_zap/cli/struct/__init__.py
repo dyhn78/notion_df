@@ -1,2 +1,2 @@
-from .date_value import DateValue
+from .date_frame import DateRange
 from .prop_frame import PropertyFrame, PropertyColumn

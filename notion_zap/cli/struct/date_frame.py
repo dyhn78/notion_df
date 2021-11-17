@@ -6,7 +6,7 @@ from typing import Union, Optional
 from ..config import TIME_ZONE
 
 
-class DateValue:
+class DateRange:
     TIME_ZONE = TIME_ZONE
 
     def __init__(self, start_date: Optional[Union[datetimecl, datecl]] = None,
@@ -32,13 +32,13 @@ class DateValue:
     def __str__(self):
         return '{' + f"start: {str(self.start)}, end: {str(self.end)}" + '}'
 
-    def __gt__(self, other: DateValue):
+    def __gt__(self, other: DateRange):
         return (self.start, self.end) > (other.start, other.end)
 
-    def __eq__(self, other: DateValue):
+    def __eq__(self, other: DateRange):
         return (self.start, self.end) == (other.start, other.end)
 
-    def __lt__(self, other: DateValue):
+    def __lt__(self, other: DateRange):
         return (self.start, self.end) < (other.start, other.end)
 
     @classmethod

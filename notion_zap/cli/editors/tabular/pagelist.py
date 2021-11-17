@@ -10,7 +10,7 @@ from notion_zap.cli.struct import PropertyFrame
 from notion_zap.cli.gateway import requestors
 from .database import Database
 from .page_row import PageRow
-from ..base import MasterEditor, BlockEditor
+from ..base import BlockEditor
 from ..common.with_children import BlockChildren
 
 
@@ -94,8 +94,11 @@ class PageList(BlockChildren):
     def list_all(self):
         return self.update.blocks + self.create.blocks
 
-    def iter_all(self) -> Iterator[MasterEditor]:
+    def iter_all(self) -> Iterator[PageRow]:
         return iter(self.list_all())
+
+    def __iter__(self) -> Iterator[PageRow]:
+        return self.iter_all()
 
     def by_value_of(self, prop_key: str):
         res = defaultdict(list)
