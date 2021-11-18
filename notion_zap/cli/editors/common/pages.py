@@ -7,8 +7,6 @@ from .with_items import ItemsBearer
 from ..base import BlockEditor, PayloadEditor, GroundEditor
 from ..root_editor import RootEditor
 from notion_zap.cli.gateway import parsers, requestors
-from notion_zap.cli.gateway.requestors import print_response_error
-from notion_zap.cli.utility import stopwatch
 
 
 class PageBlock(ItemsBearer):
@@ -63,22 +61,22 @@ class PagePayload(PayloadEditor, GroundEditor, metaclass=ABCMeta):
             return
         # register to root
         register_point = self.root.by_title
-        register_point[self.title].append(self)
+        register_point[self.title].append(self.master)
         # register to parent
         if self.parent:
             register_point = self.parent.children.by_title
-            register_point[self.title].append(self)
+            register_point[self.title].append(self.master)
 
     def _unregister_title(self):
         if self.title == '':
             return
         # detach from root
         register_point = self.root.by_title
-        register_point[self.title].remove(self)
+        register_point[self.title].remove(self.master)
         # detach from parent
         if self.parent:
             register_point = self.parent.children.by_title
-            register_point[self.title].remove(self)
+            register_point[self.title].remove(self.master)
 
     def unregister_all(self):
         self._unregister_id()

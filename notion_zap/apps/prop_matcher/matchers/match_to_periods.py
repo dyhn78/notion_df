@@ -1,9 +1,10 @@
 from abc import ABCMeta
+import datetime as dt
 
 from notion_zap.cli import editors
-from notion_zap.cli.struct import DateRange
+from notion_zap.cli.struct import DateFormat
 from ..common.base import Matcher
-from ..common.date_index import DateHandler
+from ..common.date_handler import DateHandler
 from ..common.helpers import (
     overwrite_prop,
     fetch_unique_page_from_relation,
@@ -18,26 +19,59 @@ class PeriodMatcherAbs(Matcher, metaclass=ABCMeta):
         self.to_tar = 'to_periods'
         self.tars_by_index = self.target.by_idx_value_at('index_as_target')
 
-    def find_period_by_idx(self, date_handler: DateHandler):
+    def find_by_date_val(self, date_val: dt.date):
+        date_handler = DateHandler(date_val)
         tar_idx = date_handler.strf_year_and_week()
         if tar := self.tars_by_index.get(tar_idx):
             return tar
         if tar := query_target_by_idx(self.target, tar_idx, 'text'):
             self.tars_by_index.update({tar_idx: tar})
             return tar
-        return self.create_period_by_idx(date_handler, tar_idx)
+        return None
 
-    def create_period_by_idx(self, date_handler: DateHandler, tar_idx):
+    def create_by_date_val(self, date_val: dt.date):
         tar = self.target.create_page()
+        date_handler = DateHandler(date_val)
+
+        tar_idx = date_handler.strf_year_and_week()
         tar.props.write_title_at('index_as_target', tar_idx)
         self.tars_by_index.update({tar_idx: tar})
-        date_range = DateRange(
-            start_date=date_handler.first_day_of_week(),
-            end_date=date_handler.last_day_of_week()
-        )
+
+        date_range = DateFormat(start=date_handler.first_day_of_week(),
+                                end=date_handler.last_day_of_week())
         tar.props.write_date_at('manual_date_range', date_range)
-        tar.save()
-        return tar
+        return tar.save()
+
+    def update_tar(self, tar: editors.PageRow, tar_idx=None,
+                   disable_overwrite=False):
+        """provide tar_idx manually if yet not synced to server-side"""
+        if tar_idx is None:
+            tar_idx = tar.props.read_at('index_as_target')
+        date_handler = DateHandler.from_strf_year_and_week(tar_idx)
+
+        date_range = DateFormat(start=date_handler.first_day_of_week(),
+                                end=date_handler.last_day_of_week())
+        if date_range != tar.props.read_at('manual_date_range'):
+            self.bs.root.disable_overwrite = disable_overwrite
+            tar.props.write_date_at('manual_date_range', date_range)
+            self.bs.root.disable_overwrite = False
+
+
+class PeriodTargetAutoFiller(PeriodMatcherAbs):
+    def __init__(self, bs, disable_overwrite, create_date_range):
+        super().__init__(bs)
+        self.disable_overwrite = disable_overwrite
+        from ..calendar import DateRange
+        self.create_date_range: DateRange = create_date_range
+
+    def execute(self):
+        for tar in self.target:
+            self.update_tar(tar, disable_overwrite=self.disable_overwrite)
+        if self.create_date_range:
+            for date_val in self.create_date_range.iter_date():
+                if self.find_by_date_val(date_val):
+                    continue
+                self.create_by_date_val(date_val)
 
 
 class PeriodMatcherType1(PeriodMatcherAbs):
@@ -54,9 +88,11 @@ class PeriodMatcherType1(PeriodMatcherAbs):
                 overwrite_prop(dom, self.to_tar, tar.block_id)
 
     def determine_tar(self, dom: editors.PageRow):
-        dom_idx: DateRange = dom.props.read_at('index_as_domain')
-        date_handler = DateHandler(dom_idx.start)
-        return self.find_period_by_idx(date_handler)
+        dom_idx: DateFormat = dom.props.read_at('index_as_domain')
+        date_val = dom_idx.start
+        if tar := self.find_by_date_val(date_val):
+            return tar
+        return self.create_by_date_val(date_val)
 
 
 class PeriodMatcherType2(PeriodMatcherAbs):
@@ -94,6 +130,6 @@ class PeriodMatcherType2(PeriodMatcherAbs):
         # raise AssertionError(message)
 
     # def determine_tar(self, dom):
-    #     dom_idx: DateRange = dom.props.read_at('index_as_domain')
+    #     dom_idx: DateFormat = dom.props.read_at('index_as_domain')
     #     date_handler = DateHandler(dom_idx.start, add_timedelta=-5)
     #     return self.match_period_by_idx(date_handler)

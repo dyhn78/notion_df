@@ -1,10 +1,11 @@
 from abc import ABCMeta
 from typing import Optional
+import datetime as dt
 
 from notion_zap.cli import editors
-from notion_zap.cli.struct import DateRange
+from notion_zap.cli.struct import DateFormat
 from ..common.base import Matcher
-from ..common.date_index import DateHandler
+from ..common.date_handler import DateHandler
 from ..common.helpers import (
     overwrite_prop,
     query_target_by_idx,
@@ -20,22 +21,61 @@ class DateMatcherAbs(Matcher, metaclass=ABCMeta):
         self.to_ref = 'to_journals'
         self.tars_by_index = self.bs.dates.by_idx_value_at('index_as_target')
 
-    def find_date_by_idx(self, date_handler: DateHandler):
+    def find_or_create_by_date_val(self, date_val: dt.datetime):
+        if tar := self.find_by_date_val(date_val):
+            return tar
+        return self.create_by_date_val(date_val)
+
+    def find_by_date_val(self, date_val: dt.datetime):
+        date_handler = DateHandler(date_val)
         tar_idx = date_handler.strf_dig6_and_weekday()
         if tar := self.tars_by_index.get(tar_idx):
             return tar
         if tar := query_target_by_idx(self.target, tar_idx, 'title'):
             self.tars_by_index.update({tar_idx: tar})
             return tar
-        # raise AssertionError(date_handler.date, tar_idx)
-        return self.create_date_by_idx(tar_idx)
+        return None
 
-    def create_date_by_idx(self, tar_idx):
+    def create_by_date_val(self, date_val: dt.datetime):
         tar = self.target.create_page()
+        date_handler = DateHandler(date_val)
+
+        tar_idx = date_handler.strf_dig6_and_weekday()
         tar.props.write_at('index_as_target', tar_idx)
         self.tars_by_index.update({tar_idx: tar})
-        tar.save()
-        return tar
+
+        date_range = DateFormat(date_handler.date)
+        tar.props.write_date_at('manual_date', date_range)
+        return tar.save()
+
+    def update_tar(self, tar: editors.PageRow, tar_idx=None,
+                   disable_overwrite=False):
+        """provide tar_idx manually if yet not synced to server-side"""
+        if tar_idx is None:
+            tar_idx = tar.props.read_at('index_as_target')
+        date_handler = DateHandler.from_strf_dig6(tar_idx)
+        date_range = DateFormat(date_handler.date)
+        if date_range != tar.props.read_at('manual_date'):
+            self.bs.root.disable_overwrite = disable_overwrite
+            tar.props.write_date_at('manual_date', date_range)
+            self.bs.root.disable_overwrite = False
+
+
+class DateTargetAutoFiller(DateMatcherAbs):
+    def __init__(self, bs, disable_overwrite, create_date_range):
+        super().__init__(bs)
+        self.disable_overwrite = disable_overwrite
+        from ..calendar import DateRange
+        self.create_date_range: DateRange = create_date_range
+
+    def execute(self):
+        for tar in self.target:
+            self.update_tar(tar, disable_overwrite=self.disable_overwrite)
+        if self.create_date_range:
+            for date_val in self.create_date_range.iter_date():
+                if self.find_by_date_val(date_val):
+                    continue
+                self.create_by_date_val(date_val)
 
 
 class DateMatcherType1(DateMatcherAbs):
@@ -59,9 +99,9 @@ class DateMatcherType1(DateMatcherAbs):
         return self.determine_tar_from_auto_date(dom)
 
     def determine_tar_from_auto_date(self, dom: editors.PageRow):
-        dom_idx = dom.props.read_at('index_as_domain')
-        date_handler = DateHandler(dom_idx.start, add_timedelta=-5)
-        return self.find_date_by_idx(date_handler)
+        dom_idx: DateFormat = dom.props.read_at('index_as_domain')
+        date_val = dom_idx.start - dt.timedelta(-5)
+        return self.find_or_create_by_date_val(date_val)
 
 
 class DateMatcherType2(DateMatcherAbs):
@@ -86,9 +126,9 @@ class DateMatcherType2(DateMatcherAbs):
         return self.determine_tar_from_auto_date(dom)
 
     def determine_tar_from_auto_date(self, dom: editors.PageRow):
-        dom_idx: DateRange = dom.props.read_at('index_as_domain')
-        date_handler = DateHandler(dom_idx.start, add_timedelta=-5)
-        return self.find_date_by_idx(date_handler)
+        dom_idx: DateFormat = dom.props.read_at('index_as_domain')
+        date_val = dom_idx.start - dt.timedelta(-5)
+        return self.find_or_create_by_date_val(date_val)
 
 
 class DateMatcherType3(DateMatcherAbs):
@@ -133,8 +173,8 @@ class DateMatcherType3(DateMatcherAbs):
 
     def determine_tar_from_auto_date(self, dom: editors.PageRow):
         dom_idx = dom.props.read_at('index_as_domain')
-        date_handler = DateHandler(dom_idx.start, add_timedelta=-5)
-        return self.find_date_by_idx(date_handler)
+        date_val = dom_idx.start - dt.timedelta(-5)
+        return self.find_or_create_by_date_val(date_val)
 
 
 class DateMatcherType4(DateMatcherAbs):

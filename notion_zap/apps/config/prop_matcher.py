@@ -42,7 +42,7 @@ class MatchFrames:
             _title, _to_itself,
             _to_periods,
             _to_locations, _to_channels,
-            Cl(tag='manual_date', key='🕧날짜'),
+            Cl(tag='manual_date', key='📆날짜'),
             Cl(tag='to_journals', key='📉일지'),
             Cl(tag='sync_status', key='🏁최신'),
         ]

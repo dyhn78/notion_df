@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod, ABCMeta
+from datetime import datetime, date
 from typing import Union
 
-from notion_zap.cli.struct import DateRange
+from notion_zap.cli.struct import DateFormat
 from .maker import (
     PropertyEncoder, RichTextPropertyEncoder,
     SimplePropertyEncoder, FilesPropertyEncoder)
@@ -50,8 +51,10 @@ class PageRowPropertybyName(ABC):
         writer.write_text(value)
         return writer
 
-    def write_date(self, prop_key: str, value: DateRange):
-        return self.push_carrier(prop_key, SimplePropertyEncoder.date(prop_key, value))
+    def write_date(self, prop_key: str, value: Union[DateFormat, datetime, date]):
+        cleaned_value = DateFormat.to_daterange(value)
+        carrier = SimplePropertyEncoder.date(prop_key, cleaned_value)
+        return self.push_carrier(prop_key, carrier)
 
     def write_url(self, prop_key: str, value: str):
         return self.push_carrier(prop_key, SimplePropertyEncoder.url(prop_key, value))
@@ -126,7 +129,7 @@ class PageRowPropertybyKey(PageRowPropertybyName, metaclass=ABCMeta):
         prop_key = self._name_at(prop_tag)
         return self.write_text(prop_key, value)
 
-    def write_date_at(self, prop_tag: str, value: DateRange):
+    def write_date_at(self, prop_tag: str, value: Union[DateFormat, datetime, date]):
         prop_key = self._name_at(prop_tag)
         return self.write_date(prop_key, value)
 

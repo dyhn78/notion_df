@@ -1,9 +1,9 @@
-from notion_zap.apps.prop_matcher.yearly_calendar import YearlyCalendarCreator
 # from notion_zap.apps.media_scraper import \
 #     ReadingDBStatusResolver, ReadingDBDuplicateRemover
 # from notion_zap.apps.prop_matcher import PropertySyncResolver
+from notion_zap.apps.prop_matcher.calendar import CalendarController
 
-YearlyCalendarCreator(year=2025).execute()
+CalendarController(fetch_empties=True).execute()
 #
 # ReadingDBDuplicateRemover().execute(request_size=0)
 # ReadingDBStatusResolver().execute()

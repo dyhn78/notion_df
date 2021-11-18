@@ -1,4 +1,4 @@
-from notion_zap.apps.prop_matcher.common.base import Matcher
+from ..common.base import Matcher
 
 
 class SelfMatcher(Matcher):

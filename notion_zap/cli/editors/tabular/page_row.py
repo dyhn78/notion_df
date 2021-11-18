@@ -35,9 +35,9 @@ class PageRow(PageBlock):
 
     def save(self):
         self.props.save()
-        if self.archived:
-            return
-        self.attachments.save()
+        if not self.archived:
+            self.attachments.save()
+        return self
 
     def reads(self):
         return {'type': 'page',

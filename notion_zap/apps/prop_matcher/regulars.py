@@ -5,13 +5,13 @@ from .common.base import Matcher, LocalBase
 from ...cli import editors
 
 
-class MatchController:
+class RegularMatchController:
     def __init__(self, date_range=0):
         self.bs = RegularLocalBase()
         self.date_range = date_range
 
     def execute(self):
-        self.bs.fetch_all()
+        self.bs.fetch()
         agents_1: list[Matcher] = [
             SelfMatcher(self.bs),
             DateMatcherType1(self.bs),
@@ -42,12 +42,12 @@ class RegularLocalBase(LocalBase):
         super().__init__()
         self.root.exclude_archived = True
 
-    def fetch_all(self):
+    def fetch(self):
         for database in self.root.databases:
             pagelist = database.pagelist
-            self.fetch(pagelist)
+            self.fetch_one(pagelist)
 
-    def fetch(self, pagelist: editors.PageList):
+    def fetch_one(self, pagelist: editors.PageList):
         query = pagelist.open_query()
         maker = query.filter_maker
         ft = query.open_filter()
@@ -65,7 +65,7 @@ class RegularLocalBase(LocalBase):
             frame_sync = maker.checkbox_at('sync_status')
             ft_sync = frame_sync.is_empty()
             frame_date = maker.date_at('manual_date')
-            ft_date = frame_date.on_or_before(datetime.date.today())
+            ft_date = frame_date.on_or_before(dt.date.today())
             ft |= (ft_sync & ft_date)
 
         # AND clauses
@@ -74,4 +74,5 @@ class RegularLocalBase(LocalBase):
             ft &= frame.is_empty()
 
         query.push_filter(ft)
+        # query.preview()
         query.execute(self.MAX_REQUEST_SIZE)

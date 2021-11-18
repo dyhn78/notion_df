@@ -1,7 +1,7 @@
-import datetime
+import datetime as dt
 
 from notion_zap.cli import editors
-from notion_zap.cli.struct import DateRange
+from notion_zap.cli.struct import DateFormat
 from ..common.base import Matcher
 from ..common.helpers import append_prop, fetch_all_pages_from_relation
 
@@ -36,8 +36,8 @@ class ProgressMatcherType2(Matcher):
     def execute(self):
         for dom in self.domain:
             for to_tar in self.to_tars:
-                dom_date: DateRange = dom.props.read_at('manual_date')
-                if dom_date.start.date() > datetime.date.today():
+                dom_date: DateFormat = dom.props.read_at('manual_date')
+                if dom_date.start_date > dt.date.today():
                     continue
                 if tar_ids := self.determine_tar_ids(dom, to_tar):
                     append_prop(dom, to_tar, tar_ids)
