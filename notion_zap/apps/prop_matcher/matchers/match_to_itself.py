@@ -1,4 +1,4 @@
-from ..common.base import Matcher
+from ..common.struct import Matcher
 
 
 class SelfMatcher(Matcher):

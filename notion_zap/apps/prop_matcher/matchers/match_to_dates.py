@@ -4,7 +4,7 @@ import datetime as dt
 
 from notion_zap.cli import editors
 from notion_zap.cli.struct import DateFormat
-from ..common.base import Matcher
+from ..common.struct import Matcher
 from ..common.date_handler import DateHandler
 from ..common.helpers import (
     overwrite_prop,
