@@ -100,7 +100,7 @@ class DateMatcherType1(DateMatcherAbs):
 
     def determine_tar_from_auto_date(self, dom: editors.PageRow):
         dom_idx: DateFormat = dom.props.read_at('index_as_domain')
-        date_val = dom_idx.start - dt.timedelta(-5)
+        date_val = dom_idx.start + dt.timedelta(hours=-5)
         return self.find_or_create_by_date_val(date_val)
 
 
@@ -127,7 +127,7 @@ class DateMatcherType2(DateMatcherAbs):
 
     def determine_tar_from_auto_date(self, dom: editors.PageRow):
         dom_idx: DateFormat = dom.props.read_at('index_as_domain')
-        date_val = dom_idx.start - dt.timedelta(-5)
+        date_val = dom_idx.start + dt.timedelta(hours=-5)
         return self.find_or_create_by_date_val(date_val)
 
 
@@ -146,7 +146,7 @@ class DateMatcherType3(DateMatcherAbs):
 
     def determine_tar_from_auto_date(self, dom: editors.PageRow):
         dom_idx: DateFormat = dom.props.read_at('index_as_domain')
-        date_val = dom_idx.start - dt.timedelta(-5)
+        date_val = dom_idx.start + dt.timedelta(hours=-5)
         return self.find_or_create_by_date_val(date_val)
 
 
@@ -192,5 +192,5 @@ class DateMatcherType4(DateMatcherAbs):
 
     def determine_tar_from_auto_date(self, dom: editors.PageRow):
         dom_idx = dom.props.read_at('index_as_domain')
-        date_val = dom_idx.start - dt.timedelta(-5)
+        date_val = dom_idx.start + dt.timedelta(hours=-5)
         return self.find_or_create_by_date_val(date_val)

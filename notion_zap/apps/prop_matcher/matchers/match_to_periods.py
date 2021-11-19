@@ -138,9 +138,7 @@ class PeriodMatcherType3(PeriodMatcherAbs):
                     overwrite_prop(dom, self.to_tar, tar.block_id)
 
     def determine_tar(self, dom: editors.PageRow):
-        dom.reads()
         if ref := fetch_unique_page_from_relation(dom, self.reference, self.to_ref):
-            ref.reads()
             if tar := fetch_unique_page_from_relation(
                     ref, self.target, self.from_ref_to_tar):
                 return tar
