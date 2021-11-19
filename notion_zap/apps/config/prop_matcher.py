@@ -56,7 +56,7 @@ class MatchFrames:
             _title, _to_itself,
             _to_periods, _to_dates,
             _to_themes, _to_locations, _to_readings, _to_channels,
-            Cl(tag='up_self', key='🧵구성'),
+            Cl(tag='up_self', key='🧵수합'),
             Cl(tag='down_self', key='🧵요소'),
         ]
     )
@@ -66,7 +66,7 @@ class MatchFrames:
             _title, _to_itself,
             _to_periods, _to_dates, _to_journals,
             _to_readings, _to_channels,
-            Cl(tag='to_themes', key='📕참조'),
+            Cl(tag='to_themes', key='📕맥락'),
         ]
     )
     MEMOS = Frame(
