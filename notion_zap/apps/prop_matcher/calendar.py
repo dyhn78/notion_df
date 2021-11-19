@@ -12,7 +12,7 @@ class CalendarController:
         self.disable_overwrite = disable_overwrite
         self.fetch_empties = fetch_empties
         self.fetch_year_range = (
-            DateRange(fetch_year_range) if fetch_year_range else None)
+            CalendarDateRange(fetch_year_range) if fetch_year_range else None)
         self.bs = CalendarBase(fetch_year_range, empties=fetch_empties, request_size=0)
 
     def execute(self):
@@ -39,7 +39,7 @@ class CalendarBase(LocalBase):
         self.root.exclude_archived = True
         self.request_size = request_size
         self.year_range = year_range
-        self.date_range = DateRange(year_range)
+        self.date_range = CalendarDateRange(year_range)
         self.empties = empties
 
     def fetch_all(self):
@@ -72,7 +72,7 @@ class CalendarBase(LocalBase):
             self.periods.fetch(1)
 
 
-class DateRange:
+class CalendarDateRange:
     def __init__(self, year_range: Optional[tuple[int, int]] = None):
         self.year_range = year_range
         if year_range:

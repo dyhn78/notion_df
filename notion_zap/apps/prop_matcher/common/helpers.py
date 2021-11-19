@@ -43,16 +43,14 @@ def fetch_all_pages_from_relation(
 
 
 def query_target_by_idx(
-        target: editors.PageList, tar_idx,
-        idx_data_type='text'):
+        target: editors.PageList, tar_idx_val, tars_idx_tag: str,
+        prop_type='text'):
     tar_query = target.open_query()
-    maker = tar_query.filter_maker.at('index_as_target', idx_data_type)
-    ft = maker.equals(tar_idx)
+    maker = tar_query.filter_maker.at(tars_idx_tag, prop_type)
+    ft = maker.equals(tar_idx_val)
     tar_query.push_filter(ft)
     tars = tar_query.execute()
-    tars = [tar for tar in tars if not tar.archived]
     if tars:
-        assert len(tars) == 1
         return tars[0]
     return None
 

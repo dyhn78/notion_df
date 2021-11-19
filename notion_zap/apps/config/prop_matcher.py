@@ -34,8 +34,8 @@ class MatchFrames:
             Cl(tag='manual_date_range', key='📅날짜 범위')
         ]
     )
-    PERIODS.add_alias('title', 'index_as_target')
-    PERIODS.add_alias('manual_date_range', 'index_as_domain')
+    # PERIODS.add_alias('title', 'index_as_target')
+    # PERIODS.add_alias('manual_date_range', 'index_as_domain')
 
     DATES = Frame(
         [
@@ -47,8 +47,8 @@ class MatchFrames:
             Cl(tag='sync_status', key='🏁최신'),
         ]
     )
-    DATES.add_alias('title', 'index_as_target')
-    DATES.add_alias('manual_date', 'index_as_domain')
+    # DATES.add_alias('title', 'index_as_target')
+    # DATES.add_alias('manual_date', 'index_as_domain')
 
     JOURNALS = Frame(
         _AUTO_DATE,
