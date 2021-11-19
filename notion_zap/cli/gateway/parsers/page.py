@@ -3,7 +3,7 @@ from inspect import signature
 from typing import Union, Any, Callable, Iterator
 
 from notion_zap.cli.struct import DateFormat
-from notion_zap.cli.config.props import VALUE_FORMATS
+from notion_zap.cli.struct.prop_types import VALUE_FORMATS
 from .rich_text import parse_rich_texts
 
 

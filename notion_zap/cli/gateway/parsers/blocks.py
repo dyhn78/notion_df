@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 from .rich_text import parse_rich_texts
-from notion_zap.cli.gateway.carriers import Printable
-from notion_zap.cli.config.blocks import (
+from notion_zap.cli.struct.base_classes import Printable
+from notion_zap.cli.struct.block_types import (
     PAGE_TYPES, TEXT_TYPES, CAN_HAVE_CHILDREN, SUPPORTED, UNSUPPORTED
 )
 

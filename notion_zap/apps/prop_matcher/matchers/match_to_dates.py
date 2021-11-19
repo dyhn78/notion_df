@@ -88,8 +88,8 @@ class DateMatcherType1(DateMatcherAbs):
             for dom in domain:
                 if bool(dom.props.read_at(self.to_tar)):
                     continue
-                tar = self.determine_tar(dom, domain)
-                overwrite_prop(dom, self.to_tar, tar.block_id)
+                if tar := self.determine_tar(dom, domain):
+                    overwrite_prop(dom, self.to_tar, tar.block_id)
 
     def determine_tar(self, dom: editors.PageRow, domain: editors.PageList):
         if ref := fetch_unique_page_from_relation(dom, domain, 'up_self'):

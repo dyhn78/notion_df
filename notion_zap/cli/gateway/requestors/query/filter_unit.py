@@ -1,7 +1,7 @@
 from abc import abstractmethod, ABCMeta
 from pprint import pprint
 
-from notion_zap.cli.gateway.carriers import ValueCarrier
+from notion_zap.cli.struct.base_classes import ValueCarrier
 
 
 class QueryFilter(ValueCarrier):

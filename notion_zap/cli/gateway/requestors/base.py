@@ -6,7 +6,7 @@ from notion_client.errors import APIResponseError
 
 from ... import utility
 from notion_zap.cli.editors.base import BlockEditor
-from notion_zap.cli.gateway.carriers import Executable, ValueCarrier
+from notion_zap.cli.struct.base_classes import Executable, ValueCarrier
 
 
 class Requestor(Executable, ValueCarrier, metaclass=ABCMeta):
