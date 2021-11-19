@@ -62,25 +62,24 @@ class PagePropertyStash(ValueCarrier):
         # return self.prop_value.apply(carrier)
 
 
-class ArchiveToggle(ValueCarrier):
-    def __init__(self):
-        self.archive_value = None
-
-    def __bool__(self):
-        return self.archive_value is not None
-
-    def is_archived(self):
-        return self.archive_value
-
-    def clear(self):
-        self.archive_value = None
-
-    def archive(self):
-        self.archive_value = True
-
-    def un_archive(self):
-        self.archive_value = False
-
-    def encode(self) -> dict:
-        print({'archived': self.archive_value})
-        return {'archived': self.archive_value} if bool(self) else {}
+# class ArchiveToggle(ValueCarrier):
+#     def __init__(self):
+#         self.archive_value = None
+#
+#     def __bool__(self):
+#         return self.archive_value is not None
+#
+#     def is_archived(self):
+#         return self.archive_value
+#
+#     def clear(self):
+#         self.archive_value = None
+#
+#     def archive(self):
+#         self.archive_value = True
+#
+#     def un_archive(self):
+#         self.archive_value = False
+#
+#     def encode(self) -> dict:
+#         return {'archived': self.archive_value} if bool(self) else {}
