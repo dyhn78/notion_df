@@ -119,17 +119,29 @@ class PeriodMatcherType2(PeriodMatcherAbs):
                 return tar
         return None
 
-        # if tar_id := find_unique_target_id_by_ref(
-        #         dom, self.reference, self.target, self.to_ref, self.to_tar):
-        #     return tar_id
-        # return ''
-        # tar = self.determine_tar(dom)
-        # return tar.block_id
-        # message = f"Failed to connect <{dom.block_name}> to targets :: " \
-        #           f"{self.tars_by_index}"
-        # raise AssertionError(message)
 
-    # def determine_tar(self, dom):
-    #     dom_idx: DateFormat = dom.props.read_at('index_as_domain')
-    #     date_handler = DateHandler(dom_idx.start, add_timedelta=-5)
-    #     return self.match_period_by_idx(date_handler)
+class PeriodMatcherType3(PeriodMatcherAbs):
+    def __init__(self, bs):
+        super().__init__(bs)
+        self.reference = self.bs.dates
+        self.to_tar = 'to_scheduled_periods'
+        self.to_ref = 'to_scheduled_dates'
+        self.from_ref_to_tar = 'to_periods'
+        self.domains = [self.bs.schedules]
+
+    def execute(self):
+        for domain in self.domains:
+            for dom in domain:
+                if dom.props.read_at(self.to_tar):
+                    continue
+                if tar := self.determine_tar(dom):
+                    overwrite_prop(dom, self.to_tar, tar.block_id)
+
+    def determine_tar(self, dom: editors.PageRow):
+        dom.reads()
+        if ref := fetch_unique_page_from_relation(dom, self.reference, self.to_ref):
+            ref.reads()
+            if tar := fetch_unique_page_from_relation(
+                    ref, self.target, self.from_ref_to_tar):
+                return tar
+        return None

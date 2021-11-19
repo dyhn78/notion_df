@@ -76,7 +76,15 @@ class MatchFrames:
             _to_periods, _to_dates, _to_journals,
         ]
     )
-    SCHEDULES = MEMOS
+    SCHEDULES = Frame(
+        _AUTO_DATE,
+        [
+            _title, _to_itself,
+            _to_periods, _to_dates,
+            Cl(tag='to_scheduled_periods', key='📈기간'),
+            Cl(tag='to_scheduled_dates', key='📈날짜'),
+        ]
+    )
 
     READINGS = Frame(
         _AUTO_DATE,

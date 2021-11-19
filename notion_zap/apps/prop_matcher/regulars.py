@@ -17,8 +17,10 @@ class RegularMatchController:
             DateMatcherType1(self.bs),
             DateMatcherType2(self.bs),
             DateMatcherType3(self.bs),
+            DateMatcherType4(self.bs),
             PeriodMatcherType1(self.bs),
             PeriodMatcherType2(self.bs),
+            PeriodMatcherType3(self.bs),
             ProgressMatcherType1(self.bs),
             ProgressMatcherType2(self.bs),
         ]
@@ -28,7 +30,7 @@ class RegularMatchController:
 
         # self.bs.fetch(self.bs.readings)
         # agents_2: list[Matcher] = [
-        #     DateMatcherType3(self.bs)
+        #     DateMatcherType4(self.bs)
         # ]
         # for agent in agents_2:
         #     agent.execute()
@@ -67,6 +69,9 @@ class RegularLocalBase(LocalBase):
             frame_date = maker.date_at('manual_date')
             ft_date = frame_date.on_or_before(dt.date.today())
             ft |= (ft_sync & ft_date)
+        if pagelist is self.schedules:
+            ft |= maker.relation_at('to_scheduled_periods').is_empty()
+            ft |= maker.relation_at('to_scheduled_dates').is_empty()
 
         # AND clauses
         if pagelist is self.readings:

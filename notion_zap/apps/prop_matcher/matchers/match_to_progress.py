@@ -41,7 +41,8 @@ class ProgressMatcherType2(Matcher):
                     continue
                 if tar_ids := self.determine_tar_ids(dom, to_tar):
                     append_prop(dom, to_tar, tar_ids)
-                dom.props.write_checkbox_at('sync_status', True)
+                if not dom.props.read_at('sync_status'):  # False
+                    dom.props.write_checkbox_at('sync_status', True)
 
     def determine_tar_ids(self, dom: editors.PageRow, to_tar: str):
         refs = fetch_all_pages_from_relation(

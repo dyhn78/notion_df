@@ -108,7 +108,7 @@ class DateMatcherType2(DateMatcherAbs):
     def __init__(self, bs):
         super().__init__(bs)
         self.reference = self.bs.journals
-        self.domains = [self.bs.writings, self.bs.memos, self.bs.schedules]
+        self.domains = [self.bs.writings, self.bs.memos]
 
     def execute(self):
         for domain in self.domains:
@@ -132,6 +132,25 @@ class DateMatcherType2(DateMatcherAbs):
 
 
 class DateMatcherType3(DateMatcherAbs):
+    def __init__(self, bs):
+        super().__init__(bs)
+        self.domains = [self.bs.schedules]
+
+    def execute(self):
+        for domain in self.domains:
+            for dom in domain:
+                if bool(dom.props.read_at(self.to_tar)):
+                    continue
+                if tar := self.determine_tar_from_auto_date(dom):
+                    overwrite_prop(dom, self.to_tar, tar.block_id)
+
+    def determine_tar_from_auto_date(self, dom: editors.PageRow):
+        dom_idx: DateFormat = dom.props.read_at('index_as_domain')
+        date_val = dom_idx.start - dt.timedelta(-5)
+        return self.find_or_create_by_date_val(date_val)
+
+
+class DateMatcherType4(DateMatcherAbs):
     def __init__(self, bs):
         super().__init__(bs)
         self.reference = self.bs.journals
@@ -175,10 +194,3 @@ class DateMatcherType3(DateMatcherAbs):
         dom_idx = dom.props.read_at('index_as_domain')
         date_val = dom_idx.start - dt.timedelta(-5)
         return self.find_or_create_by_date_val(date_val)
-
-
-class DateMatcherType4(DateMatcherAbs):
-    def execute(self):
-        pass
-        # algorithm = TernaryMatchAlgorithm(self.journals, None, self.dates)
-        # algorithm.by_ref('to_themes', 'to_dates', 'to_themes')
