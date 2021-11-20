@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from functools import reduce
+
 from .matchers import *
 from .common.struct import Matcher, LocalBase
 from ...cli import editors
@@ -46,37 +48,39 @@ class RegularLocalBase(LocalBase):
 
     def fetch(self):
         for database in self.root.databases:
-            pagelist = database.pagelist
-            self.fetch_one(pagelist)
+            domain = database.pagelist
+            self.fetch_one(domain)
 
-    def fetch_one(self, pagelist: editors.PageList):
-        query = pagelist.open_query()
+    def fetch_one(self, domain: editors.PageList):
+        query = domain.open_query()
         maker = query.filter_maker
         ft = query.open_filter()
 
         # OR clauses
-        frame = maker.relation_at('to_itself')
-        ft |= frame.is_empty()
-        if pagelist is not self.periods:
-            frame = maker.relation_at('to_periods')
-            ft |= frame.is_empty()
-        if pagelist not in [self.periods, self.dates]:
-            frame = maker.relation_at('to_dates')
-            ft |= frame.is_empty()
-        if pagelist is self.dates:
-            frame_sync = maker.checkbox_at('sync_status')
-            ft_sync = frame_sync.is_empty()
-            frame_date = maker.date_at('manual_date')
-            ft_date = frame_date.on_or_before(dt.date.today())
-            ft |= (ft_sync & ft_date)
-        if pagelist is self.schedules:
+        ft |= maker.relation_at('to_itself').is_empty()
+        if domain is not self.periods:
+            ft |= maker.relation_at('to_periods').is_empty()
+        if domain not in [self.periods, self.dates]:
+            ft |= maker.relation_at('to_dates').is_empty()
+        if domain is self.dates:
+            sync_needed = maker.checkbox_at('sync_status').is_empty()
+            before_today = maker.date_at('manual_date').on_or_before(dt.date.today())
+            ft |= (sync_needed & before_today)
+        if domain is self.schedules:
             ft |= maker.relation_at('to_scheduled_periods').is_empty()
             ft |= maker.relation_at('to_scheduled_dates').is_empty()
 
         # AND clauses
-        if pagelist is self.readings:
-            frame = maker.checkbox_at('status_exclude')
-            ft &= frame.is_empty()
+        if domain is self.readings:
+            ft &= maker.checkbox_at('status_exclude').is_empty()
+            is_not_book = maker.checkbox_at('is_book').is_empty()
+            has_refs = reduce(
+                lambda a, b: a | b,
+                [maker.relation_at(tag).is_not_empty()
+                 for tag in ['to_journals', 'to_schedules']]
+            )
+            ft &= (is_not_book | has_refs)
+            # ft.preview()
 
         query.push_filter(ft)
         # query.preview()

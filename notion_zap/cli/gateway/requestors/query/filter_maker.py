@@ -3,7 +3,7 @@ from typing import Union
 from datetime import datetime as datetimeclass, date as dateclass
 
 from notion_zap.cli.struct import PropertyColumn
-from .filter_unit import PlainFilter, OrFilter, AndFilter
+from .filter_struct import PlainFilter, OrFilter, AndFilter
 from .query import Query
 
 # find config by parsers

@@ -92,8 +92,8 @@ class CompoundFilter(QueryFilter, metaclass=ABCMeta):
         if self.nesting > 2:
             # TODO: AssertionError 대신 커스텀 에러클래스 정의
             print("following CompoundFilter has nesting > 2 ::")
-            pprint(self.encode())
-            raise ValueError
+            self.preview()
+            raise ValueError(self.encode())
 
 
 class AndFilter(CompoundFilter):

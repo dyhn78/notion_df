@@ -1,6 +1,6 @@
 from notion_zap.cli.struct import PropertyFrame
 from notion_zap.cli.editors import base
-from .filter_unit import QueryFilter, EmptyFilter
+from .filter_struct import QueryFilter, EmptyFilter
 from ..base import LongRequestor, print_response_error
 from notion_zap.cli.utility import page_id_to_url, stopwatch
 
