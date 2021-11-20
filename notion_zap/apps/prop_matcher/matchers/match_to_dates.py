@@ -162,7 +162,7 @@ class DateMatcherType4(DateMatcherAbs):
     def __init__(self, bs):
         super().__init__(bs)
         self.domains = [self.bs.readings]
-        self.ref2 = self.bs.schedules
+        self.reference2 = self.bs.schedules
 
     def execute(self):
         for domain in self.domains:
@@ -174,9 +174,11 @@ class DateMatcherType4(DateMatcherAbs):
         if (dom.props.read_at(self.refs_tar)
                 or dom.props.read_at('status_exclude')):
             return None
-        if tar := self.determine_tar_from_ref(dom, self.doms_ref, self.refs_tar):
+        if tar := self.determine_tar_from_ref(
+                dom, self.reference, self.doms_ref, self.refs_tar):
             return tar
-        if tar := self.determine_tar_from_ref(dom, self.doms_ref2, self.ref2s_tar):
+        if tar := self.determine_tar_from_ref(
+                dom, self.reference2, self.doms_ref2, self.ref2s_tar):
             return tar
         if dom.props.read_at('is_book'):
             return None
@@ -184,8 +186,9 @@ class DateMatcherType4(DateMatcherAbs):
             return tar
         return None
 
-    def determine_tar_from_ref(self, dom: editors.PageRow, doms_ref, refs_tar):
-        refs = fetch_all_pages_from_relation(dom, self.reference, doms_ref)
+    def determine_tar_from_ref(self, dom: editors.PageRow,
+                               reference: editors.PageList, doms_ref, refs_tar):
+        refs = fetch_all_pages_from_relation(dom, reference, doms_ref)
         tars = []
         for ref in refs:
             new_tars = fetch_all_pages_from_relation(ref, self.target, refs_tar)
