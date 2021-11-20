@@ -94,6 +94,7 @@ class MatchFrames:
             Cl(tag='is_book', key='🔵도서<-유형'),
             Cl(tag='to_periods', key='🧶기간_시작'),
             Cl(tag='to_dates', key='🧶날짜_시작'),
+            Cl(tag='to_schedules', key='📘일정'),
             _to_journals,
             _to_themes, _to_channels,
         ]

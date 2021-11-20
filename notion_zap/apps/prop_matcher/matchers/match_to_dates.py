@@ -91,12 +91,12 @@ class DateMatcherType1(DateMatcherAbs):
     def execute(self):
         for domain in self.domains:
             for dom in domain:
-                if bool(dom.props.read_at(self.refs_tar)):
-                    continue
                 if tar := self.determine_tar(dom, domain):
                     overwrite_prop(dom, self.doms_tar, tar.block_id)
 
     def determine_tar(self, dom: editors.PageRow, domain: editors.PageList):
+        if dom.props.read_at(self.refs_tar):
+            return None
         if ref := fetch_unique_page_from_relation(dom, domain, 'up_self'):
             if tar := fetch_unique_page_from_relation(ref, self.target, self.refs_tar):
                 return tar
@@ -117,12 +117,12 @@ class DateMatcherType2(DateMatcherAbs):
     def execute(self):
         for domain in self.domains:
             for dom in domain:
-                if bool(dom.props.read_at(self.refs_tar)):
-                    continue
                 if tar := self.determine_tar(dom):
                     overwrite_prop(dom, self.refs_tar, tar.block_id)
 
     def determine_tar(self, dom: editors.PageRow):
+        if dom.props.read_at(self.refs_tar):
+            return None
         if ref := fetch_unique_page_from_relation(dom, self.reference, self.doms_ref):
             if tar := fetch_unique_page_from_relation(
                     ref, self.target, self.refs_tar):
@@ -144,7 +144,7 @@ class DateMatcherType3(DateMatcherAbs):
     def execute(self):
         for domain in self.domains:
             for dom in domain:
-                if bool(dom.props.read_at(self.refs_tar)):
+                if dom.props.read_at(self.refs_tar):
                     continue
                 if tar := self.determine_tar_from_auto_date(dom):
                     overwrite_prop(dom, self.doms_tar, tar.block_id)
@@ -156,34 +156,39 @@ class DateMatcherType3(DateMatcherAbs):
 
 
 class DateMatcherType4(DateMatcherAbs):
+    doms_ref2 = 'to_schedules'
+    ref2s_tar = 'to_scheduled_dates'
+
     def __init__(self, bs):
         super().__init__(bs)
         self.domains = [self.bs.readings]
+        self.ref2 = self.bs.schedules
 
     def execute(self):
         for domain in self.domains:
             for dom in domain:
-                if self.exclude_match(dom):
-                    continue
                 if tar := self.determine_tar(dom):
                     overwrite_prop(dom, self.doms_tar, tar.block_id)
 
-    def exclude_match(self, dom: editors.PageRow):
-        return (dom.props.read_at(self.refs_tar)
-                or dom.props.read_at('status_exclude'))
-
     def determine_tar(self, dom: editors.PageRow):
-        if tar := self.determine_tar_from_ref(dom):
+        if (dom.props.read_at(self.refs_tar)
+                or dom.props.read_at('status_exclude')):
+            return None
+        if tar := self.determine_tar_from_ref(dom, self.doms_ref, self.refs_tar):
             return tar
+        if tar := self.determine_tar_from_ref(dom, self.doms_ref2, self.ref2s_tar):
+            return tar
+        if dom.props.read_at('is_book'):
+            return None
         if tar := self.determine_tar_from_auto_date(dom):
             return tar
         return None
 
-    def determine_tar_from_ref(self, dom: editors.PageRow):
-        refs = fetch_all_pages_from_relation(dom, self.reference, self.doms_ref)
+    def determine_tar_from_ref(self, dom: editors.PageRow, doms_ref, refs_tar):
+        refs = fetch_all_pages_from_relation(dom, self.reference, doms_ref)
         tars = []
         for ref in refs:
-            new_tars = fetch_all_pages_from_relation(ref, self.target, self.refs_tar)
+            new_tars = fetch_all_pages_from_relation(ref, self.target, refs_tar)
             tars.extend(new_tars)
         earliest_tar: Optional[editors.PageRow] = None
         earliest_date = None

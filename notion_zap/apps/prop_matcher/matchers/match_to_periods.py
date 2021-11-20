@@ -22,6 +22,11 @@ class PeriodMatcherAbs(Matcher, metaclass=ABCMeta):
         self.target = self.bs.periods
         self.tars_by_index = self.target.by_idx_value_at(self.tars_idx)
 
+    def find_or_create_by_date_val(self, date_val: dt.date):
+        if tar := self.find_by_date_val(date_val):
+            return tar
+        return self.create_by_date_val(date_val)
+
     def find_by_date_val(self, date_val: dt.date):
         date_handler = DateHandler(date_val)
         tar_idx_val = date_handler.strf_year_and_week()
@@ -87,17 +92,15 @@ class PeriodMatcherType1(PeriodMatcherAbs):
     def execute(self):
         for domain in self.domains:
             for dom in domain:
-                if dom.props.read_at(self.doms_tar):
-                    continue
-                tar = self.determine_tar(dom)
-                overwrite_prop(dom, self.doms_tar, tar.block_id)
+                if tar := self.determine_tar(dom):
+                    overwrite_prop(dom, self.doms_tar, tar.block_id)
 
     def determine_tar(self, dom: editors.PageRow):
+        if dom.props.read_at(self.doms_tar):
+            return None
         dom_idx: DateFormat = dom.props.read_at(self.doms_date_val)
-        date_val = dom_idx.start
-        if tar := self.find_by_date_val(date_val):
-            return tar
-        return self.create_by_date_val(date_val)
+        date_val = dom_idx.start_date
+        return self.find_or_create_by_date_val(date_val)
 
 
 class PeriodMatcherType2(PeriodMatcherAbs):
@@ -114,12 +117,12 @@ class PeriodMatcherType2(PeriodMatcherAbs):
     def execute(self):
         for domain in self.domains:
             for dom in domain:
-                if dom.props.read_at(self.doms_tar):
-                    continue
                 if tar := self.determine_tar(dom):
                     overwrite_prop(dom, self.doms_tar, tar.block_id)
 
     def determine_tar(self, dom: editors.PageRow):
+        if dom.props.read_at(self.doms_tar):
+            return None
         if ref := fetch_unique_page_from_relation(dom, self.reference, self.to_ref):
             if tar := fetch_unique_page_from_relation(ref, self.target, self.doms_tar):
                 return tar
@@ -139,12 +142,12 @@ class PeriodMatcherType3(PeriodMatcherAbs):
     def execute(self):
         for domain in self.domains:
             for dom in domain:
-                if dom.props.read_at(self.doms_tar):
-                    continue
                 if tar := self.determine_tar(dom):
                     overwrite_prop(dom, self.doms_tar, tar.block_id)
 
     def determine_tar(self, dom: editors.PageRow):
+        if dom.props.read_at(self.doms_tar):
+            return None
         if ref := fetch_unique_page_from_relation(dom, self.reference, self.doms_ref):
             if tar := fetch_unique_page_from_relation(
                     ref, self.target, self.refs_tar):
