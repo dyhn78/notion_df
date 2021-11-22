@@ -28,6 +28,8 @@ class PeriodMatcherAbs(Matcher, metaclass=ABCMeta):
         return self.create_by_date_val(date_val)
 
     def find_by_date_val(self, date_val: dt.date):
+        if not date_val:
+            return None
         date_handler = DateHandler(date_val)
         tar_idx_val = date_handler.strf_year_and_week()
         if tar := self.tars_by_index.get(tar_idx_val):
@@ -38,6 +40,8 @@ class PeriodMatcherAbs(Matcher, metaclass=ABCMeta):
         return None
 
     def create_by_date_val(self, date_val: dt.date):
+        if not date_val:
+            return None
         tar = self.target.create_page()
         date_handler = DateHandler(date_val)
 

@@ -83,6 +83,8 @@ class MatchFrames:
             _to_periods, _to_dates,
             Cl(tag='to_scheduled_periods', key='📈기간'),
             Cl(tag='to_scheduled_dates', key='📈날짜'),
+            Cl(tag='gcal_status', key='🏁Gcal'),
+            Cl(tag='gcal_link', key='📚Gcal'),
         ]
     )
 
