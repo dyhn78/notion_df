@@ -1,0 +1,3 @@
+<component name="DependencyValidationManager">
+  <scope name="모두 보기" pattern="file[Notion-py]:*/" />
+</component>
