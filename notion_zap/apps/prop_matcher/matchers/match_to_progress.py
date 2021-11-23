@@ -37,7 +37,8 @@ class ProgressMatcherType2(Matcher):
         for dom in self.domain:
             for to_tar in self.to_tars:
                 dom_date: DateFormat = dom.props.read_at('manual_date')
-                if dom_date.start_date > dt.date.today():
+                if (not dom_date.start_date
+                        or dom_date.start_date > dt.date.today()):
                     continue
                 if tar_ids := self.determine_tar_ids(dom, to_tar):
                     append_prop(dom, to_tar, tar_ids)

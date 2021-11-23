@@ -59,6 +59,9 @@ class DateMatcherAbs(Matcher, metaclass=ABCMeta):
         if tar_idx_val is None:
             tar_idx_val = tar.props.read_at(self.tars_idx)
         date_handler = DateHandler.from_strf_dig6(tar_idx_val)
+        new_tar_idx_val = date_handler.strf_dig6_and_weekday()
+        if tar_idx_val != new_tar_idx_val:
+            tar.props.write_date_at(self.tars_idx, new_tar_idx_val)
         date_range = DateFormat(date_handler.date)
         if date_range != tar.props.read_at(self.tars_date_val):
             self.bs.root.disable_overwrite = disable_overwrite

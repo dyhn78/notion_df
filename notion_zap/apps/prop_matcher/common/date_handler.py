@@ -31,7 +31,7 @@ class DateHandler:
         return f'{self.date.strftime("%y%m%d")} {dayname}'
 
     def strf_year_and_week(self):
-        """예) 21"""
+        """예) 2021년 47주: 1121-1126"""
         return (self.date.strftime("%Y년 %U주: ") +
                 self.first_day_of_week().strftime("%m%d-") +
                 self.last_day_of_week().strftime("%m%d"))
