@@ -1,7 +1,7 @@
 from typing import Optional
 
 from notion_zap.cli.gateway import encoders
-from notion_zap.cli.struct.base_classes import ValueCarrier
+from notion_zap.cli.struct.base_logic import ValueCarrier
 
 
 class BlockChildrenStash(ValueCarrier):

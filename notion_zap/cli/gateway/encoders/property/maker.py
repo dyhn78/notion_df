@@ -4,7 +4,7 @@ from abc import ABCMeta, abstractmethod
 
 from notion_zap.cli.struct import DateFormat
 from ..rich_text import RichTextObjectEncoder
-from notion_zap.cli.struct.base_classes import ValueCarrier
+from notion_zap.cli.struct.base_logic import ValueCarrier
 
 
 class PropertyEncoder(ValueCarrier, metaclass=ABCMeta):

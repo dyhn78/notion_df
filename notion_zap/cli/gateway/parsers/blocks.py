@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from .rich_text import parse_rich_texts
-from notion_zap.cli.struct.base_classes import Printable
+from notion_zap.cli.struct.base_logic import Printable
 from notion_zap.cli.struct.block_types import (
     PAGE_TYPES, TEXT_TYPES, CAN_HAVE_CHILDREN, SUPPORTED, UNSUPPORTED
 )

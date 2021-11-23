@@ -1,6 +1,6 @@
 from abc import ABCMeta
 
-from notion_zap.cli.struct.base_classes import ValueCarrier
+from notion_zap.cli.struct.base_logic import ValueCarrier
 from ...struct import DateFormat
 
 

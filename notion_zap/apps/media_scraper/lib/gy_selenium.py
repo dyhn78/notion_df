@@ -5,9 +5,8 @@ from typing import Optional
 from selenium.common.exceptions import StaleElementReferenceException, \
     NoSuchElementException
 
-from notion_zap.apps.media_scraper.common.helpers import try_method_twice, \
-    remove_emoji
-from notion_zap.apps.media_scraper.common.selenium import SeleniumScraper
+from ..common.helpers import try_method_twice, remove_emoji
+from ...externals.selenium import SeleniumScraper
 
 
 class GoyangLibrary(SeleniumScraper):
