@@ -1,5 +1,6 @@
 from __future__ import print_function
 import os.path
+from abc import ABCMeta
 
 import googleapiclient
 from googleapiclient.discovery import build
@@ -7,11 +8,14 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 
+from notion_zap.cli.struct.base_logic import ValueCarrier, Executable
+
 # If modifying these scopes, delete the file token.json.
-SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
+#  https://developers.google.com/calendar/api/guides/auth
+SCOPES = ['https://www.googleapis.com/auth/calendar']
 
 
-def open_gcal() -> googleapiclient.discovery.Resource:
+def open_gcal_service() -> googleapiclient.discovery.Resource:
     """Shows basic usage of the Google Calendar API.
     Prints the start and name of the next 10 events on the user's calendar.
     """
@@ -37,5 +41,13 @@ def open_gcal() -> googleapiclient.discovery.Resource:
     return service
 
 
+class GcalEditor(ValueCarrier, Executable, metaclass=ABCMeta):
+    def __init__(self):
+        self.service = open_gcal_service()
+
+    def __bool__(self):
+        return True
+
+
 if __name__ == '__main__':
-    open_gcal()
+    open_gcal_service()

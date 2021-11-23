@@ -90,7 +90,9 @@ class PageParser:
         if type(prop_object) != str:
             raise ValueError
         start = prop_object[:-1]
-        return DateFormat.from_isoformat(start)
+        # notion api returns auto-datetime
+        #  with timezone of utc WITHOUT explicit timezone info.
+        return DateFormat.from_utc_isoformat(start)
 
     @staticmethod
     def _parse_manual_date(prop_object):

@@ -2,13 +2,13 @@ from abc import ABCMeta
 
 from notion_zap.cli import editors
 from ..common.struct import Matcher
-from notion_zap.apps.externals.gcal.open_gcal import open_gcal
+from notion_zap.apps.externals.gcal.open_gcal import open_gcal_service
 
 
 class GcalMatcherAbs(Matcher, metaclass=ABCMeta):
     def __init__(self, bs):
         super().__init__(bs)
-        self.gcal = open_gcal()
+        self.gcal = open_gcal_service()
 
     def write_gcal_event(self):
         self.gcal.events()

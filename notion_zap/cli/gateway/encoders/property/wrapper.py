@@ -52,7 +52,7 @@ class PageRowPropertybyName(ABC):
         return writer
 
     def write_date(self, prop_key: str, value: Union[DateFormat, datetime, date]):
-        cleaned_value = DateFormat.to_daterange(value)
+        cleaned_value = DateFormat.from_date_val(value)
         carrier = SimplePropertyEncoder.date(prop_key, cleaned_value)
         return self.push_carrier(prop_key, carrier)
 
