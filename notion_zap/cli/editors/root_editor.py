@@ -37,6 +37,10 @@ class RootEditor(Editor):
             emptylike_strings = ['', '.', '-', '0', '1', 'None', 'False', '[]', '{}']
         self.emptylike_strings = emptylike_strings
 
+    @property
+    def token(self):
+        return os.environ['NOTION_TOKEN'].strip("'").strip('"')
+
     def is_emptylike(self, value):
         return str(value) in self.emptylike_strings
 
@@ -102,7 +106,3 @@ class RootEditor(Editor):
         editor = TextItem(self, block_id)
         self._top_editors.append(editor)
         return editor
-
-    @property
-    def token(self):
-        return os.environ['NOTION_TOKEN'].strip("'").strip('"')

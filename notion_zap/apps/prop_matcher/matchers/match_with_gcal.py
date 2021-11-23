@@ -2,7 +2,7 @@ from abc import ABCMeta
 
 from notion_zap.cli import editors
 from ..common.struct import Matcher
-from ..gcal.open_gcal import open_gcal
+from notion_zap.apps.externals.gcal.open_gcal import open_gcal
 
 
 class GcalMatcherAbs(Matcher, metaclass=ABCMeta):

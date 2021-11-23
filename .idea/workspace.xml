@@ -1,81 +1,53 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="AnalysisUIOptions">
-    <option name="GROUP_BY_SEVERITY" value="true" />
-  </component>
   <component name="ChangeListManager">
-    <list default="true" id="620c4a01-5f58-49ef-a421-f45c53b9d9e6" name="새 변경 목록" comment="env 파일">
-      <change beforePath="$PROJECT_DIR$/notion_zap/cli/config/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/cli/config/__init__.py" afterDir="false" />
+    <list default="true" id="14c8b388-cc79-445d-809f-101f19e0e6e5" name="변경" comment="">
+      <change afterPath="$PROJECT_DIR$/notion_zap/apps/routines/windows_scheduler.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/terminal.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/Notion-py.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Notion-py.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/codeStyles/codeStyleConfig.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/encodings.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/scopes/editor.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_zap/apps/chromedriver.exe" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_zap/apps/media_scraper/common/selenium.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_zap/apps/media_scraper/lib/gy_selenium.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/apps/media_scraper/lib/gy_selenium.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_zap/apps/media_scraper/lib/lib_endpoint.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/apps/media_scraper/lib/lib_endpoint.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_zap/apps/media_scraper/lib/snu_selenium.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/apps/media_scraper/lib/snu_selenium.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_zap/apps/prop_matcher/gcal/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_zap/apps/prop_matcher/gcal/create_events.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_zap/apps/prop_matcher/gcal/credentials.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_zap/apps/prop_matcher/gcal/open_gcal.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_zap/apps/prop_matcher/gcal/quickstart.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_zap/apps/prop_matcher/gcal/sample.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_zap/apps/prop_matcher/gcal/token.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_zap/apps/prop_matcher/matchers/match_with_gcal.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/apps/prop_matcher/matchers/match_with_gcal.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_zap/cli/editors/root_editor.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/cli/editors/root_editor.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_zap/cli/gateway/encoders/contents/maker.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/cli/gateway/encoders/contents/maker.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_zap/cli/gateway/encoders/property/maker.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/cli/gateway/encoders/property/maker.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_zap/cli/gateway/encoders/rich_text.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/cli/gateway/encoders/rich_text.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_zap/cli/gateway/parsers/blocks.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/cli/gateway/parsers/blocks.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_zap/cli/gateway/requestors/base.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/cli/gateway/requestors/base.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_zap/cli/gateway/requestors/query/filter_struct.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/cli/gateway/requestors/query/filter_struct.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_zap/cli/gateway/requestors/save/stash.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/cli/gateway/requestors/save/stash.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notion_zap/cli/struct/base_classes.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/terminal_main.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/terminal_manual.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/terminal_test.py" beforeDir="false" />
     </list>
-    <list id="2a8a7209-1ffb-43f2-969c-0ddf95281e08" name="무시" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="ChangesViewManager" show_ignored="true" />
-  <component name="FileTemplateManagerImpl">
-    <option name="RECENT_TEMPLATES">
-      <list>
-        <option value="Python Stub" />
-        <option value="Python Script" />
-      </list>
-    </option>
-  </component>
-  <component name="Git.Rebase.Settings">
-    <option name="NEW_BASE" value="origin/main" />
-  </component>
   <component name="Git.Settings">
-    <favorite-branches>
-      <branch-storage>
-        <map>
-          <entry type="LOCAL">
-            <value>
-              <list>
-                <branch-info repo="$PROJECT_DIR$" source="main" />
-              </list>
-            </value>
-          </entry>
-        </map>
-      </branch-storage>
-    </favorite-branches>
-    <option name="PUSH_AUTO_UPDATE" value="true" />
-    <option name="RECENT_BRANCH_BY_REPOSITORY">
-      <map>
-        <entry key="$PROJECT_DIR$" value="main" />
-      </map>
-    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
-    <option name="RESET_MODE" value="HARD" />
   </component>
-  <component name="GitSEFilterConfiguration">
-    <file-type-list>
-      <filtered-out-file-type name="LOCAL_BRANCH" />
-      <filtered-out-file-type name="REMOTE_BRANCH" />
-      <filtered-out-file-type name="TAG" />
-      <filtered-out-file-type name="COMMIT_BY_MESSAGE" />
-    </file-type-list>
-  </component>
-  <component name="HighlightingSettingsPerFile">
-    <setting file="file://$PROJECT_DIR$/../venv/Lib/site-packages/notion_client/client.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$USER_HOME$/AppData/Local/Programs/Python/Python39/Lib/json/encoder.py" root0="SKIP_INSPECTION" />
-    <setting file="file://$USER_HOME$/AppData/Local/Programs/Python/Python39/Lib/site-packages/notion_client/client.py" root0="FORCE_HIGHLIGHTING" />
-  </component>
-  <component name="NamedScopeManager">
-    <scope name="editor" pattern="file[Notion-py]:notion_py/interface/editor/*||file[Notion-py]:notion_py/interface/editor//*" />
-    <order>
-      <scope name="editor" />
-    </order>
-  </component>
-  <component name="ProblemsViewState">
-    <hideBySeverity>
-      <option value="15" />
-    </hideBySeverity>
-  </component>
-  <component name="ProjectId" id="1u3aBpl0esiLDIYwdfd7vlaKHwg" />
-  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
-    <ConfirmationsSetting value="2" id="Add" />
-  </component>
+  <component name="ProjectId" id="21J6XgwrIgJm4qbVq9TbwAmROdl" />
   <component name="ProjectViewState">
     <option name="compactDirectories" value="true" />
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -83,568 +55,22 @@
     <option name="showMembers" value="true" />
   </component>
   <component name="PropertiesComponent">
-    <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
-    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
-    <property name="TODO_SCOPE" value="모든 위치" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/notion_py/interface/editor/tabular/pagelist.py" />
-    <property name="run.code.analysis.last.selected.profile" value="aDefault" />
-    <property name="settings.editor.selected.configurable" value="project.scopes" />
-  </component>
-  <component name="ReaderModeSettings">
-    <option name="enabled" value="false" />
-  </component>
-  <component name="RecentsManager">
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="C:\Users\윤영훈\Documents\Workspace\Notion-py\notion_py\interface\edit" />
-      <recent name="C:\Users\윤영훈\Documents\Workspace\Notion-py\notion_py\interface\frame" />
-      <recent name="C:\Users\윤영훈\Documents\Workspace\Notion-py\notion_py\gateway" />
-      <recent name="C:\Users\윤영훈\Documents\Workspace\Notion-py\notion_py\interface" />
-    </key>
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="C:\Users\윤영훈\Documents\Workspace\Notion-py\notion_zap\cli\gateway" />
-      <recent name="C:\Users\윤영훈\Documents\Workspace\Notion-py\notion_zap\cli\struct" />
-      <recent name="C:\Users\윤영훈\Documents\Workspace\Notion-py\notion_zap\applications\config" />
-      <recent name="C:\Users\윤영훈\Documents\Workspace\Notion-py\notion_zap\interface\types" />
-      <recent name="C:\Users\윤영훈\Documents\Workspace\Notion-py\notion_zap\interface\struct" />
-    </key>
-  </component>
-  <component name="RunManager" selected="Python.terminal_main">
-    <configuration name="requestor_struct" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="Notion-py" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/notion_py/interface/struct" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="C:\Users\윤영훈\Documents\Workspace\Notion-py\notion_py\interface\requestor\requestor_struct.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="terminal" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
-      <module name="Notion-py" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="net.ashald.envfile">
-        <option name="IS_ENABLED" value="true" />
-        <option name="IS_SUBST" value="false" />
-        <option name="IS_PATH_MACRO_SUPPORTED" value="false" />
-        <option name="IS_IGNORE_MISSING_FILES" value="false" />
-        <option name="IS_ENABLE_EXPERIMENTAL_INTEGRATIONS" value="false" />
-        <ENTRIES>
-          <ENTRY IS_ENABLED="true" PARSER="runconfig" />
-          <ENTRY IS_ENABLED="true" PARSER="env" PATH=".env" />
-        </ENTRIES>
-      </EXTENSION>
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/terminal.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="terminal_main" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="Notion-py" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/terminal_main.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="terminal_test (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="Notion-py" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/terminal_test.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="terminal_test" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="Notion-py" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="C:\Users\윤영훈\Documents\Workspace\Notion-py\terminal_test.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="terminal_test" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="Notion-zap" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="C:\Users\윤영훈\Documents\Workspace\Notion-py\terminal_test.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="terminal_test" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="Notion-zap" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="C:\Users\윤영훈\Documents\Workspace\Notion-py\terminal_test.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <list>
-      <item itemvalue="Python.terminal" />
-      <item itemvalue="Python.requestor_struct" />
-      <item itemvalue="Python.terminal_main" />
-      <item itemvalue="Python.terminal_test (1)" />
-      <item itemvalue="Python.terminal_test" />
-    </list>
-    <recent_temporary>
-      <list>
-        <item itemvalue="Python.terminal_main" />
-        <item itemvalue="Python.terminal_test" />
-        <item itemvalue="Python.terminal_test (1)" />
-        <item itemvalue="Python.terminal_test" />
-        <item itemvalue="Python.requestor_struct" />
-      </list>
-    </recent_temporary>
+    <property name="add_unversioned_files" value="$PROJECT_DIR$/notion_zap/cli/notion_token.env" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../Notion-py-venv" />
+    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="애플리케이션 수준" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
-    <task id="Default" summary="디폴트 작업">
-      <changelist id="2a8a7209-1ffb-43f2-969c-0ddf95281e08" name="디폴트 변경 목록" comment="일지-&gt;진도-&gt;날짜-&gt;기간 성공" />
-      <created>1623896594872</created>
+    <task active="true" id="Default" summary="디폴트 작업">
+      <changelist id="14c8b388-cc79-445d-809f-101f19e0e6e5" name="변경" comment="" />
+      <created>1637646887999</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1626501912911</updated>
+      <updated>1637646887999</updated>
     </task>
-    <task id="LOCAL-00017" summary="새 변경 목록">
-      <created>1625850976691</created>
-      <option name="number" value="00017" />
-      <option name="presentableId" value="LOCAL-00017" />
-      <option name="project" value="LOCAL" />
-      <updated>1626501790788</updated>
-    </task>
-    <task id="LOCAL-00030" summary="Read Scraper 완료">
-      <created>1626351358926</created>
-      <option name="number" value="00030" />
-      <option name="presentableId" value="LOCAL-00030" />
-      <option name="project" value="LOCAL" />
-      <updated>1626351358926</updated>
-    </task>
-    <task id="LOCAL-00031" summary="Read Scraper 완료">
-      <created>1626355610339</created>
-      <option name="number" value="00031" />
-      <option name="presentableId" value="LOCAL-00031" />
-      <option name="project" value="LOCAL" />
-      <updated>1626355610339</updated>
-    </task>
-    <task id="LOCAL-00032" summary="Read Scraper 완료">
-      <created>1626407510600</created>
-      <option name="number" value="00032" />
-      <option name="presentableId" value="LOCAL-00032" />
-      <option name="project" value="LOCAL" />
-      <updated>1626407510600</updated>
-    </task>
-    <task id="LOCAL-00033" summary="Read Scraper 완료">
-      <created>1626407804463</created>
-      <option name="number" value="00033" />
-      <option name="presentableId" value="LOCAL-00033" />
-      <option name="project" value="LOCAL" />
-      <updated>1626407804463</updated>
-    </task>
-    <task active="true" id="LOCAL-00034" summary="새 변경 목록">
-      <changelist id="620c4a01-5f58-49ef-a421-f45c53b9d9e6" name="새 변경 목록" comment="" />
-      <created>1626501790741</created>
-      <option name="number" value="00034" />
-      <option name="presentableId" value="LOCAL-00034" />
-      <option name="project" value="LOCAL" />
-      <updated>1626501912911</updated>
-    </task>
-    <task id="LOCAL-00035" summary="env 파일">
-      <created>1626501819162</created>
-      <option name="number" value="00035" />
-      <option name="presentableId" value="LOCAL-00035" />
-      <option name="project" value="LOCAL" />
-      <updated>1626501819162</updated>
-    </task>
-    <task id="LOCAL-00036" summary="env 파일">
-      <created>1626502613347</created>
-      <option name="number" value="00036" />
-      <option name="presentableId" value="LOCAL-00036" />
-      <option name="project" value="LOCAL" />
-      <updated>1626502613347</updated>
-    </task>
-    <task id="LOCAL-00037" summary="env 파일">
-      <created>1626502635638</created>
-      <option name="number" value="00037" />
-      <option name="presentableId" value="LOCAL-00037" />
-      <option name="project" value="LOCAL" />
-      <updated>1626502635638</updated>
-    </task>
-    <task id="LOCAL-00038" summary="gy_lib가 실패해도 '고양시 상호대차'를 반환했던 오류 수정.">
-      <created>1627027936214</created>
-      <option name="number" value="00038" />
-      <option name="presentableId" value="LOCAL-00038" />
-      <option name="project" value="LOCAL" />
-      <updated>1627027936214</updated>
-    </task>
-    <task id="LOCAL-00039" summary="retry_request 데코레이터 오류 수정 (execute_once에서 self를 바보같이 두 번씩 호출하고 있었다)">
-      <created>1627032032390</created>
-      <option name="number" value="00039" />
-      <option name="presentableId" value="LOCAL-00039" />
-      <option name="project" value="LOCAL" />
-      <updated>1627032032390</updated>
-    </task>
-    <task id="LOCAL-00040" summary="lib_snu를 셀레늄으로 다시 짜기">
-      <created>1627039675904</created>
-      <option name="number" value="00040" />
-      <option name="presentableId" value="LOCAL-00040" />
-      <option name="project" value="LOCAL" />
-      <updated>1627039675904</updated>
-    </task>
-    <task id="LOCAL-00041" summary="lib_snu를 셀레늄으로 다시 짜기">
-      <created>1627040924253</created>
-      <option name="number" value="00041" />
-      <option name="presentableId" value="LOCAL-00041" />
-      <option name="project" value="LOCAL" />
-      <updated>1627040924253</updated>
-    </task>
-    <task id="LOCAL-00042" summary="버그픽스">
-      <created>1627110238839</created>
-      <option name="number" value="00042" />
-      <option name="presentableId" value="LOCAL-00042" />
-      <option name="project" value="LOCAL" />
-      <updated>1627110238839</updated>
-    </task>
-    <task id="LOCAL-00043" summary="버그픽스">
-      <created>1627111195379</created>
-      <option name="number" value="00043" />
-      <option name="presentableId" value="LOCAL-00043" />
-      <option name="project" value="LOCAL" />
-      <updated>1627111195380</updated>
-    </task>
-    <task id="LOCAL-00044" summary="driver.quit 명시적으로 추가">
-      <created>1627436738125</created>
-      <option name="number" value="00044" />
-      <option name="presentableId" value="LOCAL-00044" />
-      <option name="project" value="LOCAL" />
-      <updated>1627436738125</updated>
-    </task>
-    <task id="LOCAL-00045" summary="메모 추가; endpoint.py 클래스 기반 리팩토링">
-      <created>1627984052070</created>
-      <option name="number" value="00045" />
-      <option name="presentableId" value="LOCAL-00045" />
-      <option name="project" value="LOCAL" />
-      <updated>1627984052070</updated>
-    </task>
-    <task id="LOCAL-00046" summary="draw_graph">
-      <created>1628311946157</created>
-      <option name="number" value="00046" />
-      <option name="presentableId" value="LOCAL-00046" />
-      <option name="project" value="LOCAL" />
-      <updated>1628311946157</updated>
-    </task>
-    <task id="LOCAL-00047" summary="PageParser, PageListParser, TabularPage 등 백업한 뒤 복사본 위에서 새로 만들기 시작">
-      <created>1629194393548</created>
-      <option name="number" value="00047" />
-      <option name="presentableId" value="LOCAL-00047" />
-      <option name="project" value="LOCAL" />
-      <updated>1629194393548</updated>
-    </task>
-    <task id="LOCAL-00048" summary="- &lt;TabularPage&gt;: PropertyAgent 와 Editor 사이의 딜레마 적당히 해결&#10;- &lt;PageList&gt;: deprecated 대체할 준비 거의 다 됨&#10;- &lt;ChildrenParser&gt;: 사전작업만 하려다 보니 반쯤 끝냄&#10;- &lt;DatabaseFrame 및 PropertyFrame&gt;: deprecated 처리하고 다시 만들기&#10;- DateFormat 클래스를 만들어 날짜 정보를 읽고 쓰는 유일한 인터페이스로 지정함&#10;- Requestor 에 bool 값 추가">
-      <created>1629275848702</created>
-      <option name="number" value="00048" />
-      <option name="presentableId" value="LOCAL-00048" />
-      <option name="project" value="LOCAL" />
-      <updated>1629275848702</updated>
-    </task>
-    <task id="LOCAL-00049" summary="- &lt;TabularPageProps&gt;: 완성&#10;- &lt;BlockChildren&gt;: TabularPageProps 보면서 똑같이 따라하는 중. 시도에 비해 성과가 (굉장히 간만에) 잘 나오고 있다. &#10;- &lt;DatabaseFrame 및 PropertyFrame&gt;: 다시 만들기 끝. 구버전 처리는 조금 나중에.">
-      <created>1629280302997</created>
-      <option name="number" value="00049" />
-      <option name="presentableId" value="LOCAL-00049" />
-      <option name="project" value="LOCAL" />
-      <updated>1629280302997</updated>
-    </task>
-    <task id="LOCAL-00050" summary="폴더링">
-      <created>1629886626640</created>
-      <option name="number" value="00050" />
-      <option name="presentableId" value="LOCAL-00050" />
-      <option name="project" value="LOCAL" />
-      <updated>1629886626640</updated>
-    </task>
-    <task id="LOCAL-00051" summary="- Query.unpack(), QueryFilterMaker&#10;- UpdateBlock, RetrieveBlock">
-      <created>1629945292418</created>
-      <option name="number" value="00051" />
-      <option name="presentableId" value="LOCAL-00051" />
-      <option name="project" value="LOCAL" />
-      <updated>1629945292418</updated>
-    </task>
-    <task id="LOCAL-00052" summary="Abstractmethod 구현하지 않은 문제 수정">
-      <created>1629945541466</created>
-      <option name="number" value="00052" />
-      <option name="presentableId" value="LOCAL-00052" />
-      <option name="project" value="LOCAL" />
-      <updated>1629945541466</updated>
-    </task>
-    <task id="LOCAL-00053" summary=".">
-      <created>1630932667639</created>
-      <option name="number" value="00053" />
-      <option name="presentableId" value="LOCAL-00053" />
-      <option name="project" value="LOCAL" />
-      <updated>1630932667639</updated>
-    </task>
-    <task id="LOCAL-00054" summary="type hinting redundancy 수정">
-      <created>1630996612260</created>
-      <option name="number" value="00054" />
-      <option name="presentableId" value="LOCAL-00054" />
-      <option name="project" value="LOCAL" />
-      <updated>1630996612260</updated>
-    </task>
-    <task id="LOCAL-00055" summary="디버깅&#10;* PageParser 가 공식 DateFormat 이 아니라 dict[datetime]을 뱉는 것 수정.&#10;* ArchiveToggle 이 None 값이면 unpack에 반영 안 되게 수정.">
-      <created>1631011031492</created>
-      <option name="number" value="00055" />
-      <option name="presentableId" value="LOCAL-00055" />
-      <option name="project" value="LOCAL" />
-      <updated>1631011031494</updated>
-    </task>
-    <task id="LOCAL-00056" summary="디버깅&#10;* DateFormat 에 __str__ 추가.">
-      <created>1631011625876</created>
-      <option name="number" value="00056" />
-      <option name="presentableId" value="LOCAL-00056" />
-      <option name="project" value="LOCAL" />
-      <updated>1631011625878</updated>
-    </task>
-    <task id="LOCAL-00057" summary="media_scraper 폴더링">
-      <created>1631688281024</created>
-      <option name="number" value="00057" />
-      <option name="presentableId" value="LOCAL-00057" />
-      <option name="project" value="LOCAL" />
-      <updated>1631688281024</updated>
-    </task>
-    <task id="LOCAL-00058" summary="media_scraper 폴더링">
-      <created>1631688310194</created>
-      <option name="number" value="00058" />
-      <option name="presentableId" value="LOCAL-00058" />
-      <option name="project" value="LOCAL" />
-      <updated>1631688310194</updated>
-    </task>
-    <task id="LOCAL-00059" summary="match_to_projects 디버깅">
-      <created>1631690433117</created>
-      <option name="number" value="00059" />
-      <option name="presentableId" value="LOCAL-00059" />
-      <option name="project" value="LOCAL" />
-      <updated>1631690433117</updated>
-    </task>
-    <task id="LOCAL-00060" summary="sphere, elements 등 속성값 수정">
-      <created>1632299322590</created>
-      <option name="number" value="00060" />
-      <option name="presentableId" value="LOCAL-00060" />
-      <option name="project" value="LOCAL" />
-      <updated>1632299322592</updated>
-    </task>
-    <task id="LOCAL-00061" summary="# editor&#10;API create_inline_page 오류 수정&#10;editor 패키지 새로 폴더링: 추상&lt;-&gt;구체로 먼저 나누고, 상속 관계에 따라 세분 &#10;&#10;# prop_matcher&#10;일지-진도 합병 반영&#10;&#10;# media_scraper&#10;remove_duplicate 유닛 추가&#10;append_contents 별도의 클래스로 분리해 보강">
-      <created>1632401061097</created>
-      <option name="number" value="00061" />
-      <option name="presentableId" value="LOCAL-00061" />
-      <option name="project" value="LOCAL" />
-      <updated>1632401061101</updated>
-    </task>
-    <task id="LOCAL-00062" summary=".">
-      <created>1632472585274</created>
-      <option name="number" value="00062" />
-      <option name="presentableId" value="LOCAL-00062" />
-      <option name="project" value="LOCAL" />
-      <updated>1632472585274</updated>
-    </task>
-    <task id="LOCAL-00063" summary=".">
-      <created>1633865371003</created>
-      <option name="number" value="00063" />
-      <option name="presentableId" value="LOCAL-00063" />
-      <option name="project" value="LOCAL" />
-      <updated>1633865371003</updated>
-    </task>
-    <task id="LOCAL-00064" summary=".">
-      <created>1633952759434</created>
-      <option name="number" value="00064" />
-      <option name="presentableId" value="LOCAL-00064" />
-      <option name="project" value="LOCAL" />
-      <updated>1633952759434</updated>
-    </task>
-    <task id="LOCAL-00065" summary="unit_scraper (LibraryScraper, BkstScraper) flag -&gt; error 로 바꾸기">
-      <created>1634819492795</created>
-      <option name="number" value="00065" />
-      <option name="presentableId" value="LOCAL-00065" />
-      <option name="project" value="LOCAL" />
-      <updated>1634819492796</updated>
-    </task>
-    <task id="LOCAL-00066" summary=".">
-      <created>1635067099673</created>
-      <option name="number" value="00066" />
-      <option name="presentableId" value="LOCAL-00066" />
-      <option name="project" value="LOCAL" />
-      <updated>1635067099673</updated>
-    </task>
-    <task id="LOCAL-00067" summary="1. editor 새로 폴더링: .common 패키지에 다 모으다.&#10;2. PEP 자동 적용">
-      <created>1635688287034</created>
-      <option name="number" value="00067" />
-      <option name="presentableId" value="LOCAL-00067" />
-      <option name="project" value="LOCAL" />
-      <updated>1635688287034</updated>
-    </task>
-    <task id="LOCAL-00068" summary=".">
-      <created>1635688311416</created>
-      <option name="number" value="00068" />
-      <option name="presentableId" value="LOCAL-00068" />
-      <option name="project" value="LOCAL" />
-      <updated>1635688311416</updated>
-    </task>
-    <task id="LOCAL-00069" summary="* 커스텀 예외 클래스 (최초로) 정의&#10;* with_children_and_contents 분리. apply_block_parser 메소드가 훨씬 깔끔해짐(isinstance 를 부르지 않아도 됨)&#10;* 다음을 PayloadEditor 로 이관하고 퍼블릭 세터 삭제(만약 있었다면):&#10;&#9;* yet_not_created&#10;&#9;* can_have_children&#10;&#9;* has_children&#10;&#9;* block_id&#10;&#9;* contents&#10;&#9;* requestor&#10;* can_have_children 이 False 이면 item_creator 가 에러 띄우도록 강제">
-      <created>1635946696468</created>
-      <option name="number" value="00069" />
-      <option name="presentableId" value="LOCAL-00069" />
-      <option name="project" value="LOCAL" />
-      <updated>1635946696484</updated>
-    </task>
-    <task id="LOCAL-00070" summary="* prop_matcher: controller 에 wiring 빼먹음">
-      <created>1635947501231</created>
-      <option name="number" value="00070" />
-      <option name="presentableId" value="LOCAL-00070" />
-      <option name="project" value="LOCAL" />
-      <updated>1635947501239</updated>
-    </task>
-    <task id="LOCAL-00071" summary="* BlockChildren 에 Block 결합(attach)하는 과정을 자식 클래스에서 호출하도록 설정.&#10;* 이는 커스텀 클래스 사용을 위한 사전준비( MyPageList(PageList), MyPageRow(PageRow) 등등).&#10;* 부모 클래스를 건드리지 않고 &quot;__init__(caller=root_editor)&quot; 만으로 커스텀 자식 클래스의 __init__이 가능해야 하기 때문임.">
-      <created>1636026687986</created>
-      <option name="number" value="00071" />
-      <option name="presentableId" value="LOCAL-00071" />
-      <option name="project" value="LOCAL" />
-      <updated>1636026687993</updated>
-    </task>
-    <task id="LOCAL-00072" summary="* eval_empty 가 None 값을 Truthy 로 인식하는 오류 수정&#10;* status_finalized 추가: set_lib_missing 이 set_url_missing 가리지 않도록.">
-      <created>1636027504873</created>
-      <option name="number" value="00072" />
-      <option name="presentableId" value="LOCAL-00072" />
-      <option name="project" value="LOCAL" />
-      <updated>1636027504873</updated>
-    </task>
-    <task id="LOCAL-00073" summary="* Root.exclude_archived (전역 옵션) 추가&#10;* QueryWithCallback.execute 이 pages 아닌 None 값을 반환하는 오류 수정">
-      <created>1636100753203</created>
-      <option name="number" value="00073" />
-      <option name="presentableId" value="LOCAL-00073" />
-      <option name="project" value="LOCAL" />
-      <updated>1636100753203</updated>
-    </task>
-    <task id="LOCAL-00074" summary="chromedriver 다 끝나고 닫히지 않는 오류 수정">
-      <created>1636188150990</created>
-      <option name="number" value="00074" />
-      <option name="presentableId" value="LOCAL-00074" />
-      <option name="project" value="LOCAL" />
-      <updated>1636188150990</updated>
-    </task>
-    <task id="LOCAL-00075" summary="* 장고 스타일로 폴더링: &lt;editor.struct.MasterEditor&gt;, &lt;gateway.parsers.PageParser&gt; 식으로 쓸 수 있게 위계 조정.&#10;* GUI 추가 대비이기도 함.">
-      <created>1636531855279</created>
-      <option name="number" value="00075" />
-      <option name="presentableId" value="LOCAL-00075" />
-      <option name="project" value="LOCAL" />
-      <updated>1636531855279</updated>
-    </task>
-    <task id="LOCAL-00076" summary=".">
-      <created>1636532008492</created>
-      <option name="number" value="00076" />
-      <option name="presentableId" value="LOCAL-00076" />
-      <option name="project" value="LOCAL" />
-      <updated>1636532008492</updated>
-    </task>
-    <task id="LOCAL-00077" summary="config 패키지에 자주 바뀌는 상수 모으기">
-      <created>1636620478764</created>
-      <option name="number" value="00077" />
-      <option name="presentableId" value="LOCAL-00077" />
-      <option name="project" value="LOCAL" />
-      <updated>1636620478764</updated>
-    </task>
-    <option name="localTasksCounter" value="78" />
-    <option name="trackContextForNewChangelist" value="true" />
     <servers />
-  </component>
-  <component name="UnknownFeatures">
-    <option featureType="com.intellij.fileTypeFactory" implementationName="*.env" />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
     <option name="TAB_STATES">
@@ -656,47 +82,5 @@
         </entry>
       </map>
     </option>
-    <option name="oldMeFiltersMigrated" value="true" />
-  </component>
-  <component name="VcsManagerConfiguration">
-    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
-    <MESSAGE value="draw_graph" />
-    <MESSAGE value="PageParser, PageListParser, TabularPage 등 백업한 뒤 복사본 위에서 새로 만들기 시작" />
-    <MESSAGE value="- &lt;TabularPage&gt;: PropertyAgent 와 Editor 사이의 딜레마 적당히 해결&#10;- &lt;PageList&gt;: deprecated 대체할 준비 거의 다 됨&#10;- &lt;ChildrenParser&gt;: 사전작업만 하려다 보니 반쯤 끝냄&#10;- &lt;DatabaseFrame 및 PropertyFrame&gt;: deprecated 처리하고 다시 만들기&#10;- DateFormat 클래스를 만들어 날짜 정보를 읽고 쓰는 유일한 인터페이스로 지정함&#10;- Requestor 에 bool 값 추가" />
-    <MESSAGE value="- &lt;TabularPageProps&gt;: 완성&#10;- &lt;BlockChildren&gt;: TabularPageProps 보면서 똑같이 따라하는 중. 시도에 비해 성과가 (굉장히 간만에) 잘 나오고 있다. &#10;- &lt;DatabaseFrame 및 PropertyFrame&gt;: 다시 만들기 끝. 구버전 처리는 조금 나중에." />
-    <MESSAGE value="폴더링" />
-    <MESSAGE value="- Query.unpack(), QueryFilterMaker&#10;- UpdateBlock, RetrieveBlock" />
-    <MESSAGE value="Abstractmethod 구현하지 않은 문제 수정" />
-    <MESSAGE value="type hinting redundancy 수정" />
-    <MESSAGE value="디버깅&#10;* PageParser 가 공식 DateFormat 이 아니라 dict[datetime]을 뱉는 것 수정.&#10;* ArchiveToggle 이 None 값이면 unpack에 반영 안 되게 수정." />
-    <MESSAGE value="디버깅&#10;* DateFormat 에 __str__ 추가." />
-    <MESSAGE value="media_scraper 폴더링" />
-    <MESSAGE value="match_to_projects 디버깅" />
-    <MESSAGE value="sphere, elements 등 속성값 수정" />
-    <MESSAGE value="# editor&#10;API create_inline_page 오류 수정&#10;editor 패키지 새로 폴더링: 추상&lt;-&gt;구체로 먼저 나누고, 상속 관계에 따라 세분 &#10;&#10;# prop_matcher&#10;일지-진도 합병 반영&#10;&#10;# media_scraper&#10;remove_duplicate 유닛 추가&#10;append_contents 별도의 클래스로 분리해 보강" />
-    <MESSAGE value="unit_scraper (LibraryScraper, BkstScraper) flag -&gt; error 로 바꾸기" />
-    <MESSAGE value="1. editor 새로 폴더링: .common 패키지에 다 모으다.&#10;2. PEP 자동 적용" />
-    <MESSAGE value="* 커스텀 예외 클래스 (최초로) 정의&#10;* with_children_and_contents 분리. apply_block_parser 메소드가 훨씬 깔끔해짐(isinstance 를 부르지 않아도 됨)&#10;* 다음을 PayloadEditor 로 이관하고 퍼블릭 세터 삭제(만약 있었다면):&#10;&#9;* yet_not_created&#10;&#9;* can_have_children&#10;&#9;* has_children&#10;&#9;* block_id&#10;&#9;* contents&#10;&#9;* requestor&#10;* can_have_children 이 False 이면 item_creator 가 에러 띄우도록 강제" />
-    <MESSAGE value="* prop_matcher: controller 에 wiring 빼먹음" />
-    <MESSAGE value="* BlockChildren 에 Block 결합(attach)하는 과정을 자식 클래스에서 호출하도록 설정.&#10;* 이는 커스텀 클래스 사용을 위한 사전준비( MyPageList(PageList), MyPageRow(PageRow) 등등).&#10;* 부모 클래스를 건드리지 않고 &quot;__init__(caller=root_editor)&quot; 만으로 커스텀 자식 클래스의 __init__이 가능해야 하기 때문임." />
-    <MESSAGE value="* eval_empty 가 None 값을 Truthy 로 인식하는 오류 수정&#10;* status_finalized 추가: set_lib_missing 이 set_url_missing 가리지 않도록." />
-    <MESSAGE value="* Root.exclude_archived (전역 옵션) 추가&#10;* QueryWithCallback.execute 이 pages 아닌 None 값을 반환하는 오류 수정" />
-    <MESSAGE value="chromedriver 다 끝나고 닫히지 않는 오류 수정" />
-    <MESSAGE value="* 장고 스타일로 폴더링: &lt;editor.struct.MasterEditor&gt;, &lt;gateway.parsers.PageParser&gt; 식으로 쓸 수 있게 위계 조정.&#10;* GUI 추가 대비이기도 함." />
-    <MESSAGE value="." />
-    <MESSAGE value="config 패키지에 자주 바뀌는 상수 모으기" />
-    <option name="LAST_COMMIT_MESSAGE" value="config 패키지에 자주 바뀌는 상수 모으기" />
-    <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="true" />
-  </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <default-breakpoints>
-        <breakpoint type="python-exception">
-          <properties notifyOnTerminate="true" exception="BaseException">
-            <option name="notifyOnTerminate" value="true" />
-          </properties>
-        </breakpoint>
-      </default-breakpoints>
-    </breakpoint-manager>
   </component>
 </project>

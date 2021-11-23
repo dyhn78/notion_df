@@ -4,7 +4,7 @@ from notion_zap.cli.utility import stopwatch
 from .gy_selenium import GoyangLibrary
 from .snu_selenium import SNULibrary
 from ..regulars import ReadingDBScrapController, ReadingPageScrapController
-from ..common.selenium import SeleniumScraper
+from notion_zap.apps.externals.selenium import SeleniumScraper
 
 
 class LibraryScrapManager:

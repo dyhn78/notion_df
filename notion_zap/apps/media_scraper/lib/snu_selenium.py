@@ -1,8 +1,7 @@
 from urllib import parse
 
-from notion_zap.apps.media_scraper.common.helpers import try_method_twice
-from notion_zap.apps.media_scraper.common.selenium import retry_webdriver, \
-    SeleniumScraper
+from ..common.helpers import try_method_twice
+from ...externals.selenium import retry_webdriver, SeleniumScraper
 
 
 class SNULibrary(SeleniumScraper):
