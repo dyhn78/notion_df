@@ -7,6 +7,10 @@ from notion_zap.apps.config.common import DatabaseInfo
 
 
 class PropertySyncResolver:
+    tag__doms_date = 'auto_datetime'
+    tag__doms_updom = 'up_self'
+    tag__doms_downdom = 'down_self'
+
     def __init__(self, date_range=0):
         self.root = editors.RootEditor()
         self.date_range = date_range
@@ -20,11 +24,12 @@ class PropertySyncResolver:
 
     def make_query(self):
         for pagelist in [self.journals]:
-            query_within_date_range(pagelist, 'index_as_domain', self.date_range)
+            query_within_date_range(pagelist, self.tag__doms_date, self.date_range)
 
     def edit(self):
         for pagelist in [self.journals]:
-            algorithm = SyncResolveAlgorithm(pagelist, pagelist, 'down_self', 'up_self')
+            algorithm = SyncResolveAlgorithm(
+                pagelist, pagelist, self.tag__doms_downdom, self.tag__doms_updom)
             algorithm.execute()
 
 

@@ -1,16 +1,7 @@
 from notion_zap.cli import editors
 
 
-def overwrite_prop(dom, prop_tag: str, value: str):
-    old_value = dom.props.read_at(prop_tag)
-    if value == old_value:
-        return False
-    else:
-        dom.props.write_at(prop_tag, value)
-        return True
-
-
-def append_prop(dom, prop_tag: str, values: list[str]):
+def extend_prop(dom: editors.PageRow, prop_tag: str, values: list[str]):
     old_values = dom.props.read_at(prop_tag)
     changed = False
     for value in values:
@@ -26,7 +17,7 @@ def fetch_unique_page_from_relation(
         dom: editors.PageRow, target: editors.PageList, to_tar: str):
     tar_ids = dom.props.read_at(to_tar)
     for tar_id in tar_ids:
-        if tar := target.fetch_one(tar_id):
+        if tar := target.fetch(tar_id):
             return tar
     return None
 
@@ -37,19 +28,19 @@ def fetch_all_pages_from_relation(
     tar_ids = dom.props.read_at(to_tar)
     res = []
     for tar_id in tar_ids:
-        if tar := target.fetch_one(tar_id):
+        if tar := target.fetch(tar_id):
             res.append(tar)
     return res
 
 
-def query_target_by_idx(
-        target: editors.PageList, tar_idx_val, tars_idx_tag: str,
+def query_unique_page_by_idx(
+        pagelist: editors.PageList, idx, idx_tag: str,
         prop_type='text'):
-    tar_query = target.open_query()
-    maker = tar_query.filter_maker.at(tars_idx_tag, prop_type)
-    ft = maker.equals(tar_idx_val)
-    tar_query.push_filter(ft)
-    tars = tar_query.execute()
+    query = pagelist.open_query()
+    maker = query.filter_maker.at(idx_tag, prop_type)
+    ft = maker.equals(idx)
+    query.push_filter(ft)
+    tars = query.execute()
     if tars:
         return tars[0]
     return None
@@ -88,8 +79,8 @@ def query_target_by_idx(
 #
 # def find_unique_target_id_by_ref(
 #         dom: editors.PageRow, reference: editors.PageList, target: editors.PageList,
-#         to_ref: str, to_tar: str):
-#     if ref_id := fetch_unique_unarchived_id_from_relation(dom, reference, to_ref):
+#         doms_ref: str, to_tar: str):
+#     if ref_id := fetch_unique_unarchived_id_from_relation(dom, reference, doms_ref):
 #         ref = reference.by_id[ref_id]
 #         if tar_id := fetch_unique_unarchived_id_from_relation(ref, target, to_tar):
 #             return tar_id

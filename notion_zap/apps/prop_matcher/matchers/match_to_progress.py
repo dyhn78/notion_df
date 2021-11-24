@@ -3,7 +3,7 @@ import datetime as dt
 from notion_zap.cli import editors
 from notion_zap.cli.struct import DateFormat
 from ..common.struct import Matcher
-from ..common.helpers import append_prop, fetch_all_pages_from_relation
+from ..common.helpers import extend_prop, fetch_all_pages_from_relation
 
 
 class ProgressMatcherType1(Matcher):
@@ -22,7 +22,7 @@ class ProgressMatcherType1(Matcher):
                 tar_ids = []
                 for ref in refs:
                     tar_ids.extend(ref.props.read_at(to_tar))
-                append_prop(dom, to_tar, tar_ids)
+                extend_prop(dom, to_tar, tar_ids)
 
 
 class ProgressMatcherType2(Matcher):
@@ -41,7 +41,7 @@ class ProgressMatcherType2(Matcher):
                         or dom_date.start_date > dt.date.today()):
                     continue
                 if tar_ids := self.determine_tar_ids(dom, to_tar):
-                    append_prop(dom, to_tar, tar_ids)
+                    extend_prop(dom, to_tar, tar_ids)
                 if not dom.props.read_at('sync_status'):  # False
                     dom.props.write_checkbox_at('sync_status', True)
 

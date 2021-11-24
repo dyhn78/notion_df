@@ -59,3 +59,5 @@ class BlockContents(PayloadEditor, GroundEditor, metaclass=ABCMeta):
             self._set_block_id(parser.block_id)
         self._read_plain = parser.read_plain
         self._read_rich = parser.read_rich
+        self._created_time = parser.created_time
+        self._last_edited_time = parser.last_edited_time

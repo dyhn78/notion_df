@@ -19,6 +19,9 @@ class ItemsBearer(ChildrenBearer, metaclass=ABCMeta):
     def children(self) -> BlockChildren:
         return self.attachments
 
+    def _fetch_children(self, request_size=0):
+        self.children.fetch(request_size)
+
 
 class ItemAttachments(BlockChildren):
     def __init__(self, caller: ItemsBearer):

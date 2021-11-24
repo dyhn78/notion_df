@@ -1,7 +1,7 @@
 from __future__ import annotations
-
 from abc import ABCMeta, abstractmethod
 from typing import Union
+import datetime as dt
 
 from notion_zap.cli.utility import page_id_to_url
 from .base import Editor
@@ -69,6 +69,14 @@ class MasterEditor(BlockEditor):
     @abstractmethod
     def payload(self) -> PayloadEditor:
         pass
+
+    @property
+    def created_time(self):
+        return self.payload.created_time
+
+    @property
+    def last_edited_time(self):
+        return self.payload.last_edited_time
 
     @property
     def archived(self):
@@ -160,8 +168,19 @@ class PayloadEditor(BlockEditor, metaclass=ABCMeta):
         self.__block_id = ''
         self._set_block_id(block_id)
         self._archived = None
+        self._created_time = None
+        self._last_edited_time = None
+
         self._has_children = None
         self._can_have_children = None
+
+    @property
+    def created_time(self) -> dt.datetime:
+        return self._created_time
+
+    @property
+    def last_edited_time(self) -> dt.datetime:
+        return self._last_edited_time
 
     @property
     def archived(self):

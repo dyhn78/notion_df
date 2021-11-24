@@ -101,8 +101,10 @@ def print_response_error(func: Callable):
             response = func(self, **kwargs)
             return response
         except APIResponseError as api_response_error:
-            print(f'Error occurred while executing {str(self)} ::\n')
+            print()
+            print(f'Error occurred while executing {str(self)} ::')
             self.preview()
+            print()
             raise api_response_error
 
     return wrapper
@@ -117,8 +119,10 @@ def retry_then_print_response_error(func: Callable, recursion_limit=1, time_to_s
                 return response
             except APIResponseError as api_response_error:
                 if recursion == recursion_limit:
-                    print(f'Error occurred while executing {str(self)} ::\n')
+                    print()
+                    print(f'Error occurred while executing {str(self)} ::')
                     self.preview()
+                    print()
                     raise api_response_error
                 recursion += 1
                 utility.stopwatch(f'응답 재시도 {recursion}/{recursion_limit}회')

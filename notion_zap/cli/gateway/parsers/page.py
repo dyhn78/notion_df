@@ -1,4 +1,6 @@
 from __future__ import annotations
+
+import datetime as dt
 from inspect import signature
 from typing import Union, Any, Callable, Iterator
 
@@ -23,9 +25,18 @@ class PageListParser:
 
 
 class PageParser:
-    def __init__(self, page_id: str, archived=False):
+    def __init__(
+            self, page_id: str, archived: bool,
+            created_time: dt.datetime, last_edited_time: dt.datetime,
+            icon, cover,
+    ):
         self.page_id = page_id
         self.archived = archived
+        self.icon = icon  # TODO
+        self.cover = cover  # TODO
+        self.created_time = created_time
+        self.last_edited_time = last_edited_time
+
         self.prop_types: dict[str, str] = {}  # {prop_key: prop_type for prop_key in _}
         self.prop_ids: dict[str, str] = {}  # {prop_key: prop_id for prop_key in _}
         self.prop_values: dict[str, Any] = {}  # {prop_key: prop_value for prop_key in _}
@@ -36,7 +47,14 @@ class PageParser:
 
     @classmethod
     def parse_retrieve(cls, response: dict):
-        self = cls(response['id'], response['archived'])
+        self = cls(
+            response['id'],
+            response['archived'],
+            response['created_time'],
+            response['last_edited_time'],
+            response['icon'],
+            response['cover'],
+        )
         for prop_key, rich_property_object in response['properties'].items():
             try:
                 self.prop_values[prop_key] = \

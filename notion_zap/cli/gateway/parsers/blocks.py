@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import datetime as dt
+
 from .rich_text import parse_rich_texts
-from notion_zap.cli.struct.base_logic import Printable
-from notion_zap.cli.struct.block_types import (
-    PAGE_TYPES, TEXT_TYPES, CAN_HAVE_CHILDREN, SUPPORTED, UNSUPPORTED
+from ...struct.base_logic import Printable
+from ...struct.block_types import (
+    PAGE_TYPES, TEXT_TYPES, CAN_HAVE_CHILDREN, SUPPORTED,
+    UNSUPPORTED
 )
 
 
@@ -24,10 +27,16 @@ class BlockChildrenParser:
 
 
 class BlockContentsParser(Printable):
-    def __init__(self, block_id: str, block_type: str):
+    def __init__(
+            self, block_id: str, block_type: str,
+            created_time: dt.datetime, last_edited_time: dt.datetime,
+            has_children: bool,
+    ):
         self.block_id = block_id
         self.block_type = block_type
-        self.has_children = False
+        self.created_time = created_time
+        self.last_edited_time = last_edited_time
+        self.has_children = has_children
         self.is_page_block = (self.block_type in PAGE_TYPES)
         self.is_supported_type = (self.block_type in SUPPORTED)
         self.can_have_children = (self.block_type in CAN_HAVE_CHILDREN)
@@ -47,9 +56,13 @@ class BlockContentsParser(Printable):
 
     @classmethod
     def parse_retrieve(cls, response):
-        self = cls(block_id=response['id'],
-                   block_type=response['type'])
-        self.has_children = response['has_children']
+        self = cls(
+            response['id'],
+            response['type'],
+            response['created_time'],
+            response['last_edited_time'],
+            response['has_children'],
+        )
         self.parser_unit(response)
         return self
 

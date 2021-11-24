@@ -12,15 +12,6 @@ class DateHandler:
             date_time = date_time.date()
         self.date = date_time
 
-    # def __init__(self, date_time: Union[datetime, date],
-    #              add_timedelta=0):
-    #     """add_timedelta has effect only when argument was datetimecl."""
-    #     if isinstance(date_time, datetime):
-    #         date_time += dt.timedelta(hours=add_timedelta)
-    #         self.date = date_time.date()
-    #     elif isinstance(date_time, date):
-    #         self.date = date_time
-
     def strf_dig6(self):
         """예) 210101"""
         return self.date.strftime("%y%m%d")

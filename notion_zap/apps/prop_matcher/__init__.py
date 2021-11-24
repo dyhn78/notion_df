@@ -1,2 +1,0 @@
-from notion_zap.apps.prop_matcher.regulars import RegularMatchController
-from .sync_resolve import PropertySyncResolver

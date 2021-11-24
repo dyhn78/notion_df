@@ -16,7 +16,8 @@ class RootEditor(Editor):
             async_client=False,
             exclude_archived=False,
             disable_overwrite=False,
-            emptylike_strings=None,
+            customized_emptylike_strings=None,
+            # enable_overwrite_by_same_value=False,
     ):
         super().__init__(root_editor=self)
         if async_client:
@@ -31,11 +32,29 @@ class RootEditor(Editor):
         self._by_alias = {}
 
         # global settings, will be applied uniformly to all child-editors.
-        self.disable_overwrite = disable_overwrite
         self.exclude_archived = exclude_archived
-        if emptylike_strings is None:
-            emptylike_strings = ['', '.', '-', '0', '1', 'None', 'False', '[]', '{}']
-        self.emptylike_strings = emptylike_strings
+        self.disable_overwrite = disable_overwrite
+        if customized_emptylike_strings is None:
+            customized_emptylike_strings = \
+                ['', '.', '-', '0', '1', 'None', 'False', '[]', '{}']
+        self.emptylike_strings = customized_emptylike_strings
+        # self.enable_overwrite_by_same_value = enable_overwrite_by_same_value
+
+        # TODO : (1) enum 이용, (2) 실제로 requestor에 작동하는 로직 마련.
+        self._log_succeed_request = False
+        self._log_failed_request = True
+
+    def set_logging__silent(self):
+        self._log_succeed_request = False
+        self._log_failed_request = False
+
+    def set_logging__error(self):
+        self._log_succeed_request = False
+        self._log_failed_request = True
+
+    def set_logging__all(self):
+        self._log_succeed_request = True
+        self._log_failed_request = True
 
     @property
     def token(self):

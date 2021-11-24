@@ -1,7 +1,7 @@
 # from notion_zap.apps.media_scraper import \
 #     ReadingDBStatusResolver, ReadingDBDuplicateRemover
 # from notion_zap.apps.prop_matcher import PropertySyncResolver
-from notion_zap.apps.prop_matcher.calendar import CalendarController
+from notion_zap.apps.prop_matcher.build_calendar import CalendarController
 
 CalendarController(fetch_empties=True).execute()
 #

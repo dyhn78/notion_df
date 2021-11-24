@@ -8,13 +8,12 @@ from ...cli import editors
 
 
 class RegularMatchController:
-    def __init__(self, date_range=0):
-        self.bs = RegularLocalBase()
-        self.date_range = date_range
+    def __init__(self, request_size=50):
+        self.bs = RegularLocalBase(request_size)
 
     def execute(self):
         self.bs.fetch()
-        agents_1: list[Matcher] = [
+        agents: list[Matcher] = [
             SelfMatcher(self.bs),
             DateMatcherType1(self.bs),
             DateMatcherType2(self.bs),
@@ -25,25 +24,18 @@ class RegularMatchController:
             PeriodMatcherType3(self.bs),
             ProgressMatcherType1(self.bs),
             ProgressMatcherType2(self.bs),
+            # GcaltoScheduleMatcher(self.bs),
+            # GcalfromScheduleMatcher(self.bs),
         ]
-        for agent in agents_1:
+        for agent in agents:
             agent.execute()
         self.bs.save()
 
-        # self.bs.fetch(self.bs.readings)
-        # agents_2: list[Matcher] = [
-        #     DateMatcherType4(self.bs)
-        # ]
-        # for agent in agents_2:
-        #     agent.execute()
-        # self.bs.save()
-
 
 class RegularLocalBase(LocalBase):
-    MAX_REQUEST_SIZE = 50
-
-    def __init__(self):
+    def __init__(self, request_size: int):
         super().__init__()
+        self.request_size = request_size
         self.root.exclude_archived = True
 
     def fetch(self):
@@ -69,6 +61,7 @@ class RegularLocalBase(LocalBase):
         if domain is self.schedules:
             ft |= maker.relation_at('to_scheduled_periods').is_empty()
             ft |= maker.relation_at('to_scheduled_dates').is_empty()
+            # TODO : ft |= maker.checkbox_at('gcal_sync_status').is_empty()
 
         # AND clauses
         if domain is self.readings:
@@ -84,4 +77,4 @@ class RegularLocalBase(LocalBase):
 
         query.push_filter(ft)
         # query.preview()
-        query.execute(self.MAX_REQUEST_SIZE)
+        query.execute(self.request_size)

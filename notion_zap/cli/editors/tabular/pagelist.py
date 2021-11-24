@@ -51,12 +51,7 @@ class PageList(BlockChildren):
 
         return QueryWithCallback(self, self.frame, callback)
 
-    def fetch(self, request_size=0):
-        """randomly query with the amount of <request_size>."""
-        query = self.open_query()
-        query.execute(request_size)
-
-    def fetch_one(self, page_id: str):
+    def fetch(self, page_id: str):
         """this will first try to search the page in local base,
         then make a request (RetrievePage).
         returns child_page if succeed, otherwise returns None."""

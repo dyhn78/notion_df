@@ -15,6 +15,9 @@ class RetrieveDatabase(PointRequestor):
 
     @print_response_error
     def execute(self):
+        return self.execute_silent()
+
+    def execute_silent(self):
         return self.client.databases.retrieve(**self.encode())
 
     def print_comments(self):
@@ -39,6 +42,9 @@ class RetrievePage(PointRequestor):
 
     @print_response_error
     def execute(self):
+        return self.execute_silent()
+
+    def execute_silent(self):
         res = self.client.pages.retrieve(**self.encode())
         return res
 

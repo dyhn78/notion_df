@@ -28,7 +28,7 @@ def set_name(results, soup):
     else:
         for char in '?!"':
             name = name.replace(char, '')
-        results.update(name=name)
+        results.update()
 
 
 def set_subname(results, soup):
@@ -38,7 +38,7 @@ def set_subname(results, soup):
     except AttributeError:
         pass
     else:
-        results.update(subname=subname)
+        results.update()
 
 
 def set_author(results, soup):
@@ -49,7 +49,7 @@ def set_author(results, soup):
     except AttributeError:
         pass
     else:
-        results.update(author=author)
+        results.update()
         return
 
     tag_author2 = '#yDetailTopWrap > div.topColRgt > div.gd_infoTop > ' \
@@ -60,7 +60,7 @@ def set_author(results, soup):
         pass
     else:
         author = author_raw.strip('\n').strip().replace(' 저', '')
-        results.update(author=author)
+        results.update()
 
 
 def set_publisher(results, soup):
@@ -71,7 +71,7 @@ def set_publisher(results, soup):
     except AttributeError:
         pass
     else:
-        results.update(publisher=publisher)
+        results.update()
 
 
 def set_page_count(results, soup):
@@ -86,7 +86,7 @@ def set_page_count(results, soup):
             page_count_str = page_count_plus_etc.split('|')[0].strip()
             page_count = int(''.join([char for char in page_count_str
                                       if char.isnumeric()]))
-            results.update(page_count=page_count)
+            results.update()
 
 
 def set_cover_image(results, soup):
@@ -99,7 +99,7 @@ def set_cover_image(results, soup):
     else:
         if 'src' in cover_image:
             cover_image = cover_image.split('src="')[-1].split('"/>')[0].strip()
-            results.update(cover_image=cover_image)
+            results.update()
 
 
 def set_contents(results, soup):
@@ -110,4 +110,4 @@ def set_contents(results, soup):
     except AttributeError:
         pass
     else:
-        results.update(contents=contents)
+        results.update()

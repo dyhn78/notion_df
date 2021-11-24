@@ -24,6 +24,11 @@ class Database(ChildrenBearer):
         from .pagelist import PageList
         self._pagelist = PageList(self)
 
+    def _fetch_children(self, request_size=0):
+        """randomly query with the amount of <request_size>."""
+        query = self.pagelist.open_query()
+        query.execute(request_size)
+
     @property
     def payload(self):
         return self.schema
@@ -50,7 +55,7 @@ class Database(ChildrenBearer):
 
     def retrieve(self):
         requestor = requestors.RetrieveDatabase(self)
-        response = requestor.execute()
+        response = requestor.execute_silent()
         parser = parsers.DatabaseParser(response)
         self.frame.fetch_parser(parser)
         requestor.print_comments()

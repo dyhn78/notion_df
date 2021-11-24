@@ -1,6 +1,9 @@
 class DatabaseParser:
     def __init__(self, response: dict, database_id: str = ''):
         self.database_id = database_id
+        self.created_time = response['created_time']
+        self.last_edited_time = response['last_edited_time']
+
         table = response['properties']
         # {prop_name: prop_type for prop_name in _}
         self.prop_types = {prop_name: rich_property_object['type']

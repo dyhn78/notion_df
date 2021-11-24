@@ -43,7 +43,7 @@ class PageRowProperty(PagePayload, encoders.PageRowPropertybyKey):
     def push_carrier(self, prop_key: str, carrier: encoders.PropertyEncoder) \
             -> encoders.PropertyEncoder:
         cannot_overwrite = (self.root.disable_overwrite and
-                            self.root.is_emptylike(self.read_of(prop_key)))
+                            not self.root.is_emptylike(self.read_of(prop_key)))
         if cannot_overwrite:
             return carrier
         if prop_key == self.frame.title_key:
@@ -55,7 +55,7 @@ class PageRowProperty(PagePayload, encoders.PageRowPropertybyKey):
         try:
             value = self._read_plain[prop_key]
         except KeyError:
-            raise KeyError(f"prop_key: {prop_key}")
+            raise KeyError(prop_key)
         return value
 
     def read_rich_of(self, prop_key: str):
@@ -63,7 +63,7 @@ class PageRowProperty(PagePayload, encoders.PageRowPropertybyKey):
         try:
             value = self._read_rich[prop_key]
         except KeyError:
-            raise KeyError(f"prop_key: {prop_key}")
+            raise KeyError(prop_key)
         return value
 
     def get_of(self, prop_key: str, default=None):

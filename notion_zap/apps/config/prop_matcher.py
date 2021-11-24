@@ -24,7 +24,9 @@ _to_readings = Cl(tag='to_readings', key='📒읽기')
 _auto_date = Cl(tag='auto_date', key='날짜값⏲️')
 _auto_time = Cl(tag='auto_datetime', key='날짜⏲️')
 _AUTO_DATE = Frame([_auto_date, _auto_time])
-_AUTO_DATE.add_alias('auto_datetime', 'index_as_domain')
+
+_timestr = Cl(tag='timestr', key='📆환경/시간')
+_manual_date = Cl(tag='manual_date', key='📆날짜')
 
 
 class MatchFrames:
@@ -39,10 +41,9 @@ class MatchFrames:
 
     DATES = Frame(
         [
-            _title, _to_itself,
+            _title, _to_itself, _manual_date,
             _to_periods,
             _to_locations, _to_channels,
-            Cl(tag='manual_date', key='📆날짜'),
             Cl(tag='to_journals', key='📉일지'),
             Cl(tag='sync_status', key='🏁최신'),
         ]
@@ -53,7 +54,7 @@ class MatchFrames:
     JOURNALS = Frame(
         _AUTO_DATE,
         [
-            _title, _to_itself,
+            _title, _to_itself, _timestr,
             _to_periods, _to_dates,
             _to_themes, _to_locations, _to_readings, _to_channels,
             Cl(tag='up_self', key='🧵구성'),
@@ -63,7 +64,7 @@ class MatchFrames:
     WRITINGS = Frame(
         _AUTO_DATE,
         [
-            _title, _to_itself,
+            _title, _to_itself, _timestr,
             _to_periods, _to_dates, _to_journals,
             _to_readings, _to_channels,
             Cl(tag='to_themes', key='📕맥락'),
@@ -79,12 +80,16 @@ class MatchFrames:
     SCHEDULES = Frame(
         _AUTO_DATE,
         [
-            _title, _to_itself,
-            _to_periods, _to_dates,
-            Cl(tag='to_scheduled_periods', key='📈기간'),
-            Cl(tag='to_scheduled_dates', key='📈날짜'),
-            Cl(tag='gcal_status', key='🏁Gcal'),
+            _title, _to_itself, _timestr,
+            Cl(tag='to_periods', key='📉기간'),
+            Cl(tag='to_dates', key='📉날짜'),
+            Cl(tag='to_created_periods', key='📉기간'),
+            Cl(tag='to_created_dates', key='📉날짜'),
+            Cl(tag='to_scheduled_periods', key='🧶기간'),
+            Cl(tag='to_scheduled_dates', key='🧶날짜'),
+            Cl(tag='gcal_sync_status', key='🏁Gcal'),
             Cl(tag='gcal_link', key='📚Gcal'),
+            Cl(tag='gcal_id', key='📚Gcal_id'),
         ]
     )
 
@@ -92,12 +97,12 @@ class MatchFrames:
         _AUTO_DATE,
         [
             _title, _to_itself,
-            Cl(tag='status_exclude', key='🏁버킷<-경과'),
-            Cl(tag='is_book', key='🔵도서<-유형'),
+            _to_journals,
+            _to_themes, _to_channels,
             Cl(tag='to_periods', key='🧶기간_시작'),
             Cl(tag='to_dates', key='🧶날짜_시작'),
             Cl(tag='to_schedules', key='📘일정'),
-            _to_journals,
-            _to_themes, _to_channels,
+            Cl(tag='status_exclude', key='🏁버킷<-경과'),
+            Cl(tag='is_book', key='🔵도서<-유형'),
         ]
     )

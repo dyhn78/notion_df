@@ -93,10 +93,12 @@ class PagePayload(PayloadEditor, GroundEditor, metaclass=ABCMeta):
             self._set_block_id(parser.page_id)
         self._set_title(parser.title)
         self._archived = parser.archived
+        self._created_time = parser.created_time
+        self._last_edited_time = parser.last_edited_time
 
     def retrieve(self):
         requestor = requestors.RetrievePage(self)
-        response = requestor.execute()
+        response = requestor.execute_silent()
         parser = parsers.PageParser.parse_retrieve(response)
         self.apply_page_parser(parser)
         requestor.print_comments()

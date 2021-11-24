@@ -18,8 +18,8 @@ class CalendarController:
     def execute(self):
         self.bs.fetch_all()
         agents: list[Matcher] = [
-            DateTargetAutoFiller(self.bs, self.disable_overwrite,
-                                 self.fetch_year_range),
+            DateTargetFiller(self.bs, self.disable_overwrite,
+                             self.fetch_year_range),
             PeriodTargetAutoFiller(self.bs, self.disable_overwrite,
                                    self.fetch_year_range)
         ]

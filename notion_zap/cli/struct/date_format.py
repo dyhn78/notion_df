@@ -7,6 +7,7 @@ from typing import Union, Optional
 class DateFormat:
     def __init__(self, start: Optional[Union[datetime, date]] = None,
                  end: Optional[Union[datetime, date]] = None):
+        """default value of <start> and <end> is None."""
         if start is None and end is not None:
             start, end = end, start
         self.start = self.__add_explicit_tz(start)

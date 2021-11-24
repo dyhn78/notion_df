@@ -21,6 +21,10 @@ class ChildrenBearer(MasterEditor):
     def children(self) -> BlockChildren:
         pass
 
+    @abstractmethod
+    def _fetch_children(self, request_size=0):
+        pass
+
     def iter_descendants_with(self, exact_rank_diff: int) \
             -> Iterable[Union[ChildrenBearer, MasterEditor]]:
         if exact_rank_diff > 0:
@@ -65,13 +69,13 @@ class ChildrenBearer(MasterEditor):
         if max_rank_diff <= 0:
             return
         if min_rank_diff - 1 <= 0:
-            self.children.fetch(request_size)
+            self._fetch_children(request_size)
         for child in self.children:
             if isinstance(child, ChildrenBearer):
                 child.fetch_descendants_within(max_rank_diff - 1, min_rank_diff - 1)
 
     def fetch_descendants(self, request_size=0):
-        self.children.fetch(request_size)
+        self._fetch_children(request_size)
         for child in self.children:
             if isinstance(child, ChildrenBearer):
                 child.fetch_descendants(request_size)
@@ -83,10 +87,6 @@ class BlockChildren(BlockEditor, metaclass=ABCMeta):
         self.caller = caller
         self._by_id = {}
         self._by_title = defaultdict(list)
-
-    @abstractmethod
-    def fetch(self, request_size=0):
-        pass
 
     @abstractmethod
     def iter_all(self) -> Iterator[MasterEditor]:
