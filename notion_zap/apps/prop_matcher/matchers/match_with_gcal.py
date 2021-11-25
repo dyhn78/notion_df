@@ -2,6 +2,7 @@ import datetime as dt
 from abc import ABCMeta
 from typing import Optional
 
+# noinspection PyPackageRequirements
 from googleapiclient.errors import HttpError
 
 import notion_zap.apps.externals.gcal
