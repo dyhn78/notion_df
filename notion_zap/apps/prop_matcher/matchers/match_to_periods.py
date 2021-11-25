@@ -12,7 +12,7 @@ from ..common.helpers import (
 
 
 class PeriodMatcherAbs(Matcher, metaclass=ABCMeta):
-    tag__doms_tar = tag__refs_tar = 'to_periods'
+    tag__doms_tar2 = tag__refs_tar = 'to_periods'
     tag__tars_idx = 'title'
     tag__tars_date = 'manual_date_range'
 
@@ -87,7 +87,7 @@ class PeriodTargetAutoFiller(PeriodMatcherAbs):
 
 
 class PeriodMatcherType1(PeriodMatcherAbs):
-    doms_date = 'manual_date'
+    tag__doms_date = 'manual_date'
 
     def __init__(self, bs):
         super().__init__(bs)
@@ -96,38 +96,39 @@ class PeriodMatcherType1(PeriodMatcherAbs):
     def execute(self):
         for domain in self.domains:
             for dom in domain:
-                if tar := self.determine_tar(dom):
-                    dom.props.write_relation_at(self.tag__doms_tar, tar.block_id)
+                if tar := self.match_periods(dom):
+                    dom.props.write_relation_at(self.tag__doms_tar2, tar.block_id)
 
-    def determine_tar(self, dom: editors.PageRow):
-        if dom.props.read_at(self.tag__doms_tar):
+    def match_periods(self, dom: editors.PageRow):
+        if dom.props.read_at(self.tag__doms_tar2):
             return None
-        dom_idx: DateFormat = dom.props.read_at(self.doms_date)
+        dom_idx: DateFormat = dom.props.read_at(self.tag__doms_date)
         date_val = dom_idx.start_date
         return self.find_or_create_by_date_val(date_val)
 
 
 class PeriodMatcherType2(PeriodMatcherAbs):
-    doms_ref = 'to_dates'
+    tag__doms_ref = 'to_dates'
 
     def __init__(self, bs):
         super().__init__(bs)
         self.reference = self.bs.dates
         self.domains = [
-            self.bs.journals, self.bs.writings, self.bs.memos, self.bs.schedules,
+            self.bs.journals, self.bs.writings, self.bs.memos,
             self.bs.readings
         ]
 
     def execute(self):
         for domain in self.domains:
             for dom in domain:
-                if tar := self.determine_tar(dom):
-                    dom.props.write_relation_at(self.tag__doms_tar, tar.block_id)
+                if tar := self.match_periods(dom):
+                    dom.props.write_relation_at(self.tag__doms_tar2, tar.block_id)
 
-    def determine_tar(self, dom: editors.PageRow):
-        if dom.props.read_at(self.tag__doms_tar):
+    def match_periods(self, dom: editors.PageRow):
+        if dom.props.read_at(self.tag__doms_tar2):
             return None
-        if ref := fetch_unique_page_from_relation(dom, self.reference, self.doms_ref):
+        if ref := fetch_unique_page_from_relation(
+                dom, self.reference, self.tag__doms_ref):
             if tar := fetch_unique_page_from_relation(
                     ref, self.target, self.tag__refs_tar):
                 return tar
@@ -135,9 +136,11 @@ class PeriodMatcherType2(PeriodMatcherAbs):
 
 
 class PeriodMatcherType3(PeriodMatcherAbs):
-    tag__doms_tar = 'to_scheduled_periods'
-    tag__doms_ref = 'to_scheduled_dates'
-    tag__refs_tar = 'to_periods'
+    tag__doms_ref1 = 'to_created_dates'
+    tag__doms_tar1 = 'to_created_periods'
+    tag__doms_ref2 = 'to_scheduled_dates'
+    tag__doms_tar2 = 'to_scheduled_periods'
+    tag__ref1s_tar1 = tag__ref2s_tar2 = 'to_periods'
 
     def __init__(self, bs):
         super().__init__(bs)
@@ -147,15 +150,27 @@ class PeriodMatcherType3(PeriodMatcherAbs):
     def execute(self):
         for domain in self.domains:
             for dom in domain:
-                if tar := self.determine_tar(dom):
-                    dom.props.write_relation_at(self.tag__doms_tar, tar.block_id)
+                if tar := self.match_created_periods(dom):
+                    dom.props.write_relation_at(self.tag__doms_tar1, tar.block_id)
+                if tar := self.match_scheduled_periods(dom):
+                    dom.props.write_relation_at(self.tag__doms_tar2, tar.block_id)
 
-    def determine_tar(self, dom: editors.PageRow):
-        if dom.props.read_at(self.tag__doms_tar):
+    def match_created_periods(self, dom: editors.PageRow):
+        if dom.props.read_at(self.tag__doms_tar1):
             return None
         if ref := fetch_unique_page_from_relation(
-                dom, self.reference, self.tag__doms_ref):
+                dom, self.reference, self.tag__doms_ref1):
             if tar := fetch_unique_page_from_relation(
-                    ref, self.target, self.tag__refs_tar):
+                    ref, self.target, self.tag__ref1s_tar1):
+                return tar
+        return None
+
+    def match_scheduled_periods(self, dom: editors.PageRow):
+        if dom.props.read_at(self.tag__doms_tar2):
+            return None
+        if ref := fetch_unique_page_from_relation(
+                dom, self.reference, self.tag__doms_ref2):
+            if tar := fetch_unique_page_from_relation(
+                    ref, self.target, self.tag__ref2s_tar2):
                 return tar
         return None

@@ -5,7 +5,7 @@ from notion_client import Client
 
 from notion_zap.cli.utility import stopwatch
 
-os.environ['NOTION_TOKEN'] = ***REMOVED***
+os.environ['NOTION_TOKEN'] = '***REMOVED***'
 notion = Client(auth=os.environ['NOTION_TOKEN'])
 
 stopwatch('클라이언트 접속')

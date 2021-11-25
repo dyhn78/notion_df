@@ -44,8 +44,8 @@ class MatchFrames:
             _title, _to_itself, _manual_date,
             _to_periods,
             _to_locations, _to_channels,
-            Cl(tag='to_journals', key='📉일지'),
-            Cl(tag='sync_status', key='🏁최신'),
+            Cl(tag='to_journals', key='🧵일지'),
+            Cl(tag='sync_status', key='🏁동기화'),
         ]
     )
     # DATES.add_alias('title', 'index_as_target')
@@ -87,7 +87,7 @@ class MatchFrames:
             Cl(tag='to_created_dates', key='📉날짜'),
             Cl(tag='to_scheduled_periods', key='🧶기간'),
             Cl(tag='to_scheduled_dates', key='🧶날짜'),
-            Cl(tag='gcal_sync_status', key='🏁Gcal'),
+            Cl(tag='gcal_sync_status', key='🏁동기화'),
             Cl(tag='gcal_link', key='📚Gcal'),
             Cl(tag='gcal_id', key='📚Gcal_id'),
         ]

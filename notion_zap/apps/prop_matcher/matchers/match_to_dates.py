@@ -144,8 +144,8 @@ class DateMatcherType2(DateMatcherAbs):
 
 
 class DateMatcherType3(DateMatcherAbs):
-    tag__doms_cre_tar = 'to_created_dates'
-    tag__doms_sch_tar = 'to_scheduled_dates'
+    tag__doms_tar1 = 'to_created_dates'
+    tag__doms_tar2 = 'to_scheduled_dates'
 
     def __init__(self, bs):
         super().__init__(bs)
@@ -155,17 +155,17 @@ class DateMatcherType3(DateMatcherAbs):
         for domain in self.domains:
             for dom in domain:
                 if tar := self.match_created_dates(dom):
-                    dom.props.write_relation_at(self.tag__doms_cre_tar, tar.block_id)
+                    dom.props.write_relation_at(self.tag__doms_tar1, tar.block_id)
                 if tar := self.match_scheduled_dates(dom):
-                    dom.props.write_relation_at(self.tag__doms_sch_tar, tar.block_id)
+                    dom.props.write_relation_at(self.tag__doms_tar2, tar.block_id)
 
     def match_created_dates(self, dom: editors.PageRow):
-        if dom.props.read_at(self.tag__doms_cre_tar):
+        if dom.props.read_at(self.tag__doms_tar1):
             return None
         return self.determine_tar_from_auto_date(dom)
 
     def match_scheduled_dates(self, dom):
-        if dom.props.read_at(self.tag__doms_sch_tar):
+        if dom.props.read_at(self.tag__doms_tar2):
             return None
         return self.determine_tar_from_auto_date(dom)
 

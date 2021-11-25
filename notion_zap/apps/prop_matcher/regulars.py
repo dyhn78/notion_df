@@ -61,7 +61,7 @@ class RegularLocalBase(LocalBase):
         if domain is self.schedules:
             ft |= maker.relation_at('to_scheduled_periods').is_empty()
             ft |= maker.relation_at('to_scheduled_dates').is_empty()
-            # TODO : ft |= maker.checkbox_at('gcal_sync_status').is_empty()
+            # TODO : gcal_sync_status
 
         # AND clauses
         if domain is self.readings:

@@ -2,6 +2,7 @@
 # https://developers.google.com/calendar/quickstart/python
 # Change the scope to 'https://www.googleapis.com/auth/calendar' and delete any
 # stored credentials.
+from ..open_service import open_gcal_service
 
 event = {
   'summary': 'Google I/O 2015',
@@ -30,6 +31,6 @@ event = {
     ],
   },
 }
-
+service = open_gcal_service()
 event = service.events().insert(calendarId='primary', body=event).execute()
 print('Event created: %s' % (event.get('htmlLink')))
