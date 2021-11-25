@@ -16,7 +16,7 @@ class ItemsBearer(ChildrenBearer, metaclass=ABCMeta):
         self.attachments = ItemAttachments(self)
 
     @property
-    def children(self) -> BlockChildren:
+    def children(self) -> ItemAttachments:
         return self.attachments
 
     def _fetch_children(self, request_size=0):
