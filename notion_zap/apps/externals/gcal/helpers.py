@@ -1,5 +1,6 @@
-from collections import Callable
+from typing import Callable
 
+# noinspection PyPackageRequirements
 from googleapiclient.errors import HttpError
 
 from .open_service import GcalManagerAbs
