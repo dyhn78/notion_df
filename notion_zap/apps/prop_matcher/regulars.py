@@ -50,18 +50,21 @@ class RegularLocalBase(LocalBase):
 
         # OR clauses
         ft |= maker.relation_at('to_itself').is_empty()
-        if domain is not self.periods:
-            ft |= maker.relation_at('to_periods').is_empty()
-        if domain not in [self.periods, self.dates]:
-            ft |= maker.relation_at('to_dates').is_empty()
-        if domain is self.dates:
-            sync_needed = maker.checkbox_at('sync_status').is_empty()
-            before_today = maker.date_at('manual_date').on_or_before(dt.date.today())
-            ft |= (sync_needed & before_today)
         if domain is self.schedules:
             ft |= maker.relation_at('to_scheduled_periods').is_empty()
             ft |= maker.relation_at('to_scheduled_dates').is_empty()
+            ft |= maker.relation_at('to_created_periods').is_empty()
+            ft |= maker.relation_at('to_created_dates').is_empty()
             # TODO : gcal_sync_status
+        else:
+            if domain is self.dates:
+                sync_needed = maker.checkbox_at('sync_status').is_empty()
+                before_today = maker.date_at('manual_date').on_or_before(dt.date.today())
+                ft |= (sync_needed & before_today)
+            if domain is not self.periods:
+                ft |= maker.relation_at('to_periods').is_empty()
+            if domain not in [self.periods, self.dates]:
+                ft |= maker.relation_at('to_dates').is_empty()
 
         # AND clauses
         if domain is self.readings:

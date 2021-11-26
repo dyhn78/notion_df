@@ -28,7 +28,7 @@ class _GcalScheduleMatcherAbs(GcalMatcherAbs, DateMatcherAbs, metaclass=ABCMeta)
     tag__is_synced = 'gcal_sync_status'
     tag__gcal_link = 'gcal_link'
     tag__gcal_id = 'gcal_id'
-    tag__doms_tar = 'to_scheduled_dates'
+    T_tar = 'to_scheduled_dates'
 
     def __init__(self, bs, calendar_id='primary'):
         GcalMatcherAbs.__init__(self, bs)
@@ -199,7 +199,7 @@ class GcalfromScheduleMatcher(_GcalScheduleMatcherAbs):
         date_max: Optional[dt.date] = None
         for tar_id in tar_ids:
             tar = self.target.fetch(tar_id)
-            date_format: DateFormat = tar.props.read_at(self.tag__tars_date)
+            date_format: DateFormat = tar.props.read_at(self.Ttars_date)
             date_val = date_format.start_date
             if date_min is None or date_min > date_val:
                 date_min = date_val

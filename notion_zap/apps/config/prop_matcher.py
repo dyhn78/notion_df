@@ -15,6 +15,7 @@ _to_itself = Cl(tag='to_itself', key='🔁재귀')
 _to_periods = Cl(tag='to_periods', key='🧶기간')
 _to_dates = Cl(tag='to_dates', key='🧶날짜')
 _to_journals = Cl(tag='to_journals', key='🧵일지')
+_to_schedules = Cl(tag='to_schedules', key='🧵일정')
 
 _to_themes = Cl(tag='to_themes', key='📕수행')
 _to_locations = Cl(tag='to_locations', key='📙장소')
@@ -56,17 +57,35 @@ class MatchFrames:
         [
             _title, _to_itself, _timestr,
             _to_periods, _to_dates,
-            _to_themes, _to_locations, _to_readings, _to_channels,
             Cl(tag='up_self', key='🧵구성'),
             Cl(tag='down_self', key='🧵요소'),
+
+            _to_themes, _to_locations, _to_readings, _to_channels,
+        ]
+    )
+    SCHEDULES = Frame(
+        _AUTO_DATE,
+        [
+            _title, _to_itself, _timestr,
+            Cl(tag='to_scheduled_periods', key='🧶기간'),
+            Cl(tag='to_scheduled_dates', key='🧶날짜'),
+            Cl(tag='to_created_periods', key='📉기간'),
+            Cl(tag='to_created_dates', key='📉날짜'),
+
+            _to_themes, _to_channels, _to_readings,
+
+            Cl(tag='gcal_sync_status', key='🏁동기화'),
+            Cl(tag='gcal_link', key='📚Gcal'),
+            Cl(tag='gcal_id', key='📚Gcal_id'),
         ]
     )
     WRITINGS = Frame(
         _AUTO_DATE,
         [
             _title, _to_itself, _timestr,
-            _to_periods, _to_dates, _to_journals,
-            _to_readings, _to_channels,
+            _to_periods, _to_dates, _to_journals, _to_schedules,
+
+            _to_channels, _to_readings,
             Cl(tag='to_themes', key='📕맥락'),
         ]
     )
@@ -77,31 +96,16 @@ class MatchFrames:
             _to_periods, _to_dates, _to_journals,
         ]
     )
-    SCHEDULES = Frame(
-        _AUTO_DATE,
-        [
-            _title, _to_itself, _timestr,
-            Cl(tag='to_periods', key='📉기간'),
-            Cl(tag='to_dates', key='📉날짜'),
-            Cl(tag='to_created_periods', key='📉기간'),
-            Cl(tag='to_created_dates', key='📉날짜'),
-            Cl(tag='to_scheduled_periods', key='🧶기간'),
-            Cl(tag='to_scheduled_dates', key='🧶날짜'),
-            Cl(tag='gcal_sync_status', key='🏁동기화'),
-            Cl(tag='gcal_link', key='📚Gcal'),
-            Cl(tag='gcal_id', key='📚Gcal_id'),
-        ]
-    )
 
     READINGS = Frame(
         _AUTO_DATE,
         [
             _title, _to_itself,
-            _to_journals,
-            _to_themes, _to_channels,
             Cl(tag='to_periods', key='🧶기간_시작'),
             Cl(tag='to_dates', key='🧶날짜_시작'),
-            Cl(tag='to_schedules', key='📘일정'),
+            _to_journals, _to_schedules,
+            _to_themes, _to_channels,
+
             Cl(tag='status_exclude', key='🏁버킷<-경과'),
             Cl(tag='is_book', key='🔵도서<-유형'),
         ]

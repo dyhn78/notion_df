@@ -87,10 +87,18 @@ class PageRowProperty(PagePayload, encoders.PageRowPropertybyKey):
         return self.read_rich_of(self._name_at(prop_tag))
 
     def get_at(self, prop_tag: str, default=None):
-        return self.get_of(self._name_at(prop_tag), default)
+        try:
+            prop_key = self._name_at(prop_tag)
+        except KeyError:
+            return default
+        return self.get_of(prop_key, default)
 
     def get_rich_at(self, prop_tag: str, default=None):
-        return self.get_rich_of(self._name_at(prop_tag), default)
+        try:
+            prop_key = self._name_at(prop_tag)
+        except KeyError:
+            return default
+        return self.get_rich_of(prop_key, default)
 
     @staticmethod
     def _assert_string_key(prop_key):

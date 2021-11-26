@@ -13,7 +13,7 @@ def extend_prop(dom: editors.PageRow, prop_tag: str, values: list[str]):
     return True
 
 
-def fetch_unique_page_from_relation(
+def fetch_unique_page_of_relation(
         dom: editors.PageRow, target: editors.PageList, to_tar: str):
     tar_ids = dom.props.read_at(to_tar)
     for tar_id in tar_ids:
@@ -22,7 +22,7 @@ def fetch_unique_page_from_relation(
     return None
 
 
-def fetch_all_pages_from_relation(
+def fetch_all_pages_of_relation(
         dom: editors.PageRow, target: editors.PageList,
         to_tar: str) -> list[editors.PageRow]:
     tar_ids = dom.props.read_at(to_tar)
@@ -79,8 +79,8 @@ def query_unique_page_by_idx(
 #
 # def find_unique_target_id_by_ref(
 #         dom: editors.PageRow, reference: editors.PageList, target: editors.PageList,
-#         tag__doms_ref: str, to_tar: str):
-#     if ref_id := fetch_unique_unarchived_id_from_relation(dom, reference, tag__doms_ref):
+#         Tdoms_ref: str, to_tar: str):
+#     if ref_id := fetch_unique_unarchived_id_from_relation(dom, reference, Tdoms_ref):
 #         ref = reference.by_id[ref_id]
 #         if tar_id := fetch_unique_unarchived_id_from_relation(ref, target, to_tar):
 #             return tar_id
