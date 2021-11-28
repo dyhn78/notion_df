@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from functools import reduce
 
-from .matchers import *
-from .common.struct import Matcher, RootManager
+from .routines import *
+from .common.struct import RoutineManager, RootManager
 from ...cli import editors
 
 
@@ -13,7 +13,7 @@ class RegularMatchController:
 
     def execute(self):
         self.bs.fetch()
-        agents: list[Matcher] = [
+        agents: list[RoutineManager] = [
             SelfMatcher(self.bs),
             DateMatcherType1(self.bs),
             DateMatcherType2(self.bs),

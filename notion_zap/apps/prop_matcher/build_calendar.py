@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from datetime import date
 
-from .matchers import *
-from .common.struct import Matcher, RootManager
+from .routines import *
+from .common.struct import RoutineManager, RootManager
 
 
 class CalendarController:
@@ -18,7 +18,7 @@ class CalendarController:
 
     def execute(self):
         self.bs.fetch_all()
-        agents: list[Matcher] = [
+        agents: list[RoutineManager] = [
             DateTargetFiller(self.bs, self.disable_overwrite,
                              self.fetch_year_range),
             PeriodTargetFiller(self.bs, self.disable_overwrite,

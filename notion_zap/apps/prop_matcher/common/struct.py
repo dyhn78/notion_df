@@ -6,15 +6,6 @@ from notion_zap.apps.config.prop_matcher import MatchFrames
 from notion_zap.cli import editors
 
 
-class Matcher(ABC):
-    def __init__(self, bs: RootManager):
-        self.bs = bs
-
-    @abstractmethod
-    def execute(self):
-        pass
-
-
 class RootManager:
     def __init__(self):
         self.root = editors.RootEditor()
@@ -35,3 +26,12 @@ class RootManager:
 
     def save(self):
         self.root.save()
+
+
+class RoutineManager(ABC):
+    def __init__(self, bs: RootManager):
+        self.bs = bs
+
+    @abstractmethod
+    def execute(self):
+        pass

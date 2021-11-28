@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from notion_zap.apps.prop_matcher.matchers import *
-from notion_zap.apps.prop_matcher.common.struct import Matcher, RootManager
+from notion_zap.apps.prop_matcher.routines import *
+from notion_zap.apps.prop_matcher.common.struct import RoutineManager, RootManager
 from notion_zap.cli import editors
 
 
@@ -11,7 +11,7 @@ class GcalMatchController:
 
     def execute(self):
         self.bs.fetch()
-        agents: list[Matcher] = [
+        agents: list[RoutineManager] = [
             GcaltoScheduleMatcher(self.bs),
             GcalfromScheduleMatcher(self.bs),
         ]

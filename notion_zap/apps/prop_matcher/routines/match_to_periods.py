@@ -3,7 +3,7 @@ import datetime as dt
 
 from notion_zap.cli import editors
 from notion_zap.cli.struct import DateFormat
-from ..common.struct import Matcher
+from ..common.struct import RoutineManager
 from ..common.date_handler import DateHandler
 from ..common.helpers import (
     fetch_unique_page_of_relation,
@@ -11,7 +11,7 @@ from ..common.helpers import (
 )
 
 
-class PeriodMatcherAbs(Matcher, metaclass=ABCMeta):
+class PeriodMatcherAbs(RoutineManager, metaclass=ABCMeta):
     T_tar = 'to_periods'
     Ttars_idx = 'title'
     Ttars_date = 'manual_date_range'

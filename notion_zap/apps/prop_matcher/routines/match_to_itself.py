@@ -1,7 +1,7 @@
-from ..common.struct import Matcher
+from ..common.struct import RoutineManager
 
 
-class SelfMatcher(Matcher):
+class SelfMatcher(RoutineManager):
     def __init__(self, bs):
         super().__init__(bs)
         self.domains = [

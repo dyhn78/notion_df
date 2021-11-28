@@ -2,11 +2,11 @@ import datetime as dt
 
 from notion_zap.cli import editors
 from notion_zap.cli.struct import DateFormat
-from ..common.struct import Matcher
+from ..common.struct import RoutineManager
 from ..common.helpers import extend_prop, fetch_all_pages_of_relation
 
 
-class ProgressMatcherType1(Matcher):
+class ProgressMatcherType1(RoutineManager):
     Tdoms_ref1 = 'to_journals'
     Tdoms_ref2 = 'to_schedules'
     TL_tar = ['to_themes', 'to_channels', 'to_readings']
@@ -30,7 +30,7 @@ class ProgressMatcherType1(Matcher):
                 extend_prop(dom, T_tar, tar_ids)
 
 
-class ProgressMatcherType2(Matcher):
+class ProgressMatcherType2(RoutineManager):
     def __init__(self, bs):
         super().__init__(bs)
         self.domain = self.bs.dates
