@@ -19,7 +19,7 @@ class PageItem(PageBlock, ChildrenAndContentsBearer):
         self._contents = PageItemContents(self, page_id)
 
         if isinstance(self.caller, ItemAttachments):
-            self.caller.attach_page(self)
+            self.caller.attach(self)
 
     @property
     def payload(self) -> PageItemContents:

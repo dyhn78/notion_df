@@ -13,6 +13,9 @@ class DateFormat:
         self.start = self.__add_explicit_tz(start)
         self.end = self.__add_explicit_tz(end)
 
+    def is_emptylike(self):
+        return self.start is None and self.end is None
+
     @staticmethod
     def __add_explicit_tz(date_val: Optional[Union[datetime, date]]) \
             -> Optional[Union[datetime, date]]:

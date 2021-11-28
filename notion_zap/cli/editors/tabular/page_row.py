@@ -19,7 +19,7 @@ class PageRow(PageBlock):
 
         from .pagelist import PageList
         if isinstance(self.caller, PageList):
-            self.caller.attach_page(self)
+            self.caller.attach(self)
 
     @property
     def payload(self):

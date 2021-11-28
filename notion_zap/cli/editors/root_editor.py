@@ -1,11 +1,11 @@
 import os
 from collections import defaultdict
 from pprint import pprint
-from typing import Optional
+from typing import Optional, Any
 
 from notion_client import Client, AsyncClient
 
-from notion_zap.cli.struct import PropertyFrame
+from notion_zap.cli.struct import PropertyFrame, DateFormat
 from notion_zap.cli.utility import page_url_to_id, stopwatch
 from .base import Editor, MasterEditor
 
@@ -26,10 +26,12 @@ class RootEditor(Editor):
             client = Client(auth=self.token)
         self.client = client
 
-        self._top_editors: list[MasterEditor] = []
+        self._stems: list[MasterEditor] = []
         self._by_id = {}
         self._by_title = defaultdict(list)
-        self._by_alias = {}
+
+        from . import Database
+        self._by_alias: dict[Any, Database] = {}
 
         # global settings, will be applied uniformly to all child-editors.
         self.exclude_archived = exclude_archived
@@ -61,6 +63,8 @@ class RootEditor(Editor):
         return os.environ['NOTION_TOKEN'].strip("'").strip('"')
 
     def is_emptylike(self, value):
+        if isinstance(value, DateFormat):
+            return value.is_emptylike()
         return str(value) in self.emptylike_strings
 
     @property
@@ -75,7 +79,7 @@ class RootEditor(Editor):
         return self._by_title
 
     @property
-    def by_alias(self) -> dict[str, MasterEditor]:
+    def by_alias(self):
         return self._by_alias
 
     @property
@@ -83,16 +87,16 @@ class RootEditor(Editor):
         return self._by_alias.values()
 
     def save_required(self):
-        return any([editor.save_required() for editor in self._top_editors])
+        return any([editor.save_required() for editor in self._stems])
 
     def save_info(self, pprint_this=True):
-        preview = [editor.save_info() for editor in self._top_editors]
+        preview = [editor.save_info() for editor in self._stems]
         if pprint_this:
             pprint(preview)
         return preview
 
     def save(self):
-        for editor in self._top_editors:
+        for editor in self._stems:
             editor.save()
         stopwatch('작업 완료')
 
@@ -101,7 +105,7 @@ class RootEditor(Editor):
         from . import Database
         database_id = page_url_to_id(id_or_url)
         database = Database(self, database_id, database_alias, frame)
-        self._top_editors.append(database)
+        self._stems.append(database)
         return database
 
     def open_page_row(self, id_or_url: str,
@@ -109,19 +113,19 @@ class RootEditor(Editor):
         from . import PageRow
         page_id = page_url_to_id(id_or_url)
         page = PageRow(self, page_id, frame=frame)
-        self._top_editors.append(page)
+        self._stems.append(page)
         return page
 
     def open_page_item(self, id_or_url: str):
         from . import PageItem
         page_id = page_url_to_id(id_or_url)
         page = PageItem(self, page_id)
-        self._top_editors.append(page)
+        self._stems.append(page)
         return page
 
     def open_text_item(self, id_or_url: str):
         from . import TextItem
         block_id = page_url_to_id(id_or_url)
         editor = TextItem(self, block_id)
-        self._top_editors.append(editor)
+        self._stems.append(editor)
         return editor

@@ -1,7 +1,7 @@
 from typing import Union
 
 from notion_zap.cli.gateway import parsers
-from .bearer import ItemAttachments
+from .master_and_attachments import ItemAttachments
 from ..with_contents import ContentsBearer
 from ...base import ListEditor, MasterEditor
 

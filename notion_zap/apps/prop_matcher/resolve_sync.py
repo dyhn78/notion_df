@@ -15,7 +15,7 @@ class PropertySyncResolver:
         self.root = editors.RootEditor()
         self.date_range = date_range
         self.journals = self.root.open_database(*DatabaseInfo.JOURNALS,
-                                                frame=MatchFrames.JOURNALS).pagelist
+                                                frame=MatchFrames.JOURNALS).pages
 
     def execute(self):
         self.make_query()

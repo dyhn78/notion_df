@@ -89,7 +89,11 @@ class BlockChildren(BlockEditor, metaclass=ABCMeta):
         self._by_title = defaultdict(list)
 
     @abstractmethod
-    def iter_all(self) -> Iterator[MasterEditor]:
+    def attach(self, child: MasterEditor):
+        pass
+
+    @abstractmethod
+    def detach(self, child: MasterEditor):
         pass
 
     @property
@@ -104,6 +108,10 @@ class BlockChildren(BlockEditor, metaclass=ABCMeta):
     def by_title(self) -> dict[str, list[MasterEditor]]:
         # will be auto-updated by child blocks.
         return self._by_title
+
+    @abstractmethod
+    def iter_all(self) -> Iterator[MasterEditor]:
+        pass
 
     def __iter__(self):
         """this will return ALL child blocks, even if

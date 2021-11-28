@@ -7,7 +7,7 @@ class ReadingDBController:
     def __init__(self):
         self.root = editors.RootEditor()
         self.pagelist = self.root.open_database(
-            *DatabaseInfo.READINGS, ReadingDB_FRAME).pagelist
+            *DatabaseInfo.READINGS, ReadingDB_FRAME).pages
         self.status_enum = ReadingDB_FRAME.by_tag['edit_status'].prop_values
 
 

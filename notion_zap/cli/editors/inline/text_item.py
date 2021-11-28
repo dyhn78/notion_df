@@ -20,7 +20,7 @@ class TextItem(ItemsBearer, ContentsBearer):
         self._contents = TextItemContents(self, block_id)
 
         if isinstance(self.caller, ItemAttachments):
-            self.caller.attach_text(self)
+            self.caller.attach(self)
 
     def save_required(self) -> bool:
         return (self.contents.save_required() or

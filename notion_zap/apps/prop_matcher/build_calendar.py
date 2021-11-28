@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import date
 
 from .matchers import *
-from .common.struct import Matcher, LocalBase
+from .common.struct import Matcher, RootManager
 
 
 class CalendarController:
@@ -13,22 +13,23 @@ class CalendarController:
         self.fetch_empties = fetch_empties
         self.fetch_year_range = (
             CalendarDateRange(fetch_year_range) if fetch_year_range else None)
-        self.bs = CalendarBase(fetch_year_range, empties=fetch_empties, request_size=0)
+        self.bs = CalendarRootManager(
+            fetch_year_range, empties=fetch_empties, request_size=0)
 
     def execute(self):
         self.bs.fetch_all()
         agents: list[Matcher] = [
             DateTargetFiller(self.bs, self.disable_overwrite,
                              self.fetch_year_range),
-            PeriodTargetAutoFiller(self.bs, self.disable_overwrite,
-                                   self.fetch_year_range)
+            PeriodTargetFiller(self.bs, self.disable_overwrite,
+                               self.fetch_year_range)
         ]
         for agent in agents:
             agent.execute()
         self.bs.save()
 
 
-class CalendarBase(LocalBase):
+class CalendarRootManager(RootManager):
     MAX_REQUEST_SIZE = 50
 
     def __init__(self,

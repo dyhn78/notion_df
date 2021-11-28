@@ -18,7 +18,7 @@ class ProgressMatcherType1(Matcher):
         self.reference2 = self.bs.schedules
 
     def execute(self):
-        for dom in self.domain:
+        for dom in self.domain.pages:
             for T_tar in self.TL_tar:
                 tar_ids = []
                 ref1s = fetch_all_pages_of_relation(dom, self.reference1, self.Tdoms_ref1)
@@ -39,7 +39,7 @@ class ProgressMatcherType2(Matcher):
         self.to_tars = ['to_locations', 'to_channels']
 
     def execute(self):
-        for dom in self.domain:
+        for dom in self.domain.pages:
             for to_tar in self.to_tars:
                 dom_date: DateFormat = dom.props.read_at('manual_date')
                 if (not dom_date.start_date

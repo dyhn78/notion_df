@@ -44,6 +44,9 @@ class PageRowProperty(PagePayload, encoders.PageRowPropertybyKey):
             -> encoders.PropertyEncoder:
         cannot_overwrite = (self.root.disable_overwrite and
                             not self.root.is_emptylike(self.read_of(prop_key)))
+        # print(f"{self.read_of(prop_key)=},"
+        #       f"{self.root.is_emptylike(self.read_of(prop_key))=}, "
+        #       f"{cannot_overwrite=}")
         if cannot_overwrite:
             return carrier
         if prop_key == self.frame.title_key:

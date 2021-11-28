@@ -3,13 +3,13 @@ from __future__ import annotations
 from functools import reduce
 
 from .matchers import *
-from .common.struct import Matcher, LocalBase
+from .common.struct import Matcher, RootManager
 from ...cli import editors
 
 
 class RegularMatchController:
     def __init__(self, request_size=50):
-        self.bs = RegularLocalBase(request_size)
+        self.bs = RegularRootManager(request_size)
 
     def execute(self):
         self.bs.fetch()
@@ -19,6 +19,7 @@ class RegularMatchController:
             DateMatcherType2(self.bs),
             DateMatcherType3(self.bs),
             DateMatcherType4(self.bs),
+            DateTargetFiller(self.bs, True),
             PeriodMatcherType1(self.bs),
             PeriodMatcherType2(self.bs),
             PeriodMatcherType3(self.bs),
@@ -32,19 +33,18 @@ class RegularMatchController:
         self.bs.save()
 
 
-class RegularLocalBase(LocalBase):
+class RegularRootManager(RootManager):
     def __init__(self, request_size: int):
         super().__init__()
         self.request_size = request_size
         self.root.exclude_archived = True
 
     def fetch(self):
-        for database in self.root.databases:
-            domain = database.pagelist
+        for domain in self.root.databases:
             self.fetch_one(domain)
 
-    def fetch_one(self, domain: editors.PageList):
-        query = domain.open_query()
+    def fetch_one(self, domain: editors.Database):
+        query = domain.pages.open_query()
         maker = query.filter_maker
         ft = query.open_filter()
 
@@ -80,4 +80,4 @@ class RegularLocalBase(LocalBase):
 
         query.push_filter(ft)
         # query.preview()
-        query.execute(self.request_size)
+        query.execute(self.request_size, print_heads=5)

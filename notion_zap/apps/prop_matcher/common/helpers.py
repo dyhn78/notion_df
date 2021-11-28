@@ -14,29 +14,29 @@ def extend_prop(dom: editors.PageRow, prop_tag: str, values: list[str]):
 
 
 def fetch_unique_page_of_relation(
-        dom: editors.PageRow, target: editors.PageList, to_tar: str):
+        dom: editors.PageRow, target: editors.Database, to_tar: str):
     tar_ids = dom.props.read_at(to_tar)
     for tar_id in tar_ids:
-        if tar := target.fetch(tar_id):
+        if tar := target.pages.fetch(tar_id):
             return tar
     return None
 
 
 def fetch_all_pages_of_relation(
-        dom: editors.PageRow, target: editors.PageList,
+        dom: editors.PageRow, target: editors.Database,
         to_tar: str) -> list[editors.PageRow]:
     tar_ids = dom.props.read_at(to_tar)
     res = []
     for tar_id in tar_ids:
-        if tar := target.fetch(tar_id):
+        if tar := target.pages.fetch(tar_id):
             res.append(tar)
     return res
 
 
 def query_unique_page_by_idx(
-        pagelist: editors.PageList, idx, idx_tag: str,
+        database: editors.Database, idx, idx_tag: str,
         prop_type='text'):
-    query = pagelist.open_query()
+    query = database.pages.open_query()
     maker = query.filter_maker.at(idx_tag, prop_type)
     ft = maker.equals(idx)
     query.push_filter(ft)

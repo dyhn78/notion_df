@@ -19,12 +19,21 @@ class DateMatcherAbs(Matcher, metaclass=ABCMeta):
     T_tar = 'to_dates'
     Ttars_idx = 'title'
     Ttars_date = 'manual_date'
+    target_by_idx: dict[str, editors.PageRow] = {}
+    # this boolean flag is SHARED by all implemented classes,
+    #  so that prevent it from being initialized multiple times.
+    target_by_idx_initalized = False
 
     def __init__(self, bs):
         super().__init__(bs)
         self.target = self.bs.dates
         self.reference = self.bs.journals
-        self.target_by_idx = self.bs.dates.by_idx_value_at(self.Ttars_idx)
+
+    @classmethod
+    def initalize_idx(cls, self):
+        if not cls.target_by_idx_initalized:
+            cls.target_by_idx = self.target.pages.by_idx_at(cls.Ttars_idx)
+            cls.target_by_idx_initalized = True
 
     def find_or_create_tar_by_date(self, date_val: Union[dt.datetime, dt.date]):
         if tar := self.find_tar_by_date(date_val):
@@ -43,7 +52,7 @@ class DateMatcherAbs(Matcher, metaclass=ABCMeta):
         return None
 
     def create_tar_by_date(self, date_val: Union[dt.datetime, dt.date]):
-        tar = self.target.create_page()
+        tar = self.target.pages.create_page()
         date_handler = DateHandler(date_val)
 
         tar_idx = date_handler.strf_dig6_and_weekday()
@@ -55,37 +64,6 @@ class DateMatcherAbs(Matcher, metaclass=ABCMeta):
         return tar.save()
 
 
-class DateTargetFiller(DateMatcherAbs):
-    def __init__(self, bs, disable_overwrite: bool, create_date_range):
-        super().__init__(bs)
-        from ..build_calendar import CalendarDateRange
-        self.create_date_range: CalendarDateRange = create_date_range
-        self.disable_overwrite = disable_overwrite
-
-    def execute(self):
-        self.bs.root.disable_overwrite = self.disable_overwrite
-        for tar in self.target:
-            self.update_tar(tar)
-        if self.create_date_range:
-            for date_val in self.create_date_range.iter_date():
-                if self.find_tar_by_date(date_val):
-                    continue
-                self.create_tar_by_date(date_val)
-        self.bs.root.disable_overwrite = False
-
-    def update_tar(self, tar: editors.PageRow, tar_idx=None):
-        """provide tar_idx manually if yet not synced to server-side"""
-        if tar_idx is None:
-            tar_idx = tar.props.read_at(self.Ttars_idx)
-        date_handler = DateHandler.from_strf_dig6(tar_idx)
-        new_tar_idx = date_handler.strf_dig6_and_weekday()
-        if tar_idx != new_tar_idx:
-            tar.props.write_date_at(self.Ttars_idx, new_tar_idx)
-        date_range = DateFormat(date_handler.date)
-        if date_range != tar.props.read_at(self.Ttars_date):
-            tar.props.write_date_at(self.Ttars_date, date_range)
-
-
 class DateMatcherType1(DateMatcherAbs):
     Tdoms_updom = 'up_self'
 
@@ -94,12 +72,13 @@ class DateMatcherType1(DateMatcherAbs):
         self.domains = [self.bs.journals]
 
     def execute(self):
+        self.initalize_idx(self)
         for domain in self.domains:
-            for dom in domain:
+            for dom in domain.pages:
                 if tar := self.determine_tar(dom, domain):
                     dom.props.write_relation_at(self.T_tar, tar.block_id)
 
-    def determine_tar(self, dom: editors.PageRow, domain: editors.PageList):
+    def determine_tar(self, dom: editors.PageRow, domain: editors.Database):
         if dom.props.read_at(self.T_tar):
             return None
         if ref := fetch_unique_page_of_relation(dom, domain, self.Tdoms_updom):
@@ -123,8 +102,9 @@ class DateMatcherType2(DateMatcherAbs):
         self.domains = [self.bs.schedules]
 
     def execute(self):
+        self.initalize_idx(self)
         for domain in self.domains:
-            for dom in domain:
+            for dom in domain.pages:
                 if tar := self.match_created_dates(dom):
                     dom.props.write_relation_at(self.Tdoms_tar1, tar.block_id)
                 if tar := self.match_scheduled_dates(dom):
@@ -156,15 +136,16 @@ class DateMatcherType3(DateMatcherAbs):
         self.reference2 = self.bs.schedules
 
     def execute(self):
-        for dom in self.bs.writings:
-            if tar := self.match_dates(dom):
-                dom.props.write_relation_at(self.T_tar, tar.block_id)
-        for dom in self.bs.readings:
-            if tar := self.match_dates(dom):
-                dom.props.write_relation_at(self.T_tar, tar.block_id)
+        self.initalize_idx(self)
+        for domain in self.domains:
+            for dom in domain.pages:
+                if tar := self.match_dates(dom):
+                    dom.props.write_relation_at(self.T_tar, tar.block_id)
 
     def match_dates(self, dom: editors.PageRow):
-        if self.regard_as_done(dom):
+        if dom.props.read_at(self.T_tar):
+            return None
+        if dom.parent is self.bs.readings and dom.props.read_at('status_exclude'):
             return None
         if tar := self.determine_tar_from_ref(
                 dom, self.reference, self.Tdoms_ref, self.T_tar):
@@ -172,22 +153,14 @@ class DateMatcherType3(DateMatcherAbs):
         if tar := self.determine_tar_from_ref(
                 dom, self.reference2, self.Tdoms_ref2, self.Tref2s_tar):
             return tar
-        if dom.props.read_at('is_book'):
+        if dom.parent is self.bs.readings and dom.props.read_at('is_book'):
             return None
         if tar := self.determine_tar_from_auto_date(dom):
             return tar
         return None
 
-    def regard_as_done(self, dom: editors.PageRow):
-        if dom.parent is self.bs.writings.master:
-            return dom.props.read_at(self.T_tar)
-        elif dom.parent is self.bs.readings.master:
-            return (dom.props.read_at(self.T_tar)
-                    or dom.props.get_at('status_exclude'))
-        raise ValueError(dom)
-
     def determine_tar_from_ref(self, dom: editors.PageRow,
-                               reference: editors.PageList, doms_ref, refs_tar):
+                               reference: editors.Database, doms_ref, refs_tar):
         refs = fetch_all_pages_of_relation(dom, reference, doms_ref)
         tars = []
         for ref in refs:
@@ -214,8 +187,9 @@ class DateMatcherType4(DateMatcherAbs):
         self.domains = [self.bs.memos]
 
     def execute(self):
+        self.initalize_idx(self)
         for domain in self.domains:
-            for dom in domain:
+            for dom in domain.pages:
                 if tar := self.determine_tar(dom):
                     dom.props.write_relation_at(self.T_tar, tar.block_id)
 
@@ -234,6 +208,44 @@ class DateMatcherType4(DateMatcherAbs):
         return self.find_or_create_tar_by_date(date_val)
 
 
+class DateTargetFiller(DateMatcherAbs):
+    def __init__(self, bs, disable_overwrite: bool, create_date_range=None):
+        super().__init__(bs)
+        from ..build_calendar import CalendarDateRange
+        self.create_date_range: CalendarDateRange = create_date_range
+        self.disable_overwrite = disable_overwrite
+
+    def execute(self):
+        self.bs.root.disable_overwrite = self.disable_overwrite
+        for tar in self.target.pages:
+            self.update_tar(tar)
+        if self.create_date_range:
+            for date_val in self.create_date_range.iter_date():
+                if self.find_tar_by_date(date_val):
+                    continue
+                self.create_tar_by_date(date_val)
+        self.bs.root.disable_overwrite = False
+
+    def update_tar(self, tar: editors.PageRow, tar_idx=None):
+        """provide tar_idx manually if yet not synced to server-side"""
+        if tar_idx is None:
+            tar_idx = tar.props.read_at(self.Ttars_idx)
+        date_handler = DateHandler.from_strf_dig6(tar_idx)
+        new_tar_idx = date_handler.strf_dig6_and_weekday()
+        if tar_idx != new_tar_idx:
+            tar.props.write_date_at(self.Ttars_idx, new_tar_idx)
+        date_range = DateFormat(date_handler.date)
+        if date_range != tar.props.read_at(self.Ttars_date):
+            tar.props.write_date_at(self.Ttars_date, date_range)
+            tar.save_preview()
+            tar.save()
+        # print(f"{tar=}, {tar_idx=}, {date_range=},"
+        #       f"{tar.props.read_at(self.Ttars_date)=},"
+        #       f"{date_range != tar.props.read_at(self.Ttars_date)=}")
+
+
+# deprecated
+
 class DateDomainFiller(DateMatcherAbs):
     Tdoms_date = 'manual_date'
     Ttimestr = 'timestr'
@@ -249,12 +261,13 @@ class DateDomainFiller(DateMatcherAbs):
         ]
 
     def execute(self):
+        self.initalize_idx(self)
         self.bs.root.disable_overwrite = self.disable_overwrite
         for domain in self.domains_type1:
-            for dom in domain:
+            for dom in domain.pages:
                 self.update_type1(dom)
         for domain in self.domains_type2:
-            for dom in domain:
+            for dom in domain.pages:
                 self.update_type2(dom)
         self.bs.root.disable_overwrite = False
 
@@ -274,7 +287,7 @@ class DateDomainFiller(DateMatcherAbs):
 
     def get_date_val(self, dom: editors.PageRow):
         tar_ids = dom.props.read_at(self.T_tar)
-        tar = self.target.fetch(tar_ids[0])
+        tar = self.target.pages.fetch(tar_ids[0])
         date_val: DateFormat = tar.props.read_at(self.Ttars_date)
         return date_val.start_date
 

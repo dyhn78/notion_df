@@ -33,13 +33,13 @@ class PageList(BlockChildren):
     def create_page(self):
         return PageRow(caller=self, page_id='', frame=self.frame)
 
-    def attach_page(self, page: PageRow):
+    def attach(self, page: PageRow):
         if page.yet_not_created:
             self.create.attach_page(page)
         else:
             self.update.attach_page(page)
 
-    def detach_page(self, page: PageRow):
+    def detach(self, page: PageRow):
         if page.yet_not_created:
             self.create.detach_page(page)
         else:
@@ -62,7 +62,7 @@ class PageList(BlockChildren):
             page.props.retrieve()
             return page
         except APIResponseError:
-            self.detach_page(page)
+            self.detach(page)
             return None
 
     def save(self):
@@ -92,6 +92,20 @@ class PageList(BlockChildren):
     def iter_all(self) -> Iterator[PageRow]:
         return iter(self.list_all())
 
+    def iter_valids(self, exclude_archived_blocks=True,
+                    exclude_yet_not_created_blocks=True) -> list[PageRow]:
+        for child in self.iter_all():
+            if exclude_archived_blocks and child.archived:
+                continue
+            if exclude_yet_not_created_blocks and child.yet_not_created:
+                continue
+            yield child
+
+    def list_valids(self, exclude_archived_blocks=True,
+                    exclude_yet_not_created_blocks=True):
+        return list(self.iter_valids(
+            exclude_archived_blocks, exclude_yet_not_created_blocks))
+
     def __iter__(self) -> Iterator[PageRow]:
         return self.iter_all()
 
@@ -104,7 +118,7 @@ class PageList(BlockChildren):
     def by_value_at(self, prop_tag: str):
         return self.by_value_of(self.frame.key_at(prop_tag))
 
-    def by_idx_value_of(self, prop_key: str):
+    def by_idx_of(self, prop_key: str):
         try:
             res = {}
             for page in self.list_all():
@@ -116,8 +130,8 @@ class PageList(BlockChildren):
             pprint(f"value : {page_object.block_id}")
             raise TypeError
 
-    def by_idx_value_at(self, prop_tag: str):
-        return self.by_idx_value_of(self.frame.key_at(prop_tag))
+    def by_idx_at(self, prop_tag: str):
+        return self.by_idx_of(self.frame.key_at(prop_tag))
 
 
 class QueryWithCallback(requestors.Query):
@@ -126,8 +140,13 @@ class QueryWithCallback(requestors.Query):
         super().__init__(editor, frame)
         self.callback = execute_callback
 
-    def execute(self, request_size=0):
+    def execute(self, request_size=0, print_heads=0):
         # TODO: 수가 적으면 페이지 제목을 모두 (리스트 형태로) 프린트하게 수정
         response = super().execute(request_size)
         pages = self.callback(response)
+        if pages and print_heads:
+            heads = [(page.title, page.block_url) for page in pages[:print_heads]]
+            if pages[print_heads:]:
+                heads.append(('...', '...'))
+            pprint(heads)
         return pages

@@ -34,6 +34,26 @@ class ItemAttachments(BlockChildren):
         from .creator import ItemsCreator
         self.create = ItemsCreator(self)
 
+    def attach(self, child: MasterEditor):
+        if not self.master.can_have_children:
+            raise BlockTypeError(self.master)
+
+        # TODO: child의 이전 parent 로부터 먼저 detach 해야 한다.
+
+        from ...inline import TextItem, PageItem
+        if child.yet_not_created:
+            if isinstance(child, TextItem):
+                self.create.attach_text_item(child)
+            elif isinstance(child, PageItem):
+                self.create.attach_page_item(child)
+            else:
+                raise ValueError(f"{child=}")
+        else:
+            self.update.attach_item(child)
+
+    def detach(self, child: MasterEditor):
+        raise NotImplementedError
+
     def create_text(self):
         from ...inline import TextItem
         return TextItem(self, '')
@@ -41,33 +61,6 @@ class ItemAttachments(BlockChildren):
     def create_page(self):
         from ...inline import PageItem
         return PageItem(self, '')
-
-    def attach_text(self, child):
-        from ...inline import TextItem
-        assert isinstance(child, TextItem)
-        if not self.master.can_have_children:
-            raise BlockTypeError(self.master)
-        if child.yet_not_created:
-            self.create.attach_text_item(child)
-        else:
-            self.update.attach_item(child)
-
-    def attach_page(self, child):
-        from ...inline import PageItem
-        assert isinstance(child, PageItem)
-        if not self.master.can_have_children:
-            raise BlockTypeError(self.master)
-        if child.yet_not_created:
-            self.create.attach_page_item(child)
-        else:
-            self.update.attach_item(child)
-
-    # def create_page_alt(self):
-    #     if not self.master.can_have_children:
-    #         raise BlockTypeError(self.master)
-    #     from ...inline.page_item import PageItem
-    #     space = self.create.make_space_for_page_item()
-    #     item = PageItem(space, '')
 
     def fetch(self, request_size=0):
         requestor = requestors.GetBlockChildren(self)

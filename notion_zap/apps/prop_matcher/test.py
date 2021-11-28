@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 from notion_zap.apps.prop_matcher.matchers import *
-from notion_zap.apps.prop_matcher.common.struct import Matcher, LocalBase
+from notion_zap.apps.prop_matcher.common.struct import Matcher, RootManager
 from notion_zap.cli import editors
 
 
 class GcalMatchController:
     def __init__(self, request_size=50):
-        self.bs = GcalLocalBase(request_size)
+        self.bs = GcalRootManager(request_size)
 
     def execute(self):
         self.bs.fetch()
@@ -20,7 +20,7 @@ class GcalMatchController:
         self.bs.save()
 
 
-class GcalLocalBase(LocalBase):
+class GcalRootManager(RootManager):
     def __init__(self, request_size: int):
         super().__init__()
         self.request_size = request_size

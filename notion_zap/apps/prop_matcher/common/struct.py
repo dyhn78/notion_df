@@ -7,7 +7,7 @@ from notion_zap.cli import editors
 
 
 class Matcher(ABC):
-    def __init__(self, bs: LocalBase):
+    def __init__(self, bs: RootManager):
         self.bs = bs
 
     @abstractmethod
@@ -15,23 +15,23 @@ class Matcher(ABC):
         pass
 
 
-class LocalBase:
+class RootManager:
     def __init__(self):
         self.root = editors.RootEditor()
         self.periods = self.root.open_database(*DatabaseInfo.PERIODS,
-                                               frame=MatchFrames.PERIODS).pagelist
+                                               frame=MatchFrames.PERIODS)
         self.dates = self.root.open_database(*DatabaseInfo.DATES,
-                                             frame=MatchFrames.DATES).pagelist
+                                             frame=MatchFrames.DATES)
         self.journals = self.root.open_database(*DatabaseInfo.JOURNALS,
-                                                frame=MatchFrames.JOURNALS).pagelist
+                                                frame=MatchFrames.JOURNALS)
         self.writings = self.root.open_database(*DatabaseInfo.WRITINGS,
-                                                frame=MatchFrames.WRITINGS).pagelist
+                                                frame=MatchFrames.WRITINGS)
         self.memos = self.root.open_database(*DatabaseInfo.MEMOS,
-                                             frame=MatchFrames.MEMOS).pagelist
+                                             frame=MatchFrames.MEMOS)
         self.schedules = self.root.open_database(*DatabaseInfo.SCHEDULES,
-                                                 frame=MatchFrames.SCHEDULES).pagelist
+                                                 frame=MatchFrames.SCHEDULES)
         self.readings = self.root.open_database(*DatabaseInfo.READINGS,
-                                                frame=MatchFrames.READINGS).pagelist
+                                                frame=MatchFrames.READINGS)
 
     def save(self):
         self.root.save()

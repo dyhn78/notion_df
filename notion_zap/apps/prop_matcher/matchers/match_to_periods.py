@@ -19,7 +19,7 @@ class PeriodMatcherAbs(Matcher, metaclass=ABCMeta):
     def __init__(self, bs):
         super().__init__(bs)
         self.target = self.bs.periods
-        self.target_by_idx = self.target.by_idx_value_at(self.Ttars_idx)
+        self.target_by_idx = self.target.pages.by_idx_at(self.Ttars_idx)
 
     def find_or_create_by_date_val(self, date_val: dt.date):
         if tar := self.find_by_date_val(date_val):
@@ -56,7 +56,7 @@ class PeriodMatcherAbs(Matcher, metaclass=ABCMeta):
 
     def update_tar(self, tar: editors.PageRow, tar_idx_val=None,
                    disable_overwrite=False):
-        """provide tar_idx_val manually if yet not synced to server-side"""
+        """provide tar_idx_val manually if yet-not-synced to server-side"""
         if tar_idx_val is None:
             tar_idx_val = tar.props.read_at(self.Ttars_idx)
         date_handler = DateHandler.from_strf_year_and_week(tar_idx_val)
@@ -69,23 +69,6 @@ class PeriodMatcherAbs(Matcher, metaclass=ABCMeta):
             self.bs.root.disable_overwrite = False
 
 
-class PeriodTargetAutoFiller(PeriodMatcherAbs):
-    def __init__(self, bs, disable_overwrite, create_date_range):
-        super().__init__(bs)
-        self.disable_overwrite = disable_overwrite
-        from ..build_calendar import CalendarDateRange
-        self.create_date_range: CalendarDateRange = create_date_range
-
-    def execute(self):
-        for tar in self.target:
-            self.update_tar(tar, disable_overwrite=self.disable_overwrite)
-        if self.create_date_range:
-            for date_val in self.create_date_range.iter_date():
-                if self.find_by_date_val(date_val):
-                    continue
-                self.create_by_date_val(date_val)
-
-
 class PeriodMatcherType1(PeriodMatcherAbs):
     Tdoms_date = 'manual_date'
 
@@ -95,7 +78,7 @@ class PeriodMatcherType1(PeriodMatcherAbs):
 
     def execute(self):
         for domain in self.domains:
-            for dom in domain:
+            for dom in domain.pages:
                 if tar := self.match_periods(dom):
                     dom.props.write_relation_at(self.T_tar, tar.block_id)
 
@@ -120,7 +103,7 @@ class PeriodMatcherType2(PeriodMatcherAbs):
 
     def execute(self):
         for domain in self.domains:
-            for dom in domain:
+            for dom in domain.pages:
                 if tar := self.match_periods(dom):
                     dom.props.write_relation_at(self.T_tar, tar.block_id)
 
@@ -146,7 +129,7 @@ class PeriodMatcherType3(PeriodMatcherAbs):
 
     def execute(self):
         for domain in self.domains:
-            for dom in domain:
+            for dom in domain.pages:
                 if tar := self.match_created_periods(dom):
                     dom.props.write_relation_at(self.Tdoms_tar1, tar.block_id)
                 if tar := self.match_scheduled_periods(dom):
@@ -167,3 +150,20 @@ class PeriodMatcherType3(PeriodMatcherAbs):
             if tar := fetch_unique_page_of_relation(ref, self.target, self.T_tar):
                 return tar
         return None
+
+
+class PeriodTargetFiller(PeriodMatcherAbs):
+    def __init__(self, bs, disable_overwrite, create_date_range):
+        super().__init__(bs)
+        self.disable_overwrite = disable_overwrite
+        from ..build_calendar import CalendarDateRange
+        self.create_date_range: CalendarDateRange = create_date_range
+
+    def execute(self):
+        for tar in self.target:
+            self.update_tar(tar, disable_overwrite=self.disable_overwrite)
+        if self.create_date_range:
+            for date_val in self.create_date_range.iter_date():
+                if self.find_by_date_val(date_val):
+                    continue
+                self.create_by_date_val(date_val)

@@ -14,9 +14,9 @@ class TopologyBuilder:
         self.G = nx.DiGraph()
         self.root = editors.RootEditor()
         self.themes = self.root.open_database(*DatabaseInfo.THEMES,
-                                              NetworkFrames.THEMES).pagelist
+                                              NetworkFrames.THEMES).pages
         self.ideas = self.root.open_database(*DatabaseInfo.IDEAS,
-                                             NetworkFrames.IDEAS).pagelist
+                                             NetworkFrames.IDEAS).pages
         self.all: dict[str, editors.PageList] = {
             'themes': self.themes,
             'ideas': self.ideas

@@ -22,11 +22,11 @@ class Database(ChildrenBearer):
         self.schema = DatabaseSchema(self, database_id)
 
         from .pagelist import PageList
-        self._pagelist = PageList(self)
+        self._pages = PageList(self)
 
     def _fetch_children(self, request_size=0):
         """randomly query with the amount of <request_size>."""
-        query = self.pagelist.open_query()
+        query = self.pages.open_query()
         query.execute(request_size)
 
     @property
@@ -34,16 +34,12 @@ class Database(ChildrenBearer):
         return self.schema
 
     @property
-    def pagelist(self):
-        return self._pagelist
-
-    @property
-    def pl(self):
-        return self.pagelist
+    def pages(self):
+        return self._pages
 
     @property
     def children(self) -> BlockChildren:
-        return self.pagelist
+        return self.pages
 
     def save_required(self) -> bool:
         return (self.payload.save_required()
@@ -61,13 +57,13 @@ class Database(ChildrenBearer):
         requestor.print_comments()
 
     def save_info(self):
-        return {**self.pagelist.save_info()}
+        return {**self.pages.save_info()}
 
     def save(self):
-        self.pagelist.save()
+        self.pages.save()
 
     def reads(self):
-        return {'pagelist': self.pagelist.by_title}
+        return {'pagelist': self.pages.by_title}
 
     def reads_rich(self):
         return self.reads()
