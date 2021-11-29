@@ -1,10 +1,12 @@
 import os
 from typing import Callable
+from subprocess import CREATE_NO_WINDOW
 
 from selenium import webdriver
-from selenium.common.exceptions import \
-    NoSuchElementException, StaleElementReferenceException
+from selenium.common.exceptions import (
+    NoSuchElementException, StaleElementReferenceException)
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
 
 from notion_zap.cli.utility import stopwatch
 
@@ -24,7 +26,7 @@ def retry_webdriver(function: Callable, recursion_limit=1) -> Callable:
     return wrapper
 
 
-class SeleniumScraper:
+class SeleniumBase:
     DRIVER_CNT = 1
     CHROMEDRIVER_PATH = os.path.join(os.path.dirname(__file__), 'chromedriver95.exe')
 
@@ -32,12 +34,18 @@ class SeleniumScraper:
         self.drivers = []
 
     def start(self):
+        # https://www.zacoding.com/en/post/python-selenium-hide-console/
         for i in range(self.DRIVER_CNT):
-            driver = webdriver.Chrome(self.CHROMEDRIVER_PATH, options=self.options,
-                                      service_log_path=os.devnull)
+            service = Service(self.CHROMEDRIVER_PATH)
+            service.creationflags = CREATE_NO_WINDOW
+            driver = webdriver.Chrome(service=service,
+                                      options=self.options)
             self.drivers.append(driver)
-            # driver.minimize_window()
             driver.start_client()
+
+    def quit(self):
+        for driver in self.drivers:
+            driver.quit()
 
     @property
     def options(self):
@@ -46,10 +54,6 @@ class SeleniumScraper:
         options.add_argument('--disable-dev-shm-usage')
         options.add_argument('--no-sandbox')
         return options
-
-    def quit(self):
-        for driver in self.drivers:
-            driver.quit()
 
     def __del__(self):
         self.quit()

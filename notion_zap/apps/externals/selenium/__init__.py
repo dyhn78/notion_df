@@ -1,1 +1,1 @@
-from .selenium_client import SeleniumScraper, retry_webdriver
+from .selenium_client import SeleniumBase, retry_webdriver

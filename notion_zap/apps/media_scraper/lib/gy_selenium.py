@@ -6,10 +6,10 @@ from selenium.common.exceptions import StaleElementReferenceException, \
     NoSuchElementException
 
 from ..common.helpers import try_method_twice, remove_emoji
-from ...externals.selenium import SeleniumScraper
+from ...externals.selenium import SeleniumBase
 
 
-class GoyangLibrary(SeleniumScraper):
+class GoyangLibrary(SeleniumBase):
     DRIVER_CNT = 2
     GAJWA_LIB = '가좌도서관'
     OTHER_LIB = '고양시 상호대차'

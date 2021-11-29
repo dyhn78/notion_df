@@ -15,16 +15,15 @@ def scrap_yes24_url(book_name) -> str:
           f"qdomain=%c5%eb%c7%d5%b0%cb%bb%f6&query={book_name_encoded}"
 
     response = requests.get(url)
-    up_soup = BeautifulSoup(response.text, 'html5lib')
+    soup = BeautifulSoup(response.text, 'html5lib')
 
-    tag_book = '#schMid_wrap > div:nth-child(4) > div.goodsList.goodsList_list > table ' \
-               '> tbody > tr:nth-child(1) > td.goods_infogrp > ' \
-               'p.goods_name.goods_icon > a'
-    book = up_soup.select_one(tag_book)
+    tag_book = '#yesSchList > li:nth-child(1) > div > ' \
+               'div.item_info > div.info_row.info_name > a.gd_name'
+    book = soup.select_one(tag_book)
 
     try:
         url_part = book.attrs['href']
-        if 'bookstore' not in url_part:
+        if 'yes24' not in url_part:
             url = url_main_page + url_part
         else:
             url = url_part

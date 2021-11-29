@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from notion_zap.apps.prop_matcher.mamagers import *
+from notion_zap.apps.prop_matcher.managers import *
 from notion_zap.apps.prop_matcher.common.struct import EditorManager, EditorBase
 from notion_zap.cli import editors
 

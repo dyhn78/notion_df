@@ -1,36 +1,23 @@
-from notion_zap.cli import editors, utility
+from notion_zap.cli import editors
+from notion_zap.cli.utility import stopwatch
 from .contents_append import AppendContents
 from .yes24_main import scrap_yes24_main
 from .yes24_url import scrap_yes24_url
 from ..common.exceptions import NoURLFoundError
-from ..regulars import ReadingDBScrapController, ReadingPageScrapController
+from ..regulars import RegularScrapStatusChecker
 from ..remove_duplicates import remove_dummy_blocks
 
 
-class BookstoreScrapManager:
-    # TODO : yes24에 자료 없을 경우 대비해 알라딘 등 추가 필요.
-    def __init__(self, caller: ReadingDBScrapController):
-        self.caller = caller
-        self.subpage_id = ''
-        self.data = {}
-
-    def execute(self, page_cont: ReadingPageScrapController):
-        scraper = BookstoreScraper(self, page_cont)
-        scraper.execute()
-
-
 class BookstoreScraper:
-    def __init__(self, caller: BookstoreScrapManager,
-                 page_cont: ReadingPageScrapController):
-        self.caller = caller
-        self.cont = page_cont
-        self.page = self.cont.page
+    def __init__(self, status: RegularScrapStatusChecker):
+        self.status = status
+        self.page = self.status.page
 
     def execute(self):
         try:
             self._execute_naive()
         except NoURLFoundError:
-            self.cont.set_as_url_missing()
+            self.status.set_as_url_missing()
 
     def _execute_naive(self):
         url = self.get_or_scrap_url()
@@ -46,7 +33,7 @@ class BookstoreScraper:
     def get_or_scrap_url(self):
         if url := self.page.props.get_at('url', default=''):
             return url
-        if url := scrap_yes24_url(self.cont.get_names()):
+        if url := scrap_yes24_url(self.status.get_names()):
             self.page.props.write_url_at('url', url)
             return url
         return ''
@@ -55,13 +42,13 @@ class BookstoreScraper:
     def scrap_bkst_data(url):
         if 'yes24' in url:
             data = scrap_yes24_main(url)
-            utility.stopwatch(f'yes24: {url}')
+            stopwatch(f'yes24: {url}')
             return data
         if 'aladin' in url:
             pass
 
     def set_metadata(self, data: dict):
-        if self.cont.can_disable_overwrite:
+        if self.status.can_disable_overwrite:
             self.page.root.disable_overwrite = True
 
         if true_name := data.get('name'):

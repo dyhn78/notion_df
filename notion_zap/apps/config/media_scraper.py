@@ -12,15 +12,15 @@ ReadingDB_FRAME = PropertyFrame([
            'append': '1️⃣📥안전하게(append)',
            'overwrite': '2️⃣📥확실하게(overwrite)',
            'continue': '3️⃣📥업데이트만(continue)',
-           'done': '4️⃣👤원제/표지 검정',
-           'url_missing': '5️⃣🔍링크 직접 찾기',
-           'lib_missing': '6️⃣🔍대출정보 직접 찾기',
+           'tentatively_done': '4️⃣👤원제/표지 검정',
+           'url_missing': '5️⃣❓링크 직접 찾기',
+           'lib_missing': '6️⃣❓대출정보 직접 찾기',
            'completely_done': '7️⃣⛳스크랩 완료'
        },
        value_groups_by_tag={
-           'mamagers': ['append', 'overwrite', 'continue'],
+           'regular_scraps': ['append', 'overwrite', 'continue'],
            'need_resets': ['url_missing', 'lib_missing'],
-           'done': ['done', 'completely_done']
+           'done': ['tentatively_done', 'completely_done']
        },
        value_infos_by_tag={'append': (False, False),
                            'continue': (False, False),

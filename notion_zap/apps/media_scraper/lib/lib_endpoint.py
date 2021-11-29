@@ -3,15 +3,16 @@ from typing import Union
 from notion_zap.cli.utility import stopwatch
 from .gy_selenium import GoyangLibrary
 from .snu_selenium import SNULibrary
-from ..regulars import ReadingDBScrapController, ReadingPageScrapController
-from notion_zap.apps.externals.selenium import SeleniumScraper
+from ..regulars import RegularScrapController, RegularScrapStatusChecker
+from notion_zap.apps.externals.selenium import SeleniumBase
 
 
+# TODO : interactive cell 에서 쉽게 사용 가능하게 복잡한 호출 스택 제거.
 class LibraryScrapManager:
-    def __init__(self, caller: ReadingDBScrapController):
+    def __init__(self, caller: RegularScrapController):
         self.caller = caller
         self.tasks = caller.tasks
-        self.drivers: list[SeleniumScraper] = []
+        self.drivers: list[SeleniumBase] = []
         if 'gy_lib' in self.tasks:
             self.gylib = GoyangLibrary()
             self.drivers.append(self.gylib)
@@ -23,7 +24,7 @@ class LibraryScrapManager:
         for browser in self.drivers:
             browser.start()
 
-    def execute(self, page_cont: ReadingPageScrapController):
+    def execute(self, page_cont: RegularScrapStatusChecker):
         scraper = LibraryScraper(self, page_cont)
         scraper.execute()
 
@@ -37,7 +38,7 @@ class LibraryScrapManager:
 
 class LibraryScraper:
     def __init__(self, manager: LibraryScrapManager,
-                 cont: ReadingPageScrapController):
+                 cont: RegularScrapStatusChecker):
         self.manager = manager
         self.cont = cont
         self.page = self.cont.page

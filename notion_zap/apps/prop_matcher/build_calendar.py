@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import date
 
-from .mamagers import *
+from .managers import *
 from .common.struct import EditorManager, EditorBase
 
 

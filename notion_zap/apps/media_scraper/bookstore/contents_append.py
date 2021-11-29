@@ -9,29 +9,13 @@ class AppendContents:
         self.contents = contents
 
     def execute(self):
-        max_depth = 0
-        for text_line in self.contents:
-            depth = self.get_depth(text_line)
-            if depth != 0:
-                max_depth = max(max_depth, depth)
+        max_depth = max(self.get_depth(text_line) for text_line in self.contents)
         for text_line in self.contents:
             block = self.page.attachments.create_text()
             depth = self.get_depth(text_line)
             if depth != 0:
                 depth += (4 - max_depth)
             self.write_unit(block, text_line, depth)
-
-    def get_depth(self, text_line):
-        if self.volume.findall(text_line) or self.volume_eng.findall(text_line):
-            return 1
-        if self.section.findall(text_line) or self.section_eng.findall(text_line):
-            return 2
-        elif self.chapter.findall(text_line) or self.chapter_eng.findall(text_line):
-            return 3
-        elif self.small_chapter.findall(text_line):
-            return 4
-        else:
-            return 0
 
     @staticmethod
     def write_unit(block, text_line, depth):
@@ -46,13 +30,25 @@ class AppendContents:
         else:
             block.contents.write_toggle(text_line)
 
-    volume = re.compile(r"\d+권[.:]? ")
-    volume_eng = re.compile(r"VOLUME", re.IGNORECASE)
+    def get_depth(self, text_line: str):
+        if self.VOLUME_KOR.findall(text_line) or self.VOLUME_ENG.findall(text_line):
+            return 1
+        if self.SECTION_KOR.findall(text_line) or self.SECTION_ENG.findall(text_line):
+            return 2
+        elif self.CHAPTER_KOR.findall(text_line) or self.CHAPTER_ENG.findall(text_line):
+            return 3
+        elif self.PASSAGE.findall(text_line):
+            return 4
+        else:
+            return 0
 
-    section = re.compile(r"\d+부[.:]? ")
-    section_eng = re.compile(r"PART", re.IGNORECASE)
+    VOLUME_KOR = re.compile(r"\d+권[.:]? ")
+    VOLUME_ENG = re.compile(r"VOLUME", re.IGNORECASE)
 
-    chapter = re.compile(r"\d+장[.:]? ")
-    chapter_eng = re.compile(r"CHAPTER", re.IGNORECASE)
+    SECTION_KOR = re.compile(r"\d+부[.:]? ")
+    SECTION_ENG = re.compile(r"PART", re.IGNORECASE)
 
-    small_chapter = re.compile(r"\d+[.:] ")
+    CHAPTER_KOR = re.compile(r"\d+장[.:]? ")
+    CHAPTER_ENG = re.compile(r"CHAPTER", re.IGNORECASE)
+
+    PASSAGE = re.compile(r"\d+[.:] ")

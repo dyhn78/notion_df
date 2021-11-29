@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from functools import reduce
 
-from .mamagers import *
-from .common.struct import EditorManager, EditorBase
-from ...cli import editors
+from notion_zap.apps.prop_matcher.managers import *
+from notion_zap.apps.prop_matcher.common.struct import EditorManager, EditorBase
+from notion_zap.cli import editors
 
 
 class RegularMatchController:
@@ -80,4 +80,4 @@ class RegularEditorBase(EditorBase):
 
         query.push_filter(ft)
         # query.preview()
-        query.execute(self.request_size, print_heads=5)
+        query.execute(self.request_size)

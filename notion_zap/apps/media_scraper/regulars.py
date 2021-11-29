@@ -3,10 +3,12 @@ from typing import Optional
 
 from notion_zap.cli import editors
 from notion_zap.cli.utility import stopwatch
-from .common.struct import ReadingDBController, ReadingPageController
+from notion_zap.apps.media_scraper.common.struct import (
+    ReadingDBController,
+    ReadingPageManager)
 
 
-class ReadingDBScrapController(ReadingDBController):
+class RegularScrapController(ReadingDBController):
     BKST = {'bookstore'}
     LIBS = {'gy_lib', 'snu_lib'}
 
@@ -17,10 +19,7 @@ class ReadingDBScrapController(ReadingDBController):
         self.tasks = tasks
         self.title = title
 
-        from .bookstore import BookstoreScrapManager
-        self.bkst = BookstoreScrapManager(self)
-
-        from .lib import LibraryScrapManager
+        from notion_zap.apps.media_scraper.lib import LibraryScrapManager
         self.lib = LibraryScrapManager(self)
 
     @property
@@ -34,7 +33,7 @@ class ReadingDBScrapController(ReadingDBController):
         if self.lib_in_task:
             self.lib.start()
         for page in self.pagelist:
-            unit = ReadingPageScrapController(self, page)
+            unit = RegularScrapStatusChecker(self, page)
             unit.execute()
         if self.lib_in_task:
             self.lib.quit()
@@ -51,7 +50,7 @@ class ReadingDBScrapController(ReadingDBController):
 
         frame = maker.select_at('edit_status')
         ft &= (
-            frame.equals_to_any(frame.prop_value_groups['mamagers'])
+            frame.equals_to_any(frame.prop_value_groups['regular_scraps'])
             | frame.is_empty()
         )
 
@@ -64,8 +63,8 @@ class ReadingDBScrapController(ReadingDBController):
         return pages
 
 
-class ReadingPageScrapController(ReadingPageController):
-    def __init__(self, caller: ReadingDBScrapController, page: editors.PageRow):
+class RegularScrapStatusChecker(ReadingPageManager):
+    def __init__(self, caller: RegularScrapController, page: editors.PageRow):
         super().__init__(caller, page)
         self.caller = caller
         self.page = page
@@ -82,7 +81,8 @@ class ReadingPageScrapController(ReadingPageController):
             return
         stopwatch(f'개시: {self.page.title}')
         if 'bookstore' in self.tasks:
-            self.caller.bkst.execute(self)
+            from notion_zap.apps.media_scraper.bookstore import BookstoreScraper
+            BookstoreScraper(self).execute()
         if any(lib_str in self.tasks for lib_str in ['snu_lib', 'gy_lib']):
             self.caller.lib.execute(self)
         if not self._status:
@@ -114,19 +114,23 @@ class ReadingPageScrapController(ReadingPageController):
     def set_as_url_missing(self):
         if self._status_finalized:
             return
-        self._status = self.caller.status_enum['url_missing']
+        self._status = self.status_enum['url_missing']
         self._status_finalized = True
 
     def set_as_lib_missing(self):
         if self._status_finalized:
             return
-        self._status = self.caller.status_enum['lib_missing']
+        self._status = self.status_enum['lib_missing']
         self._status_finalized = True
 
     def set_as_done(self):
         if self.rich_overwrite_option == 'append':
-            self._status = self.caller.status_enum['done']
+            self._status = self.status_enum['tentatively_done']
         elif self.rich_overwrite_option == 'continue':
-            self._status = self.caller.status_enum['done']
+            self._status = self.status_enum['tentatively_done']
         elif self.rich_overwrite_option == 'overwrite':
-            self._status = self.caller.status_enum['completely_done']
+            self._status = self.status_enum['completely_done']
+
+
+if __name__ == '__main__':
+    RegularScrapController().execute(request_size=5)

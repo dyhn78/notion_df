@@ -1,10 +1,10 @@
 from urllib import parse
 
 from ..common.helpers import try_method_twice
-from ...externals.selenium import retry_webdriver, SeleniumScraper
+from ...externals.selenium import retry_webdriver, SeleniumBase
 
 
-class SNULibrary(SeleniumScraper):
+class SNULibrary(SeleniumBase):
     def __init__(self):
         super().__init__()
 

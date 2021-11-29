@@ -11,8 +11,9 @@ class ReadingDBController:
         self.status_enum = ReadingDB_FRAME.by_tag['edit_status'].prop_values
 
 
-class ReadingPageController:
+class ReadingPageManager:
     def __init__(self, caller: ReadingDBController, page: editors.PageRow):
         self.caller = caller
         self.page = page
         self.root = page.root
+        self.status_enum = ReadingDB_FRAME.by_tag['edit_status'].prop_values
