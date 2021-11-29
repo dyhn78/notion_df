@@ -1,3 +1,4 @@
+from selenium.webdriver.common import service
 """
 pip install pywin32
 from win32process import CREATE_NO_WINDOW
@@ -8,7 +9,7 @@ def start(self):
         cmd = [self.path]
         cmd.extend(self.command_line_args())
         self.process = subprocess.Popen(cmd, env=self.env,
-                                        close_fds=platform.system() != 'Windows',
+                                        close_fds=system() != 'Windows',
                                         stdout=self.log_file, stderr=self.log_file,
                                         creationflags=CREATE_NO_WINDOW)
     except TypeError:
