@@ -1,5 +1,5 @@
 import os
-import logging
+# import logging
 from typing import Callable
 from subprocess import CREATE_NO_WINDOW
 
@@ -11,9 +11,9 @@ from selenium.webdriver.chrome.service import Service
 
 from notion_zap.cli.utility import stopwatch
 
-logging.basicConfig(filename='debug.log', level=logging.DEBUG,
-                    format='%(asctime)s %(levelname)s %(name)s %(message)s')
-logger = logging.getLogger(__name__)
+# logging.basicConfig(filename='debug.log', level=logging.DEBUG,
+#                     format='%(asctime)s %(levelname)s %(name)s %(message)s')
+# logger = logging.getLogger(__name__)
 
 
 def retry_webdriver(function: Callable, recursion_limit=1) -> Callable:

@@ -7,5 +7,5 @@ try:
 except Exception as err:
     with open('debug.log', 'w') as log:
         traceback.print_exc(file=log)
-        raise err
+        # raise err
 # x = input("아무 키나 누르십시오...")
