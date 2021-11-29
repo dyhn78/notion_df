@@ -4,7 +4,7 @@ from notion_zap.apps.routines import main
 
 try:
     main.execute()
-except Exception as err:
+except:
     with open('debug.log', 'w') as log:
         traceback.print_exc(file=log)
         # raise err
