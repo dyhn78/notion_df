@@ -1,3 +1,10 @@
+def duplicate_char_variations(chars: set[str]) -> set[str]:
+    chars.update(char.replace('<', '</') for char in chars.copy())
+    chars.update(char.replace('>', '/>') for char in chars.copy())
+    chars.update(char.upper() for char in chars.copy())
+    return chars
+
+
 def parse_contents(contents_raw: str) -> list[str]:
     chars_to_delete = {'<b>', '<strong>', r'\t', '__'}
     chars_to_delete = duplicate_char_variations(chars_to_delete)
@@ -19,10 +26,3 @@ def parse_contents(contents_raw: str) -> list[str]:
                 continue
             filtered.append(text_line)
     return filtered
-
-
-def duplicate_char_variations(chars: set[str]) -> set[str]:
-    chars.update(char.replace('<', '</') for char in chars.copy())
-    chars.update(char.replace('>', '/>') for char in chars.copy())
-    chars.update(char.upper() for char in chars.copy())
-    return chars

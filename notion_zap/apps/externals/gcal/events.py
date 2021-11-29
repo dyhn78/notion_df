@@ -88,7 +88,7 @@ class EventCreator(_EventManagerCommon):
 
     @print_response_error
     def execute(self):
-        event = self.service.events().insert(**self.encode()).execute()
+        event = self.service.events().insert(**self.encode()).search_one()
         print(f"Created: {event.get('summary')} -> {event.get('htmlLink')}")
         return event
 
@@ -140,7 +140,7 @@ class EventUpdater(_EventManagerCommon):
         return self.execute_silent()
 
     def execute_silent(self):
-        event = self.service.events().patch(**self.encode()).execute()
+        event = self.service.events().patch(**self.encode()).search_one()
         print(f"Updated: {event.get('summary')} -> {event.get('htmlLink')}")
         return event
 
@@ -163,7 +163,7 @@ class EventGetter(GcalManagerAbs):
 
     @print_response_error
     def execute(self):
-        event = self.service.events().get(**self.encode()).execute()
+        event = self.service.events().get(**self.encode()).search_one()
         print(f"Get: {event.get('summary')} -> {event.get('htmlLink')}")
         return event
 
@@ -186,7 +186,7 @@ class EventDeleter(GcalManagerAbs):
 
     @print_response_error
     def execute(self):
-        self.service.events().delete(**self.encode()).execute()
+        self.service.events().delete(**self.encode()).search_one()
         print(f'Deleted: {self.event_id}')
 
 
@@ -233,7 +233,7 @@ class EventLister(GcalManagerAbs):
 
     @print_response_error
     def execute(self) -> list:
-        events_result = self.service.events().list(**self.encode()).execute()
+        events_result = self.service.events().list(**self.encode()).search_one()
         events = events_result.get('items', [])
         events = [event for event in events if event['status'] != 'cancelled']
         return events

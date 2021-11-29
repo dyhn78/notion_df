@@ -148,5 +148,8 @@ class QueryWithCallback(requestors.Query):
             heads = [(page.title, page.block_url) for page in pages[:print_heads]]
             if pages[print_heads:]:
                 heads.append(('...', '...'))
-            pprint(heads)
+            try:
+                pprint(heads)
+            except AttributeError:  # this happens when called from pythonw.exe
+                pass
         return pages

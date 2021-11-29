@@ -3,12 +3,12 @@ from datetime import datetime, date
 from typing import Union
 
 from notion_zap.cli.struct import DateFormat
-from .maker import (
+from .carrier import (
     PropertyEncoder, RichTextPropertyEncoder,
     SimplePropertyEncoder, FilesPropertyEncoder)
 
 
-class PageRowPropertybyName(ABC):
+class PageRowPropertyWriterbyName(ABC):
     @abstractmethod
     def _type_of(self, prop_key: str):
         pass
@@ -96,7 +96,7 @@ class PageRowPropertybyName(ABC):
                                  SimplePropertyEncoder.relation(prop_key, values))
 
 
-class PageRowPropertybyKey(PageRowPropertybyName, metaclass=ABCMeta):
+class PageRowPropertyWriterbyKey(PageRowPropertyWriterbyName, metaclass=ABCMeta):
     @abstractmethod
     def _name_at(self, prop_tag: str):
         pass

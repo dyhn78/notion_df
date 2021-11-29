@@ -1,5 +1,5 @@
 from notion_zap.cli.utility import stopwatch
-from notion_zap.apps.prop_matcher.regulars import RegularMatchController
+from notion_zap.apps.prop_matcher.match_regulars import RegularMatchController
 from notion_zap.apps.media_scraper import RegularScrapController
 
 

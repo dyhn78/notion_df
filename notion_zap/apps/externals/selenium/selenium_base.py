@@ -1,4 +1,5 @@
 import os
+import logging
 from typing import Callable
 from subprocess import CREATE_NO_WINDOW
 
@@ -9,6 +10,10 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 
 from notion_zap.cli.utility import stopwatch
+
+logging.basicConfig(filename='debug.log', level=logging.DEBUG,
+                    format='%(asctime)s %(levelname)s %(name)s %(message)s')
+logger = logging.getLogger(__name__)
 
 
 def retry_webdriver(function: Callable, recursion_limit=1) -> Callable:
@@ -27,16 +32,19 @@ def retry_webdriver(function: Callable, recursion_limit=1) -> Callable:
 
 
 class SeleniumBase:
-    DRIVER_CNT = 1
     CHROMEDRIVER_PATH = os.path.join(os.path.dirname(__file__), 'chromedriver95.exe')
 
-    def __init__(self):
+    def __init__(self, driver_cnt: int):
         self.drivers = []
+        self.driver_cnt = driver_cnt
 
     def start(self):
         # https://www.zacoding.com/en/post/python-selenium-hide-console/
-        for i in range(self.DRIVER_CNT):
-            service = Service(self.CHROMEDRIVER_PATH)
+        for i in range(self.driver_cnt):
+            service = Service(
+                self.CHROMEDRIVER_PATH,
+                # log_path=os.path.join(os.path.dirname(__file__), 'selenium_log')
+            )
             service.creationflags = CREATE_NO_WINDOW
             driver = webdriver.Chrome(service=service,
                                       options=self.options)

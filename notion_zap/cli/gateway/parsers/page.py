@@ -41,6 +41,8 @@ class PageParser:
         self.prop_ids: dict[str, str] = {}  # {prop_key: prop_id for prop_key in _}
         self.prop_values: dict[str, Any] = {}  # {prop_key: prop_value for prop_key in _}
         self.prop_rich_values = {}
+
+        # only valid in PageRow.
         self.title = ''
         self.title_key = ''
         self._current_prop_type = ''

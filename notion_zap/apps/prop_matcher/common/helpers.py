@@ -40,7 +40,7 @@ def query_unique_page_by_idx(
     maker = query.filter_maker.at(idx_tag, prop_type)
     ft = maker.equals(idx)
     query.push_filter(ft)
-    tars = query.execute()
+    tars = query.search_one()
     if tars:
         return tars[0]
     return None

@@ -1,5 +1,5 @@
 from notion_zap.cli import editors
-from .common.struct import ReadingDBController
+from notion_zap.apps.media_scraper.structs.controller_base_logic import ReadingDBController
 
 
 class ReadingDBStatusResolver(ReadingDBController):
@@ -25,3 +25,7 @@ class ReadingDBStatusResolver(ReadingDBController):
         page.props.write_select_at('edit_status', self.status_enum['append'])
         page.props.write_checkbox_at('not_available', False)
         page.save()
+
+
+if __name__ == '__main__':
+    ReadingDBStatusResolver().execute(request_size=5)

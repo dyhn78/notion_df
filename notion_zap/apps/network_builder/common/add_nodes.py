@@ -5,7 +5,7 @@ import networkx as nx
 
 from notion_zap.cli import editors
 from notion_zap.apps.config.common import DatabaseInfo
-from notion_zap.apps.config.network_drawer import NetworkFrames, NetworkPropertyFrame
+from notion_zap.apps.config.network_builder import NetworkFrames, NetworkPropertyFrame
 
 
 class TopologyBuilder:

@@ -55,7 +55,7 @@ class CalendarEditorBase(EditorBase):
                 & frame.before(self.date_range.max_date)
             )
         query.push_filter(ft)
-        if not query.execute(self.request_size):
+        if not query.search_one():
             self.dates.fetch(1)
 
         query = self.periods.open_query()
@@ -69,7 +69,7 @@ class CalendarEditorBase(EditorBase):
                 & frame.before(self.date_range.max_date)
             )
         query.push_filter(ft)
-        if not query.execute(self.request_size):
+        if not query.search_one():
             self.periods.fetch(1)
 
 

@@ -14,8 +14,8 @@ class PageRow(PageBlock):
         self.caller = caller
         self.frame = frame if frame else PropertyFrame()
 
-        from .page_row_props import PageRowProperty
-        self.props = PageRowProperty(self, page_id)
+        from .page_row_props import PageRowProperties
+        self.props = PageRowProperties(self, page_id)
 
         from .pagelist import PageList
         if isinstance(self.caller, PageList):

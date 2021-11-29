@@ -73,8 +73,11 @@ class PageItemContents(PagePayload, ChildrenBearersContents,
 
     def apply_page_parser(self, parser: parsers.PageParser):
         super().apply_page_parser(parser)
-        self._read_plain = parser.prop_values['title']
-        self._read_rich = parser.prop_rich_values['title']
+        plain_title = parser.prop_values['title']
+        rich_title = parser.prop_rich_values['title']
+        self._set_title(plain_title)
+        self._read_plain = plain_title
+        self._read_rich = rich_title
 
     def push_carrier(self, carrier: encoders.RichTextPropertyEncoder) \
             -> encoders.RichTextPropertyEncoder:

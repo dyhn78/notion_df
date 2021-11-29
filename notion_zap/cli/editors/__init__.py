@@ -7,4 +7,4 @@ from .inline.unsupported import UnsupportedBlock, UnsupportedPayload
 from .tabular.database import Database
 from .tabular.pagelist import PageList
 from .tabular.page_row import PageRow
-from .tabular.page_row_props import PageRowProperty
+from .tabular.page_row_props import PageRowProperties

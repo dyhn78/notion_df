@@ -194,7 +194,7 @@ class GcalfromScheduleMatcher(_GcalScheduleMatcherAbs):
         return dt_start, dt_end
 
     def get_date_vals(self, dom: editors.PageRow):
-        tar_ids = dom.props.read_at(self.tag__doms_tar)
+        tar_ids = dom.props.read_at(self.T_tar)
         date_min: Optional[dt.date] = None
         date_max: Optional[dt.date] = None
         for tar_id in tar_ids:

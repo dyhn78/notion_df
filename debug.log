@@ -1,1 +1,223 @@
-[0614/233157.051:ERROR:directory_reader_win.cc(43)] FindFirstFile: 지정된 경로를 찾을 수 없습니다. (0x3)
+Traceback (most recent call last):
+  File "D:\Dev\Workspace\Notion-py\terminal.py", line 16, in <module>
+    RegularScrapController().execute(request_size=5)
+  File "D:\Dev\Workspace\Notion-py\notion_zap\apps\media_scraper\scrap_regulars.py", line 26, in execute
+    if not self.fetch(request_size):
+  File "D:\Dev\Workspace\Notion-py\notion_zap\apps\media_scraper\scrap_regulars.py", line 54, in fetch
+    pages = query.execute(request_size, print_heads=5)
+  File "D:\Dev\Workspace\Notion-py\notion_zap\cli\editors\tabular\pagelist.py", line 151, in execute
+    pprint(heads)
+  File "C:\Users\user\AppData\Local\Programs\Python\Python310\lib\pprint.py", line 54, in pprint
+    printer.pprint(object)
+  File "C:\Users\user\AppData\Local\Programs\Python\Python310\lib\pprint.py", line 151, in pprint
+    self._format(object, self._stream, 0, 0, {}, 0)
+  File "C:\Users\user\AppData\Local\Programs\Python\Python310\lib\pprint.py", line 192, in _format
+    stream.write(rep)
+AttributeError: 'NoneType' object has no attribute 'write'
+2021-11-30 06:58:25,270 DEBUG httpx._client HTTP Request: POST https://api.notion.com/v1/databases/c326f77425a0446a8aa309478767c85b/query "HTTP/1.1 200 OK"
+2021-11-30 06:58:25,852 DEBUG selenium.webdriver.remote.remote_connection POST http://localhost:61763/session {"capabilities": {"firstMatch": [{}], "alwaysMatch": {"browserName": "chrome", "pageLoadStrategy": "normal", "goog:chromeOptions": {"extensions": [], "args": ["--headless", "--disable-dev-shm-usage", "--no-sandbox"]}}}, "desiredCapabilities": {"browserName": "chrome", "pageLoadStrategy": "normal", "goog:chromeOptions": {"extensions": [], "args": ["--headless", "--disable-dev-shm-usage", "--no-sandbox"]}}}
+2021-11-30 06:58:25,852 DEBUG urllib3.connectionpool Starting new HTTP connection (1): localhost:61763
+2021-11-30 06:58:26,341 DEBUG urllib3.connectionpool http://localhost:61763 "POST /session HTTP/1.1" 200 786
+2021-11-30 06:58:26,341 DEBUG selenium.webdriver.remote.remote_connection Finished Request
+2021-11-30 06:58:26,856 DEBUG selenium.webdriver.remote.remote_connection POST http://localhost:61771/session {"capabilities": {"firstMatch": [{}], "alwaysMatch": {"browserName": "chrome", "pageLoadStrategy": "normal", "goog:chromeOptions": {"extensions": [], "args": ["--headless", "--disable-dev-shm-usage", "--no-sandbox"]}}}, "desiredCapabilities": {"browserName": "chrome", "pageLoadStrategy": "normal", "goog:chromeOptions": {"extensions": [], "args": ["--headless", "--disable-dev-shm-usage", "--no-sandbox"]}}}
+2021-11-30 06:58:26,856 DEBUG urllib3.connectionpool Starting new HTTP connection (1): localhost:61771
+2021-11-30 06:58:27,324 DEBUG urllib3.connectionpool http://localhost:61771 "POST /session HTTP/1.1" 200 786
+2021-11-30 06:58:27,324 DEBUG selenium.webdriver.remote.remote_connection Finished Request
+2021-11-30 06:58:27,842 DEBUG selenium.webdriver.remote.remote_connection POST http://localhost:61780/session {"capabilities": {"firstMatch": [{}], "alwaysMatch": {"browserName": "chrome", "pageLoadStrategy": "normal", "goog:chromeOptions": {"extensions": [], "args": ["--headless", "--disable-dev-shm-usage", "--no-sandbox"]}}}, "desiredCapabilities": {"browserName": "chrome", "pageLoadStrategy": "normal", "goog:chromeOptions": {"extensions": [], "args": ["--headless", "--disable-dev-shm-usage", "--no-sandbox"]}}}
+2021-11-30 06:58:27,842 DEBUG urllib3.connectionpool Starting new HTTP connection (1): localhost:61780
+2021-11-30 06:58:28,324 DEBUG urllib3.connectionpool http://localhost:61780 "POST /session HTTP/1.1" 200 786
+2021-11-30 06:58:28,324 DEBUG selenium.webdriver.remote.remote_connection Finished Request
+2021-11-30 06:58:28,324 DEBUG selenium.webdriver.remote.remote_connection POST http://localhost:61780/session/99ea1d3ca4e49f207238122db27e65f7/url {"url": "https://primoapac01.hosted.exlibrisgroup.com/primo-explore/search?query=any,contains,%EB%AA%A8%EB%8D%98%20%EC%9E%90%EB%B0%94%EC%8A%A4%ED%81%AC%EB%A6%BD%ED%8A%B8%20Deep%20Dive&tab=all&search_scope=ALL&vid=82SNU&mfacet=rtype,include,print_book,1&mfacet=library,exclude,DPT,1&mfacet=library,exclude,HD_CHEM_BIO,1&mfacet=library,exclude,HD_DIGIT,1&mfacet=library,exclude,KYU,1&mfacet=library,exclude,MUSEUM,1&offset=0&pcAvailability=false "}
+2021-11-30 06:58:37,216 DEBUG urllib3.connectionpool http://localhost:61780 "POST /session/99ea1d3ca4e49f207238122db27e65f7/url HTTP/1.1" 200 14
+2021-11-30 06:58:37,217 DEBUG selenium.webdriver.remote.remote_connection Finished Request
+2021-11-30 06:58:37,217 DEBUG selenium.webdriver.remote.remote_connection POST http://localhost:61780/session/99ea1d3ca4e49f207238122db27e65f7/elements {"using": "css selector", "value": "div.result-item-text.layout-fill.layout-column.flex > div.search-result-availability-line-wrapper > prm-search-result-availability-line > div > div > button "}
+2021-11-30 06:58:37,227 DEBUG urllib3.connectionpool http://localhost:61780 "POST /session/99ea1d3ca4e49f207238122db27e65f7/elements HTTP/1.1" 200 12
+2021-11-30 06:58:37,228 DEBUG selenium.webdriver.remote.remote_connection Finished Request
+2021-11-30 06:58:38,229 DEBUG selenium.webdriver.remote.remote_connection POST http://localhost:61780/session/99ea1d3ca4e49f207238122db27e65f7/elements {"using": "css selector", "value": "div.result-item-text.layout-fill.layout-column.flex > div.search-result-availability-line-wrapper > prm-search-result-availability-line > div > div > button "}
+2021-11-30 06:58:38,234 DEBUG urllib3.connectionpool http://localhost:61780 "POST /session/99ea1d3ca4e49f207238122db27e65f7/elements HTTP/1.1" 200 90
+2021-11-30 06:58:38,235 DEBUG selenium.webdriver.remote.remote_connection Finished Request
+2021-11-30 06:58:38,235 DEBUG selenium.webdriver.remote.remote_connection GET http://localhost:61780/session/99ea1d3ca4e49f207238122db27e65f7/element/1455f3e1-8f31-4cac-bd71-2780f29aa89b/text {"id": "1455f3e1-8f31-4cac-bd71-2780f29aa89b"}
+2021-11-30 06:58:38,250 DEBUG urllib3.connectionpool http://localhost:61780 "GET /session/99ea1d3ca4e49f207238122db27e65f7/element/1455f3e1-8f31-4cac-bd71-2780f29aa89b/text HTTP/1.1" 200 12
+2021-11-30 06:58:38,251 DEBUG selenium.webdriver.remote.remote_connection Finished Request
+2021-11-30 06:58:39,255 DEBUG selenium.webdriver.remote.remote_connection POST http://localhost:61780/session/99ea1d3ca4e49f207238122db27e65f7/elements {"using": "css selector", "value": "div.result-item-text.layout-fill.layout-column.flex > div.search-result-availability-line-wrapper > prm-search-result-availability-line > div > div > button "}
+2021-11-30 06:58:39,255 DEBUG urllib3.connectionpool http://localhost:61780 "POST /session/99ea1d3ca4e49f207238122db27e65f7/elements HTTP/1.1" 200 90
+2021-11-30 06:58:39,255 DEBUG selenium.webdriver.remote.remote_connection Finished Request
+2021-11-30 06:58:39,255 DEBUG selenium.webdriver.remote.remote_connection GET http://localhost:61780/session/99ea1d3ca4e49f207238122db27e65f7/element/1455f3e1-8f31-4cac-bd71-2780f29aa89b/text {"id": "1455f3e1-8f31-4cac-bd71-2780f29aa89b"}
+2021-11-30 06:58:39,270 DEBUG urllib3.connectionpool http://localhost:61780 "GET /session/99ea1d3ca4e49f207238122db27e65f7/element/1455f3e1-8f31-4cac-bd71-2780f29aa89b/text HTTP/1.1" 200 12
+2021-11-30 06:58:39,270 DEBUG selenium.webdriver.remote.remote_connection Finished Request
+2021-11-30 06:58:40,278 DEBUG selenium.webdriver.remote.remote_connection POST http://localhost:61780/session/99ea1d3ca4e49f207238122db27e65f7/elements {"using": "css selector", "value": "div.result-item-text.layout-fill.layout-column.flex > div.search-result-availability-line-wrapper > prm-search-result-availability-line > div > div > button "}
+2021-11-30 06:58:40,288 DEBUG urllib3.connectionpool http://localhost:61780 "POST /session/99ea1d3ca4e49f207238122db27e65f7/elements HTTP/1.1" 200 90
+2021-11-30 06:58:40,288 DEBUG selenium.webdriver.remote.remote_connection Finished Request
+2021-11-30 06:58:40,288 DEBUG selenium.webdriver.remote.remote_connection GET http://localhost:61780/session/99ea1d3ca4e49f207238122db27e65f7/element/1455f3e1-8f31-4cac-bd71-2780f29aa89b/text {"id": "1455f3e1-8f31-4cac-bd71-2780f29aa89b"}
+2021-11-30 06:58:40,298 DEBUG urllib3.connectionpool http://localhost:61780 "GET /session/99ea1d3ca4e49f207238122db27e65f7/element/1455f3e1-8f31-4cac-bd71-2780f29aa89b/text HTTP/1.1" 200 12
+2021-11-30 06:58:40,299 DEBUG selenium.webdriver.remote.remote_connection Finished Request
+2021-11-30 06:58:41,309 DEBUG selenium.webdriver.remote.remote_connection POST http://localhost:61780/session/99ea1d3ca4e49f207238122db27e65f7/elements {"using": "css selector", "value": "div.result-item-text.layout-fill.layout-column.flex > div.search-result-availability-line-wrapper > prm-search-result-availability-line > div > div > button "}
+2021-11-30 06:58:41,309 DEBUG urllib3.connectionpool http://localhost:61780 "POST /session/99ea1d3ca4e49f207238122db27e65f7/elements HTTP/1.1" 200 90
+2021-11-30 06:58:41,309 DEBUG selenium.webdriver.remote.remote_connection Finished Request
+2021-11-30 06:58:41,309 DEBUG selenium.webdriver.remote.remote_connection GET http://localhost:61780/session/99ea1d3ca4e49f207238122db27e65f7/element/1455f3e1-8f31-4cac-bd71-2780f29aa89b/text {"id": "1455f3e1-8f31-4cac-bd71-2780f29aa89b"}
+2021-11-30 06:58:41,335 DEBUG urllib3.connectionpool http://localhost:61780 "GET /session/99ea1d3ca4e49f207238122db27e65f7/element/1455f3e1-8f31-4cac-bd71-2780f29aa89b/text HTTP/1.1" 200 90
+2021-11-30 06:58:41,335 DEBUG selenium.webdriver.remote.remote_connection Finished Request
+2021-11-30 06:58:41,335 DEBUG selenium.webdriver.remote.remote_connection POST http://localhost:61763/session/bb03aef2de16a65abbac27b774e1076e/url {"url": "https://www.goyanglib.or.kr/center/data/search.asp"}
+2021-11-30 06:58:45,191 DEBUG urllib3.connectionpool http://localhost:61763 "POST /session/bb03aef2de16a65abbac27b774e1076e/url HTTP/1.1" 200 14
+2021-11-30 06:58:45,191 DEBUG selenium.webdriver.remote.remote_connection Finished Request
+2021-11-30 06:58:45,191 DEBUG selenium.webdriver.remote.remote_connection POST http://localhost:61763/session/bb03aef2de16a65abbac27b774e1076e/element {"using": "css selector", "value": "#a_q"}
+2021-11-30 06:58:45,200 DEBUG urllib3.connectionpool http://localhost:61763 "POST /session/bb03aef2de16a65abbac27b774e1076e/element HTTP/1.1" 200 88
+2021-11-30 06:58:45,200 DEBUG selenium.webdriver.remote.remote_connection Finished Request
+2021-11-30 06:58:45,274 DEBUG selenium.webdriver.remote.remote_connection POST http://localhost:61763/session/bb03aef2de16a65abbac27b774e1076e/element/3e31167c-d279-4665-93e5-29c24a15da15/value {"text": "\ubaa8\ub358 \uc790\ubc14\uc2a4\ud06c\ub9bd\ud2b8 Deep Dive", "value": ["\ubaa8", "\ub358", " ", "\uc790", "\ubc14", "\uc2a4", "\ud06c", "\ub9bd", "\ud2b8", " ", "D", "e", "e", "p", " ", "D", "i", "v", "e"], "id": "3e31167c-d279-4665-93e5-29c24a15da15"}
+2021-11-30 06:58:45,304 DEBUG urllib3.connectionpool http://localhost:61763 "POST /session/bb03aef2de16a65abbac27b774e1076e/element/3e31167c-d279-4665-93e5-29c24a15da15/value HTTP/1.1" 200 14
+2021-11-30 06:58:45,305 DEBUG selenium.webdriver.remote.remote_connection Finished Request
+2021-11-30 06:58:45,305 DEBUG selenium.webdriver.remote.remote_connection POST http://localhost:61763/session/bb03aef2de16a65abbac27b774e1076e/element {"using": "css selector", "value": "#sb1 > a"}
+2021-11-30 06:58:45,312 DEBUG urllib3.connectionpool http://localhost:61763 "POST /session/bb03aef2de16a65abbac27b774e1076e/element HTTP/1.1" 200 88
+2021-11-30 06:58:45,313 DEBUG selenium.webdriver.remote.remote_connection Finished Request
+2021-11-30 06:58:45,313 DEBUG selenium.webdriver.remote.remote_connection POST http://localhost:61763/session/bb03aef2de16a65abbac27b774e1076e/element/2e144141-8e97-4abd-bbd1-09f212c45644/click {"id": "2e144141-8e97-4abd-bbd1-09f212c45644"}
+2021-11-30 06:58:45,362 DEBUG urllib3.connectionpool http://localhost:61763 "POST /session/bb03aef2de16a65abbac27b774e1076e/element/2e144141-8e97-4abd-bbd1-09f212c45644/click HTTP/1.1" 200 14
+2021-11-30 06:58:45,362 DEBUG selenium.webdriver.remote.remote_connection Finished Request
+2021-11-30 06:58:45,363 DEBUG selenium.webdriver.remote.remote_connection POST http://localhost:61763/session/bb03aef2de16a65abbac27b774e1076e/timeouts {"implicit": 3000}
+2021-11-30 06:58:45,364 DEBUG urllib3.connectionpool http://localhost:61763 "POST /session/bb03aef2de16a65abbac27b774e1076e/timeouts HTTP/1.1" 200 14
+2021-11-30 06:58:45,364 DEBUG selenium.webdriver.remote.remote_connection Finished Request
+2021-11-30 06:58:45,364 DEBUG selenium.webdriver.remote.remote_connection POST http://localhost:61763/session/bb03aef2de16a65abbac27b774e1076e/elements {"using": "css selector", "value": "#lists > ul > li"}
+2021-11-30 06:58:46,071 DEBUG urllib3.connectionpool http://localhost:61763 "POST /session/bb03aef2de16a65abbac27b774e1076e/elements HTTP/1.1" 200 327
+2021-11-30 06:58:46,071 DEBUG selenium.webdriver.remote.remote_connection Finished Request
+2021-11-30 06:58:46,071 DEBUG selenium.webdriver.remote.remote_connection GET http://localhost:61763/session/bb03aef2de16a65abbac27b774e1076e/element/0a7b3633-88d7-4f11-9b90-7b4299f63f9d/text {"id": "0a7b3633-88d7-4f11-9b90-7b4299f63f9d"}
+2021-11-30 06:58:46,088 DEBUG urllib3.connectionpool http://localhost:61763 "GET /session/bb03aef2de16a65abbac27b774e1076e/element/0a7b3633-88d7-4f11-9b90-7b4299f63f9d/text HTTP/1.1" 200 232
+2021-11-30 06:58:46,088 DEBUG selenium.webdriver.remote.remote_connection Finished Request
+2021-11-30 06:58:46,088 DEBUG selenium.webdriver.remote.remote_connection POST http://localhost:61763/session/bb03aef2de16a65abbac27b774e1076e/elements {"using": "css selector", "value": "#pagelist > ul > li > a"}
+2021-11-30 06:58:46,096 DEBUG urllib3.connectionpool http://localhost:61763 "POST /session/bb03aef2de16a65abbac27b774e1076e/elements HTTP/1.1" 200 248
+2021-11-30 06:58:46,097 DEBUG selenium.webdriver.remote.remote_connection Finished Request
+2021-11-30 06:58:46,097 DEBUG selenium.webdriver.remote.remote_connection POST http://localhost:61763/session/bb03aef2de16a65abbac27b774e1076e/elements {"using": "css selector", "value": "#lists > ul > li > dl > dd:nth-child(3)"}
+2021-11-30 06:58:46,104 DEBUG urllib3.connectionpool http://localhost:61763 "POST /session/bb03aef2de16a65abbac27b774e1076e/elements HTTP/1.1" 200 327
+2021-11-30 06:58:46,104 DEBUG selenium.webdriver.remote.remote_connection Finished Request
+2021-11-30 06:58:46,104 DEBUG selenium.webdriver.remote.remote_connection GET http://localhost:61763/session/bb03aef2de16a65abbac27b774e1076e/element/df58d513-d8ca-446a-9b8f-8b2f08881400/text {"id": "df58d513-d8ca-446a-9b8f-8b2f08881400"}
+2021-11-30 06:58:46,113 DEBUG urllib3.connectionpool http://localhost:61763 "GET /session/bb03aef2de16a65abbac27b774e1076e/element/df58d513-d8ca-446a-9b8f-8b2f08881400/text HTTP/1.1" 200 51
+2021-11-30 06:58:46,113 DEBUG selenium.webdriver.remote.remote_connection Finished Request
+2021-11-30 06:58:46,113 DEBUG selenium.webdriver.remote.remote_connection GET http://localhost:61763/session/bb03aef2de16a65abbac27b774e1076e/element/f9e584c6-c2a8-40f7-9738-d16a21fcdf70/text {"id": "f9e584c6-c2a8-40f7-9738-d16a21fcdf70"}
+2021-11-30 06:58:46,122 DEBUG urllib3.connectionpool http://localhost:61763 "GET /session/bb03aef2de16a65abbac27b774e1076e/element/f9e584c6-c2a8-40f7-9738-d16a21fcdf70/text HTTP/1.1" 200 58
+2021-11-30 06:58:46,122 DEBUG selenium.webdriver.remote.remote_connection Finished Request
+2021-11-30 06:58:46,122 DEBUG selenium.webdriver.remote.remote_connection GET http://localhost:61763/session/bb03aef2de16a65abbac27b774e1076e/element/2469c294-2669-4f0f-bc4e-81b0cae2ac6c/text {"id": "2469c294-2669-4f0f-bc4e-81b0cae2ac6c"}
+2021-11-30 06:58:46,131 DEBUG urllib3.connectionpool http://localhost:61763 "GET /session/bb03aef2de16a65abbac27b774e1076e/element/2469c294-2669-4f0f-bc4e-81b0cae2ac6c/text HTTP/1.1" 200 51
+2021-11-30 06:58:46,131 DEBUG selenium.webdriver.remote.remote_connection Finished Request
+2021-11-30 06:58:46,131 DEBUG selenium.webdriver.remote.remote_connection GET http://localhost:61763/session/bb03aef2de16a65abbac27b774e1076e/element/af60adee-78c2-4e2c-bfe3-8f0d90376781/text {"id": "af60adee-78c2-4e2c-bfe3-8f0d90376781"}
+2021-11-30 06:58:46,139 DEBUG urllib3.connectionpool http://localhost:61763 "GET /session/bb03aef2de16a65abbac27b774e1076e/element/af60adee-78c2-4e2c-bfe3-8f0d90376781/text HTTP/1.1" 200 52
+2021-11-30 06:58:46,140 DEBUG selenium.webdriver.remote.remote_connection Finished Request
+2021-11-30 06:58:46,140 DEBUG selenium.webdriver.remote.remote_connection POST http://localhost:61763/session/bb03aef2de16a65abbac27b774e1076e/element {"using": "css selector", "value": "#lists > ul > li:nth-child(1) > dl > dd:nth-child(4)"}
+2021-11-30 06:58:46,143 DEBUG urllib3.connectionpool http://localhost:61763 "POST /session/bb03aef2de16a65abbac27b774e1076e/element HTTP/1.1" 200 88
+2021-11-30 06:58:46,143 DEBUG selenium.webdriver.remote.remote_connection Finished Request
+2021-11-30 06:58:46,143 DEBUG selenium.webdriver.remote.remote_connection GET http://localhost:61763/session/bb03aef2de16a65abbac27b774e1076e/element/9d2a2a1b-aa80-4bdf-bda3-2604fe23ccda/text {"id": "9d2a2a1b-aa80-4bdf-bda3-2604fe23ccda"}
+2021-11-30 06:58:46,143 DEBUG urllib3.connectionpool http://localhost:61763 "GET /session/bb03aef2de16a65abbac27b774e1076e/element/9d2a2a1b-aa80-4bdf-bda3-2604fe23ccda/text HTTP/1.1" 200 63
+2021-11-30 06:58:46,143 DEBUG selenium.webdriver.remote.remote_connection Finished Request
+2021-11-30 06:58:46,143 DEBUG selenium.webdriver.remote.remote_connection POST http://localhost:61763/session/bb03aef2de16a65abbac27b774e1076e/element {"using": "css selector", "value": "#lists > ul > li:nth-child(2) > dl > dd:nth-child(4)"}
+2021-11-30 06:58:46,158 DEBUG urllib3.connectionpool http://localhost:61763 "POST /session/bb03aef2de16a65abbac27b774e1076e/element HTTP/1.1" 200 88
+2021-11-30 06:58:46,158 DEBUG selenium.webdriver.remote.remote_connection Finished Request
+2021-11-30 06:58:46,158 DEBUG selenium.webdriver.remote.remote_connection GET http://localhost:61763/session/bb03aef2de16a65abbac27b774e1076e/element/a3402517-995e-4beb-a0d1-e34a1f4e1893/text {"id": "a3402517-995e-4beb-a0d1-e34a1f4e1893"}
+2021-11-30 06:58:46,158 DEBUG urllib3.connectionpool http://localhost:61763 "GET /session/bb03aef2de16a65abbac27b774e1076e/element/a3402517-995e-4beb-a0d1-e34a1f4e1893/text HTTP/1.1" 200 63
+2021-11-30 06:58:46,158 DEBUG selenium.webdriver.remote.remote_connection Finished Request
+2021-11-30 06:58:46,158 DEBUG selenium.webdriver.remote.remote_connection POST http://localhost:61763/session/bb03aef2de16a65abbac27b774e1076e/element {"using": "css selector", "value": "#lists > ul > li:nth-child(3) > dl > dd:nth-child(4)"}
+2021-11-30 06:58:46,174 DEBUG urllib3.connectionpool http://localhost:61763 "POST /session/bb03aef2de16a65abbac27b774e1076e/element HTTP/1.1" 200 88
+2021-11-30 06:58:46,174 DEBUG selenium.webdriver.remote.remote_connection Finished Request
+2021-11-30 06:58:46,174 DEBUG selenium.webdriver.remote.remote_connection GET http://localhost:61763/session/bb03aef2de16a65abbac27b774e1076e/element/e5b2b2bc-3a05-439a-8fe6-5137554b9b9d/text {"id": "e5b2b2bc-3a05-439a-8fe6-5137554b9b9d"}
+2021-11-30 06:58:46,190 DEBUG urllib3.connectionpool http://localhost:61763 "GET /session/bb03aef2de16a65abbac27b774e1076e/element/e5b2b2bc-3a05-439a-8fe6-5137554b9b9d/text HTTP/1.1" 200 63
+2021-11-30 06:58:46,190 DEBUG selenium.webdriver.remote.remote_connection Finished Request
+2021-11-30 06:58:46,190 DEBUG selenium.webdriver.remote.remote_connection POST http://localhost:61763/session/bb03aef2de16a65abbac27b774e1076e/element {"using": "css selector", "value": "#lists > ul > li:nth-child(4) > dl > dd:nth-child(4)"}
+2021-11-30 06:58:46,190 DEBUG urllib3.connectionpool http://localhost:61763 "POST /session/bb03aef2de16a65abbac27b774e1076e/element HTTP/1.1" 200 88
+2021-11-30 06:58:46,190 DEBUG selenium.webdriver.remote.remote_connection Finished Request
+2021-11-30 06:58:46,190 DEBUG selenium.webdriver.remote.remote_connection GET http://localhost:61763/session/bb03aef2de16a65abbac27b774e1076e/element/ca95c930-49d9-40d5-8b8d-094358e94e7c/text {"id": "ca95c930-49d9-40d5-8b8d-094358e94e7c"}
+2021-11-30 06:58:46,205 DEBUG urllib3.connectionpool http://localhost:61763 "GET /session/bb03aef2de16a65abbac27b774e1076e/element/ca95c930-49d9-40d5-8b8d-094358e94e7c/text HTTP/1.1" 200 63
+2021-11-30 06:58:46,205 DEBUG selenium.webdriver.remote.remote_connection Finished Request
+2021-11-30 06:58:47,101 DEBUG httpx._client HTTP Request: PATCH https://api.notion.com/v1/pages/a13ad155-1e7b-4237-811b-a65e51355eba "HTTP/1.1 200 OK"
+2021-11-30 06:58:47,101 DEBUG selenium.webdriver.remote.remote_connection DELETE http://localhost:61763/session/bb03aef2de16a65abbac27b774e1076e {}
+2021-11-30 06:58:47,132 DEBUG urllib3.connectionpool http://localhost:61763 "DELETE /session/bb03aef2de16a65abbac27b774e1076e HTTP/1.1" 200 14
+2021-11-30 06:58:47,132 DEBUG selenium.webdriver.remote.remote_connection Finished Request
+2021-11-30 06:58:49,168 DEBUG selenium.webdriver.remote.remote_connection DELETE http://localhost:61771/session/2045300f6baab328909d0c6759d9b156 {}
+2021-11-30 06:58:49,183 DEBUG urllib3.connectionpool http://localhost:61771 "DELETE /session/2045300f6baab328909d0c6759d9b156 HTTP/1.1" 200 14
+2021-11-30 06:58:49,183 DEBUG selenium.webdriver.remote.remote_connection Finished Request
+2021-11-30 06:58:51,221 DEBUG selenium.webdriver.remote.remote_connection DELETE http://localhost:61780/session/99ea1d3ca4e49f207238122db27e65f7 {}
+2021-11-30 06:58:51,226 DEBUG urllib3.connectionpool http://localhost:61780 "DELETE /session/99ea1d3ca4e49f207238122db27e65f7 HTTP/1.1" 200 14
+2021-11-30 06:58:51,226 DEBUG selenium.webdriver.remote.remote_connection Finished Request
+2021-11-30 06:58:53,276 DEBUG selenium.webdriver.remote.remote_connection DELETE http://localhost:61763/session/bb03aef2de16a65abbac27b774e1076e {}
+2021-11-30 06:58:53,276 DEBUG urllib3.connectionpool Starting new HTTP connection (1): localhost:61763
+2021-11-30 06:58:57,312 DEBUG urllib3.util.retry Incremented Retry for (url='/session/bb03aef2de16a65abbac27b774e1076e'): Retry(total=2, connect=None, read=None, redirect=None, status=None)
+2021-11-30 06:58:57,312 WARNING urllib3.connectionpool Retrying (Retry(total=2, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x0000022A9F3FA920>: Failed to establish a new connection: [WinError 10061] 대상 컴퓨터에서 연결을 거부했으므로 연결하지 못했습니다')': /session/bb03aef2de16a65abbac27b774e1076e
+2021-11-30 06:58:57,312 DEBUG urllib3.connectionpool Starting new HTTP connection (2): localhost:61763
+2021-11-30 06:59:01,331 DEBUG urllib3.util.retry Incremented Retry for (url='/session/bb03aef2de16a65abbac27b774e1076e'): Retry(total=1, connect=None, read=None, redirect=None, status=None)
+2021-11-30 06:59:01,331 WARNING urllib3.connectionpool Retrying (Retry(total=1, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x0000022A9F3FA080>: Failed to establish a new connection: [WinError 10061] 대상 컴퓨터에서 연결을 거부했으므로 연결하지 못했습니다')': /session/bb03aef2de16a65abbac27b774e1076e
+2021-11-30 06:59:01,331 DEBUG urllib3.connectionpool Starting new HTTP connection (3): localhost:61763
+2021-11-30 06:59:05,393 DEBUG urllib3.util.retry Incremented Retry for (url='/session/bb03aef2de16a65abbac27b774e1076e'): Retry(total=0, connect=None, read=None, redirect=None, status=None)
+2021-11-30 06:59:05,393 WARNING urllib3.connectionpool Retrying (Retry(total=0, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x0000022A9F3FA470>: Failed to establish a new connection: [WinError 10061] 대상 컴퓨터에서 연결을 거부했으므로 연결하지 못했습니다')': /session/bb03aef2de16a65abbac27b774e1076e
+2021-11-30 06:59:05,393 DEBUG urllib3.connectionpool Starting new HTTP connection (4): localhost:61763
+2021-11-30 06:59:09,427 DEBUG selenium.webdriver.remote.remote_connection DELETE http://localhost:61771/session/2045300f6baab328909d0c6759d9b156 {}
+2021-11-30 06:59:09,427 DEBUG urllib3.connectionpool Starting new HTTP connection (1): localhost:61771
+2021-11-30 06:59:13,489 DEBUG urllib3.util.retry Incremented Retry for (url='/session/2045300f6baab328909d0c6759d9b156'): Retry(total=2, connect=None, read=None, redirect=None, status=None)
+2021-11-30 06:59:13,489 WARNING urllib3.connectionpool Retrying (Retry(total=2, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x0000022A9F3FB0A0>: Failed to establish a new connection: [WinError 10061] 대상 컴퓨터에서 연결을 거부했으므로 연결하지 못했습니다')': /session/2045300f6baab328909d0c6759d9b156
+2021-11-30 06:59:13,489 DEBUG urllib3.connectionpool Starting new HTTP connection (2): localhost:61771
+2021-11-30 06:59:17,536 DEBUG urllib3.util.retry Incremented Retry for (url='/session/2045300f6baab328909d0c6759d9b156'): Retry(total=1, connect=None, read=None, redirect=None, status=None)
+2021-11-30 06:59:17,536 WARNING urllib3.connectionpool Retrying (Retry(total=1, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x0000022A9F3FB1F0>: Failed to establish a new connection: [WinError 10061] 대상 컴퓨터에서 연결을 거부했으므로 연결하지 못했습니다')': /session/2045300f6baab328909d0c6759d9b156
+2021-11-30 06:59:17,536 DEBUG urllib3.connectionpool Starting new HTTP connection (3): localhost:61771
+2021-11-30 06:59:21,585 DEBUG urllib3.util.retry Incremented Retry for (url='/session/2045300f6baab328909d0c6759d9b156'): Retry(total=0, connect=None, read=None, redirect=None, status=None)
+2021-11-30 06:59:21,585 WARNING urllib3.connectionpool Retrying (Retry(total=0, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x0000022A9F3FB3A0>: Failed to establish a new connection: [WinError 10061] 대상 컴퓨터에서 연결을 거부했으므로 연결하지 못했습니다')': /session/2045300f6baab328909d0c6759d9b156
+2021-11-30 06:59:21,585 DEBUG urllib3.connectionpool Starting new HTTP connection (4): localhost:61771
+2021-11-30 06:59:25,650 DEBUG selenium.webdriver.remote.remote_connection DELETE http://localhost:61780/session/99ea1d3ca4e49f207238122db27e65f7 {}
+2021-11-30 06:59:25,650 DEBUG urllib3.connectionpool Starting new HTTP connection (1): localhost:61780
+2021-11-30 06:59:29,705 DEBUG urllib3.util.retry Incremented Retry for (url='/session/99ea1d3ca4e49f207238122db27e65f7'): Retry(total=2, connect=None, read=None, redirect=None, status=None)
+2021-11-30 06:59:29,705 WARNING urllib3.connectionpool Retrying (Retry(total=2, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x0000022A9F3FB730>: Failed to establish a new connection: [WinError 10061] 대상 컴퓨터에서 연결을 거부했으므로 연결하지 못했습니다')': /session/99ea1d3ca4e49f207238122db27e65f7
+2021-11-30 06:59:29,705 DEBUG urllib3.connectionpool Starting new HTTP connection (2): localhost:61780
+2021-11-30 06:59:33,760 DEBUG urllib3.util.retry Incremented Retry for (url='/session/99ea1d3ca4e49f207238122db27e65f7'): Retry(total=1, connect=None, read=None, redirect=None, status=None)
+2021-11-30 06:59:33,760 WARNING urllib3.connectionpool Retrying (Retry(total=1, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x0000022A9F3FB850>: Failed to establish a new connection: [WinError 10061] 대상 컴퓨터에서 연결을 거부했으므로 연결하지 못했습니다')': /session/99ea1d3ca4e49f207238122db27e65f7
+2021-11-30 06:59:33,760 DEBUG urllib3.connectionpool Starting new HTTP connection (3): localhost:61780
+2021-11-30 06:59:37,841 DEBUG urllib3.util.retry Incremented Retry for (url='/session/99ea1d3ca4e49f207238122db27e65f7'): Retry(total=0, connect=None, read=None, redirect=None, status=None)
+2021-11-30 06:59:37,841 WARNING urllib3.connectionpool Retrying (Retry(total=0, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x0000022A9F3FBA00>: Failed to establish a new connection: [WinError 10061] 대상 컴퓨터에서 연결을 거부했으므로 연결하지 못했습니다')': /session/99ea1d3ca4e49f207238122db27e65f7
+2021-11-30 06:59:37,841 DEBUG urllib3.connectionpool Starting new HTTP connection (4): localhost:61780
+2021-11-30 06:59:41,920 DEBUG selenium.webdriver.remote.remote_connection DELETE http://localhost:61763/session/bb03aef2de16a65abbac27b774e1076e {}
+2021-11-30 06:59:41,920 DEBUG urllib3.connectionpool Starting new HTTP connection (1): localhost:61763
+2021-11-30 06:59:45,955 DEBUG urllib3.util.retry Incremented Retry for (url='/session/bb03aef2de16a65abbac27b774e1076e'): Retry(total=2, connect=None, read=None, redirect=None, status=None)
+2021-11-30 06:59:45,955 WARNING urllib3.connectionpool Retrying (Retry(total=2, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x0000022A9C6EB3A0>: Failed to establish a new connection: [WinError 10061] 대상 컴퓨터에서 연결을 거부했으므로 연결하지 못했습니다')': /session/bb03aef2de16a65abbac27b774e1076e
+2021-11-30 06:59:45,955 DEBUG urllib3.connectionpool Starting new HTTP connection (2): localhost:61763
+2021-11-30 06:59:50,001 DEBUG urllib3.util.retry Incremented Retry for (url='/session/bb03aef2de16a65abbac27b774e1076e'): Retry(total=1, connect=None, read=None, redirect=None, status=None)
+2021-11-30 06:59:50,001 WARNING urllib3.connectionpool Retrying (Retry(total=1, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x0000022A9C6EB670>: Failed to establish a new connection: [WinError 10061] 대상 컴퓨터에서 연결을 거부했으므로 연결하지 못했습니다')': /session/bb03aef2de16a65abbac27b774e1076e
+2021-11-30 06:59:50,001 DEBUG urllib3.connectionpool Starting new HTTP connection (3): localhost:61763
+2021-11-30 06:59:54,035 DEBUG urllib3.util.retry Incremented Retry for (url='/session/bb03aef2de16a65abbac27b774e1076e'): Retry(total=0, connect=None, read=None, redirect=None, status=None)
+2021-11-30 06:59:54,035 WARNING urllib3.connectionpool Retrying (Retry(total=0, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x0000022A9C6EB340>: Failed to establish a new connection: [WinError 10061] 대상 컴퓨터에서 연결을 거부했으므로 연결하지 못했습니다')': /session/bb03aef2de16a65abbac27b774e1076e
+2021-11-30 06:59:54,035 DEBUG urllib3.connectionpool Starting new HTTP connection (4): localhost:61763
+2021-11-30 06:59:58,083 DEBUG selenium.webdriver.remote.remote_connection DELETE http://localhost:61771/session/2045300f6baab328909d0c6759d9b156 {}
+2021-11-30 06:59:58,083 DEBUG urllib3.connectionpool Starting new HTTP connection (1): localhost:61771
+2021-11-30 07:00:02,162 DEBUG urllib3.util.retry Incremented Retry for (url='/session/2045300f6baab328909d0c6759d9b156'): Retry(total=2, connect=None, read=None, redirect=None, status=None)
+2021-11-30 07:00:02,162 WARNING urllib3.connectionpool Retrying (Retry(total=2, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x0000022A9C361630>: Failed to establish a new connection: [WinError 10061] 대상 컴퓨터에서 연결을 거부했으므로 연결하지 못했습니다')': /session/2045300f6baab328909d0c6759d9b156
+2021-11-30 07:00:02,162 DEBUG urllib3.connectionpool Starting new HTTP connection (2): localhost:61771
+2021-11-30 07:00:06,210 DEBUG urllib3.util.retry Incremented Retry for (url='/session/2045300f6baab328909d0c6759d9b156'): Retry(total=1, connect=None, read=None, redirect=None, status=None)
+2021-11-30 07:00:06,210 WARNING urllib3.connectionpool Retrying (Retry(total=1, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x0000022A9F07E8F0>: Failed to establish a new connection: [WinError 10061] 대상 컴퓨터에서 연결을 거부했으므로 연결하지 못했습니다')': /session/2045300f6baab328909d0c6759d9b156
+2021-11-30 07:00:06,210 DEBUG urllib3.connectionpool Starting new HTTP connection (3): localhost:61771
+2021-11-30 07:00:10,244 DEBUG urllib3.util.retry Incremented Retry for (url='/session/2045300f6baab328909d0c6759d9b156'): Retry(total=0, connect=None, read=None, redirect=None, status=None)
+2021-11-30 07:00:10,244 WARNING urllib3.connectionpool Retrying (Retry(total=0, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x0000022A9F07E890>: Failed to establish a new connection: [WinError 10061] 대상 컴퓨터에서 연결을 거부했으므로 연결하지 못했습니다')': /session/2045300f6baab328909d0c6759d9b156
+2021-11-30 07:00:10,244 DEBUG urllib3.connectionpool Starting new HTTP connection (4): localhost:61771
+2021-11-30 07:00:14,284 DEBUG selenium.webdriver.remote.remote_connection DELETE http://localhost:61780/session/99ea1d3ca4e49f207238122db27e65f7 {}
+2021-11-30 07:00:14,284 DEBUG urllib3.connectionpool Starting new HTTP connection (1): localhost:61780
+2021-11-30 07:00:18,332 DEBUG urllib3.util.retry Incremented Retry for (url='/session/99ea1d3ca4e49f207238122db27e65f7'): Retry(total=2, connect=None, read=None, redirect=None, status=None)
+2021-11-30 07:00:18,332 WARNING urllib3.connectionpool Retrying (Retry(total=2, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x0000022A9F3B3190>: Failed to establish a new connection: [WinError 10061] 대상 컴퓨터에서 연결을 거부했으므로 연결하지 못했습니다')': /session/99ea1d3ca4e49f207238122db27e65f7
+2021-11-30 07:00:18,332 DEBUG urllib3.connectionpool Starting new HTTP connection (2): localhost:61780
+2021-11-30 07:00:22,381 DEBUG urllib3.util.retry Incremented Retry for (url='/session/99ea1d3ca4e49f207238122db27e65f7'): Retry(total=1, connect=None, read=None, redirect=None, status=None)
+2021-11-30 07:00:22,381 WARNING urllib3.connectionpool Retrying (Retry(total=1, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x0000022A9F3B30A0>: Failed to establish a new connection: [WinError 10061] 대상 컴퓨터에서 연결을 거부했으므로 연결하지 못했습니다')': /session/99ea1d3ca4e49f207238122db27e65f7
+2021-11-30 07:00:22,381 DEBUG urllib3.connectionpool Starting new HTTP connection (3): localhost:61780
+2021-11-30 07:00:26,462 DEBUG urllib3.util.retry Incremented Retry for (url='/session/99ea1d3ca4e49f207238122db27e65f7'): Retry(total=0, connect=None, read=None, redirect=None, status=None)
+2021-11-30 07:00:26,462 WARNING urllib3.connectionpool Retrying (Retry(total=0, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x0000022A9F3B3790>: Failed to establish a new connection: [WinError 10061] 대상 컴퓨터에서 연결을 거부했으므로 연결하지 못했습니다')': /session/99ea1d3ca4e49f207238122db27e65f7
+2021-11-30 07:00:26,462 DEBUG urllib3.connectionpool Starting new HTTP connection (4): localhost:61780
+2021-11-30 07:05:03,420 DEBUG httpx._client HTTP Request: POST https://api.notion.com/v1/databases/d020b399cf5947a59d11a0b9e0ea45d0/query "HTTP/1.1 200 OK"
+2021-11-30 07:05:04,692 DEBUG httpx._client HTTP Request: POST https://api.notion.com/v1/databases/961d1ca0a3d24a46b838ba85e710f18d/query "HTTP/1.1 200 OK"
+2021-11-30 07:05:07,830 DEBUG httpx._client HTTP Request: POST https://api.notion.com/v1/databases/c8d46c01d6c941a9bf8df5d115a05f03/query "HTTP/1.1 200 OK"
+2021-11-30 07:05:08,251 DEBUG httpx._client HTTP Request: POST https://api.notion.com/v1/databases/069bbebd632f4a6ea3044575a064cf0f/query "HTTP/1.1 200 OK"
+2021-11-30 07:05:09,040 DEBUG httpx._client HTTP Request: POST https://api.notion.com/v1/databases/e8782fe4e1a34c9d846d57b01a370327/query "HTTP/1.1 200 OK"
+2021-11-30 07:05:09,784 DEBUG httpx._client HTTP Request: POST https://api.notion.com/v1/databases/c226cffe6cf84ab996bbc384bf26bf1d/query "HTTP/1.1 200 OK"
+2021-11-30 07:05:11,328 DEBUG httpx._client HTTP Request: POST https://api.notion.com/v1/databases/c326f77425a0446a8aa309478767c85b/query "HTTP/1.1 200 OK"
+2021-11-30 07:05:12,091 DEBUG httpx._client HTTP Request: GET https://api.notion.com/v1/pages/972e8e26-47a5-42b7-a0fb-997d198f9614 "HTTP/1.1 200 OK"
+2021-11-30 07:05:12,835 DEBUG httpx._client HTTP Request: GET https://api.notion.com/v1/pages/678993c6-ef93-45c0-a208-d219f5600a02 "HTTP/1.1 200 OK"
+2021-11-30 07:05:13,082 DEBUG httpx._client HTTP Request: GET https://api.notion.com/v1/pages/0765182a-fbe1-4538-a9dc-e929b7a24837 "HTTP/1.1 200 OK"
+2021-11-30 07:05:13,337 DEBUG httpx._client HTTP Request: GET https://api.notion.com/v1/pages/2433903a-3fbe-424b-b7d4-1107a9684960 "HTTP/1.1 200 OK"
+2021-11-30 07:05:13,620 DEBUG httpx._client HTTP Request: GET https://api.notion.com/v1/pages/371787c1-46be-4fd1-b8ea-afdc41b58f83 "HTTP/1.1 200 OK"
+2021-11-30 07:05:13,863 DEBUG httpx._client HTTP Request: GET https://api.notion.com/v1/pages/5269cdbf-f830-4f77-980f-4038abcee20f "HTTP/1.1 200 OK"
+2021-11-30 07:05:14,140 DEBUG httpx._client HTTP Request: GET https://api.notion.com/v1/pages/5349cc05-4d72-452a-8db4-42ac2276790a "HTTP/1.1 200 OK"
+2021-11-30 07:05:14,888 DEBUG httpx._client HTTP Request: GET https://api.notion.com/v1/pages/9c041dce-8ef4-4089-94f1-0dfa9dabaf82 "HTTP/1.1 200 OK"
+2021-11-30 07:05:15,125 DEBUG httpx._client HTTP Request: GET https://api.notion.com/v1/pages/b03eb87c-fb61-4ab2-b413-d3f701a376ff "HTTP/1.1 200 OK"
+2021-11-30 07:05:15,378 DEBUG httpx._client HTTP Request: GET https://api.notion.com/v1/pages/ca4c5292-24b7-4f7f-882c-e9952bcd4d7a "HTTP/1.1 200 OK"
+2021-11-30 07:05:15,766 DEBUG httpx._client HTTP Request: GET https://api.notion.com/v1/pages/eb009376-ef81-47ba-8168-2f3cfd021e86 "HTTP/1.1 200 OK"
+2021-11-30 07:05:16,002 DEBUG httpx._client HTTP Request: GET https://api.notion.com/v1/pages/f60762bd-8cba-4d19-83e7-a3831b5ad341 "HTTP/1.1 200 OK"
+2021-11-30 07:05:16,416 DEBUG httpx._client HTTP Request: PATCH https://api.notion.com/v1/pages/aaba949e-5b5b-4aef-ac1a-a9438524e1c8 "HTTP/1.1 200 OK"
+2021-11-30 07:05:17,312 DEBUG httpx._client HTTP Request: PATCH https://api.notion.com/v1/pages/1057b9b7-57b9-4774-8dab-9d2831a24d33 "HTTP/1.1 200 OK"
+2021-11-30 07:05:18,431 DEBUG httpx._client HTTP Request: POST https://api.notion.com/v1/databases/c326f77425a0446a8aa309478767c85b/query "HTTP/1.1 200 OK"

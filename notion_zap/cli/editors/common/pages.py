@@ -91,7 +91,6 @@ class PagePayload(PayloadEditor, GroundEditor, metaclass=ABCMeta):
     def apply_page_parser(self, parser: parsers.PageParser):
         if parser.page_id != '':
             self._set_block_id(parser.page_id)
-        self._set_title(parser.title)
         self._archived = parser.archived
         self._created_time = parser.created_time
         self._last_edited_time = parser.last_edited_time

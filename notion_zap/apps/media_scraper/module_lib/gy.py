@@ -1,58 +1,66 @@
-from __future__ import annotations
-
-from typing import Optional
+from typing import Optional, Iterable
 
 from selenium.common.exceptions import StaleElementReferenceException, \
     NoSuchElementException
 
-from ..common.helpers import try_method_twice, remove_emoji
-from ...externals.selenium import SeleniumBase
+from notion_zap.apps.externals.selenium import SeleniumBase
+from notion_zap.apps.media_scraper.common.helpers import remove_emoji
 
 
-class GoyangLibrary(SeleniumBase):
-    DRIVER_CNT = 2
+class GoyangLibraryAgent:
     GAJWA_LIB = '가좌도서관'
     OTHER_LIB = '고양시 상호대차'
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, base: SeleniumBase, book_names: Iterable[str]):
+        self.base = base
+        if isinstance(book_names, str):
+            self.book_names = [book_names]
+        else:
+            self.book_names = list(book_names)
+
         self.available_somewhere = False
         self.best_option = {}
 
     @property
     def driv_avail(self):
-        return self.drivers[0]
+        return self.base.drivers[0]
 
     @property
     def driv_code(self):
-        return self.drivers[1]
+        return self.base.drivers[1]
 
-    @try_method_twice
-    def execute(self, book_name: str) -> Optional[dict]:
+    def execute(self):
+        visited = set()
+        for book_name in self.book_names:
+            if book_name in visited:
+                continue
+            if lib_info := self.search_one(book_name):
+                return lib_info
+            visited.add(book_name)
+
+    def search_one(self, book_name: str) -> Optional[dict]:
         """
         :return: [도서관 이름: str('가좌도서관', '고양시 상호대차', '스크랩 실패'),
                     현재 대출 가능: bool,
                     서지번호: str('가좌도서관'일 경우에만 non-empty)]
         """
-        self.reset_instance()
-        self.load_search_results(book_name)
-        self.review_search_results()
-        return self.best_option
-
-    def reset_instance(self):
+        # reset attributes
         self.available_somewhere = False
         self.best_option = {}
 
-    def load_search_results(self, book_name):
+        # load search results
         self.load_main_page()
-        self.driv_avail.implicitly_wait(3)
         self.insert_book_name(book_name)
         self.click_search_button()
-        self.driv_avail.implicitly_wait(3)
+
+        # deal with pagination
+        self.review_search_results()
+        return self.best_option
 
     def load_main_page(self):
         url_main_page = 'https://www.goyanglib.or.kr/center/data/search.asp'
         self.driv_avail.get(url_main_page)
+        # self.driv_avail.implicitly_wait(3)
 
     def insert_book_name(self, book_name):
         tag_input_box = '#a_q'
@@ -64,6 +72,7 @@ class GoyangLibrary(SeleniumBase):
         tag_search_button = '#sb1 > a'
         search_button = self.driv_avail.find_element_by_css_selector(tag_search_button)
         search_button.click()
+        self.driv_avail.implicitly_wait(3)
 
     def review_search_results(self):
         page_buttons = self.get_page_buttons()

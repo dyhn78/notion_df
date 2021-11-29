@@ -79,5 +79,4 @@ class RegularEditorBase(EditorBase):
             # ft.preview()
 
         query.push_filter(ft)
-        # query.preview()
-        query.execute(self.request_size)
+        query.execute(self.request_size, print_heads=5)

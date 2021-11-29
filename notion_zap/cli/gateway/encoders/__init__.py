@@ -1,9 +1,9 @@
-from .contents.maker import \
+from .contents.carrier import \
     ContentsEncoder, RichTextContentsEncoder
-from .contents.wrapper import \
+from .contents.editor_abs import \
     TextContentsWriter, RichTextContentsWriter, \
     PageContentsWriterAsChild, \
     PageContentsWriter
-from .property.maker import PropertyEncoder, RichTextPropertyEncoder
-from .property.wrapper import PageRowPropertybyKey
+from .property.carrier import PropertyEncoder, RichTextPropertyEncoder
+from .property.editor_abs import PageRowPropertyWriterbyKey
 from .rich_text import RichTextObjectEncoder

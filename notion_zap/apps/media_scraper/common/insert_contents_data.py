@@ -3,9 +3,9 @@ import re
 from notion_zap.cli import editors
 
 
-class AppendContents:
-    def __init__(self, subpage: editors.PageItem, contents: list[str]):
-        self.page = subpage
+class InsertContents:
+    def __init__(self, page: editors.PageItem, contents: list[str]):
+        self.page = page
         self.contents = contents
 
     def execute(self):

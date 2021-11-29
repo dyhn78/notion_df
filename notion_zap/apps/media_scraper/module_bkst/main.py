@@ -1,39 +1,45 @@
 from notion_zap.cli import editors
 from notion_zap.cli.utility import stopwatch
-from .contents_append import AppendContents
 from .yes24_main import scrap_yes24_main
 from .yes24_url import scrap_yes24_url
-from ..common.exceptions import NoURLFoundError
-from ..regulars import RegularScrapStatusChecker
-from ..remove_duplicates import remove_dummy_blocks
+from ..common.helpers import enumerate_func
+from ..common.insert_contents_data import InsertContents
+from ..common.remove_dummy_blocks import remove_dummy_blocks
+from ..structs.controller_base_logic import ReadingPageWriter
+from ..structs.exceptions import NoURLFoundError
 
 
-class BookstoreScraper:
-    def __init__(self, status: RegularScrapStatusChecker):
+class BookstoreManager:
+    pass
+    # TODO: module_lib.writer.py 참고해서 비슷하게
+    #  "Scrapers' Manager" 와 "Writing Agent" 의 역할 분리.
+
+
+class BookstoreDataWriter:
+    def __init__(self, status: ReadingPageWriter):
         self.status = status
         self.page = self.status.page
+        self.book_names = self.status.book_names
 
     def execute(self):
         try:
-            self._execute_naive()
+            url = self.read_or_scrap_url()
+            if not url:
+                raise NoURLFoundError
+            data = self.scrap_bkst_data(url)
+            if not data:
+                raise NoURLFoundError
         except NoURLFoundError:
-            self.status.set_as_url_missing()
+            self.status.set_url_missing_flag()
+        else:
+            self.set_metadata(data)
+            self.set_cover_image(data)
+            self.set_contents_data(data)
 
-    def _execute_naive(self):
-        url = self.get_or_scrap_url()
-        if not url:
-            raise NoURLFoundError
-        data = self.scrap_bkst_data(url)
-        if not data:
-            raise NoURLFoundError
-        self.set_metadata(data)
-        self.set_cover_image(data)
-        self.set_contents_data(data)
-
-    def get_or_scrap_url(self):
+    def read_or_scrap_url(self):
         if url := self.page.props.get_at('url', default=''):
             return url
-        if url := scrap_yes24_url(self.status.get_names()):
+        if url := enumerate_func(scrap_yes24_url)(self.book_names):
             self.page.props.write_url_at('url', url)
             return url
         return ''
@@ -74,15 +80,18 @@ class BookstoreScraper:
         contents = data.get('contents', [])
         subpage = self.get_subpage()
         remove_dummy_blocks(subpage)
-        AppendContents(subpage, contents).execute()
-        writer = self.page.props.write_rich_text_at('link_to_contents')
-        writer.mention_page(subpage.block_id)
+        InsertContents(subpage, contents).execute()
+        link_to_contents = self.page.props.write_rich_text_at('link_to_contents')
+        link_to_contents.mention_page(subpage.block_id)
 
     def get_subpage(self) -> editors.PageItem:
         self.page.attachments.fetch()
         for block in self.page.attachments:
-            if isinstance(block, editors.PageItem) and \
-                    self.page.title in block.contents.reads():
+            if (
+                    isinstance(block, editors.PageItem)
+                    and (self.page.title in block.title
+                         or block.title == '=')
+            ):
                 subpage = block
                 break
         else:

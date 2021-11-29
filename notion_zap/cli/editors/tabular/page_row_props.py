@@ -4,7 +4,7 @@ from .page_row import PageRow
 from notion_zap.cli.gateway import encoders, requestors, parsers
 
 
-class PageRowProperty(PagePayload, encoders.PageRowPropertybyKey):
+class PageRowProperties(PagePayload, encoders.PageRowPropertyWriterbyKey):
     def __init__(self, caller: PageRow, page_id: str):
         PagePayload.__init__(self, caller, page_id)
         self.caller = caller
@@ -30,6 +30,7 @@ class PageRowProperty(PagePayload, encoders.PageRowPropertybyKey):
     def apply_page_parser(self, parser: parsers.PageParser):
         super().apply_page_parser(parser)
         self.frame.fetch_parser(parser)
+        self._set_title(parser.title)
         self._read_plain = parser.prop_values
         self._read_rich = parser.prop_rich_values
         for name in self._read_plain:
@@ -132,30 +133,3 @@ class PageRowProperty(PagePayload, encoders.PageRowPropertybyKey):
     def all_tags(self):
         return {key: self._read_full[self._name_at(key)]
                 for key in self.frame.tags()}
-
-
-"""
-class PageRowProperty(BlockEditor):
-    def __init__(self, caller: BlockEditor):
-        super().__init__(caller)
-        self.caller = caller
-        self.struct = caller.struct if hasattr(caller, 'struct') else PropertyFrame()
-        self._container = TabularPropertyHandler(self)
-        self._read_plain = {}
-        self._read_rich = {}
-        self._value_stash = {}
-        self._type_stash = {}
-        self.by_tag = {}
-
-    def __getitem__(self, prop_key: str):
-        return self._read_plain[prop_key]
-
-    def __bool__(self):
-        return any([bool(self._container), bool(self._value_stash)])
-
-    def _encode(self):
-        for prop_key, prop_value in self._value_stash.items():
-            prop_type = self._type_stash.get(prop_key)
-            self._container.write(prop_key, prop_value, prop_type)
-        self._value_stash.clear()
-"""

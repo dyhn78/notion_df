@@ -42,7 +42,7 @@ class GroundEditor(BlockEditor, metaclass=ABCMeta):
         return self.requestor.encode()
 
     def save(self):
-        return self.requestor.execute()
+        return self.requestor.search_one()
 
     def save_required(self):
         return self.requestor.__bool__()

@@ -3,10 +3,7 @@ from urllib import parse
 import requests
 from bs4 import BeautifulSoup
 
-from notion_zap.apps.media_scraper.common.helpers import try_func_twice
 
-
-@try_func_twice
 def scrap_yes24_url(book_name) -> str:
     book_name = ''.join(filter(lambda x: str.isalnum(x) or x == ' ', book_name))
     book_name_encoded = parse.quote_plus(book_name, encoding='euc-kr')

@@ -27,7 +27,7 @@ class Database(ChildrenBearer):
     def _fetch_children(self, request_size=0):
         """randomly query with the amount of <request_size>."""
         query = self.pages.open_query()
-        query.execute(request_size)
+        query.search_one()
 
     @property
     def payload(self):

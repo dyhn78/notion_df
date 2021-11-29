@@ -28,7 +28,7 @@ class DualCircularInitializer(GraphHandler):
                 pos_relative = Point(radius * math.cos(theta),
                                      radius * math.sin(theta))
                 pos = pos_center + pos_relative
-                self.G.nodes[node].update()
+                self.G.nodes[node].update(pos=pos)
 
             start = end
         return res
@@ -40,4 +40,4 @@ class CircularInitializer(GraphHandler):
         for i, node in self.G.nodes:
             theta = (2 * math.pi / length) * i
             pos = Point(math.cos(theta), math.sin(theta))
-            self.G.nodes[node].update()
+            self.G.nodes[node].update(pos=pos)
