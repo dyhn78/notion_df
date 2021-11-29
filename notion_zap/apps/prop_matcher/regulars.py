@@ -2,18 +2,18 @@ from __future__ import annotations
 
 from functools import reduce
 
-from .routines import *
-from .common.struct import RoutineManager, RootManager
+from .mamagers import *
+from .common.struct import EditorManager, EditorBase
 from ...cli import editors
 
 
 class RegularMatchController:
     def __init__(self, request_size=50):
-        self.bs = RegularRootManager(request_size)
+        self.bs = RegularEditorBase(request_size)
 
     def execute(self):
         self.bs.fetch()
-        agents: list[RoutineManager] = [
+        agents: list[EditorManager] = [
             SelfMatcher(self.bs),
             DateMatcherType1(self.bs),
             DateMatcherType2(self.bs),
@@ -33,7 +33,7 @@ class RegularMatchController:
         self.bs.save()
 
 
-class RegularRootManager(RootManager):
+class RegularEditorBase(EditorBase):
     def __init__(self, request_size: int):
         super().__init__()
         self.request_size = request_size

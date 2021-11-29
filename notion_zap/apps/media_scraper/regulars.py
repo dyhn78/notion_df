@@ -51,7 +51,7 @@ class ReadingDBScrapController(ReadingDBController):
 
         frame = maker.select_at('edit_status')
         ft &= (
-            frame.equals_to_any(frame.prop_value_groups['routines'])
+            frame.equals_to_any(frame.prop_value_groups['mamagers'])
             | frame.is_empty()
         )
 

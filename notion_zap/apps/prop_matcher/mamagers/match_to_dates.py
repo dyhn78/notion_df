@@ -10,10 +10,10 @@ from ..common.helpers import (
     query_unique_page_by_idx,
     fetch_all_pages_of_relation, fetch_unique_page_of_relation
 )
-from ..common.struct import RoutineManager
+from ..common.struct import EditorManager
 
 
-class DateMatcherAbs(RoutineManager, metaclass=ABCMeta):
+class DateMatcherAbs(EditorManager, metaclass=ABCMeta):
     Tdoms_ref = 'to_journals'
     Tdoms_date = 'auto_datetime'
     T_tar = 'to_dates'

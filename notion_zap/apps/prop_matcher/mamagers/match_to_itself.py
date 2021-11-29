@@ -1,7 +1,7 @@
-from ..common.struct import RoutineManager
+from ..common.struct import EditorManager
 
 
-class SelfMatcher(RoutineManager):
+class SelfMatcher(EditorManager):
     def __init__(self, bs):
         super().__init__(bs)
         self.domains = [

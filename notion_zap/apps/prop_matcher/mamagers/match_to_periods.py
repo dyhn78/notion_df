@@ -3,7 +3,7 @@ import datetime as dt
 
 from notion_zap.cli import editors
 from notion_zap.cli.struct import DateFormat
-from ..common.struct import RoutineManager
+from ..common.struct import EditorManager
 from ..common.date_handler import DateHandler
 from ..common.helpers import (
     fetch_unique_page_of_relation,
@@ -11,7 +11,7 @@ from ..common.helpers import (
 )
 
 
-class PeriodMatcherAbs(RoutineManager, metaclass=ABCMeta):
+class PeriodMatcherAbs(EditorManager, metaclass=ABCMeta):
     T_tar = 'to_periods'
     Ttars_idx = 'title'
     Ttars_date = 'manual_date_range'
@@ -42,7 +42,7 @@ class PeriodMatcherAbs(RoutineManager, metaclass=ABCMeta):
     def create_by_date_val(self, date_val: dt.date):
         if not date_val:
             return None
-        tar = self.target.create_page()
+        tar = self.target.pages.create_page()
         date_handler = DateHandler(date_val)
 
         tar_idx_val = date_handler.strf_year_and_week()

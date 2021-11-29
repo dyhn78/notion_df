@@ -6,7 +6,7 @@ from notion_zap.apps.config.prop_matcher import MatchFrames
 from notion_zap.cli import editors
 
 
-class RootManager:
+class EditorBase:
     def __init__(self):
         self.root = editors.RootEditor()
         self.periods = self.root.open_database(*DatabaseInfo.PERIODS,
@@ -28,8 +28,8 @@ class RootManager:
         self.root.save()
 
 
-class RoutineManager(ABC):
-    def __init__(self, bs: RootManager):
+class EditorManager(ABC):
+    def __init__(self, bs: EditorBase):
         self.bs = bs
 
     @abstractmethod

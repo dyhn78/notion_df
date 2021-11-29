@@ -1,3 +1,3 @@
-from notion_zap.apps.stories import main
+from notion_zap.apps.routines import main
 
 main.execute()

@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from datetime import date
 
-from .routines import *
-from .common.struct import RoutineManager, RootManager
+from .mamagers import *
+from .common.struct import EditorManager, EditorBase
 
 
 class CalendarController:
@@ -13,12 +13,12 @@ class CalendarController:
         self.fetch_empties = fetch_empties
         self.fetch_year_range = (
             CalendarDateRange(fetch_year_range) if fetch_year_range else None)
-        self.bs = CalendarRootManager(
+        self.bs = CalendarEditorBase(
             fetch_year_range, empties=fetch_empties, request_size=0)
 
     def execute(self):
         self.bs.fetch_all()
-        agents: list[RoutineManager] = [
+        agents: list[EditorManager] = [
             DateTargetFiller(self.bs, self.disable_overwrite,
                              self.fetch_year_range),
             PeriodTargetFiller(self.bs, self.disable_overwrite,
@@ -29,7 +29,7 @@ class CalendarController:
         self.bs.save()
 
 
-class CalendarRootManager(RootManager):
+class CalendarEditorBase(EditorBase):
     MAX_REQUEST_SIZE = 50
 
     def __init__(self,

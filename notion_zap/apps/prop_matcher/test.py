@@ -1,17 +1,17 @@
 from __future__ import annotations
 
-from notion_zap.apps.prop_matcher.routines import *
-from notion_zap.apps.prop_matcher.common.struct import RoutineManager, RootManager
+from notion_zap.apps.prop_matcher.mamagers import *
+from notion_zap.apps.prop_matcher.common.struct import EditorManager, EditorBase
 from notion_zap.cli import editors
 
 
 class GcalMatchController:
     def __init__(self, request_size=50):
-        self.bs = GcalRootManager(request_size)
+        self.bs = GcalEditorBase(request_size)
 
     def execute(self):
         self.bs.fetch()
-        agents: list[RoutineManager] = [
+        agents: list[EditorManager] = [
             GcaltoScheduleMatcher(self.bs),
             GcalfromScheduleMatcher(self.bs),
         ]
@@ -20,7 +20,7 @@ class GcalMatchController:
         self.bs.save()
 
 
-class GcalRootManager(RootManager):
+class GcalEditorBase(EditorBase):
     def __init__(self, request_size: int):
         super().__init__()
         self.request_size = request_size
