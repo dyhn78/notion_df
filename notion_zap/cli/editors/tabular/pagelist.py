@@ -45,7 +45,7 @@ class PageList(BlockChildren):
         else:
             self.update.detach_page(page)
 
-    def open_query(self):
+    def open_query(self) -> QueryWithCallback:
         def callback(response):
             return self.update.apply_query_response(response)
 
