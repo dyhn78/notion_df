@@ -4,8 +4,8 @@
 
 !/venv/
 /notion_zap/**/notion_token.env
-/notion_zap/apps/externals/gcal/credentials.json
-/notion_zap/apps/externals/gcal/token.json
+/notion_zap/**/credentials.json
+/notion_zap/**/token.json
 debug.log
 
 
