@@ -2,7 +2,7 @@ from notion_zap.cli.struct import PropertyFrame
 from notion_zap.cli.editors import base
 from .filter_struct import QueryFilter, EmptyFilter
 from ..base import LongRequestor, print_response_error
-from notion_zap.cli.utility import page_id_to_url, stopwatch
+from notion_zap.cli.utility import id_to_url, stopwatch
 
 
 class Query(LongRequestor):
@@ -57,7 +57,7 @@ class Query(LongRequestor):
         return response
 
     def print_comments(self):
-        target_url = page_id_to_url(self.target_id)
+        target_url = id_to_url(self.target_id)
         if self.target_name:
             form = [f"{self.target_name}", target_url]
         else:

@@ -44,7 +44,7 @@ class CreatePage(PointRequestor, PagePropertyStash, BlockChildrenStash):
         return res
 
     def print_comments(self, res):
-        target_url = utility.page_id_to_url(res['id'])
+        target_url = utility.id_to_url(res['id'])
         if self.target_name:
             form = ['create_page', f"< {self.target_name} >",
                     '\n\t', target_url]

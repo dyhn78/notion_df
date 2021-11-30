@@ -4,33 +4,33 @@ from typing import Union, Callable
 from notion_zap.cli.gateway import encoders, parsers, requestors
 from ..common.with_cc import ChildrenBearersContents
 from ..common.with_contents import ContentsBearer
-from ..common.with_items import ItemsBearer, ItemAttachments
+from ..common.with_items import ItemsBearer, ItemChildren
 from ..root_editor import RootEditor
 
 
 # TODO > Can-Have-Children 을 동적으로 바꿀 수 있을까?
 class TextItem(ItemsBearer, ContentsBearer):
     def __init__(self,
-                 caller: Union[ItemAttachments,
+                 caller: Union[ItemChildren,
                                RootEditor],
-                 block_id: str):
+                 id_or_url: str):
         ItemsBearer.__init__(self, caller)
         ContentsBearer.__init__(self, caller)
         self.caller = caller
-        self._contents = TextItemContents(self, block_id)
+        self._contents = TextItemContents(self, id_or_url)
 
-        if isinstance(self.caller, ItemAttachments):
+        if isinstance(self.caller, ItemChildren):
             self.caller.attach(self)
 
     def save_required(self) -> bool:
         return (self.contents.save_required() or
-                self.attachments.save_required())
+                self.items.save_required())
 
     def save_this(self):
         self.contents.save()
         if self.archived:
             return
-        self.attachments.save()
+        self.items.save()
 
     def save(self):
         if self.yet_not_created:
@@ -48,17 +48,17 @@ class TextItem(ItemsBearer, ContentsBearer):
 
     def reads(self):
         return {'contents': self.contents.reads(),
-                'children': self.attachments.reads(),
+                'children': self.items.reads(),
                 'type': 'text'}
 
     def reads_rich(self):
         return {'contents': self.contents.reads_rich(),
-                'children': self.attachments.reads_rich(),
+                'children': self.items.reads_rich(),
                 'type': 'text'}
 
     def save_info(self):
         return {'contents': self.contents.save_info(),
-                **self.attachments.save_info(),
+                **self.items.save_info(),
                 'type': 'text'}
 
 
@@ -68,8 +68,8 @@ class TextItemContents(ChildrenBearersContents, encoders.TextContentsWriter):
     they will insert blank paragraph as a default.
     """
 
-    def __init__(self, caller: TextItem, block_id: str):
-        super().__init__(caller, block_id)
+    def __init__(self, caller: TextItem, id_or_url: str):
+        super().__init__(caller, id_or_url)
         self.caller = caller
         self._requestor = requestors.UpdateBlock(self)
         self._callback = None

@@ -5,21 +5,18 @@ from typing import Union
 from notion_zap.cli.gateway import encoders, parsers, requestors
 from ..common.pages import PageBlock, PagePayload
 from ..common.with_cc import ChildrenAndContentsBearer, ChildrenBearersContents
-from ..common.with_items import ItemAttachments
+from ..common.with_items import ItemChildren
 from notion_zap.cli.editors.root_editor import RootEditor
 
 
 class PageItem(PageBlock, ChildrenAndContentsBearer):
     def __init__(self,
-                 caller: Union[ItemAttachments, RootEditor],
-                 page_id: str):
+                 caller: Union[ItemChildren, RootEditor],
+                 id_or_url: str):
         PageBlock.__init__(self, caller)
         ChildrenAndContentsBearer.__init__(self, caller)
         self.caller = caller
-        self._contents = PageItemContents(self, page_id)
-
-        if isinstance(self.caller, ItemAttachments):
-            self.caller.attach(self)
+        self._contents = PageItemContents(self, id_or_url)
 
     @property
     def payload(self) -> PageItemContents:
@@ -37,7 +34,7 @@ class PageItem(PageBlock, ChildrenAndContentsBearer):
         self.contents.save()
         if self.archived:
             return
-        self.attachments.save()
+        self.items.save()
 
     def reads(self):
         return dict(**super().reads(), type='page')
@@ -48,8 +45,8 @@ class PageItem(PageBlock, ChildrenAndContentsBearer):
 
 class PageItemContents(PagePayload, ChildrenBearersContents,
                        encoders.PageContentsWriter):
-    def __init__(self, caller: PageItem, page_id: str):
-        super().__init__(caller, page_id)
+    def __init__(self, caller: PageItem, id_or_url: str):
+        super().__init__(caller, id_or_url)
         self.caller = caller
         if self.yet_not_created:
             requestor = requestors.CreatePage(self, under_database=False)
@@ -73,11 +70,13 @@ class PageItemContents(PagePayload, ChildrenBearersContents,
 
     def apply_page_parser(self, parser: parsers.PageParser):
         super().apply_page_parser(parser)
-        plain_title = parser.prop_values['title']
-        rich_title = parser.prop_rich_values['title']
-        self._set_title(plain_title)
-        self._read_plain = plain_title
-        self._read_rich = rich_title
+        self._read_plain = parser.prop_values['title']
+        self._read_rich = parser.prop_rich_values['title']
+        self._set_title(self._read_plain)
+
+    def apply_block_parser(self, parser: parsers.BlockContentsParser):
+        super().apply_block_parser(parser)
+        self._set_title(self._read_plain)
 
     def push_carrier(self, carrier: encoders.RichTextPropertyEncoder) \
             -> encoders.RichTextPropertyEncoder:

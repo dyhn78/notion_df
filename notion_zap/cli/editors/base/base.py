@@ -3,9 +3,9 @@ from pprint import pprint
 
 
 class Editor(metaclass=ABCMeta):
-    def __init__(self, root_editor):
+    def __init__(self, root):
         from notion_zap.cli.editors import RootEditor
-        self.root: RootEditor = root_editor
+        self.root: RootEditor = root
 
     @abstractmethod
     def save_required(self) -> bool:

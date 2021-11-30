@@ -85,8 +85,8 @@ class BookstoreDataWriter:
         link_to_contents.mention_page(subpage.block_id)
 
     def get_subpage(self) -> editors.PageItem:
-        self.page.attachments.fetch()
-        for block in self.page.attachments:
+        self.page.items.fetch()
+        for block in self.page.items:
             if (
                     isinstance(block, editors.PageItem)
                     and (self.page.title in block.title
@@ -95,7 +95,7 @@ class BookstoreDataWriter:
                 subpage = block
                 break
         else:
-            subpage = self.page.attachments.create_page()
+            subpage = self.page.items.create_page()
         subpage.contents.write_title(f'={self.page.title}')
         subpage.save()
         return subpage

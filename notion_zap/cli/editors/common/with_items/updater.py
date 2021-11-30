@@ -1,13 +1,13 @@
 from typing import Union
 
 from notion_zap.cli.gateway import parsers
-from .master_and_attachments import ItemAttachments
+from .master_and_attachments import ItemChildren
 from ..with_contents import ContentsBearer
-from ...base import ListEditor, MasterEditor
+from ...base import ListEditor, BlockMaster
 
 
 class ItemsUpdater(ListEditor):
-    def __init__(self, caller: ItemAttachments):
+    def __init__(self, caller: ItemChildren):
         super().__init__(caller)
         self.caller = caller
         self._values = []
@@ -25,7 +25,7 @@ class ItemsUpdater(ListEditor):
         self.blocks.append(child)
 
     @property
-    def blocks(self) -> list[Union[MasterEditor]]:
+    def blocks(self) -> list[Union[BlockMaster]]:
         return self._values
 
     def __iter__(self):

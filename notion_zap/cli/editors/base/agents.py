@@ -10,7 +10,7 @@ class ListEditor(BlockEditor, metaclass=ABCMeta):
     @property
     @abstractmethod
     def blocks(self):
-        """must return list of MasterEditor"""
+        """must return list of BlockMaster"""
         pass
 
     def save(self):

@@ -28,10 +28,10 @@ class PageList(BlockChildren):
         self._by_title = defaultdict(list)
 
     def open_page(self, page_id: str):
-        return PageRow(caller=self, page_id=page_id, frame=self.frame)
+        return PageRow(self, page_id, frame=self.frame)
 
     def create_page(self):
-        return PageRow(caller=self, page_id='', frame=self.frame)
+        return PageRow(self, '', frame=self.frame)
 
     def attach(self, page: PageRow):
         if page.yet_not_created:

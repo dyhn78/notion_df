@@ -1,12 +1,11 @@
-
 from ..common.pages import PagePayload
 from .page_row import PageRow
 from notion_zap.cli.gateway import encoders, requestors, parsers
 
 
 class PageRowProperties(PagePayload, encoders.PageRowPropertyWriterbyKey):
-    def __init__(self, caller: PageRow, page_id: str):
-        PagePayload.__init__(self, caller, page_id)
+    def __init__(self, caller: PageRow, id_or_url: str):
+        PagePayload.__init__(self, caller, id_or_url)
         self.caller = caller
         self.frame = caller.frame
         if self.yet_not_created:

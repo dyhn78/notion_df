@@ -1,29 +1,28 @@
 from __future__ import annotations
 
 from abc import ABCMeta
-from typing import Union, Iterator
+from typing import Iterator
 
 from notion_zap.cli.gateway import requestors, parsers
 from ..with_children import ChildrenBearer, BlockChildren
 from ...editor_exceptions import BlockTypeError, NoParentFoundError
-from ...base import BlockEditor, MasterEditor, Editor
+from ...base import BlockMaster, BlockAttachments
 
 
 class ItemsBearer(ChildrenBearer, metaclass=ABCMeta):
-    def __init__(self, caller: Union[BlockEditor, Editor]):
+    def __init__(self, caller: BlockAttachments):
         super().__init__(caller)
-        self.caller = caller
-        self.attachments = ItemAttachments(self)
+        self.items = ItemChildren(self)
 
     @property
-    def children(self) -> ItemAttachments:
-        return self.attachments
+    def children(self) -> ItemChildren:
+        return self.items
 
     def _fetch_children(self, request_size=0):
         self.children.fetch(request_size)
 
 
-class ItemAttachments(BlockChildren):
+class ItemChildren(BlockChildren):
     def __init__(self, caller: ItemsBearer):
         super().__init__(caller)
         self.caller = caller
@@ -34,7 +33,7 @@ class ItemAttachments(BlockChildren):
         from .creator import ItemsCreator
         self.create = ItemsCreator(self)
 
-    def attach(self, child: MasterEditor):
+    def attach(self, child: BlockMaster):
         if not self.master.can_have_children:
             raise BlockTypeError(self.master)
 
@@ -51,7 +50,7 @@ class ItemAttachments(BlockChildren):
         else:
             self.update.attach_item(child)
 
-    def detach(self, child: MasterEditor):
+    def detach(self, child: BlockMaster):
         raise NotImplementedError
 
     def create_text(self):
@@ -68,12 +67,12 @@ class ItemAttachments(BlockChildren):
         parser = parsers.BlockChildrenParser(response)
         self.update.apply_children_parser(parser)
 
-    def indent_cursor(self) -> ItemAttachments:
+    def indent_cursor(self) -> ItemChildren:
         """this returns new 'cursor' where you can use of create_xx method.
         raises BlockTypeError if no child can_have_children."""
         for child in reversed(self.list_all()):
             if isinstance(child, ItemsBearer) and child.can_have_children:
-                return child.attachments
+                return child.items
         else:
             raise BlockTypeError(self.master)
 
@@ -85,13 +84,13 @@ class ItemAttachments(BlockChildren):
         except BlockTypeError:
             return self
 
-    def exdent_cursor(self) -> ItemAttachments:
+    def exdent_cursor(self) -> ItemChildren:
         """this returns new 'cursor' where you can use of create_xx method.
         raises NoParentFoundError if failed."""
         parent = self.parent
         try:
             assert isinstance(parent, ItemsBearer)
-            return parent.attachments
+            return parent.items
         except AssertionError:
             raise NoParentFoundError(self.master)
 
@@ -117,11 +116,14 @@ class ItemAttachments(BlockChildren):
         return (self.update.save_required()
                 or self.create.save_required())
 
-    def list_all(self) -> list[MasterEditor]:
+    def iter_all(self) -> Iterator[BlockMaster]:
+        return iter(self.list_all())
+
+    def list_all(self) -> list[BlockMaster]:
         return self.update.blocks + self.create.blocks
 
-    def iter_all(self) -> Iterator[MasterEditor]:
-        return iter(self.list_all())
+    def __getitem__(self, idx: int):
+        return self.list_all()[idx]
 
     def reads(self):
         return self.update.reads()

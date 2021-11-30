@@ -5,13 +5,13 @@ from typing import Union
 from notion_zap.cli.gateway.encoders import ContentsEncoder
 from notion_zap.cli.gateway.parsers import BlockChildrenParser
 from notion_zap.cli.gateway.requestors import AppendBlockChildren
-from .master_and_attachments import ItemAttachments
+from .master_and_attachments import ItemChildren
 from notion_zap.cli.editors.base import (
     BlockEditor, GroundEditor, AdaptiveEditor)
 
 
 class ItemsCreator(BlockEditor):
-    def __init__(self, caller: ItemAttachments):
+    def __init__(self, caller: ItemChildren):
         super().__init__(caller)
         self.caller = caller
         self.agents: list[Union[TextItemsCreateAgent,

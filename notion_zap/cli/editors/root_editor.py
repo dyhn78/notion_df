@@ -6,11 +6,11 @@ from typing import Optional, Any
 from notion_client import Client, AsyncClient
 
 from notion_zap.cli.struct import PropertyFrame, DateFormat
-from notion_zap.cli.utility import page_url_to_id, stopwatch
-from .base import Editor, MasterEditor
+from notion_zap.cli.utility import stopwatch
+from .base import Editor, BlockMaster, BlockAttachments
 
 
-class RootEditor(Editor):
+class RootEditor(BlockAttachments):
     def __init__(
             self,
             async_client=False,
@@ -19,14 +19,14 @@ class RootEditor(Editor):
             customized_emptylike_strings=None,
             # enable_overwrite_by_same_value=False,
     ):
-        super().__init__(root_editor=self)
+        Editor.__init__(self, root=self)
         if async_client:
             client = AsyncClient(auth=self.token)
         else:
             client = Client(auth=self.token)
         self.client = client
 
-        self._stems: list[MasterEditor] = []
+        self._stems: list[BlockMaster] = []
         self._by_id = {}
         self._by_title = defaultdict(list)
 
@@ -68,14 +68,14 @@ class RootEditor(Editor):
         return str(value) in self.emptylike_strings
 
     @property
-    def by_id(self) -> dict[str, MasterEditor]:
+    def by_id(self) -> dict[str, BlockMaster]:
         return self._by_id
 
     def ids(self):
         return self.by_id.keys()
 
     @property
-    def by_title(self) -> dict[str, list[MasterEditor]]:
+    def by_title(self) -> dict[str, list[BlockMaster]]:
         return self._by_title
 
     @property
@@ -83,8 +83,40 @@ class RootEditor(Editor):
         return self._by_alias
 
     @property
-    def databases(self):
+    def favorites(self):
         return self._by_alias.values()
+
+    def attach(self, block: BlockMaster):
+        self._stems.append(block)
+
+    def detach(self, block: BlockMaster):
+        self._stems.remove(block)
+
+    def open_database(self, database_alias: str, id_or_url: str,
+                      frame: Optional[PropertyFrame] = None):
+        from . import Database
+        database = Database(self, id_or_url, database_alias, frame)
+        self._stems.append(database)
+        return database
+
+    def open_page_row(self, id_or_url: str,
+                      frame: Optional[PropertyFrame] = None):
+        from . import PageRow
+        page = PageRow(self, id_or_url, frame=frame)
+        self._stems.append(page)
+        return page
+
+    def open_page_item(self, id_or_url: str):
+        from . import PageItem
+        page = PageItem(self, id_or_url)
+        self._stems.append(page)
+        return page
+
+    def open_text_item(self, id_or_url: str):
+        from . import TextItem
+        editor = TextItem(self, id_or_url)
+        self._stems.append(editor)
+        return editor
 
     def save_required(self):
         return any([editor.save_required() for editor in self._stems])
@@ -99,33 +131,3 @@ class RootEditor(Editor):
         for editor in self._stems:
             editor.save()
         stopwatch('작업 완료')
-
-    def open_database(self, database_alias: str, id_or_url: str,
-                      frame: Optional[PropertyFrame] = None):
-        from . import Database
-        database_id = page_url_to_id(id_or_url)
-        database = Database(self, database_id, database_alias, frame)
-        self._stems.append(database)
-        return database
-
-    def open_page_row(self, id_or_url: str,
-                      frame: Optional[PropertyFrame] = None):
-        from . import PageRow
-        page_id = page_url_to_id(id_or_url)
-        page = PageRow(self, page_id, frame=frame)
-        self._stems.append(page)
-        return page
-
-    def open_page_item(self, id_or_url: str):
-        from . import PageItem
-        page_id = page_url_to_id(id_or_url)
-        page = PageItem(self, page_id)
-        self._stems.append(page)
-        return page
-
-    def open_text_item(self, id_or_url: str):
-        from . import TextItem
-        block_id = page_url_to_id(id_or_url)
-        editor = TextItem(self, block_id)
-        self._stems.append(editor)
-        return editor

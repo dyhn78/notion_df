@@ -40,7 +40,7 @@ class RegularEditorBase(EditorBase):
         self.root.exclude_archived = True
 
     def fetch(self):
-        for domain in self.root.databases:
+        for domain in self.root.favorites:
             self.fetch_one(domain)
 
     def fetch_one(self, domain: editors.Database):

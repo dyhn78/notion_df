@@ -32,7 +32,7 @@
 #             self.caller.execute()
 #         else:
 #             self.contents.execute()
-#             self.attachments.execute()
+#             self.items.execute()
 #
 #     def fully_read(self):
 #         return dict(**super().fully_read(), type='page')

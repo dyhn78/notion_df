@@ -18,9 +18,6 @@ class ChildrenAndContentsBearer(ChildrenBearer, ContentsBearer):
 
 
 class ChildrenBearersContents(BlockContents, metaclass=ABCMeta):
-    def __init__(self, caller: ContentsBearer, block_id: str):
-        super().__init__(caller, block_id)
-
     def apply_block_parser(self, parser: parsers.BlockContentsParser):
         super().apply_block_parser(parser)
         self._has_children = parser.has_children

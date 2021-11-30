@@ -4,12 +4,12 @@ from abc import ABCMeta, abstractmethod
 from collections import defaultdict
 from typing import Iterator, Union, Iterable
 
-from notion_zap.cli.editors.base import BlockEditor, MasterEditor, Editor
+from ..base import BlockMaster, BlockAttachments
 
 
-class ChildrenBearer(MasterEditor):
+class ChildrenBearer(BlockMaster):
     @abstractmethod
-    def __init__(self, caller: Union[BlockEditor, Editor]):
+    def __init__(self, caller: BlockAttachments):
         super().__init__(caller)
 
     @property
@@ -26,7 +26,7 @@ class ChildrenBearer(MasterEditor):
         pass
 
     def iter_descendants_with(self, exact_rank_diff: int) \
-            -> Iterable[Union[ChildrenBearer, MasterEditor]]:
+            -> Iterable[Union[ChildrenBearer, BlockMaster]]:
         if exact_rank_diff > 0:
             yield from self.__iter_descendants_with(self, exact_rank_diff)
         else:
@@ -42,7 +42,7 @@ class ChildrenBearer(MasterEditor):
                     yield from cls.__iter_descendants_with(child, exact_rank_diff - 1)
 
     def iter_descendants_within(self, max_rank_diff: int) \
-            -> Iterable[Union[ChildrenBearer, MasterEditor]]:
+            -> Iterable[Union[ChildrenBearer, BlockMaster]]:
         if max_rank_diff > 0:
             yield from self.__iter_descendants_within(self, max_rank_diff)
         else:
@@ -58,7 +58,7 @@ class ChildrenBearer(MasterEditor):
                     yield from cls.__iter_descendants_within(child, max_rank_diff - 1)
 
     def iter_descendants(self) \
-            -> Iterable[Union[ChildrenBearer, MasterEditor]]:
+            -> Iterable[Union[ChildrenBearer, BlockMaster]]:
         for child in self.children:
             yield child
             if isinstance(child, ChildrenBearer):
@@ -81,23 +81,15 @@ class ChildrenBearer(MasterEditor):
                 child.fetch_descendants(request_size)
 
 
-class BlockChildren(BlockEditor, metaclass=ABCMeta):
+class BlockChildren(BlockAttachments, metaclass=ABCMeta):
     def __init__(self, caller: ChildrenBearer):
         super().__init__(caller)
         self.caller = caller
         self._by_id = {}
         self._by_title = defaultdict(list)
 
-    @abstractmethod
-    def attach(self, child: MasterEditor):
-        pass
-
-    @abstractmethod
-    def detach(self, child: MasterEditor):
-        pass
-
     @property
-    def by_id(self) -> dict[str, MasterEditor]:
+    def by_id(self) -> dict[str, BlockMaster]:
         # will be auto-updated by child blocks.
         return self._by_id
 
@@ -105,12 +97,12 @@ class BlockChildren(BlockEditor, metaclass=ABCMeta):
         return self.by_id.keys()
 
     @property
-    def by_title(self) -> dict[str, list[MasterEditor]]:
+    def by_title(self) -> dict[str, list[BlockMaster]]:
         # will be auto-updated by child blocks.
         return self._by_title
 
     @abstractmethod
-    def iter_all(self) -> Iterator[MasterEditor]:
+    def iter_all(self) -> Iterator[BlockMaster]:
         pass
 
     def __iter__(self):
@@ -120,7 +112,7 @@ class BlockChildren(BlockEditor, metaclass=ABCMeta):
 
     def iter_valids(self, exclude_archived_blocks=True,
                     exclude_yet_not_created_blocks=True) \
-            -> Iterator[MasterEditor]:
+            -> Iterator[BlockMaster]:
         for child in self.iter_all():
             if exclude_archived_blocks and child.archived:
                 continue

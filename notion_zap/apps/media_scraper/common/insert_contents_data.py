@@ -11,7 +11,7 @@ class InsertContents:
     def execute(self):
         max_depth = max(self.get_depth(text_line) for text_line in self.contents)
         for text_line in self.contents:
-            block = self.page.attachments.create_text()
+            block = self.page.items.create_text()
             depth = self.get_depth(text_line)
             if depth != 0:
                 depth += (4 - max_depth)

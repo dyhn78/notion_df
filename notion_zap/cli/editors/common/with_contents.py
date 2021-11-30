@@ -4,11 +4,11 @@ from abc import ABCMeta, abstractmethod
 from typing import Union
 
 from notion_zap.cli.editors.root_editor import RootEditor
-from ..base import MasterEditor, BlockEditor, PayloadEditor, GroundEditor
+from ..base import BlockMaster, BlockEditor, BlockPayload, GroundEditor
 from notion_zap.cli.gateway import parsers
 
 
-class ContentsBearer(MasterEditor, metaclass=ABCMeta):
+class ContentsBearer(BlockMaster, metaclass=ABCMeta):
     def __init__(self, caller: Union[RootEditor, BlockEditor]):
         super().__init__(caller)
         self.caller = caller
@@ -41,9 +41,9 @@ class ContentsBearer(MasterEditor, metaclass=ABCMeta):
         return {'contents': self.contents.save_info()}
 
 
-class BlockContents(PayloadEditor, GroundEditor, metaclass=ABCMeta):
-    def __init__(self, caller: ContentsBearer, block_id: str):
-        PayloadEditor.__init__(self, caller, block_id)
+class BlockContents(BlockPayload, GroundEditor, metaclass=ABCMeta):
+    def __init__(self, caller: ContentsBearer, id_or_url: str):
+        BlockPayload.__init__(self, caller, id_or_url)
         self.caller = caller
         self._read_plain = ''
         self._read_rich = []

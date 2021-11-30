@@ -4,7 +4,7 @@ from typing import Callable
 
 from notion_client.errors import APIResponseError
 
-from ... import utility
+from notion_zap.cli.utility import stopwatch
 from notion_zap.cli.editors.base import BlockEditor
 from notion_zap.cli.struct.base_logic import Executable, ValueCarrier
 
@@ -31,7 +31,7 @@ class PointRequestor(Requestor, metaclass=ABCMeta):
 
     @property
     def target_url(self):
-        return utility.page_id_to_url(self.target_id)
+        return self.editor.block_url
 
 
 class LongRequestor(PointRequestor):
@@ -76,7 +76,7 @@ class LongRequestor(PointRequestor):
 
     def _print_comments_each(self):
         comments = f'→ {self.response_size} 개 완료'
-        utility.stopwatch(comments)
+        stopwatch(comments)
 
 
 def drop_empty_request(method: Callable):
@@ -125,7 +125,7 @@ def retry_then_print_response_error(func: Callable, recursion_limit=1, time_to_s
                     print()
                     raise api_response_error
                 recursion += 1
-                utility.stopwatch(f'응답 재시도 {recursion}/{recursion_limit}회')
+                stopwatch(f'응답 재시도 {recursion}/{recursion_limit}회')
                 time.sleep(time_to_sleep * (1 ** recursion))
 
     return wrapper

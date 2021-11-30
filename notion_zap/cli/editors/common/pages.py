@@ -4,16 +4,11 @@ from abc import abstractmethod, ABCMeta
 from typing import Union
 
 from .with_items import ItemsBearer
-from ..base import BlockEditor, PayloadEditor, GroundEditor
-from ..root_editor import RootEditor
+from ..base import BlockPayload, GroundEditor
 from notion_zap.cli.gateway import parsers, requestors
 
 
 class PageBlock(ItemsBearer):
-    def __init__(self, caller: Union[RootEditor, BlockEditor]):
-        super().__init__(caller)
-        self.caller = caller
-
     @property
     @abstractmethod
     def payload(self) -> PagePayload:
@@ -21,7 +16,7 @@ class PageBlock(ItemsBearer):
 
     def save_required(self):
         return (self.payload.save_required()
-                or self.attachments.save_required())
+                or self.items.save_required())
 
     @property
     def block_name(self):
@@ -32,9 +27,9 @@ class PageBlock(ItemsBearer):
         return self.payload.title
 
 
-class PagePayload(PayloadEditor, GroundEditor, metaclass=ABCMeta):
-    def __init__(self, caller: PageBlock, block_id):
-        PayloadEditor.__init__(self, caller, block_id)
+class PagePayload(BlockPayload, GroundEditor, metaclass=ABCMeta):
+    def __init__(self, caller: PageBlock, id_or_url):
+        BlockPayload.__init__(self, caller, id_or_url)
         self.caller = caller
         self.__title = ''
 

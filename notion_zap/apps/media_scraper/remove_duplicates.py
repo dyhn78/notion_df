@@ -11,7 +11,7 @@ class ReadingDBDuplicateRemover(ReadingDBController):
     def execute(self, request_size=0):
         self.make_query(request_size)
         for page in self.pagelist:
-            page.attachments.fetch()
+            page.items.fetch()
             if removed := remove_dummy_blocks(page):
                 stopwatch(f'중복 {removed} 개 제거: {page.title}')
                 page.save()

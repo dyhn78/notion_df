@@ -3,7 +3,7 @@ from abc import ABCMeta, abstractmethod
 from typing import Union
 import datetime as dt
 
-from notion_zap.cli.utility import page_id_to_url
+from notion_zap.cli.utility import id_to_url
 from .base import Editor
 
 
@@ -13,7 +13,7 @@ class BlockEditor(Editor, metaclass=ABCMeta):
         super().__init__(caller.root)
 
     @property
-    def master(self) -> MasterEditor:
+    def master(self) -> BlockMaster:
         return self.caller.master
 
     @property
@@ -22,7 +22,7 @@ class BlockEditor(Editor, metaclass=ABCMeta):
 
     @property
     def block_url(self):
-        return page_id_to_url(self.block_id)
+        return id_to_url(self.block_id)
 
     @property
     def block_name(self) -> str:
@@ -50,14 +50,15 @@ class BlockEditor(Editor, metaclass=ABCMeta):
     #     self.master.yet_not_created = value
 
 
-class MasterEditor(BlockEditor):
-    def __init__(self, caller: Editor):
+class BlockMaster(BlockEditor):
+    def __init__(self, caller: BlockAttachments):
         super().__init__(caller)
-        """implementations:
-        1. declare payload, make it register to parent/root (.by_id, .by_title):
-            this allows to search and read specific page from the collection.
-        2. attach self to pagelist (.update.blocks, .create.blocks):
-            this determine the order of saving process of the collection.
+        self.caller = caller
+        self.caller.attach(self)
+        """
+        declare payload here, make it "register" to parent/root (.by_id, .by_title).
+        while "attaching" is required to exhaustive, trickle-down saving,
+        "registering" allows to search and read specific page from the collection.
         """
 
     @property
@@ -67,7 +68,7 @@ class MasterEditor(BlockEditor):
 
     @property
     @abstractmethod
-    def payload(self) -> PayloadEditor:
+    def payload(self) -> BlockPayload:
         pass
 
     @property
@@ -162,11 +163,21 @@ class MasterEditor(BlockEditor):
         """
 
 
-class PayloadEditor(BlockEditor, metaclass=ABCMeta):
-    def __init__(self, caller: Union[BlockEditor, Editor], block_id: str):
+class BlockAttachments(BlockEditor):
+    @abstractmethod
+    def attach(self, child: BlockMaster):
+        pass
+
+    @abstractmethod
+    def detach(self, child: BlockMaster):
+        pass
+
+
+class BlockPayload(BlockEditor, metaclass=ABCMeta):
+    def __init__(self, caller: BlockMaster, id_or_url: str):
         super().__init__(caller)
         self.__block_id = ''
-        self._set_block_id(block_id)
+        self._set_block_id(id_to_url(id_or_url))
         self._archived = None
         self._created_time = None
         self._last_edited_time = None

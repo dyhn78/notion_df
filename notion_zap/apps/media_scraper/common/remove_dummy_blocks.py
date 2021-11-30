@@ -4,7 +4,7 @@ from notion_zap.cli import editors
 def remove_dummy_blocks(page: editors.common.ItemsBearer):
     duplicate = False
     removed = 0
-    for block in page.attachments:
+    for block in page.items:
         if block.archived:
             continue
         # remove "blank" blocks
