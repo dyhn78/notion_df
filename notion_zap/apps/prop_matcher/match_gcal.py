@@ -40,7 +40,7 @@ class GcalEditorBase(EditorBase):
 
         query.push_filter(ft)
         # query.preview()
-        query.search_one()
+        query.execute()
 
 
 if __name__ == '__main__':

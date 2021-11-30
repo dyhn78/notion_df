@@ -8,3 +8,6 @@ def execute():
     RegularScrapController().execute(request_size=5)
 
     stopwatch('모든 작업 완료')
+
+if __name__ == '__main__':
+    execute()

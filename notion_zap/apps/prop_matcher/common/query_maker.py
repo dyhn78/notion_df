@@ -15,7 +15,7 @@ def query_within_date_range(pagelist: editors.PageList,
             ft = frame.within_past_year()
         if ft is not None:
             query.push_filter(ft)
-    query.search_one()
+    query.execute()
 
 
 def query_danglings(pagelist: editors.PageList, relation_tag: str):
@@ -23,4 +23,4 @@ def query_danglings(pagelist: editors.PageList, relation_tag: str):
     frame = query.filter_maker.relation_at(relation_tag)
     ft = frame.is_empty()
     query.push_filter(ft)
-    query.search_one()
+    query.execute()

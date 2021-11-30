@@ -6,6 +6,7 @@
 /notion_zap/**/notion_token.env
 /notion_zap/apps/externals/gcal/credentials.json
 /notion_zap/apps/externals/gcal/token.json
+debug.log
 
 
 # User-specific stuff
