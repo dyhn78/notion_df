@@ -8,19 +8,19 @@ class PageRowProperties(PagePayload, encoders.PageRowPropertyWriterbyKey):
         PagePayload.__init__(self, caller, id_or_url)
         self.caller = caller
         self.frame = caller.frame
-        if self.yet_not_created:
-            self._requestor = requestors.CreatePage(self, under_database=True)
-        else:
+        if id_or_url:
             self._requestor = requestors.UpdatePage(self)
+        else:
+            self._requestor = requestors.CreatePage(self, under_database=True)
         self._read_plain = {}
         self._read_rich = {}
         self._read_full = {}
 
     def clear_requestor(self):
-        if self.yet_not_created:
-            self._requestor = requestors.CreatePage(self, under_database=True)
-        else:
+        if self.block_id:
             self._requestor = requestors.UpdatePage(self)
+        else:
+            self._requestor = requestors.CreatePage(self, under_database=True)
 
     @property
     def requestor(self):

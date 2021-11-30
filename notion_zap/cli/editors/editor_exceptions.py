@@ -1,8 +1,8 @@
-from notion_zap.cli.editors.base import BlockMaster
+from notion_zap.cli.editors.base import MasterEditor
 
 
 class BlockTypeError(TypeError):
-    def __init__(self, block: BlockMaster):
+    def __init__(self, block: MasterEditor):
         self.block = block
         self.message = f"cannot perform the order upon invalid block type :: " \
                        f"{self.block}"
@@ -10,7 +10,7 @@ class BlockTypeError(TypeError):
 
 
 class NoParentFoundError(ValueError):
-    def __init__(self, block: BlockMaster):
+    def __init__(self, block: MasterEditor):
         self.block = block
         self.message = f"cannot find parent_block of ::" \
                        f"{self.block}"

@@ -10,7 +10,7 @@ from notion_zap.cli.struct import PropertyFrame
 from notion_zap.cli.gateway import requestors
 from .database import Database
 from .page_row import PageRow
-from ..base import BlockEditor
+from ..base import Editor
 from ..common.with_children import BlockChildren
 
 
@@ -34,16 +34,16 @@ class PageList(BlockChildren):
         return PageRow(self, '', frame=self.frame)
 
     def attach(self, page: PageRow):
-        if page.yet_not_created:
-            self.create.attach_page(page)
-        else:
+        if page.block_id:
             self.update.attach_page(page)
+        else:
+            self.create.attach_page(page)
 
     def detach(self, page: PageRow):
-        if page.yet_not_created:
-            self.create.detach_page(page)
-        else:
+        if page.block_id:
             self.update.detach_page(page)
+        else:
+            self.create.detach_page(page)
 
     def open_query(self) -> QueryWithCallback:
         def callback(response):
@@ -97,7 +97,7 @@ class PageList(BlockChildren):
         for child in self.iter_all():
             if exclude_archived_blocks and child.archived:
                 continue
-            if exclude_yet_not_created_blocks and child.yet_not_created:
+            if exclude_yet_not_created_blocks and not self.block_id:
                 continue
             yield child
 
@@ -135,7 +135,7 @@ class PageList(BlockChildren):
 
 
 class QueryWithCallback(requestors.Query):
-    def __init__(self, editor: BlockEditor, frame: PropertyFrame,
+    def __init__(self, editor: Editor, frame: PropertyFrame,
                  execute_callback: Callable[[Any], list[PageRow]]):
         super().__init__(editor, frame)
         self.callback = execute_callback

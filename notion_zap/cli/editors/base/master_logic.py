@@ -1,19 +1,43 @@
 from __future__ import annotations
+
+import os
 from abc import ABCMeta, abstractmethod
-from typing import Union
+from collections import defaultdict
+from pprint import pprint
+from typing import Union, Any, Optional
 import datetime as dt
 
-from notion_zap.cli.utility import id_to_url
-from .base import Editor
+from notion_client import AsyncClient, Client
+
+from notion_zap.cli.struct import DateFormat, PropertyFrame
+from notion_zap.cli.utility import id_to_url, url_to_id, stopwatch
 
 
-class BlockEditor(Editor, metaclass=ABCMeta):
-    def __init__(self, caller: Union[BlockEditor, Editor]):
+class Editor(metaclass=ABCMeta):
+    def __init__(self, caller: Union[Editor]):
         self.caller = caller
-        super().__init__(caller.root)
 
     @property
-    def master(self) -> BlockMaster:
+    def root(self):
+        return self.caller.root
+
+    @abstractmethod
+    def save_required(self) -> bool:
+        pass
+
+    @abstractmethod
+    def save_info(self):
+        pass
+
+    def save_preview(self, **kwargs):
+        pprint(self.save_info(), **kwargs)
+
+    @abstractmethod
+    def save(self):
+        pass
+
+    @property
+    def master(self) -> MasterEditor:
         return self.caller.master
 
     @property
@@ -41,24 +65,155 @@ class BlockEditor(Editor, metaclass=ABCMeta):
     def archived(self):
         return self.master.archived
 
+
+class AttachmentsEditor(Editor):
+    @abstractmethod
+    def attach(self, child: MasterEditor):
+        pass
+
+    @abstractmethod
+    def detach(self, child: MasterEditor):
+        pass
+
+
+class RootEditor(AttachmentsEditor):
+    def __init__(
+            self,
+            async_client=False,
+            exclude_archived=False,
+            disable_overwrite=False,
+            customized_emptylike_strings=None,
+            # enable_overwrite_by_same_value=False,
+    ):
+        Editor.__init__(self, self)
+        if async_client:
+            client = AsyncClient(auth=self.token)
+        else:
+            client = Client(auth=self.token)
+        self.client = client
+
+        self._stems: list[MasterEditor] = []
+        self._by_id = {}
+        self._by_title = defaultdict(list)
+
+        from .. import Database
+        self._by_alias: dict[Any, Database] = {}
+
+        # global settings, will be applied uniformly to all child-editors.
+        self.exclude_archived = exclude_archived
+        self.disable_overwrite = disable_overwrite
+        if customized_emptylike_strings is None:
+            customized_emptylike_strings = \
+                ['', '.', '-', '0', '1', 'None', 'False', '[]', '{}']
+        self.emptylike_strings = customized_emptylike_strings
+        # self.enable_overwrite_by_same_value = enable_overwrite_by_same_value
+
+        # TODO : (1) enum 이용, (2) 실제로 requestor에 작동하는 로직 마련.
+        self._log_succeed_request = False
+        self._log_failed_request = True
+
+    def set_logging__silent(self):
+        self._log_succeed_request = False
+        self._log_failed_request = False
+
+    def set_logging__error(self):
+        self._log_succeed_request = False
+        self._log_failed_request = True
+
+    def set_logging__all(self):
+        self._log_succeed_request = True
+        self._log_failed_request = True
+
     @property
-    def yet_not_created(self):
-        return self.master.yet_not_created
-    #
-    # @yet_not_created.setter
-    # def yet_not_created(self, value: bool):
-    #     self.master.yet_not_created = value
+    def root(self):
+        return self
+
+    @property
+    def token(self):
+        return os.environ['NOTION_TOKEN'].strip("'").strip('"')
+
+    def is_emptylike(self, value):
+        if isinstance(value, DateFormat):
+            return value.is_emptylike()
+        return str(value) in self.emptylike_strings
+
+    @property
+    def by_id(self) -> dict[str, MasterEditor]:
+        return self._by_id
+
+    def ids(self):
+        return self.by_id.keys()
+
+    @property
+    def by_title(self) -> dict[str, list[MasterEditor]]:
+        return self._by_title
+
+    @property
+    def by_alias(self):
+        return self._by_alias
+
+    @property
+    def favorites(self):
+        return self._by_alias.values()
+
+    def attach(self, block: MasterEditor):
+        self._stems.append(block)
+
+    def detach(self, block: MasterEditor):
+        self._stems.remove(block)
+
+    def open_database(self, database_alias: str, id_or_url: str,
+                      frame: Optional[PropertyFrame] = None):
+        from .. import Database
+        database = Database(self, id_or_url, database_alias, frame)
+        self._stems.append(database)
+        return database
+
+    def open_page_row(self, id_or_url: str,
+                      frame: Optional[PropertyFrame] = None):
+        from .. import PageRow
+        page = PageRow(self, id_or_url, frame=frame)
+        self._stems.append(page)
+        return page
+
+    def open_page_item(self, id_or_url: str):
+        from .. import PageItem
+        page = PageItem(self, id_or_url)
+        self._stems.append(page)
+        return page
+
+    def open_text_item(self, id_or_url: str):
+        from .. import TextItem
+        editor = TextItem(self, id_or_url)
+        self._stems.append(editor)
+        return editor
+
+    def save_required(self):
+        return any([editor.save_required() for editor in self._stems])
+
+    def save_info(self, pprint_this=True):
+        preview = [editor.save_info() for editor in self._stems]
+        if pprint_this:
+            pprint(preview)
+        return preview
+
+    def save(self):
+        for editor in self._stems:
+            editor.save()
+        stopwatch('작업 완료')
 
 
-class BlockMaster(BlockEditor):
-    def __init__(self, caller: BlockAttachments):
+class MasterEditor(Editor):
+    def __init__(self, caller: AttachmentsEditor, id_or_url: str):
         super().__init__(caller)
         self.caller = caller
+        self.__block_id = url_to_id(id_or_url)
         self.caller.attach(self)
         """
-        declare payload here, make it "register" to parent/root (.by_id, .by_title).
-        while "attaching" is required to exhaustive, trickle-down saving,
-        "registering" allows to search and read specific page from the collection.
+        1. declare payload, make the payload "register" to the attachment.
+        this allows to search specific page from them. (.by_id, .by_title)
+        2. "attach" the master to caller.
+        this is required to exhaustive, trickle-down saving measures.
         """
 
     @property
@@ -68,7 +223,7 @@ class BlockMaster(BlockEditor):
 
     @property
     @abstractmethod
-    def payload(self) -> BlockPayload:
+    def payload(self) -> PayloadEditor:
         pass
 
     @property
@@ -92,16 +247,16 @@ class BlockMaster(BlockEditor):
         return self.payload.can_have_children
 
     @property
-    def yet_not_created(self):
-        return self.payload.yet_not_created
-
-    @property
     def master(self):
         return self
 
     @property
     def block_id(self):
-        return self.payload.block_id
+        try:
+            return self.payload.block_id
+        except AttributeError:
+            # this happens before payload is declared
+            return self.__block_id
 
     @property
     @abstractmethod
@@ -131,7 +286,7 @@ class BlockMaster(BlockEditor):
 
     @property
     def entry_ancestor(self):
-        if self.yet_not_created:
+        if not self.block_id:
             return self.parent.entry_ancestor
         return self
 
@@ -163,21 +318,11 @@ class BlockMaster(BlockEditor):
         """
 
 
-class BlockAttachments(BlockEditor):
-    @abstractmethod
-    def attach(self, child: BlockMaster):
-        pass
-
-    @abstractmethod
-    def detach(self, child: BlockMaster):
-        pass
-
-
-class BlockPayload(BlockEditor, metaclass=ABCMeta):
-    def __init__(self, caller: BlockMaster, id_or_url: str):
+class PayloadEditor(Editor, metaclass=ABCMeta):
+    def __init__(self, caller: MasterEditor, id_or_url: str):
         super().__init__(caller)
         self.__block_id = ''
-        self._set_block_id(id_to_url(id_or_url))
+        self._set_block_id(url_to_id(id_or_url))
         self._archived = None
         self._created_time = None
         self._last_edited_time = None
@@ -196,10 +341,6 @@ class BlockPayload(BlockEditor, metaclass=ABCMeta):
     @property
     def archived(self):
         return False if self._archived is None else self._archived
-
-    @property
-    def yet_not_created(self):
-        return self.block_id == ''
 
     @property
     def has_children(self):

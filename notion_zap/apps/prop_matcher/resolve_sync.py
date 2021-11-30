@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from notion_zap.cli import editors, utility
+from notion_zap.cli import editors
+from notion_zap.cli.utility import stopwatch
 from notion_zap.apps.config.prop_matcher import MatchFrames
 from .common.query_maker import query_within_date_range
 from notion_zap.apps.config.common import DatabaseInfo
@@ -53,4 +54,4 @@ class SyncResolveAlgorithm:
                 if front_id not in front_ids:
                     front_ids.append(front_id)
                     back.props.write_at(self.tag_backward, front_id)
-                    utility.stopwatch(f"{back.block_name} -> {front.block_name}")
+                    stopwatch(f"{back.block_name} -> {front.block_name}")

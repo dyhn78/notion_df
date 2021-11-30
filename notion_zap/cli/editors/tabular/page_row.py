@@ -3,23 +3,20 @@ from typing import Union, Optional
 from notion_zap.cli.struct import PropertyFrame
 from ..common.pages import PageBlock
 from ..common.with_children import BlockChildren
-from notion_zap.cli.editors.root_editor import RootEditor
+from .. import RootEditor
 
 
 class PageRow(PageBlock):
     def __init__(self, caller: Union[RootEditor, BlockChildren],
                  id_or_url: str,
                  frame: Optional[PropertyFrame] = None):
-        super().__init__(caller)
+        super().__init__(caller, id_or_url)
         self.caller = caller
+
         self.frame = frame if frame else PropertyFrame()
 
         from .page_row_props import PageRowProperties
         self.props = PageRowProperties(self, id_or_url)
-
-        from .pagelist import PageList
-        if isinstance(self.caller, PageList):
-            self.caller.attach(self)
 
     @property
     def payload(self):

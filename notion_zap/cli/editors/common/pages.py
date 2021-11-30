@@ -4,7 +4,7 @@ from abc import abstractmethod, ABCMeta
 from typing import Union
 
 from .with_items import ItemsBearer
-from ..base import BlockPayload, GroundEditor
+from ..base import PayloadEditor, GroundEditor
 from notion_zap.cli.gateway import parsers, requestors
 
 
@@ -27,9 +27,9 @@ class PageBlock(ItemsBearer):
         return self.payload.title
 
 
-class PagePayload(BlockPayload, GroundEditor, metaclass=ABCMeta):
+class PagePayload(PayloadEditor, GroundEditor, metaclass=ABCMeta):
     def __init__(self, caller: PageBlock, id_or_url):
-        BlockPayload.__init__(self, caller, id_or_url)
+        PayloadEditor.__init__(self, caller, id_or_url)
         self.caller = caller
         self.__title = ''
 
@@ -98,13 +98,13 @@ class PagePayload(BlockPayload, GroundEditor, metaclass=ABCMeta):
         requestor.print_comments()
 
     def save(self):
-        if self.yet_not_created:
-            response = self.requestor.execute()
-            parser = parsers.PageParser.parse_create(response)
-            self.apply_page_parser(parser)
-        else:
+        if self.block_id:
             self.requestor.execute()
             # TODO: update {self._read};
             #  1. use the <response> = self.gateway.execute()
             #  2. update PageParser yourself without response
+        else:
+            response = self.requestor.execute()
+            parser = parsers.PageParser.parse_create(response)
+            self.apply_page_parser(parser)
         self.clear_requestor()

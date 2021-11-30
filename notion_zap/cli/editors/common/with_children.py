@@ -4,14 +4,10 @@ from abc import ABCMeta, abstractmethod
 from collections import defaultdict
 from typing import Iterator, Union, Iterable
 
-from ..base import BlockMaster, BlockAttachments
+from ..base import MasterEditor, AttachmentsEditor
 
 
-class ChildrenBearer(BlockMaster):
-    @abstractmethod
-    def __init__(self, caller: BlockAttachments):
-        super().__init__(caller)
-
+class ChildrenBearer(MasterEditor):
     @property
     def is_supported_type(self) -> bool:
         return True
@@ -26,7 +22,7 @@ class ChildrenBearer(BlockMaster):
         pass
 
     def iter_descendants_with(self, exact_rank_diff: int) \
-            -> Iterable[Union[ChildrenBearer, BlockMaster]]:
+            -> Iterable[Union[ChildrenBearer, MasterEditor]]:
         if exact_rank_diff > 0:
             yield from self.__iter_descendants_with(self, exact_rank_diff)
         else:
@@ -42,7 +38,7 @@ class ChildrenBearer(BlockMaster):
                     yield from cls.__iter_descendants_with(child, exact_rank_diff - 1)
 
     def iter_descendants_within(self, max_rank_diff: int) \
-            -> Iterable[Union[ChildrenBearer, BlockMaster]]:
+            -> Iterable[Union[ChildrenBearer, MasterEditor]]:
         if max_rank_diff > 0:
             yield from self.__iter_descendants_within(self, max_rank_diff)
         else:
@@ -58,7 +54,7 @@ class ChildrenBearer(BlockMaster):
                     yield from cls.__iter_descendants_within(child, max_rank_diff - 1)
 
     def iter_descendants(self) \
-            -> Iterable[Union[ChildrenBearer, BlockMaster]]:
+            -> Iterable[Union[ChildrenBearer, MasterEditor]]:
         for child in self.children:
             yield child
             if isinstance(child, ChildrenBearer):
@@ -81,7 +77,7 @@ class ChildrenBearer(BlockMaster):
                 child.fetch_descendants(request_size)
 
 
-class BlockChildren(BlockAttachments, metaclass=ABCMeta):
+class BlockChildren(AttachmentsEditor, metaclass=ABCMeta):
     def __init__(self, caller: ChildrenBearer):
         super().__init__(caller)
         self.caller = caller
@@ -89,7 +85,7 @@ class BlockChildren(BlockAttachments, metaclass=ABCMeta):
         self._by_title = defaultdict(list)
 
     @property
-    def by_id(self) -> dict[str, BlockMaster]:
+    def by_id(self) -> dict[str, MasterEditor]:
         # will be auto-updated by child blocks.
         return self._by_id
 
@@ -97,12 +93,12 @@ class BlockChildren(BlockAttachments, metaclass=ABCMeta):
         return self.by_id.keys()
 
     @property
-    def by_title(self) -> dict[str, list[BlockMaster]]:
+    def by_title(self) -> dict[str, list[MasterEditor]]:
         # will be auto-updated by child blocks.
         return self._by_title
 
     @abstractmethod
-    def iter_all(self) -> Iterator[BlockMaster]:
+    def iter_all(self) -> Iterator[MasterEditor]:
         pass
 
     def __iter__(self):
@@ -112,10 +108,10 @@ class BlockChildren(BlockAttachments, metaclass=ABCMeta):
 
     def iter_valids(self, exclude_archived_blocks=True,
                     exclude_yet_not_created_blocks=True) \
-            -> Iterator[BlockMaster]:
+            -> Iterator[MasterEditor]:
         for child in self.iter_all():
             if exclude_archived_blocks and child.archived:
                 continue
-            if exclude_yet_not_created_blocks and child.yet_not_created:
+            if exclude_yet_not_created_blocks and not child.block_id:
                 continue
             yield child

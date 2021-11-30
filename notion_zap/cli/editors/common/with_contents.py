@@ -1,18 +1,12 @@
 from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
-from typing import Union
 
-from notion_zap.cli.editors.root_editor import RootEditor
-from ..base import BlockMaster, BlockEditor, BlockPayload, GroundEditor
+from ..base import MasterEditor, PayloadEditor, GroundEditor
 from notion_zap.cli.gateway import parsers
 
 
-class ContentsBearer(BlockMaster, metaclass=ABCMeta):
-    def __init__(self, caller: Union[RootEditor, BlockEditor]):
-        super().__init__(caller)
-        self.caller = caller
-
+class ContentsBearer(MasterEditor, metaclass=ABCMeta):
     @property
     def is_supported_type(self) -> bool:
         return True
@@ -41,9 +35,9 @@ class ContentsBearer(BlockMaster, metaclass=ABCMeta):
         return {'contents': self.contents.save_info()}
 
 
-class BlockContents(BlockPayload, GroundEditor, metaclass=ABCMeta):
+class BlockContents(PayloadEditor, GroundEditor, metaclass=ABCMeta):
     def __init__(self, caller: ContentsBearer, id_or_url: str):
-        BlockPayload.__init__(self, caller, id_or_url)
+        PayloadEditor.__init__(self, caller, id_or_url)
         self.caller = caller
         self._read_plain = ''
         self._read_rich = []

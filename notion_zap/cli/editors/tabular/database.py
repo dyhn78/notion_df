@@ -4,7 +4,7 @@ from notion_zap.cli.gateway import parsers, requestors
 from notion_zap.cli.struct import PropertyFrame
 from ..common.with_children import ChildrenBearer, BlockChildren
 from ..common.with_items import ItemChildren
-from notion_zap.cli.editors.root_editor import RootEditor
+from .. import RootEditor
 
 
 class Database(ChildrenBearer):
@@ -12,8 +12,11 @@ class Database(ChildrenBearer):
                  id_or_url: str,
                  database_alias='',
                  frame: Optional[PropertyFrame] = None):
-        super().__init__(caller)
+        super().__init__(caller, id_or_url)
         self.caller = caller
+
+        self.alias = database_alias
+        self.root.by_alias[self.alias] = self
         self.frame = frame if frame else PropertyFrame()
 
         from .database_schema import DatabaseSchema
@@ -21,9 +24,6 @@ class Database(ChildrenBearer):
 
         from .pagelist import PageList
         self._pages = PageList(self)
-
-        self.alias = database_alias
-        self.root.by_alias[self.alias] = self
 
     def _fetch_children(self, request_size=0):
         """randomly query with the amount of <request_size>."""

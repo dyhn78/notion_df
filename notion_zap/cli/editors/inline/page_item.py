@@ -6,17 +6,17 @@ from notion_zap.cli.gateway import encoders, parsers, requestors
 from ..common.pages import PageBlock, PagePayload
 from ..common.with_cc import ChildrenAndContentsBearer, ChildrenBearersContents
 from ..common.with_items import ItemChildren
-from notion_zap.cli.editors.root_editor import RootEditor
+from .. import RootEditor
 
 
 class PageItem(PageBlock, ChildrenAndContentsBearer):
     def __init__(self,
                  caller: Union[ItemChildren, RootEditor],
                  id_or_url: str):
-        PageBlock.__init__(self, caller)
-        ChildrenAndContentsBearer.__init__(self, caller)
         self.caller = caller
         self._contents = PageItemContents(self, id_or_url)
+
+        PageBlock.__init__(self, caller, id_or_url)
 
     @property
     def payload(self) -> PageItemContents:
@@ -48,10 +48,10 @@ class PageItemContents(PagePayload, ChildrenBearersContents,
     def __init__(self, caller: PageItem, id_or_url: str):
         super().__init__(caller, id_or_url)
         self.caller = caller
-        if self.yet_not_created:
-            requestor = requestors.CreatePage(self, under_database=False)
-        else:
+        if id_or_url:
             requestor = requestors.UpdatePage(self)
+        else:
+            requestor = requestors.CreatePage(self, under_database=False)
         self._requestor = requestor
 
     # @property
@@ -63,10 +63,10 @@ class PageItemContents(PagePayload, ChildrenBearersContents,
         return self._requestor
 
     def clear_requestor(self):
-        if self.yet_not_created:
-            self._requestor = requestors.CreatePage(self, under_database=False)
-        else:
+        if self.block_id:
             self._requestor = requestors.UpdatePage(self)
+        else:
+            self._requestor = requestors.CreatePage(self, under_database=False)
 
     def apply_page_parser(self, parser: parsers.PageParser):
         super().apply_page_parser(parser)

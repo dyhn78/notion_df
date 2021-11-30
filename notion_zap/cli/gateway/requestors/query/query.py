@@ -6,7 +6,7 @@ from notion_zap.cli.utility import id_to_url, stopwatch
 
 
 class Query(LongRequestor):
-    def __init__(self, editor: base.BlockEditor, frame: PropertyFrame):
+    def __init__(self, editor: base.Editor, frame: PropertyFrame):
         super().__init__(editor)
         self.frame = frame
         self._filter_value = EmptyFilter()

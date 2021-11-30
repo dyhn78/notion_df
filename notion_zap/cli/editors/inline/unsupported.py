@@ -1,12 +1,13 @@
 from typing import Union
 
-from ..base import BlockAttachments, BlockMaster, BlockPayload
+from ..base import AttachmentsEditor, MasterEditor, PayloadEditor
 
 
-class UnsupportedBlock(BlockMaster):
-    def __init__(self, caller: BlockAttachments, id_or_url: str):
-        super().__init__(caller)
+class UnsupportedBlock(MasterEditor):
+    def __init__(self, caller: AttachmentsEditor, id_or_url: str):
+        super().__init__(caller, id_or_url)
         self.caller = caller
+
         self._payload = UnsupportedPayload(self, id_or_url)
 
     @property
@@ -39,7 +40,7 @@ class UnsupportedBlock(BlockMaster):
         return False
 
 
-class UnsupportedPayload(BlockPayload):
+class UnsupportedPayload(PayloadEditor):
     def save(self):
         return {}
 

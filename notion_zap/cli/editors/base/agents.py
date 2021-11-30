@@ -1,16 +1,16 @@
 from abc import ABCMeta, abstractmethod
 
-from .master_logic import BlockEditor
+from .master_logic import Editor
 
 
-class ListEditor(BlockEditor, metaclass=ABCMeta):
-    def __init__(self, caller: BlockEditor):
+class ListEditor(Editor, metaclass=ABCMeta):
+    def __init__(self, caller: Editor):
         super().__init__(caller)
 
     @property
     @abstractmethod
     def blocks(self):
-        """must return list of BlockMaster"""
+        """must return list of MasterEditor"""
         pass
 
     def save(self):
@@ -32,7 +32,7 @@ class ListEditor(BlockEditor, metaclass=ABCMeta):
         return self.blocks[index]
 
 
-class GroundEditor(BlockEditor, metaclass=ABCMeta):
+class GroundEditor(Editor, metaclass=ABCMeta):
     @property
     @abstractmethod
     def requestor(self):
@@ -48,14 +48,14 @@ class GroundEditor(BlockEditor, metaclass=ABCMeta):
         return self.requestor.__bool__()
 
 
-class AdaptiveEditor(BlockEditor, metaclass=ABCMeta):
-    def __init__(self, caller: BlockEditor):
+class AdaptiveEditor(Editor, metaclass=ABCMeta):
+    def __init__(self, caller: Editor):
         super().__init__(caller)
         self.enable_overwrite = True
 
     @property
     @abstractmethod
-    def value(self) -> BlockEditor:
+    def value(self) -> Editor:
         pass
 
     def save_info(self):

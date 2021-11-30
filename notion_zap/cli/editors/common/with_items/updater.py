@@ -3,7 +3,7 @@ from typing import Union
 from notion_zap.cli.gateway import parsers
 from .master_and_attachments import ItemChildren
 from ..with_contents import ContentsBearer
-from ...base import ListEditor, BlockMaster
+from ...base import ListEditor, MasterEditor
 
 
 class ItemsUpdater(ListEditor):
@@ -25,7 +25,7 @@ class ItemsUpdater(ListEditor):
         self.blocks.append(child)
 
     @property
-    def blocks(self) -> list[Union[BlockMaster]]:
+    def blocks(self) -> list[Union[MasterEditor]]:
         return self._values
 
     def __iter__(self):

@@ -1,8 +1,8 @@
 from .database import Database
-from ..base import BlockPayload
+from ..base import PayloadEditor
 
 
-class DatabaseSchema(BlockPayload):
+class DatabaseSchema(PayloadEditor):
     def __init__(self, caller: Database, id_or_url: str):
         super().__init__(caller, id_or_url)
 

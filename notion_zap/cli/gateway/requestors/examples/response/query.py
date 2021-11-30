@@ -66,7 +66,7 @@ database_query = {
                                                              'link': None},
                                                     'type': 'text'}],
                                          'type': 'title'}],
-                                               'type': 'array'},
+                                        'type': 'array'},
                                     'type': 'rollup'},
                         'telephoneX': {'id': 'QSB_',
                                        'phone_number': '123',

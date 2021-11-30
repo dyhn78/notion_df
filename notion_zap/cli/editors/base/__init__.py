@@ -1,3 +1,2 @@
 from .agents import ListEditor, GroundEditor, AdaptiveEditor
-from .base import Editor
-from .master_logic import BlockEditor, BlockMaster, BlockPayload, BlockAttachments
+from .master_logic import Editor, MasterEditor, PayloadEditor, AttachmentsEditor

@@ -9,11 +9,11 @@
 #     ContentsBearer, BlockContents
 # from ..supported.with_items.creater_with_page_as_child import \
 #     BlockSphereCreatorWithChildInlinePage
-# from ..base import BlockEditor
+# from ..base import Editor
 #
 #
 # class InlinePageBlockAsChild(ContentsBearer):
-#     def __init__(self, caller: Union[Editor, BlockEditor], page_id: str):
+#     def __init__(self, caller: Union[Editor, Editor], page_id: str):
 #         super().__init__(caller, page_id)
 #         if isinstance(caller, BlockSphereCreatorWithChildInlinePage):
 #             self.contents = InlinePageContentsAsChild(self, caller)
