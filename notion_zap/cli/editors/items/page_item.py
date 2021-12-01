@@ -3,13 +3,13 @@ from __future__ import annotations
 from typing import Union
 
 from notion_zap.cli.gateway import encoders, parsers, requestors
+from ..common.with_contents import ContentsBearer, BlockContents
 from ..common.pages import PageBlock, PagePayload
-from ..common.with_cc import ChildrenAndContentsBearer, ChildrenBearersContents
 from ..common.with_items import ItemChildren
 from .. import Root
 
 
-class PageItem(PageBlock, ChildrenAndContentsBearer):
+class PageItem(PageBlock, ContentsBearer):
     def __init__(self,
                  caller: Union[ItemChildren, Root],
                  id_or_url: str):
@@ -43,7 +43,7 @@ class PageItem(PageBlock, ChildrenAndContentsBearer):
         return dict(**super().richly_read(), type='page')
 
 
-class PageItemContents(PagePayload, ChildrenBearersContents,
+class PageItemContents(PagePayload, BlockContents,
                        encoders.PageContentsWriter):
     def __init__(self, caller: PageItem, id_or_url: str):
         super().__init__(caller, id_or_url)
@@ -53,10 +53,6 @@ class PageItemContents(PagePayload, ChildrenBearersContents,
         else:
             requestor = requestors.CreatePage(self, under_database=False)
         self._requestor = requestor
-
-    # @property
-    # def can_have_children(self):
-    #     return True
 
     @property
     def requestor(self):

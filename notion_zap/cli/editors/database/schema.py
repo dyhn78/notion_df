@@ -1,4 +1,4 @@
-from .database_leaders import Database
+from .leaders import Database
 from ..structs.leaders import Payload
 
 

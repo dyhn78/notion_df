@@ -1,4 +1,5 @@
-from .. import RowChildren
+from .leaders import RowChildren
+from ..rows.page_row import PageRow
 from ..structs.followers import ListEditor
 from notion_zap.cli.gateway import parsers
 
@@ -9,7 +10,6 @@ class PageListUpdater(ListEditor):
         self.caller = caller
         self.frame = caller.frame
 
-        from ..rows.page_row import PageRow
         self._values: list[PageRow] = []
 
     @property
@@ -17,12 +17,10 @@ class PageListUpdater(ListEditor):
         return self._values
 
     def attach_page(self, page):
-        from ..rows.page_row import PageRow
         assert isinstance(page, PageRow)
         self.blocks.append(page)
 
     def detach_page(self, page):
-        from ..rows.page_row import PageRow
         assert isinstance(page, PageRow)
         self.blocks.remove(page)
 
@@ -57,7 +55,6 @@ class PageListCreator(ListEditor):
         self.caller = caller
         self.frame = self.caller.frame
 
-        from ..rows.page_row import PageRow
         self._values: list[PageRow] = []
 
     @property

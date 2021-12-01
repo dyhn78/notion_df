@@ -3,7 +3,7 @@ from itertools import chain
 
 import networkx as nx
 
-import notion_zap.cli.editors.tables.database_leaders
+import notion_zap.cli.editors.database.leaders
 from notion_zap.cli import editors
 from notion_zap.apps.config.common import DatabaseInfo
 from notion_zap.apps.config.network_builder import NetworkFrames, NetworkPropertyFrame

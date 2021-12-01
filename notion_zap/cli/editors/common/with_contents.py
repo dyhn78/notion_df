@@ -59,3 +59,5 @@ class BlockContents(Payload, RequestEditor, metaclass=ABCMeta):
         self._read_rich = parser.read_rich
         self._created_time = parser.created_time
         self._last_edited_time = parser.last_edited_time
+        self._has_children = parser.has_children
+        self._can_have_children = parser.can_have_children

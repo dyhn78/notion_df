@@ -1,10 +1,10 @@
 from typing import Any
 
-from ..structs.leaders import GeneralAttachments, Block, Payload
+from ..structs.leaders import Registry, Block, Payload
 
 
 class UnsupportedBlock(Block):
-    def __init__(self, caller: GeneralAttachments, id_or_url: str):
+    def __init__(self, caller: Registry, id_or_url: str):
         super().__init__(caller, id_or_url)
         self.caller = caller
 
@@ -39,10 +39,6 @@ class UnsupportedBlock(Block):
 
 
 class UnsupportedBlockPayload(Payload):
-    @property
-    def can_have_children(self) -> bool:
-        return False
-
     def save(self):
         return {}
 
@@ -50,4 +46,8 @@ class UnsupportedBlockPayload(Payload):
         return {}
 
     def save_required(self) -> bool:
+        return False
+
+    @property
+    def can_have_children(self) -> bool:
         return False

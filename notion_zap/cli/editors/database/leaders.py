@@ -25,7 +25,7 @@ class Database(ChildrenBearer):
         self.root.by_alias[self.alias] = self
         self.frame = frame if frame else PropertyFrame()
 
-        from .database_schema import DatabaseSchema
+        from .schema import DatabaseSchema
         self.schema = DatabaseSchema(self, id_or_url)
 
         self.rows = RowChildren(self)
@@ -75,7 +75,7 @@ class RowChildren(BlockChildren):
         self.caller = caller
         self.frame = caller.frame
 
-        from .database_followers import PageListUpdater, PageListCreator
+        from .followers import PageListUpdater, PageListCreator
         self.update = PageListUpdater(self)
         self.create = PageListCreator(self)
 
@@ -88,15 +88,15 @@ class RowChildren(BlockChildren):
     def create_page(self):
         return PageRow(self, '', frame=self.frame)
 
-    def attach(self, page: PageRow):
-        super().attach(page)
+    def add_block(self, page: PageRow):
+        super().add_block(page)
         if page.block_id:
             self.update.attach_page(page)
         else:
             self.create.attach_page(page)
 
-    def detach(self, page: PageRow):
-        super().detach(page)
+    def remove_block(self, page: PageRow):
+        super().remove_block(page)
         if page.block_id:
             self.update.detach_page(page)
         else:
@@ -119,7 +119,7 @@ class RowChildren(BlockChildren):
             page.props.retrieve()
             return page
         except APIResponseError:
-            self.detach(page)
+            page.close()
             return None
 
     def save(self):

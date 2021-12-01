@@ -4,12 +4,12 @@ from abc import ABCMeta
 
 from notion_zap.cli.gateway import requestors, parsers
 from ..with_children import ChildrenBearer, BlockChildren
-from ...structs.leaders import Block, GeneralAttachments
+from ...structs.leaders import Block, Registry
 from ...structs.exceptions import BlockTypeError, NoParentFoundError
 
 
 class ItemsBearer(ChildrenBearer, metaclass=ABCMeta):
-    def __init__(self, caller: GeneralAttachments, id_or_url: str):
+    def __init__(self, caller: Registry, id_or_url: str):
         super().__init__(caller, id_or_url)
         self.items = ItemChildren(self)
 
@@ -32,11 +32,11 @@ class ItemChildren(BlockChildren):
         from .creator import ItemsCreator
         self.create = ItemsCreator(self)
 
-    def attach(self, child: Block):
-        super().attach(child)
+    def add_block(self, child: Block):
+        super().add_block(child)
 
-        if not self.master.can_have_children:
-            raise BlockTypeError(self.master)
+        if not self.block.can_have_children:
+            raise BlockTypeError(self.block)
 
         from ...items import TextItem, PageItem
         if child.block_id:
@@ -49,7 +49,7 @@ class ItemChildren(BlockChildren):
             else:
                 raise ValueError(f"{child=}")
 
-    def detach(self, child: Block):
+    def remove_block(self, child: Block):
         raise NotImplementedError
 
     def create_text(self):
@@ -73,7 +73,7 @@ class ItemChildren(BlockChildren):
             if isinstance(child, ItemsBearer) and child.can_have_children:
                 return child.items
         else:
-            raise BlockTypeError(self.master)
+            raise BlockTypeError(self.block)
 
     def try_indent_cursor(self):
         """this returns new 'cursor' where you can use of create_xx method.
@@ -91,7 +91,7 @@ class ItemChildren(BlockChildren):
             assert isinstance(parent, ItemsBearer)
             return parent.items
         except AssertionError:
-            raise NoParentFoundError(self.master)
+            raise NoParentFoundError(self.block)
 
     def try_exdent_cursor(self):
         """this returns new 'cursor' where you can use of create_xx method.

@@ -4,7 +4,7 @@ from abc import ABCMeta, abstractmethod
 from collections import defaultdict
 from typing import Iterator, Union, Iterable
 
-from ..structs.leaders import Block, GeneralAttachments, Follower
+from ..structs.leaders import Block, Registry, Follower
 
 
 class ChildrenBearer(Block):
@@ -81,7 +81,7 @@ class ChildrenBearer(Block):
                 child.fetch_descendants(request_size)
 
 
-class BlockChildren(Follower, GeneralAttachments, metaclass=ABCMeta):
+class BlockChildren(Follower, Registry, metaclass=ABCMeta):
     def __init__(self, caller: ChildrenBearer):
         super().__init__()
         self.caller = caller

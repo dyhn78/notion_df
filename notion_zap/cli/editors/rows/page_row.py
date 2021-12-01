@@ -10,7 +10,7 @@ class PageRow(PageBlock):
     def __init__(self, caller: Union[Root, BlockChildren],
                  id_or_url: str,
                  frame: Optional[PropertyFrame] = None):
-        from ..tables.database_leaders import RowChildren
+        from ..database.leaders import RowChildren
         assert isinstance(caller, Root) or isinstance(caller, RowChildren)
 
         super().__init__(caller, id_or_url)

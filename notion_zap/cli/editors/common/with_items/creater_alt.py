@@ -1,14 +1,14 @@
 # from typing import Union
 #
 # from notion_zap.gateway.base.base import Requestor
-# from ...base import GroundEditor, GeneralEditor
+# from ...base import GroundEditor, Editor
 # from notion_zap.gateway.encoders import RichTextContentsEncoder
 # from notion_zap.gateway.parsers import BlockChildrenParser
 # from notion_zap.gateway.requestors import AppendBlockChildren
 #
 #
 # class BlockSphereCreatorWithChildInlinePage(GroundEditor):
-#     def __init__(self, caller: GeneralEditor):
+#     def __init__(self, caller: Editor):
 #         requestors = AppendBlockChildren(self)
 #         super().__init__(caller)
 #         self.caller = caller

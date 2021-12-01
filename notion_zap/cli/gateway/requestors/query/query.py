@@ -1,12 +1,12 @@
 from notion_zap.cli.struct import PropertyFrame
-from notion_zap.cli.editors.structs.leaders import Editor
+from notion_zap.cli.editors.structs.leaders import BlockEditor
 from notion_zap.cli.utility import id_to_url, stopwatch
 from .filter_struct import QueryFilter, EmptyFilter
 from ..base import LongRequestor, print_response_error
 
 
 class Query(LongRequestor):
-    def __init__(self, editor: Editor, frame: PropertyFrame):
+    def __init__(self, editor: BlockEditor, frame: PropertyFrame):
         super().__init__(editor)
         self.frame = frame
         self._filter_value = EmptyFilter()

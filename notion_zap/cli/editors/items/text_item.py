@@ -2,8 +2,7 @@ from __future__ import annotations
 from typing import Union, Callable
 
 from notion_zap.cli.gateway import encoders, parsers, requestors
-from ..common.with_cc import ChildrenBearersContents
-from ..common.with_contents import ContentsBearer
+from ..common.with_contents import ContentsBearer, BlockContents
 from ..common.with_items import ItemsBearer, ItemChildren
 from .. import Root
 
@@ -60,9 +59,9 @@ class TextItem(ItemsBearer, ContentsBearer):
                 'type': 'text'}
 
 
-class TextItemContents(ChildrenBearersContents, encoders.TextContentsWriter):
+class TextItemContents(BlockContents, encoders.TextContentsWriter):
     """
-    when the master is called from TextItemsCreateAgent and thereby it is yet_not_created,
+    when the block is called from TextItemsCreateAgent and thereby it is yet_not_created,
     they will insert blank paragraph as a default.
     """
 
@@ -106,7 +105,7 @@ class TextItemContents(ChildrenBearersContents, encoders.TextContentsWriter):
             #  1. use the <response> = self.gateway.execute()
             #  2. update BlockContentsParser yourself without response
         else:
-            self.master.save()
+            self.block.save()
         self.clear_requestor()
 
     @property

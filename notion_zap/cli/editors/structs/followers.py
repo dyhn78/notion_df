@@ -1,10 +1,10 @@
 from abc import ABCMeta, abstractmethod
 
-from .leaders import Editor, Follower
+from .leaders import BlockEditor, Follower
 
 
 class ListEditor(Follower, metaclass=ABCMeta):
-    def __init__(self, caller: Editor):
+    def __init__(self, caller: BlockEditor):
         super().__init__(caller)
 
     @property
@@ -51,7 +51,7 @@ class RequestEditor(Follower, metaclass=ABCMeta):
 class SingularEditor(Follower, metaclass=ABCMeta):
     @property
     @abstractmethod
-    def value(self) -> Editor:
+    def value(self) -> BlockEditor:
         pass
 
     def save(self):

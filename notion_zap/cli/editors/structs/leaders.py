@@ -12,7 +12,7 @@ from notion_zap.cli.struct import DateFormat, PropertyFrame
 from notion_zap.cli.utility import id_to_url, url_to_id, stopwatch
 
 
-class GeneralEditor(metaclass=ABCMeta):
+class Editor(metaclass=ABCMeta):
     @property
     @abstractmethod
     def root(self) -> Root:
@@ -34,20 +34,20 @@ class GeneralEditor(metaclass=ABCMeta):
         pass
 
 
-class GeneralAttachments(GeneralEditor):
+class Registry(Editor):
     def __init__(self):
         self.__by_id = {}
         self.__by_title = defaultdict(list)
 
     @abstractmethod
-    def attach(self, child: Block):
+    def add_block(self, child: Block):
         if child.caller != self:
-            child.caller.detach(child)
+            child.caller.remove_block(child)
         child.caller = self
-        # fill the attach method here.
+        # fill the rest here.
 
     @abstractmethod
-    def detach(self, child: Block):
+    def remove_block(self, child: Block):
         from .exceptions import DanglingBlockError
         from ..common.pages import PageBlock
         if child.block_id:
@@ -60,6 +60,7 @@ class GeneralAttachments(GeneralEditor):
                 self.by_title[child.title].remove(child)
             except ValueError:
                 raise DanglingBlockError(child, self)
+        # fill the rest here.
 
     @property
     def by_id(self) -> dict[str, Block]:
@@ -75,7 +76,7 @@ class GeneralAttachments(GeneralEditor):
         return self.__by_title
 
 
-class Root(GeneralAttachments):
+class Root(Registry):
     def __init__(
             self,
             async_client=False,
@@ -142,12 +143,12 @@ class Root(GeneralAttachments):
     def aliased_blocks(self):
         return self._by_alias.values()
 
-    def attach(self, child: Block):
-        super().attach(child)
+    def add_block(self, child: Block):
+        super().add_block(child)
         self._stems.append(child)
 
-    def detach(self, child: Block):
-        super().detach(child)
+    def remove_block(self, child: Block):
+        super().remove_block(child)
         self._stems.remove(child)
 
     def open_database(self, database_alias: str, id_or_url: str,
@@ -191,9 +192,9 @@ class Root(GeneralAttachments):
         stopwatch('작업 완료')
 
 
-class Editor(GeneralEditor, metaclass=ABCMeta):
+class BlockEditor(Editor, metaclass=ABCMeta):
     @abstractmethod
-    def __init__(self, caller: GeneralEditor):
+    def __init__(self, caller: Editor):
         self.caller = caller
 
     @property
@@ -202,16 +203,23 @@ class Editor(GeneralEditor, metaclass=ABCMeta):
 
     @property
     @abstractmethod
-    def master(self) -> Block:
+    def block(self) -> Block:
         pass
 
     @property
+    @abstractmethod
     def block_id(self) -> str:
-        return self.master.block_id
+        pass
 
     @property
+    @abstractmethod
     def block_name(self) -> str:
-        return self.master.block_name
+        pass
+
+    @property
+    @abstractmethod
+    def archived(self):
+        pass
 
     @property
     def block_url(self):
@@ -220,13 +228,13 @@ class Editor(GeneralEditor, metaclass=ABCMeta):
     @property
     def parent(self):
         """return None if block_master is directly called from the root."""
-        attach_point = self.master.caller
-        if isinstance(attach_point, Editor):
-            parent = attach_point.master
+        attach_point = self.block.caller
+        if isinstance(attach_point, BlockEditor):
+            parent = attach_point.block
             from ..common.with_children import ChildrenBearer
             if not isinstance(parent, ChildrenBearer):
                 from .exceptions import InvalidParentTypeError
-                raise InvalidParentTypeError(self.master)
+                raise InvalidParentTypeError(self.block)
             return parent
         return None
 
@@ -243,13 +251,9 @@ class Editor(GeneralEditor, metaclass=ABCMeta):
         if not self.block_id:
             if not self.parent:
                 from .exceptions import NoParentFoundError
-                raise NoParentFoundError(self.master)
+                raise NoParentFoundError(self.block)
             return self.parent.entry_ancestor
-        return self.master
-
-    @property
-    def archived(self):
-        return self.master.archived
+        return self.block
 
     @abstractmethod
     def read(self) -> dict[str, Any]:
@@ -260,16 +264,49 @@ class Editor(GeneralEditor, metaclass=ABCMeta):
         pass
 
 
-class Block(Editor):
-    def __init__(self, caller: GeneralAttachments, id_or_url: str):
+class Block(BlockEditor):
+    def __init__(self, caller: Registry, id_or_url: str):
         self.caller = caller
         self.__block_id = url_to_id(id_or_url)
-        self.caller.attach(self)
+        self.caller.add_block(self)
         # Now declare payload here, make it "register" to the attachment.
         #  this allows to search specific page from them. (.by_id, .by_title)
 
     @property
-    def master(self):
+    def _registries(self) -> list[Registry]:
+        if self.root == self.caller:
+            registry = [self.root]
+        else:
+            registry = [self.root, self.caller]
+        return registry
+
+    def attach_to(self, register: Registry):
+        if register != self.caller:
+            self.detach_from(self.caller)
+            self.caller = register
+        self.caller.add_block(self)
+
+    def detach_from(self, register: Registry):
+        from .exceptions import DanglingBlockError
+        if self.block_id:
+            try:
+                register.by_id.pop(self.block_id)
+            except KeyError:
+                raise DanglingBlockError(self, register)
+
+    def close(self):
+        """use this to delete a wrong block
+        (probably those with nonexisting block_id)"""
+        for registry in self._registries:
+            if registry.by_id[self.__block_id] == self.block:
+                registry.by_id.pop(self.__block_id)
+            else:
+                from .exceptions import DanglingBlockError
+                raise DanglingBlockError(self, registry)
+        self.caller.remove_block(self)
+
+    @property
+    def block(self):
         return self
 
     @property
@@ -316,14 +353,18 @@ class Block(Editor):
     def can_have_children(self) -> bool:
         return self.payload.can_have_children
 
-    @abstractmethod
-    def read(self) -> dict[str, Any]:
+    @property
+    def basic_info(self):
         return {'type': type(self).__name__,
                 'id': self.block_id}
 
     @abstractmethod
+    def read(self) -> dict[str, Any]:
+        return self.basic_info
+
+    @abstractmethod
     def richly_read(self) -> dict[str, Any]:
-        return self.read()
+        return self.basic_info
 
     @abstractmethod
     def save_info(self):
@@ -331,36 +372,48 @@ class Block(Editor):
         {'contents': "unpack contents here",
          'children': "unpack children here"}
         """
-        return self.read()
+        pass
 
     @abstractmethod
     def save(self):
-        """
+        """ remarks:
         1. since self.children go first than self.new_children,
             saving a multi-rank structure will be executed top to bottom,
             regardless of indentation.
         2. the 'ground editors', self.contents or self.props,
             have to refer to self.block_id if it want to 'reset gateway'.
             therefore, it first send the response without processing itself,
-            so that the master deals with its reset task instead.
+            so that the block deals with its reset task instead.
         """
+        pass
 
 
-class Follower(Editor, metaclass=ABCMeta):
-    def __init__(self, caller: Editor):
+class Follower(BlockEditor, metaclass=ABCMeta):
+    def __init__(self, caller: BlockEditor):
         self.caller = caller
 
     @property
-    def master(self) -> Block:
-        return self.caller.master
+    def block(self) -> Block:
+        return self.caller.block
+
+    @property
+    def block_id(self) -> str:
+        return self.block.block_id
+
+    @property
+    def block_name(self) -> str:
+        return self.block.block_name
+
+    @property
+    def archived(self):
+        return self.block.archived
 
 
-class Payload(Follower, metaclass=ABCMeta):
+class Payload(BlockEditor, metaclass=ABCMeta):
     def __init__(self, caller: Block, id_or_url: str):
         super().__init__(caller)
         self.caller = caller
-        self.__block_id = ''
-        self._set_block_id(url_to_id(id_or_url))
+        self.__block_id = url_to_id(id_or_url)
 
         self._archived = None
         self._created_time = None
@@ -369,12 +422,16 @@ class Payload(Follower, metaclass=ABCMeta):
         self._can_have_children = None
 
     @property
-    def register_points(self) -> list[GeneralAttachments]:
+    def _registries(self) -> list[Registry]:
         if self.root == self.caller.caller:
-            attach_points = [self.root]
+            registry = [self.root]
         else:
-            attach_points = [self.root, self.caller.caller]
-        return attach_points
+            registry = [self.root, self.caller.caller]
+        return registry
+
+    @property
+    def block(self) -> Block:
+        return self.caller
 
     @property
     def block_id(self) -> str:
@@ -383,15 +440,19 @@ class Payload(Follower, metaclass=ABCMeta):
     def _set_block_id(self, value: str):
         """set the value to empty string('') will unregister the block."""
         if self.__block_id:
-            for attachments in self.register_points:
-                if attachments.by_id[self.__block_id] == self.master:
+            for attachments in self._registries:
+                if attachments.by_id[self.__block_id] == self.block:
                     attachments.by_id.pop(self.__block_id)
                 else:
-                    print(f'WARNING: {self.master} was not registered to {attachments}')
+                    print(f'WARNING: {self.block} was not registered to {attachments}')
         self.__block_id = value
         if self.__block_id:
-            for attachments in self.register_points:
-                attachments.by_id[self.__block_id] = self.master
+            for attachments in self._registries:
+                attachments.by_id[self.__block_id] = self.block
+
+    @property
+    def block_name(self) -> str:
+        return self.block.block_name
 
     @property
     def archived(self):

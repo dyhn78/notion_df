@@ -1,4 +1,4 @@
-from .leaders import Block, GeneralAttachments
+from .leaders import Block, Registry
 
 
 class BlockTypeError(TypeError):
@@ -27,7 +27,7 @@ class InvalidParentTypeError(ValueError):
 
 
 class DanglingBlockError(ValueError):
-    def __init__(self, child_block: Block, attachments: GeneralAttachments):
+    def __init__(self, child_block: Block, registry: Registry):
         self.block = child_block
-        self.attachments = attachments
+        self.attachments = registry
         self.message = f'{self.block} was never registered to {self.attachments}'

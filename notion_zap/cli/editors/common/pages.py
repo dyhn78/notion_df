@@ -31,13 +31,8 @@ class PagePayload(Payload, RequestEditor, metaclass=ABCMeta):
         self.__title = ''
 
     @property
-    @abstractmethod
-    def requestor(self) -> Union[requestors.CreatePage, requestors.UpdatePage]:
-        pass
-
-    @abstractmethod
-    def clear_requestor(self):
-        pass
+    def can_have_children(self):
+        return True
 
     @property
     def title(self):
@@ -46,21 +41,28 @@ class PagePayload(Payload, RequestEditor, metaclass=ABCMeta):
     def _set_title(self, value: str):
         """set the value to empty string('') will unregister the block."""
         if self.__title:
-            for attachments in self.register_points:
+            for attachments in self._registries:
                 try:
-                    attachments.by_title[self.__title].remove(self.master)
+                    attachments.by_title[self.__title].remove(self.block)
                 except ValueError:
-                    print(f'WARNING: {self.master} was not registered to {attachments}')
+                    print(f'WARNING: {self.block} was not registered to {attachments}')
         self.__title = value
         if self.__title:
-            for attachments in self.register_points:
-                attachments.by_title[self.__title].append(self.master)
+            for attachments in self._registries:
+                attachments.by_title[self.__title].append(self.block)
 
     def archive(self):
         self.requestor.archive()
 
     def un_archive(self):
         self.requestor.un_archive()
+
+    def retrieve(self):
+        requestor = requestors.RetrievePage(self)
+        response = requestor.execute_silent()
+        parser = parsers.PageParser.parse_retrieve(response)
+        self.apply_page_parser(parser)
+        requestor.print_comments()
 
     def apply_page_parser(self, parser: parsers.PageParser):
         if parser.page_id != '':
@@ -69,12 +71,14 @@ class PagePayload(Payload, RequestEditor, metaclass=ABCMeta):
         self._created_time = parser.created_time
         self._last_edited_time = parser.last_edited_time
 
-    def retrieve(self):
-        requestor = requestors.RetrievePage(self)
-        response = requestor.execute_silent()
-        parser = parsers.PageParser.parse_retrieve(response)
-        self.apply_page_parser(parser)
-        requestor.print_comments()
+    @property
+    @abstractmethod
+    def requestor(self) -> Union[requestors.CreatePage, requestors.UpdatePage]:
+        pass
+
+    @abstractmethod
+    def clear_requestor(self):
+        pass
 
     def save(self):
         if self.block_id:
