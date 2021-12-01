@@ -4,7 +4,7 @@ import datetime as dt
 from notion_zap.apps.routines import main
 
 
-with open('debug.log', 'w') as log:
+with open('debugs.log', 'w') as log:
     try:
         log.write(f"last execution: {dt.datetime.now()}")
         main.execute()
