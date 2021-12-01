@@ -43,8 +43,8 @@ class PageParser:
         self.prop_rich_values = {}
 
         # only valid in PageRow.
-        self.title = ''
-        self.title_key = ''
+        self.pagerow_title = ''
+        self.pagerow_title_key = ''
         self._current_prop_type = ''
 
     @classmethod
@@ -124,8 +124,8 @@ class PageParser:
         plain_text, rich_text = parse_rich_texts(prop_object)
         self.prop_rich_values[prop_key] = rich_text
         if prop_type == 'title':
-            self.title = plain_text
-            self.title_key = prop_key
+            self.pagerow_title = plain_text
+            self.pagerow_title_key = prop_key
             self._current_prop_type = 'title'
         return plain_text
 

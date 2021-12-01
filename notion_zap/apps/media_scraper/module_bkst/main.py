@@ -37,7 +37,7 @@ class BookstoreDataWriter:
             self.set_contents_data(data)
 
     def read_or_scrap_url(self):
-        if url := self.page.props.get_at('url', default=''):
+        if url := self.page.props.get_tag('url', default=''):
             return url
         if url := enumerate_func(scrap_yes24_url)(self.book_names):
             self.page.props.write_url_at('url', url)

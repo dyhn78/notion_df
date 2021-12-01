@@ -4,16 +4,16 @@
 #     RichTextContentsEncoder
 # from notion_zap.gateway.parsers import PageParser
 # from notion_zap.gateway.requestors import UpdatePage, RetrievePage, AppendBlockChildren
-# from notion_zap.gateway.base.base import Editor, drop_empty_request
+# from notion_zap.gateway.base.base import GeneralEditor, drop_empty_request
 # from ..supported.with_items.with_contents.contents_bearing import \
 #     ContentsBearer, BlockContents
 # from ..supported.with_items.creater_with_page_as_child import \
 #     BlockSphereCreatorWithChildInlinePage
-# from ..base import Editor
+# from ..base import GeneralEditor
 #
 #
 # class InlinePageBlockAsChild(ContentsBearer):
-#     def __init__(self, caller: Union[Editor, Editor], page_id: str):
+#     def __init__(self, caller: Union[GeneralEditor, GeneralEditor], page_id: str):
 #         super().__init__(caller, page_id)
 #         if isinstance(caller, BlockSphereCreatorWithChildInlinePage):
 #             self.contents = InlinePageContentsAsChild(self, caller)

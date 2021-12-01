@@ -9,7 +9,7 @@ from notion_zap.cli import editors
 
 class EditorBase:
     def __init__(self):
-        self.root = editors.RootEditor()
+        self.root = editors.Root()
         self.periods = self.root.open_database(*DatabaseInfo.PERIODS,
                                                frame=MatchFrames.PERIODS)
         self.dates = self.root.open_database(*DatabaseInfo.DATES,

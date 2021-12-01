@@ -12,6 +12,6 @@ class SelfMatcher(EditorManager):
 
     def execute(self):
         for domain in self.domains:
-            for dom in domain.pages:
-                if dom.props.read_at('to_itself') != [dom.block_id]:
+            for dom in domain.rows:
+                if dom.props.read_tag('to_itself') != [dom.block_id]:
                     dom.props.write_at('to_itself', [dom.block_id])

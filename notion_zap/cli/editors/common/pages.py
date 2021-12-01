@@ -4,7 +4,8 @@ from abc import abstractmethod, ABCMeta
 from typing import Union
 
 from .with_items import ItemsBearer
-from ..base import PayloadEditor, GroundEditor
+from ..structs.leaders import Payload
+from ..structs.followers import RequestEditor
 from notion_zap.cli.gateway import parsers, requestors
 
 
@@ -13,10 +14,6 @@ class PageBlock(ItemsBearer):
     @abstractmethod
     def payload(self) -> PagePayload:
         pass
-
-    def save_required(self):
-        return (self.payload.save_required()
-                or self.items.save_required())
 
     @property
     def block_name(self):
@@ -27,9 +24,9 @@ class PageBlock(ItemsBearer):
         return self.payload.title
 
 
-class PagePayload(PayloadEditor, GroundEditor, metaclass=ABCMeta):
+class PagePayload(Payload, RequestEditor, metaclass=ABCMeta):
     def __init__(self, caller: PageBlock, id_or_url):
-        PayloadEditor.__init__(self, caller, id_or_url)
+        Payload.__init__(self, caller, id_or_url)
         self.caller = caller
         self.__title = ''
 
@@ -47,35 +44,17 @@ class PagePayload(PayloadEditor, GroundEditor, metaclass=ABCMeta):
         return self.__title
 
     def _set_title(self, value: str):
-        self._unregister_title()
+        """set the value to empty string('') will unregister the block."""
+        if self.__title:
+            for attachments in self.register_points:
+                try:
+                    attachments.by_title[self.__title].remove(self.master)
+                except ValueError:
+                    print(f'WARNING: {self.master} was not registered to {attachments}')
         self.__title = value
-        self._register_title()
-
-    def _register_title(self):
-        if self.title == '':
-            return
-        # register to root
-        register_point = self.root.by_title
-        register_point[self.title].append(self.master)
-        # register to parent
-        if self.parent:
-            register_point = self.parent.children.by_title
-            register_point[self.title].append(self.master)
-
-    def _unregister_title(self):
-        if self.title == '':
-            return
-        # detach from root
-        register_point = self.root.by_title
-        register_point[self.title].remove(self.master)
-        # detach from parent
-        if self.parent:
-            register_point = self.parent.children.by_title
-            register_point[self.title].remove(self.master)
-
-    def unregister_all(self):
-        self._unregister_id()
-        self._unregister_title()
+        if self.__title:
+            for attachments in self.register_points:
+                attachments.by_title[self.__title].append(self.master)
 
     def archive(self):
         self.requestor.archive()

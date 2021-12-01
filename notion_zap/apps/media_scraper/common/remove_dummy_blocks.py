@@ -9,12 +9,12 @@ def remove_dummy_blocks(page: editors.common.ItemsBearer):
             continue
         # remove "blank" blocks
         if isinstance(block, editors.TextItem) and \
-                block.contents.reads().split() == '':
+                block.contents.read().split() == '':
             block.contents.archive()
             removed += 1
         # remove duplicate contents (page_block)
         if isinstance(block, editors.PageItem) and \
-                page.block_name in block.contents.reads():
+                page.block_name in block.contents.read():
             if not duplicate:
                 duplicate = True
             else:

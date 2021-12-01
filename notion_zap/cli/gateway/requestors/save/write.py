@@ -1,7 +1,7 @@
 from typing import Any, Optional
 
-from notion_zap.cli.editors.base import Editor
-from notion_zap.cli import utility
+from notion_zap.cli.utility import stopwatch, id_to_url
+from notion_zap.cli.editors.structs.leaders import Editor
 from .stash import BlockChildrenStash, PagePropertyStash
 from ..base import PointRequestor, print_response_error, drop_empty_request
 from ...encoders import ContentsEncoder
@@ -39,12 +39,12 @@ class CreatePage(PointRequestor, PagePropertyStash, BlockChildrenStash):
     @drop_empty_request
     @print_response_error
     def execute(self) -> dict:
-        res = self.client.pages.create(**self.encode())
+        res = self.client.rows.create(**self.encode())
         self.print_comments(res)
         return res
 
     def print_comments(self, res):
-        target_url = utility.id_to_url(res['id'])
+        target_url = id_to_url(res['id'])
         if self.target_name:
             form = ['create_page', f"< {self.target_name} >",
                     '\n\t', target_url]
@@ -52,7 +52,7 @@ class CreatePage(PointRequestor, PagePropertyStash, BlockChildrenStash):
             form = ['create_page_at', f"< {self.parent_name} >",
                     '\n\t', target_url]
         comments = ' '.join(form)
-        utility.stopwatch(comments)
+        stopwatch(comments)
 
 
 class UpdatePage(PointRequestor, PagePropertyStash):
@@ -85,7 +85,7 @@ class UpdatePage(PointRequestor, PagePropertyStash):
     @drop_empty_request
     @print_response_error
     def execute(self) -> dict:
-        res = self.client.pages.update(**self.encode())
+        res = self.client.rows.update(**self.encode())
         self.print_comments()
         return res
 
@@ -96,7 +96,7 @@ class UpdatePage(PointRequestor, PagePropertyStash):
         else:
             form = ['update_page', self.target_url]
         comments = ' '.join(form)
-        utility.stopwatch(comments)
+        stopwatch(comments)
 
 
 class UpdateBlock(PointRequestor):
@@ -145,7 +145,7 @@ class UpdateBlock(PointRequestor):
         else:
             form = ['update_block', self.target_url]
         comments = ' '.join(form)
-        utility.stopwatch(comments)
+        stopwatch(comments)
 
 
 class AppendBlockChildren(PointRequestor, BlockChildrenStash):
@@ -177,4 +177,4 @@ class AppendBlockChildren(PointRequestor, BlockChildrenStash):
         else:
             form = ['append_block', self.target_url]
         comments = ' '.join(form)
-        utility.stopwatch(comments)
+        stopwatch(comments)

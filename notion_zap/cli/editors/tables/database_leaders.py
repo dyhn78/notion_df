@@ -1,26 +1,81 @@
 from __future__ import annotations
-
 from collections import defaultdict
 from pprint import pprint
-from typing import Iterator, Callable, Any
+from typing import Union, Optional, Iterator, Callable, Any
 
 from notion_client import APIResponseError
 
+from notion_zap.cli.gateway import parsers, requestors
 from notion_zap.cli.struct import PropertyFrame
-from notion_zap.cli.gateway import requestors
-from .database import Database
-from .page_row import PageRow
-from ..base import Editor
-from ..common.with_children import BlockChildren
+from .. import BlockChildren, PageRow
+from ..common.with_children import ChildrenBearer
+from ..common.with_items import ItemChildren
+from ..structs.leaders import Root
 
 
-class PageList(BlockChildren):
+class Database(ChildrenBearer):
+    def __init__(self, caller: Union[Root, ItemChildren],
+                 id_or_url: str,
+                 database_alias='',
+                 frame: Optional[PropertyFrame] = None):
+        super().__init__(caller, id_or_url)
+        self.caller = caller
+
+        self.alias = database_alias
+        self.root.by_alias[self.alias] = self
+        self.frame = frame if frame else PropertyFrame()
+
+        from .database_schema import DatabaseSchema
+        self.schema = DatabaseSchema(self, id_or_url)
+
+        self.rows = RowChildren(self)
+
+    @property
+    def payload(self):
+        return self.schema
+
+    @property
+    def children(self):
+        return self.rows
+
+    @property
+    def block_name(self):
+        return self.alias
+
+    def retrieve(self):
+        requestor = requestors.RetrieveDatabase(self)
+        response = requestor.execute_silent()
+        parser = parsers.DatabaseParser(response)
+        self.frame.fetch_parser(parser)
+        requestor.print_comments()
+
+    def _fetch_children(self, request_size=0):
+        """randomly query with the amount of <request_size>."""
+        query = self.rows.open_query()
+        query.execute(request_size)
+
+    def save(self):
+        self.rows.save()
+
+    def save_info(self):
+        return {**self.rows.save_info()}
+
+    def read(self):
+        return {"rows": self.rows.by_title,
+                "type": "database",
+                "id": self.block_id}
+
+    def richly_read(self):
+        return self.read()
+
+
+class RowChildren(BlockChildren):
     def __init__(self, caller: Database):
         super().__init__(caller)
         self.caller = caller
         self.frame = caller.frame
 
-        from .pagelist_agents import PageListUpdater, PageListCreator
+        from .database_followers import PageListUpdater, PageListCreator
         self.update = PageListUpdater(self)
         self.create = PageListCreator(self)
 
@@ -34,12 +89,14 @@ class PageList(BlockChildren):
         return PageRow(self, '', frame=self.frame)
 
     def attach(self, page: PageRow):
+        super().attach(page)
         if page.block_id:
             self.update.attach_page(page)
         else:
             self.create.attach_page(page)
 
     def detach(self, page: PageRow):
+        super().detach(page)
         if page.block_id:
             self.update.detach_page(page)
         else:
@@ -71,8 +128,8 @@ class PageList(BlockChildren):
         self.update.blocks.extend(response)
 
     def save_info(self):
-        return {'pages': self.update.save_info(),
-                'new_pages': self.create.save_info()}
+        return {'updated_rows': self.update.save_info(),
+                'created_rows': self.create.save_info()}
 
     def save_required(self):
         return (self.update.save_required()
@@ -86,33 +143,19 @@ class PageList(BlockChildren):
     def by_title(self) -> dict[str, list[PageRow]]:
         return self._by_title
 
-    def list_all(self):
-        return self.update.blocks + self.create.blocks
+    def __iter__(self) -> Iterator[PageRow]:
+        return self.iter_all()
 
     def iter_all(self) -> Iterator[PageRow]:
         return iter(self.list_all())
 
-    def iter_valids(self, exclude_archived_blocks=True,
-                    exclude_yet_not_created_blocks=True) -> list[PageRow]:
-        for child in self.iter_all():
-            if exclude_archived_blocks and child.archived:
-                continue
-            if exclude_yet_not_created_blocks and not self.block_id:
-                continue
-            yield child
-
-    def list_valids(self, exclude_archived_blocks=True,
-                    exclude_yet_not_created_blocks=True):
-        return list(self.iter_valids(
-            exclude_archived_blocks, exclude_yet_not_created_blocks))
-
-    def __iter__(self) -> Iterator[PageRow]:
-        return self.iter_all()
+    def list_all(self) -> list[PageRow]:
+        return self.update.blocks + self.create.blocks
 
     def by_value_of(self, prop_key: str):
         res = defaultdict(list)
         for page in self.list_all():
-            res[page.props.read_of(prop_key)].append(page)
+            res[page.props.read_key(prop_key)].append(page)
         return res
 
     def by_value_at(self, prop_tag: str):
@@ -122,11 +165,11 @@ class PageList(BlockChildren):
         try:
             res = {}
             for page in self.list_all():
-                res[page.props.read_of(prop_key)] = page
+                res[page.props.read_key(prop_key)] = page
             return res
         except TypeError:
             page_object = self.list_all()[0]
-            pprint(f"key : {page_object.props.read_of(prop_key)}")
+            pprint(f"key : {page_object.props.read_key(prop_key)}")
             pprint(f"value : {page_object.block_id}")
             raise TypeError
 
@@ -135,7 +178,7 @@ class PageList(BlockChildren):
 
 
 class QueryWithCallback(requestors.Query):
-    def __init__(self, editor: Editor, frame: PropertyFrame,
+    def __init__(self, editor: RowChildren, frame: PropertyFrame,
                  execute_callback: Callable[[Any], list[PageRow]]):
         super().__init__(editor, frame)
         self.callback = execute_callback
@@ -150,6 +193,7 @@ class QueryWithCallback(requestors.Query):
                 heads.append(('...', '...'))
             try:
                 pprint(heads)
-            except AttributeError:  # this happens when called from pythonw.exe
+            except AttributeError:
+                # pprint causes error on pythonw.exe
                 pass
         return pages

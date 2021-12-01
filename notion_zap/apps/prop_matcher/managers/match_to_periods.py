@@ -19,7 +19,7 @@ class PeriodMatcherAbs(EditorManager, metaclass=ABCMeta):
     def __init__(self, bs):
         super().__init__(bs)
         self.target = self.bs.periods
-        self.target_by_idx = self.target.pages.by_idx_at(self.Ttars_idx)
+        self.target_by_idx = self.target.rows.by_idx_at(self.Ttars_idx)
 
     def find_or_create_by_date_val(self, date_val: dt.date):
         if tar := self.find_by_date_val(date_val):
@@ -42,7 +42,7 @@ class PeriodMatcherAbs(EditorManager, metaclass=ABCMeta):
     def create_by_date_val(self, date_val: dt.date):
         if not date_val:
             return None
-        tar = self.target.pages.create_page()
+        tar = self.target.rows.create_page()
         date_handler = DateHandler(date_val)
 
         tar_idx_val = date_handler.strf_year_and_week()
@@ -58,12 +58,12 @@ class PeriodMatcherAbs(EditorManager, metaclass=ABCMeta):
                    disable_overwrite=False):
         """provide tar_idx_val manually if yet-not-synced to server-side"""
         if tar_idx_val is None:
-            tar_idx_val = tar.props.read_at(self.Ttars_idx)
+            tar_idx_val = tar.props.read_tag(self.Ttars_idx)
         date_handler = DateHandler.from_strf_year_and_week(tar_idx_val)
 
         date_range = DateFormat(start=date_handler.first_day_of_week(),
                                 end=date_handler.last_day_of_week())
-        if date_range != tar.props.read_at(self.Ttars_date):
+        if date_range != tar.props.read_tag(self.Ttars_date):
             self.bs.root.disable_overwrite = disable_overwrite
             tar.props.write_date_at(self.Ttars_date, date_range)
             self.bs.root.disable_overwrite = False
@@ -78,14 +78,14 @@ class PeriodMatcherType1(PeriodMatcherAbs):
 
     def execute(self):
         for domain in self.domains:
-            for dom in domain.pages:
+            for dom in domain.rows:
                 if tar := self.match_periods(dom):
                     dom.props.write_relation_at(self.T_tar, tar.block_id)
 
     def match_periods(self, dom: editors.PageRow):
-        if dom.props.read_at(self.T_tar):
+        if dom.props.read_tag(self.T_tar):
             return None
-        dom_idx: DateFormat = dom.props.read_at(self.Tdoms_date)
+        dom_idx: DateFormat = dom.props.read_tag(self.Tdoms_date)
         date_val = dom_idx.start_date
         return self.find_or_create_by_date_val(date_val)
 
@@ -103,12 +103,12 @@ class PeriodMatcherType2(PeriodMatcherAbs):
 
     def execute(self):
         for domain in self.domains:
-            for dom in domain.pages:
+            for dom in domain.rows:
                 if tar := self.match_periods(dom):
                     dom.props.write_relation_at(self.T_tar, tar.block_id)
 
     def match_periods(self, dom: editors.PageRow):
-        if dom.props.read_at(self.T_tar):
+        if dom.props.read_tag(self.T_tar):
             return None
         if ref := fetch_unique_page_of_relation(dom, self.reference, self.Tdoms_ref):
             if tar := fetch_unique_page_of_relation(ref, self.target, self.T_tar):
@@ -129,14 +129,14 @@ class PeriodMatcherType3(PeriodMatcherAbs):
 
     def execute(self):
         for domain in self.domains:
-            for dom in domain.pages:
+            for dom in domain.rows:
                 if tar := self.match_created_periods(dom):
                     dom.props.write_relation_at(self.Tdoms_tar1, tar.block_id)
                 if tar := self.match_scheduled_periods(dom):
                     dom.props.write_relation_at(self.Tdoms_tar2, tar.block_id)
 
     def match_created_periods(self, dom: editors.PageRow):
-        if dom.props.read_at(self.Tdoms_tar1):
+        if dom.props.read_tag(self.Tdoms_tar1):
             return None
         if ref := fetch_unique_page_of_relation(dom, self.reference, self.Tdoms_ref1):
             if tar := fetch_unique_page_of_relation(ref, self.target, self.T_tar):
@@ -144,7 +144,7 @@ class PeriodMatcherType3(PeriodMatcherAbs):
         return None
 
     def match_scheduled_periods(self, dom: editors.PageRow):
-        if dom.props.read_at(self.Tdoms_tar2):
+        if dom.props.read_tag(self.Tdoms_tar2):
             return None
         if ref := fetch_unique_page_of_relation(dom, self.reference, self.Tdoms_ref2):
             if tar := fetch_unique_page_of_relation(ref, self.target, self.T_tar):

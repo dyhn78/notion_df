@@ -5,14 +5,14 @@ from notion_zap.cli.gateway import encoders, parsers, requestors
 from ..common.with_cc import ChildrenBearersContents
 from ..common.with_contents import ContentsBearer
 from ..common.with_items import ItemsBearer, ItemChildren
-from .. import RootEditor
+from .. import Root
 
 
 # TODO > Can-Have-Children 을 동적으로 바꿀 수 있을까?
 class TextItem(ItemsBearer, ContentsBearer):
     def __init__(self,
                  caller: Union[ItemChildren,
-                               RootEditor],
+                               Root],
                  id_or_url: str):
         ItemsBearer.__init__(self, caller, id_or_url)
         ContentsBearer.__init__(self, caller, id_or_url)
@@ -42,16 +42,16 @@ class TextItem(ItemsBearer, ContentsBearer):
 
     @property
     def block_name(self):
-        return self.contents.reads()
+        return self.contents.read()
 
-    def reads(self):
-        return {'contents': self.contents.reads(),
-                'children': self.items.reads(),
+    def read(self):
+        return {'contents': self.contents.read(),
+                'children': self.items.read(),
                 'type': 'text'}
 
-    def reads_rich(self):
-        return {'contents': self.contents.reads_rich(),
-                'children': self.items.reads_rich(),
+    def richly_read(self):
+        return {'contents': self.contents.richly_read(),
+                'children': self.items.richly_read(),
                 'type': 'text'}
 
     def save_info(self):

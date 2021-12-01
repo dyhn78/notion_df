@@ -2,11 +2,12 @@ from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
 
-from ..base import MasterEditor, PayloadEditor, GroundEditor
+from ..structs.leaders import Block, Payload
+from ..structs.followers import RequestEditor
 from notion_zap.cli.gateway import parsers
 
 
-class ContentsBearer(MasterEditor, metaclass=ABCMeta):
+class ContentsBearer(Block, metaclass=ABCMeta):
     @property
     def is_supported_type(self) -> bool:
         return True
@@ -25,27 +26,30 @@ class ContentsBearer(MasterEditor, metaclass=ABCMeta):
     def contents(self, value):
         pass
 
-    def reads(self):
-        return {'contents': self.contents.reads()}
+    def read(self):
+        return dict(**super().read(),
+                    contents=self.contents.read())
 
-    def reads_rich(self):
-        return {'contents': self.contents.reads_rich()}
+    def richly_read(self):
+        return dict(**super().richly_read(),
+                    contents=self.contents.richly_read())
 
     def save_info(self):
-        return {'contents': self.contents.save_info()}
+        return dict(**super().save_info(),
+                    contents=self.contents.save_info())
 
 
-class BlockContents(PayloadEditor, GroundEditor, metaclass=ABCMeta):
+class BlockContents(Payload, RequestEditor, metaclass=ABCMeta):
     def __init__(self, caller: ContentsBearer, id_or_url: str):
-        PayloadEditor.__init__(self, caller, id_or_url)
+        Payload.__init__(self, caller, id_or_url)
         self.caller = caller
         self._read_plain = ''
         self._read_rich = []
 
-    def reads(self) -> str:
+    def read(self) -> str:
         return self._read_plain
 
-    def reads_rich(self) -> list:
+    def richly_read(self) -> list:
         return self._read_rich
 
     def apply_block_parser(self, parser: parsers.BlockContentsParser):

@@ -1,8 +1,8 @@
-from .database import Database
-from ..base import PayloadEditor
+from .database_leaders import Database
+from ..structs.leaders import Payload
 
 
-class DatabaseSchema(PayloadEditor):
+class DatabaseSchema(Payload):
     def __init__(self, caller: Database, id_or_url: str):
         super().__init__(caller, id_or_url)
 

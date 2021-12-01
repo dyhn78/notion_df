@@ -120,4 +120,4 @@ class PropertyFrame:
             else:
                 self.append(PropertyColumn(name, data_type=data_type))
         if isinstance(parser, parsers.PageParser):
-            self.assign_title_key(parser.title_key)
+            self.assign_title_key(parser.pagerow_title_key)

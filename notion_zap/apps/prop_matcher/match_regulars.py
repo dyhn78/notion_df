@@ -40,11 +40,11 @@ class RegularEditorBase(EditorBase):
         self.root.exclude_archived = True
 
     def fetch(self):
-        for domain in self.root.favorites:
+        for domain in self.root.aliased_blocks:
             self.fetch_one(domain)
 
     def fetch_one(self, domain: editors.Database):
-        query = domain.pages.open_query()
+        query = domain.rows.open_query()
         maker = query.filter_maker
         ft = query.open_filter()
 

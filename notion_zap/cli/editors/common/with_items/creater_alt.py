@@ -1,14 +1,14 @@
 # from typing import Union
 #
 # from notion_zap.gateway.base.base import Requestor
-# from ...base import GroundEditor, Editor
+# from ...base import GroundEditor, GeneralEditor
 # from notion_zap.gateway.encoders import RichTextContentsEncoder
 # from notion_zap.gateway.parsers import BlockChildrenParser
 # from notion_zap.gateway.requestors import AppendBlockChildren
 #
 #
 # class BlockSphereCreatorWithChildInlinePage(GroundEditor):
-#     def __init__(self, caller: Editor):
+#     def __init__(self, caller: GeneralEditor):
 #         requestors = AppendBlockChildren(self)
 #         super().__init__(caller)
 #         self.caller = caller
@@ -45,14 +45,14 @@
 #         return res
 #
 #     def create_text_block(self):
-#         from ...inline.text_block import TextItem
+#         from ...items.text_block import TextItem
 #         child = TextItem.create_new(self)
 #         self.blocks.append(child)
 #         assert id(child) == id(self[-1])
 #         return child
 #
 #     def create_inline_page(self):
-#         from ...inline.page_block_as_child import InlinePageBlockAsChild
+#         from ...items.page_block_as_child import InlinePageBlockAsChild
 #         child = InlinePageBlockAsChild.create_new(self)
 #         self.blocks.append(child)
 #         assert id(child) == id(self[-1])

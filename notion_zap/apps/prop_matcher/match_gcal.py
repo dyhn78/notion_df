@@ -29,7 +29,7 @@ class GcalEditorBase(EditorBase):
     def fetch(self):
         self.fetch_one(self.schedules)
 
-    def fetch_one(self, domain: editors.PageList):
+    def fetch_one(self, domain: editors.RowChildren):
         query = domain.open_query()
         maker = query.filter_maker
         ft = query.open_filter()

@@ -1,7 +1,7 @@
 from notion_zap.cli import editors
 
 
-def query_within_date_range(pagelist: editors.PageList,
+def query_within_date_range(pagelist: editors.RowChildren,
                             date_index_tag: str, date_range=0):
     query = pagelist.open_query()
     if date_range:
@@ -18,7 +18,7 @@ def query_within_date_range(pagelist: editors.PageList,
     query.execute()
 
 
-def query_danglings(pagelist: editors.PageList, relation_tag: str):
+def query_danglings(pagelist: editors.RowChildren, relation_tag: str):
     query = pagelist.open_query()
     frame = query.filter_maker.relation_at(relation_tag)
     ft = frame.is_empty()

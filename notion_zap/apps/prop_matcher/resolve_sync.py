@@ -13,10 +13,10 @@ class PropertySyncResolver:
     tag__doms_downdom = 'down_self'
 
     def __init__(self, date_range=0):
-        self.root = editors.RootEditor()
+        self.root = editors.Root()
         self.date_range = date_range
         self.journals = self.root.open_database(*DatabaseInfo.JOURNALS,
-                                                frame=MatchFrames.JOURNALS).pages
+                                                frame=MatchFrames.JOURNALS).rows
 
     def execute(self):
         self.make_query()
@@ -35,8 +35,8 @@ class PropertySyncResolver:
 
 
 class SyncResolveAlgorithm:
-    def __init__(self, fronts: editors.PageList,
-                 backs: editors.PageList,
+    def __init__(self, fronts: editors.RowChildren,
+                 backs: editors.RowChildren,
                  tag_forward: str,
                  tag_backward: str):
         self.fronts = fronts
@@ -47,10 +47,10 @@ class SyncResolveAlgorithm:
     def execute(self):
         for front in self.fronts:
             front_id = front.block_id
-            back_ids = front.props.read_at(self.tag_forward)
+            back_ids = front.props.read_tag(self.tag_forward)
             for back_id in back_ids:
                 back: editors.PageRow = self.backs.by_id[back_id]
-                front_ids = back.props.read_at(self.tag_backward)
+                front_ids = back.props.read_tag(self.tag_backward)
                 if front_id not in front_ids:
                     front_ids.append(front_id)
                     back.props.write_at(self.tag_backward, front_id)

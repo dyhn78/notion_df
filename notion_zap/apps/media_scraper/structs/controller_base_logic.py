@@ -9,9 +9,9 @@ class ReadingDBController:
     status_enum = ReadingDB_FRAME.by_tag['edit_status'].prop_values
 
     def __init__(self):
-        self.root = editors.RootEditor()
+        self.root = editors.Root()
         self.pagelist = self.root.open_database(
-            *DatabaseInfo.READINGS, ReadingDB_FRAME).pages
+            *DatabaseInfo.READINGS, ReadingDB_FRAME).rows
 
 
 class ReadingPageWriter:
@@ -23,7 +23,7 @@ class ReadingPageWriter:
         self._status = ''
 
     def _parse_initial_status(self):
-        edit_status = self.page.props.read_at('edit_status')
+        edit_status = self.page.props.read_tag('edit_status')
         try:
             charref = re.compile(r'(?<=\().+(?=\))')
             return re.findall(charref, edit_status)[0]
@@ -33,8 +33,8 @@ class ReadingPageWriter:
 
     @property
     def book_names(self) -> list[str]:
-        docx_name = self.page.props.get_at('docx_name', '')
-        true_name = self.page.props.get_at('true_name', '')
+        docx_name = self.page.props.get_tag('docx_name', '')
+        true_name = self.page.props.get_tag('true_name', '')
         return [string for string in (true_name, docx_name) if string]
 
     @property

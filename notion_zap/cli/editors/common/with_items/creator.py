@@ -2,15 +2,15 @@ from __future__ import annotations
 
 from typing import Union
 
+from .leaders import ItemChildren
+from ...structs.leaders import Follower
+from ...structs.followers import RequestEditor, SingularEditor
 from notion_zap.cli.gateway.encoders import ContentsEncoder
 from notion_zap.cli.gateway.parsers import BlockChildrenParser
 from notion_zap.cli.gateway.requestors import AppendBlockChildren
-from .master_and_attachments import ItemChildren
-from notion_zap.cli.editors.base import (
-    Editor, GroundEditor, AdaptiveEditor)
 
 
-class ItemsCreator(Editor):
+class ItemsCreator(Follower):
     def __init__(self, caller: ItemChildren):
         super().__init__(caller)
         self.caller = caller
@@ -19,13 +19,13 @@ class ItemsCreator(Editor):
         self._execute_in_process = False
 
     def attach_page_item(self, child):
-        from ...inline.page_item import PageItem
+        from ...items.page_item import PageItem
         assert isinstance(child, PageItem)
         agent = PageItemCreateAgent(self, child)
         self.agents.append(agent)
 
     def attach_text_item(self, child):
-        from ...inline.text_item import TextItem
+        from ...items.text_item import TextItem
         assert isinstance(child, TextItem)
         agent = self._get_text_agent()
         agent.attach(child)
@@ -77,12 +77,12 @@ class ItemsCreator(Editor):
         return len(self.blocks)
 
 
-class TextItemsCreateAgent(GroundEditor):
+class TextItemsCreateAgent(RequestEditor):
     def __init__(self, caller: ItemsCreator):
         super().__init__(caller)
         self._requestor = AppendBlockChildren(self)
 
-        from ...inline.text_item import TextItem
+        from ...items.text_item import TextItem
         self.blocks: list[TextItem] = []
 
     @property
@@ -90,7 +90,7 @@ class TextItemsCreateAgent(GroundEditor):
         return self._requestor
 
     def attach(self, child):
-        from ...inline.text_item import TextItem
+        from ...items.text_item import TextItem
         assert isinstance(child, TextItem)
 
         self.blocks.append(child)
@@ -102,6 +102,7 @@ class TextItemsCreateAgent(GroundEditor):
 
         def callback(carrier: ContentsEncoder):
             return self.requestor.apply_contents(idx, carrier)
+
         return callback
 
     def save(self):
@@ -112,7 +113,7 @@ class TextItemsCreateAgent(GroundEditor):
             child.save_this()
 
 
-class PageItemCreateAgent(AdaptiveEditor):
+class PageItemCreateAgent(SingularEditor):
     def __init__(self, caller: ItemsCreator, child):
         super().__init__(caller)
         self.caller = caller

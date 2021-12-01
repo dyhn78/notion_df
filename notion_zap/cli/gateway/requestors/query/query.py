@@ -1,12 +1,12 @@
 from notion_zap.cli.struct import PropertyFrame
-from notion_zap.cli.editors import base
+from notion_zap.cli.editors.structs.leaders import Editor
+from notion_zap.cli.utility import id_to_url, stopwatch
 from .filter_struct import QueryFilter, EmptyFilter
 from ..base import LongRequestor, print_response_error
-from notion_zap.cli.utility import id_to_url, stopwatch
 
 
 class Query(LongRequestor):
-    def __init__(self, editor: base.Editor, frame: PropertyFrame):
+    def __init__(self, editor: Editor, frame: PropertyFrame):
         super().__init__(editor)
         self.frame = frame
         self._filter_value = EmptyFilter()
@@ -44,10 +44,6 @@ class Query(LongRequestor):
         self.print_comments()
         response = self._execute_all(request_size, print_comments_each=True)
         return response
-        # from ...editors.tabular.pagelist_agents import PageListUpdater
-        # assert isinstance(self.editors, PageListUpdater)
-        # pages = self.editors.apply_query_response(response)
-        # return pages
 
     @print_response_error
     def _execute_each(self, request_size, start_cursor=None):

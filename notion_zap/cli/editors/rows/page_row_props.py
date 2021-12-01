@@ -1,3 +1,5 @@
+from typing import Any
+
 from ..common.pages import PagePayload
 from .page_row import PageRow
 from notion_zap.cli.gateway import encoders, requestors, parsers
@@ -29,7 +31,7 @@ class PageRowProperties(PagePayload, encoders.PageRowPropertyWriterbyKey):
     def apply_page_parser(self, parser: parsers.PageParser):
         super().apply_page_parser(parser)
         self.frame.fetch_parser(parser)
-        self._set_title(parser.title)
+        self._set_title(parser.pagerow_title)
         self._read_plain = parser.prop_values
         self._read_rich = parser.prop_rich_values
         for name in self._read_plain:
@@ -43,17 +45,23 @@ class PageRowProperties(PagePayload, encoders.PageRowPropertyWriterbyKey):
     def push_carrier(self, prop_key: str, carrier: encoders.PropertyEncoder) \
             -> encoders.PropertyEncoder:
         cannot_overwrite = (self.root.disable_overwrite and
-                            not self.root.is_emptylike(self.read_of(prop_key)))
+                            not self.root.is_emptylike(self.read_key(prop_key)))
         # print(f"{self.read_of(prop_key)=},"
         #       f"{self.root.is_emptylike(self.read_of(prop_key))=}, "
         #       f"{cannot_overwrite=}")
         if cannot_overwrite:
             return carrier
-        if prop_key == self.frame.title_key:
+        if prop_key == self.frame.pagerow_title_key:
             self._set_title(carrier.plain_form())
         return self.requestor.apply_prop(carrier)
 
-    def read_of(self, prop_key: str):
+    def read(self) -> dict[str, Any]:
+        pass
+
+    def richly_read(self) -> dict[str, Any]:
+        pass
+
+    def read_key(self, prop_key: str):
         self._assert_string_key(prop_key)
         try:
             value = self._read_plain[prop_key]
@@ -61,7 +69,7 @@ class PageRowProperties(PagePayload, encoders.PageRowPropertyWriterbyKey):
             raise KeyError(prop_key)
         return value
 
-    def read_rich_of(self, prop_key: str):
+    def richly_read_key(self, prop_key: str):
         self._assert_string_key(prop_key)
         try:
             value = self._read_rich[prop_key]
@@ -69,39 +77,39 @@ class PageRowProperties(PagePayload, encoders.PageRowPropertyWriterbyKey):
             raise KeyError(prop_key)
         return value
 
-    def get_of(self, prop_key: str, default=None):
+    def get_key(self, prop_key: str, default=None):
         self._assert_string_key(prop_key)
         value = self._read_plain.get(prop_key)
         if value is None:
             value = default
         return value
 
-    def get_rich_of(self, prop_key: str, default=None):
+    def richly_get_key(self, prop_key: str, default=None):
         self._assert_string_key(prop_key)
         value = self._read_rich.get(prop_key)
         if value is None:
             value = default
         return value
 
-    def read_at(self, prop_tag: str):
-        return self.read_of(self._name_at(prop_tag))
+    def read_tag(self, prop_tag: str):
+        return self.read_key(self._name_at(prop_tag))
 
-    def read_rich_at(self, prop_tag: str):
-        return self.read_rich_of(self._name_at(prop_tag))
+    def richly_read_tag(self, prop_tag: str):
+        return self.richly_read_key(self._name_at(prop_tag))
 
-    def get_at(self, prop_tag: str, default=None):
+    def get_tag(self, prop_tag: str, default=None):
         try:
             prop_key = self._name_at(prop_tag)
         except KeyError:
             return default
-        return self.get_of(prop_key, default)
+        return self.get_key(prop_key, default)
 
-    def get_rich_at(self, prop_tag: str, default=None):
+    def richly_get_tag(self, prop_tag: str, default=None):
         try:
             prop_key = self._name_at(prop_tag)
         except KeyError:
             return default
-        return self.get_rich_of(prop_key, default)
+        return self.richly_get_key(prop_key, default)
 
     @staticmethod
     def _assert_string_key(prop_key):

@@ -1,16 +1,15 @@
 from __future__ import annotations
 
 from abc import ABCMeta
-from typing import Iterator
 
 from notion_zap.cli.gateway import requestors, parsers
 from ..with_children import ChildrenBearer, BlockChildren
-from ...editor_exceptions import BlockTypeError, NoParentFoundError
-from ...base import MasterEditor, AttachmentsEditor
+from ...structs.leaders import Block, GeneralAttachments
+from ...structs.exceptions import BlockTypeError, NoParentFoundError
 
 
 class ItemsBearer(ChildrenBearer, metaclass=ABCMeta):
-    def __init__(self, caller: AttachmentsEditor, id_or_url: str):
+    def __init__(self, caller: GeneralAttachments, id_or_url: str):
         super().__init__(caller, id_or_url)
         self.items = ItemChildren(self)
 
@@ -33,32 +32,32 @@ class ItemChildren(BlockChildren):
         from .creator import ItemsCreator
         self.create = ItemsCreator(self)
 
-    def attach(self, child: MasterEditor):
+    def attach(self, child: Block):
+        super().attach(child)
+
         if not self.master.can_have_children:
             raise BlockTypeError(self.master)
 
-        # TODO: child의 이전 parent 로부터 먼저 detach 해야 한다.
-
-        from ...inline import TextItem, PageItem
-        if not child.block_id:
+        from ...items import TextItem, PageItem
+        if child.block_id:
+            self.update.attach_item(child)
+        else:
             if isinstance(child, TextItem):
                 self.create.attach_text_item(child)
             elif isinstance(child, PageItem):
                 self.create.attach_page_item(child)
             else:
                 raise ValueError(f"{child=}")
-        else:
-            self.update.attach_item(child)
 
-    def detach(self, child: MasterEditor):
+    def detach(self, child: Block):
         raise NotImplementedError
 
     def create_text(self):
-        from ...inline import TextItem
+        from ...items import TextItem
         return TextItem(self, '')
 
     def create_page(self):
-        from ...inline import PageItem
+        from ...items import PageItem
         return PageItem(self, '')
 
     def fetch(self, request_size=0):
@@ -116,14 +115,11 @@ class ItemChildren(BlockChildren):
         return (self.update.save_required()
                 or self.create.save_required())
 
-    def iter_all(self) -> Iterator[MasterEditor]:
-        return iter(self.list_all())
-
-    def list_all(self) -> list[MasterEditor]:
-        return self.update.blocks + self.create.blocks
-
     def __getitem__(self, idx: int):
         return self.list_all()[idx]
+
+    def list_all(self) -> list[Block]:
+        return self.update.blocks + self.create.blocks
 
     def reads(self):
         return self.update.reads()

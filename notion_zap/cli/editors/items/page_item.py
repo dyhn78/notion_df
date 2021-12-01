@@ -6,12 +6,12 @@ from notion_zap.cli.gateway import encoders, parsers, requestors
 from ..common.pages import PageBlock, PagePayload
 from ..common.with_cc import ChildrenAndContentsBearer, ChildrenBearersContents
 from ..common.with_items import ItemChildren
-from .. import RootEditor
+from .. import Root
 
 
 class PageItem(PageBlock, ChildrenAndContentsBearer):
     def __init__(self,
-                 caller: Union[ItemChildren, RootEditor],
+                 caller: Union[ItemChildren, Root],
                  id_or_url: str):
         self.caller = caller
         self._contents = PageItemContents(self, id_or_url)
@@ -36,11 +36,11 @@ class PageItem(PageBlock, ChildrenAndContentsBearer):
             return
         self.items.save()
 
-    def reads(self):
-        return dict(**super().reads(), type='page')
+    def read(self):
+        return dict(**super().read(), type='page')
 
-    def reads_rich(self):
-        return dict(**super().reads_rich(), type='page')
+    def richly_read(self):
+        return dict(**super().richly_read(), type='page')
 
 
 class PageItemContents(PagePayload, ChildrenBearersContents,
@@ -81,7 +81,7 @@ class PageItemContents(PagePayload, ChildrenBearersContents,
     def push_carrier(self, carrier: encoders.RichTextPropertyEncoder) \
             -> encoders.RichTextPropertyEncoder:
         cannot_overwrite = (self.root.disable_overwrite and
-                            not self.root.is_emptylike(self.reads()))
+                            not self.root.is_emptylike(self.read()))
         if cannot_overwrite:
             return carrier
         ret = self.requestor.apply_prop(carrier)

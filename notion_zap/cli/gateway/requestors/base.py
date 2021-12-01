@@ -5,7 +5,7 @@ from typing import Callable
 from notion_client.errors import APIResponseError
 
 from notion_zap.cli.utility import stopwatch
-from notion_zap.cli.editors.base import Editor
+from notion_zap.cli.editors.structs.leaders import Editor
 from notion_zap.cli.struct.base_logic import Executable, ValueCarrier
 
 

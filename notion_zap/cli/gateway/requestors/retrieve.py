@@ -1,4 +1,4 @@
-from notion_zap.cli.editors.base import Editor
+from notion_zap.cli.editors.structs.leaders import Editor
 from notion_zap.cli.utility import stopwatch
 from .base import PointRequestor, LongRequestor, print_response_error
 
@@ -45,7 +45,7 @@ class RetrievePage(PointRequestor):
         return self.execute_silent()
 
     def execute_silent(self):
-        res = self.client.pages.retrieve(**self.encode())
+        res = self.client.rows.retrieve(**self.encode())
         return res
 
     def print_comments(self):
