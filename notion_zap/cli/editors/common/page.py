@@ -32,6 +32,19 @@ class PageBlock(ItemsBearer):
             except KeyError:
                 raise DanglingBlockError(self, self.root)
 
+    def _unregister_from_caller(self):
+        super()._unregister_from_caller()
+        if self.title:
+            try:
+                self.caller.by_title[self.title].remove(self)
+            except KeyError:
+                raise DanglingBlockError(self, self.caller)
+
+    def _register_to_caller(self):
+        super()._register_to_caller()
+        if self.title:
+            self.caller.by_title[self.title].append(self)
+
 
 class PagePayload(Payload, RequestEditor, metaclass=ABCMeta):
     def __init__(self, caller: PageBlock):

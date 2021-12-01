@@ -281,28 +281,6 @@ class Block(Component):
             # this temporary attribute is needed before the payload is declared
             return self.__block_id
 
-    def move(self, new_caller: Registry):
-        if self.caller:
-            self.caller.detach(self)
-        self.caller = new_caller
-        self.caller.attach(self)
-
-    def close(self):
-        """use this to delete a wrong block
-        (probably those with nonexisting block_id)"""
-        if self.caller:
-            self.caller.detach(self)
-            self._unregister_from_root()
-        self.caller = None
-
-    def _unregister_from_root(self):
-        if self.block_id:
-            try:
-                self.root.search_by_id.pop(self.block_id)
-            except KeyError:
-                from .exceptions import DanglingBlockError
-                raise DanglingBlockError(self, self.root)
-
     @property
     @abstractmethod
     def block_name(self):
@@ -367,6 +345,43 @@ class Block(Component):
             so that the block deals with its reset task instead.
         """
         pass
+
+    def move(self, new_caller: Registry):
+        if self.caller:
+            self.caller.detach(self)
+            self._unregister_from_caller()
+        self.caller = new_caller
+        self.caller.attach(self)
+        self._register_to_caller()
+
+    def close(self):
+        """use this to delete a wrong block
+        (probably those with nonexisting block_id)"""
+        if self.caller:
+            self.caller.detach(self)
+            self._unregister_from_root()
+            self._unregister_from_caller()
+        self.caller = None
+
+    def _unregister_from_root(self):
+        if self.block_id:
+            try:
+                self.root.search_by_id.pop(self.block_id)
+            except KeyError:
+                from .exceptions import DanglingBlockError
+                raise DanglingBlockError(self, self.root)
+
+    def _unregister_from_caller(self):
+        if self.block_id:
+            try:
+                self.caller.by_id.pop(self.block_id)
+            except KeyError:
+                from .exceptions import DanglingBlockError
+                raise DanglingBlockError(self, self.caller)
+
+    def _register_to_caller(self):
+        if self.block_id:
+            self.caller.by_id[self.block_id] = self
 
 
 class Payload(Component, metaclass=ABCMeta):
