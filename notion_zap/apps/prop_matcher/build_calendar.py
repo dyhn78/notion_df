@@ -46,7 +46,7 @@ class CalendarEditorBase(EditorBase):
     def fetch_all(self):
         query = self.dates.open_query()
         ft = query.open_filter()
-        frame = query.filter_maker.date_at('manual_date')
+        frame = query.filter_manager.date_at('manual_date')
         if self.empties:
             ft |= frame.is_empty()
         if self.year_range:
@@ -60,7 +60,7 @@ class CalendarEditorBase(EditorBase):
 
         query = self.periods.open_query()
         ft = query.open_filter()
-        frame = query.filter_maker.date_at('manual_date_range')
+        frame = query.filter_manager.date_at('manual_date_range')
         if self.empties:
             ft |= frame.is_empty()
         if self.year_range:

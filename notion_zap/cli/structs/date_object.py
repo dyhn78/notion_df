@@ -4,7 +4,7 @@ from datetime import datetime, date
 from typing import Union, Optional
 
 
-class DateFormat:
+class DateObject:
     def __init__(self, start: Optional[Union[datetime, date]] = None,
                  end: Optional[Union[datetime, date]] = None):
         """default value of <start> and <end> is None."""
@@ -25,7 +25,7 @@ class DateFormat:
             return date_val
 
     @classmethod
-    def from_date_val(cls, date_val: Union[DateFormat, datetime, date]):
+    def from_date_val(cls, date_val: Union[DateObject, datetime, date]):
         if isinstance(date_val, cls):
             return date_val
         else:
@@ -100,20 +100,20 @@ class DateFormat:
     def __str__(self):
         return '{' + f"start: {str(self.start)}, end: {str(self.end)}" + '}'
 
-    def __gt__(self, other: Union[DateFormat, datetime, date]):
-        if isinstance(other, DateFormat):
+    def __gt__(self, other: Union[DateObject, datetime, date]):
+        if isinstance(other, DateObject):
             return (self.start, self.end) > (other.start, other.end)
         else:
             return self.start > self.to_datetime(other)
 
-    def __eq__(self, other: Union[DateFormat, datetime, date]):
-        if isinstance(other, DateFormat):
+    def __eq__(self, other: Union[DateObject, datetime, date]):
+        if isinstance(other, DateObject):
             return (self.start, self.end) == (other.start, other.end)
         else:
             return self.start == self.to_datetime(other)
 
-    def __lt__(self, other: Union[DateFormat, datetime, date]):
-        if isinstance(other, DateFormat):
+    def __lt__(self, other: Union[DateObject, datetime, date]):
+        if isinstance(other, DateObject):
             return (self.start, self.end) < (other.start, other.end)
         else:
             return self.start < self.to_datetime(other)

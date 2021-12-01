@@ -6,13 +6,13 @@
 # from notion_zap.gateway.requestors import UpdatePage, RetrievePage, AppendBlockChildren
 # from notion_zap.gateway.base.base import Editor, drop_empty_request
 # from ..supported.with_items.with_contents.contents_bearing import \
-#     ContentsBearer, BlockContents
+#     Item, ItemContents
 # from ..supported.with_items.creater_with_page_as_child import \
 #     BlockSphereCreatorWithChildInlinePage
 # from ..base import Editor
 #
 #
-# class InlinePageBlockAsChild(ContentsBearer):
+# class InlinePageBlockAsChild(Item):
 #     def __init__(self, caller: Union[Editor, Editor], page_id: str):
 #         super().__init__(caller, page_id)
 #         if isinstance(caller, BlockSphereCreatorWithChildInlinePage):
@@ -41,8 +41,8 @@
 #         return dict(**super().fully_read_rich(), type='page')
 #
 #
-# class InlinePageContentsAsChild(BlockContents, PageContentsWriterAsChild):
-#     def __init__(self, caller: ContentsBearer,
+# class InlinePageContentsAsChild(ItemContents, PageContentsWriterAsChild):
+#     def __init__(self, caller: Item,
 #                  uncle: Optional[BlockSphereCreatorWithChildInlinePage] = None):
 #         super().__init__(caller)
 #         self.caller = caller
@@ -75,8 +75,8 @@
 #         if parsers.page_id:
 #             self.block_id = parsers.page_id
 #         self.caller.title = parsers.title
-#         self._read_plain = parsers.prop_values['title']
-#         self._read_rich = parsers.prop_rich_values['title']
+#         self._read_plain = parsers.values['title']
+#         self._read_rich = parsers.rich_values['title']
 #
 #     def push_carrier(self, carrier: RichTextContentsEncoder) \
 #             -> RichTextContentsEncoder:

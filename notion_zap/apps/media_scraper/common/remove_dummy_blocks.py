@@ -1,7 +1,8 @@
 from notion_zap.cli import editors
+from notion_zap.cli.editors.common.page import PageBlock
 
 
-def remove_dummy_blocks(page: editors.common.ItemsBearer):
+def remove_dummy_blocks(page: PageBlock):
     duplicate = False
     removed = 0
     for block in page.items:
@@ -21,5 +22,6 @@ def remove_dummy_blocks(page: editors.common.ItemsBearer):
                 block.contents.archive()
                 removed += 1
     if removed and isinstance(page, editors.PageRow):
-        page.props.write_text_at('link_to_contents', '')
+        writer = page.props
+        writer.write_text(tag='link_to_contents', value='')
     return removed

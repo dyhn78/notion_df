@@ -53,5 +53,5 @@ class SyncResolveAlgorithm:
                 front_ids = back.props.read_tag(self.tag_backward)
                 if front_id not in front_ids:
                     front_ids.append(front_id)
-                    back.props.write_at(self.tag_backward, front_id)
+                    back.props.write_relation(tag=self.tag_backward, value=front_id)
                     stopwatch(f"{back.block_name} -> {front.block_name}")

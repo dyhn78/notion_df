@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from notion_zap.cli.struct import PropertyColumn, PropertyFrame
+from notion_zap.cli.structs import PropertyColumn, PropertyFrame
 
 
 class NetworkPropertyColumn(PropertyColumn):
     @property
     def edge_type(self):
-        return self.prop_tag.split('_')[0]
+        return self.tag.split('_')[0]
 
     @property
     def edge_vertical(self):
@@ -18,7 +18,7 @@ class NetworkPropertyColumn(PropertyColumn):
 
     @property
     def edge_target(self):
-        return self.prop_tag.split('_')[1]
+        return self.tag.split('_')[1]
 
     EDGE_ASPECTS = ['edge_type', 'edge_vertical',
                     'edge_weight', 'edge_target']
@@ -43,7 +43,7 @@ class NetworkPropertyFrame(PropertyFrame):
         :param keyword: currently supports {'hi', 'lo', 'in', 'out',
             'up', 'down', 'strong', 'weak',
             'self', 'themes', 'ideas'}
-        :return list of valid struct units
+        :return list of valid structs units
         """
         res = []
         for tag in self.tags():

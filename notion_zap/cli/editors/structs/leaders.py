@@ -8,7 +8,7 @@ from typing import Any, Optional
 
 from notion_client import AsyncClient, Client
 
-from notion_zap.cli.struct import DateFormat, PropertyFrame
+from notion_zap.cli.structs import DateObject, PropertyFrame
 from notion_zap.cli.utility import id_to_url, url_to_id, stopwatch
 
 
@@ -40,27 +40,14 @@ class Registry(Editor):
         self.__by_title = defaultdict(list)
 
     @abstractmethod
-    def add_block(self, child: Block):
-        if child.caller != self:
-            child.caller.remove_block(child)
-        child.caller = self
-        # fill the rest here.
+    def attach(self, child: Block):
+        """this will be called from childs' side."""
+        pass
 
     @abstractmethod
-    def remove_block(self, child: Block):
-        from .exceptions import DanglingBlockError
-        from ..common.pages import PageBlock
-        if child.block_id:
-            try:
-                self.by_id.pop(child.block_id)
-            except KeyError:
-                raise DanglingBlockError(child, self)
-        if isinstance(child, PageBlock) and child.title:
-            try:
-                self.by_title[child.title].remove(child)
-            except ValueError:
-                raise DanglingBlockError(child, self)
-        # fill the rest here.
+    def detach(self, child: Block):
+        """this will be called from childs' side."""
+        pass
 
     @property
     def by_id(self) -> dict[str, Block]:
@@ -92,9 +79,11 @@ class Root(Registry):
             client = Client(auth=self.token)
         self.client = client
 
-        self._stems: list[Block] = []
+        self._blocks: list[Block] = []
+        self._search_by_id: dict[str, Block] = {}
+        self._search_by_title: dict[str, list[Block]] = defaultdict(list)
 
-        from .. import Database
+        from ..database.leaders import Database
         self._by_alias: dict[Any, Database] = {}
 
         # global settings, will be applied uniformly to all child-editors.
@@ -110,6 +99,83 @@ class Root(Registry):
         self._log_succeed_request = False
         self._log_failed_request = True
 
+    @property
+    def search_by_id(self):
+        return self._search_by_id
+
+    @property
+    def search_by_title(self):
+        return self._search_by_title
+
+    @property
+    def root(self):
+        return self
+
+    @property
+    def by_alias(self):
+        return self._by_alias
+
+    @property
+    def aliased_blocks(self):
+        return self._by_alias.values()
+
+    @property
+    def token(self):
+        return os.environ['NOTION_TOKEN'].strip("'").strip('"')
+
+    def save(self):
+        for block in self._blocks:
+            block.save()
+        stopwatch('작업 완료')
+
+    def save_info(self, pprint_this=True):
+        preview = [block.save_info() for block in self._blocks]
+        if pprint_this:
+            pprint(preview)
+        return preview
+
+    def save_required(self):
+        return any([block.save_required() for block in self._blocks])
+
+    def attach(self, child: Block):
+        super().attach(child)
+        self._blocks.append(child)
+
+    def detach(self, child: Block):
+        super().detach(child)
+        self._blocks.remove(child)
+
+    def open_database(self, database_alias: str, id_or_url: str,
+                      frame: Optional[PropertyFrame] = None):
+        from .. import Database
+        database = Database(self, id_or_url, database_alias, frame)
+        self._blocks.append(database)
+        return database
+
+    def open_page_row(self, id_or_url: str,
+                      frame: Optional[PropertyFrame] = None):
+        from .. import PageRow
+        page = PageRow(self, id_or_url, frame=frame)
+        self._blocks.append(page)
+        return page
+
+    def open_page_item(self, id_or_url: str):
+        from .. import PageItem
+        page = PageItem(self, id_or_url)
+        self._blocks.append(page)
+        return page
+
+    def open_text_item(self, id_or_url: str):
+        from .. import TextItem
+        editor = TextItem(self, id_or_url)
+        self._blocks.append(editor)
+        return editor
+
+    def count_as_empty(self, value):
+        if isinstance(value, DateObject):
+            return value.is_emptylike()
+        return str(value) in self.emptylike_strings
+
     def set_logging__silent(self):
         self._log_succeed_request = False
         self._log_failed_request = False
@@ -122,77 +188,8 @@ class Root(Registry):
         self._log_succeed_request = True
         self._log_failed_request = True
 
-    @property
-    def root(self):
-        return self
 
-    @property
-    def token(self):
-        return os.environ['NOTION_TOKEN'].strip("'").strip('"')
-
-    def is_emptylike(self, value):
-        if isinstance(value, DateFormat):
-            return value.is_emptylike()
-        return str(value) in self.emptylike_strings
-
-    @property
-    def by_alias(self):
-        return self._by_alias
-
-    @property
-    def aliased_blocks(self):
-        return self._by_alias.values()
-
-    def add_block(self, child: Block):
-        super().add_block(child)
-        self._stems.append(child)
-
-    def remove_block(self, child: Block):
-        super().remove_block(child)
-        self._stems.remove(child)
-
-    def open_database(self, database_alias: str, id_or_url: str,
-                      frame: Optional[PropertyFrame] = None):
-        from .. import Database
-        database = Database(self, id_or_url, database_alias, frame)
-        self._stems.append(database)
-        return database
-
-    def open_page_row(self, id_or_url: str,
-                      frame: Optional[PropertyFrame] = None):
-        from .. import PageRow
-        page = PageRow(self, id_or_url, frame=frame)
-        self._stems.append(page)
-        return page
-
-    def open_page_item(self, id_or_url: str):
-        from .. import PageItem
-        page = PageItem(self, id_or_url)
-        self._stems.append(page)
-        return page
-
-    def open_text_item(self, id_or_url: str):
-        from .. import TextItem
-        editor = TextItem(self, id_or_url)
-        self._stems.append(editor)
-        return editor
-
-    def save_required(self):
-        return any([editor.save_required() for editor in self._stems])
-
-    def save_info(self, pprint_this=True):
-        preview = [editor.save_info() for editor in self._stems]
-        if pprint_this:
-            pprint(preview)
-        return preview
-
-    def save(self):
-        for editor in self._stems:
-            editor.save()
-        stopwatch('작업 완료')
-
-
-class BlockEditor(Editor, metaclass=ABCMeta):
+class Component(Editor, metaclass=ABCMeta):
     @abstractmethod
     def __init__(self, caller: Editor):
         self.caller = caller
@@ -229,7 +226,7 @@ class BlockEditor(Editor, metaclass=ABCMeta):
     def parent(self):
         """return None if block_master is directly called from the root."""
         attach_point = self.block.caller
-        if isinstance(attach_point, BlockEditor):
+        if isinstance(attach_point, Component):
             parent = attach_point.block
             from ..common.with_children import ChildrenBearer
             if not isinstance(parent, ChildrenBearer):
@@ -264,46 +261,13 @@ class BlockEditor(Editor, metaclass=ABCMeta):
         pass
 
 
-class Block(BlockEditor):
+class Block(Component):
     def __init__(self, caller: Registry, id_or_url: str):
-        self.caller = caller
         self.__block_id = url_to_id(id_or_url)
-        self.caller.add_block(self)
+        self.caller = caller
+        self.caller.attach(self)
         # Now declare payload here, make it "register" to the attachment.
         #  this allows to search specific page from them. (.by_id, .by_title)
-
-    @property
-    def _registries(self) -> list[Registry]:
-        if self.root == self.caller:
-            registry = [self.root]
-        else:
-            registry = [self.root, self.caller]
-        return registry
-
-    def attach_to(self, register: Registry):
-        if register != self.caller:
-            self.detach_from(self.caller)
-            self.caller = register
-        self.caller.add_block(self)
-
-    def detach_from(self, register: Registry):
-        from .exceptions import DanglingBlockError
-        if self.block_id:
-            try:
-                register.by_id.pop(self.block_id)
-            except KeyError:
-                raise DanglingBlockError(self, register)
-
-    def close(self):
-        """use this to delete a wrong block
-        (probably those with nonexisting block_id)"""
-        for registry in self._registries:
-            if registry.by_id[self.__block_id] == self.block:
-                registry.by_id.pop(self.__block_id)
-            else:
-                from .exceptions import DanglingBlockError
-                raise DanglingBlockError(self, registry)
-        self.caller.remove_block(self)
 
     @property
     def block(self):
@@ -314,9 +278,30 @@ class Block(BlockEditor):
         try:
             return self.payload.block_id
         except AttributeError:
-            # this is needed to attach itself to parents' attachments
-            #  before its payload is declared
+            # this temporary attribute is needed before the payload is declared
             return self.__block_id
+
+    def move(self, new_caller: Registry):
+        if self.caller:
+            self.caller.detach(self)
+        self.caller = new_caller
+        self.caller.attach(self)
+
+    def close(self):
+        """use this to delete a wrong block
+        (probably those with nonexisting block_id)"""
+        if self.caller:
+            self.caller.detach(self)
+            self._unregister_from_root()
+        self.caller = None
+
+    def _unregister_from_root(self):
+        if self.block_id:
+            try:
+                self.root.search_by_id.pop(self.block_id)
+            except KeyError:
+                from .exceptions import DanglingBlockError
+                raise DanglingBlockError(self, self.root)
 
     @property
     @abstractmethod
@@ -367,12 +352,8 @@ class Block(BlockEditor):
         return self.basic_info
 
     @abstractmethod
-    def save_info(self):
-        """ example:
-        {'contents': "unpack contents here",
-         'children': "unpack children here"}
-        """
-        pass
+    def save_info(self) -> dict[str, Any]:
+        return self.basic_info
 
     @abstractmethod
     def save(self):
@@ -388,46 +369,18 @@ class Block(BlockEditor):
         pass
 
 
-class Follower(BlockEditor, metaclass=ABCMeta):
-    def __init__(self, caller: BlockEditor):
-        self.caller = caller
-
-    @property
-    def block(self) -> Block:
-        return self.caller.block
-
-    @property
-    def block_id(self) -> str:
-        return self.block.block_id
-
-    @property
-    def block_name(self) -> str:
-        return self.block.block_name
-
-    @property
-    def archived(self):
-        return self.block.archived
-
-
-class Payload(BlockEditor, metaclass=ABCMeta):
-    def __init__(self, caller: Block, id_or_url: str):
+class Payload(Component, metaclass=ABCMeta):
+    def __init__(self, caller: Block):
         super().__init__(caller)
         self.caller = caller
-        self.__block_id = url_to_id(id_or_url)
+        self.__block_id = ''
+        self._set_block_id(self.caller.block_id)
 
         self._archived = None
         self._created_time = None
         self._last_edited_time = None
         self._has_children = None
         self._can_have_children = None
-
-    @property
-    def _registries(self) -> list[Registry]:
-        if self.root == self.caller.caller:
-            registry = [self.root]
-        else:
-            registry = [self.root, self.caller.caller]
-        return registry
 
     @property
     def block(self) -> Block:
@@ -438,17 +391,20 @@ class Payload(BlockEditor, metaclass=ABCMeta):
         return self.__block_id
 
     def _set_block_id(self, value: str):
-        """set the value to empty string('') will unregister the block."""
-        if self.__block_id:
-            for attachments in self._registries:
-                if attachments.by_id[self.__block_id] == self.block:
-                    attachments.by_id.pop(self.__block_id)
-                else:
-                    print(f'WARNING: {self.block} was not registered to {attachments}')
+        from .exceptions import DanglingBlockError
+        if self.block_id:
+            try:
+                self.caller.caller.by_id.pop(self.block_id)
+            except KeyError:
+                raise DanglingBlockError(self.block, self.caller.caller)
+            try:
+                self.root.search_by_id.pop(self.block_id)
+            except KeyError:
+                raise DanglingBlockError(self.block, self.root)
         self.__block_id = value
-        if self.__block_id:
-            for attachments in self._registries:
-                attachments.by_id[self.__block_id] = self.block
+        if self.block_id:
+            self.caller.caller.by_id[self.block_id] = self.block
+            self.root.search_by_id[self.block_id] = self.block
 
     @property
     def block_name(self) -> str:

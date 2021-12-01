@@ -3,8 +3,8 @@ from __future__ import annotations
 import datetime as dt
 
 from .rich_text import parse_rich_texts
-from ...struct.base_logic import Printable
-from ...struct.block_types import (
+from ...structs.base_logic import Printable
+from ...structs.block_types import (
     PAGE_TYPES, TEXT_TYPES, CAN_HAVE_CHILDREN, SUPPORTED,
     UNSUPPORTED
 )

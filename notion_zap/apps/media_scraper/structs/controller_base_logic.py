@@ -6,7 +6,7 @@ from notion_zap.apps.config.media_scraper import ReadingDB_FRAME
 
 
 class ReadingDBController:
-    status_enum = ReadingDB_FRAME.by_tag['edit_status'].prop_values
+    status_enum = ReadingDB_FRAME.by_tag['edit_status'].labels
 
     def __init__(self):
         self.root = editors.Root()
@@ -15,12 +15,18 @@ class ReadingDBController:
 
 
 class ReadingPageWriter:
-    status_enum = ReadingDB_FRAME.by_tag['edit_status'].prop_values
+    status_enum = ReadingDB_FRAME.by_tag['edit_status'].labels
 
     def __init__(self, page: editors.PageRow):
         self.page = page
         self._initial_status = self._parse_initial_status()
         self._status = ''
+
+    @property
+    def book_names(self) -> list[str]:
+        docx_name = self.page.props.get_tag('docx_name', '')
+        true_name = self.page.props.get_tag('true_name', '')
+        return [string for string in (true_name, docx_name) if string]
 
     def _parse_initial_status(self):
         edit_status = self.page.props.read_tag('edit_status')
@@ -30,12 +36,6 @@ class ReadingPageWriter:
         except (TypeError,  # read() 가 keyError로 edit_status를 반환할 경우
                 IndexError):  # findall() 가 빈 리스트를 반환할 경우
             return 'append'
-
-    @property
-    def book_names(self) -> list[str]:
-        docx_name = self.page.props.get_tag('docx_name', '')
-        true_name = self.page.props.get_tag('true_name', '')
-        return [string for string in (true_name, docx_name) if string]
 
     @property
     def can_disable_overwrite(self):
@@ -67,4 +67,5 @@ class ReadingPageWriter:
             self._submit_status()
 
     def _submit_status(self):
-        self.page.props.write_select_at('edit_status', self._status)
+        writer = self.page.props
+        writer.write_select(tag='edit_status', value=self._status)

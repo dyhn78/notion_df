@@ -21,7 +21,7 @@
 # test_database = notion.databases.retrieve()
 # test_db_query_maker = Query(TEST_DATABASE_ID)
 #
-# name_frame = test_db_query_maker.filter_maker.text_of('이름')
+# name_frame = test_db_query_maker.filter_manager.text_of('이름')
 # filter1 = name_frame.starts_with('2')
 # filter2 = name_frame.ends_with('0')
 # test_filter = (filter1 & filter2)

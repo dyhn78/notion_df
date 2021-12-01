@@ -2,38 +2,17 @@ from __future__ import annotations
 from typing import Union, Callable
 
 from notion_zap.cli.gateway import encoders, parsers, requestors
-from ..common.with_contents import ContentsBearer, BlockContents
+from ..common.item import Item, ItemContents
 from ..common.with_items import ItemsBearer, ItemChildren
-from .. import Root
+from ..structs.leaders import Root
 
 
-# TODO > Can-Have-Children 을 동적으로 바꿀 수 있을까?
-class TextItem(ItemsBearer, ContentsBearer):
-    def __init__(self,
-                 caller: Union[ItemChildren,
-                               Root],
-                 id_or_url: str):
+class TextItem(Item, ItemsBearer):
+    def __init__(self, caller: Union[ItemChildren, Root], id_or_url: str):
+        Item.__init__(self, caller, id_or_url)
         ItemsBearer.__init__(self, caller, id_or_url)
-        ContentsBearer.__init__(self, caller, id_or_url)
         self.caller = caller
-
-        self._contents = TextItemContents(self, id_or_url)
-
-    def save_required(self) -> bool:
-        return (self.contents.save_required() or
-                self.items.save_required())
-
-    def save_this(self):
-        self.contents.save()
-        if self.archived:
-            return
-        self.items.save()
-
-    def save(self):
-        if self.block_id:
-            self.save_this()
-        else:
-            self.caller.save()
+        self._contents = TextItemContents(self)
 
     @property
     def contents(self) -> TextItemContents:
@@ -43,35 +22,32 @@ class TextItem(ItemsBearer, ContentsBearer):
     def block_name(self):
         return self.contents.read()
 
-    def read(self):
-        return {'contents': self.contents.read(),
-                'children': self.items.read(),
-                'type': 'text'}
+    def save(self):
+        if self.block_id:
+            self.save_this()
+        else:
+            self.caller.save()
 
-    def richly_read(self):
-        return {'contents': self.contents.richly_read(),
-                'children': self.items.richly_read(),
-                'type': 'text'}
-
-    def save_info(self):
-        return {'contents': self.contents.save_info(),
-                **self.items.save_info(),
-                'type': 'text'}
+    def save_this(self):
+        self.contents.save()
+        if self.archived:
+            return
+        self.items.save()
 
 
-class TextItemContents(BlockContents, encoders.TextContentsWriter):
+class TextItemContents(ItemContents, encoders.TextContentsWriter):
     """
     when the block is called from TextItemsCreateAgent and thereby it is yet_not_created,
     they will insert blank paragraph as a default.
     """
 
-    def __init__(self, caller: TextItem, id_or_url: str):
-        super().__init__(caller, id_or_url)
+    def __init__(self, caller: TextItem):
+        super().__init__(caller)
         self.caller = caller
         self._requestor = requestors.UpdateBlock(self)
         self._callback = None
 
-    def push_carrier(self, carrier: encoders.RichTextContentsEncoder) \
+    def push_encoder(self, carrier: encoders.RichTextContentsEncoder) \
             -> encoders.RichTextContentsEncoder:
         self._can_have_children = carrier.can_have_children
         if self.block_id:

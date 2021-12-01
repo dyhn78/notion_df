@@ -34,21 +34,20 @@ class RegularScrapController(ReadingDBController):
 
     def fetch(self, request_size):
         query = self.pagelist.open_query()
-        maker = query.filter_maker
+        manager = query.filter_manager
         ft = query.open_filter()
 
-        frame = maker.checkbox_at('is_book')
-        ft &= frame.is_not_empty()
+        maker = manager.checkbox_at('is_book')
+        ft &= maker.is_not_empty()
 
-        frame = maker.select_at('edit_status')
+        maker = manager.select_at('edit_status')
         ft &= (
-                frame.equals_to_any(frame.prop_value_groups['regular_scraps'])
-                | frame.is_empty()
+                maker.equals_to_any(maker.column.marks['regular_scraps'])
+                | maker.is_empty()
         )
-
         if self.title:
-            frame = maker.text_at('title')
-            ft_title = frame.starts_with(self.title)
+            maker = manager.text_at('title')
+            ft_title = maker.starts_with(self.title)
             ft &= ft_title
         query.push_filter(ft)
         pages = query.execute(request_size, print_heads=5)
@@ -59,9 +58,11 @@ class RegularScrapController(ReadingDBController):
         if status.tasks:
             stopwatch(f'개시: {page.title}')
             if 'bookstore' in status.tasks:
-                self.BKST(status).execute()
+                if not self.BKST(status).execute():
+                    status.set_url_missing_flag()
             if any(lib_str in status.tasks for lib_str in ['snu_lib', 'gy_lib']):
-                self.lib.execute(status, status.tasks)
+                if not self.lib.execute(status, status.tasks):
+                    status.set_lib_missing_flag()
             status.set_complete_flag()
             page.save()
         else:

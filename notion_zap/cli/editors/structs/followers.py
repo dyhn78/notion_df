@@ -1,41 +1,59 @@
 from abc import ABCMeta, abstractmethod
 
-from .leaders import BlockEditor, Follower
+from .leaders import Component, Block
+from notion_zap.cli.gateway.requestors.structs import Requestor
+
+
+class Follower(Component, metaclass=ABCMeta):
+    def __init__(self, caller: Component):
+        self.caller = caller
+
+    @property
+    def block(self) -> Block:
+        return self.caller.block
+
+    @property
+    def block_id(self) -> str:
+        return self.block.block_id
+
+    @property
+    def block_name(self) -> str:
+        return self.block.block_name
+
+    @property
+    def archived(self):
+        return self.block.archived
 
 
 class ListEditor(Follower, metaclass=ABCMeta):
-    def __init__(self, caller: BlockEditor):
-        super().__init__(caller)
-
     @property
     @abstractmethod
-    def blocks(self):
-        """must return list of Block"""
+    def values(self) -> list[Block]:
         pass
 
     def save(self):
-        return [child.save() for child in self.blocks]
+        return [child.save() for child in self.values]
 
     def save_info(self):
-        return [child.save_info() for child in self.blocks]
+        return [child.save_info() for child in self.values]
 
     def save_required(self):
-        return any([child for child in self.blocks])
+        return any([child for child in self.values])
 
     def __iter__(self):
-        return iter(self.blocks)
+        return iter(self.values)
 
     def __len__(self):
-        return len(self.blocks)
+        return len(self.values)
 
     def __getitem__(self, index: int):
-        return self.blocks[index]
+        return self.values[index]
 
 
 class RequestEditor(Follower, metaclass=ABCMeta):
     @property
     @abstractmethod
-    def requestor(self):
+    def requestor(self) -> Requestor:
         pass
 
     def save(self):
@@ -51,7 +69,7 @@ class RequestEditor(Follower, metaclass=ABCMeta):
 class SingularEditor(Follower, metaclass=ABCMeta):
     @property
     @abstractmethod
-    def value(self) -> BlockEditor:
+    def value(self) -> Component:
         pass
 
     def save(self):
@@ -95,10 +113,10 @@ class EditorComponentStash(dict):
 class StackEditor(AbstractMainEditor):
     def __init__(self, block_id: str):
         super().__init__(block_id)
-        self.rows: list[MainEditor] = []
+        self.row: list[MainEditor] = []
 
     def __iter__(self) -> list[MainEditor]:
-        return self.rows
+        return self.row
 
     def set_overwrite_option(self, option: bool):
         for child in self:

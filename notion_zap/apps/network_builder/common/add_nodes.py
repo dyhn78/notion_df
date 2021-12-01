@@ -3,7 +3,6 @@ from itertools import chain
 
 import networkx as nx
 
-import notion_zap.cli.editors.database.leaders
 from notion_zap.cli import editors
 from notion_zap.apps.config.common import DatabaseInfo
 from notion_zap.apps.config.network_builder import NetworkFrames, NetworkPropertyFrame
@@ -18,7 +17,7 @@ class TopologyBuilder:
                                               NetworkFrames.THEMES).rows
         self.ideas = self.root.open_database(*DatabaseInfo.IDEAS,
                                              NetworkFrames.IDEAS).rows
-        self.all: dict[str, notion_zap.cli.editors.tabular.database_leaders.RowChildren] = {
+        self.all: dict[str, editors.RowChildren] = {
             'themes': self.themes,
             'ideas': self.ideas
         }
@@ -32,7 +31,7 @@ class TopologyBuilder:
     def make_query(self):
         for pagelist in [self.themes]:
             query = pagelist.open_query()
-            maker = query.filter_maker.relation_at('front_self')
+            maker = query.filter_manager.relation_at('front_self')
             ft = maker.__bool__()
             query.push_filter(ft)
             query.save()
@@ -55,7 +54,7 @@ class TopologyBuilder:
                         up_pagelist = down_pagelist
                     else:
                         up_pagelist = self.all[unit.edge_target]
-                    up_ids = down_page.props.read_tag(unit.prop_tag)
+                    up_ids = down_page.props.read_tag(unit.tag)
                     for up_id in up_ids:
                         if up_id not in up_pagelist.ids():
                             continue
@@ -73,7 +72,7 @@ class TopologyBuilder:
                 down_frame = down_pagelist.frame
                 assert isinstance(down_frame, NetworkPropertyFrame)
                 for unit in down_frame.filter_tags('up'):
-                    up_ids = down_page.props.read_tag(unit.prop_tag)
+                    up_ids = down_page.props.read_tag(unit.tag)
                     for up_id in up_ids:
                         if up_id not in self.root.ids():
                             continue

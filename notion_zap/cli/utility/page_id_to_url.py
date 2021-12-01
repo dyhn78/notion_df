@@ -1,19 +1,19 @@
 import re
 
 
-def id_to_url(uuid: str, preview=False):
-    uuid = uuid.replace('-', '')
-    url = 'https://www.notion.so/dyhn/' + uuid
+def id_to_url(block_id: str, preview=False):
+    block_id = block_id.replace('-', '')
+    url = 'https://www.notion.so/dyhn/' + block_id
     if preview:
         print(url)
     return url
 
 
-def url_to_id(uuid_or_url: str):
+def url_to_id(id_or_url: str):
     prefixes = ['https://www.notion.so/', 'www.notion.so/']
     for prefix in prefixes:
-        uuid_or_url = uuid_or_url.replace(prefix, '')
-    uuid = _clean_uuid(uuid_or_url)
+        id_or_url = id_or_url.replace(prefix, '')
+    uuid = _clean_uuid(id_or_url)
     uuid = uuid.replace('-', '')
     # assert len(uuid) == 32
     return uuid

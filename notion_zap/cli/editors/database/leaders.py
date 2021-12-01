@@ -6,9 +6,9 @@ from typing import Union, Optional, Iterator, Callable, Any
 from notion_client import APIResponseError
 
 from notion_zap.cli.gateway import parsers, requestors
-from notion_zap.cli.struct import PropertyFrame
-from .. import BlockChildren, PageRow
-from ..common.with_children import ChildrenBearer
+from notion_zap.cli.structs import PropertyFrame
+from ..row.leader import PageRow
+from ..common.with_children import BlockChildren, ChildrenBearer
 from ..common.with_items import ItemChildren
 from ..structs.leaders import Root
 
@@ -25,10 +25,10 @@ class Database(ChildrenBearer):
         self.root.by_alias[self.alias] = self
         self.frame = frame if frame else PropertyFrame()
 
-        from .schema import DatabaseSchema
-        self.schema = DatabaseSchema(self, id_or_url)
-
         self.rows = RowChildren(self)
+
+        from .schema import DatabaseSchema
+        self.schema = DatabaseSchema(self)
 
     @property
     def payload(self):
@@ -42,6 +42,11 @@ class Database(ChildrenBearer):
     def block_name(self):
         return self.alias
 
+    def _fetch_children(self, request_size=0):
+        """randomly query with the amount of <request_size>."""
+        query = self.rows.open_query()
+        query.execute(request_size)
+
     def retrieve(self):
         requestor = requestors.RetrieveDatabase(self)
         response = requestor.execute_silent()
@@ -49,24 +54,8 @@ class Database(ChildrenBearer):
         self.frame.fetch_parser(parser)
         requestor.print_comments()
 
-    def _fetch_children(self, request_size=0):
-        """randomly query with the amount of <request_size>."""
-        query = self.rows.open_query()
-        query.execute(request_size)
-
     def save(self):
         self.rows.save()
-
-    def save_info(self):
-        return {**self.rows.save_info()}
-
-    def read(self):
-        return {"rows": self.rows.by_title,
-                "type": "database",
-                "id": self.block_id}
-
-    def richly_read(self):
-        return self.read()
 
 
 class RowChildren(BlockChildren):
@@ -75,9 +64,9 @@ class RowChildren(BlockChildren):
         self.caller = caller
         self.frame = caller.frame
 
-        from .followers import PageListUpdater, PageListCreator
-        self.update = PageListUpdater(self)
-        self.create = PageListCreator(self)
+        from .followers import RowChildrenUpdater, RowChildrenCreator
+        self._updater = RowChildrenUpdater(self)
+        self._creator = RowChildrenCreator(self)
 
         self._by_id = {}
         self._by_title = defaultdict(list)
@@ -85,26 +74,26 @@ class RowChildren(BlockChildren):
     def open_page(self, page_id: str):
         return PageRow(self, page_id, frame=self.frame)
 
-    def create_page(self):
-        return PageRow(self, '', frame=self.frame)
+    def open_new_page(self):
+        return self.open_page('')
 
-    def add_block(self, page: PageRow):
-        super().add_block(page)
+    def attach(self, page: PageRow):
+        super().attach(page)
         if page.block_id:
-            self.update.attach_page(page)
+            self._updater.attach_page(page)
         else:
-            self.create.attach_page(page)
+            self._creator.attach_page(page)
 
-    def remove_block(self, page: PageRow):
-        super().remove_block(page)
+    def detach(self, page: PageRow):
+        super().detach(page)
         if page.block_id:
-            self.update.detach_page(page)
+            self._updater.detach_page(page)
         else:
-            self.create.detach_page(page)
+            self._creator.detach_page(page)
 
     def open_query(self) -> QueryWithCallback:
         def callback(response):
-            return self.update.apply_query_response(response)
+            return self._updater.apply_query_response(response)
 
         return QueryWithCallback(self, self.frame, callback)
 
@@ -123,17 +112,32 @@ class RowChildren(BlockChildren):
             return None
 
     def save(self):
-        self.update.save()
-        response = self.create.save()
-        self.update.blocks.extend(response)
+        self._updater.save()
+        response = self._creator.save()
+        self._updater.values.extend(response)
 
     def save_info(self):
-        return {'updated_rows': self.update.save_info(),
-                'created_rows': self.create.save_info()}
+        return {'updated_rows': self._updater.save_info(),
+                'created_rows': self._creator.save_info()}
 
     def save_required(self):
-        return (self.update.save_required()
-                or self.create.save_required())
+        return (self._updater.save_required()
+                or self._creator.save_required())
+
+    def __iter__(self) -> Iterator[PageRow]:
+        return self.iter_all()
+
+    def iter_all(self) -> Iterator[PageRow]:
+        return iter(self.list_all())
+
+    def list_all(self) -> list[PageRow]:
+        return self._updater.values + self._creator.values
+
+    def read(self) -> dict[str, Any]:
+        return {'children': [child.read() for child in self.list_all()]}
+
+    def richly_read(self) -> dict[str, Any]:
+        return {'children': [child.richly_read() for child in self.list_all()]}
 
     @property
     def by_id(self) -> dict[str, PageRow]:
@@ -143,15 +147,6 @@ class RowChildren(BlockChildren):
     def by_title(self) -> dict[str, list[PageRow]]:
         return self._by_title
 
-    def __iter__(self) -> Iterator[PageRow]:
-        return self.iter_all()
-
-    def iter_all(self) -> Iterator[PageRow]:
-        return iter(self.list_all())
-
-    def list_all(self) -> list[PageRow]:
-        return self.update.blocks + self.create.blocks
-
     def by_value_of(self, prop_key: str):
         res = defaultdict(list)
         for page in self.list_all():
@@ -159,7 +154,7 @@ class RowChildren(BlockChildren):
         return res
 
     def by_value_at(self, prop_tag: str):
-        return self.by_value_of(self.frame.key_at(prop_tag))
+        return self.by_value_of(self.frame.key_of(prop_tag))
 
     def by_idx_of(self, prop_key: str):
         try:
@@ -174,7 +169,7 @@ class RowChildren(BlockChildren):
             raise TypeError
 
     def by_idx_at(self, prop_tag: str):
-        return self.by_idx_of(self.frame.key_at(prop_tag))
+        return self.by_idx_of(self.frame.key_of(prop_tag))
 
 
 class QueryWithCallback(requestors.Query):
@@ -184,7 +179,6 @@ class QueryWithCallback(requestors.Query):
         self.callback = execute_callback
 
     def execute(self, request_size=0, print_heads=0):
-        # TODO: 수가 적으면 페이지 제목을 모두 (리스트 형태로) 프린트하게 수정
         response = super().execute(request_size)
         pages = self.callback(response)
         if pages and print_heads:

@@ -5,8 +5,8 @@ class DatabaseParser:
         self.last_edited_time = response['last_edited_time']
 
         table = response['properties']
-        # {prop_name: prop_type for prop_name in _}
-        self.prop_types = {prop_name: rich_property_object['type']
+        # {prop_name: data_type for prop_name in _}
+        self.data_types = {prop_name: rich_property_object['type']
                            for prop_name, rich_property_object in table.items()}
         # {prop_name: prop_id for prop_name in _}
         self.prop_ids = {prop_name: rich_property_object['id']

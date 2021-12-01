@@ -1,4 +1,4 @@
-from notion_zap.cli.struct import \
+from notion_zap.cli.structs import \
     PropertyFrame as Frame, PropertyColumn as Cl
 
 """

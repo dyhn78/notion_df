@@ -25,22 +25,24 @@ class BookstoreDataWriter:
         try:
             url = self.read_or_scrap_url()
             if not url:
-                raise NoURLFoundError
+                return False
             data = self.scrap_bkst_data(url)
             if not data:
-                raise NoURLFoundError
+                return False
         except NoURLFoundError:
             self.status.set_url_missing_flag()
         else:
             self.set_metadata(data)
             self.set_cover_image(data)
             self.set_contents_data(data)
+            return True
 
     def read_or_scrap_url(self):
         if url := self.page.props.get_tag('url', default=''):
             return url
         if url := enumerate_func(scrap_yes24_url)(self.book_names):
-            self.page.props.write_url_at('url', url)
+            writer = self.page.props
+            writer.write_url(tag='url', value=url)
             return url
         return ''
 
@@ -58,21 +60,27 @@ class BookstoreDataWriter:
             self.page.root.disable_overwrite = True
 
         if true_name := data.get('name'):
-            self.page.props.write_text_at('true_name', true_name)
+            writer = self.page.props
+            writer.write_text(tag='true_name', value=true_name)
         if subname := data.get('subname'):
-            self.page.props.write_text_at('subname', subname)
+            property_writer = self.page.props
+            property_writer.write_text(tag='subname', value=subname)
         if author := data.get('author'):
-            self.page.props.write_text_at('author', author)
+            row_property_writer = self.page.props
+            row_property_writer.write_text(tag='author', value=author)
         if publisher := data.get('publisher'):
-            self.page.props.write_text_at('publisher', publisher)
+            page_row_property_writer = self.page.props
+            page_row_property_writer.write_text(tag='publisher', value=publisher)
         if volume := data.get('page_count'):
-            self.page.props.write_number_at('volume', volume)
+            writer1 = self.page.props
+            writer1.write_number(tag='volume', value=volume)
         self.page.root.disable_overwrite = False
 
     def set_cover_image(self, data: dict):
         if cover_image := data.get('cover_image'):
             true_name = data['name']
-            file_writer = self.page.props.write_files_at('cover_image')
+            writer = self.page.props
+            file_writer = writer.write_files(tag='cover_image')
             file_writer.add_file(file_name=true_name,
                                  file_url=cover_image)
 
@@ -81,7 +89,7 @@ class BookstoreDataWriter:
         subpage = self.get_subpage()
         remove_dummy_blocks(subpage)
         InsertContents(subpage, contents).execute()
-        link_to_contents = self.page.props.write_rich_text_at('link_to_contents')
+        link_to_contents = self.page.props.write_rich_text(tag='link_to_contents')
         link_to_contents.mention_page(subpage.block_id)
 
     def get_subpage(self) -> editors.PageItem:
@@ -95,7 +103,7 @@ class BookstoreDataWriter:
                 subpage = block
                 break
         else:
-            subpage = self.page.items.create_page()
+            subpage = self.page.items.open_new_page()
         subpage.contents.write_title(f'={self.page.title}')
         subpage.save()
         return subpage

@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
 
-from notion_zap.cli.struct import DateFormat
+from notion_zap.cli.structs import DateObject
 from ..rich_text import RichTextObjectEncoder
-from notion_zap.cli.struct.base_logic import ValueCarrier
+from notion_zap.cli.structs.base_logic import ValueCarrier
 
 
 class PropertyEncoder(ValueCarrier, metaclass=ABCMeta):
@@ -90,11 +90,6 @@ class SimplePropertyEncoder(PropertyEncoder):
         return cls(prop_name, 'checkbox', value)
 
     @classmethod
-    def files(cls, prop_name, value):
-        # TODO : 새 API 활용
-        return cls(prop_name, 'files', value)
-
-    @classmethod
     def people(cls, prop_name, value):
         return cls(prop_name, 'people', value)
 
@@ -125,6 +120,6 @@ class SimplePropertyEncoder(PropertyEncoder):
         return cls(prop_name, 'relation', prop_value)
 
     @classmethod
-    def date(cls, prop_name, value: DateFormat):
+    def date(cls, prop_name, value: DateObject):
         prop_value = value.isoformat()
         return cls(prop_name, 'date', prop_value)

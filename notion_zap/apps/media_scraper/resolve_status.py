@@ -10,20 +10,23 @@ class ReadingDBStatusResolver(ReadingDBController):
 
     def make_query(self, request_size):
         query = self.pagelist.open_query()
-        maker = query.filter_maker.select_at('media_type')
-        ft = maker.equals_to_any(maker.prop_value_groups['book'])
-        maker = query.filter_maker.select_at('edit_status')
-        ft &= maker.equals_to_any(maker.prop_value_groups['need_resets'])
+        maker = query.filter_manager.select_at('media_type')
+        ft = maker.equals_to_any(maker.column.marks['book'])
+        maker = query.filter_manager.select_at('edit_status')
+        ft &= maker.equals_to_any(maker.column.marks['need_resets'])
         """
-        maker = query.filter_maker.checkbox_at('not_available')
+        maker = query.filter_manager.checkbox_at('not_available')
         ft |= maker.equals(True)
         """
         query.push_filter(ft)
         query.execute(request_size)
 
     def edit(self, page: editors.PageRow):
-        page.props.write_select_at('edit_status', self.status_enum['append'])
-        page.props.write_checkbox_at('not_available', False)
+        property_writer = page.props
+        value = self.status_enum['append']
+        property_writer.write_select(tag='edit_status', value=value)
+        writer = page.props
+        writer.write_checkbox(tag='not_available', value=False)
         page.save()
 
 

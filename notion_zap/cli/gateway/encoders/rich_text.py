@@ -1,7 +1,7 @@
 from abc import ABCMeta
 
-from notion_zap.cli.struct.base_logic import ValueCarrier
-from ...struct import DateFormat
+from notion_zap.cli.structs.base_logic import ValueCarrier
+from ...structs import DateObject
 
 
 class RichTextObjectEncoder(ValueCarrier, metaclass=ABCMeta):
@@ -41,7 +41,7 @@ class RichTextObjectEncoder(ValueCarrier, metaclass=ABCMeta):
                    'type': target_class}
         return self._wrap_unit('mention', mention)
 
-    def mention_date(self, date_value: DateFormat):
+    def mention_date(self, date_value: DateObject):
         date = date_value.isoformat()
         mention = {'type': 'date', 'date': date}
         self._list_stash.append(self._wrap_unit('mention', mention))

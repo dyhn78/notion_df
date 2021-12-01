@@ -1,4 +1,4 @@
-# match parser_type to prop_types
+# match parser_type to data_types
 PAGE_TYPES = {"child_page"}
 _DOCUMENT_TYPES = {"paragraph", "bulleted_list_item",
                    "numbered_list_item", "toggle", "to_do"}

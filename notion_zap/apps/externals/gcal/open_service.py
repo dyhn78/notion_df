@@ -14,7 +14,7 @@ from google.oauth2.credentials import Credentials
 # noinspection PyPackageRequirements
 from googleapiclient.errors import HttpError
 
-from notion_zap.cli.struct.base_logic import ValueCarrier, Executable
+from notion_zap.cli.structs.base_logic import ValueCarrier, Executable
 
 # If modifying these scopes, delete the file token.json.
 #  https://developers.google.com/calendar/api/guides/auth

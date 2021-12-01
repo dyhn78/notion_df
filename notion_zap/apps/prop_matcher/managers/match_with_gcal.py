@@ -7,7 +7,7 @@ from googleapiclient.errors import HttpError
 
 import notion_zap.apps.externals.gcal
 from notion_zap.cli import editors
-from notion_zap.cli.struct import DateFormat
+from notion_zap.cli.structs import DateObject
 from .match_to_dates import DateMatcherAbs
 from ..common.dt_handler import TimeStringHandler
 from ..common.helpers import query_unique_page_by_idx
@@ -75,9 +75,11 @@ class GcaltoScheduleMatcher(_GcalScheduleMatcherAbs):
         return None
 
     def update_dom(self, dom: editors.PageRow, event):
-        dom.props.write_checkbox_at(self.Tis_synced, True)
+        property_writer = dom.props
+        property_writer.write_checkbox(tag=self.Tis_synced, value=True)
         if summary := event.get('summary'):
-            dom.props.write_title_at(self.Ttitle, summary)
+            writer = dom.props
+            writer.write_title(tag=self.Ttitle, value=summary)
         try:
             dt_start = dt.datetime.fromisoformat(event['start']['dateTime'])
             dt_end = dt.datetime.fromisoformat(event['end']['dateTime'])
@@ -90,10 +92,10 @@ class GcaltoScheduleMatcher(_GcalScheduleMatcherAbs):
         dom.save()
 
     def create_dom(self, event):
-        dom = self.domain.create_page()
-        dom.props.write_text_at(self.Tgcal_id, event['id'])
+        dom = self.domain.open_new_page()
+        dom.props.write_text(tag=self.Tgcal_id, value=event['id'])
         self.domain_by_idx.get(event['id'])
-        dom.props.write_url_at(self.Tgcal_link, event['htmlLink'])
+        dom.props.write_url(tag=self.Tgcal_link, value=event['htmlLink'])
         self.update_dom(dom, event)
 
     def set_date_targets(self, dom: editors.PageRow,
@@ -109,14 +111,14 @@ class GcaltoScheduleMatcher(_GcalScheduleMatcherAbs):
             tar = self.find_or_create_tar_by_date(date_val)
             tar_ids.append(tar.block_id)
         if tar_ids != dom.props.read_tag(self.T_tar):
-            dom.props.write_relation_at(self.T_tar, tar_ids)
+            dom.props.write_relation(tag=self.T_tar, value=tar_ids)
 
     def set_timestr(self, dom: editors.PageRow,
                     start: dt.time, end: Optional[dt.time] = None):
         timestr = dom.props.get_tag(self.Ttimestr, '')
         new_timestr = TimeStringHandler(timestr).replace(start, end)
         if timestr != new_timestr:
-            dom.props.write_text_at(self.Ttimestr, new_timestr)
+            dom.props.write_text(tag=self.Ttimestr, value=new_timestr)
 
 
 class GcalfromScheduleMatcher(_GcalScheduleMatcherAbs):
@@ -142,7 +144,8 @@ class GcalfromScheduleMatcher(_GcalScheduleMatcherAbs):
                 self.update_gcal(dom)
         elif not gcal_link:
             self.create_gcal(dom)
-        dom.props.write_checkbox_at(self.Tis_synced, True)
+        writer = dom.props
+        writer.write_checkbox(tag=self.Tis_synced, value=True)
 
     def update_gcal(self, dom: editors.PageRow):
         dt_start, dt_end = self.get_dt_tuple(dom)
@@ -168,8 +171,8 @@ class GcalfromScheduleMatcher(_GcalScheduleMatcherAbs):
             end=dt_end,
         )
         event = requestor.execute()
-        dom.props.write_text_at(self.Tgcal_id, event['id'])
-        dom.props.write_url_at(self.Tgcal_link, event['htmlLink'])
+        dom.props.write_text(tag=self.Tgcal_id, value=event['id'])
+        dom.props.write_url(tag=self.Tgcal_link, value=event['htmlLink'])
 
     def get_dt_tuple(self, dom: editors.PageRow):
         date_start, date_end = self.get_date_vals(dom)
@@ -199,7 +202,7 @@ class GcalfromScheduleMatcher(_GcalScheduleMatcherAbs):
         date_max: Optional[dt.date] = None
         for tar_id in tar_ids:
             tar = self.target.rows.fetch(tar_id)
-            date_format: DateFormat = tar.props.read_tag(self.Ttars_date)
+            date_format: DateObject = tar.props.read_tag(self.Ttars_date)
             date_val = date_format.start_date
             if date_min is None or date_min > date_val:
                 date_min = date_val

@@ -4,7 +4,8 @@ from abc import ABCMeta, abstractmethod
 from collections import defaultdict
 from typing import Iterator, Union, Iterable
 
-from ..structs.leaders import Block, Registry, Follower
+from ..structs.leaders import Block, Registry
+from ..structs.followers import Follower
 
 
 class ChildrenBearer(Block):
@@ -13,17 +14,28 @@ class ChildrenBearer(Block):
     def children(self) -> BlockChildren:
         pass
 
-    @abstractmethod
-    def _fetch_children(self, request_size=0):
-        pass
+    def read(self):
+        return dict(**self.basic_info,
+                    **self.payload.read(),
+                    **self.children.read())
+
+    def richly_read(self):
+        return dict(**self.basic_info,
+                    **self.payload.richly_read(),
+                    **self.children.richly_read())
+
+    def save_info(self):
+        return dict(**self.basic_info,
+                    **self.payload.save_info(),
+                    **self.children.save_info())
 
     def save_required(self) -> bool:
         return (self.payload.save_required()
                 or self.children.save_required())
 
-    @property
-    def is_supported_type(self) -> bool:
-        return True
+    @abstractmethod
+    def _fetch_children(self, request_size=0):
+        pass
 
     def iter_descendants_with(self, exact_rank_diff: int) \
             -> Iterable[Union[ChildrenBearer, Block]]:
@@ -80,22 +92,27 @@ class ChildrenBearer(Block):
             if isinstance(child, ChildrenBearer):
                 child.fetch_descendants(request_size)
 
+    @property
+    def is_supported_type(self) -> bool:
+        return True
+
 
 class BlockChildren(Follower, Registry, metaclass=ABCMeta):
     def __init__(self, caller: ChildrenBearer):
-        super().__init__()
+        Follower.__init__(self, caller)
+        Registry.__init__(self)
         self.caller = caller
         self._by_id = {}
         self._by_title = defaultdict(list)
+
+    @abstractmethod
+    def list_all(self) -> list[Block]:
+        pass
+
+    def iter_all(self) -> Iterator[Block]:
+        return iter(self.iter_all())
 
     def __iter__(self):
         """this will return ALL child blocks, even if
         block.yet_not_created or block.archived."""
         return self.iter_all()
-
-    def iter_all(self) -> Iterator[Block]:
-        return iter(self.iter_all())
-
-    @abstractmethod
-    def list_all(self) -> list[Block]:
-        pass

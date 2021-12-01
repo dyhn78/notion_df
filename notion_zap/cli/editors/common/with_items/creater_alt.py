@@ -13,8 +13,8 @@
 #         super().__init__(caller)
 #         self.caller = caller
 #         self.requestors = requestors
-#         from .with_contents.contents_bearing import ContentsBearer
-#         self.blocks: list[ContentsBearer] = []
+#         from .with_contents.contents_bearing import Item
+#         self.blocks: list[Item] = []
 #         self._chunk_interrupted = True
 #
 #     def __iter__(self):

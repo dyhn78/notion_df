@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-from typing import Union
+from typing import Union, Any
 
 from .leaders import ItemChildren
-from ...structs.leaders import Follower
-from ...structs.followers import RequestEditor, SingularEditor
+from ...structs.followers import RequestEditor, SingularEditor, Follower
 from notion_zap.cli.gateway.encoders import ContentsEncoder
 from notion_zap.cli.gateway.parsers import BlockChildrenParser
 from notion_zap.cli.gateway.requestors import AppendBlockChildren
@@ -17,6 +16,13 @@ class ItemsCreator(Follower):
         self.agents: list[Union[TextItemsCreateAgent,
                                 PageItemCreateAgent]] = []
         self._execute_in_process = False
+
+    @property
+    def values(self):
+        res = []
+        for agent in self.agents:
+            res.extend(agent.values)
+        return res
 
     def attach_page_item(self, child):
         from ...items.page_item import PageItem
@@ -44,15 +50,12 @@ class ItemsCreator(Follower):
 
     def save(self):
         if self._execute_in_process:
-            # message = ("child block yet not created ::\n"
-            #            f"{[value.fully_read() for value in self.blocks]}")
-            # raise RecursionError(message)
             return []
         self._execute_in_process = True
         for agent in self.agents:
             agent.save()
         self._execute_in_process = False
-        return self.blocks
+        return self.values
 
     def save_info(self):
         res = []
@@ -63,18 +66,11 @@ class ItemsCreator(Follower):
     def save_required(self):
         return bool(self.agents)
 
-    @property
-    def blocks(self):
-        res = []
-        for agent in self.agents:
-            res.extend(agent.blocks)
-        return res
+    def read(self) -> dict[str, Any]:
+        return {'new_children': [child.read() for child in self.values]}
 
-    def __iter__(self):
-        return iter(self.blocks)
-
-    def __len__(self):
-        return len(self.blocks)
+    def richly_read(self) -> dict[str, Any]:
+        return {'new_children': [child.richly_read() for child in self.values]}
 
 
 class TextItemsCreateAgent(RequestEditor):
@@ -83,22 +79,22 @@ class TextItemsCreateAgent(RequestEditor):
         self._requestor = AppendBlockChildren(self)
 
         from ...items.text_item import TextItem
-        self.blocks: list[TextItem] = []
+        self.values: list[TextItem] = []
 
     @property
-    def requestor(self):
+    def requestor(self) -> AppendBlockChildren:
         return self._requestor
 
     def attach(self, child):
         from ...items.text_item import TextItem
         assert isinstance(child, TextItem)
 
-        self.blocks.append(child)
+        self.values.append(child)
         child.contents.set_callback(self.get_callback_func(child))
         child.contents.set_placeholder()
 
     def get_callback_func(self, child):
-        idx = self.blocks.index(child)
+        idx = self.values.index(child)
 
         def callback(carrier: ContentsEncoder):
             return self.requestor.apply_contents(idx, carrier)
@@ -108,9 +104,15 @@ class TextItemsCreateAgent(RequestEditor):
     def save(self):
         response = self.requestor.execute()
         parsers = BlockChildrenParser(response)
-        for child, parser in zip(self.blocks, parsers):
+        for child, parser in zip(self.values, parsers):
             child.contents.apply_block_parser(parser)
             child.save_this()
+
+    def read(self) -> dict[str, Any]:
+        return {'new_children': [child.read() for child in self.values]}
+
+    def richly_read(self) -> dict[str, Any]:
+        return {'new_children': [child.richly_read() for child in self.values]}
 
 
 class PageItemCreateAgent(SingularEditor):
@@ -124,5 +126,11 @@ class PageItemCreateAgent(SingularEditor):
         return self._value
 
     @property
-    def blocks(self):
+    def values(self):
         return [self._value]
+
+    def read(self) -> dict[str, Any]:
+        return {'new_children': [child.read() for child in self.values]}
+
+    def richly_read(self) -> dict[str, Any]:
+        return {'new_children': [child.richly_read() for child in self.values]}

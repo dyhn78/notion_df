@@ -5,8 +5,8 @@ from typing import Callable
 from notion_client.errors import APIResponseError
 
 from notion_zap.cli.utility import stopwatch
-from notion_zap.cli.editors.structs.leaders import BlockEditor
-from notion_zap.cli.struct.base_logic import Executable, ValueCarrier
+from notion_zap.cli.editors.structs.leaders import Component
+from notion_zap.cli.structs.base_logic import Executable, ValueCarrier
 
 
 class Requestor(Executable, ValueCarrier, metaclass=ABCMeta):
@@ -14,7 +14,7 @@ class Requestor(Executable, ValueCarrier, metaclass=ABCMeta):
 
 
 class PointRequestor(Requestor, metaclass=ABCMeta):
-    def __init__(self, editor: BlockEditor):
+    def __init__(self, editor: Component):
         self.editor = editor
         self.client = editor.root.client
 
@@ -38,7 +38,7 @@ class LongRequestor(PointRequestor):
     MAX_PAGE_SIZE = 100
     INF = int(1e5) - 1
 
-    def __init__(self, editor: BlockEditor):
+    def __init__(self, editor: Component):
         super().__init__(editor)
         self.response_size = 0
         self.has_more = True

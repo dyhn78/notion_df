@@ -1,47 +1,38 @@
 from __future__ import annotations
 
 from copy import deepcopy
-from typing import Optional, Union
+from typing import Optional, Union, Any, Hashable
 
 from notion_zap.cli.gateway import parsers
+from notion_zap.cli.structs.prop_types import VALUE_FORMATS
 
 
 class PropertyColumn:
     def __init__(self, key: str,
-                 tag: str = '',
+                 tag: Hashable = '',
                  data_type: str = '',
-                 api_format: str = '',
-                 values: Optional[dict] = None,
-                 value_groups_by_key: Optional[dict] = None,
-                 value_groups_by_tag: Optional[dict] = None,
-                 value_infos_by_key: Optional[dict] = None,
-                 value_infos_by_tag: Optional[dict] = None):
-        self.prop_key = key
-        self.prop_tag = tag
-        self.prop_type = data_type
-        self.prop_foramt = api_format
-        self.prop_values = values
+                 labels: Optional[dict[Hashable, Any]] = None,
+                 marks_on_value: Optional[dict[Hashable, list]] = None,
+                 marks_on_label: Optional[dict[Hashable, list]] = None):
+        self.key = key
+        self.tag = tag
+        self.data_type = data_type
+        self.labels = labels
 
-        self.prop_value_groups = {}
-        if value_groups_by_key:
-            self.prop_value_groups.update(**value_groups_by_key)
-        if values and value_groups_by_tag:
-            self.prop_value_groups.update(
-                **{value_group_name: [values[key] for key in value_group_by_key]
-                   for value_group_name, value_group_by_key
-                   in value_groups_by_tag.items()
-                   })
-        self.prop_value_infos = {}
-        if value_infos_by_key:
-            self.prop_value_infos.update(**value_infos_by_key)
-        if values and value_infos_by_tag:
-            self.prop_value_infos.update(
-                **{values[value_key]: value_comment
-                   for value_key, value_comment in value_infos_by_tag.items()
-                   })
+        self.marks = {}
+        if marks_on_value:
+            self.marks.update(**marks_on_value)
+        if self.labels and marks_on_label:
+            for mark, marked_labels in marks_on_label.items():
+                values = [self.labels[label] for label in marked_labels]
+                self.marks.update({mark: values})
 
     def __str__(self):
-        return f"{self.prop_key} | {self.prop_tag} | {self.prop_type}"
+        return f"{self.key} | {self.tag} | {self.data_type}"
+
+    @property
+    def parser_type(self):
+        return VALUE_FORMATS[self.data_type]
 
 
 class PropertyFrame:
@@ -66,21 +57,21 @@ class PropertyFrame:
     def by_key(self):
         res = {}
         for unit in self.units:
-            res.update({unit.prop_key: unit})
+            res.update({unit.key: unit})
         return res
 
     @property
     def by_tag(self):
         res = {}
         for unit in self.units:
-            res.update({unit.prop_tag: unit})
+            res.update({unit.tag: unit})
         return res
 
-    def key_at(self, prop_tag: str):
-        return self.by_tag[prop_tag].prop_key
+    def key_of(self, prop_tag: Hashable):
+        return self.by_tag[prop_tag].key
 
     def type_of(self, prop_key: str):
-        return self.by_key[prop_key].prop_type
+        return self.by_key[prop_key].data_type
 
     def keys(self):
         return self.by_key.keys()
@@ -103,20 +94,20 @@ class PropertyFrame:
     def add_alias(self, tag: str, new_tag: str):
         unit = self.by_tag[tag]
         new_unit = deepcopy(unit)
-        new_unit.prop_tag = new_tag
+        new_unit.tag = new_tag
         self.append(new_unit)
 
     def assign_title_key(self, key: str):
         self.title_key = key
 
     def assign_title_tag(self, tag: str):
-        self.title_key = self.key_at(tag)
+        self.title_key = self.key_of(tag)
 
     def fetch_parser(self, parser: Union[parsers.PageParser, parsers.DatabaseParser]):
-        for name, data_type in parser.prop_types.items():
+        for name, data_type in parser.data_types.items():
             if name in self.by_key:
                 frame_unit = self.by_key[name]
-                frame_unit.prop_type = data_type
+                frame_unit.data_type = data_type
             else:
                 self.append(PropertyColumn(name, data_type=data_type))
         if isinstance(parser, parsers.PageParser):

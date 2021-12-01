@@ -2,7 +2,7 @@ from abc import ABCMeta
 import datetime as dt
 
 from notion_zap.cli import editors
-from notion_zap.cli.struct import DateFormat
+from notion_zap.cli.structs import DateObject
 from ..common.struct import EditorManager
 from ..common.date_handler import DateHandler
 from ..common.helpers import (
@@ -42,16 +42,18 @@ class PeriodMatcherAbs(EditorManager, metaclass=ABCMeta):
     def create_by_date_val(self, date_val: dt.date):
         if not date_val:
             return None
-        tar = self.target.rows.create_page()
+        tar = self.target.rows.open_new_page()
         date_handler = DateHandler(date_val)
 
         tar_idx_val = date_handler.strf_year_and_week()
-        tar.props.write_title_at(self.Ttars_idx, tar_idx_val)
+        writer = tar.props
+        writer.write_title(tag=self.Ttars_idx, value=tar_idx_val)
         self.target_by_idx.update({tar_idx_val: tar})
 
-        date_range = DateFormat(start=date_handler.first_day_of_week(),
+        date_range = DateObject(start=date_handler.first_day_of_week(),
                                 end=date_handler.last_day_of_week())
-        tar.props.write_date_at(self.Ttars_date, date_range)
+        property_writer = tar.props
+        property_writer.write_date(tag=self.Ttars_date, value=date_range)
         return tar.save()
 
     def update_tar(self, tar: editors.PageRow, tar_idx_val=None,
@@ -61,11 +63,12 @@ class PeriodMatcherAbs(EditorManager, metaclass=ABCMeta):
             tar_idx_val = tar.props.read_tag(self.Ttars_idx)
         date_handler = DateHandler.from_strf_year_and_week(tar_idx_val)
 
-        date_range = DateFormat(start=date_handler.first_day_of_week(),
+        date_range = DateObject(start=date_handler.first_day_of_week(),
                                 end=date_handler.last_day_of_week())
         if date_range != tar.props.read_tag(self.Ttars_date):
             self.bs.root.disable_overwrite = disable_overwrite
-            tar.props.write_date_at(self.Ttars_date, date_range)
+            writer = tar.props
+            writer.write_date(tag=self.Ttars_date, value=date_range)
             self.bs.root.disable_overwrite = False
 
 
@@ -80,12 +83,13 @@ class PeriodMatcherType1(PeriodMatcherAbs):
         for domain in self.domains:
             for dom in domain.rows:
                 if tar := self.match_periods(dom):
-                    dom.props.write_relation_at(self.T_tar, tar.block_id)
+                    writer = dom.props
+                    writer.write_relation(tag=self.T_tar, value=tar.block_id)
 
     def match_periods(self, dom: editors.PageRow):
         if dom.props.read_tag(self.T_tar):
             return None
-        dom_idx: DateFormat = dom.props.read_tag(self.Tdoms_date)
+        dom_idx: DateObject = dom.props.read_tag(self.Tdoms_date)
         date_val = dom_idx.start_date
         return self.find_or_create_by_date_val(date_val)
 
@@ -105,7 +109,8 @@ class PeriodMatcherType2(PeriodMatcherAbs):
         for domain in self.domains:
             for dom in domain.rows:
                 if tar := self.match_periods(dom):
-                    dom.props.write_relation_at(self.T_tar, tar.block_id)
+                    writer = dom.props
+                    writer.write_relation(tag=self.T_tar, value=tar.block_id)
 
     def match_periods(self, dom: editors.PageRow):
         if dom.props.read_tag(self.T_tar):
@@ -131,9 +136,9 @@ class PeriodMatcherType3(PeriodMatcherAbs):
         for domain in self.domains:
             for dom in domain.rows:
                 if tar := self.match_created_periods(dom):
-                    dom.props.write_relation_at(self.Tdoms_tar1, tar.block_id)
+                    dom.props.write_relation(tag=self.Tdoms_tar1, value=tar.block_id)
                 if tar := self.match_scheduled_periods(dom):
-                    dom.props.write_relation_at(self.Tdoms_tar2, tar.block_id)
+                    dom.props.write_relation(tag=self.Tdoms_tar2, value=tar.block_id)
 
     def match_created_periods(self, dom: editors.PageRow):
         if dom.props.read_tag(self.Tdoms_tar1):

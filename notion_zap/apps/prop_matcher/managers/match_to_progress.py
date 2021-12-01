@@ -1,7 +1,7 @@
 import datetime as dt
 
 from notion_zap.cli import editors
-from notion_zap.cli.struct import DateFormat
+from notion_zap.cli.structs import DateObject
 from ..common.struct import EditorManager
 from ..common.helpers import extend_prop, fetch_all_pages_of_relation
 
@@ -41,14 +41,15 @@ class ProgressMatcherType2(EditorManager):
     def execute(self):
         for dom in self.domain.rows:
             for to_tar in self.to_tars:
-                dom_date: DateFormat = dom.props.read_tag('manual_date')
+                dom_date: DateObject = dom.props.read_tag('manual_date')
                 if (not dom_date.start_date
                         or dom_date.start_date > dt.date.today()):
                     continue
                 if tar_ids := self.determine_tar_ids(dom, to_tar):
                     extend_prop(dom, to_tar, tar_ids)
                 if not dom.props.read_tag('sync_status'):  # False
-                    dom.props.write_checkbox_at('sync_status', True)
+                    writer = dom.props
+                    writer.write_checkbox(tag='sync_status', value=True)
 
     def determine_tar_ids(self, dom: editors.PageRow, to_tar: str):
         refs = fetch_all_pages_of_relation(dom, self.reference, self.to_ref)

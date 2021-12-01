@@ -13,7 +13,7 @@ PARSER_TYPE = {
 }
 
 
-# match parser_type to prop_types
+# match parser_type to data_types
 VALUE_TYPES = {
     'text': ['text', 'rich_text', 'title'],
     'select': ['select'],
@@ -25,7 +25,7 @@ VALUE_TYPES = {
     'relation': ['relation'],
     'rollup': ['rollup']
 }
-# match a prop_type to the parser_type
+# match a data_type to the parser_type
 VALUE_FORMATS = {}
 for form, types in VALUE_TYPES.items():
     VALUE_FORMATS.update(**{typ: form for typ in types})

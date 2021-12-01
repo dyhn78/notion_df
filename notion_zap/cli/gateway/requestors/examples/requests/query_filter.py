@@ -1,5 +1,5 @@
 default_filter = {'database_id': 'TEST_DATABASE_ID',
-                  'filter_maker': {
+                  'filter_manager': {
                       'or': [{
                           'property': '이름',
                           'text': {'contains': '1'}

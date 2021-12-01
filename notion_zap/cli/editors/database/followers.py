@@ -1,28 +1,30 @@
+from typing import Any
+
 from .leaders import RowChildren
-from ..rows.page_row import PageRow
+from ..row.leader import PageRow
 from ..structs.followers import ListEditor
 from notion_zap.cli.gateway import parsers
 
 
-class PageListUpdater(ListEditor):
+class RowChildrenUpdater(ListEditor):
     def __init__(self, caller: RowChildren):
         super().__init__(caller)
         self.caller = caller
         self.frame = caller.frame
 
-        self._values: list[PageRow] = []
+        self._values = []
 
     @property
-    def blocks(self):
+    def values(self) -> list[PageRow]:
         return self._values
 
     def attach_page(self, page):
         assert isinstance(page, PageRow)
-        self.blocks.append(page)
+        self.values.append(page)
 
     def detach_page(self, page):
         assert isinstance(page, PageRow)
-        self.blocks.remove(page)
+        self.values.remove(page)
 
     def apply_query_response(self, response):
         parser = parsers.PageListParser(response)
@@ -48,30 +50,42 @@ class PageListUpdater(ListEditor):
         page.props.apply_page_parser(parser)
         return page
 
+    def read(self) -> dict[str, Any]:
+        return {'children': [child.read() for child in self.values]}
 
-class PageListCreator(ListEditor):
+    def richly_read(self) -> dict[str, Any]:
+        return {'children': [child.richly_read() for child in self.values]}
+
+
+class RowChildrenCreator(ListEditor):
     def __init__(self, caller: RowChildren):
         super().__init__(caller)
         self.caller = caller
         self.frame = self.caller.frame
 
-        self._values: list[PageRow] = []
+        self._values = []
 
     @property
-    def blocks(self):
+    def values(self) -> list[PageRow]:
         return self._values
 
     def attach_page(self, page):
-        self.blocks.append(page)
-        assert id(page) == id(self.blocks[-1])
+        self.values.append(page)
+        assert id(page) == id(self.values[-1])
         return page
 
     def detach_page(self, page):
         pass
 
     def save(self):
-        for child in self.blocks:
+        for child in self.values:
             child.save()
-        res = self.blocks.copy()
-        self.blocks.clear()
+        res = self.values.copy()
+        self.values.clear()
         return res
+
+    def read(self) -> dict[str, Any]:
+        return {'new_children': [child.read() for child in self.values]}
+
+    def richly_read(self) -> dict[str, Any]:
+        return {'new_children': [child.richly_read() for child in self.values]}

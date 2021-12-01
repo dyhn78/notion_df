@@ -45,7 +45,7 @@ class RegularEditorBase(EditorBase):
 
     def fetch_one(self, domain: editors.Database):
         query = domain.rows.open_query()
-        maker = query.filter_maker
+        maker = query.filter_manager
         ft = query.open_filter()
 
         # OR clauses

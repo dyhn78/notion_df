@@ -8,7 +8,7 @@ class UnsupportedBlock(Block):
         super().__init__(caller, id_or_url)
         self.caller = caller
 
-        self._payload = UnsupportedBlockPayload(self, id_or_url)
+        self._payload = UnsupportedBlockPayload(self)
 
     @property
     def payload(self):
@@ -39,6 +39,12 @@ class UnsupportedBlock(Block):
 
 
 class UnsupportedBlockPayload(Payload):
+    def read(self) -> dict[str, Any]:
+        return {}
+
+    def richly_read(self) -> dict[str, Any]:
+        return {}
+
     def save(self):
         return {}
 

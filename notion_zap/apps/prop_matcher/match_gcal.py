@@ -31,7 +31,7 @@ class GcalEditorBase(EditorBase):
 
     def fetch_one(self, domain: editors.RowChildren):
         query = domain.open_query()
-        maker = query.filter_maker
+        maker = query.filter_manager
         ft = query.open_filter()
         if domain is self.schedules:
             ft |= maker.relation_at('to_scheduled_dates').is_empty()
