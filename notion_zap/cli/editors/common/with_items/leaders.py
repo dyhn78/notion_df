@@ -1,12 +1,10 @@
 from __future__ import annotations
-
 from abc import ABCMeta
-from typing import Any
 
 from notion_zap.cli.gateway import requestors, parsers
-from ..with_children import ChildrenBearer, BlockChildren
+from ..with_children import ChildrenBearer, Children
 from ...structs.leaders import Block, Registry
-from ...structs.exceptions import BlockTypeError
+from ...structs.exceptions import InvalidBlockTypeError
 
 
 class ItemsBearer(ChildrenBearer, metaclass=ABCMeta):
@@ -23,15 +21,15 @@ class ItemsBearer(ChildrenBearer, metaclass=ABCMeta):
 
     def indent_cursor(self) -> ItemsBearer:
         """this returns new 'cursor' where you can use of open_new_xx method.
-        raises BlockTypeError if no child can_have_children."""
+        raises InvalidBlockTypeError if no child can_have_children."""
         for child in reversed(self.items.list_all()):
             if isinstance(child, ItemsBearer) and child.can_have_children:
                 return child
         else:
-            raise BlockTypeError(self)
+            raise InvalidBlockTypeError(self)
 
 
-class ItemChildren(BlockChildren):
+class ItemChildren(Children):
     def __init__(self, caller: ItemsBearer):
         super().__init__(caller)
         self.caller = caller
@@ -48,23 +46,11 @@ class ItemChildren(BlockChildren):
     def list_all(self) -> list[Block]:
         return self._updater.values + self._creator.values
 
-    def read(self) -> dict[str, Any]:
-        return dict(**self._updater.read(),
-                    **self._creator.read())
-
-    def richly_read(self) -> dict[str, Any]:
-        return dict(**self._updater.richly_read(),
-                    **self._creator.richly_read())
-
     def save(self):
         self._updater.save()
         new_children = self._creator.save()
         self._updater.values.extend(new_children)
         self._creator.clear()
-
-    def save_info(self):
-        return {'children': self._updater.save_info(),
-                'new_children': self._creator.save_info()}
 
     def save_required(self):
         return (self._updater.save_required()
@@ -90,9 +76,9 @@ class ItemChildren(BlockChildren):
     def open_new_page(self):
         return self.open_page('')
 
-    def attach(self, child: Block):
+    def _deposit(self, child: Block):
         if not self.block.can_have_children:
-            raise BlockTypeError(self.block)
+            raise InvalidBlockTypeError(self.block)
 
         from ...items import TextItem, PageItem
         if child.block_id:
@@ -103,7 +89,8 @@ class ItemChildren(BlockChildren):
             elif isinstance(child, PageItem):
                 self._creator.attach_page_item(child)
             else:
-                raise ValueError(f"{child=}")
+                raise InvalidBlockTypeError(child)
 
     def detach(self, child: Block):
+        """currently unavailable until the official API supports moving blocks."""
         raise NotImplementedError

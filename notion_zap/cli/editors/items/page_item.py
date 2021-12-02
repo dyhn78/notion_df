@@ -25,12 +25,6 @@ class PageItem(Item, PageBlock):
     def contents(self) -> PageItemContents:
         return self._contents
 
-    def save(self):
-        self.contents.save()
-        if self.archived:
-            return
-        self.items.save()
-
 
 class PageItemContents(PagePayload, ItemContents,
                        encoders.PageContentsWriter):

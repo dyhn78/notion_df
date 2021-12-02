@@ -7,8 +7,10 @@ from notion_client import APIResponseError
 
 from notion_zap.cli.gateway import parsers, requestors
 from notion_zap.cli.structs import PropertyFrame
-from ..row.leader import PageRow
-from ..common.with_children import BlockChildren, ChildrenBearer
+from ..row.leader import (
+    PageRow, IndexTable, ClassifyTable, IndexKeyRegisterer,
+    IndexTagRegisterer, ClassifyKeyRegisterer, ClassifyTagRegisterer)
+from ..common.with_children import Children, ChildrenBearer
 from ..common.with_items import ItemChildren
 from ..structs.leaders import Root
 
@@ -55,10 +57,13 @@ class Database(ChildrenBearer):
         requestor.print_comments()
 
     def save(self):
-        self.rows.save()
+        self.payload.save()
+        if not self.archived:
+            self.children.save()
+        return self
 
 
-class RowChildren(BlockChildren):
+class RowChildren(Children):
     def __init__(self, caller: Database):
         super().__init__(caller)
         self.caller = caller
@@ -68,8 +73,26 @@ class RowChildren(BlockChildren):
         self._updater = RowChildrenUpdater(self)
         self._creator = RowChildrenCreator(self)
 
-        self._by_id = {}
-        self._by_title = defaultdict(list)
+        self._index_tables: dict[str, IndexTable] = defaultdict(IndexTable)
+        self._classify_tables: dict[str, ClassifyTable] = defaultdict(ClassifyTable)
+
+    def __iter__(self) -> Iterator[PageRow]:
+        return self.iter_all()
+
+    def iter_all(self) -> Iterator[PageRow]:
+        return iter(self.list_all())
+
+    def list_all(self) -> list[PageRow]:
+        return self._updater.values + self._creator.values
+
+    def save(self):
+        self._updater.save()
+        response = self._creator.save()
+        self._updater.values.extend(response)
+
+    def save_required(self):
+        return (self._updater.save_required()
+                or self._creator.save_required())
 
     def open_page(self, page_id: str):
         return PageRow(self, page_id, frame=self.frame)
@@ -77,19 +100,18 @@ class RowChildren(BlockChildren):
     def open_new_page(self):
         return self.open_page('')
 
-    def attach(self, page: PageRow):
-        super().attach(page)
-        if page.block_id:
-            self._updater.attach_page(page)
+    def _deposit(self, child: PageRow):
+        if child.block_id:
+            self._updater.attach_page(child)
         else:
-            self._creator.attach_page(page)
+            self._creator.attach_page(child)
 
-    def detach(self, page: PageRow):
-        super().detach(page)
-        if page.block_id:
-            self._updater.detach_page(page)
+    def detach(self, child: PageRow):
+        super().detach(child)
+        if child.block_id:
+            self._updater.detach_page(child)
         else:
-            self._creator.detach_page(page)
+            self._creator.detach_page(child)
 
     def open_query(self) -> QueryWithCallback:
         def callback(response):
@@ -111,34 +133,6 @@ class RowChildren(BlockChildren):
             page.close()
             return None
 
-    def save(self):
-        self._updater.save()
-        response = self._creator.save()
-        self._updater.values.extend(response)
-
-    def save_info(self):
-        return {'updated_rows': self._updater.save_info(),
-                'created_rows': self._creator.save_info()}
-
-    def save_required(self):
-        return (self._updater.save_required()
-                or self._creator.save_required())
-
-    def __iter__(self) -> Iterator[PageRow]:
-        return self.iter_all()
-
-    def iter_all(self) -> Iterator[PageRow]:
-        return iter(self.list_all())
-
-    def list_all(self) -> list[PageRow]:
-        return self._updater.values + self._creator.values
-
-    def read(self) -> dict[str, Any]:
-        return {'children': [child.read() for child in self.list_all()]}
-
-    def richly_read(self) -> dict[str, Any]:
-        return {'children': [child.richly_read() for child in self.list_all()]}
-
     @property
     def by_id(self) -> dict[str, PageRow]:
         return self._by_id
@@ -156,6 +150,9 @@ class RowChildren(BlockChildren):
     def by_value_at(self, prop_tag: str):
         return self.by_value_of(self.frame.key_of(prop_tag))
 
+    def by_idx_at(self, prop_tag: str):
+        return self.by_idx_of(self.frame.key_of(prop_tag))
+
     def by_idx_of(self, prop_key: str):
         try:
             res = {}
@@ -168,8 +165,49 @@ class RowChildren(BlockChildren):
             pprint(f"value : {page_object.block_id}")
             raise TypeError
 
-    def by_idx_at(self, prop_tag: str):
-        return self.by_idx_of(self.frame.key_of(prop_tag))
+    def create_index_by_key(self, prop_key: str):
+        if prop_key not in self.key_tables:
+            self.key_tables[prop_key] = IndexTable()
+        for page in self.list_all():
+            if prop_key in page.regs_key:
+                reg = page.regs_key[prop_key]
+            else:
+                reg = IndexKeyRegisterer(page, prop_key)
+            reg.register_to_root_and_parent()
+        return self.key_tables[prop_key]
+
+    def create_index_by_tag(self, prop_tag: str):
+        if prop_tag not in self.tag_tables:
+            self.tag_tables[prop_tag] = IndexTable()
+        for page in self.list_all():
+            if prop_tag in page.regs_tag:
+                reg = page.regs_tag[prop_tag]
+            else:
+                reg = IndexTagRegisterer(page, prop_tag)
+            reg.register_to_root_and_parent()
+        return self.tag_tables[prop_tag]
+
+    def classify_by_key(self, prop_key: str):
+        if prop_key not in self.key_tables:
+            self.key_tables[prop_key] = ClassifyTable()
+        for page in self.list_all():
+            if prop_key in page.regs_key:
+                reg = page.regs_key[prop_key]
+            else:
+                reg = ClassifyKeyRegisterer(page, prop_key)
+            reg.register_to_root_and_parent()
+        return self.tag_tables[prop_key]
+
+    def classify_by_tag(self, prop_tag: str):
+        if prop_tag not in self.tag_tables:
+            self.tag_tables[prop_tag] = ClassifyTable()
+        for page in self.list_all():
+            if prop_tag in page.regs_tag:
+                reg = page.regs_tag[prop_tag]
+            else:
+                reg = ClassifyTagRegisterer(page, prop_tag)
+            reg.register_to_root_and_parent()
+        return self.tag_tables[prop_tag]
 
 
 class QueryWithCallback(requestors.Query):

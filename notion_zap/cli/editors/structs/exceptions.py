@@ -1,19 +1,12 @@
 from .leaders import Block, Registry
 
 
-class BlockTypeError(TypeError):
+class InvalidBlockTypeError(TypeError):
     def __init__(self, block: Block):
         self.block = block
         self.message = f"cannot perform the order upon invalid block type :: " \
                        f"{self.block}"
         super().__init__(self.message)
-
-
-class NoParentFoundError(ValueError):
-    def __init__(self, block: Block):
-        self.block = block
-        self.message = f"cannot find parent of this block ::" \
-                       f"{self.block}"
 
 
 class InvalidParentTypeError(ValueError):
@@ -24,6 +17,13 @@ class InvalidParentTypeError(ValueError):
                        f"{self.block}" \
                        f"parent info ::" \
                        f"{self.block.parent}"
+
+
+class NoParentFoundError(ValueError):
+    def __init__(self, block: Block):
+        self.block = block
+        self.message = f"cannot find parent of this block ::" \
+                       f"{self.block}"
 
 
 class DanglingBlockError(ValueError):

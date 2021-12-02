@@ -1,28 +1,7 @@
 from abc import ABCMeta, abstractmethod
 
-from .leaders import Component, Block
+from .leaders import BlockEditor, Block, Follower
 from notion_zap.cli.gateway.requestors.structs import Requestor
-
-
-class Follower(Component, metaclass=ABCMeta):
-    def __init__(self, caller: Component):
-        self.caller = caller
-
-    @property
-    def block(self) -> Block:
-        return self.caller.block
-
-    @property
-    def block_id(self) -> str:
-        return self.block.block_id
-
-    @property
-    def block_name(self) -> str:
-        return self.block.block_name
-
-    @property
-    def archived(self):
-        return self.block.archived
 
 
 class ListEditor(Follower, metaclass=ABCMeta):
@@ -69,7 +48,7 @@ class RequestEditor(Follower, metaclass=ABCMeta):
 class SingularEditor(Follower, metaclass=ABCMeta):
     @property
     @abstractmethod
-    def value(self) -> Component:
+    def value(self) -> BlockEditor:
         pass
 
     def save(self):

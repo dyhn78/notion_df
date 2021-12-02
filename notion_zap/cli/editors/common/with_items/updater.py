@@ -31,9 +31,3 @@ class ItemsUpdater(ListEditor):
 
     def __iter__(self):
         return iter(self.values)
-
-    def read(self):
-        return {'children': [child.read for child in self]}
-
-    def richly_read(self):
-        return {'children': [child.richly_read() for child in self]}

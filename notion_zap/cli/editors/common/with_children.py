@@ -2,16 +2,15 @@ from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
 from collections import defaultdict
-from typing import Iterator, Union, Iterable
+from typing import Iterator, Union, Iterable, Any
 
-from ..structs.leaders import Block, Registry
-from ..structs.followers import Follower
+from ..structs.leaders import Block, Registry, Follower, Controller
 
 
 class ChildrenBearer(Block):
     @property
     @abstractmethod
-    def children(self) -> BlockChildren:
+    def children(self) -> Children:
         pass
 
     def read(self):
@@ -97,9 +96,9 @@ class ChildrenBearer(Block):
         return True
 
 
-class BlockChildren(Follower, Registry, metaclass=ABCMeta):
+class Children(Controller, Follower, Registry, metaclass=ABCMeta):
     def __init__(self, caller: ChildrenBearer):
-        Follower.__init__(self, caller)
+        Controller.__init__(self, caller)
         Registry.__init__(self)
         self.caller = caller
         self._by_id = {}
@@ -113,6 +112,15 @@ class BlockChildren(Follower, Registry, metaclass=ABCMeta):
         return iter(self.iter_all())
 
     def __iter__(self):
-        """this will return ALL child blocks, even if
-        block.yet_not_created or block.archived."""
+        """this will return ALL child blocks on the editor at the moment,
+         even yet-not-created or archived ones."""
         return self.iter_all()
+
+    def read(self) -> dict[str, Any]:
+        return {'children': [child.read() for child in self.list_all()]}
+
+    def richly_read(self) -> dict[str, Any]:
+        return {'children': [child.richly_read() for child in self.list_all()]}
+
+    def save_info(self):
+        return {'children': [child.save_info() for child in self.list_all()]}

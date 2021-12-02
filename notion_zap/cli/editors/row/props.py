@@ -19,22 +19,31 @@ class PageRowProperties(PagePayload, encoders.PageRowPropertyWriter):
         self._read_plain = {}
         self._read_rich = {}
 
+    @property
+    def block(self) -> PageRow:
+        return self.caller
+
+    @property
+    def requestor(self):
+        return self._requestor
+
     def clear_requestor(self):
         if self.block_id:
             self._requestor = requestors.UpdatePage(self)
         else:
             self._requestor = requestors.CreatePage(self, under_database=True)
 
-    @property
-    def requestor(self):
-        return self._requestor
-
     def apply_page_parser(self, parser: parsers.PageParser):
         super().apply_page_parser(parser)
         self.frame.fetch_parser(parser)
         self._set_title(parser.pagerow_title)
+
+        for reg in self.block.regs_prop.values():
+            reg.un_register_from_root_and_parent()
         self._read_plain = parser.values
         self._read_rich = parser.rich_values
+        for reg in self.block.regs_prop.values():
+            reg.register_to_root_and_parent()
 
     def push_encoder(self, prop_key: str, encoder: encoders.PropertyEncoder) \
             -> encoders.PropertyEncoder:

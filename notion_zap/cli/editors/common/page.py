@@ -3,14 +3,28 @@ from __future__ import annotations
 from abc import abstractmethod, ABCMeta
 from typing import Union
 
+from .document import Document
 from .with_items import ItemsBearer
 from ..structs.exceptions import DanglingBlockError
-from ..structs.leaders import Payload
+from ..structs.leaders import Payload, Registry, Registerer
 from ..structs.followers import RequestEditor
 from notion_zap.cli.gateway import parsers, requestors
 
 
-class PageBlock(ItemsBearer):
+class PageBlock(ItemsBearer, Document):
+    def __init__(self, caller: Registry, id_or_url: str):
+        super().__init__(caller, id_or_url)
+        self.reg_title = TitleRegisterer(self)
+        # since title value is empty at this moment
+        #  (Payload is not yet initialized),
+        #  there's no points to 'register' it.
+        #  same thing applies to PageRow,
+        #  which doesn't register its initial property value.
+
+    @property
+    def regs(self):
+        return [self.reg_id, self.reg_title]
+
     @property
     @abstractmethod
     def payload(self) -> PagePayload:
@@ -22,28 +36,56 @@ class PageBlock(ItemsBearer):
 
     @property
     def title(self):
-        return self.payload.title
+        try:
+            return self.payload.title
+        except AttributeError:
+            # this happens during __init__;
+            #  reg_title asks to
+            #  payload is initialized from implemented class,
+            return ''
 
-    def _unregister_from_root(self):
-        super()._unregister_from_root()
+    def save(self):
+        self.payload.save()
+        if not self.archived:
+            self.children.save()
+        return self
+
+
+class TitleRegisterer(Registerer):
+    def __init__(self, caller: PageBlock):
+        super().__init__(caller)
+        self.caller = caller
+
+    @property
+    def block(self) -> PageBlock:
+        return self.caller
+
+    @property
+    def title(self):
+        return self.caller.title
+
+    def register_to_parent(self):
+        if self.title:
+            self.block.caller.by_title[self.title].append(self.block)
+
+    def register_to_root_and_parent(self):
+        self.register_to_parent()
+        if self.title:
+            self.root.title_table[self.title].append(self.block)
+
+    def un_register_from_parent(self):
         if self.title:
             try:
-                self.root.search_by_title[self.title].remove(self.title)
-            except KeyError:
-                raise DanglingBlockError(self, self.root)
+                self.block.caller.by_title[self.title].remove(self.block)
+            except ValueError:
+                raise DanglingBlockError(self.block, self.block.caller)
 
-    def _unregister_from_caller(self):
-        super()._unregister_from_caller()
+    def un_register_from_root_and_parent(self):
         if self.title:
             try:
-                self.caller.by_title[self.title].remove(self)
-            except KeyError:
-                raise DanglingBlockError(self, self.caller)
-
-    def _register_to_caller(self):
-        super()._register_to_caller()
-        if self.title:
-            self.caller.by_title[self.title].append(self)
+                self.root.title_table[self.title].remove(self.block)
+            except ValueError:
+                raise DanglingBlockError(self.block, self.root)
 
 
 class PagePayload(Payload, RequestEditor, metaclass=ABCMeta):
@@ -62,24 +104,17 @@ class PagePayload(Payload, RequestEditor, metaclass=ABCMeta):
         pass
 
     @property
+    def block(self) -> PageBlock:
+        return self.caller
+
+    @property
     def title(self):
         return self.__title
 
     def _set_title(self, value: str):
-        """set the value to empty string('') will unregister the block."""
-        if self.__title:
-            try:
-                self.caller.caller.by_title[self.title].remove(self.block)
-            except ValueError:
-                raise DanglingBlockError(self.block, self.caller.caller)
-            try:
-                self.root.search_by_title[self.title].remove(self.block)
-            except ValueError:
-                raise DanglingBlockError(self.block, self.root)
+        self.block.reg_title.un_register_from_root_and_parent()
         self.__title = value
-        if self.__title:
-            self.caller.caller.by_title[self.title].append(self.block)
-            self.root.search_by_title[self.title].append(self.block)
+        self.block.reg_title.register_to_root_and_parent()
 
     def archive(self):
         self.requestor.archive()

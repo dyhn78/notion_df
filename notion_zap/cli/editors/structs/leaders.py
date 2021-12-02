@@ -38,10 +38,24 @@ class Registry(Editor):
     def __init__(self):
         self.__by_id = {}
         self.__by_title = defaultdict(list)
+        from notion_zap.cli.editors.row.leader import CacheTable
+        self._key_tables: dict[str, CacheTable] = {}
+        self._tag_tables: dict[str, CacheTable] = {}
 
-    @abstractmethod
     def attach(self, child: Block):
         """this will be called from childs' side."""
+        if moved := (child.caller != self):
+            child.caller.detach(child)
+            for reg in child.regs:
+                reg.un_register_from_parent()
+        child.caller = self
+        if moved:
+            for reg in child.regs:
+                reg.register_to_parent()
+        self._deposit(child)
+
+    @abstractmethod
+    def _deposit(self, child: Block):
         pass
 
     @abstractmethod
@@ -62,6 +76,14 @@ class Registry(Editor):
         """this will be maintained from childrens' side."""
         return self.__by_title
 
+    @property
+    def key_tables(self):
+        return self._key_tables
+
+    @property
+    def tag_tables(self):
+        return self._tag_tables
+
 
 class Root(Registry):
     def __init__(
@@ -80,8 +102,8 @@ class Root(Registry):
         self.client = client
 
         self._blocks: list[Block] = []
-        self._search_by_id: dict[str, Block] = {}
-        self._search_by_title: dict[str, list[Block]] = defaultdict(list)
+        self._id_table: dict[str, Block] = {}
+        self._title_table: dict[str, list[Block]] = defaultdict(list)
 
         from ..database.leaders import Database
         self._by_alias: dict[Any, Database] = {}
@@ -100,12 +122,12 @@ class Root(Registry):
         self._log_failed_request = True
 
     @property
-    def search_by_id(self):
-        return self._search_by_id
+    def id_table(self):
+        return self._id_table
 
     @property
-    def search_by_title(self):
-        return self._search_by_title
+    def title_table(self):
+        return self._title_table
 
     @property
     def root(self):
@@ -137,12 +159,10 @@ class Root(Registry):
     def save_required(self):
         return any([block.save_required() for block in self._blocks])
 
-    def attach(self, child: Block):
-        super().attach(child)
+    def _deposit(self, child: Block):
         self._blocks.append(child)
 
     def detach(self, child: Block):
-        super().detach(child)
         self._blocks.remove(child)
 
     def open_database(self, database_alias: str, id_or_url: str,
@@ -189,7 +209,7 @@ class Root(Registry):
         self._log_failed_request = True
 
 
-class Component(Editor, metaclass=ABCMeta):
+class BlockEditor(Editor, metaclass=ABCMeta):
     @abstractmethod
     def __init__(self, caller: Editor):
         self.caller = caller
@@ -226,7 +246,7 @@ class Component(Editor, metaclass=ABCMeta):
     def parent(self):
         """return None if block_master is directly called from the root."""
         attach_point = self.block.caller
-        if isinstance(attach_point, Component):
+        if isinstance(attach_point, BlockEditor):
             parent = attach_point.block
             from ..common.with_children import ChildrenBearer
             if not isinstance(parent, ChildrenBearer):
@@ -252,6 +272,8 @@ class Component(Editor, metaclass=ABCMeta):
             return self.parent.entry_ancestor
         return self.block
 
+
+class Controller(BlockEditor):
     @abstractmethod
     def read(self) -> dict[str, Any]:
         pass
@@ -261,13 +283,29 @@ class Component(Editor, metaclass=ABCMeta):
         pass
 
 
-class Block(Component):
+class Block(Controller):
     def __init__(self, caller: Registry, id_or_url: str):
         self.__block_id = url_to_id(id_or_url)
         self.caller = caller
+        self.reg_id = IdRegisterer(self)
+        self.reg_id.register_to_root_and_parent()
         self.caller.attach(self)
         # Now declare payload here, make it "register" to the attachment.
         #  this allows to search specific page from them. (.by_id, .by_title)
+
+    @property
+    def regs(self) -> list[Registerer]:
+        return [self.reg_id]
+
+    def close(self):
+        """use this to delete a wrong block
+        (probably those with nonexisting block_id);
+        do not override this, override the property <regs> instead."""
+        if self.caller:
+            self.caller.detach(self)
+            for reg in self.regs:
+                reg.un_register_from_root_and_parent()
+        self.caller = None
 
     @property
     def block(self):
@@ -346,45 +384,8 @@ class Block(Component):
         """
         pass
 
-    def move(self, new_caller: Registry):
-        if self.caller:
-            self.caller.detach(self)
-            self._unregister_from_caller()
-        self.caller = new_caller
-        self.caller.attach(self)
-        self._register_to_caller()
 
-    def close(self):
-        """use this to delete a wrong block
-        (probably those with nonexisting block_id)"""
-        if self.caller:
-            self.caller.detach(self)
-            self._unregister_from_root()
-            self._unregister_from_caller()
-        self.caller = None
-
-    def _unregister_from_root(self):
-        if self.block_id:
-            try:
-                self.root.search_by_id.pop(self.block_id)
-            except KeyError:
-                from .exceptions import DanglingBlockError
-                raise DanglingBlockError(self, self.root)
-
-    def _unregister_from_caller(self):
-        if self.block_id:
-            try:
-                self.caller.by_id.pop(self.block_id)
-            except KeyError:
-                from .exceptions import DanglingBlockError
-                raise DanglingBlockError(self, self.caller)
-
-    def _register_to_caller(self):
-        if self.block_id:
-            self.caller.by_id[self.block_id] = self
-
-
-class Payload(Component, metaclass=ABCMeta):
+class Payload(Controller, metaclass=ABCMeta):
     def __init__(self, caller: Block):
         super().__init__(caller)
         self.caller = caller
@@ -406,20 +407,9 @@ class Payload(Component, metaclass=ABCMeta):
         return self.__block_id
 
     def _set_block_id(self, value: str):
-        from .exceptions import DanglingBlockError
-        if self.block_id:
-            try:
-                self.caller.caller.by_id.pop(self.block_id)
-            except KeyError:
-                raise DanglingBlockError(self.block, self.caller.caller)
-            try:
-                self.root.search_by_id.pop(self.block_id)
-            except KeyError:
-                raise DanglingBlockError(self.block, self.root)
+        self.block.reg_id.un_register_from_root_and_parent()
         self.__block_id = value
-        if self.block_id:
-            self.caller.caller.by_id[self.block_id] = self.block
-            self.root.search_by_id[self.block_id] = self.block
+        self.block.reg_id.register_to_root_and_parent()
 
     @property
     def block_name(self) -> str:
@@ -453,3 +443,83 @@ class Payload(Component, metaclass=ABCMeta):
     @property
     def last_edited_time(self) -> Optional[dt.datetime]:
         return self._last_edited_time
+
+
+class Follower(BlockEditor, metaclass=ABCMeta):
+    def __init__(self, caller: BlockEditor):
+        self.caller = caller
+
+    @property
+    def block(self) -> Block:
+        return self.caller.block
+
+    @property
+    def block_id(self) -> str:
+        return self.block.block_id
+
+    @property
+    def block_name(self) -> str:
+        return self.block.block_name
+
+    @property
+    def archived(self):
+        return self.block.archived
+
+
+class Functional(Follower, metaclass=ABCMeta):
+    def save(self):
+        return {}
+
+    def save_info(self):
+        return {}
+
+    def save_required(self) -> bool:
+        return False
+
+
+class Registerer(Functional, metaclass=ABCMeta):
+    @abstractmethod
+    def register_to_parent(self):
+        pass
+
+    @abstractmethod
+    def register_to_root_and_parent(self):
+        pass
+
+    @abstractmethod
+    def un_register_from_parent(self):
+        pass
+
+    @abstractmethod
+    def un_register_from_root_and_parent(self):
+        pass
+
+
+class IdRegisterer(Registerer):
+    def __init__(self, caller: Block):
+        super().__init__(caller)
+
+    def register_to_parent(self):
+        if self.block_id:
+            self.block.caller.by_id[self.block_id] = self.block
+
+    def register_to_root_and_parent(self):
+        self.register_to_parent()
+        if self.block_id:
+            self.root.id_table[self.block_id] = self.block
+
+    def un_register_from_parent(self):
+        from .exceptions import DanglingBlockError
+        if self.block_id:
+            try:
+                self.block.caller.by_id.pop(self.block_id)
+            except KeyError:
+                raise DanglingBlockError(self.block, self.block.caller)
+
+    def un_register_from_root_and_parent(self):
+        from .exceptions import DanglingBlockError
+        if self.block_id:
+            try:
+                self.root.id_table.pop(self.block_id)
+            except KeyError:
+                raise DanglingBlockError(self.block, self.root)

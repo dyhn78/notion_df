@@ -3,7 +3,8 @@ from __future__ import annotations
 from typing import Union, Any
 
 from .leaders import ItemChildren
-from ...structs.followers import RequestEditor, SingularEditor, Follower
+from ...structs.followers import RequestEditor, SingularEditor
+from ...structs.leaders import Follower
 from notion_zap.cli.gateway.encoders import ContentsEncoder
 from notion_zap.cli.gateway.parsers import BlockChildrenParser
 from notion_zap.cli.gateway.requestors import AppendBlockChildren
@@ -66,12 +67,6 @@ class ItemsCreator(Follower):
     def save_required(self):
         return bool(self.agents)
 
-    def read(self) -> dict[str, Any]:
-        return {'new_children': [child.read() for child in self.values]}
-
-    def richly_read(self) -> dict[str, Any]:
-        return {'new_children': [child.richly_read() for child in self.values]}
-
 
 class TextItemsCreateAgent(RequestEditor):
     def __init__(self, caller: ItemsCreator):
@@ -108,12 +103,6 @@ class TextItemsCreateAgent(RequestEditor):
             child.contents.apply_block_parser(parser)
             child.save_this()
 
-    def read(self) -> dict[str, Any]:
-        return {'new_children': [child.read() for child in self.values]}
-
-    def richly_read(self) -> dict[str, Any]:
-        return {'new_children': [child.richly_read() for child in self.values]}
-
 
 class PageItemCreateAgent(SingularEditor):
     def __init__(self, caller: ItemsCreator, child):
@@ -128,9 +117,3 @@ class PageItemCreateAgent(SingularEditor):
     @property
     def values(self):
         return [self._value]
-
-    def read(self) -> dict[str, Any]:
-        return {'new_children': [child.read() for child in self.values]}
-
-    def richly_read(self) -> dict[str, Any]:
-        return {'new_children': [child.richly_read() for child in self.values]}

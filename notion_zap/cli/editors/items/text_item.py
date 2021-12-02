@@ -2,12 +2,13 @@ from __future__ import annotations
 from typing import Union, Callable
 
 from notion_zap.cli.gateway import encoders, parsers, requestors
+from ..common.document import Document
 from ..common.item import Item, ItemContents
 from ..common.with_items import ItemsBearer, ItemChildren
 from ..structs.leaders import Root
 
 
-class TextItem(Item, ItemsBearer):
+class TextItem(Item, ItemsBearer, Document):
     def __init__(self, caller: Union[ItemChildren, Root], id_or_url: str):
         Item.__init__(self, caller, id_or_url)
         ItemsBearer.__init__(self, caller, id_or_url)
