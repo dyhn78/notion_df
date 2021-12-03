@@ -4,7 +4,7 @@ from abc import ABCMeta, abstractmethod
 from typing import Union, Iterable, Any
 
 from ..structs.block_main import Block, Follower
-from ..structs.base_logic import AccessPoint
+from ..structs.base_logic import Gatherer
 
 
 class BlockWithChildren(Block, metaclass=ABCMeta):
@@ -96,10 +96,10 @@ class BlockWithChildren(Block, metaclass=ABCMeta):
         return True
 
 
-class Children(Follower, AccessPoint, metaclass=ABCMeta):
+class Children(Follower, Gatherer, metaclass=ABCMeta):
     def __init__(self, caller: BlockWithChildren):
         Follower.__init__(self, caller)
-        AccessPoint.__init__(self)
+        Gatherer.__init__(self)
         self.caller = caller
 
     @abstractmethod

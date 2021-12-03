@@ -5,8 +5,8 @@ from ..structs.block_main import Payload
 
 
 class DatabaseSchema(Payload):
-    def __init__(self, caller: Database):
-        super().__init__(caller)
+    def __init__(self, caller: Database, block_id: str):
+        super().__init__(caller, block_id)
 
     def read(self) -> dict[str, Any]:
         return {}

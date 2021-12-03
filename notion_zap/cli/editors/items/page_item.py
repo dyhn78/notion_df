@@ -14,8 +14,8 @@ class PageItem(Item, PageBlock):
         Item.__init__(self, caller, id_or_url)
         PageBlock.__init__(self, caller, id_or_url)
 
-    def _initalize_payload(self):
-        return PageItemContents(self)
+    def _initalize_payload(self, block_id: str):
+        return PageItemContents(self, block_id)
 
     @property
     def contents(self) -> PageItemContents:
@@ -25,9 +25,9 @@ class PageItem(Item, PageBlock):
 
 class PageItemContents(PagePayload, ItemContents,
                        encoders.PageContentsWriter):
-    def __init__(self, caller: PageItem):
-        PagePayload.__init__(self, caller)
-        ItemContents.__init__(self, caller)
+    def __init__(self, caller: PageItem, block_id: str):
+        PagePayload.__init__(self, caller, block_id)
+        ItemContents.__init__(self, caller, block_id)
         self.caller = caller
         if self.block_id:
             requestor = requestors.UpdatePage(self)

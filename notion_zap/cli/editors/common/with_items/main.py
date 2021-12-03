@@ -3,13 +3,13 @@ from abc import ABCMeta
 
 from notion_zap.cli.gateway import requestors, parsers
 from ..with_children import BlockWithChildren, Children
-from ...structs.base_logic import AccessPoint
+from ...structs.base_logic import Gatherer
 from ...structs.block_main import Block
 from ...structs.exceptions import InvalidBlockTypeError
 
 
 class BlockWithItems(BlockWithChildren, metaclass=ABCMeta):
-    def __init__(self, caller: AccessPoint, id_or_url: str):
+    def __init__(self, caller: Gatherer, id_or_url: str):
         super().__init__(caller, id_or_url)
         self.items = ItemChildren(self)
 

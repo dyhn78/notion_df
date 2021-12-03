@@ -4,7 +4,7 @@ from abc import abstractmethod, ABCMeta
 from typing import Optional, Any
 
 from notion_zap.cli.utility import url_to_id, id_to_url
-from .base_logic import Readable, Saveable, BaseComponent, AccessPoint
+from .base_logic import Readable, Saveable, BaseComponent, Gatherer
 
 
 class Component(BaseComponent, metaclass=ABCMeta):
@@ -72,18 +72,31 @@ class Component(BaseComponent, metaclass=ABCMeta):
 
 
 class Block(Component, Readable, Saveable, metaclass=ABCMeta):
-    def __init__(self, caller: AccessPoint, id_or_url: str):
-        self._temp_block_id = url_to_id(id_or_url)
-        self._temp_caller = caller
-        self.__payload = self._initalize_payload()
-        self.__caller = None
-        self.caller = self._temp_caller
-        self._temp_block_id = None
-        self._temp_caller = None
+    def __init__(self, caller: Gatherer, id_or_url: str):
+        self.caller = caller
+        self.__payload = self._initalize_payload(url_to_id(id_or_url))
+        self.caller.attach(self)
+        self.regs.register_to_root_and_parent()
 
     @abstractmethod
-    def _initalize_payload(self) -> Payload:
+    def _initalize_payload(self, block_id: str) -> Payload:
         pass
+
+    def change_parent(self, gatherer: Optional[Gatherer]):
+        if (prev := self.caller) != gatherer:
+            prev.detach(self)
+            self.regs.un_register_from_parent()
+            self.caller = gatherer
+            gatherer.attach(self)
+            self.regs.register_to_parent()
+
+    def close(self):
+        """use this method to detach a wrong block
+        (probably due to nonexisting block_id)"""
+        if isinstance(prev := self.caller, Gatherer):
+            prev.detach(self)
+            self.regs.un_register_from_root_and_parent()
+        self.caller = None
 
     @property
     def block(self):
@@ -91,41 +104,7 @@ class Block(Component, Readable, Saveable, metaclass=ABCMeta):
 
     @property
     def block_id(self):
-        try:
-            return self.payload.block_id
-        except AttributeError:
-            # this temporary attribute is needed before the payload is declared
-            return self._temp_block_id
-
-    @property
-    def caller(self) -> AccessPoint:
-        try:
-            return self.__caller
-        except AttributeError:
-            return self._temp_caller
-
-    @caller.setter
-    def caller(self, value: Optional[AccessPoint]):
-        """assign the value to None to delete a wrong block
-        (probably due to nonexisting block_id)"""
-        prev = self.caller
-        if (
-                isinstance(prev, AccessPoint)
-                and isinstance(value, AccessPoint)
-                and prev != value
-        ):
-            prev.detach(self)
-            self.regs.un_register_from_parent()
-            self.__caller = value
-            value.attach(self)
-            self.regs.register_to_parent()
-        elif isinstance(value, AccessPoint):
-            self.__caller = value
-            value.attach(self)
-            # regs will register from payloads side.
-        elif isinstance(prev, AccessPoint):
-            prev.detach(self)
-            self.regs.un_register_from_root_and_parent()
+        return self.payload.block_id
 
     @property
     def regs(self):
@@ -197,22 +176,22 @@ class Block(Component, Readable, Saveable, metaclass=ABCMeta):
 
 
 class Payload(Component, Readable, Saveable, metaclass=ABCMeta):
-    def __init__(self, caller: Block):
+    def __init__(self, caller: Block, block_id: str):
         super().__init__(caller)
         self.caller = caller
+        self.__block_id = block_id
+
+        from .registry_writer import Registrant, IdRegisterer
+        if not getattr(self, 'regs', None):
+            self.regs = Registrant(self)
+            id_reg = IdRegisterer(self)
+            self.regs.add(id_reg)
 
         self._archived = None
         self._created_time = None
         self._last_edited_time = None
         self._has_children = None
         self._can_have_children = None
-        from .registry_writer import Registrant, IdRegisterer
-        self.__block_id = self.caller.block_id
-        if not getattr(self, 'regs', None):
-            self.regs = Registrant(self)
-            id_reg = IdRegisterer(self)
-            id_reg.register_to_root_and_parent()
-            self.regs.add(id_reg)
 
     @property
     def block(self) -> Block:

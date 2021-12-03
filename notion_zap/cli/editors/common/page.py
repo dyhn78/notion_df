@@ -6,7 +6,7 @@ from typing import Union
 from .document import Document
 from .with_items import BlockWithItems
 from ..structs.exceptions import DanglingBlockError
-from ..structs.base_logic import AccessPoint
+from ..structs.base_logic import Gatherer
 from ..structs.block_main import Payload
 from ..structs.registry_writer import Registerer
 from ..structs.save_agents import RequestEditor
@@ -14,7 +14,7 @@ from notion_zap.cli.gateway import parsers, requestors
 
 
 class PageBlock(BlockWithItems, Document, metaclass=ABCMeta):
-    def __init__(self, caller: AccessPoint, id_or_url: str):
+    def __init__(self, caller: Gatherer, id_or_url: str):
         super().__init__(caller, id_or_url)
 
     @property
@@ -44,8 +44,8 @@ class PageBlock(BlockWithItems, Document, metaclass=ABCMeta):
 
 
 class PagePayload(Payload, RequestEditor, metaclass=ABCMeta):
-    def __init__(self, caller: PageBlock):
-        Payload.__init__(self, caller)
+    def __init__(self, caller: PageBlock, block_id: str):
+        Payload.__init__(self, caller, block_id)
         self.caller = caller
         self.__title = ''
         self.regs.add(TitleRegisterer(self))

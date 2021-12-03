@@ -6,7 +6,6 @@ from ..common.helpers import enumerate_func
 from ..common.insert_contents_data import InsertContents
 from ..common.remove_dummy_blocks import remove_dummy_blocks
 from ..structs.controller_base_logic import ReadingPageWriter
-from ..structs.exceptions import NoURLFoundError
 
 
 class BookstoreManager:
@@ -22,20 +21,16 @@ class BookstoreDataWriter:
         self.book_names = self.status.book_names
 
     def execute(self):
-        try:
-            url = self.read_or_scrap_url()
-            if not url:
-                return False
-            data = self.scrap_bkst_data(url)
-            if not data:
-                return False
-        except NoURLFoundError:
-            self.status.set_url_missing_flag()
-        else:
-            self.set_metadata(data)
-            self.set_cover_image(data)
-            self.set_contents_data(data)
-            return True
+        url = self.read_or_scrap_url()
+        if not url:
+            return False
+        data = self.scrap_bkst_data(url)
+        if not data:
+            return False
+        self.set_metadata(data)
+        self.set_cover_image(data)
+        self.set_contents_data(data)
+        return True
 
     def read_or_scrap_url(self):
         if url := self.page.props.get_tag('url', default=''):

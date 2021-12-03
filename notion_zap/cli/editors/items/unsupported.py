@@ -1,15 +1,15 @@
 from typing import Any
 
-from ..structs.base_logic import AccessPoint
+from ..structs.base_logic import Gatherer
 from ..structs.block_main import Block, Payload
 
 
 class UnsupportedBlock(Block):
-    def __init__(self, caller: AccessPoint, id_or_url: str):
+    def __init__(self, caller: Gatherer, id_or_url: str):
         super().__init__(caller, id_or_url)
 
-    def _initalize_payload(self) -> Payload:
-        return UnsupportedPayload(self)
+    def _initalize_payload(self, block_id) -> Payload:
+        return UnsupportedPayload(self, block_id)
 
     @property
     def block_name(self):

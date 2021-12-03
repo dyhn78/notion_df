@@ -48,8 +48,8 @@ class Item(Block, metaclass=ABCMeta):
 
 
 class ItemContents(Payload, RequestEditor, metaclass=ABCMeta):
-    def __init__(self, caller: Item):
-        Payload.__init__(self, caller)
+    def __init__(self, caller: Item, block_id: str):
+        Payload.__init__(self, caller, block_id)
         self.caller = caller
         self._read_plain = ''
         self._read_rich = []

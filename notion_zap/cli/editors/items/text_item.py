@@ -13,8 +13,8 @@ class TextItem(Item, BlockWithItems, Document):
         Item.__init__(self, caller, id_or_url)
         BlockWithItems.__init__(self, caller, id_or_url)
 
-    def _initalize_payload(self):
-        return TextItemContents(self)
+    def _initalize_payload(self, block_id):
+        return TextItemContents(self, block_id)
 
     @property
     def contents(self) -> TextItemContents:
@@ -44,8 +44,8 @@ class TextItemContents(ItemContents, encoders.TextContentsWriter):
     they will insert blank paragraph as a default.
     """
 
-    def __init__(self, caller: TextItem):
-        super().__init__(caller)
+    def __init__(self, caller: TextItem, block_id):
+        super().__init__(caller, block_id)
         self.caller = caller
         self._requestor = requestors.UpdateBlock(self)
         self._callback = None

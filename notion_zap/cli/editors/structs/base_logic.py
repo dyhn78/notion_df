@@ -151,7 +151,7 @@ class Root(Registry):
         return self.objects.save()
 
 
-class AccessPoint(Readable, Saveable, Registry, metaclass=ABCMeta):
+class Gatherer(Readable, Saveable, Registry, metaclass=ABCMeta):
     @abstractmethod
     def __iter__(self):
         pass
@@ -167,7 +167,7 @@ class AccessPoint(Readable, Saveable, Registry, metaclass=ABCMeta):
         pass
 
 
-class RootRegistry(AccessPoint):
+class RootRegistry(Gatherer):
     def __init__(self, caller: Root):
         super().__init__()
         self.caller = caller

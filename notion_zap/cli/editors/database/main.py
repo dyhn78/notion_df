@@ -27,9 +27,9 @@ class Database(BlockWithChildren):
         self.alias = database_alias
         self.root.by_alias[self.alias] = self
 
-    def _initalize_payload(self) -> Payload:
+    def _initalize_payload(self, block_id) -> Payload:
         from .schema import DatabaseSchema
-        return DatabaseSchema(self)
+        return DatabaseSchema(self, block_id)
 
     @property
     def schema(self):

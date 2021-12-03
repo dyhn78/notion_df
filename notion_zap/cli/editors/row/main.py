@@ -19,8 +19,8 @@ class PageRow(PageBlock):
         from ..database.main import RowChildren
         self.caller: Union[RootRegistry, RowChildren] = caller
 
-    def _initalize_payload(self) -> Payload:
-        return PageRowProperties(self)
+    def _initalize_payload(self, block_id: str) -> Payload:
+        return PageRowProperties(self, block_id)
 
     @property
     def payload(self) -> PageRowProperties:
@@ -42,9 +42,9 @@ class PageRow(PageBlock):
 
 
 class PageRowProperties(PagePayload, encoders.PageRowPropertyWriter):
-    def __init__(self, caller: PageRow):
+    def __init__(self, caller: PageRow, block_id: str):
         self.frame = caller.frame if caller.frame else PropertyFrame()
-        PagePayload.__init__(self, caller)
+        PagePayload.__init__(self, caller, block_id)
         encoders.PageRowPropertyWriter.__init__(self, self.frame)
         self.caller = caller
 
@@ -62,7 +62,6 @@ class PageRowProperties(PagePayload, encoders.PageRowPropertyWriter):
 
         self._read_plain = {}
         self._read_rich = {}
-
 
     @property
     def block(self) -> PageRow:

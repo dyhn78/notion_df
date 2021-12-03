@@ -41,6 +41,7 @@ class LibraryManager:
             return False
         else:
             writer.set_lib_data(data, first_lib)
+            return True
 
     def scrap(self, status: ReadingPageWriter, tasks: set):
         data = {}
