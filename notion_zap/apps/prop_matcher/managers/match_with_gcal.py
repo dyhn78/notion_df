@@ -34,7 +34,7 @@ class _GcalScheduleMatcherAbs(GcalMatcherAbs, DateMatcherAbs, metaclass=ABCMeta)
         GcalMatcherAbs.__init__(self, bs)
         DateMatcherAbs.__init__(self, bs)
         self.domain = self.bs.schedules
-        self.domain_by_idx = self.domain.by_idx_at(self.Tgcal_id)
+        self.domain_by_idx = self.domain.rows.index_by_tag(self.Tgcal_id)
         self.calendar_id = calendar_id
 
 

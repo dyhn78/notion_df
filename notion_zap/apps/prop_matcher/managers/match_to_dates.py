@@ -19,21 +19,12 @@ class DateMatcherAbs(EditorManager, metaclass=ABCMeta):
     T_tar = 'to_dates'
     Ttars_idx = 'title'
     Ttars_date = 'manual_date'
-    target_by_idx: dict[str, editors.PageRow] = {}
-    # this boolean flag is SHARED by all implemented classes,
-    #  so that prevent it from being initialized multiple times.
-    target_by_idx_initalized = False
 
     def __init__(self, bs):
         super().__init__(bs)
         self.target: editors.Database = self.bs.dates
         self.reference = self.bs.journals
-
-    @classmethod
-    def initalize_idx(cls, self):
-        if not cls.target_by_idx_initalized:
-            cls.target_by_idx = self.target.rows.by_idx_at(cls.Ttars_idx)
-            cls.target_by_idx_initalized = True
+        self.target_by_idx = self.target.rows.index_by_tag(self.Ttars_idx)
 
     def find_or_create_tar_by_date(self, date_val: Union[dt.datetime, dt.date]):
         if tar := self.find_tar_by_date(date_val):
@@ -73,7 +64,6 @@ class DateMatcherType1(DateMatcherAbs):
         self.domains = [self.bs.journals]
 
     def execute(self):
-        self.initalize_idx(self)
         for domain in self.domains:
             for dom in domain.rows:
                 if tar := self.determine_tar(dom, domain):
@@ -104,7 +94,6 @@ class DateMatcherType2(DateMatcherAbs):
         self.domains = [self.bs.schedules]
 
     def execute(self):
-        self.initalize_idx(self)
         for domain in self.domains:
             for dom in domain.rows:
                 if tar := self.match_created_dates(dom):
@@ -141,7 +130,6 @@ class DateMatcherType3(DateMatcherAbs):
         self.reference2 = self.bs.schedules
 
     def execute(self):
-        self.initalize_idx(self)
         for domain in self.domains:
             for dom in domain.rows:
                 if tar := self.match_dates(dom):
@@ -193,7 +181,6 @@ class DateMatcherType4(DateMatcherAbs):
         self.domains = [self.bs.memos]
 
     def execute(self):
-        self.initalize_idx(self)
         for domain in self.domains:
             for dom in domain.rows:
                 if tar := self.determine_tar(dom):
@@ -270,7 +257,6 @@ class DateDomainFiller(DateMatcherAbs):
         ]
 
     def execute(self):
-        self.initalize_idx(self)
         self.bs.root.disable_overwrite = self.disable_overwrite
         for domain in self.domains_type1:
             for dom in domain.rows:

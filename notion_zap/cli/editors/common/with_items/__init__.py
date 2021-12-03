@@ -1,4 +1,4 @@
-from .leaders import ItemsBearer, ItemChildren
+from .main import BlockWithItems, ItemChildren
 from .creator import (
     ItemsCreator, TextItemsCreateAgent, PageItemCreateAgent)
 from .updater import ItemsUpdater

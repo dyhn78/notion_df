@@ -1,9 +1,7 @@
-from typing import Union
-
 from notion_zap.cli.gateway import parsers
-from .leaders import ItemChildren
-from ...structs.leaders import Block
-from ...structs.followers import ListEditor
+from .main import ItemChildren
+from ...structs.block_main import Block
+from ...structs.save_agents import ListEditor
 
 
 class ItemsUpdater(ListEditor):
@@ -17,7 +15,7 @@ class ItemsUpdater(ListEditor):
         from ...items.parser_logic import get_type_of_block_parser
         for parser in children_parser:
             block_type = get_type_of_block_parser(parser)
-            child = block_type(self, parser.block_id)
+            child = block_type(self.caller, parser.block_id)
             if isinstance(child, Item):
                 child.contents.apply_block_parser(parser)
             self.attach_item(child)
@@ -26,7 +24,7 @@ class ItemsUpdater(ListEditor):
         self.values.append(child)
 
     @property
-    def values(self) -> list[Union[Block]]:
+    def values(self) -> list[Block]:
         return self._values
 
     def __iter__(self):

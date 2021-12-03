@@ -1,7 +1,7 @@
 from typing import Any
 
-from .leaders import Database
-from ..structs.leaders import Payload
+from .main import Database
+from ..structs.block_main import Payload
 
 
 class DatabaseSchema(Payload):

@@ -1,22 +1,21 @@
 from __future__ import annotations
 
-from typing import Union, Any
+from typing import Union
 
-from .leaders import ItemChildren
-from ...structs.followers import RequestEditor, SingularEditor
-from ...structs.leaders import Follower
+from .main import ItemChildren
+from ...structs.save_agents import RequestEditor, SingularEditor
+from ...structs.base_logic import Saveable
+from ...structs.block_main import Follower
 from notion_zap.cli.gateway.encoders import ContentsEncoder
 from notion_zap.cli.gateway.parsers import BlockChildrenParser
 from notion_zap.cli.gateway.requestors import AppendBlockChildren
 
 
-class ItemsCreator(Follower):
+class ItemsCreator(Follower, Saveable):
     def __init__(self, caller: ItemChildren):
         super().__init__(caller)
-        self.caller = caller
         self.agents: list[Union[TextItemsCreateAgent,
                                 PageItemCreateAgent]] = []
-        self._execute_in_process = False
 
     @property
     def values(self):
@@ -28,7 +27,7 @@ class ItemsCreator(Follower):
     def attach_page_item(self, child):
         from ...items.page_item import PageItem
         assert isinstance(child, PageItem)
-        agent = PageItemCreateAgent(self, child)
+        agent = PageItemCreateAgent(self.block, child)
         self.agents.append(agent)
 
     def attach_text_item(self, child):
@@ -42,7 +41,7 @@ class ItemsCreator(Follower):
                 isinstance(self.agents[-1], TextItemsCreateAgent)):
             agent = self.agents[-1]
         else:
-            agent = TextItemsCreateAgent(self)
+            agent = TextItemsCreateAgent(self.block)
             self.agents.append(agent)
         return agent
 
@@ -50,12 +49,8 @@ class ItemsCreator(Follower):
         self.agents = []
 
     def save(self):
-        if self._execute_in_process:
-            return []
-        self._execute_in_process = True
         for agent in self.agents:
             agent.save()
-        self._execute_in_process = False
         return self.values
 
     def save_info(self):
@@ -69,7 +64,7 @@ class ItemsCreator(Follower):
 
 
 class TextItemsCreateAgent(RequestEditor):
-    def __init__(self, caller: ItemsCreator):
+    def __init__(self, caller):
         super().__init__(caller)
         self._requestor = AppendBlockChildren(self)
 
@@ -105,9 +100,8 @@ class TextItemsCreateAgent(RequestEditor):
 
 
 class PageItemCreateAgent(SingularEditor):
-    def __init__(self, caller: ItemsCreator, child):
-        super().__init__(caller)
-        self.caller = caller
+    def __init__(self, block, child):
+        super().__init__(block)
         self._value = child
 
     @property

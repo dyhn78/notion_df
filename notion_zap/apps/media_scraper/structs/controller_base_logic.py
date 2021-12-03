@@ -10,7 +10,7 @@ class ReadingDBController:
 
     def __init__(self):
         self.root = editors.Root()
-        self.pagelist = self.root.open_database(
+        self.pagelist = self.root.objects.database(
             *DatabaseInfo.READINGS, ReadingDB_FRAME).rows
 
 

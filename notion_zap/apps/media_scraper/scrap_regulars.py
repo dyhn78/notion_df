@@ -26,11 +26,14 @@ class RegularScrapController(ReadingDBController):
         if not self.fetch(request_size):
             return
         if self.has_lib_tasks:
+            stopwatch('Selenium 시작..')
             self.lib.start()
         for page in self.pagelist:
             self.edit(page)
         if self.has_lib_tasks:
+            stopwatch('Selenium 마감..')
             self.lib.quit()
+            stopwatch('Selenium 종료')
 
     def fetch(self, request_size):
         query = self.pagelist.open_query()

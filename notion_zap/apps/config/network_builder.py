@@ -3,6 +3,8 @@ from __future__ import annotations
 from notion_zap.cli.structs import PropertyColumn, PropertyFrame
 
 
+# noinspection PyUnresolvedReferences
+# TODO: self.tag 를 tuple 로 다시 짜기.
 class NetworkPropertyColumn(PropertyColumn):
     @property
     def edge_type(self):

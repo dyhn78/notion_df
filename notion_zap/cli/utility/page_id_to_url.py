@@ -2,6 +2,8 @@ import re
 
 
 def id_to_url(block_id: str, preview=False):
+    if not block_id:
+        return ''
     block_id = block_id.replace('-', '')
     url = 'https://www.notion.so/dyhn/' + block_id
     if preview:
@@ -10,6 +12,8 @@ def id_to_url(block_id: str, preview=False):
 
 
 def url_to_id(id_or_url: str):
+    if not id_or_url:
+        return ''
     prefixes = ['https://www.notion.so/', 'www.notion.so/']
     for prefix in prefixes:
         id_or_url = id_or_url.replace(prefix, '')

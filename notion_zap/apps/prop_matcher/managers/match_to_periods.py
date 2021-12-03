@@ -19,7 +19,7 @@ class PeriodMatcherAbs(EditorManager, metaclass=ABCMeta):
     def __init__(self, bs):
         super().__init__(bs)
         self.target = self.bs.periods
-        self.target_by_idx = self.target.rows.by_idx_at(self.Ttars_idx)
+        self.target_by_idx = self.target.rows.index_by_tag(self.Ttars_idx)
 
     def find_or_create_by_date_val(self, date_val: dt.date):
         if tar := self.find_by_date_val(date_val):
@@ -45,10 +45,10 @@ class PeriodMatcherAbs(EditorManager, metaclass=ABCMeta):
         tar = self.target.rows.open_new_page()
         date_handler = DateHandler(date_val)
 
-        tar_idx_val = date_handler.strf_year_and_week()
+        tar_idx = date_handler.strf_year_and_week()
         writer = tar.props
-        writer.write_title(tag=self.Ttars_idx, value=tar_idx_val)
-        self.target_by_idx.update({tar_idx_val: tar})
+        writer.write_title(tag=self.Ttars_idx, value=tar_idx)
+        self.target_by_idx.update({tar_idx: tar})
 
         date_range = DateObject(start=date_handler.first_day_of_week(),
                                 end=date_handler.last_day_of_week())
@@ -56,12 +56,12 @@ class PeriodMatcherAbs(EditorManager, metaclass=ABCMeta):
         property_writer.write_date(tag=self.Ttars_date, value=date_range)
         return tar.save()
 
-    def update_tar(self, tar: editors.PageRow, tar_idx_val=None,
+    def update_tar(self, tar: editors.PageRow, tar_idx=None,
                    disable_overwrite=False):
-        """provide tar_idx_val manually if yet-not-synced to server-side"""
-        if tar_idx_val is None:
-            tar_idx_val = tar.props.read_tag(self.Ttars_idx)
-        date_handler = DateHandler.from_strf_year_and_week(tar_idx_val)
+        """provide tar_idx manually if yet-not-synced to server-side"""
+        if tar_idx is None:
+            tar_idx = tar.props.read_tag(self.Ttars_idx)
+        date_handler = DateHandler.from_strf_year_and_week(tar_idx)
 
         date_range = DateObject(start=date_handler.first_day_of_week(),
                                 end=date_handler.last_day_of_week())

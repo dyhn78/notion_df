@@ -2,13 +2,14 @@ from __future__ import annotations
 from abc import ABCMeta
 
 from notion_zap.cli.gateway import requestors, parsers
-from ..with_children import ChildrenBearer, Children
-from ...structs.leaders import Block, Registry
+from ..with_children import BlockWithChildren, Children
+from ...structs.base_logic import AccessPoint
+from ...structs.block_main import Block
 from ...structs.exceptions import InvalidBlockTypeError
 
 
-class ItemsBearer(ChildrenBearer, metaclass=ABCMeta):
-    def __init__(self, caller: Registry, id_or_url: str):
+class BlockWithItems(BlockWithChildren, metaclass=ABCMeta):
+    def __init__(self, caller: AccessPoint, id_or_url: str):
         super().__init__(caller, id_or_url)
         self.items = ItemChildren(self)
 
@@ -19,20 +20,21 @@ class ItemsBearer(ChildrenBearer, metaclass=ABCMeta):
     def _fetch_children(self, request_size=0):
         self.children.fetch(request_size)
 
-    def indent_cursor(self) -> ItemsBearer:
+    def indent_cursor(self) -> BlockWithItems:
         """this returns new 'cursor' where you can use of open_new_xx method.
         raises InvalidBlockTypeError if no child can_have_children."""
         for child in reversed(self.items.list_all()):
-            if isinstance(child, ItemsBearer) and child.can_have_children:
+            if isinstance(child, BlockWithItems) and child.can_have_children:
                 return child
         else:
             raise InvalidBlockTypeError(self)
 
 
 class ItemChildren(Children):
-    def __init__(self, caller: ItemsBearer):
+    def __init__(self, caller: BlockWithItems):
         super().__init__(caller)
         self.caller = caller
+        self.__save_in_process = False
 
         from .updater import ItemsUpdater
         self._updater = ItemsUpdater(self)
@@ -47,10 +49,14 @@ class ItemChildren(Children):
         return self._updater.values + self._creator.values
 
     def save(self):
+        if self.__save_in_process:
+            return {}
+        self.__save_in_process = True
         self._updater.save()
         new_children = self._creator.save()
         self._updater.values.extend(new_children)
         self._creator.clear()
+        self.__save_in_process = False
 
     def save_required(self):
         return (self._updater.save_required()
@@ -76,7 +82,7 @@ class ItemChildren(Children):
     def open_new_page(self):
         return self.open_page('')
 
-    def _deposit(self, child: Block):
+    def attach(self, child: Block):
         if not self.block.can_have_children:
             raise InvalidBlockTypeError(self.block)
 

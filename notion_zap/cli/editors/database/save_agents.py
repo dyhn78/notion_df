@@ -1,17 +1,17 @@
 from typing import Any
 
-from .leaders import RowChildren
-from ..row.leader import PageRow
-from ..structs.followers import ListEditor
+from .main import RowChildren
+from ..row.main import PageRow
+from ..structs.save_agents import ListEditor
 from notion_zap.cli.gateway import parsers
+from ...structs import PropertyFrame
 
 
 class RowChildrenUpdater(ListEditor):
     def __init__(self, caller: RowChildren):
-        super().__init__(caller)
+        self.frame = caller.frame if caller.frame else PropertyFrame()
+        ListEditor.__init__(self, caller)
         self.caller = caller
-        self.frame = caller.frame
-
         self._values = []
 
     @property
@@ -59,9 +59,9 @@ class RowChildrenUpdater(ListEditor):
 
 class RowChildrenCreator(ListEditor):
     def __init__(self, caller: RowChildren):
-        super().__init__(caller)
+        self.frame = caller.frame if caller.frame else PropertyFrame()
+        ListEditor.__init__(self, caller)
         self.caller = caller
-        self.frame = self.caller.frame
 
         self._values = []
 

@@ -5,15 +5,15 @@ from abc import abstractmethod
 from typing import Union
 
 from notion_zap.cli.gateway import parsers
-from .with_items.leaders import ItemsBearer, ItemChildren
+from ..structs.base_logic import RootRegistry
+from .with_items.main import BlockWithItems, ItemChildren
 from ..structs.exceptions import InvalidParentTypeError, NoParentFoundError
-from ..structs.followers import RequestEditor
-from ..structs.leaders import Block, Payload
-from ..structs.leaders import Root
+from ..structs.save_agents import RequestEditor
+from ..structs.block_main import Block, Payload
 
 
 class Item(Block, metaclass=ABCMeta):
-    def __init__(self, caller: Union[ItemChildren, Root], id_or_url: str):
+    def __init__(self, caller: Union[ItemChildren, RootRegistry], id_or_url: str):
         super().__init__(caller, id_or_url)
 
     @property
@@ -22,17 +22,18 @@ class Item(Block, metaclass=ABCMeta):
 
     @property
     def payload(self) -> ItemContents:
-        return self.contents
+        # noinspection PyTypeChecker
+        return super().payload
 
     @property
     @abstractmethod
     def contents(self) -> ItemContents:
-        pass
+        return self.payload
 
     @property
     def parent(self):
         if parent := self.parent:
-            if not isinstance(parent, ItemsBearer):
+            if not isinstance(parent, BlockWithItems):
                 raise InvalidParentTypeError(self)
             return parent
         return None

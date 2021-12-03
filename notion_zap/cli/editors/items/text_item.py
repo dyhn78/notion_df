@@ -4,20 +4,22 @@ from typing import Union, Callable
 from notion_zap.cli.gateway import encoders, parsers, requestors
 from ..common.document import Document
 from ..common.item import Item, ItemContents
-from ..common.with_items import ItemsBearer, ItemChildren
-from ..structs.leaders import Root
+from ..structs.base_logic import RootRegistry
+from ..common.with_items import BlockWithItems, ItemChildren
 
 
-class TextItem(Item, ItemsBearer, Document):
-    def __init__(self, caller: Union[ItemChildren, Root], id_or_url: str):
+class TextItem(Item, BlockWithItems, Document):
+    def __init__(self, caller: Union[ItemChildren, RootRegistry], id_or_url: str):
         Item.__init__(self, caller, id_or_url)
-        ItemsBearer.__init__(self, caller, id_or_url)
-        self.caller = caller
-        self._contents = TextItemContents(self)
+        BlockWithItems.__init__(self, caller, id_or_url)
+
+    def _initalize_payload(self):
+        return TextItemContents(self)
 
     @property
     def contents(self) -> TextItemContents:
-        return self._contents
+        # noinspection PyTypeChecker
+        return self.payload
 
     @property
     def block_name(self):

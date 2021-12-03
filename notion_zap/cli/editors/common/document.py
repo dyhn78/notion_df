@@ -1,7 +1,7 @@
 from __future__ import annotations
 from abc import ABCMeta
 
-from ..structs.leaders import Block
+from ..structs.block_main import Block
 
 
 class Document(Block, metaclass=ABCMeta):

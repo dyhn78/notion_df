@@ -1,23 +1,68 @@
-from typing import Any
+from __future__ import annotations
+from typing import Union, Optional, Any, Hashable
 
-from ..common.page import PagePayload
-from .leader import PageRow
-from notion_zap.cli.gateway import encoders, requestors, parsers
 from notion_zap.cli.structs import PropertyFrame
+from ..common.page import PageBlock, PagePayload
+from ..common.with_children import Children
+from ..structs.base_logic import RootRegistry
+from ..structs.block_main import Payload
+from ...gateway import encoders, requestors, parsers
+
+
+class PageRow(PageBlock):
+    def __init__(self, caller: Union[RootRegistry, Children],
+                 id_or_url: str,
+                 frame: Optional[PropertyFrame] = None):
+        self.frame = frame if frame else PropertyFrame()
+        PageBlock.__init__(self, caller, id_or_url)
+
+        from ..database.main import RowChildren
+        self.caller: Union[RootRegistry, RowChildren] = caller
+
+    def _initalize_payload(self) -> Payload:
+        return PageRowProperties(self)
+
+    @property
+    def payload(self) -> PageRowProperties:
+        # noinspection PyTypeChecker
+        return super(PageRow, self).payload
+
+    @property
+    def props(self) -> PageRowProperties:
+        # noinspection PyTypeChecker
+        return self.payload
+
+    @property
+    def parent(self):
+        from ..database.main import Database
+        if parent := super().parent:
+            assert isinstance(parent, Database)
+            return parent
+        return None
 
 
 class PageRowProperties(PagePayload, encoders.PageRowPropertyWriter):
-    def __init__(self, caller: PageRow, id_or_url: str):
+    def __init__(self, caller: PageRow):
+        self.frame = caller.frame if caller.frame else PropertyFrame()
         PagePayload.__init__(self, caller)
-        self.caller = caller
-        self.frame: PropertyFrame = caller.frame
         encoders.PageRowPropertyWriter.__init__(self, self.frame)
-        if id_or_url:
+        self.caller = caller
+
+        if self.block_id:
             self._requestor = requestors.UpdatePage(self)
         else:
             self._requestor = requestors.CreatePage(self, under_database=True)
+
+        from .registerer import KeyRegisterer, TagRegisterer
+        if self.parent:
+            for prop_key in self.parent.rows.by_keys:
+                self.regs.add(KeyRegisterer(self, prop_key))
+            for prop_tag in self.parent.rows.by_tags:
+                self.regs.add(TagRegisterer(self, prop_tag))
+
         self._read_plain = {}
         self._read_rich = {}
+
 
     @property
     def block(self) -> PageRow:
@@ -38,12 +83,14 @@ class PageRowProperties(PagePayload, encoders.PageRowPropertyWriter):
         self.frame.fetch_parser(parser)
         self._set_title(parser.pagerow_title)
 
-        for reg in self.block.regs_prop.values():
-            reg.un_register_from_root_and_parent()
+        for reg in self.regs:
+            if reg.track_key not in ['id', 'title']:
+                reg.un_register_from_root_and_parent()
         self._read_plain = parser.values
         self._read_rich = parser.rich_values
-        for reg in self.block.regs_prop.values():
-            reg.register_to_root_and_parent()
+        for reg in self.regs:
+            if reg.track_key not in ['id', 'title']:
+                reg.register_to_root_and_parent()
 
     def push_encoder(self, prop_key: str, encoder: encoders.PropertyEncoder) \
             -> encoders.PropertyEncoder:
@@ -85,32 +132,25 @@ class PageRowProperties(PagePayload, encoders.PageRowPropertyWriter):
             value = default
         return value
 
-    def read_tag(self, prop_tag: str):
+    def read_tag(self, prop_tag: Hashable):
         return self.read_key(self.frame.key_of(prop_tag))
 
-    def richly_read_tag(self, prop_tag: str):
+    def richly_read_tag(self, prop_tag: Hashable):
         return self.richly_read_key(self.frame.key_of(prop_tag))
 
-    def get_tag(self, prop_tag: str, default=None):
+    def get_tag(self, prop_tag: Hashable, default=None):
         try:
             prop_key = self.frame.key_of(prop_tag)
         except KeyError:
             return default
         return self.get_key(prop_key, default)
 
-    def richly_get_tag(self, prop_tag: str, default=None):
+    def richly_get_tag(self, prop_tag: Hashable, default=None):
         try:
             prop_key = self.frame.key_of(prop_tag)
         except KeyError:
             return default
         return self.richly_get_key(prop_key, default)
-
-    @staticmethod
-    def _assert_string_key(prop_key):
-        if not isinstance(prop_key, str):
-            comment = f"<prop_key: {prop_key}>"
-            raise TypeError(comment)
-        return
 
     def read_all_keys(self):
         return self._read_plain
@@ -144,3 +184,10 @@ class PageRowProperties(PagePayload, encoders.PageRowPropertyWriter):
                 plain_value = self._read_plain.get(self.frame.key_of(tag))
                 res.update({tag: plain_value})
         return res
+
+    @staticmethod
+    def _assert_string_key(prop_key):
+        if not isinstance(prop_key, str):
+            comment = f"<prop_key: {prop_key}>"
+            raise TypeError(comment)
+        return

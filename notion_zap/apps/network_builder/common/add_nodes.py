@@ -13,10 +13,10 @@ class TopologyBuilder:
         self.request_size = request_size
         self.G = nx.DiGraph()
         self.root = editors.Root()
-        self.themes = self.root.open_database(*DatabaseInfo.THEMES,
-                                              NetworkFrames.THEMES).rows
-        self.ideas = self.root.open_database(*DatabaseInfo.IDEAS,
-                                             NetworkFrames.IDEAS).rows
+        self.themes = self.root.objects.database(
+            *DatabaseInfo.THEMES, NetworkFrames.THEMES).rows
+        self.ideas = self.root.objects.database(
+            *DatabaseInfo.IDEAS, NetworkFrames.IDEAS).rows
         self.all: dict[str, editors.RowChildren] = {
             'themes': self.themes,
             'ideas': self.ideas

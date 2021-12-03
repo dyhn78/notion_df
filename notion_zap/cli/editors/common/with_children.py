@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
-from collections import defaultdict
-from typing import Iterator, Union, Iterable, Any
+from typing import Union, Iterable, Any
 
-from ..structs.leaders import Block, Registry, Follower, Controller
+from ..structs.block_main import Block, Follower
+from ..structs.base_logic import AccessPoint
 
 
-class ChildrenBearer(Block):
+class BlockWithChildren(Block, metaclass=ABCMeta):
     @property
     @abstractmethod
     def children(self) -> Children:
@@ -37,42 +37,42 @@ class ChildrenBearer(Block):
         pass
 
     def iter_descendants_with(self, exact_rank_diff: int) \
-            -> Iterable[Union[ChildrenBearer, Block]]:
+            -> Iterable[Union[BlockWithChildren, Block]]:
         if exact_rank_diff > 0:
             yield from self.__iter_descendants_with(self, exact_rank_diff)
         else:
             return iter([])
 
     @classmethod
-    def __iter_descendants_with(cls, block: ChildrenBearer, exact_rank_diff: int):
+    def __iter_descendants_with(cls, block: BlockWithChildren, exact_rank_diff: int):
         if exact_rank_diff == 0:
             yield block
         else:
             for child in block.children:
-                if isinstance(child, ChildrenBearer):
+                if isinstance(child, BlockWithChildren):
                     yield from cls.__iter_descendants_with(child, exact_rank_diff - 1)
 
     def iter_descendants_within(self, max_rank_diff: int) \
-            -> Iterable[Union[ChildrenBearer, Block]]:
+            -> Iterable[Union[BlockWithChildren, Block]]:
         if max_rank_diff > 0:
             yield from self.__iter_descendants_within(self, max_rank_diff)
         else:
             return iter([])
 
     @classmethod
-    def __iter_descendants_within(cls, block: ChildrenBearer, max_rank_diff: int):
+    def __iter_descendants_within(cls, block: BlockWithChildren, max_rank_diff: int):
         if max_rank_diff >= 0:
             yield block
         if max_rank_diff > 0:
             for child in block.children:
-                if isinstance(child, ChildrenBearer):
+                if isinstance(child, BlockWithChildren):
                     yield from cls.__iter_descendants_within(child, max_rank_diff - 1)
 
     def iter_descendants(self) \
-            -> Iterable[Union[ChildrenBearer, Block]]:
+            -> Iterable[Union[BlockWithChildren, Block]]:
         for child in self.children:
             yield child
-            if isinstance(child, ChildrenBearer):
+            if isinstance(child, BlockWithChildren):
                 yield from child.iter_descendants()
 
     def fetch_descendants_within(self, max_rank_diff: int, min_rank_diff=1,
@@ -82,13 +82,13 @@ class ChildrenBearer(Block):
         if min_rank_diff - 1 <= 0:
             self._fetch_children(request_size)
         for child in self.children:
-            if isinstance(child, ChildrenBearer):
+            if isinstance(child, BlockWithChildren):
                 child.fetch_descendants_within(max_rank_diff - 1, min_rank_diff - 1)
 
     def fetch_descendants(self, request_size=0):
         self._fetch_children(request_size)
         for child in self.children:
-            if isinstance(child, ChildrenBearer):
+            if isinstance(child, BlockWithChildren):
                 child.fetch_descendants(request_size)
 
     @property
@@ -96,25 +96,20 @@ class ChildrenBearer(Block):
         return True
 
 
-class Children(Controller, Follower, Registry, metaclass=ABCMeta):
-    def __init__(self, caller: ChildrenBearer):
-        Controller.__init__(self, caller)
-        Registry.__init__(self)
+class Children(Follower, AccessPoint, metaclass=ABCMeta):
+    def __init__(self, caller: BlockWithChildren):
+        Follower.__init__(self, caller)
+        AccessPoint.__init__(self)
         self.caller = caller
-        self._by_id = {}
-        self._by_title = defaultdict(list)
 
     @abstractmethod
     def list_all(self) -> list[Block]:
         pass
 
-    def iter_all(self) -> Iterator[Block]:
-        return iter(self.iter_all())
-
     def __iter__(self):
         """this will return ALL child blocks on the editor at the moment,
          even yet-not-created or archived ones."""
-        return self.iter_all()
+        return iter(self.list_all())
 
     def read(self) -> dict[str, Any]:
         return {'children': [child.read() for child in self.list_all()]}

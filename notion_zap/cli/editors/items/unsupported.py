@@ -1,18 +1,15 @@
 from typing import Any
 
-from ..structs.leaders import Registry, Block, Payload
+from ..structs.base_logic import AccessPoint
+from ..structs.block_main import Block, Payload
 
 
 class UnsupportedBlock(Block):
-    def __init__(self, caller: Registry, id_or_url: str):
+    def __init__(self, caller: AccessPoint, id_or_url: str):
         super().__init__(caller, id_or_url)
-        self.caller = caller
 
-        self._payload = UnsupportedBlockPayload(self)
-
-    @property
-    def payload(self):
-        return self._payload
+    def _initalize_payload(self) -> Payload:
+        return UnsupportedPayload(self)
 
     @property
     def block_name(self):
@@ -38,7 +35,7 @@ class UnsupportedBlock(Block):
         return False
 
 
-class UnsupportedBlockPayload(Payload):
+class UnsupportedPayload(Payload):
     def read(self) -> dict[str, Any]:
         return {}
 

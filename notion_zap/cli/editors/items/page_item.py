@@ -5,38 +5,36 @@ from typing import Union
 from notion_zap.cli.gateway import encoders, parsers, requestors
 from ..common.item import Item, ItemContents
 from ..common.page import PageBlock, PagePayload
+from ..structs.base_logic import RootRegistry
 from ..common.with_items import ItemChildren
-from ..structs.leaders import Root
 
 
 class PageItem(Item, PageBlock):
-    def __init__(self, caller: Union[ItemChildren, Root], id_or_url: str):
+    def __init__(self, caller: Union[ItemChildren, RootRegistry], id_or_url: str):
         Item.__init__(self, caller, id_or_url)
         PageBlock.__init__(self, caller, id_or_url)
 
-        self.caller = caller
-        self._contents = PageItemContents(self, id_or_url)
-
-    @property
-    def payload(self) -> PageItemContents:
-        return self._contents
+    def _initalize_payload(self):
+        return PageItemContents(self)
 
     @property
     def contents(self) -> PageItemContents:
-        return self._contents
+        # noinspection PyTypeChecker
+        return self.payload
 
 
 class PageItemContents(PagePayload, ItemContents,
                        encoders.PageContentsWriter):
-    def __init__(self, caller: PageItem, id_or_url: str):
+    def __init__(self, caller: PageItem):
         PagePayload.__init__(self, caller)
         ItemContents.__init__(self, caller)
         self.caller = caller
-        if id_or_url:
+        if self.block_id:
             requestor = requestors.UpdatePage(self)
         else:
             requestor = requestors.CreatePage(self, under_database=False)
         self._requestor = requestor
+        assert self.regs['title']
 
     @property
     def requestor(self):

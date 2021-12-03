@@ -4,31 +4,23 @@ from abc import abstractmethod, ABCMeta
 from typing import Union
 
 from .document import Document
-from .with_items import ItemsBearer
+from .with_items import BlockWithItems
 from ..structs.exceptions import DanglingBlockError
-from ..structs.leaders import Payload, Registry, Registerer
-from ..structs.followers import RequestEditor
+from ..structs.base_logic import AccessPoint
+from ..structs.block_main import Payload
+from ..structs.registry_writer import Registerer
+from ..structs.save_agents import RequestEditor
 from notion_zap.cli.gateway import parsers, requestors
 
 
-class PageBlock(ItemsBearer, Document):
-    def __init__(self, caller: Registry, id_or_url: str):
+class PageBlock(BlockWithItems, Document, metaclass=ABCMeta):
+    def __init__(self, caller: AccessPoint, id_or_url: str):
         super().__init__(caller, id_or_url)
-        self.reg_title = TitleRegisterer(self)
-        # since title value is empty at this moment
-        #  (Payload is not yet initialized),
-        #  there's no points to 'register' it.
-        #  same thing applies to PageRow,
-        #  which doesn't register its initial property value.
 
     @property
-    def regs(self):
-        return [self.reg_id, self.reg_title]
-
-    @property
-    @abstractmethod
     def payload(self) -> PagePayload:
-        pass
+        # noinspection PyTypeChecker
+        return super().payload
 
     @property
     def block_name(self):
@@ -51,48 +43,12 @@ class PageBlock(ItemsBearer, Document):
         return self
 
 
-class TitleRegisterer(Registerer):
-    def __init__(self, caller: PageBlock):
-        super().__init__(caller)
-        self.caller = caller
-
-    @property
-    def block(self) -> PageBlock:
-        return self.caller
-
-    @property
-    def title(self):
-        return self.caller.title
-
-    def register_to_parent(self):
-        if self.title:
-            self.block.caller.by_title[self.title].append(self.block)
-
-    def register_to_root_and_parent(self):
-        self.register_to_parent()
-        if self.title:
-            self.root.title_table[self.title].append(self.block)
-
-    def un_register_from_parent(self):
-        if self.title:
-            try:
-                self.block.caller.by_title[self.title].remove(self.block)
-            except ValueError:
-                raise DanglingBlockError(self.block, self.block.caller)
-
-    def un_register_from_root_and_parent(self):
-        if self.title:
-            try:
-                self.root.title_table[self.title].remove(self.block)
-            except ValueError:
-                raise DanglingBlockError(self.block, self.root)
-
-
 class PagePayload(Payload, RequestEditor, metaclass=ABCMeta):
     def __init__(self, caller: PageBlock):
         Payload.__init__(self, caller)
         self.caller = caller
         self.__title = ''
+        self.regs.add(TitleRegisterer(self))
 
     @property
     @abstractmethod
@@ -112,9 +68,10 @@ class PagePayload(Payload, RequestEditor, metaclass=ABCMeta):
         return self.__title
 
     def _set_title(self, value: str):
-        self.block.reg_title.un_register_from_root_and_parent()
+        assert self.regs['title']
+        self.regs['title'].un_register_from_root_and_parent()
         self.__title = value
-        self.block.reg_title.register_to_root_and_parent()
+        self.regs['title'].register_to_root_and_parent()
 
     def archive(self):
         self.requestor.archive()
@@ -150,3 +107,43 @@ class PagePayload(Payload, RequestEditor, metaclass=ABCMeta):
     @property
     def can_have_children(self):
         return True
+
+
+class TitleRegisterer(Registerer):
+    @property
+    def block(self) -> PageBlock:
+        ret = super().block
+        assert isinstance(ret, PageBlock)
+        return ret
+
+    @property
+    def track_key(self):
+        return 'title'
+
+    @property
+    def track_val(self):
+        return self.block.title
+
+    def register_to_parent(self):
+        if self.track_val:
+            self.block.caller.by_title[self.track_val].append(self.block)
+
+    def register_to_root_and_parent(self):
+        self.register_to_parent()
+        if self.track_val:
+            self.root.by_title[self.track_val].append(self.block)
+
+    def un_register_from_parent(self):
+        if self.track_val:
+            try:
+                self.block.caller.by_title[self.track_val].remove(self.block)
+            except ValueError:
+                raise DanglingBlockError(self.block, self.block.caller)
+
+    def un_register_from_root_and_parent(self):
+        self.un_register_from_parent()
+        if self.track_val:
+            try:
+                self.root.by_title[self.track_val].remove(self.block)
+            except ValueError:
+                raise DanglingBlockError(self.block, self.root)

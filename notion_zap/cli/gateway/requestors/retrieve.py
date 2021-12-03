@@ -1,10 +1,10 @@
-from notion_zap.cli.editors.structs.leaders import BlockEditor
+from ...editors.structs.block_main import Component
 from notion_zap.cli.utility import stopwatch
 from .structs import PointRequestor, LongRequestor, print_response_error
 
 
 class RetrieveDatabase(PointRequestor):
-    def __init__(self, editor: BlockEditor):
+    def __init__(self, editor: Component):
         super().__init__(editor)
 
     def __bool__(self):
@@ -31,7 +31,7 @@ class RetrieveDatabase(PointRequestor):
 
 
 class RetrievePage(PointRequestor):
-    def __init__(self, editor: BlockEditor):
+    def __init__(self, editor: Component):
         super().__init__(editor)
 
     def __bool__(self):
@@ -60,7 +60,7 @@ class RetrievePage(PointRequestor):
 
 
 class RetrieveBlock(PointRequestor):
-    def __init__(self, editor: BlockEditor):
+    def __init__(self, editor: Component):
         super().__init__(editor)
 
     def __bool__(self):
@@ -85,7 +85,7 @@ class RetrieveBlock(PointRequestor):
 
 
 class GetBlockChildren(LongRequestor):
-    def __init__(self, editor: BlockEditor):
+    def __init__(self, editor: Component):
         super().__init__(editor)
 
     def __bool__(self):

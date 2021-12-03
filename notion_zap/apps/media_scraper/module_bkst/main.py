@@ -98,7 +98,7 @@ class BookstoreDataWriter:
             if (
                     isinstance(block, editors.PageItem)
                     and (self.page.title in block.title
-                         or block.title == '=')
+                         or block.title.strip() in ['', '='])
             ):
                 subpage = block
                 break

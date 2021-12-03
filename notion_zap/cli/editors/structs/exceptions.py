@@ -1,4 +1,5 @@
-from .leaders import Block, Registry
+from .base_logic import Registry
+from .block_main import Block
 
 
 class InvalidBlockTypeError(TypeError):
@@ -12,7 +13,7 @@ class InvalidBlockTypeError(TypeError):
 class InvalidParentTypeError(ValueError):
     def __init__(self, block: Block):
         self.block = block
-        self.message = f"parent block should be the type of ChildrenBearer;" \
+        self.message = f"parent block should be the type of BlockWithChildren;" \
                        f"block info ::" \
                        f"{self.block}" \
                        f"parent info ::" \
