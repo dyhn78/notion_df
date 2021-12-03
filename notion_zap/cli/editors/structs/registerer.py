@@ -1,11 +1,12 @@
 from __future__ import annotations
-from abc import ABCMeta, abstractmethod
-from typing import Any
+from abc import ABCMeta
+from typing import Any, Callable, Union
 
 from .block_main import Follower
+from .exceptions import DanglingBlockError
 
 
-class Registrant(Follower):
+class RegistererMap(Follower):
     def __init__(self, block):
         super().__init__(block)
         self._elements: dict[Any, Registerer] = {}
@@ -20,8 +21,10 @@ class Registrant(Follower):
             raise KeyError(f"{e.args[0]} not in cluster :: "
                            f"{list(self._elements.keys())}")
 
-    def add(self, value: Registerer):
-        self._elements[value.track_key] = value
+    def add(self, track_key: Union[str, tuple],
+            track_val: Callable[[Follower], Any]):
+        reg = Registerer(self, track_key, track_val)
+        self._elements[track_key] = reg
 
     def register_to_parent(self):
         for reg in self:
@@ -41,66 +44,49 @@ class Registrant(Follower):
 
 
 class Registerer(Follower, metaclass=ABCMeta):
-    def __init__(self, caller):
+    def __init__(self, caller,
+                 track_key: Union[str, tuple],
+                 track_val: Callable[[Follower], Any]):
         super().__init__(caller)
+        self._track_key = track_key
+        self._track_val = track_val
 
-    @property
-    @abstractmethod
-    def track_key(self):
-        pass
-
-    @property
-    @abstractmethod
-    def track_val(self):
-        pass
-
-    @abstractmethod
-    def register_to_parent(self):
-        pass
-
-    @abstractmethod
-    def register_to_root_and_parent(self):
-        pass
-
-    @abstractmethod
-    def un_register_from_parent(self):
-        pass
-
-    @abstractmethod
-    def un_register_from_root_and_parent(self):
-        pass
-
-
-class IdRegisterer(Registerer):
     @property
     def track_key(self):
-        return 'id'
+        return self._track_key
 
     @property
     def track_val(self):
-        return self.block_id
+        return self._track_val(self)
+
+    @property
+    def parents_table(self):
+        return self.block.caller[self.track_key]
+
+    @property
+    def roots_table(self):
+        return self.root[self.track_key]
 
     def register_to_parent(self):
         if self.track_val:
-            self.block.caller.by_id[self.track_val] = self.block
+            self.parents_table.update({self.track_val: self.block})
 
     def register_to_root_and_parent(self):
         self.register_to_parent()
         if self.track_val:
-            self.root.by_id[self.track_val] = self.block
+            self.roots_table.update({self.track_val: self.block})
 
     def un_register_from_parent(self):
-        from .exceptions import DanglingBlockError
         if self.track_val:
             try:
-                self.block.caller.by_id.pop(self.track_val)
+                self.parents_table.remove({self.track_val: self.block})
             except KeyError:
                 raise DanglingBlockError(self.block, self.block.caller)
 
     def un_register_from_root_and_parent(self):
-        from .exceptions import DanglingBlockError
+        self.un_register_from_parent()
         if self.track_val:
             try:
-                self.root.by_id.pop(self.track_val)
+                self.roots_table.remove({self.track_val: self.block})
             except KeyError:
                 raise DanglingBlockError(self.block, self.root)

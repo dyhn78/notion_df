@@ -10,6 +10,7 @@ Block = TypeVar('Block')
 class RegistryTable(MutableMapping[Hashable, Block]):
     def __init__(self, table: dict[Hashable, Block]):
         self._table = table
+        self.pop = None
 
     def __delitem__(self, key: Hashable) -> None:
         del self._table[key]

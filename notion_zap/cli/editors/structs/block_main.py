@@ -4,7 +4,7 @@ from abc import abstractmethod, ABCMeta
 from typing import Optional, Any
 
 from notion_zap.cli.utility import url_to_id, id_to_url
-from .base_logic import Readable, Saveable, BaseComponent, Gatherer
+from .base_logic import Readable, Saveable, BaseComponent, Gatherer, RegistryContributer
 
 
 class Component(BaseComponent, metaclass=ABCMeta):
@@ -76,26 +76,26 @@ class Block(Component, Readable, Saveable, metaclass=ABCMeta):
         self.caller = caller
         self.__payload = self._initalize_payload(url_to_id(id_or_url))
         self.caller.attach(self)
-        self.regs.register_to_root_and_parent()
+        self.payload.regs.register_to_root_and_parent()
 
     @abstractmethod
     def _initalize_payload(self, block_id: str) -> Payload:
         pass
 
-    def change_parent(self, gatherer: Optional[Gatherer]):
+    def move_parent(self, gatherer: Gatherer):
         if (prev := self.caller) != gatherer:
             prev.detach(self)
-            self.regs.un_register_from_parent()
+            self.payload.regs.un_register_from_parent()
             self.caller = gatherer
             gatherer.attach(self)
-            self.regs.register_to_parent()
+            self.payload.regs.register_to_parent()
 
     def close(self):
         """use this method to detach a wrong block
         (probably due to nonexisting block_id)"""
         if isinstance(prev := self.caller, Gatherer):
             prev.detach(self)
-            self.regs.un_register_from_root_and_parent()
+            self.payload.regs.un_register_from_root_and_parent()
         self.caller = None
 
     @property
@@ -105,10 +105,6 @@ class Block(Component, Readable, Saveable, metaclass=ABCMeta):
     @property
     def block_id(self):
         return self.payload.block_id
-
-    @property
-    def regs(self):
-        return self.payload.regs
 
     @property
     @abstractmethod
@@ -175,17 +171,16 @@ class Block(Component, Readable, Saveable, metaclass=ABCMeta):
         pass
 
 
-class Payload(Component, Readable, Saveable, metaclass=ABCMeta):
+class Payload(Component, Readable, Saveable, RegistryContributer, metaclass=ABCMeta):
     def __init__(self, caller: Block, block_id: str):
         super().__init__(caller)
         self.caller = caller
         self.__block_id = block_id
 
-        from .registry_writer import Registrant, IdRegisterer
+        from .registerer import RegistererMap
         if not getattr(self, 'regs', None):
-            self.regs = Registrant(self)
-            id_reg = IdRegisterer(self)
-            self.regs.add(id_reg)
+            self.regs = RegistererMap(self)
+            self.regs.add(self._Tid, lambda x: x.block_id)
 
         self._archived = None
         self._created_time = None
@@ -202,9 +197,9 @@ class Payload(Component, Readable, Saveable, metaclass=ABCMeta):
         return self.__block_id
 
     def _set_block_id(self, value: str):
-        self.regs['id'].un_register_from_root_and_parent()
+        self.regs[self._Tid].un_register_from_root_and_parent()
         self.__block_id = value
-        self.regs['id'].register_to_root_and_parent()
+        self.regs[self._Tid].register_to_root_and_parent()
 
     @property
     def block_name(self) -> str:

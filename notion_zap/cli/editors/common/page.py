@@ -5,10 +5,9 @@ from typing import Union
 
 from .document import Document
 from .with_items import BlockWithItems
-from ..structs.exceptions import DanglingBlockError
 from ..structs.base_logic import Gatherer
 from ..structs.block_main import Payload
-from ..structs.registry_writer import Registerer
+from ..structs.registerer import Registerer
 from ..structs.save_agents import RequestEditor
 from notion_zap.cli.gateway import parsers, requestors
 
@@ -48,7 +47,7 @@ class PagePayload(Payload, RequestEditor, metaclass=ABCMeta):
         Payload.__init__(self, caller, block_id)
         self.caller = caller
         self.__title = ''
-        self.regs.add(TitleRegisterer(self))
+        self.regs.add(self._Ttitle, lambda x: x.block.title)
 
     @property
     @abstractmethod
@@ -68,10 +67,9 @@ class PagePayload(Payload, RequestEditor, metaclass=ABCMeta):
         return self.__title
 
     def _set_title(self, value: str):
-        assert self.regs['title']
-        self.regs['title'].un_register_from_root_and_parent()
+        self.regs[self._Ttitle].un_register_from_root_and_parent()
         self.__title = value
-        self.regs['title'].register_to_root_and_parent()
+        self.regs[self._Ttitle].register_to_root_and_parent()
 
     def archive(self):
         self.requestor.archive()
@@ -115,35 +113,3 @@ class TitleRegisterer(Registerer):
         ret = super().block
         assert isinstance(ret, PageBlock)
         return ret
-
-    @property
-    def track_key(self):
-        return 'title'
-
-    @property
-    def track_val(self):
-        return self.block.title
-
-    def register_to_parent(self):
-        if self.track_val:
-            self.block.caller.by_title[self.track_val].append(self.block)
-
-    def register_to_root_and_parent(self):
-        self.register_to_parent()
-        if self.track_val:
-            self.root.by_title[self.track_val].append(self.block)
-
-    def un_register_from_parent(self):
-        if self.track_val:
-            try:
-                self.block.caller.by_title[self.track_val].remove(self.block)
-            except ValueError:
-                raise DanglingBlockError(self.block, self.block.caller)
-
-    def un_register_from_root_and_parent(self):
-        self.un_register_from_parent()
-        if self.track_val:
-            try:
-                self.root.by_title[self.track_val].remove(self.block)
-            except ValueError:
-                raise DanglingBlockError(self.block, self.root)

@@ -48,20 +48,27 @@ class PageRowProperties(PagePayload, encoders.PageRowPropertyWriter):
         encoders.PageRowPropertyWriter.__init__(self, self.frame)
         self.caller = caller
 
+        if self.parent:
+            for prop_key in self.parent.rows.by_keys:
+                self.add_key_reg(prop_key)
+            for prop_tag in self.parent.rows.by_tags:
+                self.add_tag_reg(prop_tag)
+
+        self._read_plain = {}
+        self._read_rich = {}
+
         if self.block_id:
             self._requestor = requestors.UpdatePage(self)
         else:
             self._requestor = requestors.CreatePage(self, under_database=True)
 
-        from .registerer import KeyRegisterer, TagRegisterer
-        if self.parent:
-            for prop_key in self.parent.rows.by_keys:
-                self.regs.add(KeyRegisterer(self, prop_key))
-            for prop_tag in self.parent.rows.by_tags:
-                self.regs.add(TagRegisterer(self, prop_tag))
+    def add_key_reg(self, prop_key):
+        self.regs.add(('key', prop_key),
+                      lambda x: x.block.props.get_key(prop_key))
 
-        self._read_plain = {}
-        self._read_rich = {}
+    def add_tag_reg(self, prop_tag):
+        self.regs.add(('tag', prop_tag),
+                      lambda x: x.block.props.get_key(prop_tag))
 
     @property
     def block(self) -> PageRow:

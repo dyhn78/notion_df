@@ -2,11 +2,12 @@ from __future__ import annotations
 import os
 from abc import ABCMeta, abstractmethod
 from pprint import pprint
-from typing import Any, Optional, Hashable
+from typing import Any, Optional, Hashable, Union
 
 from notion_client import AsyncClient, Client
 
 from notion_zap.cli.structs import DateObject, PropertyFrame
+from .registry_table import RegistryTable, IndexTable, ClassifyTable
 
 
 class BaseComponent(metaclass=ABCMeta):
@@ -43,10 +44,12 @@ class Saveable(metaclass=ABCMeta):
         pprint(self.save_info(), **kwargs)
 
 
-from .registry_table import RegistryTable, IndexTable, ClassifyTable
+class RegistryContributer(metaclass=ABCMeta):
+    _Tid = 'id'
+    _Ttitle = 'title'
 
 
-class Registry(BaseComponent, metaclass=ABCMeta):
+class Registry(BaseComponent, RegistryContributer, metaclass=ABCMeta):
     def __init__(self):
         from .block_main import Block
         from ..row.main import PageRow
@@ -54,6 +57,17 @@ class Registry(BaseComponent, metaclass=ABCMeta):
         self.__by_title: ClassifyTable[str, Block] = ClassifyTable()
         self.__by_keys: dict[str, RegistryTable[Hashable, PageRow]] = {}
         self.__by_tags: dict[Hashable, RegistryTable[Hashable, PageRow]] = {}
+
+    def __getitem__(self, key: Union[str, tuple]):
+        if key == self._Tid:
+            return self.by_id
+        elif key == self._Ttitle:
+            return self.by_title
+        elif key[0] == 'key':
+            return self.by_keys[key[1]]
+        elif key[0] == 'tag':
+            return self.by_tags[key[1]]
+        raise ValueError(key)
 
     @property
     def by_id(self):

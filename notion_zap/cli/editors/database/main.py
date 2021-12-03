@@ -7,7 +7,6 @@ from notion_client import APIResponseError
 from notion_zap.cli.gateway import parsers, requestors
 from notion_zap.cli.structs import PropertyFrame
 from ..row.main import PageRow
-from ..row.registerer import KeyRegisterer, TagRegisterer
 from ..common.with_children import Children, BlockWithChildren
 from ..common.with_items import ItemChildren
 from ..structs.base_logic import RootGatherer
@@ -144,7 +143,7 @@ class RowChildren(Children):
                 self.root.by_keys[prop_key] = IndexTable()
             self.by_keys[prop_key] = IndexTable()
             for page in self.list_all():
-                page.regs.add(KeyRegisterer(page.props, prop_key))
+                page.props.add_key_reg(prop_key)
             return self.by_keys[prop_key]
 
     def index_by_tag(self, prop_tag: str) -> IndexTable[Hashable, PageRow]:
@@ -155,21 +154,21 @@ class RowChildren(Children):
                 self.root.by_tags[prop_tag] = IndexTable()
             self.by_tags[prop_tag] = IndexTable()
             for page in self.list_all():
-                page.regs.add(KeyRegisterer(page.props, prop_tag))
+                page.props.add_tag_reg(prop_tag)
             return self.by_tags[prop_tag]
 
     def classify_by_key(self, prop_key: str) -> ClassifyTable[Hashable, PageRow]:
         if not isinstance(self.by_keys.get(prop_key), ClassifyTable):
             self.by_keys[prop_key] = ClassifyTable()
             for page in self.list_all():
-                page.regs.add(KeyRegisterer(page.props, prop_key))
+                page.props.add_key_reg(prop_key)
         return self.by_tags[prop_key]
 
     def classify_by_tag(self, prop_tag: str) -> ClassifyTable[Hashable, PageRow]:
         if not isinstance(self.by_tags.get(prop_tag), ClassifyTable):
             self.by_tags[prop_tag] = ClassifyTable()
             for page in self.list_all():
-                page.regs.add(TagRegisterer(page.props, prop_tag))
+                page.props.add_tag_reg(prop_tag)
         return self.by_tags[prop_tag]
 
 
