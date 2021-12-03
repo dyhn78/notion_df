@@ -93,7 +93,7 @@ class Root(Registry):
             client = Client(auth=self.token)
         self.client = client
 
-        self.objects = RootRegistry(self)
+        self.objects = RootGatherer(self)
 
         from .block_main import Block
         self._blocks: list[Block] = []
@@ -167,7 +167,7 @@ class Gatherer(Readable, Saveable, Registry, metaclass=ABCMeta):
         pass
 
 
-class RootRegistry(Gatherer):
+class RootGatherer(Gatherer):
     def __init__(self, caller: Root):
         super().__init__()
         self.caller = caller
@@ -198,17 +198,17 @@ class RootRegistry(Gatherer):
     def richly_read(self) -> dict[str, Any]:
         return {'root': child.richly_read() for child in self.direct_blocks}
 
-    def database(self, database_alias: str, id_or_url: str,
-                 frame: Optional[PropertyFrame] = None):
-        from .. import Database
-        block = Database(self, id_or_url, database_alias, frame)
-        return block
-
     def attach(self, block):
         self.direct_blocks.append(block)
 
     def detach(self, block):
         self.direct_blocks.remove(block)
+
+    def database(self, database_alias: str, id_or_url: str,
+                 frame: Optional[PropertyFrame] = None):
+        from .. import Database
+        block = Database(self, id_or_url, database_alias, frame)
+        return block
 
     def page_row(self, id_or_url: str,
                  frame: Optional[PropertyFrame] = None):

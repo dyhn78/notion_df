@@ -5,12 +5,12 @@ from typing import Union
 from notion_zap.cli.gateway import encoders, parsers, requestors
 from ..common.item import Item, ItemContents
 from ..common.page import PageBlock, PagePayload
-from ..structs.base_logic import RootRegistry
+from ..structs.base_logic import RootGatherer
 from ..common.with_items import ItemChildren
 
 
 class PageItem(Item, PageBlock):
-    def __init__(self, caller: Union[ItemChildren, RootRegistry], id_or_url: str):
+    def __init__(self, caller: Union[ItemChildren, RootGatherer], id_or_url: str):
         Item.__init__(self, caller, id_or_url)
         PageBlock.__init__(self, caller, id_or_url)
 

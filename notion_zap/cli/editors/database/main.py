@@ -10,14 +10,14 @@ from ..row.main import PageRow
 from ..row.registerer import KeyRegisterer, TagRegisterer
 from ..common.with_children import Children, BlockWithChildren
 from ..common.with_items import ItemChildren
-from ..structs.base_logic import RootRegistry
+from ..structs.base_logic import RootGatherer
 from ..structs.block_main import Payload
 from ..structs.exceptions import InvalidBlockTypeError
 from ..structs.registry_table import IndexTable, ClassifyTable
 
 
 class Database(BlockWithChildren):
-    def __init__(self, caller: Union[RootRegistry, ItemChildren],
+    def __init__(self, caller: Union[RootGatherer, ItemChildren],
                  id_or_url: str,
                  database_alias='',
                  frame: Optional[PropertyFrame] = None):

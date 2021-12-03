@@ -5,7 +5,7 @@ from abc import abstractmethod
 from typing import Union
 
 from notion_zap.cli.gateway import parsers
-from ..structs.base_logic import RootRegistry
+from ..structs.base_logic import RootGatherer
 from .with_items.main import BlockWithItems, ItemChildren
 from ..structs.exceptions import InvalidParentTypeError, NoParentFoundError
 from ..structs.save_agents import RequestEditor
@@ -13,7 +13,7 @@ from ..structs.block_main import Block, Payload
 
 
 class Item(Block, metaclass=ABCMeta):
-    def __init__(self, caller: Union[ItemChildren, RootRegistry], id_or_url: str):
+    def __init__(self, caller: Union[ItemChildren, RootGatherer], id_or_url: str):
         super().__init__(caller, id_or_url)
 
     @property

@@ -4,20 +4,20 @@ from typing import Union, Optional, Any, Hashable
 from notion_zap.cli.structs import PropertyFrame
 from ..common.page import PageBlock, PagePayload
 from ..common.with_children import Children
-from ..structs.base_logic import RootRegistry
+from ..structs.base_logic import RootGatherer
 from ..structs.block_main import Payload
 from ...gateway import encoders, requestors, parsers
 
 
 class PageRow(PageBlock):
-    def __init__(self, caller: Union[RootRegistry, Children],
+    def __init__(self, caller: Union[RootGatherer, Children],
                  id_or_url: str,
                  frame: Optional[PropertyFrame] = None):
         self.frame = frame if frame else PropertyFrame()
         PageBlock.__init__(self, caller, id_or_url)
 
         from ..database.main import RowChildren
-        self.caller: Union[RootRegistry, RowChildren] = caller
+        self.caller: Union[RootGatherer, RowChildren] = caller
 
     def _initalize_payload(self, block_id: str) -> Payload:
         return PageRowProperties(self, block_id)

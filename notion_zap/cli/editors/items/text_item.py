@@ -4,12 +4,12 @@ from typing import Union, Callable
 from notion_zap.cli.gateway import encoders, parsers, requestors
 from ..common.document import Document
 from ..common.item import Item, ItemContents
-from ..structs.base_logic import RootRegistry
+from ..structs.base_logic import RootGatherer
 from ..common.with_items import BlockWithItems, ItemChildren
 
 
 class TextItem(Item, BlockWithItems, Document):
-    def __init__(self, caller: Union[ItemChildren, RootRegistry], id_or_url: str):
+    def __init__(self, caller: Union[ItemChildren, RootGatherer], id_or_url: str):
         Item.__init__(self, caller, id_or_url)
         BlockWithItems.__init__(self, caller, id_or_url)
 
