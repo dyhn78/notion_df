@@ -44,12 +44,7 @@ class Saveable(metaclass=ABCMeta):
         pprint(self.save_info(), **kwargs)
 
 
-class RegistryContributer(metaclass=ABCMeta):
-    _Tid = 'id'
-    _Ttitle = 'title'
-
-
-class Registry(BaseComponent, RegistryContributer, metaclass=ABCMeta):
+class Registry(BaseComponent, metaclass=ABCMeta):
     def __init__(self):
         from .block_main import Block
         from ..row.main import PageRow
@@ -59,9 +54,9 @@ class Registry(BaseComponent, RegistryContributer, metaclass=ABCMeta):
         self.__by_tags: dict[Hashable, RegistryTable[Hashable, PageRow]] = {}
 
     def __getitem__(self, key: Union[str, tuple]):
-        if key == self._Tid:
+        if key == 'id':
             return self.by_id
-        elif key == self._Ttitle:
+        elif key == 'title':
             return self.by_title
         elif key[0] == 'key':
             return self.by_keys[key[1]]

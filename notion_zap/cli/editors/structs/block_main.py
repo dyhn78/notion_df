@@ -4,7 +4,7 @@ from abc import abstractmethod, ABCMeta
 from typing import Optional, Any
 
 from notion_zap.cli.utility import url_to_id, id_to_url
-from .base_logic import Readable, Saveable, BaseComponent, Gatherer, RegistryContributer
+from .base_logic import Readable, Saveable, BaseComponent, Gatherer
 
 
 class Component(BaseComponent, metaclass=ABCMeta):
@@ -171,7 +171,7 @@ class Block(Component, Readable, Saveable, metaclass=ABCMeta):
         pass
 
 
-class Payload(Component, Readable, Saveable, RegistryContributer, metaclass=ABCMeta):
+class Payload(Component, Readable, Saveable, metaclass=ABCMeta):
     def __init__(self, caller: Block, block_id: str):
         super().__init__(caller)
         self.caller = caller
@@ -180,7 +180,7 @@ class Payload(Component, Readable, Saveable, RegistryContributer, metaclass=ABCM
         from .registerer import RegistererMap
         if not getattr(self, 'regs', None):
             self.regs = RegistererMap(self)
-            self.regs.add(self._Tid, lambda x: x.block_id)
+            self.regs.add('id', lambda x: x.block_id)
 
         self._archived = None
         self._created_time = None
@@ -197,9 +197,9 @@ class Payload(Component, Readable, Saveable, RegistryContributer, metaclass=ABCM
         return self.__block_id
 
     def _set_block_id(self, value: str):
-        self.regs[self._Tid].un_register_from_root_and_parent()
+        self.regs['id'].un_register_from_root_and_parent()
         self.__block_id = value
-        self.regs[self._Tid].register_to_root_and_parent()
+        self.regs['id'].register_to_root_and_parent()
 
     @property
     def block_name(self) -> str:

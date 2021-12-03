@@ -47,7 +47,7 @@ class PagePayload(Payload, RequestEditor, metaclass=ABCMeta):
         Payload.__init__(self, caller, block_id)
         self.caller = caller
         self.__title = ''
-        self.regs.add(self._Ttitle, lambda x: x.block.title)
+        self.regs.add('title', lambda x: x.block.title)
 
     @property
     @abstractmethod
@@ -67,9 +67,9 @@ class PagePayload(Payload, RequestEditor, metaclass=ABCMeta):
         return self.__title
 
     def _set_title(self, value: str):
-        self.regs[self._Ttitle].un_register_from_root_and_parent()
+        self.regs['title'].un_register_from_root_and_parent()
         self.__title = value
-        self.regs[self._Ttitle].register_to_root_and_parent()
+        self.regs['title'].register_to_root_and_parent()
 
     def archive(self):
         self.requestor.archive()
