@@ -7,8 +7,8 @@ from notion_client import APIResponseError
 from notion_zap.cli.gateway import parsers, requestors
 from notion_zap.cli.structs import PropertyFrame
 from ..row.main import PageRow
-from ..common.with_children import Children, BlockWithChildren
-from ..common.with_items import ItemChildren
+from ..shared.with_children import Children, BlockWithChildren
+from ..shared.with_items import ItemChildren
 from ..structs.base_logic import RootGatherer
 from ..structs.block_main import Payload
 from ..structs.exceptions import InvalidBlockTypeError
@@ -184,7 +184,7 @@ class QueryWithCallback(requestors.Query):
         if pages and print_heads:
             heads = [(page.title, page.block_url) for page in pages[:print_heads]]
             if pages[print_heads:]:
-                heads.append(('...', '...'))
+                heads.append(...)
             try:
                 pprint(heads)
             except AttributeError:

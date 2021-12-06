@@ -1,5 +1,5 @@
 from notion_zap.cli import editors
-from notion_zap.cli.editors.common.page import PageBlock
+from notion_zap.cli.editors.shared.page import PageBlock
 
 
 def remove_dummy_blocks(page: PageBlock):

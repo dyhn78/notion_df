@@ -38,7 +38,7 @@ class DateMatcherAbs(EditorManager, metaclass=ABCMeta):
             return tar
         if tar := query_unique_page_by_idx(self.target, tar_idx, self.Ttars_idx,
                                            'title'):
-            self.target_by_idx.update({tar_idx: tar})
+            # self.target_by_idx.update({tar_idx: tar})
             return tar
         return None
 
@@ -48,7 +48,7 @@ class DateMatcherAbs(EditorManager, metaclass=ABCMeta):
 
         tar_idx = date_handler.strf_dig6_and_weekday()
         tar.props.write(tag=self.Ttars_idx, value=tar_idx)
-        self.target_by_idx.update({tar_idx: tar})
+        # self.target_by_idx.update({tar_idx: tar})
 
         date_range = DateObject(date_handler.date)
         writer = tar.props
@@ -228,12 +228,10 @@ class DateTargetFiller(DateMatcherAbs):
         new_tar_idx = date_handler.strf_dig6_and_weekday()
         if tar_idx != new_tar_idx:
             writer = tar.props
-            writer.write_date(tag=self.Ttars_idx, value=new_tar_idx)
+            writer.write(tag=self.Ttars_idx, value=new_tar_idx)
         date_range = DateObject(date_handler.date)
         if date_range != tar.props.read_tag(self.Ttars_date):
-            property_writer = tar.props
-            property_writer.write_date(tag=self.Ttars_date, value=date_range)
-            tar.save_preview()
+            tar.props.write_date(tag=self.Ttars_date, value=date_range)
             tar.save()
         # print(f"{tar=}, {tar_idx=}, {date_range=},"
         #       f"{tar.props.read_at(self.Ttars_date)=},"
@@ -273,14 +271,12 @@ class DateDomainFiller(DateMatcherAbs):
             else:
                 dt_val = date_val
             if dt_val != dom.props.read_tag(self.Tdoms_date):
-                writer = dom.props
-                writer.write_date(tag=self.Tdoms_date, value=dt_val)
+                dom.props.write_date(tag=self.Tdoms_date, value=dt_val)
 
     def update_type2(self, dom: editors.PageRow):
         if date_val := self.get_date_val(dom):
             if date_val != dom.props.read_tag(self.Tdoms_date):
-                writer = dom.props
-                writer.write_date(tag=self.Tdoms_date, value=date_val)
+                dom.props.write_date(tag=self.Tdoms_date, value=date_val)
 
     def get_date_val(self, dom: editors.PageRow):
         tar_ids = dom.props.read_tag(self.T_tar)

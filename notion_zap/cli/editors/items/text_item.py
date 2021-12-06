@@ -2,10 +2,10 @@ from __future__ import annotations
 from typing import Union, Callable
 
 from notion_zap.cli.gateway import encoders, parsers, requestors
-from ..common.document import Document
-from ..common.item import Item, ItemContents
+from ..shared.document import Document
+from ..shared.item import Item, ItemContents
 from ..structs.base_logic import RootGatherer
-from ..common.with_items import BlockWithItems, ItemChildren
+from ..shared.with_items import BlockWithItems, ItemChildren
 
 
 class TextItem(Item, BlockWithItems, Document):

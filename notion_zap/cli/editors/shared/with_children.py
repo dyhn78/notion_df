@@ -14,17 +14,17 @@ class BlockWithChildren(Block, metaclass=ABCMeta):
         pass
 
     def read(self):
-        return dict(**self.basic_info,
+        return dict(**self.class_info,
                     **self.payload.read(),
                     **self.children.read())
 
     def richly_read(self):
-        return dict(**self.basic_info,
+        return dict(**self.class_info,
                     **self.payload.richly_read(),
                     **self.children.richly_read())
 
     def save_info(self):
-        return dict(**self.basic_info,
+        return dict(**self.class_info,
                     **self.payload.save_info(),
                     **self.children.save_info())
 

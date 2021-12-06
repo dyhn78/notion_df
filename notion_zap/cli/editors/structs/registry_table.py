@@ -60,10 +60,10 @@ class ClassifyTable(RegistryTable):
         self._table[key] = value
 
     def update(self, mapping: dict[Hashable, Block], **kwargs: dict[Hashable, Block]):
-        for key, value in mapping:
+        for key, value in mapping.items():
             self._table[key].append(value)
 
     def remove(self, mapping: dict[Hashable, Block], **kwargs: dict[Hashable, Block]):
-        for key, value in mapping:
+        for key, value in mapping.items():
             if value in self._table[key]:
                 self._table[key].remove(value)

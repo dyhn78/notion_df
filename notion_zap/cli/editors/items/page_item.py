@@ -3,10 +3,10 @@ from __future__ import annotations
 from typing import Union
 
 from notion_zap.cli.gateway import encoders, parsers, requestors
-from ..common.item import Item, ItemContents
-from ..common.page import PageBlock, PagePayload
+from ..shared.item import Item, ItemContents
+from ..shared.page import PageBlock, PagePayload
 from ..structs.base_logic import RootGatherer
-from ..common.with_items import ItemChildren
+from ..shared.with_items import ItemChildren
 
 
 class PageItem(Item, PageBlock):

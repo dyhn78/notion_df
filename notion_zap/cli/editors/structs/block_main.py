@@ -46,7 +46,7 @@ class Component(BaseComponent, metaclass=ABCMeta):
         parents_registry = self.block.caller
         if isinstance(parents_registry, Component):
             parent = parents_registry.block
-            from ..common.with_children import BlockWithChildren
+            from ..shared.with_children import BlockWithChildren
             if not isinstance(parent, BlockWithChildren):
                 from .exceptions import InvalidParentTypeError
                 raise InvalidParentTypeError(self.block)
@@ -141,21 +141,22 @@ class Block(Component, Readable, Saveable, metaclass=ABCMeta):
         return self.payload.can_have_children
 
     @property
-    def basic_info(self):
+    def class_info(self):
         return {'type': type(self).__name__,
-                'id': self.block_id}
+                # 'id': self.block_id
+                }
 
     @abstractmethod
     def read(self) -> dict[str, Any]:
-        return self.basic_info
+        return self.class_info
 
     @abstractmethod
     def richly_read(self) -> dict[str, Any]:
-        return self.basic_info
+        return self.class_info
 
     @abstractmethod
     def save_info(self) -> dict[str, Any]:
-        return self.basic_info
+        return self.class_info
 
     @abstractmethod
     def save(self):

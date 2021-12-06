@@ -35,7 +35,7 @@ class PeriodMatcherAbs(EditorManager, metaclass=ABCMeta):
             return tar
         if tar := query_unique_page_by_idx(self.target, tar_idx, self.Ttars_idx,
                                            'title'):
-            self.target_by_idx.update({tar_idx: tar})
+            # self.target_by_idx.update({tar_idx: tar})
             return tar
         return None
 
@@ -48,7 +48,7 @@ class PeriodMatcherAbs(EditorManager, metaclass=ABCMeta):
         tar_idx = date_handler.strf_year_and_week()
         writer = tar.props
         writer.write_title(tag=self.Ttars_idx, value=tar_idx)
-        self.target_by_idx.update({tar_idx: tar})
+        # self.target_by_idx.update({tar_idx: tar})
 
         date_range = DateObject(start=date_handler.first_day_of_week(),
                                 end=date_handler.last_day_of_week())

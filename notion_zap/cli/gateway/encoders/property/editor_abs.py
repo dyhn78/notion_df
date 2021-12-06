@@ -121,15 +121,15 @@ class PageRowPropertyWriter(metaclass=ABCMeta):
 
     def write_multi_select(
             self, key: str = None, tag: Hashable = None,
-            value: str = None,
+            value: str | list[str] = None,
             label: Hashable = None,
             label_list: Optional[list[Hashable]] = None, mark: Hashable = None):
         key, value = self._cleaned_key_with_value_list(key, tag, value, label, label_list,
                                                        mark)
-        if isinstance(value, str):
+        if isinstance(value, list) or isinstance(value, tuple):
+            cleaned_value = list(value)
+        elif isinstance(value, str):
             cleaned_value = [value]
-        elif isinstance(value, list):
-            cleaned_value = value
         else:
             raise ValueError(value)
         encoder = SimplePropertyEncoder.multi_select(key, cleaned_value)
@@ -137,15 +137,15 @@ class PageRowPropertyWriter(metaclass=ABCMeta):
 
     def write_relation(
             self, key: str = None, tag: Hashable = None,
-            value: str = None,
+            value: str | list[str] = None,
             label: Hashable = None,
             label_list: Optional[list[Hashable]] = None, mark: Hashable = None):
         key, value = self._cleaned_key_with_value_list(key, tag, value, label, label_list,
                                                        mark)
-        if isinstance(value, str):
+        if isinstance(value, list) or isinstance(value, tuple):
+            cleaned_value = list(value)
+        elif isinstance(value, str):
             cleaned_value = [value]
-        elif isinstance(value, list):
-            cleaned_value = value
         else:
             raise ValueError(value)
         encoder = SimplePropertyEncoder.relation(key, cleaned_value)
@@ -158,12 +158,10 @@ class PageRowPropertyWriter(metaclass=ABCMeta):
             label_list: Optional[list[Hashable]] = None, mark: Hashable = None):
         key, value = self._cleaned_key_with_value_list(key, tag, value, label, label_list,
                                                        mark)
-        if isinstance(value, str):
-            cleaned_value = [value]
-        elif isinstance(value, list):
-            cleaned_value = value
+        if isinstance(value, list) or isinstance(value, tuple):
+            cleaned_value = list(value)
         else:
-            raise ValueError(value)
+            cleaned_value = [value]
         encoder = SimplePropertyEncoder.people(key, cleaned_value)
         return self.push_encoder(key, encoder)
 

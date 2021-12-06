@@ -2,8 +2,8 @@ from __future__ import annotations
 from typing import Union, Optional, Any, Hashable
 
 from notion_zap.cli.structs import PropertyFrame
-from ..common.page import PageBlock, PagePayload
-from ..common.with_children import Children
+from ..shared.page import PageBlock, PagePayload
+from ..shared.with_children import Children
 from ..structs.base_logic import RootGatherer
 from ..structs.block_main import Payload
 from ...gateway import encoders, requestors, parsers
