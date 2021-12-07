@@ -3,13 +3,11 @@
 # Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
 
 /venv/
-debug.log
 /notion_zap/**/notion_token.env
 /notion_zap/**/credentials.json
 /notion_zap/**/token.json
+debug.log
 
-.idea/Notion-py.iml
-.idea/misc.xml
 
 # User-specific stuff
 .idea/**/workspace.xml
