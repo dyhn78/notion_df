@@ -184,7 +184,8 @@ class QueryWithCallback(requestors.Query):
         if pages and print_heads:
             heads = [(page.title, page.block_url) for page in pages[:print_heads]]
             if pages[print_heads:]:
-                heads.append(...)
+                # noinspection PyTypeChecker
+                heads.append('...')
             try:
                 pprint(heads)
             except AttributeError:

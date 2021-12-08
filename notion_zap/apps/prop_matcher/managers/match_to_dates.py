@@ -141,7 +141,7 @@ class DateMatcherType3(DateMatcherAbs):
     def match_dates(self, dom: editors.PageRow):
         if dom.props.read_tag(self.T_tar):
             return None
-        if dom.parent is self.bs.readings and dom.props.read_tag('status_exclude'):
+        if dom.parent is self.bs.readings and dom.props.read_tag('no_exp'):
             return None
         if tar := self.determine_tar_from_ref(
                 dom, self.reference, self.Tdoms_ref, self.T_tar):

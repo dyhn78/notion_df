@@ -71,7 +71,7 @@ class RegularEditorBase(EditorBase):
 
         # AND clauses
         if domain is self.readings:
-            ft &= manager.checkbox_at('status_exclude').is_empty()
+            ft &= manager.checkbox_at('no_exp').is_empty()
             is_not_book = manager.checkbox_at('is_book').is_empty()
             has_refs = reduce(
                 lambda a, b: a | b,

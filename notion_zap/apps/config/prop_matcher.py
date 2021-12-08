@@ -106,7 +106,7 @@ class MatchFrames:
             _to_journals, _to_schedules,
             _to_themes, _to_channels,
 
-            Cl(tag='status_exclude', key='🏁버킷<-경과'),
+            Cl(tag='no_exp', key='🏁경험 없음<-경과'),
             Cl(tag='is_book', key='🔵도서<-유형'),
         ]
     )
