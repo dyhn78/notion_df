@@ -53,7 +53,7 @@ class Registry(BaseComponent, metaclass=ABCMeta):
         self.__by_keys: dict[str, RegistryTable[Hashable, PageRow]] = {}
         self.__by_tags: dict[Hashable, RegistryTable[Hashable, PageRow]] = {}
 
-    def __getitem__(self, key: Union[str, tuple]):
+    def tables(self, key: Union[str, tuple]):
         if key == 'id':
             return self.by_id
         elif key == 'title':

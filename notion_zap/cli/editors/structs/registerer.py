@@ -61,11 +61,11 @@ class Registerer(Follower, metaclass=ABCMeta):
 
     @property
     def parents_table(self):
-        return self.block.caller[self.track_key]
+        return self.block.caller.tables(self.track_key)
 
     @property
     def roots_table(self):
-        return self.root[self.track_key]
+        return self.root.tables(self.track_key)
 
     def register_to_parent(self):
         if self.track_val:
