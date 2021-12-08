@@ -19,7 +19,7 @@ class RegularMatchController:
             DateMatcherType2(self.bs),
             DateMatcherType3(self.bs),
             DateMatcherType4(self.bs),
-            DateTargetFiller(self.bs, True),
+            DateTargetFiller(self.bs, False),
             PeriodMatcherType1(self.bs),
             PeriodMatcherType2(self.bs),
             PeriodMatcherType3(self.bs),
@@ -45,34 +45,37 @@ class RegularEditorBase(EditorBase):
 
     def fetch_one(self, domain: editors.Database):
         query = domain.rows.open_query()
-        maker = query.filter_manager
+        manager = query.filter_manager
         ft = query.open_filter()
 
         # OR clauses
-        ft |= maker.relation_at('to_itself').is_empty()
+        ft |= manager.relation_at('to_itself').is_empty()
         if domain is self.schedules:
-            ft |= maker.relation_at('to_scheduled_periods').is_empty()
-            ft |= maker.relation_at('to_scheduled_dates').is_empty()
-            ft |= maker.relation_at('to_created_periods').is_empty()
-            ft |= maker.relation_at('to_created_dates').is_empty()
+            ft |= manager.relation_at('to_scheduled_periods').is_empty()
+            ft |= manager.relation_at('to_scheduled_dates').is_empty()
+            ft |= manager.relation_at('to_created_periods').is_empty()
+            ft |= manager.relation_at('to_created_dates').is_empty()
             # TODO : gcal_sync_status
         else:
             if domain is self.dates:
-                sync_needed = maker.checkbox_at('sync_status').is_empty()
-                before_today = maker.date_at('manual_date').on_or_before(dt.date.today())
+                sync_needed = manager.checkbox_at('sync_status').is_empty()
+                maker = manager.date_at('manual_date')
+                before_today = maker.on_or_before(dt.date.today())
                 ft |= (sync_needed & before_today)
+                date_empty = maker.is_empty()
+                ft |= date_empty
             if domain is not self.periods:
-                ft |= maker.relation_at('to_periods').is_empty()
+                ft |= manager.relation_at('to_periods').is_empty()
             if domain not in [self.periods, self.dates]:
-                ft |= maker.relation_at('to_dates').is_empty()
+                ft |= manager.relation_at('to_dates').is_empty()
 
         # AND clauses
         if domain is self.readings:
-            ft &= maker.checkbox_at('status_exclude').is_empty()
-            is_not_book = maker.checkbox_at('is_book').is_empty()
+            ft &= manager.checkbox_at('status_exclude').is_empty()
+            is_not_book = manager.checkbox_at('is_book').is_empty()
             has_refs = reduce(
                 lambda a, b: a | b,
-                [maker.relation_at(tag).is_not_empty()
+                [manager.relation_at(tag).is_not_empty()
                  for tag in ['to_journals', 'to_schedules']]
             )
             ft &= (is_not_book | has_refs)

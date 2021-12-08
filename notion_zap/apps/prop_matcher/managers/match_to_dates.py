@@ -4,7 +4,7 @@ from typing import Optional, Union
 
 from notion_zap.cli import editors
 from notion_zap.cli.structs import DateObject
-from . import PeriodResetter
+from .match_to_periods import PeriodResetter
 from ..common.date_handler import DateHandler
 from ..common.dt_handler import TimeStringHandler
 from ..common.helpers import (
@@ -229,20 +229,18 @@ class DateTargetFiller(DateMatcherAbs):
         date_handler = DateHandler.from_strf_dig6(tar_idx)
         new_tar_idx = date_handler.strf_dig6_and_weekday()
         if tar_idx != new_tar_idx:
-            writer = tar.props
-            writer.write(tag=self.Ttars_idx, value=new_tar_idx)
+            tar.props.write(tag=self.Ttars_idx, value=new_tar_idx)
         date_range = DateObject(date_handler.date)
         if date_range != tar.props.read_tag(self.Ttars_date):
             tar.props.write_date(tag=self.Ttars_date, value=date_range)
-            tar.save()
+        tar.save()
         # print(f"{tar=}, {tar_idx=}, {date_range=},"
         #       f"{tar.props.read_at(self.Ttars_date)=},"
         #       f"{date_range != tar.props.read_at(self.Ttars_date)=}")
 
 
 # deprecated
-
-class DateDomainFiller(DateMatcherAbs):
+class DateDomainFillerDepr(DateMatcherAbs):
     Tdoms_date = 'manual_date'
     Ttimestr = 'timestr'
 

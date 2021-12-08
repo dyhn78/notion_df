@@ -28,11 +28,11 @@ class PageRowPropertyWriter(metaclass=ABCMeta):
             self, key: str, tag: Hashable, value: Any, label: Hashable):
         cleaned_key = self._cleaned_key(key, tag)
         column = self.frame.by_key[cleaned_key]
-        assert bool(value is not None) + bool(label is not None) == 1
-        if value:
-            cleaned_value = value
-        else:
+        assert bool(value is not None) + bool(label is not None) <= 1
+        if label is not None:
             cleaned_value = column.labels[label]
+        else:
+            cleaned_value = value
         return cleaned_key, cleaned_value
 
     def _cleaned_key_with_value_list(
@@ -42,15 +42,15 @@ class PageRowPropertyWriter(metaclass=ABCMeta):
         cleaned_key = self._cleaned_key(key, tag)
         column = self.frame.by_key[cleaned_key]
         assert sum(arg is not None
-                   for arg in [value, label, label_list, mark]) == 1
-        if value:
-            cleaned_value = value
-        elif label:
+                   for arg in [value, label, label_list, mark]) <= 1
+        if label is not None:
             cleaned_value = column.labels[label]
-        elif label_list:
+        elif label_list is not None:
             cleaned_value = [column.labels[label] for label in label_list]
-        else:
+        elif mark is not None:
             cleaned_value = column.marks[mark]
+        else:
+            cleaned_value = value
         return cleaned_key, cleaned_value
 
     def write_rich(self, key: str = None, tag: Hashable = None, data_type=''):
