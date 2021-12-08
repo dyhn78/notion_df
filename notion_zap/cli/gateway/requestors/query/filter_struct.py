@@ -34,7 +34,7 @@ class EmptyFilter(QueryFilter):
         return {}
 
 
-class PlainFilter(QueryFilter):
+class SimpleFilter(QueryFilter):
     def __init__(self, plain_filter: dict):
         self._value = plain_filter
 

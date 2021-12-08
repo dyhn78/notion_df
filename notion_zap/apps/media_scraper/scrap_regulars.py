@@ -37,19 +37,19 @@ class RegularScrapController(ReadingDBController):
 
     def fetch(self, request_size):
         query = self.pagelist.open_query()
-        manager = query.filter_manager
+        manager = query.filter_manager_by_tags
         ft = query.open_filter()
 
-        maker = manager.checkbox_at('is_book')
+        maker = manager.checkbox('is_book')
         ft &= maker.is_not_empty()
 
-        maker = manager.select_at('edit_status')
+        maker = manager.select('edit_status')
         ft &= (
                 maker.equals_to_any(maker.column.marks['regular_scraps'])
                 | maker.is_empty()
         )
         if self.title:
-            maker = manager.text_at('title')
+            maker = manager.text('title')
             ft_title = maker.starts_with(self.title)
             ft &= ft_title
         query.push_filter(ft)

@@ -110,18 +110,12 @@ class PageRowProperties(PagePayload, encoders.PageRowPropertyWriter):
 
     def read_key(self, prop_key: str):
         self._assert_string_key(prop_key)
-        try:
-            value = self._read_plain[prop_key]
-        except KeyError:
-            raise KeyError(prop_key)
+        value = self._read_plain[prop_key]
         return value
 
     def richly_read_key(self, prop_key: str):
         self._assert_string_key(prop_key)
-        try:
-            value = self._read_rich[prop_key]
-        except KeyError:
-            raise KeyError(prop_key)
+        value = self._read_rich[prop_key]
         return value
 
     def get_key(self, prop_key: str, default=None):

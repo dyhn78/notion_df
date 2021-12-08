@@ -9,31 +9,33 @@ from notion_zap.cli.structs import \
 처리하는 식으로 움직이자.
 """
 
-_title = Cl(tag='title', key='📚제목')
+Cl_title = Cl(tag='title', key='📚제목')
 
-_to_itself = Cl(tag='to_itself', key='🔁재귀')
-_to_periods = Cl(tag='to_periods', key='🧶기간')
-_to_dates = Cl(tag='to_dates', key='🧶날짜')
-_to_journals = Cl(tag='to_journals', key='🧵일지')
-_to_schedules = Cl(tag='to_schedules', key='🧵일정')
+Cl_to_itself = Cl(tag='to_itself', key='🔁재귀')
+Cl_to_periods = Cl(tag='to_periods', key='🧶기간')
+Cl_to_dates = Cl(tag='to_dates', key='🧶날짜')
+Cl_to_journals = Cl(tag='to_journals', key='🧵일지')
+Cl_to_schedules = Cl(tag='to_schedules', key='🧵일정')
 
-_to_themes = Cl(tag='to_themes', key='📕수행')
-_to_locations = Cl(tag='to_locations', key='📙장소')
-_to_channels = Cl(tag='to_channels', key='📒채널')
-_to_readings = Cl(tag='to_readings', key='📒읽기')
+Cl_to_themes = Cl(tag='to_themes', key='📕수행')
+Cl_to_locations = Cl(tag='to_locations', key='📙장소')
+Cl_to_channels = Cl(tag='to_channels', key='📒채널')
+Cl_to_readings = Cl(tag='to_readings', key='📒읽기')
 
-_auto_date = Cl(tag='auto_date', key='날짜값⏲️')
-_auto_time = Cl(tag='auto_datetime', key='날짜⏲️')
-_AUTO_DATE = Frame([_auto_date, _auto_time])
+Cl_auto_date = Cl(tag='auto_date', key='날짜값⏲️')
+Cl_auto_time = Cl(tag='auto_datetime', key='날짜⏲️')
+Fr_AUTO_DATE = Frame([Cl_auto_date, Cl_auto_time])
 
-_timestr = Cl(tag='timestr', key='📆환경/시간')
-_manual_date = Cl(tag='manual_date', key='📆날짜')
+Cl_timestr = Cl(tag='timestr', key='📆환경/시간')
+Cl_manual_date = Cl(tag='manual_date', key='📆날짜')
+
+Cl_media_type = Cl(tag='media_type', key='🔵유형', labels={'empty': '🛠️결정 전'})
 
 
 class MatchFrames:
     PERIODS = Frame(
         [
-            _title, _to_itself,
+            Cl_title, Cl_to_itself,
             Cl(tag='manual_date_range', key='📅날짜 범위')
         ]
     )
@@ -42,9 +44,9 @@ class MatchFrames:
 
     DATES = Frame(
         [
-            _title, _to_itself, _manual_date,
-            _to_periods,
-            _to_locations, _to_channels,
+            Cl_title, Cl_to_itself, Cl_manual_date,
+            Cl_to_periods,
+            Cl_to_locations, Cl_to_channels,
             Cl(tag='to_journals', key='🧵일지'),
             Cl(tag='sync_status', key='🏁동기화'),
         ]
@@ -53,26 +55,26 @@ class MatchFrames:
     # DATES.add_alias('manual_date', 'index_as_domain')
 
     JOURNALS = Frame(
-        _AUTO_DATE,
+        Fr_AUTO_DATE,
         [
-            _title, _to_itself, _timestr,
-            _to_periods, _to_dates,
+            Cl_title, Cl_to_itself, Cl_timestr,
+            Cl_to_periods, Cl_to_dates,
             Cl(tag='up_self', key='🧵구성'),
             Cl(tag='down_self', key='🧵요소'),
 
-            _to_themes, _to_locations, _to_readings, _to_channels,
+            Cl_to_themes, Cl_to_locations, Cl_to_readings, Cl_to_channels,
         ]
     )
     SCHEDULES = Frame(
-        _AUTO_DATE,
+        Fr_AUTO_DATE,
         [
-            _title, _to_itself, _timestr,
+            Cl_title, Cl_to_itself, Cl_timestr,
             Cl(tag='to_scheduled_periods', key='🧶기간'),
             Cl(tag='to_scheduled_dates', key='🧶날짜'),
             Cl(tag='to_created_periods', key='📉기간'),
             Cl(tag='to_created_dates', key='📉날짜'),
 
-            _to_themes, _to_channels, _to_readings,
+            Cl_to_themes, Cl_to_channels, Cl_to_readings,
 
             Cl(tag='gcal_sync_status', key='🏁동기화'),
             Cl(tag='gcal_link', key='📚Gcal'),
@@ -80,33 +82,41 @@ class MatchFrames:
         ]
     )
     WRITINGS = Frame(
-        _AUTO_DATE,
+        Fr_AUTO_DATE,
         [
-            _title, _to_itself, _timestr,
-            _to_periods, _to_dates, _to_journals, _to_schedules,
+            Cl_title, Cl_to_itself, Cl_timestr,
+            Cl_to_periods, Cl_to_dates, Cl_to_journals, Cl_to_schedules,
 
-            _to_channels, _to_readings,
+            Cl_to_channels, Cl_to_readings,
             Cl(tag='to_themes', key='📕맥락'),
         ]
     )
     MEMOS = Frame(
-        _AUTO_DATE,
+        Fr_AUTO_DATE,
         [
-            _title, _to_itself,
-            _to_periods, _to_dates, _to_journals,
+            Cl_title, Cl_to_itself,
+            Cl_to_periods, Cl_to_dates, Cl_to_journals,
         ]
     )
 
     READINGS = Frame(
-        _AUTO_DATE,
+        Fr_AUTO_DATE,
         [
-            _title, _to_itself,
+            Cl_title, Cl_to_itself,
             Cl(tag='to_periods', key='🧶기간_시작'),
             Cl(tag='to_dates', key='🧶날짜_시작'),
-            _to_journals, _to_schedules,
-            _to_themes, _to_channels,
+            Cl_to_journals, Cl_to_schedules,
+            Cl_to_themes, Cl_to_channels,
 
+            Cl_media_type,
             Cl(tag='no_exp', key='🏁경험 없음<-경과'),
             Cl(tag='is_book', key='🔵도서<-유형'),
+        ]
+    )
+
+    CHANNELS = Frame(
+        [
+            Cl_title,
+            Cl_media_type,
         ]
     )

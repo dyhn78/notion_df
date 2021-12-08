@@ -11,8 +11,9 @@ class Query(LongRequestor):
         self.frame = frame
         self._filter_value = EmptyFilter()
 
-        from .filter_maker import QueryFilterManager
-        self.filter_manager = QueryFilterManager(self)
+        from .filter_maker import QueryFilterManagerbyKey, QueryFilterManagerbyTag
+        self.filter_manager_by_keys = QueryFilterManagerbyKey(self)
+        self.filter_manager_by_tags = QueryFilterManagerbyTag(self)
 
         from .sort import QuerySort
         self.sort = QuerySort()

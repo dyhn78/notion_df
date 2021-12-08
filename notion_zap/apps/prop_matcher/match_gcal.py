@@ -31,12 +31,12 @@ class GcalEditorBase(EditorBase):
 
     def fetch_one(self, domain: editors.RowChildren):
         query = domain.open_query()
-        maker = query.filter_manager
+        maker = query.filter_manager_by_tags
         ft = query.open_filter()
         if domain is self.schedules:
-            ft |= maker.relation_at('to_scheduled_dates').is_empty()
-            ft |= maker.checkbox_at('gcal_sync_status').is_empty()
-            ft |= maker.text_at('gcal_link').is_empty()
+            ft |= maker.relation('to_scheduled_dates').is_empty()
+            ft |= maker.checkbox('gcal_sync_status').is_empty()
+            ft |= maker.text('gcal_link').is_empty()
 
         query.push_filter(ft)
         # query.preview()

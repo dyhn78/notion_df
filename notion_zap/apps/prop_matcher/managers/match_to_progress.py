@@ -1,12 +1,14 @@
 import datetime as dt
+from typing import Optional
 
 from notion_zap.cli import editors
 from notion_zap.cli.structs import DateObject
 from ..common.struct import EditorManager
-from ..common.helpers import extend_prop, fetch_all_pages_of_relation
+from ..common.helpers import extend_prop, fetch_all_pages_of_relation, \
+    fetch_unique_page_of_relation
 
 
-class ProgressMatcherType1(EditorManager):
+class ProgressMatcherofWritings(EditorManager):
     Tdoms_ref1 = 'to_journals'
     Tdoms_ref2 = 'to_schedules'
     TL_tar = ['to_themes', 'to_channels', 'to_readings']
@@ -30,7 +32,31 @@ class ProgressMatcherType1(EditorManager):
                 extend_prop(dom, T_tar, tar_ids)
 
 
-class ProgressMatcherType2(EditorManager):
+class ProgressMatcherofReadings(EditorManager):
+    Tmedia_type = 'media_type'
+    T_tar = 'to_channels'
+    Lmedia_type_empty = 'empty'
+
+    def __init__(self, bs):
+        super().__init__(bs)
+        self.domain = self.bs.readings
+        self.target = self.bs.channels
+
+    def execute(self):
+        for dom in self.domain.rows:
+            self.match(dom)
+
+    def match(self, dom: editors.PageRow) -> Optional[str]:
+        if dom.props.read_tag(self.Tmedia_type):
+            return
+        tar = fetch_unique_page_of_relation(dom, self.target, self.T_tar)
+        if tar_val := tar.props.read_tag(self.Tmedia_type):
+            dom.props.write_select(tag=self.Tmedia_type, value=tar_val)
+        else:
+            dom.props.write_select(tag=self.Tmedia_type, label=self.Lmedia_type_empty)
+
+
+class ProgressMatcherofDates(EditorManager):
     def __init__(self, bs):
         super().__init__(bs)
         self.domain = self.bs.dates

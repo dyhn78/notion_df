@@ -37,7 +37,7 @@ def query_unique_page_by_idx(
         database: editors.Database, idx, idx_tag: str,
         prop_type='text'):
     query = database.rows.open_query()
-    maker = query.filter_manager.at(idx_tag, prop_type)
+    maker = query.filter_manager_by_tags(idx_tag, prop_type)
     ft = maker.equals(idx)
     query.push_filter(ft)
     tars = query.execute()

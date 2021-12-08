@@ -81,7 +81,7 @@ class PeriodResetter(PeriodMatcherAbs):
         dom.props.write_relation(tag=cls.T_tar, value=[])
 
 
-class PeriodMatcherType1(PeriodMatcherAbs):
+class PeriodMatcherofDates(PeriodMatcherAbs):
     Tdoms_date = 'manual_date'
 
     def __init__(self, bs):
@@ -103,34 +103,7 @@ class PeriodMatcherType1(PeriodMatcherAbs):
         return self.find_or_create_by_date_val(date_val)
 
 
-class PeriodMatcherType2(PeriodMatcherAbs):
-    Tdoms_ref = 'to_dates'
-
-    def __init__(self, bs):
-        super().__init__(bs)
-        self.reference = self.bs.dates
-        self.domains = [
-            self.bs.journals, self.bs.writings, self.bs.memos,
-            self.bs.readings
-        ]
-
-    def execute(self):
-        for domain in self.domains:
-            for dom in domain.rows:
-                if tar := self.match_periods(dom):
-                    writer = dom.props
-                    writer.write_relation(tag=self.T_tar, value=tar.block_id)
-
-    def match_periods(self, dom: editors.PageRow):
-        if dom.props.read_tag(self.T_tar):
-            return None
-        if ref := fetch_unique_page_of_relation(dom, self.reference, self.Tdoms_ref):
-            if tar := fetch_unique_page_of_relation(ref, self.target, self.T_tar):
-                return tar
-        return None
-
-
-class PeriodMatcherType3(PeriodMatcherAbs):
+class PeriodMatcherofSchedules(PeriodMatcherAbs):
     Tdoms_ref1 = 'to_created_dates'
     Tdoms_tar1 = 'to_created_periods'
     Tdoms_ref2 = 'to_scheduled_dates'
@@ -161,6 +134,33 @@ class PeriodMatcherType3(PeriodMatcherAbs):
         if dom.props.read_tag(self.Tdoms_tar2):
             return None
         if ref := fetch_unique_page_of_relation(dom, self.reference, self.Tdoms_ref2):
+            if tar := fetch_unique_page_of_relation(ref, self.target, self.T_tar):
+                return tar
+        return None
+
+
+class PeriodMatcherType1(PeriodMatcherAbs):
+    Tdoms_ref = 'to_dates'
+
+    def __init__(self, bs):
+        super().__init__(bs)
+        self.reference = self.bs.dates
+        self.domains = [
+            self.bs.journals, self.bs.writings, self.bs.memos,
+            self.bs.readings
+        ]
+
+    def execute(self):
+        for domain in self.domains:
+            for dom in domain.rows:
+                if tar := self.match_periods(dom):
+                    writer = dom.props
+                    writer.write_relation(tag=self.T_tar, value=tar.block_id)
+
+    def match_periods(self, dom: editors.PageRow):
+        if dom.props.read_tag(self.T_tar):
+            return None
+        if ref := fetch_unique_page_of_relation(dom, self.reference, self.Tdoms_ref):
             if tar := fetch_unique_page_of_relation(ref, self.target, self.T_tar):
                 return tar
         return None

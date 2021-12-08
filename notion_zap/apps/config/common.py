@@ -10,4 +10,5 @@ class DatabaseInfo:
 
     THEMES = ('수행', 'eb2f09a1de41412e8b2357bc04f26e74')
     IDEAS = ('관점', '2c5411ba6a0f43a0a8aa06295751e37a')
+    CHANNELS = ('채널', '2d3f4ea770854b8e9e30abecd4d31a86')
     READINGS = ('읽기', 'c326f77425a0446a8aa309478767c85b')

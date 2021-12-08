@@ -57,7 +57,7 @@ class DateMatcherAbs(EditorManager, metaclass=ABCMeta):
         return tar.save()
 
 
-class DateMatcherType1(DateMatcherAbs):
+class DateMatcherofJournals(DateMatcherAbs):
     Tdoms_updom = 'up_self'
 
     def __init__(self, bs):
@@ -86,7 +86,7 @@ class DateMatcherType1(DateMatcherAbs):
         return self.find_or_create_tar_by_date(date_val)
 
 
-class DateMatcherType2(DateMatcherAbs):
+class DateMatcherofSchedules(DateMatcherAbs):
     Tdoms_tar1 = 'to_created_dates'
     Tdoms_tar2 = 'to_scheduled_dates'
 
@@ -121,63 +121,7 @@ class DateMatcherType2(DateMatcherAbs):
         return self.find_or_create_tar_by_date(date_val)
 
 
-class DateMatcherType3(DateMatcherAbs):
-    Tdoms_ref2 = 'to_schedules'
-    Tref2s_tar = 'to_scheduled_dates'
-
-    def __init__(self, bs):
-        super().__init__(bs)
-        self.domains = [self.bs.writings, self.bs.readings]
-        self.reference2 = self.bs.schedules
-
-    def execute(self):
-        for domain in self.domains:
-            for dom in domain.rows:
-                if tar := self.match_dates(dom):
-                    writer = dom.props
-                    writer.write_relation(tag=self.T_tar, value=tar.block_id)
-                    PeriodResetter.process(dom)
-
-    def match_dates(self, dom: editors.PageRow):
-        if dom.props.read_tag(self.T_tar):
-            return None
-        if dom.parent is self.bs.readings and dom.props.read_tag('no_exp'):
-            return None
-        if tar := self.determine_tar_from_ref(
-                dom, self.reference, self.Tdoms_ref, self.T_tar):
-            return tar
-        if tar := self.determine_tar_from_ref(
-                dom, self.reference2, self.Tdoms_ref2, self.Tref2s_tar):
-            return tar
-        if dom.parent is self.bs.readings and dom.props.read_tag('is_book'):
-            return None
-        if tar := self.determine_tar_from_auto_date(dom):
-            return tar
-        return None
-
-    def determine_tar_from_ref(self, dom: editors.PageRow,
-                               reference: editors.Database, doms_ref, refs_tar):
-        refs = fetch_all_pages_of_relation(dom, reference, doms_ref)
-        tars = []
-        for ref in refs:
-            new_tars = fetch_all_pages_of_relation(ref, self.target, refs_tar)
-            tars.extend(new_tars)
-        earliest_tar: Optional[editors.PageRow] = None
-        earliest_date = None
-        for tar in tars:
-            date = tar.props.read_tag(self.Ttars_date)
-            if earliest_date is None or date < earliest_date:
-                earliest_tar = tar
-                earliest_date = date
-        return earliest_tar
-
-    def determine_tar_from_auto_date(self, dom: editors.PageRow):
-        dom_idx = dom.props.read_tag(self.Tdoms_date)
-        date_val = dom_idx.start + dt.timedelta(hours=-5)
-        return self.find_or_create_tar_by_date(date_val)
-
-
-class DateMatcherType4(DateMatcherAbs):
+class DateMatcherofMemos(DateMatcherAbs):
     def __init__(self, bs):
         super().__init__(bs)
         self.domains = [self.bs.memos]
@@ -200,6 +144,81 @@ class DateMatcherType4(DateMatcherAbs):
 
     def determine_tar_from_auto_date(self, dom: editors.PageRow):
         dom_idx: DateObject = dom.props.read_tag(self.Tdoms_date)
+        date_val = dom_idx.start + dt.timedelta(hours=-5)
+        return self.find_or_create_tar_by_date(date_val)
+
+
+class DateMatcherType1(DateMatcherAbs):
+    Tdoms_ref2 = 'to_schedules'
+    Tref2s_tar = 'to_scheduled_dates'
+
+    def __init__(self, bs):
+        super().__init__(bs)
+        self.domains = [self.bs.writings, self.bs.readings]
+        self.reference2 = self.bs.schedules
+
+    def execute(self):
+        for domain in self.domains:
+            for dom in domain.rows:
+                if tar := self.match(dom):
+                    dom.props.write_relation(tag=self.T_tar, value=tar.block_id)
+                    PeriodResetter.process(dom)
+
+    def match(self, dom: editors.PageRow):
+        if dom.parent is self.bs.readings:
+            return self.match_dates_of_readings(dom)
+        elif dom.parent is self.bs.writings:
+            return self.match_dates_general(dom)
+        raise ValueError(dom)
+
+    def match_dates_of_readings(self, dom: editors.PageRow):
+        if dom.props.read_tag(self.T_tar):
+            return None
+        if dom.props.read_tag('no_exp'):
+            return None
+        if tar := self.determine_tar_from_ref(
+                dom, self.reference, self.Tdoms_ref, self.T_tar):
+            return tar
+        if tar := self.determine_tar_from_ref(
+                dom, self.reference2, self.Tdoms_ref2, self.Tref2s_tar):
+            return tar
+        if dom.props.read_tag('is_book'):
+            return None
+        if tar := self.determine_tar_from_auto_date(dom):
+            return tar
+        return None
+
+    def match_dates_general(self, dom: editors.PageRow):
+        if dom.props.read_tag(self.T_tar):
+            return None
+        if tar := self.determine_tar_from_ref(
+                dom, self.reference, self.Tdoms_ref, self.T_tar):
+            return tar
+        if tar := self.determine_tar_from_ref(
+                dom, self.reference2, self.Tdoms_ref2, self.Tref2s_tar):
+            return tar
+        if tar := self.determine_tar_from_auto_date(dom):
+            return tar
+        return None
+
+    def determine_tar_from_ref(self, dom: editors.PageRow,
+                               reference: editors.Database, doms_ref, refs_tar):
+        refs = fetch_all_pages_of_relation(dom, reference, doms_ref)
+        tars = []
+        for ref in refs:
+            new_tars = fetch_all_pages_of_relation(ref, self.target, refs_tar)
+            tars.extend(new_tars)
+        earliest_tar: Optional[editors.PageRow] = None
+        earliest_date = None
+        for tar in tars:
+            date = tar.props.read_tag(self.Ttars_date)
+            if earliest_date is None or date < earliest_date:
+                earliest_tar = tar
+                earliest_date = date
+        return earliest_tar
+
+    def determine_tar_from_auto_date(self, dom: editors.PageRow):
+        dom_idx = dom.props.read_tag(self.Tdoms_date)
         date_val = dom_idx.start + dt.timedelta(hours=-5)
         return self.find_or_create_tar_by_date(date_val)
 

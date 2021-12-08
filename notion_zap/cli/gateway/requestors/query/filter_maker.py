@@ -3,7 +3,7 @@ from typing import Union
 from datetime import datetime as datetimeclass, date as dateclass
 
 from notion_zap.cli.structs import PropertyColumn
-from .filter_struct import PlainFilter, OrFilter, AndFilter
+from .filter_struct import SimpleFilter, OrFilter, AndFilter
 from .query import Query
 
 # find config by parsers
@@ -18,13 +18,16 @@ for form, types in FILTER_TYPES.items():
     FILTER_FORMATS.update(**{typ: form for typ in types})
 
 
-class QueryFilterManager:
+class QueryFilterManagerbyKey:
     def __init__(self, query: Query):
-        """특정한 데이터베이스 하나를 위한 query_filter 프레임을 만든다."""
         self.query = query
         self.frame = self.query.frame
 
-    def of(self, prop_key: str, prop_type=None) -> QueryFilterMaker:
+    def __call__(self, prop_key: str, prop_type=None) -> QueryFilterMaker:
+        format_type = self._get_attr_name(prop_key, prop_type)
+        return getattr(self, format_type)(prop_key)
+
+    def _get_attr_name(self, prop_key, prop_type):
         if prop_type == 'formula':
             format_type = prop_type
             assert prop_type in ['text', 'checkbox', 'number', 'date']
@@ -34,71 +37,72 @@ class QueryFilterManager:
             if prop_type is None:
                 prop_type = self.frame.type_of(prop_key)
             format_type = FILTER_FORMATS[prop_type]
-        frame_func = f'{format_type}_of'
-        return getattr(self, frame_func)(prop_key)
+        return format_type
 
-    def at(self, prop_tag: str, prop_type=None):
-        return self.of(self.frame.key_of(prop_tag), prop_type)
-
-    def text_of(self, prop_key: str):
+    def text(self, prop_key: str):
         return TextFilterMaker(self, prop_key)
 
-    def relation_of(self, prop_key: str):
+    def relation(self, prop_key: str):
         return RelationFilterMaker(self, prop_key)
 
-    def number_of(self, prop_key: str):
+    def number(self, prop_key: str):
         return NumberFilterMaker(self, prop_key)
 
-    def checkbox_of(self, prop_key: str):
+    def checkbox(self, prop_key: str):
         return CheckboxFilterMaker(self, prop_key)
 
-    def select_of(self, prop_key: str):
+    def select(self, prop_key: str):
         return SelectFilterMaker(self, prop_key)
 
-    def multi_select_of(self, prop_key: str):
+    def multi_select(self, prop_key: str):
         return MultiselectFilterMaker(self, prop_key)
 
-    def files_of(self, prop_key: str):
+    def files(self, prop_key: str):
         return FilesFilterMaker(self, prop_key)
 
-    def date_of(self, prop_key: str):
+    def date(self, prop_key: str):
         return DateFilterMaker(self, prop_key)
 
-    def people_of(self, prop_key: str):
+    def people(self, prop_key: str):
         return PeopleFilterMaker(self, prop_key)
 
-    def text_at(self, prop_tag: str):
-        return self.text_of(self.frame.key_of(prop_tag))
 
-    def relation_at(self, prop_tag: str):
-        return self.relation_of(self.frame.key_of(prop_tag))
+class QueryFilterManagerbyTag(QueryFilterManagerbyKey):
+    def __call__(self, prop_tag: str, prop_type=None):
+        return super().__call__(prop_tag, prop_type)
 
-    def number_at(self, prop_tag: str):
-        return self.number_of(self.frame.key_of(prop_tag))
+    def text(self, prop_tag: str):
+        return super().text(self.frame.key_of(prop_tag))
 
-    def checkbox_at(self, prop_tag: str):
-        return self.checkbox_of(self.frame.key_of(prop_tag))
+    def relation(self, prop_tag: str):
+        return super().relation(self.frame.key_of(prop_tag))
 
-    def select_at(self, prop_tag: str):
-        return self.select_of(self.frame.key_of(prop_tag))
+    def number(self, prop_tag: str):
+        return super().number(self.frame.key_of(prop_tag))
 
-    def multi_select_at(self, prop_tag: str):
-        return self.multi_select_of(self.frame.key_of(prop_tag))
+    def checkbox(self, prop_tag: str):
+        return super().checkbox(self.frame.key_of(prop_tag))
 
-    def files_at(self, prop_tag: str):
-        return self.files_of(self.frame.key_of(prop_tag))
+    def select(self, prop_tag: str):
+        return super().select(self.frame.key_of(prop_tag))
 
-    def date_at(self, prop_tag: str):
-        return self.date_of(self.frame.key_of(prop_tag))
+    def multi_select(self, prop_tag: str):
+        return super().multi_select(self.frame.key_of(prop_tag))
 
-    def people_at(self, prop_tag: str):
-        return self.people_of(self.frame.key_of(prop_tag))
+    def files(self, prop_tag: str):
+        return super().files(self.frame.key_of(prop_tag))
+
+    def date(self, prop_tag: str):
+        return super().date(self.frame.key_of(prop_tag))
+
+    def people(self, prop_tag: str):
+        return super().people(self.frame.key_of(prop_tag))
 
 
 class QueryFilterMaker:
     prop_type = None
 
-    def __init__(self, filter_maker: QueryFilterManager, prop_key):
+    def __init__(self, filter_maker: QueryFilterManagerbyKey, prop_key):
         assert self.prop_type is not None
         self.prop_key: str = prop_key
         self.column: PropertyColumn = (
@@ -108,7 +112,7 @@ class QueryFilterMaker:
         )
 
     def _wrap_as_filter(self, filter_type, arg):
-        return PlainFilter({
+        return SimpleFilter({
             'property': self.prop_key,
             self.prop_type: {filter_type: arg}
         })

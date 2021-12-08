@@ -53,6 +53,9 @@ class PropertyFrame:
             res.extend(units)
         return res
 
+    def mapping_of_tag_to_key(self):
+        return {unit.tag: unit.key for unit in self.units}
+
     @property
     def by_key(self):
         res = {}
@@ -68,7 +71,10 @@ class PropertyFrame:
         return res
 
     def key_of(self, prop_tag: Hashable):
-        return self.by_tag[prop_tag].key
+        try:
+            return self.by_tag[prop_tag].key
+        except KeyError:
+            raise KeyError(prop_tag, self.mapping_of_tag_to_key())
 
     def type_of(self, prop_key: str):
         return self.by_key[prop_key].data_type

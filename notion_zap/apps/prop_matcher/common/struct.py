@@ -23,6 +23,8 @@ class EditorBase:
                                                     frame=MatchFrames.SCHEDULES)
         self.readings = self.root.objects.database(*DatabaseInfo.READINGS,
                                                    frame=MatchFrames.READINGS)
+        self.channels = self.root.objects.database(*DatabaseInfo.CHANNELS,
+                                                   frame=MatchFrames.CHANNELS)
 
     def save(self):
         self.root.save()

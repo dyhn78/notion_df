@@ -5,7 +5,7 @@ def query_within_date_range(pagelist: editors.RowChildren,
                             date_index_tag: str, date_range=0):
     query = pagelist.open_query()
     if date_range:
-        frame = query.filter_manager.date_at(date_index_tag)
+        frame = query.filter_manager_by_tags.date(date_index_tag)
         ft = None
         if date_range == 7:
             ft = frame.within_past_week()
@@ -20,7 +20,7 @@ def query_within_date_range(pagelist: editors.RowChildren,
 
 def query_danglings(pagelist: editors.RowChildren, relation_tag: str):
     query = pagelist.open_query()
-    frame = query.filter_manager.relation_at(relation_tag)
+    frame = query.filter_manager_by_tags.relation(relation_tag)
     ft = frame.is_empty()
     query.push_filter(ft)
     query.execute()
