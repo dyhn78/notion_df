@@ -92,3 +92,7 @@ class RegularEditorBase(EditorBase):
         # ft.preview()
         query.push_filter(ft)
         query.execute(self.request_size, print_heads=5)
+
+
+if __name__ == '__main__':
+    RegularMatchController(request_size=20).execute()
