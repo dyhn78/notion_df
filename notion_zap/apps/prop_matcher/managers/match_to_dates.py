@@ -4,6 +4,7 @@ from typing import Optional, Union
 
 from notion_zap.cli import editors
 from notion_zap.cli.structs import DateObject
+from . import PeriodResetter
 from ..common.date_handler import DateHandler
 from ..common.dt_handler import TimeStringHandler
 from ..common.helpers import (
@@ -100,9 +101,9 @@ class DateMatcherType2(DateMatcherAbs):
                     writer = dom.props
                     writer.write_relation(tag=self.Tdoms_tar1, value=tar.block_id)
                 if tar := self.match_scheduled_dates(dom):
-                    property_writer = dom.props
-                    property_writer.write_relation(tag=self.Tdoms_tar2,
-                                                   value=tar.block_id)
+                    dom.props.write_relation(tag=self.Tdoms_tar2,
+                                             value=tar.block_id)
+                    PeriodResetter.process(dom)
 
     def match_created_dates(self, dom: editors.PageRow):
         if dom.props.read_tag(self.Tdoms_tar1):
@@ -135,6 +136,7 @@ class DateMatcherType3(DateMatcherAbs):
                 if tar := self.match_dates(dom):
                     writer = dom.props
                     writer.write_relation(tag=self.T_tar, value=tar.block_id)
+                    PeriodResetter.process(dom)
 
     def match_dates(self, dom: editors.PageRow):
         if dom.props.read_tag(self.T_tar):

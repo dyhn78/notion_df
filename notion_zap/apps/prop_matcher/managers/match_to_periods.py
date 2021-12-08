@@ -72,6 +72,15 @@ class PeriodMatcherAbs(EditorManager, metaclass=ABCMeta):
             self.bs.root.disable_overwrite = False
 
 
+class PeriodResetter(PeriodMatcherAbs):
+    def execute(self):
+        pass
+
+    @classmethod
+    def process(cls, dom: editors.PageRow):
+        dom.props.write_relation(tag=cls.T_tar, value=[])
+
+
 class PeriodMatcherType1(PeriodMatcherAbs):
     Tdoms_date = 'manual_date'
 
