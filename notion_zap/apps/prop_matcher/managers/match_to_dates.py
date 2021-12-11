@@ -167,9 +167,8 @@ class DateMatcherType1(DateMatcherAbs):
     def match(self, dom: editors.PageRow):
         if dom.parent is self.bs.readings:
             return self.match_dates_of_readings(dom)
-        elif dom.parent is self.bs.writings:
+        else:
             return self.match_dates_general(dom)
-        raise ValueError(dom)
 
     def match_dates_of_readings(self, dom: editors.PageRow):
         if dom.props.read_tag(self.T_tar):
