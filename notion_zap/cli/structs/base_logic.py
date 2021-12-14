@@ -26,4 +26,7 @@ class ValueCarrier(Printable, metaclass=ABCMeta):
         pass
 
     def preview(self, **kwargs):
-        pprint(self.encode(), **kwargs)
+        try:
+            pprint(self.encode(), **kwargs)
+        except AttributeError:
+            pass

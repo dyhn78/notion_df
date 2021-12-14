@@ -15,8 +15,8 @@ class SyncResolveController:
     def __init__(self, date_range=0):
         self.root = editors.Root()
         self.date_range = date_range
-        self.journals = self.root.objects.database(*DatabaseInfo.JOURNALS,
-                                                    MatchFrames.JOURNALS)
+        self.marks = self.root.objects.database(*DatabaseInfo.MARKS,
+                                                MatchFrames.MARKS)
 
     def execute(self):
         self.make_query()
@@ -24,11 +24,11 @@ class SyncResolveController:
         self.root.save()
 
     def make_query(self):
-        for domain in [self.journals]:
+        for domain in [self.marks]:
             query_within_date_range(domain, self.tag__doms_date, self.date_range)
 
     def edit(self):
-        for domain in [self.journals]:
+        for domain in [self.marks]:
             algorithm = SyncResolver(
                 domain, domain, self.tag__doms_downdom, self.tag__doms_updom)
             algorithm.execute()

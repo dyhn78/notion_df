@@ -14,8 +14,8 @@ Cl_title = Cl(tag='title', key='📚제목')
 Cl_to_itself = Cl(tag='to_itself', key='🔁재귀')
 Cl_to_periods = Cl(tag='to_periods', key='🧶기간')
 Cl_to_dates = Cl(tag='to_dates', key='🧵날짜')
-Cl_to_journals = Cl(tag='to_journals', key='🎵일과')
-Cl_to_writings = Cl(tag='to_writings', key='🎵일지')
+Cl_to_marks = Cl(tag='to_journals', key='🎵진도')
+Cl_to_journals = Cl(tag='to_writings', key='🎵일지')
 Cl_to_schedules = Cl(tag='to_schedules', key='📘안배')
 
 Cl_to_themes = Cl(tag='to_themes', key='📕수행')
@@ -40,22 +40,17 @@ class MatchFrames:
             Cl(tag='manual_date_range', key='📅날짜 범위')
         ]
     )
-    # PERIODS.add_alias('title', 'index_as_target')
-    # PERIODS.add_alias('manual_date_range', 'index_as_domain')
-
     DATES = Frame(
         [
             Cl_title, Cl_to_itself, Cl_manual_date,
             Cl_to_periods,
-            Cl_to_journals,
+            Cl_to_marks,
             Cl_to_locations, Cl_to_channels,
             Cl(tag='sync_status', key='🏁동기화'),
         ]
     )
-    # DATES.add_alias('title', 'index_as_target')
-    # DATES.add_alias('manual_date', 'index_as_domain')
 
-    JOURNALS = Frame(
+    MARKS = Frame(
         Fr_AUTO_DATE,
         [
             Cl_title, Cl_to_itself, Cl_timestr,
@@ -64,6 +59,23 @@ class MatchFrames:
             Cl(tag='down_self', key='🎵요소'),
 
             Cl_to_themes, Cl_to_locations, Cl_to_readings, Cl_to_channels,
+        ]
+    )
+    JOURNALS = Frame(
+        Fr_AUTO_DATE,
+        [
+            Cl_title, Cl_to_itself, Cl_timestr,
+            Cl_to_periods, Cl_to_dates, Cl_to_marks, Cl_to_schedules,
+
+            Cl_to_channels, Cl_to_readings,
+            Cl(tag='to_themes', key='📕맥락'),
+        ]
+    )
+    TASKS = Frame(
+        Fr_AUTO_DATE,
+        [
+            Cl_title, Cl_to_itself,
+            Cl_to_periods, Cl_to_dates, Cl_to_marks,
         ]
     )
     SCHEDULES = Frame(
@@ -82,23 +94,6 @@ class MatchFrames:
             Cl(tag='gcal_id', key='📚Gcal_id'),
         ]
     )
-    WRITINGS = Frame(
-        Fr_AUTO_DATE,
-        [
-            Cl_title, Cl_to_itself, Cl_timestr,
-            Cl_to_periods, Cl_to_dates, Cl_to_journals, Cl_to_schedules,
-
-            Cl_to_channels, Cl_to_readings,
-            Cl(tag='to_themes', key='📕맥락'),
-        ]
-    )
-    MEMOS = Frame(
-        Fr_AUTO_DATE,
-        [
-            Cl_title, Cl_to_itself,
-            Cl_to_periods, Cl_to_dates, Cl_to_journals,
-        ]
-    )
 
     READINGS = Frame(
         Fr_AUTO_DATE,
@@ -106,7 +101,7 @@ class MatchFrames:
             Cl_title, Cl_to_itself,
             Cl(tag='to_periods', key='🧶시작'),
             Cl(tag='to_dates', key='🧵시작'),
-            Cl_to_journals, Cl_to_schedules,
+            Cl_to_marks, Cl_to_schedules,
             Cl_to_themes, Cl_to_channels,
 
             Cl_media_type,
@@ -114,7 +109,6 @@ class MatchFrames:
             Cl(tag='is_book', key='🔵도서<-유형'),
         ]
     )
-
     CHANNELS = Frame(
         [
             Cl_title,

@@ -146,7 +146,7 @@ class PeriodMatcherType1(PeriodMatcherAbs):
         super().__init__(bs)
         self.reference = self.bs.dates
         self.domains = [
-            self.bs.journals, self.bs.writings, self.bs.memos,
+            self.bs.marks, self.bs.journals, self.bs.tasks,
             self.bs.readings
         ]
 

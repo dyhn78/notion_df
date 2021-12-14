@@ -13,12 +13,12 @@ class EditorBase:
                                                   frame=MatchFrames.PERIODS)
         self.dates = self.root.objects.database(*DatabaseInfo.DATES,
                                                 frame=MatchFrames.DATES)
+        self.marks = self.root.objects.database(*DatabaseInfo.MARKS,
+                                                frame=MatchFrames.MARKS)
         self.journals = self.root.objects.database(*DatabaseInfo.JOURNALS,
                                                    frame=MatchFrames.JOURNALS)
-        self.writings = self.root.objects.database(*DatabaseInfo.WRITINGS,
-                                                   frame=MatchFrames.WRITINGS)
-        self.memos = self.root.objects.database(*DatabaseInfo.MEMOS,
-                                                frame=MatchFrames.MEMOS)
+        self.tasks = self.root.objects.database(*DatabaseInfo.TASKS,
+                                                frame=MatchFrames.TASKS)
         self.schedules = self.root.objects.database(*DatabaseInfo.SCHEDULES,
                                                     frame=MatchFrames.SCHEDULES)
         self.readings = self.root.objects.database(*DatabaseInfo.READINGS,

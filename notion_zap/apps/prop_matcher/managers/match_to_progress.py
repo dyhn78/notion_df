@@ -15,8 +15,8 @@ class ProgressMatcherofWritings(EditorManager):
 
     def __init__(self, bs):
         super().__init__(bs)
-        self.domain = self.bs.writings
-        self.reference1 = self.bs.journals
+        self.domain = self.bs.journals
+        self.reference1 = self.bs.marks
         self.reference2 = self.bs.schedules
 
     def execute(self):
@@ -60,7 +60,7 @@ class ProgressMatcherofDates(EditorManager):
     def __init__(self, bs):
         super().__init__(bs)
         self.domain = self.bs.dates
-        self.reference = self.bs.journals
+        self.reference = self.bs.marks
         self.to_ref = 'to_journals'
         self.to_tars = ['to_locations', 'to_channels']
 

@@ -24,7 +24,7 @@ class DateMatcherAbs(EditorManager, metaclass=ABCMeta):
     def __init__(self, bs):
         super().__init__(bs)
         self.target: editors.Database = self.bs.dates
-        self.reference = self.bs.journals
+        self.reference = self.bs.marks
         self.target_by_idx = self.target.rows.index_by_tag(self.Ttars_idx)
 
     def find_or_create_tar_by_date(self, date_val: Union[dt.datetime, dt.date]):
@@ -62,7 +62,7 @@ class DateMatcherofJournals(DateMatcherAbs):
 
     def __init__(self, bs):
         super().__init__(bs)
-        self.domains = [self.bs.journals]
+        self.domains = [self.bs.marks]
 
     def execute(self):
         for domain in self.domains:
@@ -124,7 +124,7 @@ class DateMatcherofSchedules(DateMatcherAbs):
 class DateMatcherofMemos(DateMatcherAbs):
     def __init__(self, bs):
         super().__init__(bs)
-        self.domains = [self.bs.memos]
+        self.domains = [self.bs.tasks]
 
     def execute(self):
         for domain in self.domains:
@@ -154,7 +154,7 @@ class DateMatcherType1(DateMatcherAbs):
 
     def __init__(self, bs):
         super().__init__(bs)
-        self.domains = [self.bs.writings, self.bs.readings]
+        self.domains = [self.bs.journals, self.bs.readings]
         self.reference2 = self.bs.schedules
 
     def execute(self):
@@ -266,10 +266,10 @@ class DateDomainFillerDepr(DateMatcherAbs):
         super().__init__(bs)
         self.disable_overwrite = disable_overwrite
         self.domains_type1 = [
-            self.bs.journals, self.bs.writings,
+            self.bs.marks, self.bs.journals,
         ]
         self.domains_type2 = [
-            self.bs.memos, self.bs.schedules,
+            self.bs.tasks, self.bs.schedules,
         ]
 
     def execute(self):
