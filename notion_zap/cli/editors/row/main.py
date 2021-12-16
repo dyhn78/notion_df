@@ -101,7 +101,7 @@ class PageRowProperties(PagePayload, encoders.PageRowPropertyWriter):
     def push_encoder(self, prop_key: str, encoder: encoders.PropertyEncoder) \
             -> encoders.PropertyEncoder:
         cannot_overwrite = (self.root.disable_overwrite and
-                            not self.root.count_as_empty(self.read_key(prop_key)))
+                            self.root.eval(self.read_key(prop_key)))
         if cannot_overwrite:
             return encoder
         if prop_key == self.frame.title_key:

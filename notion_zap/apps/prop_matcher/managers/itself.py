@@ -5,8 +5,8 @@ class SelfMatcher(EditorManager):
     def __init__(self, bs):
         super().__init__(bs)
         self.domains = [
-            self.bs.periods, self.bs.dates, self.bs.marks,
-            self.bs.journals, self.bs.tasks, self.bs.schedules,
+            self.bs.periods, self.bs.dates, self.bs.journals,
+            self.bs.writings, self.bs.tasks, self.bs.schedules,
             self.bs.readings
         ]
 

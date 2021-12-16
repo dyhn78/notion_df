@@ -59,7 +59,7 @@ class PageItemContents(PagePayload, ItemContents,
     def push_encoder(self, carrier: encoders.RichTextPropertyEncoder) \
             -> encoders.RichTextPropertyEncoder:
         cannot_overwrite = (self.root.disable_overwrite and
-                            not self.root.count_as_empty(self.read()))
+                            self.root.eval(self.read()))
         if cannot_overwrite:
             return carrier
         ret = self.requestor.apply_prop(carrier)

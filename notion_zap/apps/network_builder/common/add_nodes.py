@@ -12,9 +12,9 @@ class TopologyBuilder:
     def __init__(self, request_size=0):
         self.request_size = request_size
         self.G = nx.DiGraph()
-        self.root = editors.Root()
+        self.root = editors.Root(print_heads=5)
         self.themes = self.root.objects.database(
-            *DatabaseInfo.THEMES, NetworkFrames.THEMES).rows
+            *DatabaseInfo.PROJECTS, NetworkFrames.THEMES).rows
         self.ideas = self.root.objects.database(
             *DatabaseInfo.IDEAS, NetworkFrames.IDEAS).rows
         self.all: dict[str, editors.RowChildren] = {

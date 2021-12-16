@@ -53,7 +53,7 @@ class RegularScrapController(ReadingDBController):
             ft_title = maker.starts_with(self.title)
             ft &= ft_title
         query.push_filter(ft)
-        pages = query.execute(request_size, print_heads=5)
+        pages = query.execute(request_size)
         return pages
 
     def edit(self, page: editors.PageRow):

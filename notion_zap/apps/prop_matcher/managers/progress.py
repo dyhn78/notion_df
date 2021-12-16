@@ -8,15 +8,15 @@ from ..common.helpers import extend_prop, fetch_all_pages_of_relation, \
     fetch_unique_page_of_relation
 
 
-class ProgressMatcherofWritings(EditorManager):
+class ProgressMatcherofWritingsDepr(EditorManager):
     Tdoms_ref1 = 'to_journals'
     Tdoms_ref2 = 'to_schedules'
-    TL_tar = ['to_themes', 'to_channels', 'to_readings']
+    TL_tar = ['to_projects', 'to_channels', 'to_readings']
 
     def __init__(self, bs):
         super().__init__(bs)
-        self.domain = self.bs.journals
-        self.reference1 = self.bs.marks
+        self.domain = self.bs.writings
+        self.reference1 = self.bs.journals
         self.reference2 = self.bs.schedules
 
     def execute(self):
@@ -56,11 +56,11 @@ class ProgressMatcherofReadings(EditorManager):
             dom.props.write_select(tag=self.Tmedia_type, label=self.Lmedia_type_empty)
 
 
-class ProgressMatcherofDates(EditorManager):
+class ProgressMatcherofDatesDepr(EditorManager):
     def __init__(self, bs):
         super().__init__(bs)
         self.domain = self.bs.dates
-        self.reference = self.bs.marks
+        self.reference = self.bs.journals
         self.to_ref = 'to_journals'
         self.to_tars = ['to_locations', 'to_channels']
 

@@ -178,9 +178,12 @@ class QueryWithCallback(requestors.Query):
         super().__init__(editor, frame)
         self.callback = execute_callback
 
-    def execute(self, request_size=0, print_heads=0):
+    def execute(self, request_size=0, print_heads: int = None):
         response = super().execute(request_size)
         pages = self.callback(response)
+
+        if print_heads is None:
+            print_heads = self.root.print_heads
         if pages and print_heads:
             heads = [(page.title, page.block_url) for page in pages[:print_heads]]
             if pages[print_heads:]:

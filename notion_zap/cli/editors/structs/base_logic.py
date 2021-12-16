@@ -93,6 +93,7 @@ class Root(Registry):
             exclude_archived=False,
             disable_overwrite=False,
             customized_emptylike_strings=None,
+            print_heads=0,
             # enable_overwrite_by_same_value=False,
     ):
         super().__init__()
@@ -117,6 +118,7 @@ class Root(Registry):
             customized_emptylike_strings = \
                 ['', '.', '-', '0', '1', 'None', 'False', '[]', '{}']
         self.emptylike_strings = customized_emptylike_strings
+        self.print_heads = print_heads
         # self.enable_overwrite_by_same_value = enable_overwrite_by_same_value
 
         # TODO : (1) enum 이용, (2) 실제로 requestor에 작동하는 로직 마련.
@@ -127,10 +129,10 @@ class Root(Registry):
     def token(self):
         return os.environ['NOTION_TOKEN'].strip("'").strip('"')
 
-    def count_as_empty(self, value):
+    def eval(self, value):
         if isinstance(value, DateObject):
-            return value.is_emptylike()
-        return str(value) in self.emptylike_strings
+            return not value.is_emptylike()
+        return str(value) not in self.emptylike_strings
 
     def set_logging__silent(self):
         self._log_succeed_request = False

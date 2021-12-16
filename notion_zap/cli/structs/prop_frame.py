@@ -9,15 +9,19 @@ from notion_zap.cli.structs.prop_types import VALUE_FORMATS
 
 class PropertyColumn:
     def __init__(self, key: str,
-                 tag: Hashable = '',
+                 tag: Hashable = None,
+                 tags: list[Hashable] = None,
                  data_type: str = '',
                  labels: Optional[dict[Hashable, Any]] = None,
                  marks_on_value: Optional[dict[Hashable, list]] = None,
                  marks_on_label: Optional[dict[Hashable, list]] = None):
         self.key = key
-        self.tag = tag
         self.data_type = data_type
-        self.labels = labels
+
+        self.tags = tags if tags is not None else []
+        if tag is not None:
+            self.tags.append(tag)
+        self.labels = labels if labels is not None else {}
 
         self.marks = {}
         if marks_on_value:
@@ -28,11 +32,17 @@ class PropertyColumn:
                 self.marks.update({mark: values})
 
     def __str__(self):
-        return f"{self.key} | {self.tag} | {self.data_type}"
+        return ' | '.join(
+            [self.key, ', '.join(str(tag) for tag in self.tags), self.data_type])
 
     @property
     def parser_type(self):
         return VALUE_FORMATS[self.data_type]
+
+    def key_change(self, new_key: str):
+        res = deepcopy(self)
+        res.key = new_key
+        return res
 
 
 class PropertyFrame:
@@ -54,7 +64,10 @@ class PropertyFrame:
         return res
 
     def mapping_of_tag_to_key(self):
-        return {unit.tag: unit.key for unit in self.units}
+        res = {}
+        for unit in self.units:
+            res.update({tag: unit.key for tag in unit.tags})
+        return res
 
     @property
     def by_key(self):
@@ -67,7 +80,7 @@ class PropertyFrame:
     def by_tag(self):
         res = {}
         for unit in self.units:
-            res.update({unit.tag: unit})
+            res.update({tag: unit for tag in unit.tags})
         return res
 
     def key_of(self, prop_tag: Hashable):

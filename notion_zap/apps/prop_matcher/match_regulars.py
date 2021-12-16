@@ -4,50 +4,50 @@ from functools import reduce
 
 from notion_zap.apps.prop_matcher.managers import *
 from notion_zap.apps.prop_matcher.common.struct import EditorManager, EditorBase
+from notion_zap.apps.prop_matcher.managers.calendar import (
+    DateTargetFiller, PeriodTargetFiller)
 from notion_zap.cli import editors
 
 
 class RegularMatchController:
-    def __init__(self, request_size=50):
-        self.bs = RegularEditorBase(request_size)
-
-    def execute(self):
-        self.bs.fetch()
-        agents: list[EditorManager] = [
+    def __init__(self):
+        self.bs = RegularEditorBase()
+        self.agents: list[EditorManager] = [
             SelfMatcher(self.bs),
 
-            DateMatcherofJournals(self.bs),
-            DateMatcherofSchedules(self.bs),
-            DateMatcherofMemos(self.bs),
-            DateMatcherType1(self.bs),
+            DateMatcherofDoublyLinked(self.bs),
+            DateMatcherviaReference(self.bs),
+            DateMatcherofWritings(self.bs),
+            DateMatcherofReadings(self.bs),
             DateTargetFiller(self.bs, False),
 
             PeriodMatcherofDates(self.bs),
-            PeriodMatcherofSchedules(self.bs),
-            PeriodMatcherType1(self.bs),
+            PeriodMatcherofDoublyLinked(self.bs),
+            PeriodMatcherDefault(self.bs),
+            PeriodTargetFiller(self.bs, False)
 
-            ProgressMatcherofWritings(self.bs),
-            ProgressMatcherofDates(self.bs),
 
             # GcaltoScheduleMatcher(self.bs),
             # GcalfromScheduleMatcher(self.bs),
         ]
-        for agent in agents:
+
+    def execute(self, request_size=0):
+        self.bs.fetch(request_size)
+        for agent in self.agents:
             agent.execute()
         self.bs.save()
 
 
 class RegularEditorBase(EditorBase):
-    def __init__(self, request_size: int):
+    def __init__(self):
         super().__init__()
-        self.request_size = request_size
         self.root.exclude_archived = True
 
-    def fetch(self):
+    def fetch(self, request_size=0):
         for domain in self.root.aliased_blocks:
-            self.fetch_one(domain)
+            self.fetch_one(domain, request_size)
 
-    def fetch_one(self, domain: editors.Database):
+    def fetch_one(self, domain: editors.Database, request_size):
         if domain is self.channels:
             return
 
@@ -69,10 +69,8 @@ class RegularEditorBase(EditorBase):
             before_today = manual_date.on_or_before(dt.date.today())
             ft |= (sync_needed & before_today)
             ft |= manual_date.is_empty()
-        if domain is self.schedules:
+        if domain in [self.journals, self.schedules]:
             # TODO : gcal_sync_status
-            ft |= manager.relation('to_scheduled_periods').is_empty()
-            ft |= manager.relation('to_scheduled_dates').is_empty()
             ft |= manager.relation('to_created_periods').is_empty()
             ft |= manager.relation('to_created_dates').is_empty()
         if domain is self.readings:
@@ -91,8 +89,8 @@ class RegularEditorBase(EditorBase):
 
         # ft.preview()
         query.push_filter(ft)
-        query.execute(self.request_size, print_heads=5)
+        query.execute(request_size)
 
 
 if __name__ == '__main__':
-    RegularMatchController(request_size=20).execute()
+    RegularMatchController().execute(request_size=20)

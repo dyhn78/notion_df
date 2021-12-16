@@ -1,12 +1,12 @@
 from notion_zap.cli.structs import PropertyColumn as Cl, PropertyFrame
 
 ReadingDB_FRAME = PropertyFrame([
-    Cl('🔵유형', 'media_type',
+    Cl(key='🔵유형', tag='media_type',
        marks_on_value={
            'book': ['📖단행본', '☕연속간행물', '✒학습자료']
        }),
-    Cl('🔵도서<-유형', 'is_book'),
-    Cl('🏁준비', 'edit_status',
+    Cl(key='🔵도서<-유형', tag='is_book'),
+    Cl(key='🏁준비', tag='edit_status',
        labels={
            'pass': '0️⃣⛳정보 없음',
            'append': '1️⃣📥안전하게(append)',
@@ -22,16 +22,16 @@ ReadingDB_FRAME = PropertyFrame([
            'need_resets': ['url_missing', 'lib_missing'],
            'done': ['tentatively_done', 'completely_done'],
        }),
-    Cl('📚제목', 'docx_name'),
-    Cl('📚원제(검색용)', 'true_name'),
-    Cl('📚부제', 'subname'),
-    Cl('📚링크', 'url'),
-    Cl('📚만든이', 'author'),
-    Cl('📚만든곳', 'publisher'),
-    Cl('📚N(쪽+)', 'volume'),
-    Cl('📚표지', 'cover_image'),
-    Cl('📦이동', 'link_to_contents'),
-    Cl('📚위치', 'location'),
-    Cl('📚대출중', 'not_available'),
+    Cl(key='📚제목', tag='docx_name'),
+    Cl(key='📚원제(검색용)', tag='true_name'),
+    Cl(key='📚부제', tag='subname'),
+    Cl(key='📚링크', tag='url'),
+    Cl(key='📚만든이', tag='author'),
+    Cl(key='📚만든곳', tag='publisher'),
+    Cl(key='📚N(쪽+)', tag='volume'),
+    Cl(key='📚표지', tag='cover_image'),
+    Cl(key='📦이동', tag='link_to_contents'),
+    Cl(key='📚위치', tag='location'),
+    Cl(key='📚대출중', tag='not_available'),
 ])
 ReadingDB_FRAME.add_alias('docx_name', 'title')

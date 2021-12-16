@@ -22,6 +22,10 @@ class PointRequestor(Requestor, metaclass=ABCMeta):
         return f"{type(self).__name__}"
 
     @property
+    def root(self):
+        return self.editor.root
+
+    @property
     def target_id(self):
         return self.editor.block_id
 

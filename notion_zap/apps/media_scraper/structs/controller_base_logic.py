@@ -9,7 +9,7 @@ class ReadingDBController:
     status_enum = ReadingDB_FRAME.by_tag['edit_status'].labels
 
     def __init__(self):
-        self.root = editors.Root()
+        self.root = editors.Root(print_heads=5)
         self.pagelist = self.root.objects.database(
             *DatabaseInfo.READINGS, ReadingDB_FRAME).rows
 

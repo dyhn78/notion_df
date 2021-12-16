@@ -8,7 +8,7 @@ from googleapiclient.errors import HttpError
 import notion_zap.apps.externals.gcal
 from notion_zap.cli import editors
 from notion_zap.cli.structs import DateObject
-from .match_to_dates import DateMatcherAbs
+from .dates import DateMatcherAbs
 from ..common.dt_handler import TimeStringHandler
 from ..common.helpers import query_unique_page_by_idx
 from ..common.struct import EditorManager

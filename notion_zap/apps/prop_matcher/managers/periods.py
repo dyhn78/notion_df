@@ -92,37 +92,35 @@ class PeriodMatcherofDates(PeriodMatcherAbs):
         for domain in self.domains:
             for dom in domain.rows:
                 if tar := self.match_periods(dom):
-                    writer = dom.props
-                    writer.write_relation(tag=self.T_tar, value=tar.block_id)
+                    dom.props.write_relation(tag=self.T_tar, value=tar.block_id)
 
     def match_periods(self, dom: editors.PageRow):
         if dom.props.read_tag(self.T_tar):
             return None
         dom_idx: DateObject = dom.props.read_tag(self.Tdoms_date)
-        date_val = dom_idx.start_date
-        return self.find_or_create_by_date_val(date_val)
+        return self.find_or_create_by_date_val(dom_idx.start_date)
 
 
-class PeriodMatcherofSchedules(PeriodMatcherAbs):
-    Tdoms_ref1 = 'to_created_dates'
-    Tdoms_tar1 = 'to_created_periods'
-    Tdoms_ref2 = 'to_scheduled_dates'
-    Tdoms_tar2 = 'to_scheduled_periods'
+class PeriodMatcherofDoublyLinked(PeriodMatcherAbs):
+    Tdoms_ref1 = 'to_dates'
+    Tdoms_tar1 = 'to_periods'
+    Tdoms_ref2 = 'to_created_dates'
+    Tdoms_tar2 = 'to_created_periods'
 
     def __init__(self, bs):
         super().__init__(bs)
         self.reference = self.bs.dates
-        self.domains = [self.bs.schedules]
+        self.domains = [self.bs.journals, self.bs.schedules]
 
     def execute(self):
         for domain in self.domains:
             for dom in domain.rows:
-                if tar := self.match_created_periods(dom):
+                if tar := self.match_periods(dom):
                     dom.props.write_relation(tag=self.Tdoms_tar1, value=tar.block_id)
-                if tar := self.match_scheduled_periods(dom):
+                if tar := self.match_created_periods(dom):
                     dom.props.write_relation(tag=self.Tdoms_tar2, value=tar.block_id)
 
-    def match_created_periods(self, dom: editors.PageRow):
+    def match_periods(self, dom: editors.PageRow):
         if dom.props.read_tag(self.Tdoms_tar1):
             return None
         if ref := fetch_unique_page_of_relation(dom, self.reference, self.Tdoms_ref1):
@@ -130,7 +128,7 @@ class PeriodMatcherofSchedules(PeriodMatcherAbs):
                 return tar
         return None
 
-    def match_scheduled_periods(self, dom: editors.PageRow):
+    def match_created_periods(self, dom: editors.PageRow):
         if dom.props.read_tag(self.Tdoms_tar2):
             return None
         if ref := fetch_unique_page_of_relation(dom, self.reference, self.Tdoms_ref2):
@@ -139,23 +137,21 @@ class PeriodMatcherofSchedules(PeriodMatcherAbs):
         return None
 
 
-class PeriodMatcherType1(PeriodMatcherAbs):
+class PeriodMatcherDefault(PeriodMatcherAbs):
     Tdoms_ref = 'to_dates'
 
     def __init__(self, bs):
         super().__init__(bs)
         self.reference = self.bs.dates
         self.domains = [
-            self.bs.marks, self.bs.journals, self.bs.tasks,
-            self.bs.readings
+            self.bs.writings, self.bs.tasks, self.bs.readings
         ]
 
     def execute(self):
         for domain in self.domains:
             for dom in domain.rows:
                 if tar := self.match_periods(dom):
-                    writer = dom.props
-                    writer.write_relation(tag=self.T_tar, value=tar.block_id)
+                    dom.props.write_relation(tag=self.T_tar, value=tar.block_id)
 
     def match_periods(self, dom: editors.PageRow):
         if dom.props.read_tag(self.T_tar):
@@ -164,20 +160,3 @@ class PeriodMatcherType1(PeriodMatcherAbs):
             if tar := fetch_unique_page_of_relation(ref, self.target, self.T_tar):
                 return tar
         return None
-
-
-class PeriodTargetFiller(PeriodMatcherAbs):
-    def __init__(self, bs, disable_overwrite, create_date_range):
-        super().__init__(bs)
-        self.disable_overwrite = disable_overwrite
-        from ..build_calendar import CalendarDateRange
-        self.create_date_range: CalendarDateRange = create_date_range
-
-    def execute(self):
-        for tar in self.target:
-            self.update_tar(tar, disable_overwrite=self.disable_overwrite)
-        if self.create_date_range:
-            for date_val in self.create_date_range.iter_date():
-                if self.find_by_date_val(date_val):
-                    continue
-                self.create_by_date_val(date_val)
