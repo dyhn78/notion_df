@@ -20,11 +20,11 @@ class Database(BlockWithChildren):
                  id_or_url: str,
                  database_alias='',
                  frame: Optional[PropertyFrame] = None):
-        self.frame = frame if frame else PropertyFrame()
-        BlockWithChildren.__init__(self, caller, id_or_url)
-        self.rows = RowChildren(self)
         self.alias = database_alias
+        BlockWithChildren.__init__(self, caller, id_or_url)
         self.root.by_alias[self.alias] = self
+        self.frame = frame if frame else PropertyFrame()
+        self.rows = RowChildren(self)
 
     def _initalize_payload(self, block_id) -> Payload:
         from .schema import DatabaseSchema
@@ -136,39 +136,59 @@ class RowChildren(Children):
         return super().by_title
 
     def index_by_key(self, prop_key: str) -> IndexTable[Hashable, PageRow]:
-        if isinstance(self.by_keys.get(prop_key), IndexTable):
-            return self.by_keys[prop_key]
-        else:
-            if not self.root.by_keys.get(prop_key):
-                self.root.by_keys[prop_key] = IndexTable()
+        flag = False
+        if not isinstance(self.root.by_keys.get(prop_key), IndexTable):
+            self.root.by_keys[prop_key] = IndexTable()
+            flag = True
+        if not isinstance(self.by_keys.get(prop_key), IndexTable):
             self.by_keys[prop_key] = IndexTable()
+            flag = True
+        if flag:
             for page in self.list_all():
-                page.props.add_key_reg(prop_key)
-            return self.by_keys[prop_key]
+                reg = page.props.add_key_reg(prop_key)
+                reg.register_to_root_and_parent()
+        return self.by_keys[prop_key]
 
     def index_by_tag(self, prop_tag: str) -> IndexTable[Hashable, PageRow]:
-        if isinstance(self.by_tags.get(prop_tag), IndexTable):
-            return self.by_tags[prop_tag]
-        else:
-            if not self.root.by_tags.get(prop_tag):
-                self.root.by_tags[prop_tag] = IndexTable()
+        flag = False
+        if not isinstance(self.root.by_tags.get(prop_tag), IndexTable):
+            self.root.by_tags[prop_tag] = IndexTable()
+            flag = True
+        if not isinstance(self.by_tags.get(prop_tag), IndexTable):
             self.by_tags[prop_tag] = IndexTable()
+            flag = True
+        if flag:
             for page in self.list_all():
-                page.props.add_tag_reg(prop_tag)
-            return self.by_tags[prop_tag]
+                reg = page.props.add_tag_reg(prop_tag)
+                reg.register_to_root_and_parent()
+        return self.by_tags[prop_tag]
 
     def classify_by_key(self, prop_key: str) -> ClassifyTable[Hashable, PageRow]:
+        flag = False
+        if not isinstance(self.root.by_keys.get(prop_key), ClassifyTable):
+            self.root.by_keys[prop_key] = ClassifyTable()
+            flag = True
         if not isinstance(self.by_keys.get(prop_key), ClassifyTable):
             self.by_keys[prop_key] = ClassifyTable()
+            flag = True
+        if flag:
             for page in self.list_all():
-                page.props.add_key_reg(prop_key)
-        return self.by_tags[prop_key]
+                reg = page.props.add_key_reg(prop_key)
+                reg.register_to_root_and_parent()
+        return self.by_keys[prop_key]
 
     def classify_by_tag(self, prop_tag: str) -> ClassifyTable[Hashable, PageRow]:
+        flag = False
+        if not isinstance(self.root.by_tags.get(prop_tag), ClassifyTable):
+            self.root.by_keys[prop_tag] = ClassifyTable()
+            flag = True
         if not isinstance(self.by_tags.get(prop_tag), ClassifyTable):
             self.by_tags[prop_tag] = ClassifyTable()
+            flag = True
+        if flag:
             for page in self.list_all():
-                page.props.add_tag_reg(prop_tag)
+                reg = page.props.add_tag_reg(prop_tag)
+                reg.register_to_root_and_parent()
         return self.by_tags[prop_tag]
 
 

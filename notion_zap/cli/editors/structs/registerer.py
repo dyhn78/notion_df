@@ -14,6 +14,9 @@ class RegistererMap(Follower):
     def __iter__(self):
         return iter(self._elements.values())
 
+    def __repr__(self):
+        return str(self._elements)
+
     def __getitem__(self, key):
         try:
             return self._elements[key]
@@ -25,6 +28,8 @@ class RegistererMap(Follower):
             track_val: Callable[[Follower], Any]):
         reg = Registerer(self, track_key, track_val)
         self._elements[track_key] = reg
+        # TODO: master-payload 통합하면 return 값 삭제
+        return reg
 
     def register_to_parent(self):
         for reg in self:
@@ -50,6 +55,7 @@ class Registerer(Follower, metaclass=ABCMeta):
         super().__init__(caller)
         self._track_key = track_key
         self._track_val = track_val
+        # TODO: master-payload 통합하면 여기서 즉시 register_to_root_and_parent
 
     @property
     def track_key(self):

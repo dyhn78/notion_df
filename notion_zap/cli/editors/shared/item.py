@@ -60,9 +60,13 @@ class ItemContents(Payload, RequestEditor, metaclass=ABCMeta):
     def richly_read(self) -> list:
         return self._read_rich
 
-    def apply_block_parser(self, parser: parsers.BlockContentsParser):
-        if parser.block_id:
-            self._set_block_id(parser.block_id)
+    def apply_block_parser(self, parser: parsers.BlockParser):
+        self.regs.un_register_from_root_and_parent()
+        self._apply_block_parser(parser)
+        self.regs.register_to_root_and_parent()
+
+    def _apply_block_parser(self, parser: parsers.BlockParser):
+        self._block_id = parser.block_id
         self._read_plain = parser.read_plain
         self._read_rich = parser.read_rich
         self._created_time = parser.created_time

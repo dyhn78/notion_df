@@ -7,6 +7,7 @@ from typing import Union, Any, Callable, Iterator
 from notion_zap.cli.structs import DateObject
 from notion_zap.cli.structs.prop_types import VALUE_FORMATS
 from .rich_text import parse_rich_texts
+from ...utility import url_to_id
 
 
 class PageListParser:
@@ -30,7 +31,7 @@ class PageParser:
             created_time: dt.datetime, last_edited_time: dt.datetime,
             icon, cover,
     ):
-        self.page_id = page_id
+        self.page_id = url_to_id(page_id)
         self.archived = archived
         self.icon = icon  # TODO
         self.cover = cover  # TODO

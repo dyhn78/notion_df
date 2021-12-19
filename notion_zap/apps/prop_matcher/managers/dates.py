@@ -44,6 +44,7 @@ class DateMatcherAbs(EditorManager, metaclass=ABCMeta):
             return tar
         if tar := query_unique_page_by_idx(self.target, tar_idx, self.Ttars_idx,
                                            'title'):
+            print(self.target_by_idx)
             return tar
         return None
 

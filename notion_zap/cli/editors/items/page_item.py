@@ -46,15 +46,15 @@ class PageItemContents(PagePayload, ItemContents,
         else:
             self._requestor = requestors.CreatePage(self, under_database=False)
 
-    def apply_page_parser(self, parser: parsers.PageParser):
-        super().apply_page_parser(parser)
+    def _apply_page_parser(self, parser: parsers.PageParser):
+        super()._apply_page_parser(parser)
         self._read_plain = parser.values['title']
         self._read_rich = parser.rich_values['title']
-        self._set_title(self._read_plain)
+        self._title = self._read_plain
 
-    def apply_block_parser(self, parser: parsers.BlockContentsParser):
-        super().apply_block_parser(parser)
-        self._set_title(self._read_plain)
+    def _apply_block_parser(self, parser: parsers.BlockParser):
+        super()._apply_block_parser(parser)
+        self._title = self._read_plain
 
     def push_encoder(self, carrier: encoders.RichTextPropertyEncoder) \
             -> encoders.RichTextPropertyEncoder:
@@ -64,5 +64,5 @@ class PageItemContents(PagePayload, ItemContents,
             return carrier
         ret = self.requestor.apply_prop(carrier)
         # this is always title
-        self._set_title(carrier.plain_form())
+        # self._title = carrier.plain_form()
         return ret

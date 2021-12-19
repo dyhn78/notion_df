@@ -56,6 +56,7 @@ class ProgressMatcherofReadings(EditorManager):
             dom.props.write_select(tag=self.Tmedia_type, label=self.Lmedia_type_empty)
 
 
+# TODO : 전역 -> 전체 복사 기능
 class ProgressMatcherofDatesDepr(EditorManager):
     def __init__(self, bs):
         super().__init__(bs)
@@ -74,8 +75,7 @@ class ProgressMatcherofDatesDepr(EditorManager):
                 if tar_ids := self.determine_tar_ids(dom, to_tar):
                     extend_prop(dom, to_tar, tar_ids)
                 if not dom.props.read_tag('sync_status'):  # False
-                    writer = dom.props
-                    writer.write_checkbox(tag='sync_status', value=True)
+                    dom.props.write_checkbox(tag='sync_status', value=True)
 
     def determine_tar_ids(self, dom: editors.PageRow, to_tar: str):
         refs = fetch_all_pages_of_relation(dom, self.reference, self.to_ref)

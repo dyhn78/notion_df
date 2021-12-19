@@ -21,6 +21,12 @@ class RegistryTable(MutableMapping[Hashable, Block]):
     def __iter__(self):
         return iter(self._table.keys())
 
+    def __repr__(self):
+        return str(self._table)
+
+    def __str__(self):
+        return str(self._table)
+
     @abstractmethod
     def update(self, mapping: dict[Hashable, Block], **kwargs: dict[Hashable, Block]):
         pass

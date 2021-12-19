@@ -47,7 +47,6 @@ class PageRowProperties(PagePayload, encoders.PageRowPropertyWriter):
         PagePayload.__init__(self, caller, block_id)
         encoders.PageRowPropertyWriter.__init__(self, self.frame)
         self.caller = caller
-
         if self.parent:
             for prop_key in self.parent.rows.by_keys:
                 self.add_key_reg(prop_key)
@@ -63,12 +62,12 @@ class PageRowProperties(PagePayload, encoders.PageRowPropertyWriter):
             self._requestor = requestors.CreatePage(self, under_database=True)
 
     def add_key_reg(self, prop_key):
-        self.regs.add(('key', prop_key),
+        return self.regs.add(('key', prop_key),
                       lambda x: x.block.props.get_key(prop_key))
 
     def add_tag_reg(self, prop_tag):
-        self.regs.add(('tag', prop_tag),
-                      lambda x: x.block.props.get_key(prop_tag))
+        return self.regs.add(('tag', prop_tag),
+                      lambda x: x.block.props.get_tag(prop_tag))
 
     @property
     def block(self) -> PageRow:
@@ -84,19 +83,12 @@ class PageRowProperties(PagePayload, encoders.PageRowPropertyWriter):
         else:
             self._requestor = requestors.CreatePage(self, under_database=True)
 
-    def apply_page_parser(self, parser: parsers.PageParser):
-        super().apply_page_parser(parser)
+    def _apply_page_parser(self, parser: parsers.PageParser):
+        super()._apply_page_parser(parser)
         self.frame.fetch_parser(parser)
-        self._set_title(parser.pagerow_title)
-
-        for reg in self.regs:
-            if reg.track_key not in ['id', 'title']:
-                reg.un_register_from_root_and_parent()
+        self._title = parser.pagerow_title
         self._read_plain = parser.values
         self._read_rich = parser.rich_values
-        for reg in self.regs:
-            if reg.track_key not in ['id', 'title']:
-                reg.register_to_root_and_parent()
 
     def push_encoder(self, prop_key: str, encoder: encoders.PropertyEncoder) \
             -> encoders.PropertyEncoder:
@@ -104,8 +96,8 @@ class PageRowProperties(PagePayload, encoders.PageRowPropertyWriter):
                             self.root.eval(self.read_key(prop_key)))
         if cannot_overwrite:
             return encoder
-        if prop_key == self.frame.title_key:
-            self._set_title(encoder.plain_form())
+        # if prop_key == self.frame.title_key:
+        #     self._title = encoder.plain_form()
         return self.requestor.apply_prop(encoder)
 
     def read_key(self, prop_key: str):

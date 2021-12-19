@@ -75,8 +75,20 @@ class Block(Component, Readable, Saveable, metaclass=ABCMeta):
     def __init__(self, caller: Gatherer, id_or_url: str):
         self.caller = caller
         self.__payload = self._initalize_payload(url_to_id(id_or_url))
-        self.caller.attach(self)
         self.payload.regs.register_to_root_and_parent()
+        self.caller.attach(self)
+
+    def __repr__(self):
+        if self.block_name:
+            return f"{self.block_name}({type(self).__name__})"
+        else:
+            return f"{type(self).__name__} at {hex(id(self))}"
+
+    def __str__(self):
+        if self.block_name:
+            return self.block_name
+        else:
+            return f"{type(self).__name__} at {hex(id(self))}"
 
     @abstractmethod
     def _initalize_payload(self, block_id: str) -> Payload:
@@ -176,10 +188,10 @@ class Payload(Component, Readable, Saveable, metaclass=ABCMeta):
     def __init__(self, caller: Block, block_id: str):
         super().__init__(caller)
         self.caller = caller
-        self.__block_id = block_id
+        self._block_id = block_id
 
-        from .registerer import RegistererMap
         if not getattr(self, 'regs', None):
+            from .registerer import RegistererMap
             self.regs = RegistererMap(self)
             self.regs.add('id', lambda x: x.block_id)
 
@@ -195,12 +207,7 @@ class Payload(Component, Readable, Saveable, metaclass=ABCMeta):
 
     @property
     def block_id(self) -> str:
-        return self.__block_id
-
-    def _set_block_id(self, value: str):
-        self.regs['id'].un_register_from_root_and_parent()
-        self.__block_id = value
-        self.regs['id'].register_to_root_and_parent()
+        return self._block_id
 
     @property
     def block_name(self) -> str:

@@ -73,7 +73,7 @@ class TextItemContents(ItemContents, encoders.TextContentsWriter):
     def retrieve(self):
         requestor = requestors.RetrieveBlock(self)
         response = requestor.execute()
-        parser = parsers.BlockContentsParser.parse_retrieve(response)
+        parser = parsers.BlockParser.parse_retrieve(response)
         self.apply_block_parser(parser)
         requestor.print_comments()
 
@@ -82,7 +82,7 @@ class TextItemContents(ItemContents, encoders.TextContentsWriter):
             self.requestor.execute()
             # TODO: update {self._read};
             #  1. use the <response> = self.gateway.execute()
-            #  2. update BlockContentsParser yourself without response
+            #  2. update BlockParser yourself without response
         else:
             self.block.save()
         self.clear_requestor()

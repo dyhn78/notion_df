@@ -64,11 +64,11 @@ class RegularEditorBase(EditorBase):
 
         # OR clauses
         if domain is self.dates:
-            sync_needed = manager.checkbox('sync_status').is_empty()
             manual_date = manager.date('manual_date')
-            before_today = manual_date.on_or_before(dt.date.today())
-            ft |= (sync_needed & before_today)
             ft |= manual_date.is_empty()
+            # sync_needed = manager.checkbox('sync_status').is_empty()
+            # before_today = manual_date.on_or_before(dt.date.today())
+            # ft |= (sync_needed & before_today)
         if domain in [self.journals, self.schedules]:
             # TODO : gcal_sync_status
             ft |= manager.relation('to_created_periods').is_empty()

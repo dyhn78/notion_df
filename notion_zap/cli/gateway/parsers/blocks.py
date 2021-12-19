@@ -8,31 +8,32 @@ from ...structs.block_types import (
     PAGE_TYPES, TEXT_TYPES, CAN_HAVE_CHILDREN, SUPPORTED,
     UNSUPPORTED
 )
+from ...utility import url_to_id
 
 
 class BlockChildrenParser:
     def __init__(self, response: dict):
         try:
-            self.values: list[BlockContentsParser] = self._parse(response['results'])
+            self.values: list[BlockParser] = self._parse(response['results'])
         except KeyError:
-            self.values: list[BlockContentsParser] = self._parse([response])
+            self.values: list[BlockParser] = self._parse([response])
 
     @staticmethod
     def _parse(response_frag):
-        return [BlockContentsParser.parse_retrieve_frag(rich_block_object)
+        return [BlockParser.parse_retrieve_frag(rich_block_object)
                 for rich_block_object in response_frag]
 
     def __iter__(self):
         return iter(self.values)
 
 
-class BlockContentsParser(Printable):
+class BlockParser(Printable):
     def __init__(
             self, block_id: str, block_type: str,
             created_time: dt.datetime, last_edited_time: dt.datetime,
             has_children: bool,
     ):
-        self.block_id = block_id
+        self.block_id = url_to_id(block_id)
         self.block_type = block_type
         self.created_time = created_time
         self.last_edited_time = last_edited_time

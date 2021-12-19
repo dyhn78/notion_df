@@ -46,7 +46,7 @@ class PagePayload(Payload, RequestEditor, metaclass=ABCMeta):
     def __init__(self, caller: PageBlock, block_id: str):
         Payload.__init__(self, caller, block_id)
         self.caller = caller
-        self.__title = ''
+        self._title = ''
         self.regs.add('title', lambda x: x.block.title)
 
     @property
@@ -64,12 +64,7 @@ class PagePayload(Payload, RequestEditor, metaclass=ABCMeta):
 
     @property
     def title(self):
-        return self.__title
-
-    def _set_title(self, value: str):
-        self.regs['title'].un_register_from_root_and_parent()
-        self.__title = value
-        self.regs['title'].register_to_root_and_parent()
+        return self._title
 
     def archive(self):
         self.requestor.archive()
@@ -85,7 +80,13 @@ class PagePayload(Payload, RequestEditor, metaclass=ABCMeta):
         requestor.print_comments()
 
     def apply_page_parser(self, parser: parsers.PageParser):
-        self._set_block_id(parser.page_id)
+        self.regs.un_register_from_root_and_parent()
+        self._apply_page_parser(parser)
+        self.regs.register_to_root_and_parent()
+
+    @abstractmethod
+    def _apply_page_parser(self, parser: parsers.PageParser):
+        self._block_id = parser.page_id
         self._archived = parser.archived
         self._created_time = parser.created_time
         self._last_edited_time = parser.last_edited_time

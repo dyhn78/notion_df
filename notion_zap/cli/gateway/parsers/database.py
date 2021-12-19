@@ -1,6 +1,9 @@
+from notion_zap.cli.utility import url_to_id
+
+
 class DatabaseParser:
     def __init__(self, response: dict, database_id: str = ''):
-        self.database_id = database_id
+        self.database_id = url_to_id(database_id)
         self.created_time = response['created_time']
         self.last_edited_time = response['last_edited_time']
 
