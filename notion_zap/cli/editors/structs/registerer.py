@@ -28,7 +28,6 @@ class RegistererMap(Follower):
             track_val: Callable[[Follower], Any]):
         reg = Registerer(self, track_key, track_val)
         self._elements[track_key] = reg
-        # TODO: master-payload 통합하면 return 값 삭제
         return reg
 
     def register_to_parent(self):
@@ -55,7 +54,7 @@ class Registerer(Follower, metaclass=ABCMeta):
         super().__init__(caller)
         self._track_key = track_key
         self._track_val = track_val
-        # TODO: master-payload 통합하면 여기서 즉시 register_to_root_and_parent
+        self.register_to_root_and_parent()
 
     @property
     def track_key(self):

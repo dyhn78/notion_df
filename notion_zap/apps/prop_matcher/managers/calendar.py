@@ -42,14 +42,14 @@ class DateTargetFiller(DateMatcherAbs):
     def update_tar(self, tar: PageRow, tar_idx=None):
         """provide tar_idx manually if yet not synced to server-side"""
         if tar_idx is None:
-            tar_idx = tar.props.read_tag(self.Ttars_idx)
+            tar_idx = tar.read_tag(self.Ttars_idx)
         date_handler = DateHandler.from_strf_dig6(tar_idx)
         new_tar_idx = date_handler.strf_dig6_and_weekday()
         if tar_idx != new_tar_idx:
-            tar.props.write(tag=self.Ttars_idx, value=new_tar_idx)
+            tar.write(tag=self.Ttars_idx, value=new_tar_idx)
         date_range = DateObject(date_handler.date)
-        if date_range != tar.props.read_tag(self.Ttars_date):
-            tar.props.write_date(tag=self.Ttars_date, value=date_range)
+        if date_range != tar.read_tag(self.Ttars_date):
+            tar.write_date(tag=self.Ttars_date, value=date_range)
         tar.save()
         # print(f"{tar=}, {tar_idx=}, {date_range=},"
         #       f"{tar.props.read_at(self.Ttars_date)=},"

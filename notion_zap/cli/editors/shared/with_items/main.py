@@ -2,15 +2,16 @@ from __future__ import annotations
 from abc import ABCMeta
 
 from notion_zap.cli.gateway import requestors, parsers
-from ..with_children import BlockWithChildren, Children
+from notion_zap.cli.editors.structs.children import Children, \
+    BlockWithContentsAndChildren
 from ...structs.base_logic import Gatherer
 from ...structs.block_main import Block
 from ...structs.exceptions import InvalidBlockTypeError
 
 
-class BlockWithItems(BlockWithChildren, metaclass=ABCMeta):
+class BlockWithItems(BlockWithContentsAndChildren, metaclass=ABCMeta):
     def __init__(self, caller: Gatherer, id_or_url: str):
-        super().__init__(caller, id_or_url)
+        BlockWithContentsAndChildren.__init__(self, caller, id_or_url)
         self.items = ItemChildren(self)
 
     @property
@@ -69,11 +70,11 @@ class ItemChildren(Children):
         self._updater.apply_children_parser(parser)
 
     def open_text(self, id_or_url: str):
-        from ...items import TextItem
+        from ...items.text_item import TextItem
         return TextItem(self, id_or_url)
 
     def open_page(self, id_or_url: str):
-        from ...items import PageItem
+        from ...items.page_item import PageItem
         return PageItem(self, id_or_url)
 
     def open_new_text(self):
@@ -86,7 +87,8 @@ class ItemChildren(Children):
         if not self.block.can_have_children:
             raise InvalidBlockTypeError(self.block)
 
-        from ...items import TextItem, PageItem
+        from ...items.text_item import TextItem
+        from ...items.page_item import PageItem
         if child.block_id:
             self._updater.attach_item(child)
         else:
@@ -99,4 +101,4 @@ class ItemChildren(Children):
 
     def detach(self, child: Block):
         """currently unavailable until the official API supports moving blocks."""
-        raise NotImplementedError
+        pass

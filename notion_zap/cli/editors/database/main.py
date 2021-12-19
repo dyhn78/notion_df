@@ -7,12 +7,12 @@ from notion_client import APIResponseError
 from notion_zap.cli.gateway import parsers, requestors
 from notion_zap.cli.structs import PropertyFrame
 from ..row.main import PageRow
-from ..shared.with_children import Children, BlockWithChildren
+from notion_zap.cli.editors.structs.children import Children, BlockWithChildren
 from ..shared.with_items import ItemChildren
 from ..structs.base_logic import RootGatherer
-from ..structs.block_main import Payload
 from ..structs.exceptions import InvalidBlockTypeError
 from ..structs.registry_table import IndexTable, ClassifyTable
+from ...utility import url_to_id
 
 
 class Database(BlockWithChildren):
@@ -21,26 +21,18 @@ class Database(BlockWithChildren):
                  database_alias='',
                  frame: Optional[PropertyFrame] = None):
         self.alias = database_alias
+        self.frame = frame if frame else PropertyFrame()
         BlockWithChildren.__init__(self, caller, id_or_url)
         self.root.by_alias[self.alias] = self
-        self.frame = frame if frame else PropertyFrame()
         self.rows = RowChildren(self)
-
-    def _initalize_payload(self, block_id) -> Payload:
-        from .schema import DatabaseSchema
-        return DatabaseSchema(self, block_id)
-
-    @property
-    def schema(self):
-        return self.payload
-
-    @property
-    def children(self):
-        return self.rows
 
     @property
     def block_name(self):
         return self.alias
+
+    @property
+    def children(self):
+        return self.rows
 
     def _fetch_children(self, request_size=0):
         """randomly query with the amount of <request_size>."""
@@ -54,11 +46,11 @@ class Database(BlockWithChildren):
         self.frame.fetch_parser(parser)
         requestor.print_comments()
 
-    def save(self):
-        self.schema.save()
-        if not self.archived:
-            self.children.save()
-        return self
+    def read_contents(self) -> dict[str, Any]:
+        pass
+
+    def richly_read_contents(self) -> dict[str, Any]:
+        pass
 
 
 class RowChildren(Children):
@@ -113,15 +105,16 @@ class RowChildren(Children):
 
         return QueryWithCallback(self, self.frame, callback)
 
-    def fetch(self, page_id: str):
+    def fetch_page(self, id_or_url: str):
         """this will first try to search the page in local base,
         then make a request (RetrievePage).
         returns child_page if succeed, otherwise returns None."""
+        page_id = url_to_id(id_or_url)
         if page := self.by_id.get(page_id):
             return page
         page = self.open_page(page_id)
         try:
-            page.props.retrieve()
+            page.retrieve()
             return page
         except APIResponseError:
             page.caller = None
@@ -145,8 +138,7 @@ class RowChildren(Children):
             flag = True
         if flag:
             for page in self.list_all():
-                reg = page.props.add_key_reg(prop_key)
-                reg.register_to_root_and_parent()
+                page.register_a_key(prop_key)
         return self.by_keys[prop_key]
 
     def index_by_tag(self, prop_tag: str) -> IndexTable[Hashable, PageRow]:
@@ -159,8 +151,7 @@ class RowChildren(Children):
             flag = True
         if flag:
             for page in self.list_all():
-                reg = page.props.add_tag_reg(prop_tag)
-                reg.register_to_root_and_parent()
+                page.register_a_tag(prop_tag)
         return self.by_tags[prop_tag]
 
     def classify_by_key(self, prop_key: str) -> ClassifyTable[Hashable, PageRow]:
@@ -173,8 +164,7 @@ class RowChildren(Children):
             flag = True
         if flag:
             for page in self.list_all():
-                reg = page.props.add_key_reg(prop_key)
-                reg.register_to_root_and_parent()
+                page.register_a_key(prop_key)
         return self.by_keys[prop_key]
 
     def classify_by_tag(self, prop_tag: str) -> ClassifyTable[Hashable, PageRow]:
@@ -187,8 +177,7 @@ class RowChildren(Children):
             flag = True
         if flag:
             for page in self.list_all():
-                reg = page.props.add_tag_reg(prop_tag)
-                reg.register_to_root_and_parent()
+                page.register_a_tag(prop_tag)
         return self.by_tags[prop_tag]
 
 

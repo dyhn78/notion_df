@@ -46,29 +46,26 @@ class PeriodMatcherAbs(EditorManager, metaclass=ABCMeta):
         date_handler = DateHandler(date_val)
 
         tar_idx = date_handler.strf_year_and_week()
-        writer = tar.props
-        writer.write_title(tag=self.Ttars_idx, value=tar_idx)
+        tar.write_title(tag=self.Ttars_idx, value=tar_idx)
         # self.target_by_idx.update({tar_idx: tar})
 
         date_range = DateObject(start=date_handler.first_day_of_week(),
                                 end=date_handler.last_day_of_week())
-        property_writer = tar.props
-        property_writer.write_date(tag=self.Ttars_date, value=date_range)
+        tar.write_date(tag=self.Ttars_date, value=date_range)
         return tar.save()
 
     def update_tar(self, tar: editors.PageRow, tar_idx=None,
                    disable_overwrite=False):
         """provide tar_idx manually if yet-not-synced to server-side"""
         if tar_idx is None:
-            tar_idx = tar.props.read_tag(self.Ttars_idx)
+            tar_idx = tar.read_tag(self.Ttars_idx)
         date_handler = DateHandler.from_strf_year_and_week(tar_idx)
 
         date_range = DateObject(start=date_handler.first_day_of_week(),
                                 end=date_handler.last_day_of_week())
-        if date_range != tar.props.read_tag(self.Ttars_date):
+        if date_range != tar.read_tag(self.Ttars_date):
             self.bs.root.disable_overwrite = disable_overwrite
-            writer = tar.props
-            writer.write_date(tag=self.Ttars_date, value=date_range)
+            tar.write_date(tag=self.Ttars_date, value=date_range)
             self.bs.root.disable_overwrite = False
 
 
@@ -78,7 +75,7 @@ class PeriodResetter(PeriodMatcherAbs):
 
     @classmethod
     def process(cls, dom: editors.PageRow):
-        dom.props.write_relation(tag=cls.T_tar, value=[])
+        dom.write_relation(tag=cls.T_tar, value=[])
 
 
 class PeriodMatcherofDates(PeriodMatcherAbs):
@@ -92,12 +89,12 @@ class PeriodMatcherofDates(PeriodMatcherAbs):
         for domain in self.domains:
             for dom in domain.rows:
                 if tar := self.match_periods(dom):
-                    dom.props.write_relation(tag=self.T_tar, value=tar.block_id)
+                    dom.write_relation(tag=self.T_tar, value=tar.block_id)
 
     def match_periods(self, dom: editors.PageRow):
-        if dom.props.read_tag(self.T_tar):
+        if dom.read_tag(self.T_tar):
             return None
-        dom_idx: DateObject = dom.props.read_tag(self.Tdoms_date)
+        dom_idx: DateObject = dom.read_tag(self.Tdoms_date)
         return self.find_or_create_by_date_val(dom_idx.start_date)
 
 
@@ -116,12 +113,12 @@ class PeriodMatcherofDoublyLinked(PeriodMatcherAbs):
         for domain in self.domains:
             for dom in domain.rows:
                 if tar := self.match_periods(dom):
-                    dom.props.write_relation(tag=self.Tdoms_tar1, value=tar.block_id)
+                    dom.write_relation(tag=self.Tdoms_tar1, value=tar.block_id)
                 if tar := self.match_created_periods(dom):
-                    dom.props.write_relation(tag=self.Tdoms_tar2, value=tar.block_id)
+                    dom.write_relation(tag=self.Tdoms_tar2, value=tar.block_id)
 
     def match_periods(self, dom: editors.PageRow):
-        if dom.props.read_tag(self.Tdoms_tar1):
+        if dom.read_tag(self.Tdoms_tar1):
             return None
         if ref := fetch_unique_page_of_relation(dom, self.reference, self.Tdoms_ref1):
             if tar := fetch_unique_page_of_relation(ref, self.target, self.T_tar):
@@ -129,7 +126,7 @@ class PeriodMatcherofDoublyLinked(PeriodMatcherAbs):
         return None
 
     def match_created_periods(self, dom: editors.PageRow):
-        if dom.props.read_tag(self.Tdoms_tar2):
+        if dom.read_tag(self.Tdoms_tar2):
             return None
         if ref := fetch_unique_page_of_relation(dom, self.reference, self.Tdoms_ref2):
             if tar := fetch_unique_page_of_relation(ref, self.target, self.T_tar):
@@ -151,10 +148,10 @@ class PeriodMatcherDefault(PeriodMatcherAbs):
         for domain in self.domains:
             for dom in domain.rows:
                 if tar := self.match_periods(dom):
-                    dom.props.write_relation(tag=self.T_tar, value=tar.block_id)
+                    dom.write_relation(tag=self.T_tar, value=tar.block_id)
 
     def match_periods(self, dom: editors.PageRow):
-        if dom.props.read_tag(self.T_tar):
+        if dom.read_tag(self.T_tar):
             return None
         if ref := fetch_unique_page_of_relation(dom, self.reference, self.Tdoms_ref):
             if tar := fetch_unique_page_of_relation(ref, self.target, self.T_tar):

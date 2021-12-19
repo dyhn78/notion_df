@@ -25,10 +25,10 @@ class ProgressMatcherofWritingsDepr(EditorManager):
                 tar_ids = []
                 ref1s = fetch_all_pages_of_relation(dom, self.reference1, self.Tdoms_ref1)
                 for ref1 in ref1s:
-                    tar_ids.extend(ref1.props.read_tag(T_tar))
+                    tar_ids.extend(ref1.read_tag(T_tar))
                 ref2s = fetch_all_pages_of_relation(dom, self.reference2, self.Tdoms_ref2)
                 for ref2 in ref2s:
-                    tar_ids.extend(ref2.props.read_tag(T_tar))
+                    tar_ids.extend(ref2.read_tag(T_tar))
                 extend_prop(dom, T_tar, tar_ids)
 
 
@@ -47,13 +47,13 @@ class ProgressMatcherofReadings(EditorManager):
             self.match(dom)
 
     def match(self, dom: editors.PageRow) -> Optional[str]:
-        if dom.props.read_tag(self.Tmedia_type):
+        if dom.read_tag(self.Tmedia_type):
             return
         tar = fetch_unique_page_of_relation(dom, self.target, self.T_tar)
-        if tar_val := tar.props.read_tag(self.Tmedia_type):
-            dom.props.write_select(tag=self.Tmedia_type, value=tar_val)
+        if tar_val := tar.read_tag(self.Tmedia_type):
+            dom.write_select(tag=self.Tmedia_type, value=tar_val)
         else:
-            dom.props.write_select(tag=self.Tmedia_type, label=self.Lmedia_type_empty)
+            dom.write_select(tag=self.Tmedia_type, label=self.Lmedia_type_empty)
 
 
 # TODO : 전역 -> 전체 복사 기능
@@ -68,18 +68,18 @@ class ProgressMatcherofDatesDepr(EditorManager):
     def execute(self):
         for dom in self.domain.rows:
             for to_tar in self.to_tars:
-                dom_date: DateObject = dom.props.read_tag('manual_date')
+                dom_date: DateObject = dom.read_tag('manual_date')
                 if (not dom_date.start_date
                         or dom_date.start_date > dt.date.today()):
                     continue
                 if tar_ids := self.determine_tar_ids(dom, to_tar):
                     extend_prop(dom, to_tar, tar_ids)
-                if not dom.props.read_tag('sync_status'):  # False
-                    dom.props.write_checkbox(tag='sync_status', value=True)
+                if not dom.read_tag('sync_status'):  # False
+                    dom.write_checkbox(tag='sync_status', value=True)
 
     def determine_tar_ids(self, dom: editors.PageRow, to_tar: str):
         refs = fetch_all_pages_of_relation(dom, self.reference, self.to_ref)
         tar_ids = []
         for ref in refs:
-            tar_ids.extend(ref.props.read_tag(to_tar))
+            tar_ids.extend(ref.read_tag(to_tar))
         return tar_ids

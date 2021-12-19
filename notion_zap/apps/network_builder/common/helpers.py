@@ -21,4 +21,4 @@ def print_edges(gp):
 def print_pages(builder: TopologyBuilder):
     for pagelist in builder.all.values():
         for page in pagelist:
-            pprint(page.props.read_this)
+            pprint(page.read_contents())

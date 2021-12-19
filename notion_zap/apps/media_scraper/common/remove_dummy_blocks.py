@@ -10,18 +10,17 @@ def remove_dummy_blocks(page: PageBlock):
             continue
         # remove "blank" blocks
         if isinstance(block, editors.TextItem) and \
-                block.contents.read_this().split() == '':
-            block.contents.archive()
+                block.read_contents().split() == '':
+            block.archive()
             removed += 1
         # remove duplicate contents (page_block)
         if isinstance(block, editors.PageItem) and \
-                page.block_name in block.contents.read_this():
+                page.block_name in block.read_contents():
             if not duplicate:
                 duplicate = True
             else:
-                block.contents.archive()
+                block.archive()
                 removed += 1
     if removed and isinstance(page, editors.PageRow):
-        writer = page.props
-        writer.write_text(tag='link_to_contents', value='')
+        page.write_text(tag='link_to_contents', value='')
     return removed

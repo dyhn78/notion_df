@@ -17,7 +17,7 @@ class ItemsUpdater(ListEditor):
             block_type = get_type_of_block_parser(parser)
             child = block_type(self.caller, parser.block_id)
             if isinstance(child, Item):
-                child.contents.apply_block_parser(parser)
+                child.apply_block_parser(parser)
             self.attach_item(child)
 
     def attach_item(self, child):

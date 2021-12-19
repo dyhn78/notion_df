@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import datetime as dt
 from abc import abstractmethod, ABCMeta
 from typing import Optional, Any
@@ -46,7 +47,7 @@ class Component(BaseComponent, metaclass=ABCMeta):
         parents_registry = self.block.caller
         if isinstance(parents_registry, Component):
             parent = parents_registry.block
-            from ..shared.with_children import BlockWithChildren
+            from notion_zap.cli.editors.structs.children import BlockWithChildren
             if not isinstance(parent, BlockWithChildren):
                 from .exceptions import InvalidParentTypeError
                 raise InvalidParentTypeError(self.block)
@@ -73,22 +74,20 @@ class Component(BaseComponent, metaclass=ABCMeta):
 
 class Block(Component, Saveable, metaclass=ABCMeta):
     def __init__(self, caller: Gatherer, id_or_url: str):
-        self.caller = caller
-        self.__payload = self._initalize_payload(url_to_id(id_or_url))
-        self.payload.regs.register_to_root_and_parent()
-        self.caller.attach(self)
-
-        if not getattr(self, 'regs', None):
-            from .registerer import RegistererMap
-            self.regs = RegistererMap(self)
-            self.regs.add('id', lambda x: x.block_id)
-
         self._block_id = url_to_id(id_or_url)
         self._archived = None
         self._created_time = None
         self._last_edited_time = None
         self._has_children = None
         self._can_have_children = None
+
+        self.caller = caller
+        self.caller.attach(self)
+
+        if not getattr(self, 'regs', None):
+            from .registerer import RegistererMap
+            self.regs = RegistererMap(self)
+            self.regs.add('id', lambda x: x.block_id)
 
     def __repr__(self):
         if self.block_name:
@@ -111,26 +110,16 @@ class Block(Component, Saveable, metaclass=ABCMeta):
         (probably due to nonexisting block_id)"""
         if isinstance(prev := self.caller, Gatherer):
             prev.detach(self)
-            self.payload.regs.un_register_from_root_and_parent()
+            self.regs.un_register_from_root_and_parent()
         self.caller = None
 
     def move_parent(self, new_gatherer: Gatherer):
         if (prev := self.caller) != new_gatherer:
             prev.detach(self)
-            self.payload.regs.un_register_from_parent()
+            self.regs.un_register_from_parent()
             self.caller = new_gatherer
             new_gatherer.attach(self)
-            self.payload.regs.register_to_parent()
-
-    @property
-    def payload(self) -> Payload:
-        # TODO remove
-        return self.__payload
-
-    @abstractmethod
-    def _initalize_payload(self, block_id: str) -> Payload:
-        # TODO remove
-        pass
+            self.regs.register_to_parent()
 
     @property
     def block(self):
@@ -184,13 +173,21 @@ class Block(Component, Saveable, metaclass=ABCMeta):
         return {'type': type(self).__name__,
                 'id': self.block_id}
 
-    @abstractmethod
     def read(self, max_rank_diff=0) -> dict[str, Any]:
-        return self.basic_info
+        return dict(**self.basic_info,
+                    contents=self.read_contents())
+
+    def richly_read(self, max_rank_diff=0) -> dict[str, Any]:
+        return dict(**self.basic_info,
+                    contents=self.richly_read_contents())
 
     @abstractmethod
-    def richly_read(self, max_rank_diff=0) -> dict[str, Any]:
-        return self.basic_info
+    def read_contents(self) -> dict[str, Any]:
+        pass
+
+    @abstractmethod
+    def richly_read_contents(self) -> dict[str, Any]:
+        pass
 
     @abstractmethod
     def save_info(self) -> dict[str, Any]:
@@ -207,73 +204,6 @@ class Block(Component, Saveable, metaclass=ABCMeta):
             therefore, it first send the response without processing itself,
             so that the block deals with its reset task instead.
         """
-        pass
-
-
-class Payload(Component, Saveable, metaclass=ABCMeta):
-    def __init__(self, caller: Block, block_id: str):
-        super().__init__(caller)
-        self.caller = caller
-        self._block_id = block_id
-
-        if not getattr(self, 'regs', None):
-            from .registerer import RegistererMap
-            self.regs = RegistererMap(self)
-            self.regs.add('id', lambda x: x.block_id)
-
-        self._archived = None
-        self._created_time = None
-        self._last_edited_time = None
-        self._has_children = None
-        self._can_have_children = None
-
-    @property
-    def block(self) -> Block:
-        return self.caller
-
-    @property
-    def block_id(self) -> str:
-        return self._block_id
-
-    @property
-    def block_name(self) -> str:
-        return self.block.block_name
-
-    @property
-    def archived(self):
-        if self._archived is not None:
-            return self._archived
-        else:
-            return False
-
-    @property
-    def has_children(self):
-        if self._has_children is not None:
-            return self._has_children
-        else:
-            return self.can_have_children
-
-    @property
-    def can_have_children(self):
-        if self._can_have_children is not None:
-            return self._can_have_children
-        else:
-            return True
-
-    @property
-    def created_time(self) -> Optional[dt.datetime]:
-        return self._created_time
-
-    @property
-    def last_edited_time(self) -> Optional[dt.datetime]:
-        return self._last_edited_time
-
-    @abstractmethod
-    def read_this(self) -> dict[str, Any]:
-        pass
-
-    @abstractmethod
-    def richly_read_this(self) -> dict[str, Any]:
         pass
 
 

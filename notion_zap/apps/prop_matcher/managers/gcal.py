@@ -75,10 +75,10 @@ class GcaltoScheduleMatcher(_GcalScheduleMatcherAbs):
         return None
 
     def update_dom(self, dom: editors.PageRow, event):
-        property_writer = dom.props
+        property_writer = dom
         property_writer.write_checkbox(tag=self.Tis_synced, value=True)
         if summary := event.get('summary'):
-            writer = dom.props
+            writer = dom
             writer.write_title(tag=self.Ttitle, value=summary)
         try:
             dt_start = dt.datetime.fromisoformat(event['start']['dateTime'])
@@ -93,9 +93,9 @@ class GcaltoScheduleMatcher(_GcalScheduleMatcherAbs):
 
     def create_dom(self, event):
         dom = self.domain.open_new_page()
-        dom.props.write_text(tag=self.Tgcal_id, value=event['id'])
+        dom.write_text(tag=self.Tgcal_id, value=event['id'])
         self.domain_by_idx.get(event['id'])
-        dom.props.write_url(tag=self.Tgcal_link, value=event['htmlLink'])
+        dom.write_url(tag=self.Tgcal_link, value=event['htmlLink'])
         self.update_dom(dom, event)
 
     def set_date_targets(self, dom: editors.PageRow,
@@ -110,15 +110,15 @@ class GcaltoScheduleMatcher(_GcalScheduleMatcherAbs):
         for date_val in iter_date():
             tar = self.find_or_create_tar_by_date(date_val)
             tar_ids.append(tar.block_id)
-        if tar_ids != dom.props.read_tag(self.T_tar):
-            dom.props.write_relation(tag=self.T_tar, value=tar_ids)
+        if tar_ids != dom.read_tag(self.T_tar):
+            dom.write_relation(tag=self.T_tar, value=tar_ids)
 
     def set_timestr(self, dom: editors.PageRow,
                     start: dt.time, end: Optional[dt.time] = None):
-        timestr = dom.props.get_tag(self.Ttimestr, '')
+        timestr = dom.get_tag(self.Ttimestr, '')
         new_timestr = TimeStringHandler(timestr).replace(start, end)
         if timestr != new_timestr:
-            dom.props.write_text(tag=self.Ttimestr, value=new_timestr)
+            dom.write_text(tag=self.Ttimestr, value=new_timestr)
 
 
 class GcalfromScheduleMatcher(_GcalScheduleMatcherAbs):
@@ -131,9 +131,9 @@ class GcalfromScheduleMatcher(_GcalScheduleMatcherAbs):
             self.sync_dom_to_gcal(dom)
 
     def sync_dom_to_gcal(self, dom: editors.PageRow):
-        gcal_link = dom.props.get_tag(self.Tgcal_link, '')
-        gcal_id = dom.props.get_tag(self.Tgcal_id, '')
-        synced = dom.props.read_tag(self.Tis_synced)
+        gcal_link = dom.get_tag(self.Tgcal_link, '')
+        gcal_id = dom.get_tag(self.Tgcal_id, '')
+        synced = dom.read_tag(self.Tis_synced)
         if gcal_link and synced:
             return
         elif gcal_link and not synced:
@@ -144,7 +144,7 @@ class GcalfromScheduleMatcher(_GcalScheduleMatcherAbs):
                 self.update_gcal(dom)
         elif not gcal_link:
             self.create_gcal(dom)
-        writer = dom.props
+        writer = dom
         writer.write_checkbox(tag=self.Tis_synced, value=True)
 
     def update_gcal(self, dom: editors.PageRow):
@@ -152,7 +152,7 @@ class GcalfromScheduleMatcher(_GcalScheduleMatcherAbs):
         if not dt_start:
             return
         requestor = self.Gcals.EventUpdater(
-            event_id=dom.props.read_tag(self.Tgcal_id),
+            event_id=dom.read_tag(self.Tgcal_id),
             calendar_id=self.calendar_id,
             summary=dom.title,
             start=dt_start,
@@ -171,8 +171,8 @@ class GcalfromScheduleMatcher(_GcalScheduleMatcherAbs):
             end=dt_end,
         )
         event = requestor.execute()
-        dom.props.write_text(tag=self.Tgcal_id, value=event['id'])
-        dom.props.write_url(tag=self.Tgcal_link, value=event['htmlLink'])
+        dom.write_text(tag=self.Tgcal_id, value=event['id'])
+        dom.write_url(tag=self.Tgcal_link, value=event['htmlLink'])
 
     def get_dt_tuple(self, dom: editors.PageRow):
         date_start, date_end = self.get_date_vals(dom)
@@ -197,12 +197,12 @@ class GcalfromScheduleMatcher(_GcalScheduleMatcherAbs):
         return dt_start, dt_end
 
     def get_date_vals(self, dom: editors.PageRow):
-        tar_ids = dom.props.read_tag(self.T_tar)
+        tar_ids = dom.read_tag(self.T_tar)
         date_min: Optional[dt.date] = None
         date_max: Optional[dt.date] = None
         for tar_id in tar_ids:
-            tar = self.target.rows.fetch(tar_id)
-            date_format: DateObject = tar.props.read_tag(self.Ttars_date)
+            tar = self.target.rows.fetch_page(tar_id)
+            date_format: DateObject = tar.read_tag(self.Ttars_date)
             date_val = date_format.start_date
             if date_min is None or date_min > date_val:
                 date_min = date_val
@@ -211,6 +211,6 @@ class GcalfromScheduleMatcher(_GcalScheduleMatcherAbs):
         return date_min, date_max
 
     def get_time_vals(self, dom: editors.PageRow) -> list[dt.time]:
-        if timestr := dom.props.read_tag(self.Ttimestr):
+        if timestr := dom.read_tag(self.Ttimestr):
             return TimeStringHandler(timestr).time_val
         return []

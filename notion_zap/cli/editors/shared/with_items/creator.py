@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Union
 
 from .main import ItemChildren
-from ...structs.save_agents import RequestEditor, SingularEditor
+from ...structs.save_agents import SingularEditor, RequestEditor
 from ...structs.base_logic import Saveable
 from ...structs.block_main import Follower
 from notion_zap.cli.gateway.encoders import ContentsEncoder
@@ -63,7 +63,7 @@ class ItemsCreator(Follower, Saveable):
         return bool(self.agents)
 
 
-class TextItemsCreateAgent(RequestEditor):
+class TextItemsCreateAgent(Follower, RequestEditor):
     def __init__(self, caller):
         super().__init__(caller)
         self._requestor = AppendBlockChildren(self)
@@ -80,8 +80,8 @@ class TextItemsCreateAgent(RequestEditor):
         assert isinstance(child, TextItem)
 
         self.values.append(child)
-        child.contents.set_callback(self.get_callback_func(child))
-        child.contents.set_placeholder()
+        child.set_callback(self.get_callback_func(child))
+        child.set_placeholder()
 
     def get_callback_func(self, child):
         idx = self.values.index(child)
@@ -95,8 +95,8 @@ class TextItemsCreateAgent(RequestEditor):
         response = self.requestor.execute()
         parsers = BlockChildrenParser(response)
         for child, parser in zip(self.values, parsers):
-            child.contents.apply_block_parser(parser)
-            child.save_this()
+            child.apply_block_parser(parser)
+            child.save()
 
 
 class PageItemCreateAgent(SingularEditor):

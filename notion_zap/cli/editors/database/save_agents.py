@@ -47,7 +47,7 @@ class RowChildrenUpdater(ListEditor):
             if self.root.exclude_archived and parser.archived:
                 return None
             page = self.caller.open_page(page_id)
-        page.props.apply_page_parser(parser)
+        page.apply_page_parser(parser)
         return page
 
     def read(self) -> dict[str, Any]:

@@ -202,10 +202,10 @@ class RootGatherer(Gatherer):
         return any([block.save_required() for block in self.direct_blocks])
 
     def read(self, max_rank_diff=0) -> dict[str, Any]:
-        return {'root': child.read() for child in self.direct_blocks}
+        return {'root': child.read(max_rank_diff) for child in self.direct_blocks}
 
     def richly_read(self, max_rank_diff=0) -> dict[str, Any]:
-        return {'root': child.richly_read() for child in self.direct_blocks}
+        return {'root': child.richly_read(max_rank_diff) for child in self.direct_blocks}
 
     def attach(self, block):
         self.direct_blocks.append(block)

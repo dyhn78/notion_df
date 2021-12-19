@@ -22,15 +22,15 @@ class InsertContents:
     @staticmethod
     def write_unit(block, text_line, depth):
         if depth == 1:
-            block.contents.write_heading_1(text_line)
+            block.write_heading_1(text_line)
         elif depth == 2:
-            block.contents.write_heading_2(text_line)
+            block.write_heading_2(text_line)
         elif depth == 3:
-            block.contents.write_heading_3(text_line)
+            block.write_heading_3(text_line)
         elif depth == 4:
-            block.contents.write_paragraph(text_line)
+            block.write_paragraph(text_line)
         else:
-            block.contents.write_toggle(text_line)
+            block.write_toggle(text_line)
 
     def get_depth(self, text_line: str):
         if self.VOLUME_KOR.findall(text_line) or self.VOLUME_ENG.findall(text_line):

@@ -18,11 +18,9 @@ class LibraryDataWriter:
                             for lib, data in data.items()])
         joined_string = '; '.join(datastrings)
 
-        writer = self.page.props
-        writer.write_text(tag='location', value=joined_string)
-        property_writer = self.page.props
+        self.page.write_text(tag='location', value=joined_string)
         value = not available
-        property_writer.write_checkbox(tag='not_available', value=value)
+        self.page.write_checkbox(tag='not_available', value=value)
 
     @staticmethod
     def _cleaned_data(res: Union[dict, str]) -> tuple[str, bool]:

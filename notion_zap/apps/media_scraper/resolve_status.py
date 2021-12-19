@@ -22,11 +22,9 @@ class ReadingDBStatusResolver(ReadingDBController):
         query.execute(request_size)
 
     def edit(self, page: editors.PageRow):
-        property_writer = page.props
         value = self.status_enum['append']
-        property_writer.write_select(tag='edit_status', value=value)
-        writer = page.props
-        writer.write_checkbox(tag='not_available', value=False)
+        page.write_select(tag='edit_status', value=value)
+        page.write_checkbox(tag='not_available', value=False)
         page.save()
 
 

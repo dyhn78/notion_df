@@ -2,7 +2,7 @@ from abc import ABCMeta, abstractmethod
 
 from .base_logic import Saveable
 from .block_main import Block, Follower, Component
-from notion_zap.cli.gateway.requestors.structs import Requestor
+from ...gateway.requestors.structs import Requestor
 
 
 class ListEditor(Follower, Saveable, metaclass=ABCMeta):
@@ -30,23 +30,6 @@ class ListEditor(Follower, Saveable, metaclass=ABCMeta):
         return self.values[index]
 
 
-class RequestEditor(Component, Saveable, metaclass=ABCMeta):
-    @property
-    @abstractmethod
-    def requestor(self) -> Requestor:
-        pass
-
-    def save(self):
-        return self.requestor.execute()
-
-    def save_info(self):
-        items: dict = self.requestor.encode()
-        return {key: value for key, value in items.items() if value != self.block_id}
-
-    def save_required(self):
-        return self.requestor.__bool__()
-
-
 class SingularEditor(Follower, Saveable, metaclass=ABCMeta):
     @property
     @abstractmethod
@@ -61,3 +44,21 @@ class SingularEditor(Follower, Saveable, metaclass=ABCMeta):
 
     def save_required(self):
         return self.value.save_required()
+
+
+class RequestEditor(Component, Saveable, metaclass=ABCMeta):
+    @property
+    @abstractmethod
+    def requestor(self) -> Requestor:
+        pass
+
+    @abstractmethod
+    def save(self):
+        return self.requestor.execute()
+
+    def save_info(self):
+        items: dict = self.requestor.encode()
+        return {key: value for key, value in items.items() if value != self.block_id}
+
+    def save_required(self):
+        return self.requestor.__bool__()

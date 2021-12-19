@@ -28,7 +28,7 @@ class DateMatcherAbs(EditorManager, metaclass=ABCMeta):
         self.target_by_idx = self.target.rows.index_by_tag(self.Ttars_idx)
 
     def determine_tar_from_auto_date(self, dom: PageRow):
-        dom_idx: DateObject = dom.props.read_tag(self.Tdoms_date)
+        dom_idx: DateObject = dom.read_tag(self.Tdoms_date)
         date_val = dom_idx.start + dt.timedelta(hours=-5)
         return self.find_or_create_tar_by_date(date_val)
 
@@ -44,7 +44,6 @@ class DateMatcherAbs(EditorManager, metaclass=ABCMeta):
             return tar
         if tar := query_unique_page_by_idx(self.target, tar_idx, self.Ttars_idx,
                                            'title'):
-            print(self.target_by_idx)
             return tar
         return None
 
@@ -53,10 +52,10 @@ class DateMatcherAbs(EditorManager, metaclass=ABCMeta):
         date_handler = DateHandler(date_val)
 
         tar_idx = date_handler.strf_dig6_and_weekday()
-        tar.props.write(tag=self.Ttars_idx, value=tar_idx)
+        tar.write(tag=self.Ttars_idx, value=tar_idx)
 
         date_range = DateObject(date_handler.date)
-        writer = tar.props
+        writer = tar
         writer.write_date(tag=self.Ttars_date, value=date_range)
         return tar.save()
 
@@ -73,19 +72,19 @@ class DateMatcherofDoublyLinked(DateMatcherAbs):
         for domain in self.domains:
             for dom in domain.rows:
                 if tar := self.match_dates(dom):
-                    dom.props.write_relation(tag=self.Tdoms_tar2,
-                                             value=tar.block_id)
+                    dom.write_relation(tag=self.Tdoms_tar2,
+                                              value=tar.block_id)
                     PeriodResetter.process(dom)
                 if tar := self.match_created_dates(dom):
-                    dom.props.write_relation(tag=self.Tdoms_tar1, value=tar.block_id)
+                    dom.write_relation(tag=self.Tdoms_tar1, value=tar.block_id)
 
     def match_dates(self, dom: PageRow):
-        if dom.props.read_tag(self.Tdoms_tar2):
+        if dom.read_tag(self.Tdoms_tar2):
             return None
         return self.determine_tar_from_auto_date(dom)
 
     def match_created_dates(self, dom: PageRow):
-        if dom.props.read_tag(self.Tdoms_tar1):
+        if dom.read_tag(self.Tdoms_tar1):
             return None
         return self.determine_tar_from_auto_date(dom)
 
@@ -99,10 +98,10 @@ class DateMatcherviaReference(DateMatcherAbs):
         for domain in self.domains:
             for dom in domain.rows:
                 if tar := self.determine_tar(dom):
-                    dom.props.write_relation(tag=self.T_tar, value=tar.block_id)
+                    dom.write_relation(tag=self.T_tar, value=tar.block_id)
 
     def determine_tar(self, dom: PageRow):
-        if dom.props.read_tag(self.T_tar):
+        if dom.read_tag(self.T_tar):
             return None
         if ref := fetch_unique_page_of_relation(dom, self.reference, self.Tdoms_ref):
             if tar := fetch_unique_page_of_relation(ref, self.target, self.T_tar):
@@ -119,10 +118,10 @@ class DateMatcherofWritings(DateMatcherAbs):
     def execute(self):
         for dom in self.domain.rows:
             if tar := self.match_dates(dom):
-                dom.props.write_relation(tag=self.T_tar, value=tar.block_id)
+                dom.write_relation(tag=self.T_tar, value=tar.block_id)
 
     def match_dates(self, dom: PageRow):
-        if dom.props.read_tag(self.T_tar):
+        if dom.read_tag(self.T_tar):
             return None
         return self.determine_tar_from_auto_date(dom)
 
@@ -138,7 +137,7 @@ class DateMatcherofMultipleCardinality(DateMatcherAbs, metaclass=ABCMeta):
         earliest_tar: Optional[PageRow] = None
         earliest_date = None
         for tar in tars:
-            date = tar.props.read_tag(self.Ttars_date)
+            date = tar.read_tag(self.Ttars_date)
             if earliest_date is None or date < earliest_date:
                 earliest_tar = tar
                 earliest_date = date
@@ -157,13 +156,13 @@ class DateMatcherofReadings(DateMatcherofMultipleCardinality):
     def execute(self):
         for dom in self.domain.rows:
             if tar := self.match_dates(dom):
-                dom.props.write_relation(tag=self.T_tar, value=tar.block_id)
+                dom.write_relation(tag=self.T_tar, value=tar.block_id)
                 PeriodResetter.process(dom)
 
     def match_dates(self, dom: PageRow):
-        if dom.props.read_tag(self.T_tar):
+        if dom.read_tag(self.T_tar):
             return None
-        if dom.props.read_tag('no_exp'):
+        if dom.read_tag('no_exp'):
             return None
         if tar := self.determine_earliest_tar(dom, self.reference, self.Tdoms_ref,
                                               self.T_tar):
@@ -171,7 +170,7 @@ class DateMatcherofReadings(DateMatcherofMultipleCardinality):
         if tar := self.determine_earliest_tar(dom, self.reference2, self.Tdoms_ref2,
                                               self.Tref2s_tar):
             return tar
-        if dom.props.read_tag('is_book'):
+        if dom.read_tag('is_book'):
             return None
         if tar := self.determine_tar_from_auto_date(dom):
             return tar
@@ -189,11 +188,10 @@ class DateMatcherofJournalsDepr(DateMatcherAbs):
         for domain in self.domains:
             for dom in domain.rows:
                 if tar := self.determine_tar(dom):
-                    writer = dom.props
-                    writer.write_relation(tag=self.T_tar, value=tar.block_id)
+                    dom.write_relation(tag=self.T_tar, value=tar.block_id)
 
     def determine_tar(self, dom: PageRow):
-        if dom.props.read_tag(self.T_tar):
+        if dom.read_tag(self.T_tar):
             return None
         # if ref := fetch_unique_page_of_relation(dom, dom.parent, self.Tdoms_updom):
         #     if tar := fetch_unique_page_of_relation(ref, self.target, self.T_tar):
@@ -232,21 +230,21 @@ class DateDomainFillerDepr(DateMatcherAbs):
                 dt_val = dt.datetime.combine(date_val, time_val[0])
             else:
                 dt_val = date_val
-            if dt_val != dom.props.read_tag(self.Tdoms_date):
-                dom.props.write_date(tag=self.Tdoms_date, value=dt_val)
+            if dt_val != dom.read_tag(self.Tdoms_date):
+                dom.write_date(tag=self.Tdoms_date, value=dt_val)
 
     def update_type2(self, dom: PageRow):
         if date_val := self.get_date_val(dom):
-            if date_val != dom.props.read_tag(self.Tdoms_date):
-                dom.props.write_date(tag=self.Tdoms_date, value=date_val)
+            if date_val != dom.read_tag(self.Tdoms_date):
+                dom.write_date(tag=self.Tdoms_date, value=date_val)
 
     def get_date_val(self, dom: PageRow):
-        tar_ids = dom.props.read_tag(self.T_tar)
-        tar = self.target.rows.fetch(tar_ids[0])
-        date_val: DateObject = tar.props.read_tag(self.Ttars_date)
+        tar_ids = dom.read_tag(self.T_tar)
+        tar = self.target.rows.fetch_page(tar_ids[0])
+        date_val: DateObject = tar.read_tag(self.Ttars_date)
         return date_val.start_date
 
     def get_time_val(self, dom: PageRow):
-        if timestr := dom.props.read_tag(self.Ttimestr):
+        if timestr := dom.read_tag(self.Ttimestr):
             return TimeStringHandler(timestr).time_val
         return None

@@ -4,6 +4,7 @@ from ..structs.base_logic import Gatherer
 from ..structs.block_main import Block
 
 
+# noinspection PyMethodMayBeStatic
 class UnsupportedBlock(Block):
     def __init__(self, caller: Gatherer, id_or_url: str):
         super().__init__(caller, id_or_url)
@@ -20,11 +21,11 @@ class UnsupportedBlock(Block):
     def can_have_children(self) -> bool:
         return False
 
-    def read(self, max_rank_diff=0) -> dict[str, Any]:
-        return super().read()
+    def read_contents(self) -> dict[str, Any]:
+        return {}
 
-    def richly_read(self, max_rank_diff=0) -> dict[str, Any]:
-        return super().richly_read()
+    def richly_read_contents(self) -> dict[str, Any]:
+        return {}
 
     def save(self):
         return {}

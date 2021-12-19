@@ -3,8 +3,9 @@ from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 from typing import Union, Iterable, Any
 
-from ..structs.block_main import Block, Follower
-from ..structs.base_logic import Gatherer
+from notion_zap.cli.editors.structs.block_main import Block, Follower
+from notion_zap.cli.editors.structs.base_logic import Gatherer
+from notion_zap.cli.gateway.requestors.structs import Requestor
 
 
 class BlockWithChildren(Block, metaclass=ABCMeta):
@@ -18,27 +19,28 @@ class BlockWithChildren(Block, metaclass=ABCMeta):
         return True
 
     def read(self, max_rank_diff=0):
-        res = dict(**self.basic_info,
-                   **self.payload.read_this())
+        res = super().read(max_rank_diff)
         if max_rank_diff > 0:
             res.update(**self.children.read(max_rank_diff - 1))
         return res
 
     def richly_read(self, max_rank_diff=0):
-        res = dict(**self.basic_info,
-                   **self.payload.richly_read_this())
+        res = super().richly_read(max_rank_diff)
         if max_rank_diff > 0:
             res.update(**self.children.richly_read(max_rank_diff - 1))
         return res
 
+    def save(self):
+        if not (self.archived and self.root.exclude_archived):
+            self.children.save()
+        return self
+
     def save_info(self):
         return dict(**self.basic_info,
-                    **self.payload.save_info(),
                     **self.children.save_info())
 
     def save_required(self) -> bool:
-        return (self.payload.save_required()
-                or self.children.save_required())
+        return self.children.save_required()
 
     @abstractmethod
     def _fetch_children(self, request_size=0):
@@ -98,6 +100,39 @@ class BlockWithChildren(Block, metaclass=ABCMeta):
         for child in self.children:
             if isinstance(child, BlockWithChildren):
                 child.fetch_all_descendants(request_size)
+
+
+class BlockWithContentsAndChildren(BlockWithChildren):
+    @property
+    @abstractmethod
+    def requestor(self) -> Requestor:
+        pass
+
+    def save(self):
+        self._save_this()
+        if not (self.archived and self.root.exclude_archived):
+            self.children.save()
+        return self
+
+    @abstractmethod
+    def _save_this(self):
+        return self.requestor.execute()
+
+    def save_info(self):
+        return dict(**self.basic_info,
+                    **self._save_this_info(),
+                    **self.children.save_info())
+
+    def _save_this_info(self):
+        encode: dict = self.requestor.encode()
+        return {key: value for key, value in encode.items() if value != self.block_id}
+
+    def save_required(self) -> bool:
+        return (self._save_this_required()
+                or self.children.save_required())
+
+    def _save_this_required(self):
+        return self.requestor.__bool__()
 
 
 class Children(Follower, Gatherer, metaclass=ABCMeta):
