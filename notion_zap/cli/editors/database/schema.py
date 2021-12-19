@@ -8,10 +8,10 @@ class DatabaseSchema(Payload):
     def __init__(self, caller: Database, block_id: str):
         super().__init__(caller, block_id)
 
-    def read(self) -> dict[str, Any]:
+    def read_this(self) -> dict[str, Any]:
         return {}
 
-    def richly_read(self) -> dict[str, Any]:
+    def richly_read_this(self) -> dict[str, Any]:
         return {}
 
     def save(self):

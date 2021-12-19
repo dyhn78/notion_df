@@ -3,13 +3,13 @@ from typing import Any, Optional
 from notion_zap.cli.utility import stopwatch, id_to_url
 from notion_zap.cli.editors.structs.block_main import Component
 from .stash import BlockChildrenStash, PagePropertyStash
-from ..structs import PointRequestor, print_response_error, drop_empty_request
+from ..structs import Requestor, print_response_error, drop_empty_request
 from ...encoders import ContentsEncoder
 
 
-class CreatePage(PointRequestor, PagePropertyStash, BlockChildrenStash):
+class CreatePage(Requestor, PagePropertyStash, BlockChildrenStash):
     def __init__(self, editor: Component, under_database: bool):
-        PointRequestor.__init__(self, editor)
+        Requestor.__init__(self, editor)
         PagePropertyStash.__init__(self)
         BlockChildrenStash.__init__(self)
         self.parent_type = 'database_id' if under_database else 'page_id'
@@ -55,9 +55,9 @@ class CreatePage(PointRequestor, PagePropertyStash, BlockChildrenStash):
         stopwatch(comments)
 
 
-class UpdatePage(PointRequestor, PagePropertyStash):
+class UpdatePage(Requestor, PagePropertyStash):
     def __init__(self, editor: Component):
-        PointRequestor.__init__(self, editor)
+        Requestor.__init__(self, editor)
         PagePropertyStash.__init__(self)
         self._archive_value = None
 
@@ -99,9 +99,9 @@ class UpdatePage(PointRequestor, PagePropertyStash):
         stopwatch(comments)
 
 
-class UpdateBlock(PointRequestor):
+class UpdateBlock(Requestor):
     def __init__(self, editor: Component):
-        PointRequestor.__init__(self, editor)
+        Requestor.__init__(self, editor)
         self._contents_value: Optional[ContentsEncoder] = None
         self._archive_value = None
 
@@ -148,9 +148,9 @@ class UpdateBlock(PointRequestor):
         stopwatch(comments)
 
 
-class AppendBlockChildren(PointRequestor, BlockChildrenStash):
+class AppendBlockChildren(Requestor, BlockChildrenStash):
     def __init__(self, editor: Component):
-        PointRequestor.__init__(self, editor)
+        Requestor.__init__(self, editor)
         BlockChildrenStash.__init__(self)
 
     def __bool__(self):

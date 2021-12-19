@@ -4,7 +4,7 @@ from abc import abstractmethod, ABCMeta
 from typing import Optional, Any
 
 from notion_zap.cli.utility import url_to_id, id_to_url
-from .base_logic import Readable, Saveable, BaseComponent, Gatherer
+from .base_logic import Saveable, BaseComponent, Gatherer
 
 
 class Component(BaseComponent, metaclass=ABCMeta):
@@ -71,36 +71,40 @@ class Component(BaseComponent, metaclass=ABCMeta):
         return self.block
 
 
-class Block(Component, Readable, Saveable, metaclass=ABCMeta):
+class Block(Component, Saveable, metaclass=ABCMeta):
     def __init__(self, caller: Gatherer, id_or_url: str):
         self.caller = caller
         self.__payload = self._initalize_payload(url_to_id(id_or_url))
         self.payload.regs.register_to_root_and_parent()
         self.caller.attach(self)
 
+        if not getattr(self, 'regs', None):
+            from .registerer import RegistererMap
+            self.regs = RegistererMap(self)
+            self.regs.add('id', lambda x: x.block_id)
+
+        self._block_id = url_to_id(id_or_url)
+        self._archived = None
+        self._created_time = None
+        self._last_edited_time = None
+        self._has_children = None
+        self._can_have_children = None
+
     def __repr__(self):
         if self.block_name:
-            return f"{self.block_name}({type(self).__name__})"
+            return f"{type(self).__name__.lower()} {self.block_name}"
+        elif self.block_id:
+            return f"{type(self).__name__.lower()} {self.block_url}"
         else:
-            return f"{type(self).__name__} at {hex(id(self))}"
+            return f"new {type(self).__name__.lower()} at {hex(id(self))}"
 
     def __str__(self):
         if self.block_name:
             return self.block_name
+        elif self.block_id:
+            return self.block_url
         else:
-            return f"{type(self).__name__} at {hex(id(self))}"
-
-    @abstractmethod
-    def _initalize_payload(self, block_id: str) -> Payload:
-        pass
-
-    def move_parent(self, gatherer: Gatherer):
-        if (prev := self.caller) != gatherer:
-            prev.detach(self)
-            self.payload.regs.un_register_from_parent()
-            self.caller = gatherer
-            gatherer.attach(self)
-            self.payload.regs.register_to_parent()
+            return f"new {type(self).__name__.lower()}"
 
     def close(self):
         """use this method to detach a wrong block
@@ -110,13 +114,31 @@ class Block(Component, Readable, Saveable, metaclass=ABCMeta):
             self.payload.regs.un_register_from_root_and_parent()
         self.caller = None
 
+    def move_parent(self, new_gatherer: Gatherer):
+        if (prev := self.caller) != new_gatherer:
+            prev.detach(self)
+            self.payload.regs.un_register_from_parent()
+            self.caller = new_gatherer
+            new_gatherer.attach(self)
+            self.payload.regs.register_to_parent()
+
+    @property
+    def payload(self) -> Payload:
+        # TODO remove
+        return self.__payload
+
+    @abstractmethod
+    def _initalize_payload(self, block_id: str) -> Payload:
+        # TODO remove
+        pass
+
     @property
     def block(self):
         return self
 
     @property
     def block_id(self):
-        return self.payload.block_id
+        return self._block_id
 
     @property
     @abstractmethod
@@ -129,46 +151,50 @@ class Block(Component, Readable, Saveable, metaclass=ABCMeta):
         pass
 
     @property
-    def payload(self) -> Payload:
-        return self.__payload
-
-    @property
-    def created_time(self):
-        return self.payload.created_time
-
-    @property
-    def last_edited_time(self):
-        return self.payload.last_edited_time
-
-    @property
     def archived(self):
-        return self.payload.archived
+        if self._archived is not None:
+            return self._archived
+        else:
+            return False
 
     @property
-    def has_children(self) -> bool:
-        return self.payload.has_children
+    def has_children(self):
+        if self._has_children is not None:
+            return self._has_children
+        else:
+            return self.can_have_children
 
     @property
-    def can_have_children(self) -> bool:
-        return self.payload.can_have_children
+    def can_have_children(self):
+        if self._can_have_children is not None:
+            return self._can_have_children
+        else:
+            return True
 
     @property
-    def class_info(self):
+    def created_time(self) -> Optional[dt.datetime]:
+        return self._created_time
+
+    @property
+    def last_edited_time(self) -> Optional[dt.datetime]:
+        return self._last_edited_time
+
+    @property
+    def basic_info(self):
         return {'type': type(self).__name__,
-                # 'id': self.block_id
-                }
+                'id': self.block_id}
 
     @abstractmethod
-    def read(self) -> dict[str, Any]:
-        return self.class_info
+    def read(self, max_rank_diff=0) -> dict[str, Any]:
+        return self.basic_info
 
     @abstractmethod
-    def richly_read(self) -> dict[str, Any]:
-        return self.class_info
+    def richly_read(self, max_rank_diff=0) -> dict[str, Any]:
+        return self.basic_info
 
     @abstractmethod
     def save_info(self) -> dict[str, Any]:
-        return self.class_info
+        return self.basic_info
 
     @abstractmethod
     def save(self):
@@ -184,7 +210,7 @@ class Block(Component, Readable, Saveable, metaclass=ABCMeta):
         pass
 
 
-class Payload(Component, Readable, Saveable, metaclass=ABCMeta):
+class Payload(Component, Saveable, metaclass=ABCMeta):
     def __init__(self, caller: Block, block_id: str):
         super().__init__(caller)
         self.caller = caller
@@ -241,6 +267,14 @@ class Payload(Component, Readable, Saveable, metaclass=ABCMeta):
     @property
     def last_edited_time(self) -> Optional[dt.datetime]:
         return self._last_edited_time
+
+    @abstractmethod
+    def read_this(self) -> dict[str, Any]:
+        pass
+
+    @abstractmethod
+    def richly_read_this(self) -> dict[str, Any]:
+        pass
 
 
 class Follower(Component):

@@ -17,16 +17,6 @@ class BaseComponent(metaclass=ABCMeta):
         pass
 
 
-class Readable:
-    @abstractmethod
-    def read(self) -> dict[str, Any]:
-        pass
-
-    @abstractmethod
-    def richly_read(self) -> dict[str, Any]:
-        pass
-
-
 class Saveable(metaclass=ABCMeta):
     @abstractmethod
     def save(self):
@@ -162,7 +152,7 @@ class Root(Registry):
         return self.objects.save()
 
 
-class Gatherer(Readable, Saveable, Registry, metaclass=ABCMeta):
+class Gatherer(Registry, Saveable, metaclass=ABCMeta):
     @abstractmethod
     def __iter__(self):
         pass
@@ -175,6 +165,14 @@ class Gatherer(Readable, Saveable, Registry, metaclass=ABCMeta):
     @abstractmethod
     def detach(self, block):
         """this will be called from child's side."""
+        pass
+
+    @abstractmethod
+    def read(self, max_rank_diff=0) -> dict[str, Any]:
+        pass
+
+    @abstractmethod
+    def richly_read(self, max_rank_diff=0) -> dict[str, Any]:
         pass
 
 
@@ -203,10 +201,10 @@ class RootGatherer(Gatherer):
     def save_required(self):
         return any([block.save_required() for block in self.direct_blocks])
 
-    def read(self) -> dict[str, Any]:
+    def read(self, max_rank_diff=0) -> dict[str, Any]:
         return {'root': child.read() for child in self.direct_blocks}
 
-    def richly_read(self) -> dict[str, Any]:
+    def richly_read(self, max_rank_diff=0) -> dict[str, Any]:
         return {'root': child.richly_read() for child in self.direct_blocks}
 
     def attach(self, block):

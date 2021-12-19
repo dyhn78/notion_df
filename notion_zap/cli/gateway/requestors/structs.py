@@ -10,10 +10,6 @@ from notion_zap.cli.structs.base_logic import Executable, ValueCarrier
 
 
 class Requestor(Executable, ValueCarrier, metaclass=ABCMeta):
-    pass
-
-
-class PointRequestor(Requestor, metaclass=ABCMeta):
     def __init__(self, editor: Component):
         self.editor = editor
         self.client = editor.root.client
@@ -38,7 +34,7 @@ class PointRequestor(Requestor, metaclass=ABCMeta):
         return self.editor.block_url
 
 
-class LongRequestor(PointRequestor):
+class LongRequestor(Requestor):
     MAX_PAGE_SIZE = 100
     INF = int(1e5) - 1
 
@@ -100,7 +96,7 @@ def drop_empty_request(method: Callable):
 
 # JSONDecodeError 처리 로직 추가
 def print_response_error(func: Callable):
-    def wrapper(self: PointRequestor, **kwargs):
+    def wrapper(self: Requestor, **kwargs):
         try:
             response = func(self, **kwargs)
             return response
@@ -115,7 +111,7 @@ def print_response_error(func: Callable):
 
 
 def retry_then_print_response_error(func: Callable, recursion_limit=1, time_to_sleep=1):
-    def wrapper(self: PointRequestor, **kwargs):
+    def wrapper(self: Requestor, **kwargs):
         recursion = 0
         while True:
             try:

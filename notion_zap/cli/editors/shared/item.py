@@ -15,10 +15,32 @@ from ..structs.block_main import Block, Payload
 class Item(Block, metaclass=ABCMeta):
     def __init__(self, caller: Union[ItemChildren, RootGatherer], id_or_url: str):
         super().__init__(caller, id_or_url)
+        self._read_plain = ''
+        self._read_rich = []
 
     @property
     def is_supported_type(self) -> bool:
         return True
+
+    def read_this(self) -> str:
+        return self._read_plain
+
+    def richly_read_this(self) -> list:
+        return self._read_rich
+
+    def apply_block_parser(self, parser: parsers.BlockParser):
+        self.regs.un_register_from_root_and_parent()
+        self._apply_block_parser(parser)
+        self.regs.register_to_root_and_parent()
+
+    def _apply_block_parser(self, parser: parsers.BlockParser):
+        self._block_id = parser.block_id
+        self._read_plain = parser.read_plain
+        self._read_rich = parser.read_rich
+        self._created_time = parser.created_time
+        self._last_edited_time = parser.last_edited_time
+        self._has_children = parser.has_children
+        self._can_have_children = parser.can_have_children
 
     @property
     def payload(self) -> ItemContents:
@@ -54,10 +76,10 @@ class ItemContents(Payload, RequestEditor, metaclass=ABCMeta):
         self._read_plain = ''
         self._read_rich = []
 
-    def read(self) -> str:
+    def read_this(self) -> str:
         return self._read_plain
 
-    def richly_read(self) -> list:
+    def richly_read_this(self) -> list:
         return self._read_rich
 
     def apply_block_parser(self, parser: parsers.BlockParser):

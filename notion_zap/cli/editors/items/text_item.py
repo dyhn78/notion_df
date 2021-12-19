@@ -23,7 +23,7 @@ class TextItem(Item, BlockWithItems, Document):
 
     @property
     def block_name(self):
-        return self.contents.read()
+        return self.contents.read_this()
 
     def save(self):
         if self.block_id:

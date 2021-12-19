@@ -13,18 +13,26 @@ class BlockWithChildren(Block, metaclass=ABCMeta):
     def children(self) -> Children:
         pass
 
-    def read(self):
-        return dict(**self.class_info,
-                    **self.payload.read(),
-                    **self.children.read())
+    @property
+    def is_supported_type(self) -> bool:
+        return True
 
-    def richly_read(self):
-        return dict(**self.class_info,
-                    **self.payload.richly_read(),
-                    **self.children.richly_read())
+    def read(self, max_rank_diff=0):
+        res = dict(**self.basic_info,
+                   **self.payload.read_this())
+        if max_rank_diff > 0:
+            res.update(**self.children.read(max_rank_diff - 1))
+        return res
+
+    def richly_read(self, max_rank_diff=0):
+        res = dict(**self.basic_info,
+                   **self.payload.richly_read_this())
+        if max_rank_diff > 0:
+            res.update(**self.children.richly_read(max_rank_diff - 1))
+        return res
 
     def save_info(self):
-        return dict(**self.class_info,
+        return dict(**self.basic_info,
                     **self.payload.save_info(),
                     **self.children.save_info())
 
@@ -68,12 +76,12 @@ class BlockWithChildren(Block, metaclass=ABCMeta):
                 if isinstance(child, BlockWithChildren):
                     yield from cls.__iter_descendants_within(child, max_rank_diff - 1)
 
-    def iter_descendants(self) \
+    def iter_all_descendants(self) \
             -> Iterable[Union[BlockWithChildren, Block]]:
         for child in self.children:
             yield child
             if isinstance(child, BlockWithChildren):
-                yield from child.iter_descendants()
+                yield from child.iter_all_descendants()
 
     def fetch_descendants_within(self, max_rank_diff: int, min_rank_diff=1,
                                  request_size=0):
@@ -85,15 +93,11 @@ class BlockWithChildren(Block, metaclass=ABCMeta):
             if isinstance(child, BlockWithChildren):
                 child.fetch_descendants_within(max_rank_diff - 1, min_rank_diff - 1)
 
-    def fetch_descendants(self, request_size=0):
+    def fetch_all_descendants(self, request_size=0):
         self._fetch_children(request_size)
         for child in self.children:
             if isinstance(child, BlockWithChildren):
-                child.fetch_descendants(request_size)
-
-    @property
-    def is_supported_type(self) -> bool:
-        return True
+                child.fetch_all_descendants(request_size)
 
 
 class Children(Follower, Gatherer, metaclass=ABCMeta):
@@ -111,11 +115,12 @@ class Children(Follower, Gatherer, metaclass=ABCMeta):
          even yet-not-created or archived ones."""
         return iter(self.list_all())
 
-    def read(self) -> dict[str, Any]:
-        return {'children': [child.read() for child in self.list_all()]}
+    def read(self, max_rank_diff=0) -> dict[str, Any]:
+        return {'children': [child.read(max_rank_diff) for child in self.list_all()]}
 
-    def richly_read(self) -> dict[str, Any]:
-        return {'children': [child.richly_read() for child in self.list_all()]}
+    def richly_read(self, max_rank_diff=0) -> dict[str, Any]:
+        return {'children': [child.richly_read(max_rank_diff)
+                             for child in self.list_all()]}
 
     def save_info(self):
         return {'children': [child.save_info() for child in self.list_all()]}
