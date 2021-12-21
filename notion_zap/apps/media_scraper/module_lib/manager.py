@@ -37,7 +37,6 @@ class LibraryManager:
         try:
             first_lib = self.prioritize_data(data)
         except ValueError:
-            print(f"page.title={status.page.title}, {data=}")
             return False
         else:
             writer.set_lib_data(data, first_lib)

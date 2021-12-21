@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 from abc import ABCMeta
-from typing import Union
+from typing import Union, Optional
 
 from notion_zap.cli.gateway import parsers
 from .with_items.main import BlockWithItems, ItemChildren
 from ..structs.base_logic import RootGatherer
 from ..structs.block_main import Block
-from ..structs.exceptions import InvalidParentTypeError, NoParentFoundError
+from ..structs.exceptions import NoParentFoundError
 
 
 class Item(Block, metaclass=ABCMeta):
@@ -41,12 +41,8 @@ class Item(Block, metaclass=ABCMeta):
         self._can_have_children = parser.can_have_children
 
     @property
-    def parent(self):
-        if parent := self.parent:
-            if not isinstance(parent, BlockWithItems):
-                raise InvalidParentTypeError(self)
-            return parent
-        return None
+    def parent(self) -> Optional[BlockWithItems]:
+        return super().parent
 
     def exdent_cursor(self):
         """this returns new 'cursor' where you can use of open_new_xx method.

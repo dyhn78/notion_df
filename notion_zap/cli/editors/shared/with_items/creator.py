@@ -79,17 +79,14 @@ class TextItemsCreateAgent(Follower, RequestEditor):
         from ...items.text_item import TextItem
         assert isinstance(child, TextItem)
 
+        idx = len(self.values)
         self.values.append(child)
-        child.set_callback(self.get_callback_func(child))
-        child.set_placeholder()
-
-    def get_callback_func(self, child):
-        idx = self.values.index(child)
 
         def callback(carrier: ContentsEncoder):
             return self.requestor.apply_contents(idx, carrier)
 
-        return callback
+        child.set_callback(callback)
+        child.set_placeholder()
 
     def save(self):
         response = self.requestor.execute()
