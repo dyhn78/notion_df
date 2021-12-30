@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from notion_zap.cli import editors
 from notion_zap.cli.utility import stopwatch
-from notion_zap.apps.common import DatabaseInfo
+from notion_zap.apps.config import DatabaseInfo
 from notion_zap.apps.prop_matcher.config import MatchFrames
 from .common.query_maker import query_within_date_range
 

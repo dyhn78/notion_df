@@ -4,7 +4,7 @@ from itertools import chain
 import networkx as nx
 
 from notion_zap.cli import editors
-from notion_zap.apps.common import DatabaseInfo
+from notion_zap.apps.config import DatabaseInfo
 from notion_zap.apps.network_builder.config import NetworkFrames, NetworkPropertyFrame
 
 
