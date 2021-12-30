@@ -4,8 +4,8 @@ from itertools import chain
 import networkx as nx
 
 from notion_zap.cli import editors
-from notion_zap.apps.config.common import DatabaseInfo
-from notion_zap.apps.config.network_builder import NetworkFrames, NetworkPropertyFrame
+from notion_zap.apps.common import DatabaseInfo
+from notion_zap.apps.network_builder.config import NetworkFrames, NetworkPropertyFrame
 
 
 class TopologyBuilder:

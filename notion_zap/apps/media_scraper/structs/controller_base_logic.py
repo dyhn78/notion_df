@@ -1,8 +1,8 @@
 import re
 
 from notion_zap.cli import editors
-from notion_zap.apps.config.common import DatabaseInfo
-from notion_zap.apps.config.media_scraper import ReadingDB_FRAME
+from notion_zap.apps.common import DatabaseInfo
+from notion_zap.apps.media_scraper.config import ReadingDB_FRAME
 
 
 class ReadingDBController:
