@@ -15,9 +15,9 @@ from ..common.struct import EditorManager
 
 
 class DateMatcherAbs(EditorManager, metaclass=ABCMeta):
-    Tdoms_ref = 'to_journals'
+    Tdoms_ref = 'journals'
     Tdoms_date = 'auto_datetime'
-    T_tar = 'to_dates'
+    T_tar = 'dates'
     Ttars_idx = 'title'
     Ttars_date = 'manual_date'
 
@@ -61,8 +61,8 @@ class DateMatcherAbs(EditorManager, metaclass=ABCMeta):
 
 
 class DateMatcherofDoublyLinked(DateMatcherAbs):
-    Tdoms_tar1 = 'to_created_dates'
-    Tdoms_tar2 = 'to_dates'
+    Tdoms_tar1 = 'dates_created'
+    Tdoms_tar2 = 'dates'
 
     def __init__(self, bs):
         super().__init__(bs)
@@ -145,8 +145,9 @@ class DateMatcherofMultipleCardinality(DateMatcherAbs, metaclass=ABCMeta):
 
 
 class DateMatcherofReadings(DateMatcherofMultipleCardinality):
-    Tdoms_ref2 = 'to_schedules'
-    Tref2s_tar = 'to_dates'
+    Tdoms_ref2 = 'schedules'
+    Tdoms_tar = 'dates_begin'
+    Tref2s_tar = 'dates'
 
     def __init__(self, bs):
         super().__init__(bs)
@@ -156,11 +157,11 @@ class DateMatcherofReadings(DateMatcherofMultipleCardinality):
     def execute(self):
         for dom in self.domain.rows:
             if tar := self.match_dates(dom):
-                dom.write_relation(tag=self.T_tar, value=tar.block_id)
+                dom.write_relation(tag=self.Tdoms_tar, value=tar.block_id)
                 PeriodResetter.process(dom)
 
     def match_dates(self, dom: PageRow):
-        if dom.read_tag(self.T_tar):
+        if dom.read_tag(self.Tdoms_tar):
             return None
         if dom.read_tag('no_exp'):
             return None

@@ -12,7 +12,7 @@ from ..common.helpers import (
 
 
 class PeriodMatcherAbs(EditorManager, metaclass=ABCMeta):
-    T_tar = 'to_periods'
+    T_tar = 'periods'
     Ttars_idx = 'title'
     Ttars_date = 'manual_date_range'
 
@@ -99,10 +99,10 @@ class PeriodMatcherofDates(PeriodMatcherAbs):
 
 
 class PeriodMatcherofDoublyLinked(PeriodMatcherAbs):
-    Tdoms_ref1 = 'to_dates'
-    Tdoms_tar1 = 'to_periods'
-    Tdoms_ref2 = 'to_created_dates'
-    Tdoms_tar2 = 'to_created_periods'
+    Tdoms_ref1 = 'dates'
+    Tdoms_tar1 = 'periods'
+    Tdoms_ref2 = 'dates_created'
+    Tdoms_tar2 = 'periods_created'
 
     def __init__(self, bs):
         super().__init__(bs)
@@ -135,7 +135,7 @@ class PeriodMatcherofDoublyLinked(PeriodMatcherAbs):
 
 
 class PeriodMatcherDefault(PeriodMatcherAbs):
-    Tdoms_ref = 'to_dates'
+    Tdoms_ref = 'dates'
 
     def __init__(self, bs):
         super().__init__(bs)

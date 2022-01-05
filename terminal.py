@@ -1,4 +1,4 @@
-from notion_zap.apps.scripts import main_routine
+from notion_zap.apps.scripts.main_routine import main
 
-main_routine.main()
+main()
 # x = input("아무 키나 누르십시오...")

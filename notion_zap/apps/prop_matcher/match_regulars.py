@@ -56,7 +56,7 @@ class RegularEditorBase(EditorBase):
         ft = query.open_filter()
 
         # OR clauses
-        for tag in ['to_itself', 'to_periods', 'to_dates']:
+        for tag in ['itself', 'periods', 'dates']:
             try:
                 ft |= manager.relation(tag).is_empty()
             except KeyError:
@@ -71,8 +71,8 @@ class RegularEditorBase(EditorBase):
             # ft |= (sync_needed & before_today)
         if domain in [self.journals, self.schedules]:
             # TODO : gcal_sync_status
-            ft |= manager.relation('to_created_periods').is_empty()
-            ft |= manager.relation('to_created_dates').is_empty()
+            ft |= manager.relation('periods_created').is_empty()
+            ft |= manager.relation('dates_created').is_empty()
         if domain is self.readings:
             ft |= manager.select('media_type').is_empty()
 
@@ -83,7 +83,7 @@ class RegularEditorBase(EditorBase):
             has_refs = reduce(
                 lambda a, b: a | b,
                 [manager.relation(tag).is_not_empty()
-                 for tag in ['to_journals', 'to_schedules']]
+                 for tag in ['journals', 'schedules']]
             )
             ft &= (is_not_book | has_refs)
 

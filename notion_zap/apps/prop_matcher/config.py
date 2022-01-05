@@ -23,106 +23,171 @@ fr_gcal = Frame([
     Cl(tag='gcal_link', key='📔링크'),
     Cl(tag='gcal_id', key='📔id'),
 ])
-fr_auto_date = Frame([
-    Cl(key='날짜값⏲️', tag='auto_date', ),
-    Cl(key='날짜⏲️', tag='auto_datetime', )
+ic_dates_auto = '⏲️'
+fr_dates_auto = Frame([
+    Cl(key='날짜값' + ic_dates_auto, tag='auto_date', ),
+    Cl(key='날짜' + ic_dates_auto, tag='auto_datetime', )
 ])
 ########################################################
 ###### relational properties ###########################
 ########################################################
-cl_to_itself = Cl(key='🔁재귀', tag='to_itself', )
-cl_to_periods = Cl(key='🧶기간', tag='to_periods', )
-cl_to_dates = Cl(key='🧵날짜', tag='to_dates', )
-fr_dual_dates = Frame([
-    cl_to_periods,
-    cl_to_dates,
-    Cl(key='🧶생성', tag='to_created_periods', ),
-    Cl(key='🧵생성', tag='to_created_dates', ),
+cl_itself = Cl(key='🔁재귀', tag='itself', )
+
+ic_periods = '🧶'
+ic_dates = '🧵'
+cl_periods = Cl(key=ic_periods + '기간', tag='periods', )
+cl_dates = Cl(key=ic_dates + '날짜', tag='dates', )
+fr_dates_actual = Frame([
+    cl_periods,
+    cl_dates
+])
+fr_dates_deadline = Frame([
+    cl_periods_dl := Cl(key=ic_periods + '기한', tags=['periods_deadline', 'periods']),
+    cl_dates_dl := Cl(key=ic_dates + '기한', tags=['dates_deadline', 'dates']),
+])
+fr_dates_begin = Frame([
+    Cl(key=ic_periods + '시작', tags=['periods_begin', 'periods']),
+    Cl(key=ic_dates + '시작', tags=['dates_begin', 'dates']),
+])
+fr_dates_created = Frame([
+    Cl(key=ic_periods + '생성', tag='periods_created', ),
+    Cl(key=ic_dates + '생성', tag='dates_created', )
 ])
 
-cl_to_journals = Cl(key='🟣일지', tag='to_journals', )
-cl_to_writings = Cl(key='💜쓰기', tag='to_writings', )
-cl_to_tasks = Cl(key='🔵과제', tag='to_tasks', )
-cl_to_schedules = Cl(key='💙안배', tag='to_schedules', )
+ic_projects = '🔴'
+cl_projects = Cl(key=ic_projects + '실행', tag='projects', )
+cl_projects_target = Cl(key=ic_projects + '구성', tags=['projects_target', 'projects'])
+cl_projects_context = Cl(key=ic_projects + '맥락', tag='projects_context', )
+cl_projects_deadline = Cl(key=ic_projects + '기한', tag='projects_deadline', )
+cl_projects_total = Cl(key=ic_projects + '종합', tag='projects_total', )
 
-cl_to_projects = Cl(key='🔴실행', tag='to_projects', )
-cl_to_ideas = Cl(key='❤관점', tag='to_ideas', )
-cl_to_people = Cl(key='🟠인물', tag='to_people', )
-cl_to_locations = Cl(key='🧡장소', tag='to_locations', )
-cl_to_channels = Cl(key='🟡채널', tag='to_channels', )
-cl_to_readings = Cl(key='💛읽기', tag='to_readings', )
+ic_topics = '❤'
+cl_topics = Cl(key=ic_topics + '꼭지', tag='topics', )
+cl_topics_context = Cl(key=ic_topics + '맥락', tag='topics_context', )
+cl_topics_total = Cl(key=ic_topics + '종합', tag='topics_total', )
+
+ic_channels = '🟡'
+cl_channels = Cl(key=ic_channels + '채널', tag='channels', )
+cl_channels_context = Cl(key=ic_channels + '맥락', tag='channels_context', )
+cl_channels_total = Cl(key=ic_channels + '종합', tag='channels_total', )
+
+ic_readings = '💛'
+cl_readings = Cl(key=ic_readings + '읽기', tag='readings', )
+cl_readings_context = Cl(key=ic_readings + '맥락', tag='readings_context', )
+cl_readings_begin = Cl(key=ic_readings + '시작', tag='readings_begin')
+cl_readings_deadline = Cl(key=ic_readings + '기한', tag='readings_deadline', )
+cl_readings_total = Cl(key=ic_readings + '종합', tag='readings_total', )
+
+cl_people = Cl(key='🟠인물', tag='people', )
+
+cl_locations = Cl(key='🧡장소', tag='locations', )
+
+ic_journals = '🟣'
+cl_journals = Cl(key=ic_journals + '일지', tag='journals', )
+cl_journals_context = Cl(key=ic_journals + '맥락', tag='journals_context', )
+cl_journals_induced = Cl(key=ic_journals + '언급', tag='journals_induced', )
+
+ic_writings = '💜'
+cl_writings = Cl(key=ic_writings + '쓰기', tag='writings', )
+cl_writings_induced = Cl(key=ic_writings + '언급', tag='writings_induced', )
+
+ic_schedules = '🔵'
+cl_schedules = Cl(key=ic_schedules + '목표', tag='schedules', )
+cl_schedules_deadline = Cl(key=ic_schedules + '기한', tag='schedules_deadline', )
+
+ic_tasks = '💙'
+cl_tasks = Cl(key=ic_tasks + '요점', tag='tasks', )
 
 
 class MatchFrames:
     PERIODS = Frame(
         [
-            cl_title, cl_to_itself,
+            cl_title, cl_itself,
             Cl(key='📅날짜 범위', tag='manual_date_range')
         ]
     )
     DATES = Frame(
         [
-            cl_title, cl_to_itself, cl_manual_date,
-            cl_to_periods,
-            cl_to_journals,
-            cl_to_locations, cl_to_channels,
+            cl_title, cl_itself, cl_manual_date,
+            cl_periods,
+            cl_journals,
+            cl_locations, cl_channels,
             Cl(key='🏁동기화', tag='sync_status'),
         ]
     )
 
-    JOURNALS = Frame(
-        fr_auto_date, fr_gcal, fr_dual_dates,
-        [
-            cl_title, cl_to_itself, cl_timestr,
-
-            cl_to_projects, cl_to_locations, cl_to_readings, cl_to_channels,
-        ]
-    )
-    WRITINGS = Frame(
-        fr_auto_date,
-        [
-            cl_title, cl_to_itself, cl_timestr,
-            cl_to_periods, cl_to_dates, cl_to_journals, cl_to_schedules,
-
-            cl_to_channels, cl_to_readings,
-            cl_to_projects.key_change('🔴구성'),
-            cl_to_ideas
-        ]
-    )
-    TASKS = Frame(
-        fr_auto_date,
-        [
-            cl_title, cl_to_itself,
-            cl_to_periods, cl_to_dates, cl_to_journals,
-        ]
-    )
-    SCHEDULES = Frame(
-        fr_auto_date, fr_gcal, fr_dual_dates,
-        [
-            cl_title, cl_to_itself, cl_timestr,
-
-            cl_to_projects, cl_to_channels, cl_to_readings,
-
-        ]
-    )
-
-    READINGS = Frame(
-        fr_auto_date,
-        [
-            cl_title, cl_to_itself,
-            cl_to_periods.key_change('🧶시작'),
-            cl_to_dates.key_change('🧵시작'),
-            cl_to_journals, cl_to_schedules,
-            cl_to_projects, cl_to_channels,
-
-            cl_media_type,
-            Cl(tag='no_exp', key='🏁경험 없음<-경과', ),
-            Cl(tag='is_book', key='🔵도서<-유형', ),
-        ]
-    )
     CHANNELS = Frame(
         [
             cl_title,
-            cl_media_type.key_change('📘읽기'),
+            cl_media_type,
+        ]
+    )
+    READINGS = Frame(
+        fr_dates_auto, fr_dates_begin,
+        [
+            cl_title, cl_itself,
+            cl_media_type,
+            Cl(tag='no_exp', key='🏁경험 없음<-경과', ),
+            Cl(tag='is_book', key='📘도서<-유형', ),
+
+            cl_journals,
+            cl_schedules,
+
+            cl_projects,
+            cl_channels,
+        ]
+    )
+
+    JOURNALS = Frame(
+        fr_dates_auto, fr_gcal, fr_dates_actual, fr_dates_created,
+        [
+            cl_title, cl_itself, cl_timestr,
+
+            cl_writings_induced,
+            cl_schedules, cl_tasks,
+
+            cl_projects, cl_projects_context,
+            cl_readings, cl_readings_context,
+            cl_channels, cl_channels_context,
+            cl_topics_context,
+        ]
+    )
+    WRITINGS = Frame(
+        fr_dates_auto, fr_dates_actual,
+        [
+            cl_title, cl_itself, cl_timestr,
+
+            cl_journals_context,
+            cl_schedules,
+
+            cl_projects_target,
+            cl_topics,
+            cl_channels,
+            cl_readings,
+        ]
+    )
+    SCHEDULES = Frame(
+        fr_dates_auto, fr_gcal, fr_dates_deadline, fr_dates_created,
+        [
+            cl_title, cl_itself, cl_timestr,
+
+            cl_journals, cl_tasks,
+
+            cl_projects,
+            cl_topics,
+            cl_channels,
+            cl_readings,
+        ]
+    )
+    TASKS = Frame(
+        fr_dates_auto, fr_dates_actual,
+        [
+            cl_title, cl_itself,
+
+            cl_journals, cl_schedules,
+
+            cl_topics,
+            cl_channels,
+            cl_readings,
         ]
     )

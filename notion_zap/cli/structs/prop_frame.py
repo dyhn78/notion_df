@@ -39,10 +39,40 @@ class PropertyColumn:
     def parser_type(self):
         return VALUE_FORMATS[self.data_type]
 
-    def key_change(self, new_key: str):
+    def replace_key(self, new_key: str):
+        """returns new object with replaced key."""
         res = deepcopy(self)
         res.key = new_key
         return res
+
+    def replace_tag(self, new_tag: str):
+        """returns new object with replaced tag."""
+        res = deepcopy(self)
+        res.tags = [new_tag]
+        return res
+
+    def replace_key_suffix(self, new_key_suffix: str, replace_length: int = None):
+        """returns new object with replaced key.
+        replace_length: length to erase backwards from present key.
+        default value is the length of new_key_suffix."""
+        replace_length = self.__get_replace_length(new_key_suffix, replace_length)
+        new_key = self.key[:-replace_length] + new_key_suffix
+        return self.replace_key(new_key)
+
+    def replace_key_prefix(self, new_key_prefix: str, replace_length: int = None):
+        """returns new object with replaced key.
+        replace_length: length to erase forwards from present key.
+        default value is the length of new_key_prefix."""
+        replace_length = self.__get_replace_length(new_key_prefix, replace_length)
+        new_key = new_key_prefix + self.key[replace_length:]
+        return self.replace_key(new_key)
+
+    def __get_replace_length(self, new_key_frag: str, replace_length: int = None):
+        if replace_length is None:
+            replace_length = len(new_key_frag)
+        if len(self.key) > replace_length:
+            raise ValueError(f"{len(self.key)=}, {replace_length=}")
+        return replace_length
 
 
 class PropertyFrame:

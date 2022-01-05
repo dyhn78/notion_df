@@ -8,33 +8,9 @@ from ..common.helpers import extend_prop, fetch_all_pages_of_relation, \
     fetch_unique_page_of_relation
 
 
-class ProgressMatcherofWritingsDepr(EditorManager):
-    Tdoms_ref1 = 'to_journals'
-    Tdoms_ref2 = 'to_schedules'
-    TL_tar = ['to_projects', 'to_channels', 'to_readings']
-
-    def __init__(self, bs):
-        super().__init__(bs)
-        self.domain = self.bs.writings
-        self.reference1 = self.bs.journals
-        self.reference2 = self.bs.schedules
-
-    def execute(self):
-        for dom in self.domain.rows:
-            for T_tar in self.TL_tar:
-                tar_ids = []
-                ref1s = fetch_all_pages_of_relation(dom, self.reference1, self.Tdoms_ref1)
-                for ref1 in ref1s:
-                    tar_ids.extend(ref1.read_tag(T_tar))
-                ref2s = fetch_all_pages_of_relation(dom, self.reference2, self.Tdoms_ref2)
-                for ref2 in ref2s:
-                    tar_ids.extend(ref2.read_tag(T_tar))
-                extend_prop(dom, T_tar, tar_ids)
-
-
 class ProgressMatcherofReadings(EditorManager):
     Tmedia_type = 'media_type'
-    T_tar = 'to_channels'
+    T_tar = 'channels'
     Lmedia_type_empty = 'empty'
 
     def __init__(self, bs):
@@ -56,14 +32,69 @@ class ProgressMatcherofReadings(EditorManager):
             dom.write_select(tag=self.Tmedia_type, label=self.Lmedia_type_empty)
 
 
-# TODO : 전역 -> 전체 복사 기능
+# TODO
+class ProgressMatcherofDates(EditorManager):
+    def __init__(self, bs):
+        super().__init__(bs)
+        self.domain = self.bs.dates
+        self.ref_zip = [
+            (self.bs.journals, 'journals'),
+        ]
+        self.collect_zip = [
+            (
+                'projects_total',  # dom collector ('종합')
+                ['projects'],  # dom setter ('직결')
+                # list of (ref_tag, ref setter)
+                [
+                    ('journals', ['projects', 'projects_context']),
+                    ('writings', ['projects', 'projects_context']),
+                    ('schedules', ['projects']),
+                    ('tasks', ['projects']),
+                ]
+            ),
+            (
+                'topics_total',
+                ['topics'],
+                [
+                    ('journals', ['topics_context']),
+                    ('writings', ['topics']),
+                    ('schedules', ['topics']),
+                    ('tasks', ['topics']),
+                ]
+            ),
+            (
+                'channels_total',
+                ['channels'],
+                [
+                    ('journals', ['channels', 'channels_context']),
+                    ('writings', ['channels']),
+                    ('schedules', ['channels']),
+                    ('tasks', ['channels']),
+                ]
+            ),
+            (
+                'readings_total',
+                ['readings_begin'],
+                [
+                    ('journals', ['readings', 'readings_context']),
+                    ('writings', ['readings']),
+                    ('schedules', ['readings']),
+                    ('tasks', ['readings']),
+                ]
+            ),
+        ]
+
+    def execute(self):
+        pass
+
+
 class ProgressMatcherofDatesDepr(EditorManager):
     def __init__(self, bs):
         super().__init__(bs)
         self.domain = self.bs.dates
         self.reference = self.bs.journals
-        self.to_ref = 'to_journals'
-        self.to_tars = ['to_locations', 'to_channels']
+        self.to_ref = 'journals'
+        self.to_tars = ['locations', 'channels']
 
     def execute(self):
         for dom in self.domain.rows:
@@ -83,3 +114,27 @@ class ProgressMatcherofDatesDepr(EditorManager):
         for ref in refs:
             tar_ids.extend(ref.read_tag(to_tar))
         return tar_ids
+
+
+class ProgressMatcherofWritingsDepr(EditorManager):
+    Tdoms_ref1 = 'journals'
+    Tdoms_ref2 = 'schedules'
+    TL_tar = ['projects', 'channels', 'readings']
+
+    def __init__(self, bs):
+        super().__init__(bs)
+        self.domain = self.bs.writings
+        self.reference1 = self.bs.journals
+        self.reference2 = self.bs.schedules
+
+    def execute(self):
+        for dom in self.domain.rows:
+            for T_tar in self.TL_tar:
+                tar_ids = []
+                ref1s = fetch_all_pages_of_relation(dom, self.reference1, self.Tdoms_ref1)
+                for ref1 in ref1s:
+                    tar_ids.extend(ref1.read_tag(T_tar))
+                ref2s = fetch_all_pages_of_relation(dom, self.reference2, self.Tdoms_ref2)
+                for ref2 in ref2s:
+                    tar_ids.extend(ref2.read_tag(T_tar))
+                extend_prop(dom, T_tar, tar_ids)

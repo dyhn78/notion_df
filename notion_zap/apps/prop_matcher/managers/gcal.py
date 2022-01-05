@@ -23,7 +23,7 @@ class GcalMatcherAbs(EditorManager, metaclass=ABCMeta):
 
 
 class _GcalScheduleMatcherAbs(GcalMatcherAbs, DateMatcherAbs, metaclass=ABCMeta):
-    T_tar = 'to_scheduled_dates'
+    T_tar = 'dates_deadline'
     Ttimestr = 'timestr'
     Ttitle = 'title'
     Tis_synced = 'gcal_sync_status'

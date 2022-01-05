@@ -1,11 +1,11 @@
 from notion_zap.cli.structs import PropertyColumn as Cl, PropertyFrame
 
 ReadingDB_FRAME = PropertyFrame([
-    Cl(key='🔵유형', tag='media_type',
+    Cl(key='📘유형', tag='media_type',
        marks_on_value={
            'book': ['📖단행본', '☕연속간행물', '✒학습자료']
        }),
-    Cl(key='🔵도서<-유형', tag='is_book'),
+    Cl(key='📘도서<-유형', tag='is_book'),
     Cl(key='🏁준비', tag='edit_status',
        labels={
            'pass': '0️⃣⛳정보 없음',
@@ -30,8 +30,8 @@ ReadingDB_FRAME = PropertyFrame([
     Cl(key='📚만든곳', tag='publisher'),
     Cl(key='📚N(쪽+)', tag='volume'),
     Cl(key='📚표지', tag='cover_image'),
-    Cl(key='📦이동', tag='link_to_contents'),
     Cl(key='📚위치', tag='location'),
     Cl(key='📚대출중', tag='not_available'),
+    Cl(key='📦이동', tag='link_to_contents'),
 ])
 ReadingDB_FRAME.add_alias('docx_name', 'title')
