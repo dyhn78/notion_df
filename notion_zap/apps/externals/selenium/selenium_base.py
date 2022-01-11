@@ -32,8 +32,6 @@ def retry_webdriver(function: Callable, recursion_limit=1) -> Callable:
 
 
 class SeleniumBase:
-    CHROMEDRIVER_PATH = os.path.join(os.path.dirname(__file__), 'chromedriver95.exe')
-
     def __init__(self, driver_cnt: int):
         self.drivers = []
         self.driver_cnt = driver_cnt
@@ -41,13 +39,9 @@ class SeleniumBase:
     def start(self):
         # https://www.zacoding.com/en/post/python-selenium-hide-console/
         for i in range(self.driver_cnt):
-            service = Service(
-                self.CHROMEDRIVER_PATH,
-                # log_path=os.path.join(os.path.dirname(__file__), 'selenium_log')
-            )
-            service.creationflags = CREATE_NO_WINDOW
-            driver = webdriver.Chrome(service=service,
-                                      options=self.options)
+            # noinspection PyArgumentList
+            driver = webdriver.Chrome(service=self.get_service(),
+                                      options=self.get_options())
             self.drivers.append(driver)
             driver.start_client()
 
@@ -55,13 +49,25 @@ class SeleniumBase:
         for driver in self.drivers:
             driver.quit()
 
-    @property
-    def options(self):
+    def __del__(self):
+        self.quit()
+
+    @staticmethod
+    def driver_path():
+        return os.path.join(os.path.dirname(__file__), 'chromedriver97.exe')
+
+    def get_service(self):
+        service = Service(
+            self.driver_path(),
+            # log_path=os.path.join(os.path.dirname(__file__), 'selenium_log')
+        )
+        service.creationflags = CREATE_NO_WINDOW
+        return service
+
+    @staticmethod
+    def get_options():
         options = Options()
         options.add_argument('--headless')
         options.add_argument('--disable-dev-shm-usage')
         options.add_argument('--no-sandbox')
         return options
-
-    def __del__(self):
-        self.quit()

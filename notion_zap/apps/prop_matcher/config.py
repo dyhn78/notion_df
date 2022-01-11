@@ -92,7 +92,7 @@ cl_writings = Cl(key=ic_writings + '쓰기', tag='writings', )
 cl_writings_induced = Cl(key=ic_writings + '언급', tag='writings_induced', )
 
 ic_schedules = '🔵'
-cl_schedules = Cl(key=ic_schedules + '목표', tag='schedules', )
+cl_schedules = Cl(key=ic_schedules + '계획', tag='schedules', )
 cl_schedules_deadline = Cl(key=ic_schedules + '기한', tag='schedules_deadline', )
 
 ic_tasks = '💙'
