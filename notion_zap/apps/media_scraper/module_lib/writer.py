@@ -12,20 +12,23 @@ class LibraryDataWriter:
             self.first_lib = self.prioritize_data(data)
             self.encode(data)
         except ValueError:
-            self.checker.mark_as_lib_missing()
+            if not self.page.read_tag('location'):
+                self.checker.mark_as_lib_missing()
 
     def encode(self, data: dict):
+        available, joined_string = self.join_datastrings(data)
+        self.page.write_text(tag='location', value=joined_string)
+        self.page.write_checkbox(tag='not_available', value=not available)
+
+    def join_datastrings(self, data):
         datastrings = []
         first_data = data.pop(self.first_lib)
         string, available = self._cleaned_data(first_data)
         datastrings.append(string)
-        datastrings.extend([self._cleaned_data(data)[0]
-                            for lib, data in data.items()])
+        datastrings.extend([self._cleaned_data(lib_data)[0]
+                            for lib, lib_data in data.items()])
         joined_string = '; '.join(datastrings)
-
-        self.page.write_text(tag='location', value=joined_string)
-        value = not available
-        self.page.write_checkbox(tag='not_available', value=value)
+        return available, joined_string
 
     @staticmethod
     def prioritize_data(data: dict):
