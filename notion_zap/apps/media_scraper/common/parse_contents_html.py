@@ -1,28 +1,38 @@
-def duplicate_char_variations(chars: set[str]) -> set[str]:
+def duplicate_tag(chars: set[str]) -> set[str]:
     chars.update(char.replace('<', '</') for char in chars.copy())
     chars.update(char.replace('>', '/>') for char in chars.copy())
     chars.update(char.upper() for char in chars.copy())
     return chars
 
 
+CHARS_TO_DELETE = duplicate_tag({'<b>', '<strong>', r'\t', '__'})
+CHARS_TO_SPLIT = duplicate_tag({'<br/>', '</br>', '<br>', '\n', '|'})
+CHARS_TO_STRIP = duplicate_tag({'"', "'", ' ', '·'})
+CHARS_TO_LSTRIP = duplicate_tag({'?'})
+
+
 def parse_contents(contents_raw: str) -> list[str]:
-    chars_to_delete = {'<b>', '<strong>', r'\t', '__'}
-    chars_to_delete = duplicate_char_variations(chars_to_delete)
-    for char_to_delete in chars_to_delete:
-        contents_raw = contents_raw.replace(char_to_delete, '')
+    # filter
+    for char in CHARS_TO_DELETE:
+        contents_raw = contents_raw.replace(char, '')
     filtered = [contents_raw.strip()]
-    for char_to_split in ['<br/>', '</br>', '<br>', '\n']:
-        splited = []
+
+    # split
+    splited = []
+    for char in CHARS_TO_SPLIT:
         for text_line in filtered:
-            splited.extend(text_line.split(char_to_split))
-        filtered = []
-        for text_line in splited:
-            for char_to_strip in ['"', "'", ' ', '·']:
-                text_line = text_line.strip(char_to_strip)
-            for char_to_lstrip in ['?']:
-                text_line = text_line.lstrip(char_to_lstrip)
-            text_line = text_line.replace("  ", " ")
-            if not text_line.replace(' ', ''):
-                continue
-            filtered.append(text_line)
-    return filtered
+            splited.extend(text_line.split(char))
+
+    # strip
+    striped = []
+    for text_line in splited:
+        for char in CHARS_TO_STRIP:
+            text_line = text_line.strip(char)
+        for char in CHARS_TO_LSTRIP:
+            text_line = text_line.lstrip(char)
+        text_line = text_line.replace("  ", " ")
+        if not text_line.replace(' ', ''):
+            continue  # skip totally-blank lines
+        striped.append(text_line)
+
+    return striped
