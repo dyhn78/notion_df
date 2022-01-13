@@ -1,9 +1,9 @@
 from notion_zap.cli.utility import stopwatch
-from notion_zap.apps.media_scraper.structs.controller_base_logic import ReadingDBController
+from notion_zap.apps.media_scraper.common.struct import ReadingTableController
 from notion_zap.apps.media_scraper.common.remove_dummy_blocks import remove_dummy_blocks
 
 
-class ReadingDBDuplicateRemover(ReadingDBController):
+class ReadingTableDuplicateRemover(ReadingTableController):
     def __init__(self, title=''):
         super().__init__()
         self.title = title
@@ -28,4 +28,4 @@ class ReadingDBDuplicateRemover(ReadingDBController):
 
 
 if __name__ == '__main__':
-    ReadingDBDuplicateRemover().execute(request_size=5)
+    ReadingTableDuplicateRemover().execute(request_size=5)

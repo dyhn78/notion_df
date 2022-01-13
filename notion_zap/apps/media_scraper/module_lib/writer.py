@@ -1,17 +1,22 @@
 from typing import Union
 
-from notion_zap.apps.media_scraper.structs.controller_base_logic import ReadingPageWriter
+from notion_zap.apps.media_scraper.common.struct import ReadingPageChecker
+from notion_zap.apps.media_scraper.module_lib.gy import GoyangLibraryAgent
 
 
 class LibraryDataWriter:
-    def __init__(self, status: ReadingPageWriter):
-        self.status = status
-        self.page = status.page
-        self.book_names = status.book_names
+    def __init__(self, checker: ReadingPageChecker, data: dict):
+        self.checker = checker
+        self.page = checker.page
+        try:
+            self.first_lib = self.prioritize_data(data)
+            self.encode(data)
+        except ValueError:
+            self.checker.mark_as_lib_missing()
 
-    def set_lib_data(self, data: dict, first_lib: str):
+    def encode(self, data: dict):
         datastrings = []
-        first_data = data.pop(first_lib)
+        first_data = data.pop(self.first_lib)
         string, available = self._cleaned_data(first_data)
         datastrings.append(string)
         datastrings.extend([self._cleaned_data(data)[0]
@@ -21,6 +26,17 @@ class LibraryDataWriter:
         self.page.write_text(tag='location', value=joined_string)
         value = not available
         self.page.write_checkbox(tag='not_available', value=value)
+
+    @staticmethod
+    def prioritize_data(data: dict):
+        if 'gy' in data.keys() and \
+                data['gy']['lib_name'] == GoyangLibraryAgent.GAJWA_LIB:
+            return 'gy'
+        elif 'snu' in data.keys():
+            return 'snu'
+        elif 'gy' in data.keys():
+            return 'gy'
+        raise ValueError
 
     @staticmethod
     def _cleaned_data(res: Union[dict, str]) -> tuple[str, bool]:

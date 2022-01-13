@@ -83,7 +83,7 @@ class ItemChildren(Children):
     def open_new_page(self):
         return self.open_page('')
 
-    def attach(self, child: Block):
+    def contain(self, child: Block):
         if not self.block.can_have_children:
             raise InvalidBlockTypeError(self.block)
 
@@ -99,6 +99,6 @@ class ItemChildren(Children):
             else:
                 raise InvalidBlockTypeError(child)
 
-    def detach(self, child: Block):
+    def release(self, child: Block):
         """currently unavailable until the official API supports moving blocks."""
         pass

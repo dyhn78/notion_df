@@ -34,7 +34,7 @@ class RegularMatchController:
     def execute(self, request_size=0):
         self.bs.fetch(request_size)
         for agent in self.agents:
-            agent.execute()
+            agent()
         self.bs.save()
 
 

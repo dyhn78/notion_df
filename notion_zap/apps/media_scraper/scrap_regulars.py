@@ -2,37 +2,36 @@ from typing import Optional
 
 from notion_zap.cli import editors
 from notion_zap.cli.utility import stopwatch
-from notion_zap.apps.media_scraper.structs.controller_base_logic import (
-    ReadingDBController, ReadingPageWriter)
-from notion_zap.apps.media_scraper.module_bkst.main import BookstoreDataWriter
+from notion_zap.apps.media_scraper.common.struct import (
+    ReadingTableController, ReadingPageChecker)
+from notion_zap.apps.media_scraper.module_meta.main import MetadataManager
 from notion_zap.apps.media_scraper.module_lib import LibraryManager
 
 
-class RegularScrapController(ReadingDBController):
-    TASKS_BKST = {'bookstore'}
-    TASKS_LIBS = {'gy_lib', 'snu_lib'}
-    BKST = BookstoreDataWriter
+class RegularScrapController(ReadingTableController):
+    LABEL_BKST = {'metadata'}
+    LABEL_LIBS = {'gy_lib', 'snu_lib'}
 
     def __init__(self, tasks: Optional[set] = None, title=''):
         super().__init__()
         if not tasks:
-            tasks = self.TASKS_BKST | self.TASKS_LIBS
+            tasks = self.LABEL_BKST | self.LABEL_LIBS
         self.global_tasks = tasks
         self.title = title
-        self.lib = LibraryManager(self.global_tasks)
-        self.has_lib_tasks = any(lib in self.global_tasks for lib in self.TASKS_LIBS)
+        self.scrap_meta = MetadataManager(self.global_tasks)
+        self.scrap_lib = LibraryManager(self.global_tasks)
 
     def execute(self, request_size=0):
         if not self.fetch(request_size):
             return
-        if self.has_lib_tasks:
+        if self.has_lib_tasks(self.global_tasks):
             stopwatch('Selenium 시작..')
-            self.lib.start()
+            self.scrap_lib.start()
         for page in self.pagelist:
             self.edit(page)
-        if self.has_lib_tasks:
+        if self.has_lib_tasks(self.global_tasks):
             stopwatch('Selenium 마감..')
-            self.lib.quit()
+            self.scrap_lib.quit()
             stopwatch('Selenium 종료')
 
     def fetch(self, request_size):
@@ -40,8 +39,8 @@ class RegularScrapController(ReadingDBController):
         manager = query.filter_manager_by_tags
         ft = query.open_filter()
 
-        maker = manager.checkbox('is_book')
-        ft &= maker.is_not_empty()
+        # maker = manager.checkbox('is_book')
+        # ft &= maker.is_not_empty()
 
         maker = manager.select('edit_status')
         ft &= (
@@ -57,29 +56,36 @@ class RegularScrapController(ReadingDBController):
         return pages
 
     def edit(self, page: editors.PageRow):
-        status = ReadingPageStatusWriter(page, self.global_tasks.copy())
-        if status.tasks:
+        checker = RegularReadingPageChecker(page, self.global_tasks)
+        tasks = checker.tasks
+        if tasks:
             stopwatch(f'개시: {page.title}')
-            if 'bookstore' in status.tasks:
-                if not self.BKST(status).execute():
-                    status.set_url_missing_flag()
-            if any(lib_str in status.tasks for lib_str in ['snu_lib', 'gy_lib']):
-                if not self.lib.execute(status, status.tasks):
-                    status.set_lib_missing_flag()
-            status.set_complete_flag()
+            if 'metadata' in tasks:
+                self.scrap_meta(checker)
+            if self.has_lib_tasks(tasks):
+                self.scrap_lib(checker, tasks)
+            checker.mark_as_complete()
             page.save()
         else:
             stopwatch(f'무시: {page.title}')
             return
 
+    @classmethod
+    def has_lib_tasks(cls, tasks: set):
+        return any(label_lib in tasks for label_lib in cls.LABEL_LIBS)
 
-class ReadingPageStatusWriter(ReadingPageWriter):
+
+class RegularReadingPageChecker(ReadingPageChecker):
     def __init__(self, page: editors.PageRow, tasks: set):
         super().__init__(page)
-        self.tasks = tasks
-        if self._initial_status == 'continue':
-            self.tasks.remove('bookstore')
+        self.tasks = self.cleaned_tasks(tasks.copy())
+
+    def cleaned_tasks(self, tasks):
+        if self._init_label == 'continue':
+            tasks.remove('metadata')
+        return tasks
 
 
 if __name__ == '__main__':
-    RegularScrapController(tasks={'bookstore'}).execute(request_size=5)
+    RegularScrapController(tasks={'metadata'}, title='헬스의 정석').execute()
+    # RegularScrapController(tasks={'metadata'}).execute(request_size=5)

@@ -11,7 +11,7 @@ from notion_zap.cli.structs import DateObject
 from .dates import DateMatcherAbs
 from ..common.dt_handler import TimeStringHandler
 from ..common.helpers import query_unique_page_by_idx
-from ..common.struct import EditorModule
+from ..common.struct import EditorModule, TableModule
 
 
 class GcalMatcherAbs(EditorModule, metaclass=ABCMeta):
@@ -38,7 +38,7 @@ class _GcalScheduleMatcherAbs(GcalMatcherAbs, DateMatcherAbs, metaclass=ABCMeta)
         self.calendar_id = calendar_id
 
 
-class GcaltoScheduleMatcher(_GcalScheduleMatcherAbs):
+class GcaltoScheduleMatcher(_GcalScheduleMatcherAbs, TableModule):
     def __init__(self, bs, calendar_id='primary', updated_in_past_x_days=7):
         super().__init__(bs, calendar_id)
         if updated_in_past_x_days:
@@ -121,7 +121,7 @@ class GcaltoScheduleMatcher(_GcalScheduleMatcherAbs):
             dom.write_text(tag=self.Ttimestr, value=new_timestr)
 
 
-class GcalfromScheduleMatcher(_GcalScheduleMatcherAbs):
+class GcalfromScheduleMatcher(_GcalScheduleMatcherAbs, TableModule):
     def __init__(self, bs, calendar_id='primary', default_event_duration_in_minutes=60):
         super().__init__(bs, calendar_id)
         self.default_event_duration = default_event_duration_in_minutes

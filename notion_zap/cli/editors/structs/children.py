@@ -31,7 +31,7 @@ class BlockWithChildren(Block, metaclass=ABCMeta):
         return res
 
     def save(self):
-        if not (self.archived and self.root.exclude_archived):
+        if not (self.is_archived and self.root.exclude_archived):
             self.children.save()
         return self
 
@@ -110,7 +110,7 @@ class BlockWithContentsAndChildren(BlockWithChildren):
 
     def save(self):
         self._save_this()
-        if not (self.archived and self.root.exclude_archived):
+        if not (self.is_archived and self.root.exclude_archived):
             self.children.save()
         return self
 
@@ -125,14 +125,13 @@ class BlockWithContentsAndChildren(BlockWithChildren):
 
     def _save_this_info(self):
         encode: dict = self.requestor.encode()
-        return {key: value for key, value in encode.items() if value != self.block_id}
+        return {key: value for key, value in encode.items()
+                if key != 'children' and value != self.block_id}
 
     def save_required(self) -> bool:
-        return (self._save_this_required()
+        save_this_required = self.requestor.__bool__()
+        return (save_this_required()
                 or self.children.save_required())
-
-    def _save_this_required(self):
-        return self.requestor.__bool__()
 
 
 class Children(Follower, Gatherer, metaclass=ABCMeta):

@@ -56,8 +56,7 @@ class DateMatcherAbs(EditorModule, metaclass=ABCMeta):
         tar.write(tag=self.Ttars_idx, value=tar_idx)
 
         date_range = DateObject(date_handler.date)
-        writer = tar
-        writer.write_date(tag=self.Ttars_date, value=date_range)
+        tar.write_date(tag=self.Ttars_date, value=date_range)
         return tar.save()
 
 
@@ -80,7 +79,7 @@ class DateofDoublyLinked(DateMatcherAbs, TableModule):
         super().__init__(bs)
         self.domains = [self.bs.journals, self.bs.schedules]
 
-    def execute(self):
+    def __call__(self):
         for domain in self.domains:
             for dom in domain.rows:
                 if tar := self.match_dates(dom):
@@ -106,7 +105,7 @@ class TableDateofReference(DateMatcherAbs, TableModule):
         super().__init__(bs)
         self.domains = [self.bs.tasks]
 
-    def execute(self):
+    def __call__(self):
         for domain in self.domains:
             for dom in domain.rows:
                 if tar := self.determine_tar(dom):
@@ -127,7 +126,7 @@ class DateMatcherofWritings(DateMatcherAbs, TableModule):
         super().__init__(bs)
         self.domain = self.bs.writings
 
-    def execute(self):
+    def __call__(self):
         for dom in self.domain.rows:
             if tar := self.match_dates(dom):
                 dom.write_relation(tag=self.T_tar, value=tar.block_id)
@@ -182,7 +181,7 @@ class DateMatcherofReadings(DateMatcherAbs, TableModule):
         #     bs, self.reference2, self.Tdoms_ref2, self.Tref2s_tar
         # )
 
-    def execute(self):
+    def __call__(self):
         for dom in self.domain.rows:
             if tar := self.match_dates_created(dom):
                 dom.write_relation(tag=self.Tdoms_tar, value=tar.block_id)

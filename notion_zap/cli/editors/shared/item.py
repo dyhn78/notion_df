@@ -12,9 +12,9 @@ from ..structs.exceptions import NoParentFoundError
 
 class Item(Block, metaclass=ABCMeta):
     def __init__(self, caller: Union[ItemChildren, RootGatherer], id_or_url: str):
-        super().__init__(caller, id_or_url)
         self._read_plain = ''
         self._read_rich = []
+        super().__init__(caller, id_or_url)
 
     @property
     def is_supported_type(self) -> bool:

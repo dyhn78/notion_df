@@ -11,6 +11,7 @@ from selenium.webdriver.chrome.service import Service
 
 from notion_zap.cli.utility import stopwatch
 
+
 # logging.basicConfig(filename='debug.log', level=logging.DEBUG,
 #                     format='%(asctime)s %(levelname)s %(name)s %(message)s')
 # logger = logging.getLogger(__name__)
@@ -32,16 +33,20 @@ def retry_webdriver(function: Callable, recursion_limit=1) -> Callable:
 
 
 class SeleniumBase:
-    def __init__(self, driver_cnt: int):
-        self.drivers = []
+    def __init__(self, driver_cnt: int, create_window=False):
+        self.drivers: list[webdriver.Chrome] = []
         self.driver_cnt = driver_cnt
+        self.create_window = create_window
 
     def start(self):
         # https://www.zacoding.com/en/post/python-selenium-hide-console/
         for i in range(self.driver_cnt):
             # noinspection PyArgumentList
-            driver = webdriver.Chrome(service=self.get_service(),
-                                      options=self.get_options())
+            if self.create_window:
+                driver = webdriver.Chrome(self.driver_path())
+            else:
+                driver = webdriver.Chrome(service=self.get_service(),
+                                          options=self.get_options())
             self.drivers.append(driver)
             driver.start_client()
 

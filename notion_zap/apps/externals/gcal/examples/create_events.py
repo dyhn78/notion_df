@@ -32,5 +32,5 @@ event = {
   },
 }
 service = open_gcal_service()
-event = service.events().insert(calendarId='primary', body=event).search_one()
+event = service.events().insert(calendarId='primary', body=event).execute()
 print('Event created: %s' % (event.get('htmlLink')))

@@ -2,6 +2,7 @@ import datetime as dt
 from typing import Optional
 
 from notion_zap.apps.prop_matcher.common.date_handler import DateHandler
+from notion_zap.apps.prop_matcher.common.struct import TableModule
 from notion_zap.apps.prop_matcher.modules import DateMatcherAbs, PeriodMatcherAbs
 from notion_zap.cli.editors import PageRow
 from notion_zap.cli.structs import DateObject
@@ -21,14 +22,14 @@ class CalendarDateRange:
             date_val += dt.timedelta(days=1)
 
 
-class DateTargetFiller(DateMatcherAbs):
+class DateTargetFiller(DateMatcherAbs, TableModule):
     def __init__(self, bs, disable_overwrite: bool,
                  create_date_range: CalendarDateRange=None):
         super().__init__(bs)
         self.create_date_range = create_date_range
         self.disable_overwrite = disable_overwrite
 
-    def execute(self):
+    def __call__(self):
         self.bs.root.disable_overwrite = self.disable_overwrite
         for tar in self.target.rows:
             self.update_tar(tar)
@@ -56,14 +57,14 @@ class DateTargetFiller(DateMatcherAbs):
         #       f"{date_range != tar.props.read_at(self.Ttars_date)=}")
 
 
-class PeriodTargetFiller(PeriodMatcherAbs):
+class PeriodTargetFiller(PeriodMatcherAbs, TableModule):
     def __init__(self, bs, disable_overwrite,
                  create_date_range: CalendarDateRange = None):
         super().__init__(bs)
         self.disable_overwrite = disable_overwrite
         self.create_date_range = create_date_range
 
-    def execute(self):
+    def __call__(self):
         for tar in self.target.rows:
             self.update_tar(tar, disable_overwrite=self.disable_overwrite)
         if self.create_date_range:

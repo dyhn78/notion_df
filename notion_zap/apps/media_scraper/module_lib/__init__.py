@@ -1,2 +1,2 @@
 from .writer import LibraryDataWriter
-from .manager import LibraryManager
+from .main import LibraryManager

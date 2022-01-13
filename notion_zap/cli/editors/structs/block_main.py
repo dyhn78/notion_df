@@ -34,7 +34,7 @@ class Component(BaseComponent, metaclass=ABCMeta):
 
     @property
     @abstractmethod
-    def archived(self):
+    def is_archived(self):
         pass
 
     @property
@@ -73,7 +73,10 @@ class Component(BaseComponent, metaclass=ABCMeta):
 
 
 class Block(Component, Saveable, metaclass=ABCMeta):
-    def __init__(self, caller: Gatherer, id_or_url: str):
+    def __init__(self, gatherer: Gatherer, id_or_url: str):
+        if getattr(self, '_block_id', None) is not None:
+            return
+
         self._block_id = url_to_id(id_or_url)
         self._archived = None
         self._created_time = None
@@ -81,13 +84,12 @@ class Block(Component, Saveable, metaclass=ABCMeta):
         self._has_children = None
         self._can_have_children = None
 
-        self.caller = caller
-        self.caller.attach(self)
+        self.caller = gatherer
+        self.caller.contain(self)
 
-        if not getattr(self, 'regs', None):
-            from .registerer import RegistererMap
-            self.regs = RegistererMap(self)
-            self.regs.add('id', lambda x: x.block_id)
+        from .registerer import RegistererMap
+        self.regs = RegistererMap(self)
+        self.regs.add('id', lambda x: x.block_id)
 
     def __repr__(self):
         if self.block_name:
@@ -105,21 +107,21 @@ class Block(Component, Saveable, metaclass=ABCMeta):
         else:
             return f"new {type(self).__name__.lower()}"
 
+    def move_to(self, new_caller: Gatherer):
+        if (prev := self.caller) != new_caller:
+            prev.release(self)
+            self.regs.un_register_from_parent()
+            self.caller = new_caller
+            new_caller.contain(self)
+            self.regs.register_to_parent()
+
     def close(self):
         """use this method to detach a wrong block
         (probably due to nonexisting block_id)"""
         if isinstance(prev := self.caller, Gatherer):
-            prev.detach(self)
+            prev.release(self)
             self.regs.un_register_from_root_and_parent()
         self.caller = None
-
-    def move_parent(self, new_gatherer: Gatherer):
-        if (prev := self.caller) != new_gatherer:
-            prev.detach(self)
-            self.regs.un_register_from_parent()
-            self.caller = new_gatherer
-            new_gatherer.attach(self)
-            self.regs.register_to_parent()
 
     @property
     def block(self):
@@ -140,11 +142,17 @@ class Block(Component, Saveable, metaclass=ABCMeta):
         pass
 
     @property
-    def archived(self):
+    def is_archived(self):
         if self._archived is not None:
             return self._archived
         else:
             return False
+
+    def archive(self):
+        pass
+
+    def un_archive(self):
+        pass
 
     @property
     def has_children(self):
@@ -224,5 +232,5 @@ class Follower(Component):
         return self.block.block_name
 
     @property
-    def archived(self):
-        return self.block.archived
+    def is_archived(self):
+        return self.block.is_archived

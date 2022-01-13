@@ -6,7 +6,7 @@ def remove_dummy_blocks(page: PageBlock):
     duplicate = False
     removed = 0
     for block in page.items:
-        if block.archived:
+        if block.is_archived:
             continue
         # remove "blank" blocks
         if isinstance(block, editors.TextItem) and \

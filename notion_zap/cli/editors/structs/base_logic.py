@@ -158,12 +158,12 @@ class Gatherer(Registry, Saveable, metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def attach(self, block):
+    def contain(self, block):
         """this will be called from child's side."""
         pass
 
     @abstractmethod
-    def detach(self, block):
+    def release(self, block):
         """this will be called from child's side."""
         pass
 
@@ -207,10 +207,10 @@ class RootGatherer(Gatherer):
     def richly_read(self, max_rank_diff=0) -> dict[str, Any]:
         return {'root': child.richly_read(max_rank_diff) for child in self.direct_blocks}
 
-    def attach(self, block):
+    def contain(self, block):
         self.direct_blocks.append(block)
 
-    def detach(self, block):
+    def release(self, block):
         self.direct_blocks.remove(block)
 
     def database(self, database_alias: str, id_or_url: str,

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections import defaultdict
 from copy import deepcopy
 from typing import Optional, Union, Any, Hashable
 
@@ -22,6 +23,7 @@ class PropertyColumn:
         if tag is not None:
             self.tags.append(tag)
         self.labels = labels if labels is not None else {}
+        self._value_to_label = {value: key for key, value in self.labels.items()}
 
         self.marks = {}
         if marks_on_value:
@@ -30,6 +32,10 @@ class PropertyColumn:
             for mark, marked_labels in marks_on_label.items():
                 values = [self.labels[label] for label in marked_labels]
                 self.marks.update({mark: values})
+        self._value_to_mark = defaultdict(list)
+        for mark, values in self.marks.items():
+            for value in values:
+                self._value_to_mark[value].append(mark)
 
     def __str__(self):
         return ' | '.join(
@@ -39,40 +45,11 @@ class PropertyColumn:
     def parser_type(self):
         return VALUE_FORMATS[self.data_type]
 
-    def replace_key(self, new_key: str):
-        """returns new object with replaced key."""
-        res = deepcopy(self)
-        res.key = new_key
-        return res
+    def label_of(self, value, default=None):
+        return self._value_to_label.get(value, default)
 
-    def replace_tag(self, new_tag: str):
-        """returns new object with replaced tag."""
-        res = deepcopy(self)
-        res.tags = [new_tag]
-        return res
-
-    def replace_key_suffix(self, new_key_suffix: str, replace_length: int = None):
-        """returns new object with replaced key.
-        replace_length: length to erase backwards from present key.
-        default value is the length of new_key_suffix."""
-        replace_length = self.__get_replace_length(new_key_suffix, replace_length)
-        new_key = self.key[:-replace_length] + new_key_suffix
-        return self.replace_key(new_key)
-
-    def replace_key_prefix(self, new_key_prefix: str, replace_length: int = None):
-        """returns new object with replaced key.
-        replace_length: length to erase forwards from present key.
-        default value is the length of new_key_prefix."""
-        replace_length = self.__get_replace_length(new_key_prefix, replace_length)
-        new_key = new_key_prefix + self.key[replace_length:]
-        return self.replace_key(new_key)
-
-    def __get_replace_length(self, new_key_frag: str, replace_length: int = None):
-        if replace_length is None:
-            replace_length = len(new_key_frag)
-        if len(self.key) > replace_length:
-            raise ValueError(f"{len(self.key)=}, {replace_length=}")
-        return replace_length
+    def marks_of(self, value, default=None):
+        return self._value_to_mark.get(value, default)
 
 
 class PropertyFrame:
@@ -107,7 +84,7 @@ class PropertyFrame:
         return res
 
     @property
-    def by_tag(self):
+    def by_tag(self) -> dict[Hashable, PropertyColumn]:
         res = {}
         for unit in self.units:
             res.update({tag: unit for tag in unit.tags})

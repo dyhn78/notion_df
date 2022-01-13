@@ -1,28 +1,22 @@
 import re
 
-from notion_zap.cli import editors
+from notion_zap.cli.editors import PageItem, Root
 
 
-class InsertContents:
-    def __init__(self, page: editors.PageItem, contents: list[str]):
-        self.page = page
-        self.contents = contents
-
-    def execute(self):
-        from pprint import pprint
-        pprint(self.contents)
-        if not self.contents:
+class ContentsWriter:
+    def __call__(self, page: PageItem, contents: list[str]):
+        if not contents:
             return
-        max_depth = max(self.get_depth(text_line) for text_line in self.contents)
-        for text_line in self.contents:
-            block = self.page.items.open_new_text()
+        max_depth = max(self.get_depth(text_line) for text_line in contents)
+        for text_line in contents:
+            block = page.items.open_new_text()
             depth = self.get_depth(text_line)
             if depth != 0:
                 depth += (4 - max_depth)
-            self.write_unit(block, text_line, depth)
+            self.write_a_line(block, text_line, depth)
 
     @staticmethod
-    def write_unit(block, text_line, depth):
+    def write_a_line(block, text_line, depth):
         if depth == 1:
             block.write_heading_1(text_line)
         elif depth == 2:
@@ -56,3 +50,12 @@ class InsertContents:
     CHAPTER_ENG = re.compile(r"CHAPTER", re.IGNORECASE)
 
     PASSAGE = re.compile(r"\d+[.:] ")
+
+
+if __name__ == '__main__':
+    writer = ContentsWriter()
+    root = Root()
+    page1 = root.objects.text_item('')
+    contents1 = ['1', '2', '3']
+    writer(page1, contents1)
+    root.objects.save_preview()

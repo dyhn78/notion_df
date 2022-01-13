@@ -1,47 +1,31 @@
 import time
-from typing import Iterable
 from urllib import parse
 
 import requests
 from bs4 import BeautifulSoup
 from selenium.webdriver.chrome.webdriver import WebDriver
 
-from notion_zap.apps.externals.selenium import retry_webdriver, SeleniumBase
-from notion_zap.apps.media_scraper.common.helpers import enumerate_func
+from notion_zap.apps.externals.selenium import SeleniumBase
 
 
 class SNULibraryAgent:
-    def __init__(self, base: SeleniumBase, book_names: Iterable[str]):
+    def __init__(self, base: SeleniumBase, book_name: str):
         self.base = base
-        if isinstance(book_names, str):
-            self.book_names = [book_names]
-        else:
-            self.book_names = list(book_names)
+        self.book_name = book_name
 
-    @property
-    def driver(self) -> WebDriver:
-        return self.base.drivers[0]
-
-    def execute(self):
-        visited = set()
-        for book_name in self.book_names:
-            if book_name in visited:
-                continue
-            if lib_info := self.search_one(book_name):
-                # print(f"{lib_info=}")
-                return lib_info
-            visited.add(book_name)
-
-    @retry_webdriver
-    def search_one(self, book_name: str) -> str:
-        self.load_search_results(book_name)
+    def __call__(self) -> str:
+        self.load_search_results()
         first_title = self.select_tag()
         if lib_info := self.parse_tag(first_title):
             # print(f"{lib_info=}")
             return lib_info
 
-    def load_search_results(self, book_name):
-        parsedname = parse.quote(book_name)
+    @property
+    def driver(self) -> WebDriver:
+        return self.base.drivers[0]
+
+    def load_search_results(self):
+        parsedname = parse.quote(self.book_name)
         url = f'https://primoapac01.hosted.exlibrisgroup.com/primo-explore/search?' \
               f'query=any,contains,{parsedname}' \
               f'&tab=all' \
@@ -76,12 +60,11 @@ class SNULibraryAgent:
     def parse_tag(raw_string):
         # TODO 책 제목을 출력하고, 올바른 책을 선택한 게 맞는지
         #  (화면에 출력해서?) 확인하는 간단한 기능들을 구현할 것.
-        return raw_string
+        return raw_string.strip()
 
 
 # deprecated
-@enumerate_func
-def scrap_snu_library(book_name) -> str:
+def scrap_snu_library_depr(book_name) -> str:
     parsedname = parse.quote(book_name)
     url = f'https://primoapac01.hosted.exlibrisgroup.com/primo-explore/search?query' \
           f'=any,contains,{parsedname}&tab=all' \

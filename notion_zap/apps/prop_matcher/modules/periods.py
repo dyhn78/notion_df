@@ -81,7 +81,7 @@ class PeriodMatcherofDates(PeriodMatcherAbs, TableModule):
         super().__init__(bs)
         self.domains = [self.bs.dates]
 
-    def execute(self):
+    def __call__(self):
         for domain in self.domains:
             for dom in domain.rows:
                 if tar := self.match_periods(dom):
@@ -105,7 +105,7 @@ class PeriodMatcherofDoublyLinked(PeriodMatcherAbs, TableModule):
         self.reference = self.bs.dates
         self.domains = [self.bs.journals, self.bs.schedules]
 
-    def execute(self):
+    def __call__(self):
         for domain in self.domains:
             for dom in domain.rows:
                 if tar := self.match_periods(dom):
@@ -140,7 +140,7 @@ class PeriodMatcherDefault(PeriodMatcherAbs, TableModule):
             self.bs.writings, self.bs.tasks, self.bs.readings
         ]
 
-    def execute(self):
+    def __call__(self):
         for domain in self.domains:
             for dom in domain.rows:
                 if tar := self.match_periods(dom):

@@ -1,8 +1,11 @@
+from notion_zap.apps.media_scraper.config import READING_FRAME
 from notion_zap.cli import editors
-from notion_zap.apps.media_scraper.structs.controller_base_logic import ReadingDBController
+from notion_zap.apps.media_scraper.common.struct import ReadingTableController
 
 
-class ReadingDBStatusResolver(ReadingDBController):
+class ReadingTableStatusResolver(ReadingTableController):
+    status_enum = READING_FRAME.by_tag['edit_status'].labels
+
     def execute(self, request_size=0):
         self.make_query(request_size)
         for page in self.pagelist:
@@ -29,4 +32,4 @@ class ReadingDBStatusResolver(ReadingDBController):
 
 
 if __name__ == '__main__':
-    ReadingDBStatusResolver().execute(request_size=5)
+    ReadingTableStatusResolver().execute(request_size=5)

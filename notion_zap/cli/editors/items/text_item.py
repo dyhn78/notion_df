@@ -16,8 +16,8 @@ class TextItem(Item, BlockWithItems, Document, TextContentsWriter):
     def __init__(self, caller: Union[ItemChildren, RootGatherer], id_or_url: str):
         self.callback: Optional[Callable[[RichTextContentsEncoder],
                                          RichTextContentsEncoder]] = None
-        BlockWithItems.__init__(self, caller, id_or_url)
         Item.__init__(self, caller, id_or_url)
+        BlockWithItems.__init__(self, caller, id_or_url)
         self._requestor = requestors.UpdateBlock(self)
 
     @property
@@ -50,8 +50,7 @@ class TextItem(Item, BlockWithItems, Document, TextContentsWriter):
         self.callback = value
 
     def set_placeholder(self):
-        pass  # TODO
-        # self.write_paragraph('')
+        self.write_paragraph('')
 
     def retrieve(self):
         requestor = requestors.RetrieveBlock(self)

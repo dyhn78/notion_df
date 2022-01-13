@@ -1,4 +1,4 @@
-from typing import Optional, Iterable
+from typing import Optional
 
 from selenium.common.exceptions import StaleElementReferenceException, \
     NoSuchElementException
@@ -11,68 +11,50 @@ class GoyangLibraryAgent:
     GAJWA_LIB = '가좌도서관'
     OTHER_LIB = '고양시 상호대차'
 
-    def __init__(self, base: SeleniumBase, book_names: Iterable[str]):
+    def __init__(self, base: SeleniumBase, book_name: str):
         self.base = base
-        if isinstance(book_names, str):
-            self.book_names = [book_names]
-        else:
-            self.book_names = list(book_names)
+        self.book_name = remove_emoji(book_name)
 
         self.available_somewhere = False
         self.best_option = {}
 
-    @property
-    def driv_avail(self):
-        return self.base.drivers[0]
-
-    @property
-    def driv_code(self):
-        return self.base.drivers[1]
-
-    def execute(self):
-        visited = set()
-        for book_name in self.book_names:
-            if book_name in visited:
-                continue
-            if lib_info := self.search_one(book_name):
-                return lib_info
-            visited.add(book_name)
-
-    def search_one(self, book_name: str) -> Optional[dict]:
+    def __call__(self) -> Optional[dict]:
         """
         :return: [도서관 이름: str('가좌도서관', '고양시 상호대차', '스크랩 실패'),
                     현재 대출 가능: bool,
                     서지번호: str('가좌도서관'일 경우에만 non-empty)]
         """
-        # reset attributes
-        self.available_somewhere = False
-        self.best_option = {}
-
-        # load search results
-        self.load_main_page()
-        self.insert_book_name(book_name)
-        self.click_search_button()
+        self.load_search_results()
 
         # deal with pagination
         self.review_search_results()
         return self.best_option
 
-    def load_main_page(self):
+    @property
+    def driver(self):
+        return self.base.drivers[0]
+
+    # @property
+    # def driv_code(self):
+    #     return self.base.drivers[1]
+
+    def load_search_results(self):
+        # load main page
         url_main_page = 'https://www.goyanglib.or.kr/center/data/search.asp'
-        self.driv_avail.get(url_main_page)
-        # self.driv_avail.implicitly_wait(3)
+        self.driver.get(url_main_page)
+        # self.driver.implicitly_wait(3)
 
-    def insert_book_name(self, book_name):
+        # insert_book_name
         tag_input_box = '#a_q'
-        input_box = self.driv_avail.find_element_by_css_selector(tag_input_box)
-        book_name = remove_emoji(book_name)
-        input_box.send_keys(book_name)
+        input_box = self.driver.find_element("css selector", tag_input_box)
+        input_box.send_keys(self.book_name)
 
-    def click_search_button(self):
+        # click search button
         tag_search_button = '#sb1 > a'
-        search_button = self.driv_avail.find_element_by_css_selector(tag_search_button)
+        search_button = self.driver.find_element("css selector",
+                                                 tag_search_button)
         search_button.click()
-        self.driv_avail.implicitly_wait(3)
+        self.driver.implicitly_wait(3)
 
     def review_search_results(self):
         page_buttons = self.get_page_buttons()
@@ -80,7 +62,7 @@ class GoyangLibraryAgent:
             try:
                 if bb != 0:
                     button.click()
-                    self.driv_avail.implicitly_wait(5)
+                    self.driver.implicitly_wait(5)
             except StaleElementReferenceException:
                 return
             if not (lib_names := self.get_lib_names()):
@@ -90,7 +72,6 @@ class GoyangLibraryAgent:
                 available_here = self.get_availability(i)
                 if needs_detail_info:
                     self.load_detail_info(i)
-                    self.driv_code.implicitly_wait(3)
                     book_code = self.get_book_code()
                     self.update_best_option(self.GAJWA_LIB, available_here, book_code)
                     return
@@ -100,17 +81,17 @@ class GoyangLibraryAgent:
 
     def get_page_buttons(self):
         tag_no_book = '#lists > ul > li'
-        no_book = self.driv_avail.find_elements_by_css_selector(tag_no_book)
+        no_book = self.driver.find_elements("css selector", tag_no_book)
         if no_book and '검색하신 도서가 없습니다' in no_book[0].text:
             return []
         tag_page_buttons = '#pagelist > ul > li > a'
-        page_buttons = self.driv_avail.find_elements_by_css_selector(tag_page_buttons)
+        page_buttons = self.driver.find_elements("css selector", tag_page_buttons)
         page_buttons = page_buttons[1:-1]
         return page_buttons
 
     def get_lib_names(self):
         tag_lib_name = '#lists > ul > li > dl > dd:nth-child(3)'
-        elms_lib_name = self.driv_avail.find_elements_by_css_selector(tag_lib_name)
+        elms_lib_name = self.driver.find_elements("css selector", tag_lib_name)
         return [lib_name.text for lib_name in elms_lib_name]
 
     def get_availability(self, i):
@@ -122,28 +103,31 @@ class GoyangLibraryAgent:
         tag_availability = f"#lists > ul > li:nth-child({str(i + 1)}) " \
                            f"> dl > dd:nth-child(4)"
         available_here_raw = \
-            self.driv_avail.find_element_by_css_selector(
-                tag_availability).text.split(',')[0]
+            self.driver.find_element("css selector",
+                                     tag_availability).text.split(',')[0]
         available_here = not ('불가능' in available_here_raw)
         return available_here
 
     def load_detail_info(self, i):
         tag_detail_info_button = f"#lists > ul > li:nth-child({str(i + 1)}) > dl > dt > a"
-        detail_button = self.driv_avail.find_element_by_css_selector(
-            tag_detail_info_button)
-        detail_button_url = detail_button.get_attribute('href')
-        self.driv_code.get(detail_button_url)
+        detail_button = self.driver.find_element("css selector",
+                                                 tag_detail_info_button)
+        detail_button.click()
+        self.driver.implicitly_wait(3)
+
+    def go_back(self):
+        self.driver.back()
 
     def get_book_code(self):
         book_code = ''
         tag_book_code = '#printArea > div.tblType01.mt30 > table > tbody > ' \
                         'tr:nth-child(2) > td:nth-child(2)'
         try:
-            book_code = self.driv_code.find_element_by_css_selector(
-                tag_book_code).text
+            book_code = self.driver.find_element("css selector",
+                                                 tag_book_code).text
         except NoSuchElementException:
             pass
-        return book_code
+        return book_code.strip()
 
     def update_best_option(self, lib_name, available_here, book_code):
         self.best_option = {

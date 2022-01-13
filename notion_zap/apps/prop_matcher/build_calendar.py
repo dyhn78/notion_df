@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from .modules import *
-from .common.struct import EditorModule, EditorBase
+from .common.struct import EditorBase
 from .modules.calendar import DateTargetFiller, CalendarDateRange, PeriodTargetFiller
 
 
@@ -17,14 +17,14 @@ class CalendarController:
 
     def execute(self):
         self.bs.fetch_all()
-        agents: list[EditorModule] = [
+        agents: list[TableModule] = [
             DateTargetFiller(self.bs, self.disable_overwrite,
                              self.fetch_year_range),
             PeriodTargetFiller(self.bs, self.disable_overwrite,
                                self.fetch_year_range)
         ]
         for agent in agents:
-            agent.execute()
+            agent()
         self.bs.save()
 
 
@@ -54,9 +54,9 @@ class CalendarEditorBase(EditorBase):
                 & frame.before(self.date_range.max_date)
             )
         query.push_filter(ft)
-        if not query.execute():
+        if not query.execute(self.request_size):
             query = self.dates.rows.open_query()
-            query.execute(request_size=1)
+            query.execute(1)
 
         query = self.periods.open_query()
         ft = query.open_filter()
@@ -69,8 +69,8 @@ class CalendarEditorBase(EditorBase):
                 & frame.before(self.date_range.max_date)
             )
         query.push_filter(ft)
-        if not query.execute():
+        if not query.execute(self.request_size):
             query = self.periods.rows.open_query()
-            query.execute(request_size=1)
+            query.execute(1)
 
 

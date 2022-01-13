@@ -84,7 +84,7 @@ class RowChildren(Children):
     def open_new_page(self):
         return self.open_page('')
 
-    def attach(self, child: PageRow):
+    def contain(self, child: PageRow):
         if isinstance(child, PageRow):
             if child.block_id:
                 self._updater.attach_page(child)
@@ -93,7 +93,7 @@ class RowChildren(Children):
         else:
             raise InvalidBlockTypeError(child)
 
-    def detach(self, child: PageRow):
+    def release(self, child: PageRow):
         if child.block_id:
             self._updater.detach_page(child)
         else:

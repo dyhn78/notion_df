@@ -22,7 +22,7 @@ def scrap_yes24_main(url: str) -> dict:
 def set_name(results, soup):
     tag_name = '#yDetailTopWrap > div.topColRgt > div.gd_infoTop > div > h2'
     try:
-        name = soup.select_one(tag_name).text
+        name = soup.select_one(tag_name).text.strip()
         for char in '?!"':
             name = name.replace(char, '')
         results.update(name=name)
@@ -33,7 +33,7 @@ def set_name(results, soup):
 def set_subname(results, soup):
     tag_subname = '#yDetailTopWrap > div.topColRgt > div.gd_infoTop > div > h3'
     try:
-        subname = soup.select_one(tag_subname).text
+        subname = soup.select_one(tag_subname).text.strip()
         results.update(subname=subname)
     except AttributeError:
         pass
@@ -43,7 +43,7 @@ def set_author(results, soup):
     tag_author = '#yDetailTopWrap > div.topColRgt > div.gd_infoTop > ' \
                  'span.gd_pubArea > span.gd_auth > a'
     try:
-        author = soup.select_one(tag_author).text
+        author = soup.select_one(tag_author).text.strip()
         results.update(author=author)
         return
     except AttributeError:
@@ -52,7 +52,7 @@ def set_author(results, soup):
     tag_author2 = '#yDetailTopWrap > div.topColRgt > div.gd_infoTop > ' \
                   'span.gd_pubArea > span.gd_auth'
     try:
-        author_raw = soup.select_one(tag_author2).text
+        author_raw = soup.select_one(tag_author2).text.strip()
         author = author_raw.strip('\n').strip().replace(' 저', '')
         results.update(author=author)
     except AttributeError:
@@ -63,7 +63,7 @@ def set_publisher(results, soup):
     tag_publisher = '#yDetailTopWrap > div.topColRgt > div.gd_infoTop > ' \
                     'span.gd_pubArea > span.gd_pub > a'
     try:
-        publisher = soup.select_one(tag_publisher).text
+        publisher = soup.select_one(tag_publisher).text.strip()
         results.update(publisher=publisher)
     except AttributeError:
         pass

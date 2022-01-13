@@ -41,7 +41,7 @@ class TableModule(ABC):
         self.bs = bs
 
     @abstractmethod
-    def execute(self):
+    def __call__(self):
         pass
 
 class RowModule(ABC):

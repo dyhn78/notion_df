@@ -1,7 +1,7 @@
-from ..common.struct import EditorModule
+from ..common.struct import TableModule
 
 
-class SelfMatcher(EditorModule):
+class SelfMatcher(TableModule):
     def __init__(self, bs):
         super().__init__(bs)
         self.domains = [
@@ -10,7 +10,7 @@ class SelfMatcher(EditorModule):
             self.bs.readings
         ]
 
-    def execute(self):
+    def __call__(self):
         for domain in self.domains:
             for dom in domain.rows:
                 if dom.read_tag('itself') != [dom.block_id]:

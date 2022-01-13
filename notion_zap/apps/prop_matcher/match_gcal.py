@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from notion_zap.apps.prop_matcher.modules import *
-from notion_zap.apps.prop_matcher.common.struct import EditorModule, EditorBase
+from notion_zap.apps.prop_matcher.common.struct import EditorBase
 from notion_zap.cli import editors
 
 
@@ -11,12 +11,12 @@ class GcalMatchController:
 
     def execute(self):
         self.bs.fetch()
-        agents: list[EditorModule] = [
+        agents: list[TableModule] = [
             GcaltoScheduleMatcher(self.bs),
             GcalfromScheduleMatcher(self.bs),
         ]
         for agent in agents:
-            agent.execute()
+            agent()
         self.bs.save()
 
 
