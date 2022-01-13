@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from .managers import *
-from .common.struct import EditorManager, EditorBase
-from .managers.calendar import DateTargetFiller, CalendarDateRange, PeriodTargetFiller
+from .modules import *
+from .common.struct import EditorModule, EditorBase
+from .modules.calendar import DateTargetFiller, CalendarDateRange, PeriodTargetFiller
 
 
 class CalendarController:
@@ -17,7 +17,7 @@ class CalendarController:
 
     def execute(self):
         self.bs.fetch_all()
-        agents: list[EditorManager] = [
+        agents: list[EditorModule] = [
             DateTargetFiller(self.bs, self.disable_overwrite,
                              self.fetch_year_range),
             PeriodTargetFiller(self.bs, self.disable_overwrite,

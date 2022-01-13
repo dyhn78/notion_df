@@ -21,6 +21,7 @@ class BlockChildrenStash(ValueCarrier):
 
     def apply_contents(self, i: int, carrier: encoders.ContentsEncoder) \
             -> encoders.ContentsEncoder:
+        print(i, carrier.encode())
         while len(self.__carriers) <= i:
             self.__carriers.append(None)
         self.__carriers[i] = carrier

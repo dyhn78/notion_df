@@ -9,6 +9,8 @@ class InsertContents:
         self.contents = contents
 
     def execute(self):
+        from pprint import pprint
+        pprint(self.contents)
         if not self.contents:
             return
         max_depth = max(self.get_depth(text_line) for text_line in self.contents)

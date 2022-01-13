@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 from notion_zap.apps.config import DatabaseInfo
 from notion_zap.apps.prop_matcher.config import MatchFrames
 from notion_zap.cli import editors
+from notion_zap.cli.editors import PageRow
 
 
 class EditorBase:
@@ -30,10 +31,23 @@ class EditorBase:
         self.root.save()
 
 
-class EditorManager(ABC):
+class EditorModule(ABC):
+    def __init__(self, bs: EditorBase):
+        self.bs = bs
+
+
+class TableModule(ABC):
     def __init__(self, bs: EditorBase):
         self.bs = bs
 
     @abstractmethod
     def execute(self):
+        pass
+
+class RowModule(ABC):
+    def __init__(self, bs: EditorBase):
+        self.bs = bs
+
+    @abstractmethod
+    def __call__(self, dom: PageRow):
         pass

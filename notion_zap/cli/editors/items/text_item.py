@@ -8,7 +8,7 @@ from ..structs.base_logic import RootGatherer
 from ..shared.with_items import BlockWithItems, ItemChildren
 from ...gateway.encoders import (
     TextContentsWriter,
-    RichTextContentsEncoder,
+    RichTextContentsEncoder, ContentsEncoder,
 )
 
 
@@ -46,11 +46,12 @@ class TextItem(Item, BlockWithItems, Document, TextContentsWriter):
         return self.read_contents()
 
     def set_callback(
-            self, value: Callable[[RichTextContentsEncoder], RichTextContentsEncoder]):
+            self, value: Callable[[ContentsEncoder], ContentsEncoder]):
         self.callback = value
 
     def set_placeholder(self):
-        self.write_paragraph('')
+        pass  # TODO
+        # self.write_paragraph('')
 
     def retrieve(self):
         requestor = requestors.RetrieveBlock(self)

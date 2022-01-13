@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from functools import reduce
+# from functools import reduce
 
-from notion_zap.apps.prop_matcher.managers import *
-from notion_zap.apps.prop_matcher.common.struct import EditorManager, EditorBase
-from notion_zap.apps.prop_matcher.managers.calendar import (
+from notion_zap.apps.prop_matcher.modules import *
+from notion_zap.apps.prop_matcher.common.struct import TableModule, EditorBase
+from notion_zap.apps.prop_matcher.modules.calendar import (
     DateTargetFiller, PeriodTargetFiller)
 from notion_zap.cli import editors
 
@@ -12,11 +12,11 @@ from notion_zap.cli import editors
 class RegularMatchController:
     def __init__(self):
         self.bs = RegularEditorBase()
-        self.agents: list[EditorManager] = [
+        self.agents: list[TableModule] = [
             SelfMatcher(self.bs),
 
-            DateMatcherofDoublyLinked(self.bs),
-            DateMatcherviaReference(self.bs),
+            DateofDoublyLinked(self.bs),
+            TableDateofReference(self.bs),
             DateMatcherofWritings(self.bs),
             DateMatcherofReadings(self.bs),
             DateTargetFiller(self.bs, False),
@@ -78,14 +78,16 @@ class RegularEditorBase(EditorBase):
 
         # AND clauses
         if domain is self.readings:
-            ft &= manager.checkbox('no_exp').is_empty()
-            is_not_book = manager.checkbox('is_book').is_empty()
-            has_refs = reduce(
-                lambda a, b: a | b,
-                [manager.relation(tag).is_not_empty()
-                 for tag in ['journals', 'schedules']]
-            )
-            ft &= (is_not_book | has_refs)
+            ft |= manager.relation('periods_created').is_empty()
+            ft |= manager.relation('dates_created').is_empty()
+            # ft &= manager.checkbox('no_exp').is_empty()
+            # is_not_book = manager.checkbox('is_book').is_empty()
+            # has_refs = reduce(
+            #     lambda a, b: a | b,
+            #     [manager.relation(tag).is_not_empty()
+            #      for tag in ['journals', 'schedules']]
+            # )
+            # ft &= (is_not_book | has_refs)
 
         # ft.preview()
         query.push_filter(ft)

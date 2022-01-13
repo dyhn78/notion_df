@@ -11,10 +11,10 @@ from notion_zap.cli.structs import DateObject
 from .dates import DateMatcherAbs
 from ..common.dt_handler import TimeStringHandler
 from ..common.helpers import query_unique_page_by_idx
-from ..common.struct import EditorManager
+from ..common.struct import EditorModule
 
 
-class GcalMatcherAbs(EditorManager, metaclass=ABCMeta):
+class GcalMatcherAbs(EditorModule, metaclass=ABCMeta):
     Gcals = notion_zap.apps.externals.gcal.events
     Gcal_api_error = HttpError
 

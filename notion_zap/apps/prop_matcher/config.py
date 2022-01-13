@@ -123,11 +123,11 @@ class MatchFrames:
         ]
     )
     READINGS = Frame(
-        fr_dates_auto, fr_dates_begin,
+        fr_dates_auto, fr_dates_begin, fr_dates_created,
         [
             cl_title, cl_itself,
             cl_media_type,
-            Cl(tag='no_exp', key='🏁경험 없음<-경과', ),
+            Cl(tag='no_exp', key='🏁경험 없음<-진행', ),
             Cl(tag='is_book', key='📘도서<-유형', ),
 
             cl_journals,

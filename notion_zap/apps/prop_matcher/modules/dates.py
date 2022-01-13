@@ -11,10 +11,10 @@ from ..common.helpers import (
     query_unique_page_by_idx,
     fetch_all_pages_of_relation, fetch_unique_page_of_relation
 )
-from ..common.struct import EditorManager
+from ..common.struct import EditorModule, TableModule, RowModule
 
 
-class DateMatcherAbs(EditorManager, metaclass=ABCMeta):
+class DateMatcherAbs(EditorModule, metaclass=ABCMeta):
     Tdoms_ref = 'journals'
     Tdoms_date = 'auto_datetime'
     T_tar = 'dates'
@@ -26,6 +26,7 @@ class DateMatcherAbs(EditorManager, metaclass=ABCMeta):
         self.target: Database = self.bs.dates
         self.reference = self.bs.journals
         self.target_by_idx = self.target.rows.index_by_tag(self.Ttars_idx)
+        self.period_resetter = PeriodResetter(bs)
 
     def determine_tar_from_auto_date(self, dom: PageRow):
         dom_idx: DateObject = dom.read_tag(self.Tdoms_date)
@@ -60,7 +61,18 @@ class DateMatcherAbs(EditorManager, metaclass=ABCMeta):
         return tar.save()
 
 
-class DateMatcherofDoublyLinked(DateMatcherAbs):
+class DatefromAutoDate(DateMatcherAbs, RowModule):
+    def __init__(self, bs, Tdoms_tar):
+        super().__init__(bs)
+        self.Tdoms_tar = Tdoms_tar
+
+    def __call__(self, dom: PageRow):
+        if dom.read_tag(self.Tdoms_tar):
+            return None
+        return self.determine_tar_from_auto_date(dom)
+
+
+class DateofDoublyLinked(DateMatcherAbs, TableModule):
     Tdoms_tar1 = 'dates_created'
     Tdoms_tar2 = 'dates'
 
@@ -74,7 +86,7 @@ class DateMatcherofDoublyLinked(DateMatcherAbs):
                 if tar := self.match_dates(dom):
                     dom.write_relation(tag=self.Tdoms_tar2,
                                               value=tar.block_id)
-                    PeriodResetter.process(dom)
+                    self.period_resetter(dom)
                 if tar := self.match_created_dates(dom):
                     dom.write_relation(tag=self.Tdoms_tar1, value=tar.block_id)
 
@@ -89,7 +101,7 @@ class DateMatcherofDoublyLinked(DateMatcherAbs):
         return self.determine_tar_from_auto_date(dom)
 
 
-class DateMatcherviaReference(DateMatcherAbs):
+class TableDateofReference(DateMatcherAbs, TableModule):
     def __init__(self, bs):
         super().__init__(bs)
         self.domains = [self.bs.tasks]
@@ -110,7 +122,7 @@ class DateMatcherviaReference(DateMatcherAbs):
         return self.determine_tar_from_auto_date(dom)
 
 
-class DateMatcherofWritings(DateMatcherAbs):
+class DateMatcherofWritings(DateMatcherAbs, TableModule):
     def __init__(self, bs):
         super().__init__(bs)
         self.domain = self.bs.writings
@@ -126,14 +138,22 @@ class DateMatcherofWritings(DateMatcherAbs):
         return self.determine_tar_from_auto_date(dom)
 
 
-class DateMatcherofMultipleCardinality(DateMatcherAbs, metaclass=ABCMeta):
-    def determine_earliest_tar(self, dom: PageRow,
-                               reference: Database, doms_ref, refs_tar):
-        refs = fetch_all_pages_of_relation(dom, reference, doms_ref)
+class RowDateofEarliest(DateMatcherAbs, RowModule):
+    def __init__(self, bs, reference: Database, doms_ref, refs_tar):
+        super().__init__(bs)
+        self.reference = reference
+        self.doms_ref = doms_ref
+        self.refs_tar = refs_tar
+
+    def __call__(self, dom: PageRow):
+        refs = fetch_all_pages_of_relation(dom, self.reference, self.doms_ref)
         tars = []
         for ref in refs:
-            new_tars = fetch_all_pages_of_relation(ref, self.target, refs_tar)
+            new_tars = fetch_all_pages_of_relation(ref, self.target, self.refs_tar)
             tars.extend(new_tars)
+        return self.pick_earliest(*tars)
+
+    def pick_earliest(self, *tars: Optional[PageRow]):
         earliest_tar: Optional[PageRow] = None
         earliest_date = None
         for tar in tars:
@@ -144,35 +164,43 @@ class DateMatcherofMultipleCardinality(DateMatcherAbs, metaclass=ABCMeta):
         return earliest_tar
 
 
-class DateMatcherofReadings(DateMatcherofMultipleCardinality):
+
+class DateMatcherofReadings(DateMatcherAbs, TableModule):
     Tdoms_ref2 = 'schedules'
-    Tdoms_tar = 'dates_begin'
+    Tdoms_tar = 'dates'
+    Tdoms_tar2 = 'dates_begin'
     Tref2s_tar = 'dates'
 
     def __init__(self, bs):
         super().__init__(bs)
         self.domain = self.bs.readings
         self.reference2 = self.bs.schedules
+        self.match_dates_created = DatefromAutoDate(bs, self.Tdoms_tar)
+        self.match_earliest1 = RowDateofEarliest(
+            bs, self.reference, self.Tdoms_ref, self.T_tar)
+        # self.match_earliest2 = RowDateofEarliest(
+        #     bs, self.reference2, self.Tdoms_ref2, self.Tref2s_tar
+        # )
 
     def execute(self):
         for dom in self.domain.rows:
-            if tar := self.match_dates(dom):
+            if tar := self.match_dates_created(dom):
                 dom.write_relation(tag=self.Tdoms_tar, value=tar.block_id)
-                PeriodResetter.process(dom)
+            if tar := self.match_dates_begin(dom):
+                dom.write_relation(tag=self.Tdoms_tar2, value=tar.block_id)
+                self.period_resetter(dom)
 
-    def match_dates(self, dom: PageRow):
-        if dom.read_tag(self.Tdoms_tar):
+    def match_dates_begin(self, dom: PageRow):
+        if dom.read_tag(self.Tdoms_tar2):
             return None
         if dom.read_tag('no_exp'):
             return None
-        if tar := self.determine_earliest_tar(dom, self.reference, self.Tdoms_ref,
-                                              self.T_tar):
+        if tar := self.match_earliest1(dom):
             return tar
-        if tar := self.determine_earliest_tar(dom, self.reference2, self.Tdoms_ref2,
-                                              self.Tref2s_tar):
-            return tar
-        if dom.read_tag('is_book'):
-            return None
+        # tar1 = self.match_earliest1(dom)
+        # tar2 = self.match_earliest2(dom)
+        # if tar := self.match_earliest1.pick_earliest(tar1, tar2):
+        #     return tar
         if tar := self.determine_tar_from_auto_date(dom):
             return tar
         return None

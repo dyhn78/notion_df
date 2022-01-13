@@ -3,7 +3,7 @@ import datetime as dt
 
 from notion_zap.cli import editors
 from notion_zap.cli.structs import DateObject
-from ..common.struct import EditorManager
+from ..common.struct import EditorModule, TableModule, RowModule
 from ..common.date_handler import DateHandler
 from ..common.helpers import (
     fetch_unique_page_of_relation,
@@ -11,7 +11,7 @@ from ..common.helpers import (
 )
 
 
-class PeriodMatcherAbs(EditorManager, metaclass=ABCMeta):
+class PeriodMatcherAbs(EditorModule, metaclass=ABCMeta):
     T_tar = 'periods'
     Ttars_idx = 'title'
     Ttars_date = 'manual_date_range'
@@ -69,16 +69,12 @@ class PeriodMatcherAbs(EditorManager, metaclass=ABCMeta):
             self.bs.root.disable_overwrite = False
 
 
-class PeriodResetter(PeriodMatcherAbs):
-    def execute(self):
-        pass
-
-    @classmethod
-    def process(cls, dom: editors.PageRow):
-        dom.write_relation(tag=cls.T_tar, value=[])
+class PeriodResetter(PeriodMatcherAbs, RowModule):
+    def __call__(self, dom: editors.PageRow):
+        dom.write_relation(tag=self.T_tar, value=[])
 
 
-class PeriodMatcherofDates(PeriodMatcherAbs):
+class PeriodMatcherofDates(PeriodMatcherAbs, TableModule):
     Tdoms_date = 'manual_date'
 
     def __init__(self, bs):
@@ -98,7 +94,7 @@ class PeriodMatcherofDates(PeriodMatcherAbs):
         return self.find_or_create_by_date_val(dom_idx.start_date)
 
 
-class PeriodMatcherofDoublyLinked(PeriodMatcherAbs):
+class PeriodMatcherofDoublyLinked(PeriodMatcherAbs, TableModule):
     Tdoms_ref1 = 'dates'
     Tdoms_tar1 = 'periods'
     Tdoms_ref2 = 'dates_created'
@@ -134,7 +130,7 @@ class PeriodMatcherofDoublyLinked(PeriodMatcherAbs):
         return None
 
 
-class PeriodMatcherDefault(PeriodMatcherAbs):
+class PeriodMatcherDefault(PeriodMatcherAbs, TableModule):
     Tdoms_ref = 'dates'
 
     def __init__(self, bs):

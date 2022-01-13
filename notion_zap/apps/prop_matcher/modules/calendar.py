@@ -2,7 +2,7 @@ import datetime as dt
 from typing import Optional
 
 from notion_zap.apps.prop_matcher.common.date_handler import DateHandler
-from notion_zap.apps.prop_matcher.managers import DateMatcherAbs, PeriodMatcherAbs
+from notion_zap.apps.prop_matcher.modules import DateMatcherAbs, PeriodMatcherAbs
 from notion_zap.cli.editors import PageRow
 from notion_zap.cli.structs import DateObject
 

@@ -1,7 +1,7 @@
-from ..common.struct import EditorManager
+from ..common.struct import EditorModule
 
 
-class SelfMatcher(EditorManager):
+class SelfMatcher(EditorModule):
     def __init__(self, bs):
         super().__init__(bs)
         self.domains = [

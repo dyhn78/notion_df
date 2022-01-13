@@ -3,12 +3,12 @@ from typing import Optional
 
 from notion_zap.cli import editors
 from notion_zap.cli.structs import DateObject
-from ..common.struct import EditorManager
+from ..common.struct import EditorModule
 from ..common.helpers import extend_prop, fetch_all_pages_of_relation, \
     fetch_unique_page_of_relation
 
 
-class ProgressMatcherofReadings(EditorManager):
+class ProgressMatcherofReadings(EditorModule):
     Tmedia_type = 'media_type'
     T_tar = 'channels'
     Lmedia_type_empty = 'empty'
@@ -33,7 +33,7 @@ class ProgressMatcherofReadings(EditorManager):
 
 
 # TODO
-class ProgressMatcherofDates(EditorManager):
+class ProgressMatcherofDates(EditorModule):
     def __init__(self, bs):
         super().__init__(bs)
         self.domain = self.bs.dates
@@ -88,7 +88,7 @@ class ProgressMatcherofDates(EditorManager):
         pass
 
 
-class ProgressMatcherofDatesDepr(EditorManager):
+class ProgressMatcherofDatesDepr(EditorModule):
     def __init__(self, bs):
         super().__init__(bs)
         self.domain = self.bs.dates
@@ -116,7 +116,7 @@ class ProgressMatcherofDatesDepr(EditorManager):
         return tar_ids
 
 
-class ProgressMatcherofWritingsDepr(EditorManager):
+class ProgressMatcherofWritingsDepr(EditorModule):
     Tdoms_ref1 = 'journals'
     Tdoms_ref2 = 'schedules'
     TL_tar = ['projects', 'channels', 'readings']

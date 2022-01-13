@@ -82,4 +82,4 @@ class ReadingPageStatusWriter(ReadingPageWriter):
 
 
 if __name__ == '__main__':
-    RegularScrapController().execute(request_size=5)
+    RegularScrapController(tasks={'bookstore'}).execute(request_size=5)
