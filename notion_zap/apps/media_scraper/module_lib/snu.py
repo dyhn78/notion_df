@@ -1,4 +1,3 @@
-import time
 from urllib import parse
 
 import requests
@@ -46,21 +45,16 @@ class SNULibraryAgent:
         tag_lib_info = 'div.result-item-text.layout-fill.layout-column.flex > ' \
                        'div.search-result-availability-line-wrapper ' \
                        '> prm-search-result-availability-line > div > div > button '
-        for _ in range(10):
-            try:
-                elements = self.driver.find_elements("css selector", tag_lib_info)
-                lib_info = elements[0].text
-                assert lib_info
-                return lib_info
-            except (AssertionError, IndexError):
-                # print(f"{self.driver.current_url=}")
-                time.sleep(1)
+        try:
+            return self.driver.find_element("css selector", tag_lib_info).text
+        except AttributeError:
+            return ''
 
     @staticmethod
     def parse_tag(raw_string):
         # TODO 책 제목을 출력하고, 올바른 책을 선택한 게 맞는지
         #  (화면에 출력해서?) 확인하는 간단한 기능들을 구현할 것.
-        return raw_string.strip()
+        return raw_string
 
 
 # deprecated
