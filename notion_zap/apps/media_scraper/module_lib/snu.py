@@ -2,6 +2,7 @@ from urllib import parse
 
 import requests
 from bs4 import BeautifulSoup
+from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.chrome.webdriver import WebDriver
 
 from notion_zap.apps.externals.selenium import SeleniumBase
@@ -47,7 +48,7 @@ class SNULibraryAgent:
                        '> prm-search-result-availability-line > div > div > button '
         try:
             return self.driver.find_element("css selector", tag_lib_info).text
-        except AttributeError:
+        except NoSuchElementException:
             return ''
 
     @staticmethod

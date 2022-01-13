@@ -1,7 +1,6 @@
 from typing import Optional
 
-from selenium.common.exceptions import StaleElementReferenceException, \
-    NoSuchElementException
+from selenium.common.exceptions import StaleElementReferenceException
 
 from notion_zap.apps.externals.selenium import SeleniumBase
 from notion_zap.apps.media_scraper.common.helpers import remove_emoji
@@ -119,14 +118,10 @@ class GoyangLibraryAgent:
         self.driver.back()
 
     def get_book_code(self):
-        book_code = ''
         tag_book_code = '#printArea > div.tblType01.mt30 > table > tbody > ' \
                         'tr:nth-child(2) > td:nth-child(2)'
-        try:
-            book_code = self.driver.find_element("css selector",
-                                                 tag_book_code).text
-        except NoSuchElementException:
-            pass
+        book_code = self.driver.find_element("css selector",
+                                             tag_book_code).text
         return book_code.strip()
 
     def update_best_option(self, lib_name, available_here, book_code):
