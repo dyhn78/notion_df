@@ -3,8 +3,8 @@ from notion_zap.cli.utility import stopwatch
 from .yes24_main import scrap_yes24_main
 from .yes24_url import scrap_yes24_url
 from ..common.struct import ReadingPageChecker
-from ..common.write_contents import ContentsWriter
-from ..common.remove_dummy_blocks import remove_dummy_blocks
+from notion_zap.apps.media_scraper.module_meta.write_contents import ContentsWriter
+from notion_zap.apps.media_scraper.module_meta.remove_dummy_blocks import remove_dummy_blocks
 
 
 class MetadataManager:
