@@ -158,7 +158,7 @@ class PeriodMatcherDefault(PeriodMatcherAbs, TableModule):
 class PeriodMatcherReadingCreated(PeriodMatcherAbs, TableModule):
     Tdoms_tar = 'periods_created'
     Tdoms_ref = 'dates_created'
-    Trefs_tar = 'dates'
+    Trefs_tar = 'periods'
 
     def __init__(self, bs):
         super().__init__(bs)
