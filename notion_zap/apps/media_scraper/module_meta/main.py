@@ -4,7 +4,7 @@ from .yes24_main import scrap_yes24_main
 from .yes24_url import scrap_yes24_url
 from ..common.struct import ReadingPageChecker
 from notion_zap.apps.media_scraper.module_meta.write_contents import ContentsWriter
-from notion_zap.apps.media_scraper.module_meta.remove_dummy_blocks import remove_dummy_blocks
+from notion_zap.apps.media_scraper.module_meta.adjust_contents import remove_dummy_blocks
 
 
 class MetadataManager:

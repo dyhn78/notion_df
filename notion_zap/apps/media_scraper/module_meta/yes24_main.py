@@ -1,7 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 
-from notion_zap.apps.media_scraper.module_meta.parse_contents_html import parse_contents
+from notion_zap.apps.media_scraper.module_meta.parse_contents import parse_contents
 
 
 def scrap_yes24_main(url: str) -> dict:
