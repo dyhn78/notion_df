@@ -6,16 +6,18 @@ import datetime as dt
 
 
 def main():
-    log = open('debug.log', 'w', encoding='utf-8')
-    log.write(f"last execution: {dt.datetime.now()}")
+    message = f"last execution: {dt.datetime.now()}"+"\n"
     try:
         RegularMatchController().execute(request_size=20)
         RegularScrapController().execute(request_size=5)
 
+        with open('debug.log', 'a', encoding='utf-8') as log:
+            log.write(message)
         stopwatch('모든 작업 완료')
     except Exception as err:
-        traceback.print_exc(file=log)
-        log.close()
+        with open('debug.log', 'w', encoding='utf-8') as log:
+            log.write(message+'\n')
+            traceback.print_exc(file=log)
         raise err
 
 
