@@ -121,7 +121,7 @@ class PageRowPropertyWriter(metaclass=ABCMeta):
 
     def write_multi_select(
             self, key: str = None, tag: Hashable = None,
-            value: str | list[str] = None,
+            value: Union[str, list[str]] = None,
             label: Hashable = None,
             label_list: Optional[list[Hashable]] = None, mark: Hashable = None):
         key, value = self._cleaned_key_with_value_list(key, tag, value, label, label_list,
@@ -137,7 +137,7 @@ class PageRowPropertyWriter(metaclass=ABCMeta):
 
     def write_relation(
             self, key: str = None, tag: Hashable = None,
-            value: str | list[str] = None,
+            value: Union[str, list[str]] = None,
             label: Hashable = None,
             label_list: Optional[list[Hashable]] = None, mark: Hashable = None):
         key, value = self._cleaned_key_with_value_list(key, tag, value, label, label_list,
