@@ -83,7 +83,8 @@ class Root(Registry):
             exclude_archived=False,
             disable_overwrite=False,
             customized_emptylike_strings=None,
-            print_heads=0,
+            print_response_heads=0,
+            print_request_formats=False,
             # enable_overwrite_by_same_value=False,
     ):
         super().__init__()
@@ -108,7 +109,8 @@ class Root(Registry):
             customized_emptylike_strings = \
                 ['', '.', '-', '0', '1', 'None', 'False', '[]', '{}']
         self.emptylike_strings = customized_emptylike_strings
-        self.print_heads = print_heads
+        self.print_heads = print_response_heads
+        self.print_request_formats = print_request_formats
         # self.enable_overwrite_by_same_value = enable_overwrite_by_same_value
 
         # TODO : (1) enum 이용, (2) 실제로 requestor에 작동하는 로직 마련.

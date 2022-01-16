@@ -49,7 +49,7 @@ class GcaltoScheduleMatcher(_GcalScheduleMatcherAbs, TableModule):
         else:
             self.updated_min = None
 
-    def execute(self):
+    def __call__(self):
         events = self.Gcals.EventLister(
             calendar_id=self.calendar_id,
             only_single_events=True,
@@ -126,7 +126,7 @@ class GcalfromScheduleMatcher(_GcalScheduleMatcherAbs, TableModule):
         super().__init__(bs, calendar_id)
         self.default_event_duration = default_event_duration_in_minutes
 
-    def execute(self):
+    def __call__(self):
         for dom in self.domain.rows:
             self.sync_dom_to_gcal(dom)
 

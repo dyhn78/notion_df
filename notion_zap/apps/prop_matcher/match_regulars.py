@@ -24,6 +24,7 @@ class RegularMatchController:
             PeriodMatcherofDates(self.bs),
             PeriodMatcherofDoublyLinked(self.bs),
             PeriodMatcherDefault(self.bs),
+            PeriodMatcherReadingCreated(self.bs),
             PeriodTargetFiller(self.bs, False)
 
 
@@ -42,6 +43,7 @@ class RegularEditorBase(EditorBase):
     def __init__(self):
         super().__init__()
         self.root.exclude_archived = True
+        # self.root.print_request_formats = True
 
     def fetch(self, request_size=0):
         for domain in self.root.aliased_blocks:

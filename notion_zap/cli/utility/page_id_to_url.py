@@ -18,7 +18,8 @@ def url_to_id(id_or_url: str):
     for prefix in prefixes:
         id_or_url = id_or_url.replace(prefix, '')
     uuid = _clean_uuid(id_or_url)
-    uuid = uuid.replace('-', '')
+    if uuid and '-' not in uuid:
+        uuid = '-'.join([uuid[0:8], uuid[8:12], uuid[12:16], uuid[16:20], uuid[20:]])
     # assert len(uuid) == 32
     return uuid
 

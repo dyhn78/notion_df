@@ -54,6 +54,7 @@ class Query(LongRequestor):
         return response
 
     def print_comments(self):
+        super().print_comments()
         target_url = id_to_url(self.target_id)
         if self.target_name:
             form = [f"{self.target_name}", target_url]

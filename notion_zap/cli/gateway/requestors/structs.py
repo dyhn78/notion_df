@@ -33,6 +33,11 @@ class Requestor(Executable, ValueCarrier, metaclass=ABCMeta):
     def target_url(self):
         return self.editor.block_url
 
+    @abstractmethod
+    def print_comments(self):
+        if self.root.print_request_formats:
+            self.preview()
+
 
 class LongRequestor(Requestor):
     MAX_PAGE_SIZE = 100

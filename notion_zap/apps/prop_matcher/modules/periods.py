@@ -153,3 +153,27 @@ class PeriodMatcherDefault(PeriodMatcherAbs, TableModule):
             if tar := fetch_unique_page_of_relation(ref, self.target, self.T_tar):
                 return tar
         return None
+
+
+class PeriodMatcherReadingCreated(PeriodMatcherAbs, TableModule):
+    Tdoms_tar = 'periods_created'
+    Tdoms_ref = 'dates_created'
+    Trefs_tar = 'dates'
+
+    def __init__(self, bs):
+        super().__init__(bs)
+        self.reference = self.bs.dates
+        self.domain = self.bs.readings
+
+    def __call__(self):
+        for dom in self.domain.rows:
+            if tar := self.match_periods(dom):
+                dom.write_relation(tag=self.Tdoms_tar, value=tar.block_id)
+
+    def match_periods(self, dom: editors.PageRow):
+        if dom.read_tag(self.Tdoms_tar):
+            return None
+        if ref := fetch_unique_page_of_relation(dom, self.reference, self.Tdoms_ref):
+            if tar := fetch_unique_page_of_relation(ref, self.target, self.Trefs_tar):
+                return tar
+        return None

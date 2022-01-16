@@ -13,7 +13,7 @@ class SyncResolveController:
     tag__doms_downdom = 'down_self'
 
     def __init__(self, date_range=0):
-        self.root = editors.Root(print_heads=5)
+        self.root = editors.Root(print_response_heads=5)
         self.date_range = date_range
         self.marks = self.root.objects.database(*DatabaseInfo.JOURNALS,
                                                 MatchFrames.JOURNALS)

@@ -21,6 +21,7 @@ class RetrieveDatabase(Requestor):
         return self.client.databases.retrieve(**self.encode())
 
     def print_comments(self):
+        super().print_comments()
         if self.target_name:
             form = ['retrieve_database', f"< {self.target_name} >",
                     '\n\t', self.target_url]
@@ -49,6 +50,7 @@ class RetrievePage(Requestor):
         return res
 
     def print_comments(self):
+        super().print_comments()
         # TODO
         if self.target_name:
             form = ['retrieve_page', f"< {self.target_name} >",
@@ -75,6 +77,7 @@ class RetrieveBlock(Requestor):
         return res
 
     def print_comments(self):
+        super().print_comments()
         if self.target_name:
             form = ['retrieve_block', f"< {self.target_name} >",
                     '\n\t', self.target_url]
@@ -112,6 +115,7 @@ class GetBlockChildren(LongRequestor):
         )
 
     def print_comments(self):
+        super().print_comments()
         if self.target_name:
             form = ['fetch_children', f"< {self.target_name} >",
                     '\n\t', self.target_url]

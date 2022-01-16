@@ -5,7 +5,7 @@ from notion_zap.apps.media_scraper.config import READING_FRAME
 
 class ReadingTableController:
     def __init__(self):
-        self.root = editors.Root(print_heads=5)
+        self.root = editors.Root(print_response_heads=5)
         self.pagelist = self.root.objects.database(
             *DatabaseInfo.READINGS, READING_FRAME).rows
 

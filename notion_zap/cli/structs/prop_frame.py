@@ -49,6 +49,8 @@ class PropertyColumn:
         return self._value_to_label.get(value, default)
 
     def marks_of(self, value, default=None):
+        if default is None:
+            default = []
         return self._value_to_mark.get(value, default)
 
 

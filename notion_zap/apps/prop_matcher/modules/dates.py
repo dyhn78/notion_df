@@ -165,26 +165,26 @@ class RowDateofEarliest(DateMatcherAbs, RowModule):
 
 
 class DateMatcherofReadings(DateMatcherAbs, TableModule):
-    Tdoms_ref2 = 'schedules'
-    Tdoms_tar = 'dates'
+    Tdoms_tar1 = 'dates_created'
     Tdoms_tar2 = 'dates_begin'
-    Tref2s_tar = 'dates'
+    Tdoms_ref2 = 'schedules'
+    Tref2s_tar2 = 'dates'
 
     def __init__(self, bs):
         super().__init__(bs)
         self.domain = self.bs.readings
         self.reference2 = self.bs.schedules
-        self.match_dates_created = DatefromAutoDate(bs, self.Tdoms_tar)
+        self.match_dates_created = DatefromAutoDate(bs, self.Tdoms_tar1)
         self.match_earliest1 = RowDateofEarliest(
             bs, self.reference, self.Tdoms_ref, self.T_tar)
         # self.match_earliest2 = RowDateofEarliest(
-        #     bs, self.reference2, self.Tdoms_ref2, self.Tref2s_tar
+        #     bs, self.reference2, self.Tdoms_ref2, self.Tref2s_tar2
         # )
 
     def __call__(self):
         for dom in self.domain.rows:
             if tar := self.match_dates_created(dom):
-                dom.write_relation(tag=self.Tdoms_tar, value=tar.block_id)
+                dom.write_relation(tag=self.Tdoms_tar1, value=tar.block_id)
             if tar := self.match_dates_begin(dom):
                 dom.write_relation(tag=self.Tdoms_tar2, value=tar.block_id)
                 self.period_resetter(dom)

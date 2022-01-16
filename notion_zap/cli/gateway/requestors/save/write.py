@@ -13,6 +13,7 @@ class CreatePage(Requestor, PagePropertyStash, BlockChildrenStash):
         PagePropertyStash.__init__(self)
         BlockChildrenStash.__init__(self)
         self.parent_type = 'database_id' if under_database else 'page_id'
+        self._res = None
 
     @property
     def parent_id(self):
@@ -40,11 +41,13 @@ class CreatePage(Requestor, PagePropertyStash, BlockChildrenStash):
     @print_response_error
     def execute(self) -> dict:
         res = self.client.pages.create(**self.encode())
-        self.print_comments(res)
+        self._res = res
+        self.print_comments()
         return res
 
-    def print_comments(self, res):
-        target_url = id_to_url(res['id'])
+    def print_comments(self):
+        super().print_comments()
+        target_url = id_to_url(self._res['id'])
         if self.target_name:
             form = ['create_page', f"< {self.target_name} >",
                     '\n\t', target_url]
@@ -90,6 +93,7 @@ class UpdatePage(Requestor, PagePropertyStash):
         return res
 
     def print_comments(self):
+        super().print_comments()
         if self.target_name:
             form = ['update_page', f"< {self.target_name} >",
                     '\n\t', self.target_url]
@@ -139,6 +143,7 @@ class UpdateBlock(Requestor):
         return res
 
     def print_comments(self):
+        super().print_comments()
         if self.target_name:
             form = ['update_block', f"< {self.target_name} >",
                     '\n\t', self.target_url]
@@ -171,6 +176,7 @@ class AppendBlockChildren(Requestor, BlockChildrenStash):
         BlockChildrenStash.clear(self)
 
     def print_comments(self):
+        super().print_comments()
         if self.target_name:
             form = ['append_block', f"< {self.target_name} >",
                     '\n\t', self.target_url]

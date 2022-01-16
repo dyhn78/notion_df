@@ -3,13 +3,13 @@ from abc import ABC, abstractmethod
 
 from notion_zap.apps.config import DatabaseInfo
 from notion_zap.apps.prop_matcher.config import MatchFrames
-from notion_zap.cli import editors
-from notion_zap.cli.editors import PageRow
+from notion_zap.cli.editors import PageRow, Root
 
 
 class EditorBase:
-    def __init__(self):
-        self.root = editors.Root(print_heads=5)
+    def __init__(self, print_heads=5, print_request_formats=False):
+        self.root = Root(print_response_heads=print_heads,
+                         print_request_formats=print_request_formats)
         self.periods = self.root.objects.database(*DatabaseInfo.PERIODS,
                                                   frame=MatchFrames.PERIODS)
         self.dates = self.root.objects.database(*DatabaseInfo.DATES,

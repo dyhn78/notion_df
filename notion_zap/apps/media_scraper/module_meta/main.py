@@ -83,7 +83,8 @@ class MetadataAgent:
                 break
         else:
             subpage = self.page.items.open_new_page()
-        subpage.write_title(f'={self.page.title}')
+        if subpage.title != f'={self.page.title}':
+            subpage.write_title(f'={self.page.title}')
         subpage.save()
         return subpage
 
