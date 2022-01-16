@@ -1,7 +1,8 @@
 import os
 # import logging
 from typing import Callable
-from subprocess import CREATE_NO_WINDOW
+if os.name == 'nt':
+    from subprocess import CREATE_NO_WINDOW
 
 from selenium import webdriver
 from selenium.common.exceptions import (
@@ -66,7 +67,9 @@ class SeleniumBase:
             self.driver_path(),
             # log_path=os.path.join(os.path.dirname(__file__), 'selenium_log')
         )
-        service.creationflags = CREATE_NO_WINDOW
+        if os.name == 'nt':
+            from subprocess import CREATE_NO_WINDOW
+            service.creationflags = CREATE_NO_WINDOW
         return service
 
     @staticmethod
