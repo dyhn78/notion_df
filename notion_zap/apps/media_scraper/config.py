@@ -8,19 +8,23 @@ READING_FRAME = PropertyFrame([
     Cl(key='📘도서<-유형', tag='is_book'),
     Cl(key='🏁준비', tag='edit_status',
        labels={
-           'pass': '⭕정보 없음',
-           'tentatively_done': '👤원제/표지 검정',
-           'completely_done': '⛳수합 완료',
            'append': '📥본문(비파괴)/위치',
            'overwrite': '📥본문(파괴)/위치',
            'continue': '📥위치만',
+
+           'completely_done': '⛳수합 완료',
+           'pass': '⭕정보 없음',
+
+           'tentatively_done': '👤원제/표지 검정',
+           'manually_filled': '👤직접 채워넣기',
+
            'url_missing': '❓링크 찾기',
            'lib_missing': '❓위치 찾기',
        },
        marks_on_label={
            'regular_scraps': ['append', 'overwrite', 'continue'],
            'need_resets': ['url_missing', 'lib_missing'],
-           'done': ['pass', 'tentatively_done', 'completely_done'],
+           'done': ['pass', 'tentatively_done', 'completely_done', 'manually_filled'],
            'cannot_overwrite': ['append', 'continue']
        }),
     Cl(key='📚제목', tags=['docx_name', 'title']),

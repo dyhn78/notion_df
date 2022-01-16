@@ -23,9 +23,10 @@ class MetadataManager:
         else:
             writer = MetadataAgent(checker)
             writer.adjust_subpage()
-            checker.mark_as_pass()
+            checker.mark_as_manually_filled()
 
 
+# TODO
 class MetadataAgent:
     def __init__(self, checker: ReadingPageChecker):
         self.checker = checker

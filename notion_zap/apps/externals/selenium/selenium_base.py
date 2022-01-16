@@ -1,39 +1,19 @@
 import os
 # import logging
 from typing import Callable
-if os.name == 'nt':
-    from subprocess import CREATE_NO_WINDOW
 
 from selenium import webdriver
 from selenium.common.exceptions import (
     NoSuchElementException, StaleElementReferenceException)
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
-
 from notion_zap.cli.utility import stopwatch
 
 
-# logging.basicConfig(filename='debug.log', level=logging.DEBUG,
-#                     format='%(asctime)s %(levelname)s %(name)s %(message)s')
-# logger = logging.getLogger(__name__)
-
-
-def retry_webdriver(function: Callable, recursion_limit=1) -> Callable:
-    def wrapper(self, *args):
-        for recursion in range(recursion_limit):
-            if recursion != 0:
-                stopwatch(f'selenium 재시작 {recursion}/{recursion_limit}회')
-            try:
-                response = function(self, *args)
-                return response
-            except (NoSuchElementException, StaleElementReferenceException):
-                if recursion == recursion_limit:
-                    return None
-
-    return wrapper
-
-
 class SeleniumBase:
+    ON_WINDOWS = os.name == 'nt'
+    ON_LINUX = os.name == 'posix'
+
     def __init__(self, driver_cnt: int, create_window=False):
         self.drivers: list[webdriver.Chrome] = []
         self.driver_cnt = driver_cnt
@@ -58,16 +38,23 @@ class SeleniumBase:
     def __del__(self):
         self.quit()
 
-    @staticmethod
-    def driver_path():
-        return os.path.join(os.path.dirname(__file__), 'chromedriver97.exe')
+    @classmethod
+    def driver_path(cls):
+        if cls.ON_WINDOWS:
+            return os.path.join(os.path.dirname(__file__), 'chromedriver97.exe')
+        elif cls.ON_LINUX:
+            return os.path.join(os.path.dirname(__file__), 'chromedriver97_linux')
+
 
     def get_service(self):
+        # logging.basicConfig(filename='debug.log', level=logging.DEBUG,
+        #                     format='%(asctime)s %(levelname)s %(name)s %(message)s')
+        # logger = logging.getLogger(__name__)
         service = Service(
             self.driver_path(),
             # log_path=os.path.join(os.path.dirname(__file__), 'selenium_log')
         )
-        if os.name == 'nt':
+        if self.ON_WINDOWS:
             from subprocess import CREATE_NO_WINDOW
             service.creationflags = CREATE_NO_WINDOW
         return service
@@ -79,3 +66,18 @@ class SeleniumBase:
         options.add_argument('--disable-dev-shm-usage')
         options.add_argument('--no-sandbox')
         return options
+
+
+def retry_webdriver(function: Callable, recursion_limit=1) -> Callable:
+    def wrapper(self, *args):
+        for recursion in range(recursion_limit):
+            if recursion != 0:
+                stopwatch(f'selenium 재시작 {recursion}/{recursion_limit}회')
+            try:
+                response = function(self, *args)
+                return response
+            except (NoSuchElementException, StaleElementReferenceException):
+                if recursion == recursion_limit:
+                    return None
+
+    return wrapper

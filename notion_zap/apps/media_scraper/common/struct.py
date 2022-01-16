@@ -50,11 +50,11 @@ class ReadingPageChecker:
     def mark_as_lib_missing(self):
         self.write('lib_missing')
 
+    def mark_as_manually_filled(self):
+        self.write('manually_filled')
+
     def mark_as_complete(self):
         self.write(self._terminal)
-
-    def mark_as_pass(self):
-        self._finalized = True
 
     def write(self, label):
         if not self._finalized:
