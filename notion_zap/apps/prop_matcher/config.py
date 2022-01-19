@@ -17,7 +17,7 @@ cl_title = Cl(key='📚제목', tag='title')
 cl_timestr = Cl(key='📆환경/시간', tag='timestr', )
 cl_manual_date = Cl(key='📆날짜', tag='manual_date', )
 cl_media_type = Cl(key='📘유형', tag='media_type',
-                   labels={'empty': '🛠️결정 전'})
+                   labels={'empty': '📌결정 전'})
 fr_gcal = Frame([
     Cl(tag='gcal_sync_status', key='📔달력'),
     Cl(tag='gcal_link', key='📔링크'),

@@ -155,7 +155,7 @@ class PeriodMatcherDefault(PeriodMatcherAbs, TableModule):
         return None
 
 
-class PeriodMatcherReadingCreated(PeriodMatcherAbs, TableModule):
+class ReadingsPeriodsCreated(PeriodMatcherAbs, TableModule):
     Tdoms_tar = 'periods_created'
     Tdoms_ref = 'dates_created'
     Trefs_tar = 'periods'

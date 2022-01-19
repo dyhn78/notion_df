@@ -15,21 +15,19 @@ class RegularMatchController:
         self.agents: list[TableModule] = [
             SelfMatcher(self.bs),
 
+            DateTargetFiller(self.bs, False),
             DateofDoublyLinked(self.bs),
             TableDateofReference(self.bs),
             DateMatcherofWritings(self.bs),
             DateMatcherofReadings(self.bs),
-            DateTargetFiller(self.bs, False),
 
+            PeriodTargetFiller(self.bs, False),
             PeriodMatcherofDates(self.bs),
             PeriodMatcherofDoublyLinked(self.bs),
             PeriodMatcherDefault(self.bs),
-            PeriodMatcherReadingCreated(self.bs),
-            PeriodTargetFiller(self.bs, False)
+            ReadingsPeriodsCreated(self.bs),
 
-
-            # GcaltoScheduleMatcher(self.bs),
-            # GcalfromScheduleMatcher(self.bs),
+            ReadingsMediaType(self.bs),
         ]
 
     def execute(self, request_size=0):
