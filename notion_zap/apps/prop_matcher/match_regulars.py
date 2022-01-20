@@ -56,11 +56,12 @@ class RegularEditorBase(EditorBase):
         ft = query.open_filter()
 
         # OR clauses
-        for tag in ['itself', 'periods', 'dates']:
-            try:
-                ft |= manager.relation(tag).is_empty()
-            except KeyError:
-                pass
+        if domain is not self.readings:
+            for tag in ['itself', 'periods', 'dates']:
+                try:
+                    ft |= manager.relation(tag).is_empty()
+                except KeyError:
+                    pass
 
         # OR clauses
         if domain is self.dates:
@@ -74,20 +75,19 @@ class RegularEditorBase(EditorBase):
             ft |= manager.relation('periods_created').is_empty()
             ft |= manager.relation('dates_created').is_empty()
         if domain is self.readings:
-            ft |= manager.select('media_type').is_empty()
+            ft |= manager.relation('itself').is_empty()
 
-        # AND clauses
-        if domain is self.readings:
             ft |= manager.relation('periods_created').is_empty()
             ft |= manager.relation('dates_created').is_empty()
-            # ft &= manager.checkbox('no_exp').is_empty()
-            # is_not_book = manager.checkbox('is_book').is_empty()
-            # has_refs = reduce(
-            #     lambda a, b: a | b,
-            #     [manager.relation(tag).is_not_empty()
-            #      for tag in ['journals', 'schedules']]
-            # )
-            # ft &= (is_not_book | has_refs)
+            ft |= manager.select('media_type').is_empty()
+
+            begin = manager.relation('periods_begin').is_empty()
+            begin &= manager.checkbox('no_exp').is_empty()
+            ft |= begin
+
+            begin = manager.relation('dates_begin').is_empty()
+            begin &= manager.checkbox('no_exp').is_empty()
+            ft |= begin
 
         # ft.preview()
         query.push_filter(ft)
