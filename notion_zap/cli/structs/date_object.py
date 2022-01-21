@@ -19,10 +19,8 @@ class DateObject:
     @staticmethod
     def __add_explicit_tz(date_val: Optional[Union[datetime, date]]) \
             -> Optional[Union[datetime, date]]:
-        # TODO
-        tzinfo = pytz.timezone('Asia/Seoul')
         if isinstance(date_val, datetime):
-            return date_val.astimezone(tzinfo)
+            return date_val.astimezone()
         else:
             return date_val
 
