@@ -1,12 +1,15 @@
 from __future__ import annotations
 import pytz
-from datetime import datetime, date
+import datetime as dt
 from typing import Union, Optional
 
 
+LOCAL_TIMEZONE = pytz.timezone('Asia/Seoul')
+
+
 class DateObject:
-    def __init__(self, start: Optional[Union[datetime, date]] = None,
-                 end: Optional[Union[datetime, date]] = None):
+    def __init__(self, start: Optional[Union[dt.datetime, dt.date]] = None,
+                 end: Optional[Union[dt.datetime, dt.date]] = None):
         """default value of <start> and <end> is None."""
         if start is None and end is not None:
             start, end = end, start
@@ -17,15 +20,15 @@ class DateObject:
         return self.start is None and self.end is None
 
     @staticmethod
-    def __add_explicit_tz(date_val: Optional[Union[datetime, date]]) \
-            -> Optional[Union[datetime, date]]:
-        if isinstance(date_val, datetime):
-            return date_val.astimezone()
+    def __add_explicit_tz(date_val: Optional[Union[dt.datetime, dt.date]]) \
+            -> Optional[Union[dt.datetime, dt.date]]:
+        if isinstance(date_val, dt.datetime):
+            return date_val.astimezone(LOCAL_TIMEZONE)
         else:
             return date_val
 
     @classmethod
-    def from_date_val(cls, date_val: Union[DateObject, datetime, date]):
+    def from_date_val(cls, date_val: Union[DateObject, dt.datetime, dt.date]):
         if isinstance(date_val, cls):
             return date_val
         else:
@@ -54,9 +57,9 @@ class DateObject:
         if not datestring:
             return None
         try:
-            return date.fromisoformat(datestring)
+            return dt.date.fromisoformat(datestring)
         except ValueError:
-            return datetime.fromisoformat(datestring)
+            return dt.datetime.fromisoformat(datestring)
 
     def isoformat(self):
         res = {}
@@ -67,30 +70,30 @@ class DateObject:
         return res
 
     @property
-    def start_date(self) -> Union[date, None]:
+    def start_date(self) -> Union[dt.date, None]:
         return self.to_date(self.start)
 
     @property
-    def end_date(self) -> Union[date, None]:
+    def end_date(self) -> Union[dt.date, None]:
         return self.to_date(self.end)
 
     @property
-    def start_dt(self) -> Union[datetime, None]:
+    def start_dt(self) -> Union[dt.datetime, None]:
         return self.to_datetime(self.start)
 
     @property
-    def end_dt(self) -> Union[datetime, None]:
+    def end_dt(self) -> Union[dt.datetime, None]:
         return self.to_datetime(self.end)
 
     @staticmethod
-    def to_datetime(date_val: Union[datetime, date]):
-        if isinstance(date_val, date):
-            date_val = datetime.combine(date_val, datetime.min.time())
+    def to_datetime(date_val: Union[dt.datetime, dt.date]):
+        if isinstance(date_val, dt.date):
+            date_val = dt.datetime.combine(date_val, dt.datetime.min.time())
         return date_val
 
     @staticmethod
-    def to_date(date_val: Union[datetime, date]):
-        if isinstance(date_val, datetime):
+    def to_date(date_val: Union[dt.datetime, dt.date]):
+        if isinstance(date_val, dt.datetime):
             date_val = date_val.date()
         return date_val
 
@@ -100,20 +103,24 @@ class DateObject:
     def __str__(self):
         return '{' + f"start: {str(self.start)}, end: {str(self.end)}" + '}'
 
-    def __gt__(self, other: Union[DateObject, datetime, date]):
+    def __gt__(self, other: Union[DateObject, dt.datetime, dt.date]):
         if isinstance(other, DateObject):
             return (self.start, self.end) > (other.start, other.end)
         else:
             return self.start > self.to_datetime(other)
 
-    def __eq__(self, other: Union[DateObject, datetime, date]):
+    def __eq__(self, other: Union[DateObject, dt.datetime, dt.date]):
         if isinstance(other, DateObject):
             return (self.start, self.end) == (other.start, other.end)
         else:
             return self.start == self.to_datetime(other)
 
-    def __lt__(self, other: Union[DateObject, datetime, date]):
+    def __lt__(self, other: Union[DateObject, dt.datetime, dt.date]):
         if isinstance(other, DateObject):
             return (self.start, self.end) < (other.start, other.end)
         else:
             return self.start < self.to_datetime(other)
+
+
+dt.date = DateObject(dt.datetime(2021, 1, 13, 8, 30))
+print(dt.datetime.now().tzname())
