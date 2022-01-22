@@ -120,7 +120,3 @@ class DateObject:
             return (self.start, self.end) < (other.start, other.end)
         else:
             return self.start < self.to_datetime(other)
-
-
-dt.date = DateObject(dt.datetime(2021, 1, 13, 8, 30))
-print(dt.datetime.now().tzname())
