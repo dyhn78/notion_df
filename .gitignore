@@ -7,7 +7,7 @@
 /notion_zap/**/credentials.json
 /notion_zap/**/token.json
 debug.log
-
+__pycache__/
 
 # User-specific stuff
 .idea/**/workspace.xml
