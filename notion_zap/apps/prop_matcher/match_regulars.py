@@ -70,7 +70,7 @@ class RegularEditorBase(EditorBase):
             # sync_needed = manager.checkbox('sync_status').is_empty()
             # before_today = manual_date.on_or_before(dt.date.today())
             # ft |= (sync_needed & before_today)
-        if domain in [self.journals, self.schedules]:
+        if domain in [self.checks, self.journals]:
             # TODO : gcal_sync_status
             ft |= manager.relation('periods_created').is_empty()
             ft |= manager.relation('dates_created').is_empty()

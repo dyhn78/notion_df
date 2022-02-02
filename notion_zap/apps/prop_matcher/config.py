@@ -83,7 +83,7 @@ cl_people = Cl(key='🟠인물', tag='people', )
 cl_locations = Cl(key='🧡장소', tag='locations', )
 
 ic_journals = '🟣'
-cl_journals = Cl(key=ic_journals + '일지', tag='journals', )
+cl_journals = Cl(key=ic_journals + '일지', tag='checks', )
 cl_journals_context = Cl(key=ic_journals + '맥락', tag='journals_context', )
 cl_journals_induced = Cl(key=ic_journals + '언급', tag='journals_induced', )
 
@@ -92,7 +92,7 @@ cl_writings = Cl(key=ic_writings + '쓰기', tag='writings', )
 cl_writings_induced = Cl(key=ic_writings + '언급', tag='writings_induced', )
 
 ic_schedules = '🔵'
-cl_schedules = Cl(key=ic_schedules + '계획', tag='schedules', )
+cl_schedules = Cl(key=ic_schedules + '계획', tag='journals', )
 cl_schedules_deadline = Cl(key=ic_schedules + '기한', tag='schedules_deadline', )
 
 ic_tasks = '💙'
@@ -143,6 +143,19 @@ class MatchFrames:
         [
             cl_title, cl_itself, cl_timestr,
 
+            cl_journals, cl_tasks,
+
+            cl_projects,
+            cl_topics,
+            cl_channels,
+            cl_readings,
+        ]
+    )
+    CHECKS = Frame(
+        fr_dates_auto, fr_gcal, fr_dates_actual, fr_dates_created,
+        [
+            cl_title, cl_itself, cl_timestr,
+
             cl_writings_induced,
             cl_schedules, cl_tasks,
 
@@ -161,19 +174,6 @@ class MatchFrames:
             cl_schedules,
 
             cl_projects_target,
-            cl_topics,
-            cl_channels,
-            cl_readings,
-        ]
-    )
-    SCHEDULES = Frame(
-        fr_dates_auto, fr_gcal, fr_dates_deadline, fr_dates_created,
-        [
-            cl_title, cl_itself, cl_timestr,
-
-            cl_journals, cl_tasks,
-
-            cl_projects,
             cl_topics,
             cl_channels,
             cl_readings,

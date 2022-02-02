@@ -16,10 +16,10 @@ class EditorBase:
                                                 frame=MatchFrames.DATES)
         self.journals = self.root.objects.database(*DatabaseInfo.JOURNALS,
                                                    frame=MatchFrames.JOURNALS)
+        self.checks = self.root.objects.database(*DatabaseInfo.CHECKS,
+                                                 frame=MatchFrames.CHECKS)
         self.writings = self.root.objects.database(*DatabaseInfo.WRITINGS,
                                                    frame=MatchFrames.WRITINGS)
-        self.schedules = self.root.objects.database(*DatabaseInfo.SCHEDULES,
-                                                    frame=MatchFrames.SCHEDULES)
         self.tasks = self.root.objects.database(*DatabaseInfo.TASKS,
                                                 frame=MatchFrames.TASKS)
         self.channels = self.root.objects.database(*DatabaseInfo.CHANNELS,

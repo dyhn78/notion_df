@@ -15,7 +15,7 @@ from ..common.struct import EditorModule, TableModule, RowModule
 
 
 class DateMatcherAbs(EditorModule, metaclass=ABCMeta):
-    Tdoms_ref = 'journals'
+    Tdoms_ref = 'checks'
     Tdoms_date = 'auto_datetime'
     T_tar = 'dates'
     Ttars_idx = 'title'
@@ -24,7 +24,7 @@ class DateMatcherAbs(EditorModule, metaclass=ABCMeta):
     def __init__(self, bs):
         super().__init__(bs)
         self.target: Database = self.bs.dates
-        self.reference = self.bs.journals
+        self.reference = self.bs.checks
         self.target_by_idx = self.target.rows.index_by_tag(self.Ttars_idx)
         self.period_resetter = PeriodResetter(bs)
 
@@ -77,7 +77,7 @@ class DateofDoublyLinked(DateMatcherAbs, TableModule):
 
     def __init__(self, bs):
         super().__init__(bs)
-        self.domains = [self.bs.journals, self.bs.schedules]
+        self.domains = [self.bs.checks, self.bs.journals]
 
     def __call__(self):
         for domain in self.domains:
@@ -167,13 +167,13 @@ class RowDateofEarliest(DateMatcherAbs, RowModule):
 class DateMatcherofReadings(DateMatcherAbs, TableModule):
     Tdoms_tar1 = 'dates_created'
     Tdoms_tar2 = 'dates_begin'
-    Tdoms_ref2 = 'schedules'
+    Tdoms_ref2 = 'journals'
     Tref2s_tar2 = 'dates'
 
     def __init__(self, bs):
         super().__init__(bs)
         self.domain = self.bs.readings
-        self.reference2 = self.bs.schedules
+        self.reference2 = self.bs.journals
         self.match_dates_created = DatefromAutoDate(bs, self.Tdoms_tar1)
         self.match_earliest1 = RowDateofEarliest(
             bs, self.reference, self.Tdoms_ref, self.T_tar)
@@ -210,7 +210,7 @@ class DateMatcherofJournalsDepr(DateMatcherAbs):
 
     def __init__(self, bs):
         super().__init__(bs)
-        self.domains = [self.bs.journals]
+        self.domains = [self.bs.checks]
 
     def execute(self):
         for domain in self.domains:
@@ -236,10 +236,10 @@ class DateDomainFillerDepr(DateMatcherAbs):
         super().__init__(bs)
         self.disable_overwrite = disable_overwrite
         self.domains_type1 = [
-            self.bs.journals, self.bs.writings,
+            self.bs.checks, self.bs.writings,
         ]
         self.domains_type2 = [
-            self.bs.tasks, self.bs.schedules,
+            self.bs.tasks, self.bs.journals,
         ]
 
     def execute(self):

@@ -103,7 +103,7 @@ class PeriodMatcherofDoublyLinked(PeriodMatcherAbs, TableModule):
     def __init__(self, bs):
         super().__init__(bs)
         self.reference = self.bs.dates
-        self.domains = [self.bs.journals, self.bs.schedules]
+        self.domains = [self.bs.checks, self.bs.journals]
 
     def __call__(self):
         for domain in self.domains:

@@ -15,8 +15,8 @@ class SyncResolveController:
     def __init__(self, date_range=0):
         self.root = editors.Root(print_response_heads=5)
         self.date_range = date_range
-        self.marks = self.root.objects.database(*DatabaseInfo.JOURNALS,
-                                                MatchFrames.JOURNALS)
+        self.marks = self.root.objects.database(*DatabaseInfo.CHECKS,
+                                                MatchFrames.CHECKS)
 
     def execute(self):
         self.make_query()

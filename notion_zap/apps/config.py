@@ -2,9 +2,9 @@ class DatabaseInfo:
     """(database_alias, database_id)"""
     PERIODS = ('기간', 'd020b399cf5947a59d11a0b9e0ea45d0')
     DATES = ('날짜', '961d1ca0a3d24a46b838ba85e710f18d')
-    JOURNALS = ('일지', 'c8d46c01d6c941a9bf8df5d115a05f03')
+    JOURNALS = ('일지', 'c226cffe6cf84ab996bbc384bf26bf1d')
+    CHECKS = ('진도', 'c8d46c01d6c941a9bf8df5d115a05f03')
     WRITINGS = ('쓰기', '069bbebd632f4a6ea3044575a064cf0f')
-    SCHEDULES = ('계획', 'c226cffe6cf84ab996bbc384bf26bf1d')
     TASKS = ('요점', 'e8782fe4e1a34c9d846d57b01a370327')
 
     PROJECTS = ('실행', 'eb2f09a1de41412e8b2357bc04f26e74')
