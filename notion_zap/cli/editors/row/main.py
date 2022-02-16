@@ -80,7 +80,13 @@ class PageRow(PageBlock, PageRowPropertyWriter):
 
     def read_key(self, prop_key: str):
         self._assert_string_key(prop_key)
-        value = self._read_plain[prop_key]
+        try:
+            value = self._read_plain[prop_key]
+        except KeyError as e:
+            # TODO
+            from pprint import pprint
+            pprint(self._read_plain)
+            raise e
         return value
 
     def richly_read_key(self, prop_key: str):
