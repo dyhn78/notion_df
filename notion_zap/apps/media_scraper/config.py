@@ -5,7 +5,7 @@ READING_FRAME = PropertyFrame([
        marks_on_value={
            'book': ['📖단행본', '☕연속간행물', '✒학습자료']
        }),
-    Cl(key='📘도서<-유형', tag='is_book'),
+    Cl(key='📓경험 없음', tag='is_book'),
     Cl(key='🏁준비', tag='edit_status',
        labels={
            'append': '📥본문(비파괴)/위치',
