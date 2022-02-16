@@ -1,14 +1,6 @@
 from notion_zap.cli.structs import \
     PropertyFrame as Frame, PropertyColumn as Cl
 
-"""
-날짜 관련된 formula 속성의 값은
-그리니치 시간대를 기준으로 그때그때 계산하는 것 같다.
-노션 클라이언트에 뜨는 값과 API로 받아오는 값이 다르다.
-웬만하면 노션 날짜 수식을 믿지 말고, raw data를 가져와서
-이쪽 파이썬 코드에서 처리하는 식으로 움직이자.
-"""
-
 
 class EMOJI:
     RED_CIRCLE = '🔴'
@@ -29,6 +21,19 @@ class EMOJI:
     BOOKSTACK = '📚'
     GREEN_BOOK = '📗'
     ORANGE_BOOK = '📙'
+
+
+class PREFIX:
+    PROJECTS = EMOJI.RED_CIRCLE
+    TOPICS = EMOJI.RED_HEART
+    CHANNELS = EMOJI.YELLOW_CIRCLE
+    READINGS = EMOJI.YELLOW_HEART
+    PEOPLE = EMOJI.ORANGE_CIRCLE
+    LOCATIONS = EMOJI.ORANGE_HEART
+    JOURNALS = EMOJI.PURPLE_CIRCLE
+    TASKS = EMOJI.PURPLE_HEART
+    CHECKS = EMOJI.BLUE_CIRCLE
+    WRITINGS = EMOJI.BLUE_HEART
 
 
 ########################################################
@@ -82,20 +87,6 @@ fr_dates_created = Frame([
     Cl(key=ic_periods + '생성', tag='periods_created', ),
     Cl(key=ic_dates + '생성', tag='dates_created', )
 ])
-
-
-class PREFIX:
-    PROJECTS = EMOJI.RED_CIRCLE
-    TOPICS = EMOJI.RED_HEART
-    CHANNELS = EMOJI.YELLOW_CIRCLE
-    READINGS = EMOJI.YELLOW_HEART
-    PEOPLE = EMOJI.ORANGE_CIRCLE
-    LOCATIONS = EMOJI.ORANGE_HEART
-    JOURNALS = EMOJI.PURPLE_CIRCLE
-    TASKS = EMOJI.PURPLE_HEART
-    CHECKS = EMOJI.BLUE_CIRCLE
-    WRITINGS = EMOJI.BLUE_HEART
-
 
 cl_projects = Cl(key=PREFIX.PROJECTS + '실행', tag='projects', )
 cl_projects_target = Cl(key=PREFIX.PROJECTS + '구성', tags=['projects_target', 'projects'])
