@@ -1,7 +1,9 @@
-from notion_zap.cli import editors
+from collections import Hashable
+
+from notion_zap.cli.editors import Database, PageRow
 
 
-def extend_prop(dom: editors.PageRow, prop_tag: str, values: list[str]):
+def extend_prop(dom: PageRow, prop_tag: str, values: list[str]):
     old_values = dom.read_tag(prop_tag)
     changed = False
     for value in values:
@@ -14,7 +16,7 @@ def extend_prop(dom: editors.PageRow, prop_tag: str, values: list[str]):
 
 
 def fetch_unique_page_of_relation(
-        dom: editors.PageRow, target: editors.Database, to_tar: str):
+        dom: PageRow, target: Database, to_tar: Hashable):
     tar_ids = dom.read_tag(to_tar)
     for tar_id in tar_ids:
         if tar := target.rows.fetch_page(tar_id):
@@ -23,8 +25,8 @@ def fetch_unique_page_of_relation(
 
 
 def fetch_all_pages_of_relation(
-        dom: editors.PageRow, target: editors.Database,
-        to_tar: str) -> list[editors.PageRow]:
+        dom: PageRow, target: Database,
+        to_tar: Hashable) -> list[PageRow]:
     tar_ids = dom.read_tag(to_tar)
     res = []
     for tar_id in tar_ids:
@@ -34,7 +36,7 @@ def fetch_all_pages_of_relation(
 
 
 def query_unique_page_by_idx(
-        database: editors.Database, idx, idx_tag: str,
+        database: Database, idx, idx_tag: str,
         prop_type='text'):
     query = database.rows.open_query()
     maker = query.filter_manager_by_tags(idx_tag, prop_type)

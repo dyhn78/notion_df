@@ -17,7 +17,7 @@ class CalendarController:
 
     def execute(self):
         self.bs.fetch_all()
-        agents: list[TableModule] = [
+        agents: list[TableModuleDepr] = [
             DateTargetFiller(self.bs, self.disable_overwrite,
                              self.fetch_year_range),
             PeriodTargetFiller(self.bs, self.disable_overwrite,
@@ -45,7 +45,7 @@ class CalendarEditorBase(EditorBase):
     def fetch_all(self):
         query = self.dates.open_query()
         ft = query.open_filter()
-        frame = query.filter_manager_by_tags.date('manual_date')
+        frame = query.filter_manager_by_tags.date('dateval_manual')
         if self.empties:
             ft |= frame.is_empty()
         if self.year_range:

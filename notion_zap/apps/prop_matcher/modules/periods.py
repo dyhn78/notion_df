@@ -3,7 +3,7 @@ import datetime as dt
 
 from notion_zap.cli import editors
 from notion_zap.cli.structs import DateObject
-from ..common.struct import EditorModule, TableModule, RowModule
+from ..common.struct import ModuleDepr, TableModuleDepr, BasedRowFunction
 from ..common.date_handler import DateHandler
 from ..common.helpers import (
     fetch_unique_page_of_relation,
@@ -11,7 +11,7 @@ from ..common.helpers import (
 )
 
 
-class PeriodMatcherAbs(EditorModule, metaclass=ABCMeta):
+class PeriodMatcherAbs(ModuleDepr, metaclass=ABCMeta):
     T_tar = 'periods'
     Ttars_idx = 'title'
     Ttars_date = 'manual_date_range'
@@ -69,13 +69,13 @@ class PeriodMatcherAbs(EditorModule, metaclass=ABCMeta):
             self.bs.root.disable_overwrite = False
 
 
-class PeriodResetter(PeriodMatcherAbs, RowModule):
-    def __call__(self, dom: editors.PageRow):
-        dom.write_relation(tag=self.T_tar, value=[])
+class PeriodResetter(PeriodMatcherAbs, BasedRowFunction):
+    def __call__(self, row: editors.PageRow):
+        row.write_relation(tag=self.T_tar, value=[])
 
 
-class PeriodMatcherofDates(PeriodMatcherAbs, TableModule):
-    Tdoms_date = 'manual_date'
+class PeriodMatcherofDates(PeriodMatcherAbs, TableModuleDepr):
+    Tdoms_date = 'dateval_manual'
 
     def __init__(self, bs):
         super().__init__(bs)
@@ -94,7 +94,7 @@ class PeriodMatcherofDates(PeriodMatcherAbs, TableModule):
         return self.find_or_create_by_date_val(dom_idx.start_date)
 
 
-class PeriodMatcherofDoublyLinked(PeriodMatcherAbs, TableModule):
+class PeriodMatcherofDoublyLinked(PeriodMatcherAbs, TableModuleDepr):
     Tdoms_ref1 = 'dates'
     Tdoms_tar1 = 'periods'
     Tdoms_ref2 = 'dates_created'
@@ -130,7 +130,7 @@ class PeriodMatcherofDoublyLinked(PeriodMatcherAbs, TableModule):
         return None
 
 
-class PeriodMatcherDefault(PeriodMatcherAbs, TableModule):
+class PeriodMatcherDefault(PeriodMatcherAbs, TableModuleDepr):
     Tdoms_ref = 'dates'
 
     def __init__(self, bs):
@@ -155,7 +155,7 @@ class PeriodMatcherDefault(PeriodMatcherAbs, TableModule):
         return None
 
 
-class ReadingsPeriodsCreated(PeriodMatcherAbs, TableModule):
+class ReadingsPeriodsCreated(PeriodMatcherAbs, TableModuleDepr):
     Tdoms_tar = 'periods_created'
     Tdoms_ref = 'dates_created'
     Trefs_tar = 'periods'

@@ -3,6 +3,15 @@ from notion_zap.cli.structs import \
 
 
 class EMOJI:
+    CYCLE = '🔁'
+    CHECKER_FLAG = '🏁'
+
+    YARN = '🧶'
+    THREAD = '🧵'
+    CALENDAR = '📆'
+    BIG_CALENDAR = '📅'
+    TIMER = '⏲️'  # 가끔 Notion 환경에 뒤 공백이 짤려 삽입된 경우가 있다.
+
     RED_CIRCLE = '🔴'
     RED_HEART = '❤'
     ORANGE_HEART = '🟠'
@@ -14,213 +23,242 @@ class EMOJI:
     BLUE_CIRCLE = '🔵'
     BLUE_HEART = '💙'
 
-    # 가끔 뒤 공백이 짤리는 경우가 있다.
-    # 인코딩 상태에서는 확인 불가능하니 아래 문자열을 그대로 붙여넣어야 한다.
-    TIMER = '⏲️'
-
     BOOKSTACK = '📚'
     GREEN_BOOK = '📗'
     ORANGE_BOOK = '📙'
+    BLUE_BOOK = '📘'
+    BROWN_NOTEBOOK = '📔'
+    YELLOW_NOTEBOOK = '📒'
+    BLACK_NOTEBOOK = '📓'
 
 
 class PREFIX:
+    PERIODS = EMOJI.YARN
+    DATES = EMOJI.THREAD
+    JOURNALS = EMOJI.PURPLE_CIRCLE
+    CHECKS = EMOJI.PURPLE_HEART
+    TOPICS = EMOJI.BLUE_CIRCLE
+    TASKS = EMOJI.BLUE_HEART
+    WRITINGS = EMOJI.BLUE_HEART
+
     PROJECTS = EMOJI.RED_CIRCLE
-    TOPICS = EMOJI.RED_HEART
+    DOMAINS = EMOJI.RED_HEART
     CHANNELS = EMOJI.YELLOW_CIRCLE
     READINGS = EMOJI.YELLOW_HEART
     PEOPLE = EMOJI.ORANGE_CIRCLE
     LOCATIONS = EMOJI.ORANGE_HEART
-    JOURNALS = EMOJI.PURPLE_CIRCLE
-    TASKS = EMOJI.PURPLE_HEART
-    CHECKS = EMOJI.BLUE_CIRCLE
-    WRITINGS = EMOJI.BLUE_HEART
 
 
-########################################################
-###### basic properties ################################
-########################################################
-cl_generic_title = Cl(key=EMOJI.ORANGE_BOOK + '제목', tag='title')
-cl_datetime_title = Cl(key=EMOJI.GREEN_BOOK + '제목', tag='title')
-cl_media_title = Cl(key=EMOJI.BOOKSTACK + '제목', tag='title')
+# basic properties
 
-cl_no_exp = Cl(tag='no_exp', key='📓경험 없음', )
+class Columns:
+    title_generic = Cl(key=EMOJI.ORANGE_BOOK + '제목', tag='title')
+    title_datetime = Cl(key=EMOJI.GREEN_BOOK + '제목', tag='title')
+    title_metadata = Cl(key=EMOJI.BOOKSTACK + '제목', tag='title')
 
-cl_media_type = Cl(key='📘유형', tag='media_type',
-                   labels={'empty': '📌결정 전'})
-cl_media_type_book = Cl(tag='is_book', key='📔도서류', )
+    no_exp = Cl(tag='no_exp', key=EMOJI.BLACK_NOTEBOOK + '경험 없음', )
 
-cl_timestr = Cl(key='📆환경/시간', tag='timestr', )
-cl_manual_date = Cl(key='📆날짜', tag='manual_date', )
+    media_type = Cl(key=EMOJI.BLUE_BOOK + '유형', tag='media_type',
+                    labels={'empty': '📌결정 전'})
+    media_type_book = Cl(tag='is_book', key='📔도서류', )
 
-fr_gcal = Frame([
-    Cl(tag='gcal_sync_status', key='📔달력'),
-    Cl(tag='gcal_link', key='📔링크'),
-    Cl(tag='gcal_id', key='📔id'),
-])
+    timestr = Cl(key=EMOJI.CALENDAR + '시간', tag='timestr', )
+    dateval_manual = Cl(key=EMOJI.CALENDAR + '날짜', tag='dateval_manual', )
 
-fr_dates_auto = Frame([
-    Cl(key=EMOJI.TIMER + '날짜', tag='auto_datetime', ),
-    Cl(key=EMOJI.TIMER + '날짜/D', tag='auto_date', ),
-])
-########################################################
-###### relational properties ###########################
-########################################################
-cl_itself = Cl(key='🔁재귀', tag='itself', )
+    # relational properties
+    itself = Cl(key=EMOJI.CYCLE + '재귀', tag='itself', )
 
-ic_periods = '🧶'
-ic_dates = '🧵'
-cl_periods = Cl(key=ic_periods + '기간', tag='periods', )
-cl_dates = Cl(key=ic_dates + '날짜', tag='dates', )
-fr_dates_actual = Frame([
-    cl_periods,
-    cl_dates
-])
-fr_dates_deadline = Frame([
-    cl_periods_dl := Cl(key=ic_periods + '기한', tags=['periods_deadline', 'periods']),
-    cl_dates_dl := Cl(key=ic_dates + '기한', tags=['dates_deadline', 'dates']),
-])
-fr_dates_begin = Frame([
-    Cl(key=ic_periods + '시작', tags=['periods_begin', 'periods']),
-    Cl(key=ic_dates + '시작', tags=['dates_begin', 'dates']),
-])
-fr_dates_created = Frame([
-    Cl(key=ic_periods + '생성', tag='periods_created', ),
-    Cl(key=ic_dates + '생성', tag='dates_created', )
-])
+    periods = Cl(key=EMOJI.YARN + '기간', tag='periods', )
+    dates = Cl(key=EMOJI.THREAD + '날짜', tag='dates', )
 
-cl_projects = Cl(key=PREFIX.PROJECTS + '실행', tag='projects', )
-cl_projects_target = Cl(key=PREFIX.PROJECTS + '구성', tags=['projects_target', 'projects'])
-cl_projects_perspective = Cl(key=PREFIX.PROJECTS + '관점', tag='projects_context', )
-cl_projects_deadline = Cl(key=PREFIX.PROJECTS + '기한', tag='projects_deadline', )
-cl_projects_total = Cl(key=PREFIX.PROJECTS + '종합', tag='projects_total', )
+    journals = Cl(key=PREFIX.JOURNALS + '일지', tag='checks', )
+    journals_mentioned = Cl(key=PREFIX.JOURNALS + '언급', tag='journals_induced', )
 
-cl_topics = Cl(key=PREFIX.TOPICS + '꼭지', tag='topics', )
-cl_topics_context = Cl(key=PREFIX.TOPICS + '맥락', tag='topics_context', )
-cl_topics_total = Cl(key=PREFIX.TOPICS + '종합', tag='topics_total', )
+    checks = Cl(key=PREFIX.CHECKS + '진도', tag='journals', )
 
-cl_channels = Cl(key=PREFIX.CHANNELS + '채널', tag='channels', )
-cl_channels_context = Cl(key=PREFIX.CHANNELS + '맥락', tag='channels_context', )
-cl_channels_total = Cl(key=PREFIX.CHANNELS + '종합', tag='channels_total', )
+    topics = Cl(key=PREFIX.TOPICS + '전개', tag='topics', )
+    tasks = Cl(key=PREFIX.TASKS + '요점', tag='tasks', )
 
-cl_readings = Cl(key=PREFIX.READINGS + '읽기', tag='readings', )
-cl_readings_context = Cl(key=PREFIX.READINGS + '맥락', tag='readings_context', )
-cl_readings_begin = Cl(key=PREFIX.READINGS + '시작', tag='readings_begin')
-cl_readings_deadline = Cl(key=PREFIX.READINGS + '기한', tag='readings_deadline', )
-cl_readings_total = Cl(key=PREFIX.READINGS + '종합', tag='readings_total', )
+    writings = Cl(key=PREFIX.WRITINGS + '쓰기', tag='writings', )
+    writings_mentioned = Cl(key=PREFIX.WRITINGS + '언급', tag='writings_induced', )
 
-cl_people = Cl(key=PREFIX.PEOPLE + '인물', tag='people', )
+    projects = Cl(key=PREFIX.PROJECTS + '실행', tag='projects', )
+    projects_main = Cl(key=PREFIX.PROJECTS + '중심', tags=['projects_main', 'projects'])
+    projects_side = Cl(key=PREFIX.PROJECTS + '주변', tag='projects_side')
 
-cl_locations = Cl(key=PREFIX.LOCATIONS + '🧡장소', tag='locations', )
+    # deprecated?
+    projects_target = Cl(key=PREFIX.PROJECTS + '구성', tags=['projects_target', 'projects'])
+    projects_perspective = Cl(key=PREFIX.PROJECTS + '관점', tag='projects_context', )
+    projects_deadline = Cl(key=PREFIX.PROJECTS + '기한', tag='projects_deadline', )
+    projects_total = Cl(key=PREFIX.PROJECTS + '종합', tag='projects_total', )
+    #
 
-cl_journals = Cl(key=PREFIX.JOURNALS + '일지', tag='checks', )
-cl_journals_mentioned = Cl(key=PREFIX.JOURNALS + '언급', tag='journals_induced', )
+    domains = Cl(key=PREFIX.DOMAINS + '꼭지', tag='domains', )
+    domains_context = Cl(key=PREFIX.DOMAINS + '맥락', tag='domains_context', )
+    domains_total = Cl(key=PREFIX.DOMAINS + '종합', tag='domains_total', )
 
-cl_tasks = Cl(key=PREFIX.TASKS + '요점', tag='tasks', )
+    channels = Cl(key=PREFIX.CHANNELS + '채널', tag='channels', )
+    channels_context = Cl(key=PREFIX.CHANNELS + '맥락', tag='channels_context', )
+    channels_total = Cl(key=PREFIX.CHANNELS + '종합', tag='channels_total', )
 
-cl_checks = Cl(key=PREFIX.CHECKS + '진도', tag='journals', )
+    readings = Cl(key=PREFIX.READINGS + '읽기', tag='readings', )
+    readings_context = Cl(key=PREFIX.READINGS + '맥락', tag='readings_context', )
+    readings_begin = Cl(key=PREFIX.READINGS + '시작', tag='readings_begin')
+    readings_deadline = Cl(key=PREFIX.READINGS + '기한', tag='readings_deadline', )
+    readings_total = Cl(key=PREFIX.READINGS + '종합', tag='readings_total', )
 
-cl_writings = Cl(key=PREFIX.WRITINGS + '쓰기', tag='writings', )
-cl_writings_mentioned = Cl(key=PREFIX.WRITINGS + '언급', tag='writings_induced', )
+    people = Cl(key=PREFIX.PEOPLE + '인물', tag='people', )
+
+    locations = Cl(key=PREFIX.LOCATIONS + '장소', tag='locations', )
 
 
-class MatchFrames:
+class SubFrames:
+    gcal = Frame([
+        Cl(tag='gcal_sync_status', key='📔달력'),
+        Cl(tag='gcal_link', key=EMOJI.YELLOW_NOTEBOOK + '링크'),
+        Cl(tag='gcal_id', key=EMOJI.YELLOW_NOTEBOOK + 'id'),
+    ])
+
+    dateval_created = Frame([
+        Cl(key=EMOJI.TIMER + '날짜', tag='auto_datetime', ),
+        Cl(key=EMOJI.TIMER + '날짜/D', tag='auto_date', ),
+    ])
+
+    dates = Frame([
+        Columns.periods,
+        Columns.dates
+    ])
+    dates_deadline = Frame([
+        Cl(key=EMOJI.YARN + '기한', tags=['periods_deadline', 'periods']),
+        Cl(key=EMOJI.THREAD + '기한', tags=['dates_deadline', 'dates']),
+    ])
+    dates_begin = Frame([
+        Cl(key=EMOJI.YARN + '시작', tags=['periods_begin', 'periods']),
+        Cl(key=EMOJI.THREAD + '시작', tags=['dates_begin', 'dates']),
+    ])
+    dates_created = Frame([
+        Cl(key=EMOJI.YARN + '생성', tag='periods_created', ),
+        Cl(key=EMOJI.THREAD + '생성', tag='dates_created', )
+    ])
+
+
+class Frames:
     PERIODS = Frame(
         [
-            cl_datetime_title,
-            Cl(key='📅날짜 범위', tag='manual_date_range'),
+            Columns.title_datetime,
+            Cl(key=EMOJI.BIG_CALENDAR + '날짜 범위', tag='manual_date_range'),
 
-            cl_itself,
+            Columns.itself,
         ]
     )
     DATES = Frame(
         [
-            cl_datetime_title, cl_manual_date,
-            Cl(key='🏁동기화', tag='sync_status'),
+            Columns.title_datetime, Columns.dateval_manual,
+            Cl(key=EMOJI.CHECKER_FLAG + '동기화', tag='sync_status'),
 
-            cl_itself,
-            cl_periods,
-            cl_journals,
-            cl_locations, cl_channels,
+            Columns.itself,
+            Columns.periods,
+            Columns.journals,
+            Columns.locations, Columns.channels,
         ]
     )
 
     JOURNALS = Frame(
-        fr_dates_auto, fr_dates_actual, fr_dates_created,
-        fr_gcal,
+        SubFrames.dateval_created, SubFrames.dates, SubFrames.dates_created,
+        SubFrames.gcal,
         [
-            cl_generic_title,
-            cl_timestr,
+            Columns.title_generic,
+            Columns.timestr,
 
-            cl_itself,
-            cl_projects, cl_projects_perspective, cl_topics,
-            cl_channels, cl_readings,
+            Columns.itself,
+            Columns.projects_main, Columns.projects_side, Columns.domains,
+            Columns.channels, Columns.readings,
 
-            cl_tasks,
-            cl_checks,
-        ]
-    )
-    TASKS = Frame(
-        fr_dates_auto, fr_dates_actual,
-        [
-            cl_generic_title,
-            cl_timestr,
-
-            cl_itself,
-            cl_projects, cl_topics,
-            cl_people, cl_locations,
-            cl_channels, cl_readings,
-            cl_journals,
+            Columns.topics, Columns.writings,
         ]
     )
     CHECKS = Frame(
-        fr_dates_auto, fr_dates_actual, fr_dates_created,
+        SubFrames.dateval_created, SubFrames.dates, SubFrames.dates_created,
         [
-            cl_generic_title,
-            cl_timestr,
+            Columns.title_generic,
+            Columns.timestr,
 
-            cl_itself,
-            cl_projects,
-            cl_readings, cl_channels,
-            cl_journals,
-            cl_writings,
+            Columns.itself,
+            Columns.projects,
+            Columns.readings, Columns.channels,
+            Columns.journals,
+            Columns.writings,
+        ]
+    )
+    TOPICS = Frame(
+        SubFrames.dateval_created, SubFrames.dates,
+        [
+            Columns.title_generic,
+            Columns.timestr,
+
+            Columns.itself,
+            Columns.projects, Columns.domains,
+            Columns.channels, Columns.readings,
+            Columns.writings, Columns.tasks,
+
+            Columns.journals, Columns.checks,
+        ]
+    )
+    TASKS = Frame(
+        SubFrames.dateval_created, SubFrames.dates,
+        [
+            Columns.title_generic,
+            Columns.timestr,
+
+            Columns.itself,
+            Columns.projects, Columns.domains,
+            Columns.people, Columns.locations,
+            Columns.channels, Columns.readings,
+            Columns.journals,
         ]
     )
     WRITINGS = Frame(
-        fr_dates_auto, fr_dates_actual,
+        SubFrames.dateval_created, SubFrames.dates,
         [
-            cl_generic_title,
-            cl_timestr,
+            Columns.title_generic,
+            Columns.timestr,
 
-            cl_itself,
-            cl_projects_target, cl_projects_perspective, cl_topics,
-            cl_people, cl_locations,
-            cl_channels, cl_readings,
-            cl_journals,
+            Columns.itself,
+            Columns.projects_target, Columns.projects_perspective, Columns.domains,
+            Columns.people, Columns.locations,
+            Columns.channels, Columns.readings,
+            Columns.journals,
 
-            cl_checks,
+            Columns.checks,
         ]
     )
 
+    PROJECTS = Frame(
+        SubFrames.dateval_created,
+        [
+
+        ]
+    )
     CHANNELS = Frame(
         [
-            cl_media_title,
-            cl_media_type,
-            cl_media_type_book,
+            Columns.title_metadata,
+            Columns.media_type,
+            Columns.media_type_book,
         ]
     )
     READINGS = Frame(
-        fr_dates_auto, fr_dates_begin, fr_dates_created,
+        SubFrames.dateval_created, SubFrames.dates_begin, SubFrames.dates_created,
         [
-            cl_media_title,
-            cl_media_type,
-            cl_media_type_book,
-            cl_no_exp,
+            Columns.title_metadata,
+            Columns.media_type,
+            Columns.media_type_book,
+            Columns.no_exp,
 
-            cl_itself,
-            cl_projects, cl_topics,
-            cl_channels,
+            Columns.itself,
+            Columns.projects, Columns.domains,
+            Columns.channels,
 
-            cl_journals, cl_tasks,
-            cl_checks, cl_writings,
+            Columns.journals, Columns.tasks,
+            Columns.checks, Columns.writings,
         ]
     )

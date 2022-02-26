@@ -1,7 +1,7 @@
-from ..common.struct import TableModule
+from ..common.struct import TableModuleDepr
 
 
-class SelfMatcher(TableModule):
+class SelfMatcher(TableModuleDepr):
     def __init__(self, bs):
         super().__init__(bs)
         self.domains = [

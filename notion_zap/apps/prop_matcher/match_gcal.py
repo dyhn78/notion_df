@@ -11,7 +11,7 @@ class GcalMatchController:
 
     def execute(self):
         self.bs.fetch()
-        agents: list[TableModule] = [
+        agents: list[TableModuleDepr] = [
             GcaltoScheduleMatcher(self.bs),
             GcalfromScheduleMatcher(self.bs),
         ]

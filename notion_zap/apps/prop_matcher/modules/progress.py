@@ -3,12 +3,12 @@ from typing import Optional
 
 from notion_zap.cli import editors
 from notion_zap.cli.structs import DateObject
-from ..common.struct import TableModule
+from ..common.struct import TableModuleDepr
 from ..common.helpers import extend_prop, fetch_all_pages_of_relation, \
     fetch_unique_page_of_relation
 
 
-class ReadingsMediaType(TableModule):
+class ReadingsMediaType(TableModuleDepr):
     Tmedia_type = 'media_type'
     T_tar = 'channels'
     Lmedia_type_empty = 'empty'
@@ -33,7 +33,7 @@ class ReadingsMediaType(TableModule):
 
 
 # TODO
-class ProgressMatcherofDates(TableModule):
+class ProgressMatcherofDates(TableModuleDepr):
     def __init__(self, bs):
         super().__init__(bs)
         self.domain = self.bs.dates
@@ -53,13 +53,13 @@ class ProgressMatcherofDates(TableModule):
                 ]
             ),
             (
-                'topics_total',
-                ['topics'],
+                'domains_total',
+                ['domains'],
                 [
-                    ('checks', ['topics_context']),
-                    ('writings', ['topics']),
-                    ('journals', ['topics']),
-                    ('tasks', ['topics']),
+                    ('checks', ['domains_context']),
+                    ('writings', ['domains']),
+                    ('journals', ['domains']),
+                    ('tasks', ['domains']),
                 ]
             ),
             (
@@ -88,7 +88,7 @@ class ProgressMatcherofDates(TableModule):
         pass
 
 
-class ProgressMatcherofDatesDepr(TableModule):
+class ProgressMatcherofDatesDepr(TableModuleDepr):
     def __init__(self, bs):
         super().__init__(bs)
         self.domain = self.bs.dates
@@ -99,7 +99,7 @@ class ProgressMatcherofDatesDepr(TableModule):
     def __call__(self):
         for dom in self.domain.rows:
             for to_tar in self.to_tars:
-                dom_date: DateObject = dom.read_tag('manual_date')
+                dom_date: DateObject = dom.read_tag('dateval_manual')
                 if (not dom_date.start_date
                         or dom_date.start_date > dt.date.today()):
                     continue
@@ -116,7 +116,7 @@ class ProgressMatcherofDatesDepr(TableModule):
         return tar_ids
 
 
-class ProgressMatcherofWritingsDepr(TableModule):
+class ProgressMatcherofWritingsDepr(TableModuleDepr):
     Tdoms_ref1 = 'checks'
     Tdoms_ref2 = 'journals'
     TL_tar = ['projects', 'channels', 'readings']

@@ -19,7 +19,7 @@ VALUE_TYPES = {
     'select': ['select'],
     'multi_select': ['multi_select'],
     'person': ['people', 'person', 'created_by', 'last_edited_by'],
-    'manual_date': ['date'],
+    'dateval_manual': ['date'],
     'auto_date': ['created_time', 'last_edited_time'],
     'formula': ['formula'],
     'relation': ['relation'],

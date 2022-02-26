@@ -3,7 +3,7 @@ from __future__ import annotations
 # from functools import reduce
 
 from notion_zap.apps.prop_matcher.modules import *
-from notion_zap.apps.prop_matcher.common.struct import TableModule, EditorBase
+from notion_zap.apps.prop_matcher.common.struct import TableModuleDepr, EditorBase
 from notion_zap.apps.prop_matcher.modules.calendar import (
     DateTargetFiller, PeriodTargetFiller)
 from notion_zap.cli import editors
@@ -12,7 +12,7 @@ from notion_zap.cli import editors
 class RegularMatchController:
     def __init__(self):
         self.bs = RegularEditorBase()
-        self.agents: list[TableModule] = [
+        self.agents: list[TableModuleDepr] = [
             SelfMatcher(self.bs),
 
             DateTargetFiller(self.bs, False),
@@ -65,10 +65,10 @@ class RegularEditorBase(EditorBase):
 
         # OR clauses
         if domain is self.dates:
-            manual_date = manager.date('manual_date')
+            manual_date = manager.date('dateval_manual')
             ft |= manual_date.is_empty()
             # sync_needed = manager.checkbox('sync_status').is_empty()
-            # before_today = manual_date.on_or_before(dt.date.today())
+            # before_today = dateval_manual.on_or_before(dt.date.today())
             # ft |= (sync_needed & before_today)
         if domain in [self.checks, self.journals]:
             # TODO : gcal_sync_status

@@ -2,7 +2,7 @@ import datetime as dt
 from typing import Optional
 
 from notion_zap.apps.prop_matcher.common.date_handler import DateHandler
-from notion_zap.apps.prop_matcher.common.struct import TableModule
+from notion_zap.apps.prop_matcher.common.struct import TableModuleDepr
 from notion_zap.apps.prop_matcher.modules import DateMatcherAbs, PeriodMatcherAbs
 from notion_zap.cli.editors import PageRow
 from notion_zap.cli.structs import DateObject
@@ -22,7 +22,7 @@ class CalendarDateRange:
             date_val += dt.timedelta(days=1)
 
 
-class DateTargetFiller(DateMatcherAbs, TableModule):
+class DateTargetFiller(DateMatcherAbs, TableModuleDepr):
     def __init__(self, bs, disable_overwrite: bool,
                  create_date_range: CalendarDateRange=None):
         super().__init__(bs)
@@ -57,7 +57,7 @@ class DateTargetFiller(DateMatcherAbs, TableModule):
         #       f"{date_range != tar.props.read_at(self.Ttars_date)=}")
 
 
-class PeriodTargetFiller(PeriodMatcherAbs, TableModule):
+class PeriodTargetFiller(PeriodMatcherAbs, TableModuleDepr):
     def __init__(self, bs, disable_overwrite,
                  create_date_range: CalendarDateRange = None):
         super().__init__(bs)

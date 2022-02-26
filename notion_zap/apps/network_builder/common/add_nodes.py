@@ -16,7 +16,7 @@ class TopologyBuilder:
         self.themes = self.root.objects.database(
             *DatabaseInfo.PROJECTS, NetworkFrames.THEMES).rows
         self.ideas = self.root.objects.database(
-            *DatabaseInfo.TOPICS, NetworkFrames.IDEAS).rows
+            *DatabaseInfo.DOMAINS, NetworkFrames.IDEAS).rows
         self.all: dict[str, editors.RowChildren] = {
             'themes': self.themes,
             'ideas': self.ideas

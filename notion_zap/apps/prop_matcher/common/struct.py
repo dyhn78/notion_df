@@ -2,8 +2,8 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 
 from notion_zap.apps.config import DatabaseInfo
-from notion_zap.apps.prop_matcher.config import MatchFrames
-from notion_zap.cli.editors import PageRow, Root
+from notion_zap.apps.prop_matcher.config import Frames
+from notion_zap.cli.editors import PageRow, Root, Database
 
 
 class EditorBase:
@@ -11,32 +11,47 @@ class EditorBase:
         self.root = Root(print_response_heads=print_heads,
                          print_request_formats=print_request_formats)
         self.periods = self.root.objects.database(*DatabaseInfo.PERIODS,
-                                                  frame=MatchFrames.PERIODS)
+                                                  frame=Frames.PERIODS)
         self.dates = self.root.objects.database(*DatabaseInfo.DATES,
-                                                frame=MatchFrames.DATES)
+                                                frame=Frames.DATES)
+
         self.journals = self.root.objects.database(*DatabaseInfo.JOURNALS,
-                                                   frame=MatchFrames.JOURNALS)
+                                                   frame=Frames.JOURNALS)
         self.checks = self.root.objects.database(*DatabaseInfo.CHECKS,
-                                                 frame=MatchFrames.CHECKS)
+                                                 frame=Frames.CHECKS)
+        self.topics = self.root.objects.database(*DatabaseInfo.TOPICS,
+                                                 frame=Frames.TOPICS)
         self.writings = self.root.objects.database(*DatabaseInfo.WRITINGS,
-                                                   frame=MatchFrames.WRITINGS)
+                                                   frame=Frames.WRITINGS)
         self.tasks = self.root.objects.database(*DatabaseInfo.TASKS,
-                                                frame=MatchFrames.TASKS)
+                                                frame=Frames.TASKS)
+
+        self.projects = self.root.objects.database(*DatabaseInfo.PROJECTS,
+                                                   frame=Frames.PROJECTS)
         self.channels = self.root.objects.database(*DatabaseInfo.CHANNELS,
-                                                   frame=MatchFrames.CHANNELS)
+                                                   frame=Frames.CHANNELS)
         self.readings = self.root.objects.database(*DatabaseInfo.READINGS,
-                                                   frame=MatchFrames.READINGS)
+                                                   frame=Frames.READINGS)
+
+    def __open_database(self, info_tuple, frame):
+        return self.root.objects.database(*info_tuple, frame=frame)
 
     def save(self):
         self.root.save()
 
 
-class EditorModule(ABC):
+class BasedModule(ABC):
     def __init__(self, bs: EditorBase):
         self.bs = bs
 
 
 class TableModule(ABC):
+    @abstractmethod
+    def __call__(self, table: Database):
+        pass
+
+
+class RootFunction(ABC):
     def __init__(self, bs: EditorBase):
         self.bs = bs
 
@@ -44,10 +59,31 @@ class TableModule(ABC):
     def __call__(self):
         pass
 
-class RowModule(ABC):
+
+class RowFunction(ABC):
+    @abstractmethod
+    def __call__(self, row: PageRow):
+        pass
+
+
+class BasedRowFunction(ABC):
     def __init__(self, bs: EditorBase):
         self.bs = bs
 
     @abstractmethod
-    def __call__(self, dom: PageRow):
+    def __call__(self, row: PageRow):
+        pass
+
+
+class ModuleDepr(ABC):
+    def __init__(self, bs: EditorBase):
+        self.bs = bs
+
+
+class TableModuleDepr(ABC):
+    def __init__(self, bs: EditorBase):
+        self.bs = bs
+
+    @abstractmethod
+    def __call__(self):
         pass

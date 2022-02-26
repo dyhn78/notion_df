@@ -11,15 +11,15 @@ from ..common.helpers import (
     query_unique_page_by_idx,
     fetch_all_pages_of_relation, fetch_unique_page_of_relation
 )
-from ..common.struct import EditorModule, TableModule, RowModule
+from ..common.struct import ModuleDepr, TableModuleDepr, BasedRowFunction
 
 
-class DateMatcherAbs(EditorModule, metaclass=ABCMeta):
+class DateMatcherAbs(ModuleDepr, metaclass=ABCMeta):
     Tdoms_ref = 'checks'
     Tdoms_date = 'auto_datetime'
     T_tar = 'dates'
     Ttars_idx = 'title'
-    Ttars_date = 'manual_date'
+    Ttars_date = 'dateval_manual'
 
     def __init__(self, bs):
         super().__init__(bs)
@@ -60,18 +60,18 @@ class DateMatcherAbs(EditorModule, metaclass=ABCMeta):
         return tar.save()
 
 
-class DatefromAutoDate(DateMatcherAbs, RowModule):
+class DatefromAutoDate(DateMatcherAbs, BasedRowFunction):
     def __init__(self, bs, Tdoms_tar):
         super().__init__(bs)
         self.Tdoms_tar = Tdoms_tar
 
-    def __call__(self, dom: PageRow):
-        if dom.read_tag(self.Tdoms_tar):
+    def __call__(self, row: PageRow):
+        if row.read_tag(self.Tdoms_tar):
             return None
-        return self.determine_tar_from_auto_date(dom)
+        return self.determine_tar_from_auto_date(row)
 
 
-class DateofDoublyLinked(DateMatcherAbs, TableModule):
+class DateofDoublyLinked(DateMatcherAbs, TableModuleDepr):
     Tdoms_tar1 = 'dates_created'
     Tdoms_tar2 = 'dates'
 
@@ -84,7 +84,7 @@ class DateofDoublyLinked(DateMatcherAbs, TableModule):
             for dom in domain.rows:
                 if tar := self.match_dates(dom):
                     dom.write_relation(tag=self.Tdoms_tar2,
-                                              value=tar.block_id)
+                                       value=tar.block_id)
                     self.period_resetter(dom)
                 if tar := self.match_created_dates(dom):
                     dom.write_relation(tag=self.Tdoms_tar1, value=tar.block_id)
@@ -100,7 +100,7 @@ class DateofDoublyLinked(DateMatcherAbs, TableModule):
         return self.determine_tar_from_auto_date(dom)
 
 
-class TableDateofReference(DateMatcherAbs, TableModule):
+class TableDateofReference(DateMatcherAbs, TableModuleDepr):
     def __init__(self, bs):
         super().__init__(bs)
         self.domains = [self.bs.tasks]
@@ -121,7 +121,7 @@ class TableDateofReference(DateMatcherAbs, TableModule):
         return self.determine_tar_from_auto_date(dom)
 
 
-class DateMatcherofWritings(DateMatcherAbs, TableModule):
+class DateMatcherofWritings(DateMatcherAbs, TableModuleDepr):
     def __init__(self, bs):
         super().__init__(bs)
         self.domain = self.bs.writings
@@ -137,15 +137,15 @@ class DateMatcherofWritings(DateMatcherAbs, TableModule):
         return self.determine_tar_from_auto_date(dom)
 
 
-class RowDateofEarliest(DateMatcherAbs, RowModule):
+class RowDateofEarliest(DateMatcherAbs, BasedRowFunction):
     def __init__(self, bs, reference: Database, doms_ref, refs_tar):
         super().__init__(bs)
         self.reference = reference
         self.doms_ref = doms_ref
         self.refs_tar = refs_tar
 
-    def __call__(self, dom: PageRow):
-        refs = fetch_all_pages_of_relation(dom, self.reference, self.doms_ref)
+    def __call__(self, row: PageRow):
+        refs = fetch_all_pages_of_relation(row, self.reference, self.doms_ref)
         tars = []
         for ref in refs:
             new_tars = fetch_all_pages_of_relation(ref, self.target, self.refs_tar)
@@ -163,8 +163,7 @@ class RowDateofEarliest(DateMatcherAbs, RowModule):
         return earliest_tar
 
 
-
-class DateMatcherofReadings(DateMatcherAbs, TableModule):
+class DateMatcherofReadings(DateMatcherAbs, TableModuleDepr):
     Tdoms_tar1 = 'dates_created'
     Tdoms_tar2 = 'dates_begin'
     Tdoms_ref2 = 'journals'
@@ -177,7 +176,7 @@ class DateMatcherofReadings(DateMatcherAbs, TableModule):
         self.match_dates_created = DatefromAutoDate(bs, self.Tdoms_tar1)
         self.match_earliest1 = RowDateofEarliest(
             bs, self.reference, self.Tdoms_ref, self.T_tar)
-        # self.match_earliest2 = RowDateofEarliest(
+        # self.match_earliest2 = MatcherofEarliest(
         #     bs, self.reference2, self.Tdoms_ref2, self.Tref2s_tar2
         # )
 
@@ -229,7 +228,7 @@ class DateMatcherofJournalsDepr(DateMatcherAbs):
 
 
 class DateDomainFillerDepr(DateMatcherAbs):
-    Tdoms_date = 'manual_date'
+    Tdoms_date = 'dateval_manual'
     Ttimestr = 'timestr'
 
     def __init__(self, bs, disable_overwrite=False):
