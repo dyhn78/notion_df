@@ -1,6 +1,6 @@
 from notion_zap.apps.media_scraper.config import READING_FRAME
 from notion_zap.cli import editors
-from notion_zap.apps.media_scraper.common.struct import ReadingTableController
+from notion_zap.apps.media_scraper.struct import ReadingTableController
 
 
 class ReadingTableStatusResolver(ReadingTableController):

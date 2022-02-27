@@ -1,7 +1,7 @@
 from typing import Union
 
-from notion_zap.apps.media_scraper.common.struct import ReadingPageChecker
-from notion_zap.apps.media_scraper.module_lib.gy import GoyangLibraryAgent
+from notion_zap.apps.media_scraper.struct import ReadingPageChecker
+from notion_zap.apps.media_scraper.location.gy import GoyangLibraryAgent
 
 
 class LibraryDataWriter:

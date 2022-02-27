@@ -1,3 +1,1 @@
-from .scrap_regulars import RegularScrapController
-from .remove_duplicates import ReadingTableDuplicateRemover
-from .resolve_status import ReadingTableStatusResolver
+from notion_zap.apps.media_scraper.controllers.remove_duplicates import ReadingTableDuplicateRemover

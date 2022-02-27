@@ -3,7 +3,7 @@ from typing import Callable, Any, Iterable
 import emoji
 
 
-def remove_emoji(text):
+def remove_emoji(text: str):
     return emoji.get_emoji_regexp().sub(u'', text)
 
 

@@ -1,5 +1,4 @@
 import os
-# import logging
 from typing import Callable
 
 from selenium import webdriver
@@ -10,48 +9,38 @@ from selenium.webdriver.chrome.service import Service
 from notion_zap.cli.utility import stopwatch
 
 
-class SeleniumBaseDepr:
+class SeleniumFactory:
     ON_WINDOWS = os.name == 'nt'
     ON_LINUX = os.name == 'posix'
 
-    def __init__(self, driver_cnt: int, create_window=False):
+    def __init__(self):
         self.drivers: list[webdriver.Chrome] = []
-        self.driver_cnt = driver_cnt
-        self.create_window = create_window
 
-    def start(self):
+    def __call__(self, create_window=False):
         # https://www.zacoding.com/en/post/python-selenium-hide-console/
-        for i in range(self.driver_cnt):
-            # noinspection PyArgumentList
-            if self.create_window:
-                driver = webdriver.Chrome(self.driver_path())
-            else:
-                driver = webdriver.Chrome(service=self.get_service(),
-                                          options=self.get_options())
-            self.drivers.append(driver)
-            driver.start_client()
-
-    def quit(self):
-        for driver in self.drivers:
-            driver.quit()
-
-    def __del__(self):
-        self.quit()
+        if create_window:
+            driver = webdriver.Chrome(self.get_driver_path())
+        else:
+            driver = webdriver.Chrome(service=self.get_service_without_window(),
+                                      options=self.get_options())
+        self.drivers.append(driver)
+        # driver.start_client()
+        return driver
 
     @classmethod
-    def driver_path(cls):
+    def get_driver_path(cls):
         if cls.ON_WINDOWS:
             return os.path.join(os.path.dirname(__file__), 'chromedriver97.exe')
         elif cls.ON_LINUX:
             return os.path.join(os.path.dirname(__file__), 'chromedriver97_linux')
 
 
-    def get_service(self):
+    def get_service_without_window(self):
         # logging.basicConfig(filename='debug.log', level=logging.DEBUG,
         #                     format='%(asctime)s %(levelname)s %(name)s %(message)s')
         # logger = logging.getLogger(__name__)
         service = Service(
-            self.driver_path(),
+            self.get_driver_path(),
             # log_path=os.path.join(os.path.dirname(__file__), 'selenium_log')
         )
         if self.ON_WINDOWS:

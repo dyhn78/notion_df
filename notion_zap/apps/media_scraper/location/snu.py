@@ -5,11 +5,11 @@ from bs4 import BeautifulSoup
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.chrome.webdriver import WebDriver
 
-from notion_zap.apps.externals.selenium import SeleniumBase
+from notion_zap.apps.externals.selenium import SeleniumBaseDepr
 
 
 class SNULibraryAgent:
-    def __init__(self, base: SeleniumBase, book_name: str):
+    def __init__(self, base: SeleniumBaseDepr, book_name: str):
         self.base = base
         self.book_name = book_name
 

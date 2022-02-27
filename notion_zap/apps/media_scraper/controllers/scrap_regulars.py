@@ -2,10 +2,10 @@ from typing import Optional
 
 from notion_zap.cli import editors
 from notion_zap.cli.utility import stopwatch
-from notion_zap.apps.media_scraper.common.struct import (
+from notion_zap.apps.media_scraper.struct import (
     ReadingTableController, ReadingPageChecker)
-from notion_zap.apps.media_scraper.module_meta.main import MetadataManager
-from notion_zap.apps.media_scraper.module_lib import LibraryManager
+from notion_zap.apps.media_scraper.metadata.main import MetadataManager
+from notion_zap.apps.media_scraper.location import LibraryManager
 
 
 class RegularScrapController(ReadingTableController):
