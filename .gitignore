@@ -7,6 +7,7 @@
 /notion_zap/**/credentials.json
 /notion_zap/**/token.json
 debug.log
+*.ppk
 __pycache__/
 
 # User-specific stuff
@@ -42,9 +43,7 @@ __pycache__/
 # .idea/artifacts
 # .idea/compiler.xml
 # .idea/jarRepositories.xml
-# .idea/managers.xml
 # .idea/*.iml
-# .idea/managers
 # *.iml
 # *.ipr
 

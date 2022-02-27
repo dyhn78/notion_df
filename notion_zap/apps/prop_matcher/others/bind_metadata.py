@@ -1,35 +1,8 @@
 import datetime as dt
-from typing import Optional
 
-from notion_zap.cli import editors
 from notion_zap.cli.structs import DateObject
-from ..common.struct import TableModuleDepr
-from ..common.helpers import extend_prop, fetch_all_pages_of_relation, \
-    fetch_unique_page_of_relation
-
-
-class ReadingsMediaType(TableModuleDepr):
-    Tmedia_type = 'media_type'
-    T_tar = 'channels'
-    Lmedia_type_empty = 'empty'
-
-    def __init__(self, bs):
-        super().__init__(bs)
-        self.domain = self.bs.readings
-        self.target = self.bs.channels
-
-    def __call__(self):
-        for dom in self.domain.rows:
-            self.match(dom)
-
-    def match(self, dom: editors.PageRow) -> Optional[str]:
-        if dom.read_tag(self.Tmedia_type):
-            return
-        if tar := fetch_unique_page_of_relation(dom, self.target, self.T_tar):
-            if tar_val := tar.read_tag(self.Tmedia_type):
-                dom.write_select(tag=self.Tmedia_type, value=tar_val)
-                return
-        dom.write_select(tag=self.Tmedia_type, label=self.Lmedia_type_empty)
+from notion_zap.apps.prop_matcher.struct import TableModuleDepr
+from notion_zap.apps.prop_matcher.common import write_extendedly
 
 
 # TODO
@@ -104,7 +77,7 @@ class ProgressMatcherofDatesDepr(TableModuleDepr):
                         or dom_date.start_date > dt.date.today()):
                     continue
                 if tar_ids := self.determine_tar_ids(dom, to_tar):
-                    extend_prop(dom, to_tar, tar_ids)
+                    write_extendedly(dom, to_tar, tar_ids)
                 if not dom.read_tag('sync_status'):  # False
                     dom.write_checkbox(tag='sync_status', value=True)
 
@@ -137,4 +110,4 @@ class ProgressMatcherofWritingsDepr(TableModuleDepr):
                 ref2s = fetch_all_pages_of_relation(dom, self.reference2, self.Tdoms_ref2)
                 for ref2 in ref2s:
                     tar_ids.extend(ref2.read_tag(T_tar))
-                extend_prop(dom, T_tar, tar_ids)
+                write_extendedly(dom, T_tar, tar_ids)

@@ -1,5 +1,5 @@
 from notion_zap.cli.utility import stopwatch
-from notion_zap.apps.prop_matcher.match_regulars import RegularMatchController
+from notion_zap.apps.prop_matcher.controllers.match_regulars import RegularMatchController
 from notion_zap.apps.media_scraper import RegularScrapController
 import traceback
 import datetime as dt
@@ -20,7 +20,7 @@ def main():
         stopwatch('모든 작업 완료')
     except Exception as err:
         with open('debug.log', 'w', encoding='utf-8') as log:
-            log.write(message+'\n')
+            log.write(message+'\n'*5)
             traceback.print_exc(file=log)
         raise err
 

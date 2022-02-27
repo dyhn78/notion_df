@@ -40,18 +40,12 @@ class EditorBase:
         self.root.save()
 
 
-class BasedModule(ABC):
+class BaseEditor(ABC):
     def __init__(self, bs: EditorBase):
         self.bs = bs
 
 
-class TableModule(ABC):
-    @abstractmethod
-    def __call__(self, table: Database):
-        pass
-
-
-class RootFunction(ABC):
+class MainEditor(ABC):
     def __init__(self, bs: EditorBase):
         self.bs = bs
 
@@ -60,13 +54,13 @@ class RootFunction(ABC):
         pass
 
 
-class RowFunction(ABC):
+class RowEditor(ABC):
     @abstractmethod
     def __call__(self, row: PageRow):
         pass
 
 
-class BasedRowFunction(ABC):
+class BasedRowProcessorDepr(ABC):
     def __init__(self, bs: EditorBase):
         self.bs = bs
 

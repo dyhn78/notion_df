@@ -16,11 +16,3 @@ def query_within_date_range(pagelist: editors.RowChildren,
         if ft is not None:
             query.push_filter(ft)
     query.execute()
-
-
-def query_danglings(pagelist: editors.RowChildren, relation_tag: str):
-    query = pagelist.open_query()
-    frame = query.filter_manager_by_tags.relation(relation_tag)
-    ft = frame.is_empty()
-    query.push_filter(ft)
-    query.execute()

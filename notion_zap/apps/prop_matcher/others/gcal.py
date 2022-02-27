@@ -8,10 +8,8 @@ from googleapiclient.errors import HttpError
 import notion_zap.apps.externals.gcal
 from notion_zap.cli import editors
 from notion_zap.cli.structs import DateObject
-from .dates import DateMatcherAbs
-from ..common.dt_handler import TimeStringHandler
-from ..common.helpers import query_unique_page_by_idx
-from ..common.struct import ModuleDepr, TableModuleDepr
+from ..date_index.dt_formatter import TimeStringHandler
+from notion_zap.apps.prop_matcher.struct import ModuleDepr, TableModuleDepr
 
 
 class GcalMatcherAbs(ModuleDepr, metaclass=ABCMeta):
@@ -69,8 +67,7 @@ class GcaltoScheduleMatcher(_GcalScheduleMatcherAbs, TableModuleDepr):
         idx = event['id']
         if dom := self.domain_by_idx.get(idx):
             return dom
-        if dom := query_unique_page_by_idx(
-                self.domain, idx, self.Tgcal_id, 'text'):
+        if dom := query_unique_page_by_idx(self.domain, idx, self.Tgcal_id, 'text'):
             return dom
         return None
 
