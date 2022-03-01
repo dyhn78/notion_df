@@ -53,7 +53,7 @@ class RegularMatchFetcher:
             self.fetch_table(table, request_size)
 
     def fetch_table(self, table: Database, request_size):
-        if table is self.bs.channels:
+        if table in [self.bs.channels, self.bs.projects]:
             return
 
         query = table.rows.open_query()

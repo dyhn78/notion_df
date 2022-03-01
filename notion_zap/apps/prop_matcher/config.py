@@ -64,6 +64,8 @@ class Columns:
 
     timestr = Cl(key=EMOJI.CALENDAR + '시간', tag='timestr', )
     dateval_manual = Cl(key=EMOJI.CALENDAR + '날짜', tag='dateval_manual', )
+    dateval_manual_range = Cl(key=EMOJI.BIG_CALENDAR + '날짜 범위',
+                              tag='manual_date_range', )
 
     # relational properties
     itself = Cl(key=EMOJI.CYCLE + '재귀', tag='itself', )
@@ -71,14 +73,12 @@ class Columns:
     periods = Cl(key=EMOJI.YARN + '기간', tag='periods', )
     dates = Cl(key=EMOJI.THREAD + '날짜', tag='dates', )
 
-    journals = Cl(key=PREFIX.JOURNALS + '일지', tag='checks', )
+    journals = Cl(key=PREFIX.JOURNALS + '일지', tag='journals', )
     journals_mentioned = Cl(key=PREFIX.JOURNALS + '언급', tag='journals_induced', )
-
-    checks = Cl(key=PREFIX.CHECKS + '진도', tag='journals', )
+    checks = Cl(key=PREFIX.CHECKS + '진도', tag='checks', )
 
     topics = Cl(key=PREFIX.TOPICS + '전개', tag='topics', )
     tasks = Cl(key=PREFIX.TASKS + '요점', tag='tasks', )
-
     writings = Cl(key=PREFIX.WRITINGS + '쓰기', tag='writings', )
     writings_mentioned = Cl(key=PREFIX.WRITINGS + '언급', tag='writings_induced', )
 
@@ -146,7 +146,7 @@ class Frames:
     PERIODS = Frame(
         [
             Columns.title_datetime,
-            Cl(key=EMOJI.BIG_CALENDAR + '날짜 범위', tag='manual_date_range'),
+            Columns.dateval_manual_range,
 
             Columns.itself,
         ]

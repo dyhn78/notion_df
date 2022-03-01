@@ -3,7 +3,9 @@ from typing import Optional
 
 from notion_zap.cli.editors import Database, PageRow
 from notion_zap.apps.prop_matcher.struct import MainEditor, EditorBase
-from notion_zap.apps.prop_matcher.common import has_value, set_value, ReferenceInfo, get_all_pages_from_relation
+from notion_zap.apps.prop_matcher.common import \
+    has_value, set_value, ReferenceInfo, get_all_pages_from_relation
+from notion_zap.cli.structs import DateObject
 
 
 class DateMatcherByEarliestRef(MainEditor):
@@ -13,11 +15,11 @@ class DateMatcherByEarliestRef(MainEditor):
 
     def __call__(self):
         for table, tag_date, ref_args in self.args:
-            getter = GetterByEarliestRef(self.bs.dates, ref_args)
+            get_date = GetterByEarliestRef(self.bs.dates, ref_args)
             for row in table.rows:
                 if self.no_replace and has_value(row, tag_date):
                     continue
-                if date := getter(row):
+                if date := get_date(row):
                     set_value(row, date, tag_date)
                     self.reset_period(row)
 
@@ -34,15 +36,14 @@ class DateMatcherByEarliestRef(MainEditor):
 
 
 class GetterByEarliestRef:
-    def __init__(self, dates: Database, args: list[ReferenceInfo]):
+    def __init__(self, dates: Database, ref_infos: list[ReferenceInfo]):
         self.dates = dates
-        self.args = args
+        self.ref_infos = ref_infos
 
     def __call__(self, row: PageRow):
         collector = EarliestDateFinder(row, self.dates)
-        for arg in self.args:
-            collector.collect_dates_via_reference(
-                arg.reference, arg.tag_ref, arg.refs_tag_tar)
+        for ref_info in self.ref_infos:
+            collector.collect_dates_via_reference(ref_info)
         return collector.earliest_date_row
 
 
@@ -53,18 +54,19 @@ class EarliestDateFinder:
         self.earliest_date_row: Optional[PageRow] = None
         self.earliest_date_val = None
 
-    def collect_dates_via_reference(
-            self, reference: Database, tag_ref, refs_tag_date):
-        refs = get_all_pages_from_relation(self.row, reference, tag_ref)
+    def collect_dates_via_reference(self, ref_info: ReferenceInfo):
+        refs = get_all_pages_from_relation(self.row, ref_info.reference, ref_info.tag_ref)
         dates = []
         for ref in refs:
-            new_tars = get_all_pages_from_relation(ref, self.dates, refs_tag_date)
-            dates.extend(new_tars)
+            new_dates = get_all_pages_from_relation(
+                ref, self.dates, ref_info.refs_tag_tar)
+            dates.extend(new_dates)
         for date_row in dates:
             self.update_earliest_by_date_row(date_row)
 
     def update_earliest_by_date_row(self, date_row: PageRow):
-        date_val = date_row.read_tag('dateval_manual')
-        if self.earliest_date_val is None or date_row < self.earliest_date_val:
+        date_object: DateObject = date_row.read_tag('dateval_manual')
+        date_val = date_object.start_date
+        if self.earliest_date_val is None or date_val < self.earliest_date_val:
             self.earliest_date_row = date_row
             self.earliest_date_val = date_val

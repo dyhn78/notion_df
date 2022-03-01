@@ -13,3 +13,8 @@ class DatabaseInfo:
     DOMAINS = ('꼭지', '2c5411ba6a0f43a0a8aa06295751e37a')
     CHANNELS = ('채널', '2d3f4ea770854b8e9e30abecd4d31a86')
     READINGS = ('읽기', 'c326f77425a0446a8aa309478767c85b')
+
+
+if __name__ == '__main__':
+    from notion_zap.cli.utility.page_id_to_url import id_to_url
+    print(id_to_url(DatabaseInfo.JOURNALS[1]))
