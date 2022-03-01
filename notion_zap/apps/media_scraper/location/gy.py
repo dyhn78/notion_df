@@ -1,4 +1,5 @@
-from typing import Optional
+from __future__ import annotations
+from typing import Optional, Callable
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.remote.webelement import WebElement
@@ -20,7 +21,7 @@ class GoyangLibraryScraper:
 
     def __init__(self, driver: WebDriver, title: str):
         self.driver = driver
-        self.query = GoyangLibraryQueryMaker(self.driver, title)
+        self.query = GoyangLibraryQueryBuilder(self.driver, title)
         self.evaluate = GoyangLibraryEvaluator(self.driver)
 
     def __call__(self) -> Optional[LibraryScrapResult]:
@@ -29,11 +30,11 @@ class GoyangLibraryScraper:
                     현재 대출 가능: bool,
                     서지번호: str('가좌도서관'일 경우에만 non-empty)]
         """
-        self.query.for_gajwa()
+        self.query.search_for_gajwa()
         if gajwa_option := self.evaluate():
             gajwa_option.lib_name = self.GAJWA_LIB
             return gajwa_option
-        self.query.for_all_libs()
+        self.query.search_for_all_libs()
         if other_option := self.evaluate():
             other_option.lib_name = self.OTHER_LIB
             other_option.book_code = ''
@@ -41,26 +42,25 @@ class GoyangLibraryScraper:
         return None
 
 
-class GoyangLibraryQueryMaker:
+class GoyangLibraryQueryBuilder:
     def __init__(self, driver: WebDriver, title: str):
         self.driver = driver
         self.title = title
         self.title_is_ready = False
-        self.now_search_all = True
 
-    def for_gajwa(self):
+    def _search_for_(self, set_options: Callable[[], None]):
         if not self.title_is_ready:
             self.load_main_page()
             self.insert_title()
-        self.set_for_gajwa_only()
-        self.click_search_button()
+        set_options()
+        self.search_button.click()
+        self.driver.implicitly_wait(3)
 
-    def for_all_libs(self):
-        if not self.title_is_ready:
-            self.load_main_page()
-            self.insert_title()
-        self.set_for_all_libs()
-        self.click_search_button()
+    def search_for_gajwa(self):
+        return self._search_for_(self.set_options_as_gajwa_only)
+
+    def search_for_all_libs(self):
+        return self._search_for_(self.set_options_as_all_libs)
 
     def load_main_page(self):
         url_main_page = \
@@ -72,31 +72,34 @@ class GoyangLibraryQueryMaker:
         input_box = self.driver.find_element("css selector", tag)
         input_box.send_keys(self.title)
 
-    def set_for_all_libs(self):
-        if not self.now_search_all:
-            self.toggle_all_libs()
+    def set_options_as_all_libs(self):
+        if not self.now_set_for_all_libs:
+            self.checkbox_for_all_libs.click()
 
-    def set_for_gajwa_only(self):
-        if not self.now_search_all:
-            self.toggle_all_libs()
-        self.toggle_all_libs()
-        self.toggle_gajwa()
+    def set_options_as_gajwa_only(self):
+        if not self.now_set_for_all_libs:
+            self.checkbox_for_all_libs.click()
+        self.checkbox_for_all_libs.click()
+        self.checkbox_for_gajwa.click()
 
-    def toggle_all_libs(self):
+    @property
+    def now_set_for_all_libs(self):
+        return self.checkbox_for_all_libs.get_attribute('checked')
+
+    @property
+    def checkbox_for_all_libs(self):
         tag = '#searchLibraryAll'
-        checkbox = self.driver.find_element("css selector", tag)
-        checkbox.click()
+        return self.driver.find_element("css selector", tag)
 
-    def toggle_gajwa(self):
+    @property
+    def checkbox_for_gajwa(self):
         tag = '#searchManageCodeArr2'
-        checkbox = self.driver.find_element("css selector", tag)
-        checkbox.click()
+        return self.driver.find_element("css selector", tag)
 
-    def click_search_button(self):
+    @property
+    def search_button(self):
         tag = '#searchBtn'
-        search_button = self.driver.find_element("css selector", tag)
-        search_button.click()
-        self.driver.implicitly_wait(3)
+        return self.driver.find_element("css selector", tag)
 
 
 class GoyangLibraryEvaluator:
