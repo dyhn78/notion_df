@@ -2,15 +2,19 @@ from __future__ import annotations
 
 from notion_zap.cli.editors import Database
 from notion_zap.apps.prop_matcher.struct import EditorBase
-from notion_zap.apps.prop_matcher.date_index.get_date_by_created_time import DateMatcherByCreatedTime
-from notion_zap.apps.prop_matcher.date_index.get_date_by_earliest_ref import DateMatcherByEarliestRef
-from notion_zap.apps.prop_matcher.date_index.get_period_by_manual_value import PeriodMatcherByManualValue
-from notion_zap.apps.prop_matcher.date_index.get_period_by_date_ref import PeriodMatcherByDateRef
+from notion_zap.apps.prop_matcher.date_index.get_date_by_created_time \
+    import DateMatcherByCreatedTime
+from notion_zap.apps.prop_matcher.date_index.get_date_by_earliest_ref \
+    import DateMatcherByEarliestRef
+from notion_zap.apps.prop_matcher.date_index.get_period_by_manual_value \
+    import PeriodMatcherByManualValue
+from notion_zap.apps.prop_matcher.date_index.get_period_by_date_ref \
+    import PeriodMatcherByDateRef
 from notion_zap.apps.prop_matcher.others.match_to_itself import SelfMatcher
 from notion_zap.apps.prop_matcher.others.bind_simple_props import BindSimpleProperties
 
 
-class RegularMatchEditor:
+class RegularMatchProcessor:
     def __init__(self, bs: EditorBase):
         self.bs = bs
         self.main_editors = [
@@ -23,8 +27,9 @@ class RegularMatchEditor:
         ]
 
     def __call__(self):
-        for module in self.main_editors:
-            module()
+        for edit in self.main_editors:
+            edit()
+        self.bs.save()
 
 
 class RegularMatchController:
@@ -32,15 +37,11 @@ class RegularMatchController:
         self.bs = EditorBase()
         self.bs.root.exclude_archived = True
         self.fetch = RegularMatchFetcher(self.bs)
-        self.edit = RegularMatchEditor(self.bs)
+        self.process = RegularMatchProcessor(self.bs)
 
-    def execute(self, request_size=0):
+    def __call__(self, request_size=0):
         self.fetch(request_size)
-        self.edit()
-        self.save()
-
-    def save(self):
-        self.bs.save()
+        self.process()
 
 
 class RegularMatchFetcher:
@@ -96,4 +97,4 @@ class RegularMatchFetcher:
 
 
 if __name__ == '__main__':
-    RegularMatchController().execute(request_size=20)
+    RegularMatchController()(request_size=20)

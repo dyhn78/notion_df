@@ -1,11 +1,23 @@
 from typing import Union
 
-from notion_zap.apps.media_scraper.struct import ReadingPageChecker
-from notion_zap.apps.media_scraper.location.gy import GoyangLibraryAgent
+from ..struct import ReadingPageEditor
+from .multi import MultiLibraryScraper
+
+
+class LibraryScrapManager:
+    def __init__(self, targets: set[str], create_window=False):
+        self.scrap = MultiLibraryScraper(targets, create_window)
+
+    def __call__(self, editor: ReadingPageEditor):
+        data = self.scrap(*editor.titles)
+        LibraryDataWriter(editor, data)
+
+    def quit(self):
+        self.scrap.quit_drivers()
 
 
 class LibraryDataWriter:
-    def __init__(self, checker: ReadingPageChecker, data: dict):
+    def __init__(self, checker: ReadingPageEditor, data: dict):
         self.checker = checker
         self.page = checker.page
         try:
@@ -33,7 +45,7 @@ class LibraryDataWriter:
     @staticmethod
     def prioritize_data(data: dict):
         if 'gy' in data.keys() and \
-                data['gy']['lib_name'] == GoyangLibraryAgent.GAJWA_LIB:
+                data['gy']['lib_name'] == 'gajwa':
             return 'gy'
         elif 'snu' in data.keys():
             return 'snu'

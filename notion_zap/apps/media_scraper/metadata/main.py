@@ -2,43 +2,45 @@ from notion_zap.cli import editors
 from notion_zap.cli.utility import stopwatch
 from .yes24_main import scrap_yes24_main
 from .yes24_url import scrap_yes24_url
-from notion_zap.apps.media_scraper.struct import ReadingPageChecker
+from notion_zap.apps.media_scraper.struct import ReadingPageEditor
 from notion_zap.apps.media_scraper.metadata.write_contents import ContentsWriter
 from notion_zap.apps.media_scraper.metadata.adjust_contents import remove_dummy_blocks
 
 
-class MetadataManager:
-    def __init__(self, global_tasks: set[str]):
-        self.global_tasks = global_tasks
+class MetadataScrapManager:
+    def __init__(self, targets: set[str]):
+        self.targets = targets
 
-    def __call__(self, checker: ReadingPageChecker):
-        if checker.is_book:
-            writer = BookstoreAgent(checker)
+    def __call__(self, editor: ReadingPageEditor):
+        if editor.is_book:
+            writer = BookstoreWriter(editor)
             writer.adjust_subpage()
             if writer.get_url():
                 if writer.scrap_data():
                     writer.set_data()
             else:
-                checker.mark_as_url_missing()
+                editor.mark_as_url_missing()
         else:
-            writer = MetadataAgent(checker)
+            writer = MetadataWriter(editor)
             writer.adjust_subpage()
-            checker.mark_as_manually_filled()
+            editor.mark_as_manually_filled()
+
+    def quit(self):
+        pass
 
 
-# TODO
-class MetadataAgent:
-    def __init__(self, checker: ReadingPageChecker):
-        self.checker = checker
-        self.page = checker.page
-        self.book_names = checker.names
+class MetadataWriter:
+    def __init__(self, editor: ReadingPageEditor):
+        self.editor = editor
+        self.page = editor.page
+        self.titles = editor.titles
         self.write_contents = ContentsWriter()
         self.subpage = self._get_subpage()
         self.url = ''
         self.data = {}
 
     def set_data(self):
-        self.page.root.disable_overwrite = self.checker.cannot_overwrite_metadata
+        self.page.root.disable_overwrite = self.editor.cannot_overwrite_metadata
 
         if true_name := self.data.get('name'):
             self.page.write_text(tag='true_name', value=true_name)
@@ -64,7 +66,7 @@ class MetadataAgent:
 
     def adjust_subpage(self):
         remove_dummy_blocks(self.subpage)
-        if self.subpage.block_id and self.checker.must_clear_previous_contents:
+        if self.subpage.block_id and self.editor.must_clear_previous_contents:
             for child in self.subpage.children:
                 child.archive()
         link_to_contents = self.page.write_rich_text(tag='link_to_contents')
@@ -89,14 +91,15 @@ class MetadataAgent:
         return subpage
 
 
-class BookstoreAgent(MetadataAgent):
+# TODO : MetadataWriter와 독립된 클래스로 분리
+class BookstoreWriter(MetadataWriter):
     def get_url(self):
         """return True if successfully get url."""
         if url := self.page.get_tag('url', default=''):
             self.url = url
             return True
-        for name in self.book_names:
-            if url := scrap_yes24_url(name):
+        for title in self.titles:
+            if url := scrap_yes24_url(title):
                 self.page.write_url(tag='url', value=url)
                 self.url = url
                 return True

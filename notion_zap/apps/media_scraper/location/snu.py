@@ -5,27 +5,30 @@ from bs4 import BeautifulSoup
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.chrome.webdriver import WebDriver
 
-from notion_zap.apps.externals.selenium import SeleniumBaseDepr
+from notion_zap.apps.media_scraper.location.struct import LibraryScrapBase, \
+    LibraryScrapResult
 
 
-class SNULibraryAgent:
-    def __init__(self, base: SeleniumBaseDepr, book_name: str):
-        self.base = base
-        self.book_name = book_name
+class SNULibraryScrapBase(LibraryScrapBase):
+    def scrap(self, title: str) -> LibraryScrapResult:
+        self.start_if_needed()
+        scrap = SNULibraryScraper(self.drivers[0], title)
+        return scrap()
 
-    def __call__(self) -> str:
-        self.load_search_results()
-        first_title = self.select_tag()
-        if lib_info := self.parse_tag(first_title):
-            # print(f"{lib_info=}")
-            return lib_info
 
-    @property
-    def driver(self) -> WebDriver:
-        return self.base.drivers[0]
+class SNULibraryScraper:
+    def __init__(self, driver: WebDriver, title: str):
+        self.driver = driver
+        self.title = title
 
-    def load_search_results(self):
-        parsedname = parse.quote(self.book_name)
+    def __call__(self):
+        self.query()
+        first_title = self.pick_first_titem()
+        if lib_info := self.parse_raw_title(first_title):
+            return self.format_result(lib_info)
+
+    def query(self):
+        parsedname = parse.quote(self.title)
         url = f'https://primoapac01.hosted.exlibrisgroup.com/primo-explore/search?' \
               f'query=any,contains,{parsedname}' \
               f'&tab=all' \
@@ -42,7 +45,7 @@ class SNULibraryAgent:
         # implicitly-wait 기능이 서울대 도서관 홈페이지에서 제대로 작동하지 않는다.
         return url
 
-    def select_tag(self):
+    def pick_first_titem(self):
         tag_lib_info = 'div.result-item-text.layout-fill.layout-column.flex > ' \
                        'div.search-result-availability-line-wrapper ' \
                        '> prm-search-result-availability-line > div > div > button '
@@ -52,15 +55,21 @@ class SNULibraryAgent:
             return ''
 
     @staticmethod
-    def parse_tag(raw_string):
+    def parse_raw_title(raw_title):
         # TODO 책 제목을 출력하고, 올바른 책을 선택한 게 맞는지
         #  (화면에 출력해서?) 확인하는 간단한 기능들을 구현할 것.
-        return raw_string
+        return raw_title
+
+    @staticmethod
+    def format_result(lib_info):
+        res = LibraryScrapResult(True, lib_info)
+        # res.lib_name = '서울대'
+        return res
 
 
 # deprecated
-def scrap_snu_library_depr(book_name) -> str:
-    parsedname = parse.quote(book_name)
+def scrap_snu_library_depr(title) -> str:
+    parsedname = parse.quote(title)
     url = f'https://primoapac01.hosted.exlibrisgroup.com/primo-explore/search?query' \
           f'=any,contains,{parsedname}&tab=all' \
           f'&search_scope=ALL&vid=82SNU&mfacet=rtype,include,print_book,' \

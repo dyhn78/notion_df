@@ -1,5 +1,5 @@
 import os
-from typing import Callable
+from typing import Callable, Optional
 
 from selenium import webdriver
 from selenium.common.exceptions import (
@@ -9,15 +9,17 @@ from selenium.webdriver.chrome.service import Service
 from notion_zap.cli.utility import stopwatch
 
 
-class SeleniumFactory:
+class WebDriverFactory:
     ON_WINDOWS = os.name == 'nt'
     ON_LINUX = os.name == 'posix'
 
-    def __init__(self):
+    def __init__(self, create_window=False):
         self.drivers: list[webdriver.Chrome] = []
+        self.create_window = create_window
 
-    def __call__(self, create_window=False):
-        # https://www.zacoding.com/en/post/python-selenium-hide-console/
+    def __call__(self, create_window: Optional[bool] = None):
+        if create_window is None:
+            create_window = self.create_window
         if create_window:
             driver = webdriver.Chrome(self.get_driver_path())
         else:
@@ -36,12 +38,9 @@ class SeleniumFactory:
 
 
     def get_service_without_window(self):
-        # logging.basicConfig(filename='debug.log', level=logging.DEBUG,
-        #                     format='%(asctime)s %(levelname)s %(name)s %(message)s')
-        # logger = logging.getLogger(__name__)
+        # https://www.zacoding.com/en/post/python-selenium-hide-console/
         service = Service(
             self.get_driver_path(),
-            # log_path=os.path.join(os.path.dirname(__file__), 'selenium_log')
         )
         if self.ON_WINDOWS:
             from subprocess import CREATE_NO_WINDOW

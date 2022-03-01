@@ -3,25 +3,25 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.remote.webelement import WebElement
 
-
-class LibraryScrapResult:
-    def __init__(self, availability: bool, book_code=''):
-        self.lib_name = ''
-        self.book_code = book_code
-        self.availability = availability
+from notion_zap.apps.media_scraper.location.struct import (
+    LibraryScrapResult, LibraryScrapBase)
 
 
-class GoyangLibraryAgent:
+class GoyangLibraryScrapBase(LibraryScrapBase):
+    def scrap(self, title: str) -> LibraryScrapResult:
+        self.start_if_needed()
+        scrap = GoyangLibraryScraper(self.drivers[0], title)
+        return scrap()
+
+
+class GoyangLibraryScraper:
     GAJWA_LIB = '가좌도서관'
     OTHER_LIB = '고양시 상호대차'
 
-    def __init__(self, title: str, driver: WebDriver):
+    def __init__(self, driver: WebDriver, title: str):
         self.driver = driver
-        self.title = title
-
-        self.now_search_all = True
-        self.now_page_num = 1
-        self.best_option: Optional[LibraryScrapResult] = None
+        self.query = GoyangLibraryQueryMaker(self.driver, title)
+        self.evaluate = GoyangLibraryEvaluator(self.driver)
 
     def __call__(self) -> Optional[LibraryScrapResult]:
         """
@@ -29,18 +29,38 @@ class GoyangLibraryAgent:
                     현재 대출 가능: bool,
                     서지번호: str('가좌도서관'일 경우에만 non-empty)]
         """
-        self.load_main_page()
-        self.insert_title()
-        self.search_gajwa_only()
-        if self.evaluate_result():
-            self.best_option.lib_name = self.GAJWA_LIB
-            return self.best_option
-        self.search_all_libs()
-        if self.evaluate_result():
-            self.best_option.lib_name = self.OTHER_LIB
-            self.best_option.book_code = ''
-            return self.best_option
+        self.query.for_gajwa()
+        if gajwa_option := self.evaluate():
+            gajwa_option.lib_name = self.GAJWA_LIB
+            return gajwa_option
+        self.query.for_all_libs()
+        if other_option := self.evaluate():
+            other_option.lib_name = self.OTHER_LIB
+            other_option.book_code = ''
+            return other_option
         return None
+
+
+class GoyangLibraryQueryMaker:
+    def __init__(self, driver: WebDriver, title: str):
+        self.driver = driver
+        self.title = title
+        self.title_is_ready = False
+        self.now_search_all = True
+
+    def for_gajwa(self):
+        if not self.title_is_ready:
+            self.load_main_page()
+            self.insert_title()
+        self.set_for_gajwa_only()
+        self.click_search_button()
+
+    def for_all_libs(self):
+        if not self.title_is_ready:
+            self.load_main_page()
+            self.insert_title()
+        self.set_for_all_libs()
+        self.click_search_button()
 
     def load_main_page(self):
         url_main_page = \
@@ -52,17 +72,15 @@ class GoyangLibraryAgent:
         input_box = self.driver.find_element("css selector", tag)
         input_box.send_keys(self.title)
 
-    def search_all_libs(self):
+    def set_for_all_libs(self):
         if not self.now_search_all:
             self.toggle_all_libs()
-        self.click_search_button()
 
-    def search_gajwa_only(self):
+    def set_for_gajwa_only(self):
         if not self.now_search_all:
             self.toggle_all_libs()
         self.toggle_all_libs()
         self.toggle_gajwa()
-        self.click_search_button()
 
     def toggle_all_libs(self):
         tag = '#searchLibraryAll'
@@ -80,15 +98,25 @@ class GoyangLibraryAgent:
         search_button.click()
         self.driver.implicitly_wait(3)
 
-    def evaluate_result(self):
+
+class GoyangLibraryEvaluator:
+    def __init__(self, driver: WebDriver):
+        self.driver = driver
+        self.now_page_num = 1
+        self.best_option: Optional[LibraryScrapResult] = None
+
+    def __call__(self):
+        self.evaluate()
+        return self.best_option
+
+    def evaluate(self):
         if self.has_no_result():
-            return False
+            return
         proceed = True
         while proceed:
-            if res := self.evalaute_page_section():
-                return res
+            if self.evalaute_page_section():
+                return
             proceed = self.move_to_next_page_section()
-        return False
 
     def has_no_result(self):
         tag = '#bookList > div.bookList.listViewStyle > ul > li > div > p.noResult'

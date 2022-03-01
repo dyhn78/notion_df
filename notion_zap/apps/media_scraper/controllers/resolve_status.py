@@ -1,18 +1,18 @@
 from notion_zap.apps.media_scraper.config import READING_FRAME
 from notion_zap.cli import editors
-from notion_zap.apps.media_scraper.struct import ReadingTableController
+from notion_zap.apps.media_scraper.struct import ReadingTableEditor
 
 
-class ReadingTableStatusResolver(ReadingTableController):
+class ReadingTableStatusResolver(ReadingTableEditor):
     status_enum = READING_FRAME.by_tag['edit_status'].labels
 
     def execute(self, request_size=0):
         self.make_query(request_size)
-        for page in self.pagelist:
+        for page in self.table.rows:
             self.edit(page)
 
     def make_query(self, request_size):
-        query = self.pagelist.open_query()
+        query = self.table.rows.open_query()
         maker = query.filter_manager_by_tags.select('media_type')
         ft = maker.equals_to_any(maker.column.marks['book'])
         maker = query.filter_manager_by_tags.select('edit_status')

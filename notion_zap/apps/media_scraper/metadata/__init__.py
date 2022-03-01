@@ -1,1 +1,1 @@
-from .main import MetadataManager, BookstoreAgent
+from .main import MetadataScrapManager, BookstoreWriter

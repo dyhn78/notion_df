@@ -1,41 +1,67 @@
-from typing import Optional
+from typing import Optional, Iterable
 
-from notion_zap.cli import editors
-from notion_zap.cli.utility import stopwatch
+from notion_zap.apps.media_scraper.location.manager import LibraryScrapManager
+from notion_zap.apps.media_scraper.metadata.main import MetadataScrapManager
 from notion_zap.apps.media_scraper.struct import (
-    ReadingTableController, ReadingPageChecker)
-from notion_zap.apps.media_scraper.metadata.main import MetadataManager
-from notion_zap.apps.media_scraper.location import LibraryManager
+    ReadingTableEditor, ReadingPageEditor)
+from notion_zap.cli.editors import PageRow, Database
+from notion_zap.cli.utility import stopwatch
 
 
-class RegularScrapController(ReadingTableController):
-    LABEL_BKST = {'metadata'}
-    LABEL_LIBS = {'gy_lib', 'snu_lib'}
+class RegularScrapController(ReadingTableEditor):
+    LABEL_META = {'metadata'}
+    LABEL_LOC = {'gy, lib'}
 
-    def __init__(self, tasks: Optional[set] = None, title=''):
+    def __init__(self, targets: Optional[Iterable] = None):
         super().__init__()
-        if not tasks:
-            tasks = self.LABEL_BKST | self.LABEL_LIBS
-        self.global_tasks = tasks
-        self.title = title
-        self.scrap_meta = MetadataManager(self.global_tasks)
-        self.scrap_lib = LibraryManager(self.global_tasks)
+        self.fetch = RegularScrapFetcher(self.table)
 
-    def execute(self, request_size=0):
+        if not targets:
+            targets = self.LABEL_META | self.LABEL_LOC
+        targets = set(targets)
+        self.targets_meta = targets | self.LABEL_META
+        self.targets_loc = targets | self.LABEL_LOC
+        self.metadata = MetadataScrapManager(self.targets_meta)
+        self.location = LibraryScrapManager(self.targets_loc)
+
+    def __call__(self, request_size=0):
         if not self.fetch(request_size):
+            stopwatch('읽기: 대상 없음')
             return
-        if self.has_lib_tasks(self.global_tasks):
-            stopwatch('Selenium 시작..')
-            self.scrap_lib.start()
-        for page in self.pagelist:
-            self.edit(page)
-        if self.has_lib_tasks(self.global_tasks):
-            stopwatch('Selenium 마감..')
-            self.scrap_lib.quit()
-            stopwatch('Selenium 종료')
+        stopwatch('읽기: 시작')
+        self.process()
 
-    def fetch(self, request_size):
-        query = self.pagelist.open_query()
+    def process(self):
+        for page in self.table.rows:
+            self.process_page(page)
+        self.metadata.quit()
+        self.location.quit()
+
+    def process_page(self, page: PageRow):
+        editor = ReadingPageEditor(page)
+        signer = ReadingPageSigner(page)
+        if editor.needs_to_scrap_metadata():
+            signer.start()
+            self.metadata(editor)
+        if self.targets_loc:
+            signer.start()
+            self.location(editor)
+
+        if signer.started:
+            editor.mark_as_complete()
+            page.save()
+        else:
+            editor.mark_as_manually_filled()
+            signer.ignore()
+            return
+
+
+class RegularScrapFetcher:
+    def __init__(self, table: Database):
+        self.table = table
+
+    def __call__(self, request_size=0, title=''):
+        query = self.table.rows.open_query()
         manager = query.filter_manager_by_tags
         ft = query.open_filter()
 
@@ -47,45 +73,33 @@ class RegularScrapController(ReadingTableController):
                 maker.equals_to_any(maker.column.marks['regular_scraps'])
                 | maker.is_empty()
         )
-        if self.title:
+        if title:
             maker = manager.text('title')
-            ft_title = maker.starts_with(self.title)
+            ft_title = maker.starts_with(title)
             ft &= ft_title
         query.push_filter(ft)
         pages = query.execute(request_size)
         return pages
 
-    def edit(self, page: editors.PageRow):
-        checker = RegularReadingPageChecker(page, self.global_tasks)
-        tasks = checker.tasks
-        if tasks:
-            stopwatch(f'개시: {page.title}')
-            if 'metadata' in tasks:
-                self.scrap_meta(checker)
-            if self.has_lib_tasks(tasks):
-                self.scrap_lib(checker, tasks)
-            checker.mark_as_complete()
-            page.save()
-        else:
-            stopwatch(f'무시: {page.title}')
-            return
 
-    @classmethod
-    def has_lib_tasks(cls, tasks: set):
-        return any(label_lib in tasks for label_lib in cls.LABEL_LIBS)
+class ReadingPageSigner:
+    def __init__(self, page: PageRow):
+        self.page = page
+        self.started = False
 
+    def start(self):
+        if not self.started:
+            stopwatch(f'개시: {self.page.title}')
+            self.started = True
 
-class RegularReadingPageChecker(ReadingPageChecker):
-    def __init__(self, page: editors.PageRow, tasks: set):
-        super().__init__(page)
-        self.tasks = self.cleaned_tasks(tasks.copy())
-
-    def cleaned_tasks(self, tasks):
-        if self._init_label == 'continue':
-            tasks.remove('metadata')
-        return tasks
+    def ignore(self):
+        stopwatch(f'무시: {self.page.title}')
 
 
 if __name__ == '__main__':
-    RegularScrapController(tasks={'metadata'}, title='헬스의 정석').execute()
+    # controller = RegularScrapController(targets={'metadata'})
+    # controller.fetch(title='헬스의 정석')
+    controller = RegularScrapController()
+    controller.fetch(request_size=0)
+    controller.process()
     # RegularScrapController(tasks={'metadata'}).execute(request_size=5)

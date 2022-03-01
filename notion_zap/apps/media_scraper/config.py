@@ -5,7 +5,7 @@ READING_FRAME = PropertyFrame([
        marks_on_value={
            'book': ['📖단행본', '☕연속간행물', '✒학습자료']
        }),
-    Cl(key='📓경험 없음', tag='is_book'),
+    Cl(key='📔도서류', tag='is_book'),
     Cl(key='🏁준비', tag='edit_status',
        labels={
            'append': '📥본문(비파괴)/위치',
@@ -33,7 +33,7 @@ READING_FRAME = PropertyFrame([
     Cl(key='📚링크', tag='url'),
     Cl(key='📚만든이', tag='author'),
     Cl(key='📚만든곳', tag='publisher'),
-    Cl(key='📚N(쪽+)', tag='volume'),
+    Cl(key='📚N(쪽)', tag='volume'),
     Cl(key='📚표지', tag='cover_image'),
     Cl(key='📚위치', tag='location'),
     Cl(key='📚대출중', tag='not_available'),

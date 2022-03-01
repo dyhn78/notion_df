@@ -3,14 +3,14 @@ from notion_zap.apps.config import DatabaseInfo
 from notion_zap.apps.media_scraper.config import READING_FRAME
 
 
-class ReadingTableController:
+class ReadingTableEditor:
     def __init__(self):
         self.root = editors.Root(print_response_heads=5)
-        self.pagelist = self.root.objects.database(
-            *DatabaseInfo.READINGS, READING_FRAME).rows
+        self.table = self.root.objects.database(
+            *DatabaseInfo.READINGS, READING_FRAME)
 
 
-class ReadingPageChecker:
+class ReadingPageEditor:
     STATUS_CL = READING_FRAME.by_tag['edit_status']
     STATUS_LABELS = STATUS_CL.labels
     TERMINAL_LABELS = {'append': 'tentatively_done',
@@ -31,10 +31,12 @@ class ReadingPageChecker:
         return self.page.read_tag('is_book')
 
     @property
-    def names(self) -> list[str]:
-        docx_name = self.page.get_tag('docx_name', '')
-        true_name = self.page.get_tag('true_name', '')
-        return [string for string in (true_name, docx_name) if string]
+    def titles(self) -> list[str]:
+        titles = []
+        for key_alias in ['docx_name', 'true_name']:
+            if title := self.page.get_tag(key_alias):
+                titles.append(title)
+        return titles
 
     @property
     def cannot_overwrite_metadata(self):
@@ -60,3 +62,6 @@ class ReadingPageChecker:
         if not self._finalized:
             self.page.write_select(tag='edit_status', label=label)
             self._finalized = True
+
+    def needs_to_scrap_metadata(self):
+        return self._init_label != 'continue'

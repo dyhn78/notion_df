@@ -1,2 +1,2 @@
-from .writer import LibraryDataWriter
-from .main import LibraryManager
+from .manager import LibraryDataWriter
+from .multi import MultiLibraryScraper
