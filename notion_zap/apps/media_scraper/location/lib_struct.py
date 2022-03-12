@@ -1,3 +1,4 @@
+from __future__ import annotations
 from abc import abstractmethod, ABC
 from typing import Callable
 
@@ -5,13 +6,22 @@ from selenium.webdriver.chrome.webdriver import WebDriver
 
 
 class LibraryScrapResult:
-    def __init__(self, availability: bool, book_code=''):
+    def __init__(self, available: bool, book_code=''):
         self.lib_name = ''
         self.book_code = book_code
-        self.availability = availability
+        self.available = available
+        self.priority = 0
 
     def __str__(self):
-        return "  ".join(val for val in [self.lib_name, self.book_code] if val)
+        return " ".join(val for val in
+                        [self.lib_name, self.book_code, self.availability_str] if val)
+
+    @property
+    def availability_str(self):
+        return '가능' if self.available else '불가능'
+
+    def __lt__(self, other: LibraryScrapResult):
+        return self.priority < other.priority
 
 
 class LibraryScrapBase(ABC):

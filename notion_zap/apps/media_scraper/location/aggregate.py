@@ -4,7 +4,8 @@ from notion_zap.apps.externals.selenium.factory import WebDriverFactory
 from notion_zap.apps.media_scraper.helpers import remove_emoji
 from notion_zap.apps.media_scraper.location.lib_gy import GoyangLibraryScrapBase
 from notion_zap.apps.media_scraper.location.lib_snu import SNULibraryScrapBase
-from notion_zap.apps.media_scraper.location.lib_struct import LibraryScrapBase
+from notion_zap.apps.media_scraper.location.lib_struct import LibraryScrapBase, \
+    LibraryScrapResult
 from notion_zap.cli.utility import stopwatch
 
 
@@ -20,7 +21,7 @@ class LibraryScraperAggregate:
             key: base for key, base in self.base_map_full.items()
             if key in self.targets}
 
-    def __call__(self, *titles: str):
+    def __call__(self, *titles: str) -> dict[str, LibraryScrapResult]:
         titles = set(remove_emoji(title) for title in titles)
         data = {}
         for key, base in self.base_map.items():
@@ -40,4 +41,4 @@ class LibraryScraperAggregate:
 
 if __name__ == '__main__':
     agg = LibraryScraperAggregate({'gy'}, create_window=True)
-    print(agg('가면의 생').get('gy'))
+    print(agg('자기 인생의 철학자들').get('gy'))

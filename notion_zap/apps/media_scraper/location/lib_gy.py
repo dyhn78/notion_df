@@ -33,11 +33,13 @@ class GoyangLibraryScraper:
         self.query.search_for('gajwa')
         if gajwa_option := self.evaluate():
             gajwa_option.lib_name = self.GAJWA_LIB
+            gajwa_option.priority = +1
             return gajwa_option
         self.query.search_for('all_libs')
         if other_option := self.evaluate():
             other_option.lib_name = self.OTHER_LIB
             other_option.book_code = ''
+            other_option.priority = -1
             return other_option
         return None
 
