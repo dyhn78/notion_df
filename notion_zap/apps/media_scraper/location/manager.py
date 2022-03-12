@@ -1,12 +1,12 @@
 from typing import Union
 
 from ..struct import ReadingPageEditor
-from .multi import MultiLibraryScraper
+from .aggregate import LibraryScraperAggregate
 
 
 class LibraryScrapManager:
     def __init__(self, targets: set[str], create_window=False):
-        self.scrap = MultiLibraryScraper(targets, create_window)
+        self.scrap = LibraryScraperAggregate(targets, create_window)
 
     def __call__(self, editor: ReadingPageEditor):
         data = self.scrap(*editor.titles)

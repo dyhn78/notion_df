@@ -32,7 +32,7 @@ class WebDriverFactory:
     @classmethod
     def get_driver_path(cls):
         if cls.ON_WINDOWS:
-            return os.path.join(os.path.dirname(__file__), 'chromedriver97.exe')
+            return os.path.join(os.path.dirname(__file__), 'chromedriver.exe')
         elif cls.ON_LINUX:
             return os.path.join(os.path.dirname(__file__), 'chromedriver97_linux')
 
