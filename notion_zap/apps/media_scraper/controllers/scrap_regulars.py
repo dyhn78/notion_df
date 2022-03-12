@@ -10,7 +10,7 @@ from notion_zap.cli.utility import stopwatch
 
 class RegularScrapController(ReadingTableEditor):
     LABEL_META = {'metadata'}
-    LABEL_LOC = {'gy, lib'}
+    LABEL_LOC = {'gy', 'snu'}
 
     def __init__(self, targets: Optional[Iterable] = None):
         super().__init__()
@@ -19,8 +19,8 @@ class RegularScrapController(ReadingTableEditor):
         if not targets:
             targets = self.LABEL_META | self.LABEL_LOC
         targets = set(targets)
-        self.targets_meta = targets | self.LABEL_META
-        self.targets_loc = targets | self.LABEL_LOC
+        self.targets_meta = targets & self.LABEL_META
+        self.targets_loc = targets & self.LABEL_LOC
         self.metadata = MetadataScrapManager(self.targets_meta)
         self.location = LibraryScrapManager(self.targets_loc)
 

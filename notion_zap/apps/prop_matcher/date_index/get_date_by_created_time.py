@@ -40,6 +40,7 @@ class DateMatcherByCreatedTime(MainEditor):
             self.bs.topics,
             self.bs.writings,
             self.bs.tasks,
+            self.bs.readings,
         ]:
             args.append((table, 'dates'))
         for table in [

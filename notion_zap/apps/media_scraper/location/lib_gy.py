@@ -187,7 +187,7 @@ class BookAreaParser:
         self.book_area = book_area
 
     def get_book_code(self):
-        tag = 'div.bookData > div.book_dataInner > div.book_info.info02 > ' \
+        tag = 'div.bookData > div > div > ' \
               'p.kor.on > span:nth-child(3)'
         element = self.book_area.find_element(By.CSS_SELECTOR, tag)
         return element.text

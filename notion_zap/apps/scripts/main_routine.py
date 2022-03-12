@@ -15,7 +15,7 @@ def main():
         controller = RegularMatchController()
         controller(request_size=20)
 
-        controller = RegularScrapController()
+        controller = RegularScrapController(targets={'metadata', 'gy'})
         controller(request_size=5)
 
         with open('debug.log', 'a', encoding='utf-8') as log:

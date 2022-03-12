@@ -17,19 +17,20 @@ from notion_zap.apps.prop_matcher.others.bind_simple_props import BindSimpleProp
 class RegularMatchProcessor:
     def __init__(self, bs: EditorBase):
         self.bs = bs
-        self.main_editors = [
-            DateMatcherByCreatedTime(self.bs),
-            DateMatcherByEarliestRef(self.bs),
+        self.editor_groups = [
+            [DateMatcherByEarliestRef(self.bs)], # created time보다 우선순위가 높아야 한다
+            [DateMatcherByCreatedTime(self.bs),
             PeriodMatcherByManualValue(self.bs),
             PeriodMatcherByDateRef(self.bs),
             SelfMatcher(self.bs),
-            BindSimpleProperties(self.bs),
+            BindSimpleProperties(self.bs),]
         ]
 
     def __call__(self):
-        for edit in self.main_editors:
-            edit()
-        self.bs.save()
+        for editor_group in self.editor_groups:
+            for editor in editor_group:
+                editor()
+                self.bs.save()
 
 
 class RegularMatchController:
