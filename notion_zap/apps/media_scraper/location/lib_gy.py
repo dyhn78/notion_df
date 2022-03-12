@@ -187,10 +187,13 @@ class BookAreaParser:
         self.book_area = book_area
 
     def get_book_code(self):
-        tag = 'div.bookData > div > div > ' \
-              'p.kor.on > span:nth-child(3)'
-        element = self.book_area.find_element(By.CSS_SELECTOR, tag)
-        return element.text
+        tag = 'div.bookData > div > div > p.kor.on > span:nth-child(3)'
+        try:
+            element = self.book_area.find_element(By.CSS_SELECTOR, tag)
+            return element.text
+        except NoSuchElementException as e:
+            print(e)
+            return ''
 
     def get_availability(self):
         tag = 'div.bookData > div > ul > li.title > span > strong'
