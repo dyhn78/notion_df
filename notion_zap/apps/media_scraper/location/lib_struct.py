@@ -21,7 +21,7 @@ class LibraryScrapResult:
         return '가능' if self.available else '불가능'
 
     def __lt__(self, other: LibraryScrapResult):
-        return self.priority < other.priority
+        return (self.priority, self.available) < (other.priority, other.available)
 
 
 class LibraryScrapBase(ABC):

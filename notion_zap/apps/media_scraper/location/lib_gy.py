@@ -16,35 +16,27 @@ class GoyangLibraryScrapBase(LibraryScrapBase):
 
 
 class GoyangLibraryScraper:
-    GAJWA_LIB = '가좌도서관'
-    OTHER_LIB = '고양시 상호대차'
-
     def __init__(self, driver: WebDriver, title: str):
         self.driver = driver
-        self.query = GoyangLibraryQueryBuilder(self.driver, title)
-        self.evaluate = GoyangLibraryExaminer(self.driver)
+        self.query = GoyangLibraryQuerier(self.driver, title)
+        self.examine = GoyangLibraryExaminer(self.driver)
 
     def __call__(self) -> Optional[LibraryScrapResult]:
-        """
-        :return: [도서관 이름: str('가좌도서관', '고양시 상호대차', '스크랩 실패'),
-                    현재 대출 가능: bool,
-                    서지번호: str('가좌도서관'일 경우에만 non-empty)]
-        """
-        self.query.search_for('gajwa')
-        if gajwa_option := self.evaluate():
-            gajwa_option.lib_name = self.GAJWA_LIB
+        self.query('gajwa')
+        if gajwa_option := self.examine():
+            gajwa_option.lib_name = '가좌도서관'
             gajwa_option.priority = +1
             return gajwa_option
-        self.query.search_for('all_libs')
-        if other_option := self.evaluate():
-            other_option.lib_name = self.OTHER_LIB
+        self.query('all_libs')
+        if other_option := self.examine():
+            other_option.lib_name = '고양시 상호대차'
             other_option.book_code = ''
             other_option.priority = -1
             return other_option
         return None
 
 
-class GoyangLibraryQueryBuilder:
+class GoyangLibraryQuerier:
     def __init__(self, driver: WebDriver, title: str):
         self.driver = driver
         self.driver.minimize_window()
@@ -61,7 +53,7 @@ class GoyangLibraryQueryBuilder:
             'gajwa': self.set_options_as_gajwa_only,
         }
 
-    def search_for(self, option_key: str):
+    def __call__(self, option_key: str):
         self.set_title()
         set_option = self.options[option_key]
         set_option()
@@ -192,13 +184,17 @@ class BookAreaParser:
             element = self.book_area.find_element(By.CSS_SELECTOR, tag)
             return element.text
         except NoSuchElementException as e:
-            print(e)
+            print(f"{type(e).__name__}: {e.msg}")
             return ''
 
     def get_availability(self):
         tag = 'div.bookData > div > ul > li.title > span > strong'
-        element = self.book_area.find_element(By.CSS_SELECTOR, tag)
-        return "대출가능" in element.text
+        try:
+            element = self.book_area.find_element(By.CSS_SELECTOR, tag)
+            return "대출가능" in element.text
+        except NoSuchElementException as e:
+            print(f"{type(e).__name__}: {e.msg}")
+            return ''
 
     # def check_title(self):
     #     tag = 'div.bookData > div.book_dataInner > div.book_name > p.kor.on > a'
