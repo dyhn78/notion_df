@@ -1,5 +1,6 @@
 from typing import Optional, Iterable
 
+from notion_zap.apps.media_scraper.config import STATUS_REGULAR
 from notion_zap.apps.media_scraper.location.manager import LibraryScrapManager
 from notion_zap.apps.media_scraper.metadata.main import MetadataScrapManager
 from notion_zap.apps.media_scraper.struct import (
@@ -21,8 +22,8 @@ class RegularScrapController(ReadingTableEditor):
         targets = set(targets)
         self.targets_meta = targets & self.LABEL_META
         self.targets_loc = targets & self.LABEL_LOC
-        self.metadata = MetadataScrapManager(self.targets_meta)
-        self.location = LibraryScrapManager(self.targets_loc)
+        self.get_metadata = MetadataScrapManager(self.targets_meta)
+        self.get_location = LibraryScrapManager(self.targets_loc)
 
     def __call__(self, request_size=0):
         if not self.fetch(request_size):
@@ -34,26 +35,26 @@ class RegularScrapController(ReadingTableEditor):
     def process(self):
         for page in self.table.rows:
             self.process_page(page)
-        self.metadata.quit()
-        self.location.quit()
+        self.get_metadata.quit()
+        self.get_location.quit()
 
     def process_page(self, page: PageRow):
         editor = ReadingPageEditor(page)
-        signer = ReadingPageSigner(page)
-        if editor.needs_to_scrap_metadata():
-            signer.start()
-            self.metadata(editor)
-        if self.targets_loc:
-            signer.start()
-            self.location(editor)
+        f'개시: {page.title}'
+        edited = False
+        if editor.needs_metadata:
+            edited = True
+            self.get_metadata(editor)
+        if editor.needs_location:
+            edited = True
+            self.get_location(editor)
 
-        if signer.started:
-            editor.mark_as_complete()
+        if edited:
+            editor.mark_completion()
             page.save()
         else:
-            editor.mark_as_manually_filled()
-            signer.ignore()
-            return
+            editor.mark_exception('fill_manually')
+            f' -- 편집 항목 없음!'
 
 
 class RegularScrapFetcher:
@@ -70,7 +71,7 @@ class RegularScrapFetcher:
 
         maker = manager.select('edit_status')
         ft &= (
-                maker.equals_to_any(maker.column.marks['regular_scraps'])
+                maker.equals_to_any(STATUS_REGULAR)
                 | maker.is_empty()
         )
         if title:
@@ -82,24 +83,10 @@ class RegularScrapFetcher:
         return pages
 
 
-class ReadingPageSigner:
-    def __init__(self, page: PageRow):
-        self.page = page
-        self.started = False
-
-    def start(self):
-        if not self.started:
-            stopwatch(f'개시: {self.page.title}')
-            self.started = True
-
-    def ignore(self):
-        stopwatch(f'무시: {self.page.title}')
-
-
 if __name__ == '__main__':
     # controller = RegularScrapController(targets={'metadata'})
     # controller.fetch(title='헬스의 정석')
     controller = RegularScrapController()
-    controller.fetch(request_size=0)
+    controller.fetch(request_size=3)
     controller.process()
     # RegularScrapController(tasks={'metadata'}).execute(request_size=5)

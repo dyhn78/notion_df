@@ -1,32 +1,23 @@
 from notion_zap.cli.structs import PropertyColumn as Cl, PropertyFrame
 
+STATUS_DEFAULT = ('queue', 'metadata', 'location', 'manually_confirm')
+STATUSES = Cl(key='🏁준비', tag='edit_status',
+              labels={
+                  STATUS_DEFAULT: '📥본문(비파괴)/위치',
+                  ('queue', 'metadata', 'overwrite', 'completely'): '📥본문(파괴)',
+                  ('queue', 'location', 'overwrite', 'manually_confirm'): '📥위치',
+                  ('success', 'completely'): '⛳수합 완료',
+                  ('success', 'pass'): '⭕정보 없음',
+                  ('success', 'fill_manually'): '👤직접 입력',
+                  ('success', 'manually_confirm'): '👤결과 검정',
+                  ('fail', 'no_meta_url'): '❓링크 찾기',
+                  ('fail', 'no_loc'): '❓위치 찾기', }, )
+STATUS_REGULAR = [value for label, value in STATUSES.labels.items() if 'queue' in label]
+
 READING_FRAME = PropertyFrame([
-    Cl(key='📘유형', tag='media_type',
-       marks_on_value={
-           'book': ['📖단행본', '☕연속간행물', '✒학습자료']
-       }),
+    Cl(key='📘유형', tag='media_type', ),
     Cl(key='📔도서류', tag='is_book'),
-    Cl(key='🏁준비', tag='edit_status',
-       labels={
-           'append': '📥본문(비파괴)/위치',
-           'overwrite': '📥본문(파괴)/위치',
-           'continue': '📥위치만',
-
-           'completely_done': '⛳수합 완료',
-           'pass': '⭕정보 없음',
-
-           'tentatively_done': '👤원제/표지 검정',
-           'manually_filled': '👤직접 채워넣기',
-
-           'url_missing': '❓링크 찾기',
-           'lib_missing': '❓위치 찾기',
-       },
-       marks_on_label={
-           'regular_scraps': ['append', 'overwrite', 'continue'],
-           'need_resets': ['url_missing', 'lib_missing'],
-           'done': ['pass', 'tentatively_done', 'completely_done', 'manually_filled'],
-           'cannot_overwrite': ['append', 'continue']
-       }),
+    STATUSES,
     Cl(key='📚제목', tags=['docx_name', 'title']),
     Cl(key='📚원제(검색용)', tag='true_name'),
     Cl(key='📚부제', tag='subname'),

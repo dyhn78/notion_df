@@ -23,8 +23,9 @@ def main():
         stopwatch('모든 작업 완료')
     except Exception as err:
         with open('debug.log', 'w', encoding='utf-8') as log:
-            log.write(message+'\n'*5)
+            log.write(message+'\n'*1)
             traceback.print_exc(file=log)
+            log.write('\n'*3)
         raise err
 
 

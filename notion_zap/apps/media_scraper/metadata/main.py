@@ -19,11 +19,11 @@ class MetadataScrapManager:
                 if writer.scrap_data():
                     writer.set_data()
             else:
-                editor.mark_as_url_missing()
+                editor.mark_exception('url_missing')
         else:
             writer = MetadataWriter(editor)
             writer.adjust_subpage()
-            editor.mark_as_manually_filled()
+            editor.mark_exception('fill_manually')
 
     def quit(self):
         pass
@@ -40,7 +40,7 @@ class MetadataWriter:
         self.data = {}
 
     def set_data(self):
-        self.page.root.disable_overwrite = self.editor.cannot_overwrite_metadata
+        self.page.root.disable_overwrite = not self.editor.enable_overwrite
 
         if true_name := self.data.get('name'):
             self.page.write_text(tag='true_name', value=true_name)
@@ -66,7 +66,7 @@ class MetadataWriter:
 
     def adjust_subpage(self):
         remove_dummy_blocks(self.subpage)
-        if self.subpage.block_id and self.editor.must_clear_previous_contents:
+        if self.subpage.block_id and self.editor.enable_overwrite:
             for child in self.subpage.children:
                 child.archive()
         link_to_contents = self.page.write_rich_text(tag='link_to_contents')

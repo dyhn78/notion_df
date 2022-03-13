@@ -53,7 +53,7 @@ def write_data(editor: ReadingPageEditor, results: dict[str, LibraryScrapResult]
         page.write_checkbox(tag='not_available', value=not available)
     else:
         if not page.read_tag('location'):
-            editor.mark_as_lib_missing()
+            editor.mark_exception('lib_missing')
 
 
 def parse_scrap_results(results: dict[str, LibraryScrapResult]):
