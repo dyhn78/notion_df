@@ -49,7 +49,7 @@ class NetworkPropertyFrame(PropertyFrame):
         """
         res = []
         for tag in self.tags():
-            unit = self.by_tag[tag]
+            unit = self.by_alias[tag]
             if isinstance(unit, NetworkPropertyColumn):
                 for aspect in unit.EDGE_ASPECTS:
                     try:

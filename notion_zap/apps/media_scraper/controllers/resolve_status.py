@@ -4,7 +4,7 @@ from notion_zap.apps.media_scraper.struct import ReadingTableEditor
 
 
 class ReadingTableStatusResolver(ReadingTableEditor):
-    status_enum = READING_FRAME.by_tag['edit_status'].labels
+    status_enum = READING_FRAME.by_alias['edit_status'].label_map
 
     def execute(self, request_size=0):
         self.make_query(request_size)
@@ -26,8 +26,8 @@ class ReadingTableStatusResolver(ReadingTableEditor):
 
     def edit(self, page: editors.PageRow):
         value = self.status_enum['append']
-        page.write_select(tag='edit_status', value=value)
-        page.write_checkbox(tag='not_available', value=False)
+        page.write_select(key_alias='edit_status', value=value)
+        page.write_checkbox(key_alias='not_available', value=False)
         page.save()
 
 

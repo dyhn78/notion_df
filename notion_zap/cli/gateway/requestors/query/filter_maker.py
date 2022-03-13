@@ -23,98 +23,98 @@ class QueryFilterManagerbyKey:
         self.query = query
         self.frame = self.query.frame
 
-    def __call__(self, prop_key: str, prop_type=None) -> QueryFilterMaker:
-        format_type = self._get_attr_name(prop_key, prop_type)
-        return getattr(self, format_type)(prop_key)
+    def __call__(self, key: str, data_type=None) -> QueryFilterMaker:
+        format_type = self._get_attr_name(key, data_type)
+        return getattr(self, format_type)(key)
 
-    def _get_attr_name(self, prop_key, prop_type):
-        if prop_type == 'formula':
-            format_type = prop_type
-            assert prop_type in ['text', 'checkbox', 'number', 'date']
-        elif prop_type == 'rollup':
-            format_type = prop_type
+    def _get_attr_name(self, key, data_type):
+        if data_type == 'formula':
+            format_type = data_type
+            assert data_type in ['text', 'checkbox', 'number', 'date']
+        elif data_type == 'rollup':
+            format_type = data_type
         else:
-            if prop_type is None:
-                prop_type = self.frame.type_of(prop_key)
-            format_type = FILTER_FORMATS[prop_type]
+            if data_type is None:
+                data_type = self.frame.type_of(key)
+            format_type = FILTER_FORMATS[data_type]
         return format_type
 
-    def text(self, prop_key: str):
-        return TextFilterMaker(self, prop_key)
+    def text(self, key: str):
+        return TextFilterMaker(self, key)
 
-    def relation(self, prop_key: str):
-        return RelationFilterMaker(self, prop_key)
+    def relation(self, key: str):
+        return RelationFilterMaker(self, key)
 
-    def number(self, prop_key: str):
-        return NumberFilterMaker(self, prop_key)
+    def number(self, key: str):
+        return NumberFilterMaker(self, key)
 
-    def checkbox(self, prop_key: str):
-        return CheckboxFilterMaker(self, prop_key)
+    def checkbox(self, key: str):
+        return CheckboxFilterMaker(self, key)
 
-    def select(self, prop_key: str):
-        return SelectFilterMaker(self, prop_key)
+    def select(self, key: str):
+        return SelectFilterMaker(self, key)
 
-    def multi_select(self, prop_key: str):
-        return MultiselectFilterMaker(self, prop_key)
+    def multi_select(self, key: str):
+        return MultiselectFilterMaker(self, key)
 
-    def files(self, prop_key: str):
-        return FilesFilterMaker(self, prop_key)
+    def files(self, key: str):
+        return FilesFilterMaker(self, key)
 
-    def date(self, prop_key: str):
-        return DateFilterMaker(self, prop_key)
+    def date(self, key: str):
+        return DateFilterMaker(self, key)
 
-    def people(self, prop_key: str):
-        return PeopleFilterMaker(self, prop_key)
+    def people(self, key: str):
+        return PeopleFilterMaker(self, key)
 
 
 class QueryFilterManagerbyTag(QueryFilterManagerbyKey):
-    def __call__(self, prop_tag: str, prop_type=None):
-        return super().__call__(prop_tag, prop_type)
+    def __call__(self, key_alias: str, data_type=None):
+        return super().__call__(key_alias, data_type)
 
-    def text(self, prop_tag: str):
-        return super().text(self.frame.key_of(prop_tag))
+    def text(self, key_alias: str):
+        return super().text(self.frame.key_of(key_alias))
 
-    def relation(self, prop_tag: str):
-        return super().relation(self.frame.key_of(prop_tag))
+    def relation(self, key_alias: str):
+        return super().relation(self.frame.key_of(key_alias))
 
-    def number(self, prop_tag: str):
-        return super().number(self.frame.key_of(prop_tag))
+    def number(self, key_alias: str):
+        return super().number(self.frame.key_of(key_alias))
 
-    def checkbox(self, prop_tag: str):
-        return super().checkbox(self.frame.key_of(prop_tag))
+    def checkbox(self, key_alias: str):
+        return super().checkbox(self.frame.key_of(key_alias))
 
-    def select(self, prop_tag: str):
-        return super().select(self.frame.key_of(prop_tag))
+    def select(self, key_alias: str):
+        return super().select(self.frame.key_of(key_alias))
 
-    def multi_select(self, prop_tag: str):
-        return super().multi_select(self.frame.key_of(prop_tag))
+    def multi_select(self, key_alias: str):
+        return super().multi_select(self.frame.key_of(key_alias))
 
-    def files(self, prop_tag: str):
-        return super().files(self.frame.key_of(prop_tag))
+    def files(self, key_alias: str):
+        return super().files(self.frame.key_of(key_alias))
 
-    def date(self, prop_tag: str):
-        return super().date(self.frame.key_of(prop_tag))
+    def date(self, key_alias: str):
+        return super().date(self.frame.key_of(key_alias))
 
-    def people(self, prop_tag: str):
-        return super().people(self.frame.key_of(prop_tag))
+    def people(self, key_alias: str):
+        return super().people(self.frame.key_of(key_alias))
 
 
 class QueryFilterMaker:
-    prop_type = None
+    data_type = None
 
-    def __init__(self, filter_maker: QueryFilterManagerbyKey, prop_key):
-        assert self.prop_type is not None
-        self.prop_key: str = prop_key
+    def __init__(self, filter_maker: QueryFilterManagerbyKey, key):
+        assert self.data_type is not None
+        self.key: str = key
         self.column: PropertyColumn = (
-            filter_maker.frame.by_key[prop_key]
-            if prop_key in filter_maker.frame.by_key
-            else PropertyColumn(prop_key)
+            filter_maker.frame.by_key[key]
+            if key in filter_maker.frame.by_key
+            else PropertyColumn(key)
         )
 
     def _wrap_as_filter(self, filter_type, arg):
         return SimpleFilter({
-            'property': self.prop_key,
-            self.prop_type: {filter_type: arg}
+            'property': self.key,
+            self.data_type: {filter_type: arg}
         })
 
     def is_empty(self):
@@ -159,27 +159,27 @@ class ContaintypeFilterMaker(QueryFilterMaker):
 
 
 class SelectFilterMaker(EqualtypeFilterMaker):
-    prop_type = 'select'
+    data_type = 'select'
 
 
 class MultiselectFilterMaker(EqualtypeFilterMaker, ContaintypeFilterMaker):
-    prop_type = 'multi_select'
+    data_type = 'multi_select'
 
 
 class PeopleFilterMaker(EqualtypeFilterMaker, ContaintypeFilterMaker):
-    prop_type = 'people'
+    data_type = 'people'
 
 
 class FilesFilterMaker(QueryFilterMaker):
-    prop_type = 'files'
+    data_type = 'files'
 
 
 class RelationFilterMaker(ContaintypeFilterMaker):
-    prop_type = 'relation'
+    data_type = 'relation'
 
 
 class TextFilterMaker(EqualtypeFilterMaker, ContaintypeFilterMaker):
-    prop_type = 'text'
+    data_type = 'text'
 
     def starts_with(self, value):
         return self._wrap_as_filter('starts_with', str(value))
@@ -195,7 +195,7 @@ class TextFilterMaker(EqualtypeFilterMaker, ContaintypeFilterMaker):
 
 
 class NumberFilterMaker(EqualtypeFilterMaker):
-    prop_type = 'number'
+    data_type = 'number'
 
     def greater_than(self, value):
         return self._wrap_as_filter('greater_than', value)
@@ -211,7 +211,7 @@ class NumberFilterMaker(EqualtypeFilterMaker):
 
 
 class CheckboxFilterMaker(EqualtypeFilterMaker):
-    prop_type = 'checkbox'
+    data_type = 'checkbox'
 
     def is_empty(self):
         return self.equals(False)
@@ -221,7 +221,7 @@ class CheckboxFilterMaker(EqualtypeFilterMaker):
 
 
 class DateFilterMaker(EqualtypeFilterMaker):
-    prop_type = 'date'
+    data_type = 'date'
 
     def does_not_equal(self, value: Union[datetimeclass, dateclass]):
         return OrFilter([self.before(value), self.after(value)])

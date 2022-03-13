@@ -73,10 +73,10 @@ class GcaltoScheduleMatcher(_GcalScheduleMatcherAbs, TableModuleDepr):
 
     def update_dom(self, dom: editors.PageRow, event):
         property_writer = dom
-        property_writer.write_checkbox(tag=self.Tis_synced, value=True)
+        property_writer.write_checkbox(key_alias=self.Tis_synced, value=True)
         if summary := event.get('summary'):
             writer = dom
-            writer.write_title(tag=self.Ttitle, value=summary)
+            writer.write_title(key_alias=self.Ttitle, value=summary)
         try:
             dt_start = dt.datetime.fromisoformat(event['start']['dateTime'])
             dt_end = dt.datetime.fromisoformat(event['end']['dateTime'])
@@ -90,9 +90,9 @@ class GcaltoScheduleMatcher(_GcalScheduleMatcherAbs, TableModuleDepr):
 
     def create_dom(self, event):
         dom = self.domain.open_new_page()
-        dom.write_text(tag=self.Tgcal_id, value=event['id'])
+        dom.write_text(key_alias=self.Tgcal_id, value=event['id'])
         self.domain_by_idx.get(event['id'])
-        dom.write_url(tag=self.Tgcal_link, value=event['htmlLink'])
+        dom.write_url(key_alias=self.Tgcal_link, value=event['htmlLink'])
         self.update_dom(dom, event)
 
     def set_date_targets(self, dom: editors.PageRow,
@@ -108,14 +108,14 @@ class GcaltoScheduleMatcher(_GcalScheduleMatcherAbs, TableModuleDepr):
             tar = self.find_or_create_tar_by_date(date_val)
             tar_ids.append(tar.block_id)
         if tar_ids != dom.read_tag(self.T_tar):
-            dom.write_relation(tag=self.T_tar, value=tar_ids)
+            dom.write_relation(key_alias=self.T_tar, value=tar_ids)
 
     def set_timestr(self, dom: editors.PageRow,
                     start: dt.time, end: Optional[dt.time] = None):
         timestr = dom.get_tag(self.Ttimestr, '')
         new_timestr = TimeStringHandler(timestr).replace(start, end)
         if timestr != new_timestr:
-            dom.write_text(tag=self.Ttimestr, value=new_timestr)
+            dom.write_text(key_alias=self.Ttimestr, value=new_timestr)
 
 
 class GcalfromScheduleMatcher(_GcalScheduleMatcherAbs, TableModuleDepr):
@@ -142,7 +142,7 @@ class GcalfromScheduleMatcher(_GcalScheduleMatcherAbs, TableModuleDepr):
         elif not gcal_link:
             self.create_gcal(dom)
         writer = dom
-        writer.write_checkbox(tag=self.Tis_synced, value=True)
+        writer.write_checkbox(key_alias=self.Tis_synced, value=True)
 
     def update_gcal(self, dom: editors.PageRow):
         dt_start, dt_end = self.get_dt_tuple(dom)
@@ -168,8 +168,8 @@ class GcalfromScheduleMatcher(_GcalScheduleMatcherAbs, TableModuleDepr):
             end=dt_end,
         )
         event = requestor.execute()
-        dom.write_text(tag=self.Tgcal_id, value=event['id'])
-        dom.write_url(tag=self.Tgcal_link, value=event['htmlLink'])
+        dom.write_text(key_alias=self.Tgcal_id, value=event['id'])
+        dom.write_url(key_alias=self.Tgcal_link, value=event['htmlLink'])
 
     def get_dt_tuple(self, dom: editors.PageRow):
         date_start, date_end = self.get_date_vals(dom)

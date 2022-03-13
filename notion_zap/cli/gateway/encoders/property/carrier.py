@@ -8,9 +8,9 @@ from notion_zap.cli.structs.base_logic import ValueCarrier
 
 
 class PropertyEncoder(ValueCarrier, metaclass=ABCMeta):
-    def __init__(self, prop_name, value_type):
+    def __init__(self, key, value_type):
         super().__init__()
-        self.prop_name = prop_name
+        self.key = key
         self.value_type = value_type
 
     @property
@@ -26,7 +26,7 @@ class PropertyEncoder(ValueCarrier, metaclass=ABCMeta):
         return bool(self.encode())
 
     def encode(self):
-        props = {self.prop_name: {self.value_type: self.prop_value,
+        props = {self.key: {self.value_type: self.prop_value,
                                   # 'type': self.value_type <- prior to 2021-08-16,
                                   }
                  }
@@ -34,8 +34,8 @@ class PropertyEncoder(ValueCarrier, metaclass=ABCMeta):
 
 
 class RichTextPropertyEncoder(PropertyEncoder, RichTextObjectEncoder):
-    def __init__(self, prop_name, prop_type):
-        PropertyEncoder.__init__(self, prop_name, prop_type)
+    def __init__(self, key, data_type):
+        PropertyEncoder.__init__(self, key, data_type)
         RichTextObjectEncoder.__init__(self)
 
     @property
@@ -47,8 +47,8 @@ class RichTextPropertyEncoder(PropertyEncoder, RichTextObjectEncoder):
 
 
 class FilesPropertyEncoder(PropertyEncoder):
-    def __init__(self, prop_name):
-        PropertyEncoder.__init__(self, prop_name=prop_name, value_type='files')
+    def __init__(self, key):
+        PropertyEncoder.__init__(self, key, 'files')
         self._prop_value = []
         self._plain_form = []
 
@@ -70,8 +70,8 @@ class FilesPropertyEncoder(PropertyEncoder):
 
 
 class SimplePropertyEncoder(PropertyEncoder):
-    def __init__(self, prop_name, prop_type, value):
-        super().__init__(prop_name=prop_name, value_type=prop_type)
+    def __init__(self, key, value, data_type):
+        super().__init__(key=key, value_type=data_type)
         self._prop_value = value
 
     @property
@@ -82,44 +82,45 @@ class SimplePropertyEncoder(PropertyEncoder):
         return self._prop_value
 
     @classmethod
-    def number(cls, prop_name, value):
-        return cls(prop_name, 'number', value)
+    def number(cls, key, value):
+        return cls(key, value, 'number')
 
     @classmethod
-    def checkbox(cls, prop_name, value):
-        return cls(prop_name, 'checkbox', value)
+    def checkbox(cls, key, value):
+        return cls(key, value, 'checkbox')
 
     @classmethod
-    def people(cls, prop_name, value):
-        return cls(prop_name, 'people', value)
+    def people(cls, key, value):
+        return cls(key, value, 'people')
 
     @classmethod
-    def url(cls, prop_name, value):
-        return cls(prop_name, 'url', value)
+    def url(cls, key, value):
+        return cls(key, value, 'url')
 
     @classmethod
-    def email(cls, prop_name, value):
-        return cls(prop_name, 'email', value)
+    def email(cls, key, value):
+        return cls(key, value, 'email')
 
     @classmethod
-    def phone_number(cls, prop_name, value):
-        return cls(prop_name, 'phone_number', value)
+    def phone_number(cls, key, value):
+        return cls(key, value, 'phone_number')
 
     @classmethod
-    def select(cls, prop_name, value):
-        return cls(prop_name, 'select', {'name': value})
+    def select(cls, key, value):
+        wrapped_value = {'name': value} if value is not None else None
+        return cls(key, wrapped_value, 'select')
 
     @classmethod
-    def multi_select(cls, prop_name, values: list[str]):
-        prop_value = [{'name': value} for value in values]
-        return cls(prop_name, 'multi_select', prop_value)
+    def multi_select(cls, key, values: list[str]):
+        wrapped_value = [{'name': option} for option in values]
+        return cls(key, wrapped_value, 'multi_select')
 
     @classmethod
-    def relation(cls, prop_name, page_ids: list[str]):
-        prop_value = [{'id': page_id} for page_id in page_ids]
-        return cls(prop_name, 'relation', prop_value)
+    def relation(cls, key, page_ids: list[str]):
+        wrapped_value = [{'id': page_id} for page_id in page_ids]
+        return cls(key, wrapped_value, 'relation')
 
     @classmethod
-    def date(cls, prop_name, value: DateObject):
-        prop_value = value.isoformat()
-        return cls(prop_name, 'date', prop_value)
+    def date(cls, key, value: DateObject):
+        value = value.isoformat()
+        return cls(key, value, 'date')

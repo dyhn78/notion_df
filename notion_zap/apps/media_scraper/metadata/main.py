@@ -19,7 +19,7 @@ class MetadataScrapManager:
                 if writer.scrap_data():
                     writer.set_data()
             else:
-                editor.mark_exception('url_missing')
+                editor.mark_exception('no_meta_url')
         else:
             writer = MetadataWriter(editor)
             writer.adjust_subpage()
@@ -43,19 +43,19 @@ class MetadataWriter:
         self.page.root.disable_overwrite = not self.editor.enable_overwrite
 
         if true_name := self.data.get('name'):
-            self.page.write_text(tag='true_name', value=true_name)
+            self.page.write_text(key_alias='true_name', value=true_name)
         if subname := self.data.get('subname'):
-            self.page.write_text(tag='subname', value=subname)
+            self.page.write_text(key_alias='subname', value=subname)
         if author := self.data.get('author'):
-            self.page.write_text(tag='author', value=author)
+            self.page.write_text(key_alias='author', value=author)
         if publisher := self.data.get('publisher'):
-            self.page.write_text(tag='publisher', value=publisher)
+            self.page.write_text(key_alias='publisher', value=publisher)
         if volume := self.data.get('page_count'):
-            self.page.write_number(tag='volume', value=volume)
+            self.page.write_number(key_alias='volume', value=volume)
 
         if cover_image := self.data.get('cover_image'):
             true_name = self.data['name']
-            file_writer = self.page.write_files(tag='cover_image')
+            file_writer = self.page.write_files(key_alias='cover_image')
             file_writer.add_file(file_name=true_name,
                                  file_url=cover_image)
 
@@ -69,7 +69,7 @@ class MetadataWriter:
         if self.subpage.block_id and self.editor.enable_overwrite:
             for child in self.subpage.children:
                 child.archive()
-        link_to_contents = self.page.write_rich_text(tag='link_to_contents')
+        link_to_contents = self.page.write_rich_text(key_alias='link_to_contents')
         link_to_contents.mention_page(self.subpage.block_id)
         return self.subpage
 
@@ -100,7 +100,7 @@ class BookstoreWriter(MetadataWriter):
             return True
         for title in self.titles:
             if url := scrap_yes24_url(title):
-                self.page.write_url(tag='url', value=url)
+                self.page.write_url(key_alias='url', value=url)
                 self.url = url
                 return True
         return False

@@ -81,8 +81,6 @@ class RegularMatchFetcher:
             ft |= manager.relation('dates_created').is_empty()
         if table is self.bs.readings:
             ft |= manager.relation('itself').is_empty()
-            ft |= manager.relation('dates_created').is_empty()
-            ft |= manager.select('media_type').is_empty()
 
             begin = manager.relation('periods_begin').is_empty()
             begin &= manager.checkbox('no_exp').is_empty()
@@ -91,6 +89,9 @@ class RegularMatchFetcher:
             begin = manager.relation('dates_begin').is_empty()
             begin &= manager.checkbox('no_exp').is_empty()
             ft |= begin
+
+            ft |= manager.relation('dates_created').is_empty()
+            ft |= manager.select('media_type').is_empty()
 
         # ft.preview()
         query.push_filter(ft)

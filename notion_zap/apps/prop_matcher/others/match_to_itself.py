@@ -6,7 +6,7 @@ class SelfMatcher(MainEditor):
         for table in self.tables:
             for row in table.rows:
                 if row.read_tag('itself') != [row.block_id]:
-                    row.write()
+                    row.write(key_alias='itself', value=[row.block_id])
 
     @property
     def tables(self):

@@ -14,8 +14,8 @@ class DateIntroducer:
         date_handler = DateHandler.from_strf_dig6(date_title)
         new_tar_idx = date_handler.strf_dig6_and_weekday()
         if date_title != new_tar_idx:
-            date.write(tag='title', value=new_tar_idx)
+            date.write(key_alias='title', value=new_tar_idx)
         date_range = DateObject(date_handler.date)
         if date_range != date.read_tag('dateval_manual'):
-            date.write_date(tag='dateval_manual', value=date_range)
+            date.write_date(key_alias='dateval_manual', value=date_range)
         date.save()

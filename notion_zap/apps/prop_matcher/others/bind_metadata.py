@@ -79,7 +79,7 @@ class ProgressMatcherofDatesDepr(TableModuleDepr):
                 if tar_ids := self.determine_tar_ids(dom, to_tar):
                     write_extendedly(dom, to_tar, tar_ids)
                 if not dom.read_tag('sync_status'):  # False
-                    dom.write_checkbox(tag='sync_status', value=True)
+                    dom.write_checkbox(key_alias='sync_status', value=True)
 
     def determine_tar_ids(self, dom: editors.PageRow, to_tar: str):
         refs = fetch_all_pages_of_relation(dom, self.reference, self.to_ref)

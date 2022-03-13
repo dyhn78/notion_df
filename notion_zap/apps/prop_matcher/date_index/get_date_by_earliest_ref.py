@@ -25,7 +25,7 @@ class DateMatcherByEarliestRef(MainEditor):
 
     @staticmethod
     def reset_period(row: PageRow):
-        row.write_relation(tag='periods', value=[])
+        row.write_relation(key_alias='periods', value=[])
 
     @property
     def args(self):

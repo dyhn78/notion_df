@@ -1,57 +1,67 @@
 from __future__ import annotations
 
-from collections import defaultdict
 from copy import deepcopy
-from typing import Optional, Union, Any, Hashable
+from typing import Optional, Union, Any, Hashable, Iterable
 
 from notion_zap.cli.gateway import parsers
 from notion_zap.cli.structs.prop_types import VALUE_FORMATS
 
 
+class PropertyValueLabel:
+    def __init__(self, value: Any,
+                 alias: Hashable,
+                 marks: Optional[Iterable[Hashable]] = None):
+        self.value = value
+        self.alias = alias
+        self.marks = marks
+
+
 class PropertyColumn:
     def __init__(self, key: str,
-                 tag: Hashable = None,
-                 tags: list[Hashable] = None,
+                 alias: Hashable = None,
+                 aliases: Iterable[Hashable] = None,
                  data_type: str = '',
-                 labels: Optional[dict[Hashable, Any]] = None,
-                 marks_on_value: Optional[dict[Hashable, list]] = None,
-                 marks_on_label: Optional[dict[Hashable, list]] = None):
-        self.key = key
+                 labels: Optional[Iterable[PropertyValueLabel]] = None):
         self.data_type = data_type
-
-        self.tags = tags if tags is not None else []
-        if tag is not None:
-            self.tags.append(tag)
-        self.labels = labels if labels is not None else {}
-        self._value_to_label = {value: key for key, value in self.labels.items()}
-
-        self.marks = {}
-        if marks_on_value:
-            self.marks.update(**marks_on_value)
-        if self.labels and marks_on_label:
-            for mark, marked_labels in marks_on_label.items():
-                values = [self.labels[label] for label in marked_labels]
-                self.marks.update({mark: values})
-        self._value_to_mark = defaultdict(list)
-        for mark, values in self.marks.items():
-            for value in values:
-                self._value_to_mark[value].append(mark)
+        self.key = key
+        self.key_aliases = []
+        if alias is not None:
+            assert isinstance(alias, Hashable)
+            self.key_aliases.append(alias)
+        if aliases is not None:
+            for alias in aliases:
+                assert isinstance(alias, Hashable)
+                self.key_aliases.append(alias)
+        self.label_map: dict[Hashable, PropertyValueLabel] \
+            = {label.alias: label for label in labels} if labels else {}
 
     def __str__(self):
         return ' | '.join(
-            [self.key, ', '.join(str(tag) for tag in self.tags), self.data_type])
+            [self.key, ', '.join(str(tag) for tag in self.key_aliases), self.data_type])
 
     @property
     def parser_type(self):
         return VALUE_FORMATS[self.data_type]
 
     def label_of(self, value, default=None):
-        return self._value_to_label.get(value, default)
+        for label in self.label_map.values():
+            if label.value == value:
+                return label
+        return default
 
-    def marks_of(self, value, default=None):
-        if default is None:
-            default = []
-        return self._value_to_mark.get(value, default)
+    def marked_labels(self, mark: Hashable) -> list[PropertyValueLabel]:
+        res = []
+        for label in self.label_map.values():
+            if mark in label.marks:
+                res.append(label)
+        return res
+
+    def marked_values(self, mark: Hashable):
+        res = []
+        for label in self.label_map.values():
+            if mark in label.marks:
+                res.append(label.value)
+        return res
 
 
 class PropertyFrame:
@@ -75,7 +85,7 @@ class PropertyFrame:
     def mapping_of_tag_to_key(self):
         res = {}
         for unit in self.units:
-            res.update({tag: unit.key for tag in unit.tags})
+            res.update({tag: unit.key for tag in unit.key_aliases})
         return res
 
     @property
@@ -86,17 +96,17 @@ class PropertyFrame:
         return res
 
     @property
-    def by_tag(self) -> dict[Hashable, PropertyColumn]:
+    def by_alias(self) -> dict[Hashable, PropertyColumn]:
         res = {}
         for unit in self.units:
-            res.update({tag: unit for tag in unit.tags})
+            res.update({key_alias: unit for key_alias in unit.key_aliases})
         return res
 
-    def key_of(self, prop_tag: Hashable):
+    def key_of(self, key_alias: Hashable):
         try:
-            return self.by_tag[prop_tag].key
+            return self.by_alias[key_alias].key
         except KeyError:
-            raise KeyError(prop_tag, self.mapping_of_tag_to_key())
+            raise KeyError(key_alias, self.mapping_of_tag_to_key())
 
     def type_of(self, prop_key: str):
         return self.by_key[prop_key].data_type
@@ -105,7 +115,7 @@ class PropertyFrame:
         return self.by_key.keys()
 
     def tags(self):
-        return self.by_tag.keys()
+        return self.by_alias.keys()
 
     def __iter__(self):
         return iter(self.units)
@@ -120,7 +130,7 @@ class PropertyFrame:
         self.units.append(unit)
 
     def add_alias(self, tag: str, new_tag: str):
-        unit = self.by_tag[tag]
+        unit = self.by_alias[tag]
         new_unit = deepcopy(unit)
         new_unit.tag = new_tag
         self.append(new_unit)

@@ -1,6 +1,6 @@
 from typing import Optional, Iterable
 
-from notion_zap.apps.media_scraper.config import STATUS_REGULAR
+from notion_zap.apps.media_scraper.config import STATUS_COLUMN
 from notion_zap.apps.media_scraper.location.manager import LibraryScrapManager
 from notion_zap.apps.media_scraper.metadata.main import MetadataScrapManager
 from notion_zap.apps.media_scraper.struct import (
@@ -71,7 +71,7 @@ class RegularScrapFetcher:
 
         maker = manager.select('edit_status')
         ft &= (
-                maker.equals_to_any(STATUS_REGULAR)
+                maker.equals_to_any(STATUS_COLUMN.marked_values('queue'))
                 | maker.is_empty()
         )
         if title:

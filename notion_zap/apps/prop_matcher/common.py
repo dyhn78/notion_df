@@ -11,7 +11,7 @@ def has_value(row: PageRow, tag_target):
 
 
 def set_value(row: PageRow, target: PageRow, tag_target):
-    row.write_relation(tag=tag_target, value=target.block_id)
+    row.write_relation(key_alias=tag_target, value=[target.block_id])
 
 
 class ReferenceInfo:
@@ -35,14 +35,14 @@ class GetterByReference(RowEditor):
 
 
 def write_extendedly(row: PageRow, prop_tag: str, values: list[str]):
-    old_values = row.read_tag(prop_tag)
+    total = row.read_tag(prop_tag)
     changed = False
     for value in values:
-        if value not in old_values:
-            old_values.append(value)
+        if value not in total:
+            total.append(value)
             changed = True
     if changed:
-        row.write(tag=prop_tag, value=old_values)
+        row.write(key_alias=prop_tag, value=total)
     return True
 
 

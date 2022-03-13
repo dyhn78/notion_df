@@ -16,45 +16,32 @@ class PageRowPropertyWriter(metaclass=ABCMeta):
     def push_encoder(self, prop_key: str, encoder: PropertyEncoder):
         pass
 
-    def _cleaned_key(self, key: str, tag: Hashable) -> str:
-        assert bool(key) + bool(tag) == 1
+    def clean_key(self, key: str, key_alias: Hashable) -> str:
+        assert bool(key) + bool(key_alias) == 1
         if key:
-            cleaned_key = key
+            return key
         else:
-            cleaned_key = self.frame.key_of(tag)
-        return cleaned_key
+            return self.frame.key_of(key_alias)
 
-    def _cleaned_key_with_a_value(
-            self, key: str, tag: Hashable, value: Any, label: Hashable):
-        cleaned_key = self._cleaned_key(key, tag)
-        column = self.frame.by_key[cleaned_key]
-        assert bool(value is not None) + bool(label is not None) <= 1
-        if label is not None:
-            cleaned_value = column.labels[label]
+    def clean_value(self, key: str, value: Any, value_alias: Hashable):
+        column = self.frame.by_key[key]
+        assert bool(value is not None) + bool(value_alias is not None) <= 1
+        if value is not None:
+            return value
+        elif value_alias is not None:
+            return column.label_map[value_alias].value
+        return None
+
+    def clean_values(self, key: str, value: Any, value_aliases: Optional[list[Hashable]]):
+        column = self.frame.by_key[key]
+        assert bool(value is not None) + bool(value_aliases is not None) <= 1
+        if value is not None:
+            return value
         else:
-            cleaned_value = value
-        return cleaned_key, cleaned_value
+            return [column.label_map[label].value for label in value_aliases]
 
-    def _cleaned_key_with_value_list(
-            self, key: str, tag: Hashable, value: Any,
-            label: Hashable, label_list: list[Hashable],
-            mark: Hashable) -> tuple[str, Any]:
-        cleaned_key = self._cleaned_key(key, tag)
-        column = self.frame.by_key[cleaned_key]
-        assert sum(arg is not None
-                   for arg in [value, label, label_list, mark]) <= 1
-        if label is not None:
-            cleaned_value = column.labels[label]
-        elif label_list is not None:
-            cleaned_value = [column.labels[label] for label in label_list]
-        elif mark is not None:
-            cleaned_value = column.marks[mark]
-        else:
-            cleaned_value = value
-        return cleaned_key, cleaned_value
-
-    def write_rich(self, key: str = None, tag: Hashable = None, data_type=''):
-        key = self._cleaned_key(key, tag)
+    def write_rich(self, key: str = None, key_alias: Hashable = None, data_type=''):
+        key = self.clean_key(key, key_alias)
         if not data_type:
             data_type = self.frame.type_of(key)
         try:
@@ -70,23 +57,22 @@ class PageRowPropertyWriter(metaclass=ABCMeta):
         return [func_name for func_name in dir(cls)
                 if func_name.startswith('write_rich_')]
 
-    def write_rich_text(self, key: str = None, tag: Hashable = None):
-        key = self._cleaned_key(key, tag)
+    def write_rich_text(self, key: str = None, key_alias: Hashable = None):
+        key = self.clean_key(key, key_alias)
         encoder = RichTextPropertyEncoder(key, 'rich_text')
         return self.push_encoder(key, encoder)
 
-    def write_rich_title(self, key: str = None, tag: Hashable = None):
-        key = self._cleaned_key(key, tag)
+    def write_rich_title(self, key: str = None, key_alias: Hashable = None):
+        key = self.clean_key(key, key_alias)
         encoder = RichTextPropertyEncoder(key, 'title')
         return self.push_encoder(key, encoder)
 
     def write(
-            self, key: str = None, tag: Hashable = None, data_type='',
+            self, key: str = None, key_alias: Hashable = None, data_type='',
             value: Any = None,
-            label: Hashable = None,
-            label_list: Optional[list[Hashable]] = None, mark: Hashable = None):
-        key, value = self._cleaned_key_with_value_list(key, tag, value, label, label_list,
-                                                       mark)
+            value_aliases: Optional[list[Hashable]] = None):
+        key = self.clean_key(key, key_alias)
+        value = self.clean_values(key, value, value_aliases)
         if not data_type:
             data_type = self.frame.type_of(key)
         try:
@@ -104,118 +90,109 @@ class PageRowPropertyWriter(metaclass=ABCMeta):
                 not func_name.startswith('write_rich_')]
 
     def write_text(
-            self, key: str = None, tag: Hashable = None, value: str = None,
-            label: Hashable = None):
-        key, value = self._cleaned_key_with_a_value(key, tag, value, label)
+            self, key: str = None, key_alias: Hashable = None, value: str = None,
+            value_alias: Hashable = None):
+        key = self.clean_key(key, key_alias)
+        value = self.clean_value(key, value, value_alias)
         encoder = self.write_rich_text(key=key)
         encoder.write_text(value)
         return encoder
 
     def write_title(
-            self, key: str = None, tag: Hashable = None, value: str = None,
-            label: Hashable = None):
-        key, value = self._cleaned_key_with_a_value(key, tag, value, label)
+            self, key: str = None, key_alias: Hashable = None, value: str = None,
+            value_alias: Hashable = None):
+        key = self.clean_key(key, key_alias)
+        value = self.clean_value(key, value, value_alias)
         encoder = self.write_rich_title(key=key)
         encoder.write_text(value)
         return encoder
 
     def write_multi_select(
-            self, key: str = None, tag: Hashable = None,
-            value: Union[str, list[str]] = None,
-            label: Hashable = None,
-            label_list: Optional[list[Hashable]] = None, mark: Hashable = None):
-        key, value = self._cleaned_key_with_value_list(key, tag, value, label, label_list,
-                                                       mark)
-        if isinstance(value, list) or isinstance(value, tuple):
-            cleaned_value = list(value)
-        elif isinstance(value, str):
-            cleaned_value = [value]
-        else:
-            raise ValueError(value)
-        encoder = SimplePropertyEncoder.multi_select(key, cleaned_value)
+            self, key: str = None, key_alias: Hashable = None,
+            value: list[str] = None,
+            value_aliases: Optional[list[Hashable]] = None):
+        key = self.clean_key(key, key_alias)
+        value = self.clean_values(key, value, value_aliases)
+        encoder = SimplePropertyEncoder.multi_select(key, value)
         return self.push_encoder(key, encoder)
 
     def write_relation(
-            self, key: str = None, tag: Hashable = None,
-            value: Union[str, list[str]] = None,
-            label: Hashable = None,
-            label_list: Optional[list[Hashable]] = None, mark: Hashable = None):
-        key, value = self._cleaned_key_with_value_list(key, tag, value, label, label_list,
-                                                       mark)
-        if isinstance(value, list) or isinstance(value, tuple):
-            cleaned_value = list(value)
-        elif isinstance(value, str):
-            cleaned_value = [value]
-        else:
-            raise ValueError(value)
-        encoder = SimplePropertyEncoder.relation(key, cleaned_value)
+            self, key: str = None, key_alias: Hashable = None,
+            value: list[str] = None,
+            value_aliases: Optional[list[Hashable]] = None):
+        key = self.clean_key(key, key_alias)
+        value = self.clean_values(key, value, value_aliases)
+        encoder = SimplePropertyEncoder.relation(key, value)
         return self.push_encoder(key, encoder)
 
     def write_people(
-            self, key: str = None, tag: Hashable = None,
+            self, key: str = None, key_alias: Hashable = None,
             value: Any = None,
-            label: Hashable = None,
-            label_list: Optional[list[Hashable]] = None, mark: Hashable = None):
-        key, value = self._cleaned_key_with_value_list(key, tag, value, label, label_list,
-                                                       mark)
-        if isinstance(value, list) or isinstance(value, tuple):
-            cleaned_value = list(value)
-        else:
-            cleaned_value = [value]
-        encoder = SimplePropertyEncoder.people(key, cleaned_value)
+            value_aliases: Optional[list[Hashable]] = None):
+        key = self.clean_key(key, key_alias)
+        value = self.clean_values(key, value, value_aliases)
+        encoder = SimplePropertyEncoder.people(key, value)
         return self.push_encoder(key, encoder)
 
-    def write_files(self, key: str = None, tag: Hashable = None):
-        key = self._cleaned_key(key, tag)
+    def write_files(self, key: str = None, key_alias: Hashable = None):
+        key = self.clean_key(key, key_alias)
         encoder = FilesPropertyEncoder(key)
         return self.push_encoder(key, encoder)
 
     def write_date(
-            self, key: str = None, tag: Hashable = None,
-            value: Union[DateObject, datetime, date] = None, label: Hashable = None):
-        key, value = self._cleaned_key_with_a_value(key, tag, value, label)
+            self, key: str = None, key_alias: Hashable = None,
+            value: Union[DateObject, datetime, date] = None,
+            value_alias: Hashable = None):
+        key = self.clean_key(key, key_alias)
+        value = self.clean_value(key, value, value_alias)
         value = DateObject.from_date_val(value)
         encoder = SimplePropertyEncoder.date(key, value)
         return self.push_encoder(key, encoder)
 
     def write_select(
-            self, key: str = None, tag: Hashable = None, value: str = None,
-            label: Hashable = None):
-        key, value = self._cleaned_key_with_a_value(key, tag, value, label)
+            self, key: str = None, key_alias: Hashable = None, value: str = None,
+            value_alias: Hashable = None):
+        key = self.clean_key(key, key_alias)
+        value = self.clean_value(key, value, value_alias)
         encoder = SimplePropertyEncoder.select(key, value)
         return self.push_encoder(key, encoder)
 
     def write_checkbox(
-            self, key: str = None, tag: Hashable = None, value: bool = None,
-            label: Hashable = None):
-        key, value = self._cleaned_key_with_a_value(key, tag, value, label)
+            self, key: str = None, key_alias: Hashable = None, value: bool = None,
+            value_alias: Hashable = None):
+        key = self.clean_key(key, key_alias)
+        value = self.clean_value(key, value, value_alias)
         encoder = SimplePropertyEncoder.checkbox(key, value)
         return self.push_encoder(key, encoder)
 
     def write_number(
-            self, key: str = None, tag: Hashable = None, value: Union[int, float] = None,
-            label: Hashable = None):
-        key, value = self._cleaned_key_with_a_value(key, tag, value, label)
+            self, key: str = None, key_alias: Hashable = None, value: Union[int, float] = None,
+            value_alias: Hashable = None):
+        key = self.clean_key(key, key_alias)
+        value = self.clean_value(key, value, value_alias)
         encoder = SimplePropertyEncoder.number(key, value)
         return self.push_encoder(key, encoder)
 
     def write_phone_number(
-            self, key: str = None, tag: Hashable = None, value: str = None,
-            label: Hashable = None):
-        key, value = self._cleaned_key_with_a_value(key, tag, value, label)
+            self, key: str = None, key_alias: Hashable = None, value: str = None,
+            value_alias: Hashable = None):
+        key = self.clean_key(key, key_alias)
+        value = self.clean_value(key, value, value_alias)
         encoder = SimplePropertyEncoder.phone_number(key, value)
         return self.push_encoder(key, encoder)
 
     def write_email(
-            self, key: str = None, tag: Hashable = None, value: str = None,
-            label: Hashable = None):
-        key, value = self._cleaned_key_with_a_value(key, tag, value, label)
+            self, key: str = None, key_alias: Hashable = None, value: str = None,
+            value_alias: Hashable = None):
+        key = self.clean_key(key, key_alias)
+        value = self.clean_value(key, value, value_alias)
         encoder = SimplePropertyEncoder.email(key, value)
         return self.push_encoder(key, encoder)
 
     def write_url(
-            self, key: str = None, tag: Hashable = None, value: str = None,
-            label: Hashable = None):
-        key, value = self._cleaned_key_with_a_value(key, tag, value, label)
+            self, key: str = None, key_alias: Hashable = None, value: str = None,
+            value_alias: Hashable = None):
+        key = self.clean_key(key, key_alias)
+        value = self.clean_value(key, value, value_alias)
         encoder = SimplePropertyEncoder.url(key, value)
         return self.push_encoder(key, encoder)

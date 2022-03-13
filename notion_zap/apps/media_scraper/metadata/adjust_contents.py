@@ -22,5 +22,5 @@ def remove_dummy_blocks(page: PageBlock):
                 block.archive()
                 removed += 1
     if removed and isinstance(page, editors.PageRow):
-        page.write_text(tag='link_to_contents', value='')
+        page.write_text(key_alias='link_to_contents', value='')
     return removed

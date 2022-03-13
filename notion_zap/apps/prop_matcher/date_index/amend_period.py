@@ -17,5 +17,5 @@ class PeriodIntroducer:
                                 end=date_handler.last_day_of_week())
         if date_range != period.read_tag('manual_date_range'):
             period.root.disable_overwrite = self.disable_overwrite
-            period.write_date(tag='manual_date_range', value=date_range)
+            period.write_date(key_alias='manual_date_range', value=date_range)
             period.root.disable_overwrite = False

@@ -76,8 +76,8 @@ class DateGetterFromDateValue:
         date_handler = DateHandler(date_val)
 
         tar_idx = date_handler.strf_dig6_and_weekday()
-        tar.write(tag='title', value=tar_idx)
+        tar.write(key_alias='title', value=tar_idx)
 
         date_range = DateObject(date_handler.date)
-        tar.write_date(tag='dateval_manual', value=date_range)
+        tar.write_date(key_alias='dateval_manual', value=date_range)
         return tar.save()

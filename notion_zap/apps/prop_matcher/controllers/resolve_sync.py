@@ -53,5 +53,5 @@ class SyncResolver:
                 front_ids = back.read_tag(self.tag_backward)
                 if front_id not in front_ids:
                     front_ids.append(front_id)
-                    back.write_relation(tag=self.tag_backward, value=front_id)
+                    back.write_relation(key_alias=self.tag_backward, value=[front_id])
                     stopwatch(f"{back.block_name} -> {front.block_name}")

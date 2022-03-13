@@ -58,9 +58,9 @@ class PeriodGetterFromDateValue:
         date_handler = DateHandler(date_val)
 
         tar_idx = date_handler.strf_year_and_week()
-        tar.write_title(tag='title', value=tar_idx)
+        tar.write_title(key_alias='title', value=tar_idx)
 
         date_range = DateObject(start=date_handler.first_day_of_week(),
                                 end=date_handler.last_day_of_week())
-        tar.write_date(tag='manual_date_range', value=date_range)
+        tar.write_date(key_alias='manual_date_range', value=date_range)
         return tar.save()
