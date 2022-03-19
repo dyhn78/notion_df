@@ -34,7 +34,7 @@ class WebDriverFactory:
         if cls.ON_WINDOWS:
             return os.path.join(os.path.dirname(__file__), 'chromedriver.exe')
         elif cls.ON_LINUX:
-            return os.path.join(os.path.dirname(__file__), 'chromedriver97_linux')
+            return os.path.join(os.path.dirname(__file__), 'chromedriver_linux')
 
 
     def get_service_without_window(self):
