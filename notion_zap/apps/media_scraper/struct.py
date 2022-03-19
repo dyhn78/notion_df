@@ -40,15 +40,15 @@ class ReadingPageManager:
     def needs_location(self):
         return 'location' in self.init_mark.tags
 
-    def mark_exception(self, label):
+    def mark_exception(self, value_alias):
         if not self._finalized:
-            self.page.write_select(key_alias='edit_status', value_alias=label)
+            self.page.write_select(key_alias='edit_status', value_alias=value_alias)
             self._finalized = True
 
     def mark_completion(self):
         if not self._finalized:
             self.page.write_select(key_alias='edit_status',
-                                   value_alias=self.success_mark)
+                                   value=self.success_mark.value)
             self._finalized = True
 
     @property

@@ -14,6 +14,9 @@ class PropertyMarkedValue:
         self.alias = alias
         self.tags: list[Hashable] = list(tags) if tags else []
 
+    def __str__(self):
+        return f"marked_value({self.value}, alias= {self.alias}, tags= {self.tags})"
+
 
 class PropertyColumn:
     def __init__(self, key: str,
@@ -47,7 +50,7 @@ class PropertyColumn:
             for mark in self.marks.values():
                 if value_or_alias in [mark.value, mark.alias]:
                     return mark
-        raise KeyError
+        raise KeyError(f"{value_or_aliases=}, {self.marks=}")
 
     def get_mark_by_value(self, value):
         for mark in self.marks.values():

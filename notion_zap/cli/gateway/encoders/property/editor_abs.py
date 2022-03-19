@@ -29,7 +29,10 @@ class PageRowPropertyWriter(metaclass=ABCMeta):
         if value is not None:
             return value
         elif value_alias is not None:
-            return column.marks[value_alias].value
+            try:
+                return column.marks[value_alias].value
+            except KeyError:
+                raise KeyError(f"{value_alias=}, {column.marks.keys=}")
         return None
 
     def clean_values(self, key: str, value: Any, value_aliases: Optional[list[Hashable]]):
@@ -38,7 +41,10 @@ class PageRowPropertyWriter(metaclass=ABCMeta):
         if value is not None:
             return value
         else:
-            return [column.marks[label].value for label in value_aliases]
+            try:
+                return [column.marks[label].value for label in value_aliases]
+            except KeyError:
+                raise KeyError(f"{value_aliases=}, {column.marks.keys=}")
 
     def write_rich(self, key: str = None, key_alias: Hashable = None, data_type=''):
         key = self.clean_key(key, key_alias)
