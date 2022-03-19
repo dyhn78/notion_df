@@ -109,21 +109,21 @@ class PageRow(PageBlock, PageRowPropertyWriter):
         return value
 
     def read_tag(self, prop_tag: Hashable):
-        return self.read_key(self.frame.key_of(prop_tag))
+        return self.read_key(self.frame.get_key(prop_tag))
 
     def richly_read_tag(self, prop_tag: Hashable):
-        return self.richly_read_key(self.frame.key_of(prop_tag))
+        return self.richly_read_key(self.frame.get_key(prop_tag))
 
     def get_tag(self, prop_tag: Hashable, default=None):
         try:
-            prop_key = self.frame.key_of(prop_tag)
+            prop_key = self.frame.get_key(prop_tag)
         except KeyError:
             return default
         return self.get_key(prop_key, default)
 
     def richly_get_tag(self, prop_tag: Hashable, default=None):
         try:
-            prop_key = self.frame.key_of(prop_tag)
+            prop_key = self.frame.get_key(prop_tag)
         except KeyError:
             return default
         return self.richly_get_key(prop_key, default)
@@ -132,15 +132,15 @@ class PageRow(PageBlock, PageRowPropertyWriter):
         return self._read_plain
 
     def read_all_tags(self):
-        return {key: self._read_plain[self.frame.key_of(key)]
-                for key in self.frame.tags()}
+        return {key: self._read_plain[self.frame.get_key(key)]
+                for key in self.frame.key_aliases()}
 
     def richly_read_all_keys(self):
         return self._read_rich
 
     def richly_read_all_tags(self):
-        return {key: self._read_rich[self.frame.key_of(key)]
-                for key in self.frame.tags()}
+        return {key: self._read_rich[self.frame.get_key(key)]
+                for key in self.frame.key_aliases()}
 
     def read_contents(self) -> dict[str, Any]:
         """this method is purely built for trickle-down reading;
@@ -153,11 +153,11 @@ class PageRow(PageBlock, PageRowPropertyWriter):
         don't use it editing source.
         only shows columns with manual tag."""
         res = {}
-        for tag in self.frame.tags():
-            if rich_value := self._read_rich.get(self.frame.key_of(tag)):
+        for tag in self.frame.key_aliases():
+            if rich_value := self._read_rich.get(self.frame.get_key(tag)):
                 res.update({tag: rich_value})
             else:
-                plain_value = self._read_plain.get(self.frame.key_of(tag))
+                plain_value = self._read_plain.get(self.frame.get_key(tag))
                 res.update({tag: plain_value})
         return res
 

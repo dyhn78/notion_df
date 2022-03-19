@@ -19,7 +19,7 @@ class ReadingTableDuplicateRemover(ReadingTableEditor):
     def make_query(self, request_size):
         query = self.table.rows.open_query()
         maker = query.filter_manager_by_tags.select('media_type')
-        ft_media = maker.equals_to_any(maker.column.marks['book'])
+        ft_media = maker.equals_to_any(maker.column.key_aliases['book'])
         if self.title:
             maker = query.filter_manager_by_tags.text('title')
             ft_media &= maker.starts_with(self.title)

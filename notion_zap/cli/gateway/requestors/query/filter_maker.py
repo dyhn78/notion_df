@@ -35,7 +35,7 @@ class QueryFilterManagerbyKey:
             format_type = data_type
         else:
             if data_type is None:
-                data_type = self.frame.type_of(key)
+                data_type = self.frame.get_type(key)
             format_type = FILTER_FORMATS[data_type]
         return format_type
 
@@ -72,31 +72,31 @@ class QueryFilterManagerbyTag(QueryFilterManagerbyKey):
         return super().__call__(key_alias, data_type)
 
     def text(self, key_alias: str):
-        return super().text(self.frame.key_of(key_alias))
+        return super().text(self.frame.get_key(key_alias))
 
     def relation(self, key_alias: str):
-        return super().relation(self.frame.key_of(key_alias))
+        return super().relation(self.frame.get_key(key_alias))
 
     def number(self, key_alias: str):
-        return super().number(self.frame.key_of(key_alias))
+        return super().number(self.frame.get_key(key_alias))
 
     def checkbox(self, key_alias: str):
-        return super().checkbox(self.frame.key_of(key_alias))
+        return super().checkbox(self.frame.get_key(key_alias))
 
     def select(self, key_alias: str):
-        return super().select(self.frame.key_of(key_alias))
+        return super().select(self.frame.get_key(key_alias))
 
     def multi_select(self, key_alias: str):
-        return super().multi_select(self.frame.key_of(key_alias))
+        return super().multi_select(self.frame.get_key(key_alias))
 
     def files(self, key_alias: str):
-        return super().files(self.frame.key_of(key_alias))
+        return super().files(self.frame.get_key(key_alias))
 
     def date(self, key_alias: str):
-        return super().date(self.frame.key_of(key_alias))
+        return super().date(self.frame.get_key(key_alias))
 
     def people(self, key_alias: str):
-        return super().people(self.frame.key_of(key_alias))
+        return super().people(self.frame.get_key(key_alias))
 
 
 class QueryFilterMaker:

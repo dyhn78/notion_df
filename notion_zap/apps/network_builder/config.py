@@ -45,10 +45,10 @@ class NetworkPropertyFrame(PropertyFrame):
         :param keyword: currently supports {'hi', 'lo', 'in', 'out',
             'up', 'down', 'strong', 'weak',
             'self', 'themes', 'ideas'}
-        :return list of valid structs units
+        :return list of valid structs columns
         """
         res = []
-        for tag in self.tags():
+        for tag in self.key_aliases():
             unit = self.by_alias[tag]
             if isinstance(unit, NetworkPropertyColumn):
                 for aspect in unit.EDGE_ASPECTS:

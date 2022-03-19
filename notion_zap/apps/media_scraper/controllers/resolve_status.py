@@ -4,7 +4,7 @@ from notion_zap.apps.media_scraper.struct import ReadingTableEditor
 
 
 class ReadingTableStatusResolver(ReadingTableEditor):
-    status_enum = READING_FRAME.by_alias['edit_status'].label_map
+    status_enum = READING_FRAME.by_alias['edit_status'].marks
 
     def execute(self, request_size=0):
         self.make_query(request_size)
@@ -14,9 +14,9 @@ class ReadingTableStatusResolver(ReadingTableEditor):
     def make_query(self, request_size):
         query = self.table.rows.open_query()
         maker = query.filter_manager_by_tags.select('media_type')
-        ft = maker.equals_to_any(maker.column.marks['book'])
+        ft = maker.equals_to_any(maker.column.key_aliases['book'])
         maker = query.filter_manager_by_tags.select('edit_status')
-        ft &= maker.equals_to_any(maker.column.marks['need_resets'])
+        ft &= maker.equals_to_any(maker.column.key_aliases['need_resets'])
         """
         maker = query.filter_manager_by_tags.checkbox_at('not_available')
         ft |= maker.equals(True)

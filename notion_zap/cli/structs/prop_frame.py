@@ -1,19 +1,18 @@
 from __future__ import annotations
 
-from copy import deepcopy
 from typing import Optional, Union, Any, Hashable, Iterable
 
 from notion_zap.cli.gateway import parsers
 from notion_zap.cli.structs.prop_types import VALUE_FORMATS
 
 
-class PropertyValueLabel:
+class PropertyMarkedValue:
     def __init__(self, value: Any,
                  alias: Hashable,
-                 marks: Optional[Iterable[Hashable]] = None):
+                 tags: Optional[Iterable[Hashable]] = None):
         self.value = value
         self.alias = alias
-        self.marks = marks
+        self.tags = tags
 
 
 class PropertyColumn:
@@ -21,7 +20,7 @@ class PropertyColumn:
                  alias: Hashable = None,
                  aliases: Iterable[Hashable] = None,
                  data_type: str = '',
-                 labels: Optional[Iterable[PropertyValueLabel]] = None):
+                 marked_values: Optional[Iterable[PropertyMarkedValue]] = None):
         self.data_type = data_type
         self.key = key
         self.key_aliases = []
@@ -32,8 +31,8 @@ class PropertyColumn:
             for alias in aliases:
                 assert isinstance(alias, Hashable)
                 self.key_aliases.append(alias)
-        self.label_map: dict[Hashable, PropertyValueLabel] \
-            = {label.alias: label for label in labels} if labels else {}
+        self.marks: dict[Hashable, PropertyMarkedValue] \
+            = {mark.alias: mark for mark in marked_values} if marked_values else {}
 
     def __str__(self):
         return ' | '.join(
@@ -43,30 +42,30 @@ class PropertyColumn:
     def parser_type(self):
         return VALUE_FORMATS[self.data_type]
 
-    def label_of(self, value, default=None):
-        for label in self.label_map.values():
-            if label.value == value:
-                return label
+    def get_mark(self, value, default=None):
+        for mark in self.marks.values():
+            if mark.value == value:
+                return mark
         return default
 
-    def marked_labels(self, mark: Hashable) -> list[PropertyValueLabel]:
+    def filter_marks(self, tag: Hashable) -> list[PropertyMarkedValue]:
         res = []
-        for label in self.label_map.values():
-            if mark in label.marks:
-                res.append(label)
+        for mark in self.marks.values():
+            if tag in mark.tags:
+                res.append(mark)
         return res
 
-    def marked_values(self, mark: Hashable):
+    def filter_values(self, tag: Hashable):
         res = []
-        for label in self.label_map.values():
-            if mark in label.marks:
-                res.append(label.value)
+        for mark in self.marks.values():
+            if tag in mark.tags:
+                res.append(mark.value)
         return res
 
 
 class PropertyFrame:
     def __init__(self, *args: Union[PropertyFrame, list[PropertyColumn]]):
-        self.units: list[PropertyColumn] = self._flatten(args)
+        self.columns: list[PropertyColumn] = self._flatten(args)
         self.title_key = ''
 
     @staticmethod
@@ -74,7 +73,7 @@ class PropertyFrame:
         res = []
         for arg in args:
             if isinstance(arg, PropertyFrame):
-                units = arg.units
+                units = arg.columns
             else:
                 for a in arg:
                     assert isinstance(a, PropertyColumn)
@@ -84,62 +83,53 @@ class PropertyFrame:
 
     def mapping_of_tag_to_key(self):
         res = {}
-        for unit in self.units:
+        for unit in self.columns:
             res.update({tag: unit.key for tag in unit.key_aliases})
         return res
 
     @property
     def by_key(self):
         res = {}
-        for unit in self.units:
-            res.update({unit.key: unit})
+        for cl in self.columns:
+            res.update({cl.key: cl})
         return res
 
     @property
     def by_alias(self) -> dict[Hashable, PropertyColumn]:
         res = {}
-        for unit in self.units:
-            res.update({key_alias: unit for key_alias in unit.key_aliases})
+        for cl in self.columns:
+            res.update({key_alias: cl for key_alias in cl.key_aliases})
         return res
 
-    def key_of(self, key_alias: Hashable):
+    def get_key(self, key_alias: Hashable):
         try:
             return self.by_alias[key_alias].key
         except KeyError:
             raise KeyError(key_alias, self.mapping_of_tag_to_key())
 
-    def type_of(self, prop_key: str):
+    def get_type(self, prop_key: str):
         return self.by_key[prop_key].data_type
 
     def keys(self):
         return self.by_key.keys()
 
-    def tags(self):
+    def key_aliases(self):
         return self.by_alias.keys()
 
     def __iter__(self):
-        return iter(self.units)
+        return iter(self.columns)
 
     def __len__(self):
-        return len(self.units)
+        return len(self.columns)
 
     def __str__(self):
-        return "----\n" + '\n'.join([str(unit) for unit in self.units]) + "\n----"
+        return "----\n" + '\n'.join([str(unit) for unit in self.columns]) + "\n----"
 
     def append(self, unit: PropertyColumn):
-        self.units.append(unit)
-
-    def add_alias(self, tag: str, new_tag: str):
-        unit = self.by_alias[tag]
-        new_unit = deepcopy(unit)
-        new_unit.tag = new_tag
-        self.append(new_unit)
+        self.columns.append(unit)
 
     def assign_title_key(self, key: str):
         self.title_key = key
-
-    def assign_title_tag(self, tag: str):
-        self.title_key = self.key_of(tag)
 
     def fetch_parser(self, parser: Union[parsers.PageParser, parsers.DatabaseParser]):
         for name, data_type in parser.data_types.items():

@@ -1,7 +1,7 @@
 from notion_zap.cli.structs import (
-    PropertyColumn as Cl, PropertyValueLabel as Lb, PropertyFrame)
+    PropertyColumn as Cl, PropertyMarkedValue as Lb, PropertyFrame)
 
-_STATUS_LABELS = [
+_STATUS_MARKS = [
     Lb('📥본문(비파괴)/위치', 'default',
        ('queue', 'manually_confirm', 'metadata', 'location',)),
     Lb('📥본문(파괴)', 'metadata', ('queue', 'completely', 'metadata', 'overwrite', )),
@@ -14,7 +14,7 @@ _STATUS_LABELS = [
     Lb('❓위치 찾기', 'no_location', ('fail', )),
 ]
 STATUS_COLUMN = Cl(key='🏁준비', alias='edit_status',
-                   labels=_STATUS_LABELS)
+                   marked_values=_STATUS_MARKS)
 
 READING_FRAME = PropertyFrame([
     Cl(key='📘유형', alias='media_type', ),

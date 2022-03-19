@@ -21,7 +21,7 @@ class PageRowPropertyWriter(metaclass=ABCMeta):
         if key:
             return key
         else:
-            return self.frame.key_of(key_alias)
+            return self.frame.get_key(key_alias)
 
     def clean_value(self, key: str, value: Any, value_alias: Hashable):
         column = self.frame.by_key[key]
@@ -29,7 +29,7 @@ class PageRowPropertyWriter(metaclass=ABCMeta):
         if value is not None:
             return value
         elif value_alias is not None:
-            return column.label_map[value_alias].value
+            return column.marks[value_alias].value
         return None
 
     def clean_values(self, key: str, value: Any, value_aliases: Optional[list[Hashable]]):
@@ -38,12 +38,12 @@ class PageRowPropertyWriter(metaclass=ABCMeta):
         if value is not None:
             return value
         else:
-            return [column.label_map[label].value for label in value_aliases]
+            return [column.marks[label].value for label in value_aliases]
 
     def write_rich(self, key: str = None, key_alias: Hashable = None, data_type=''):
         key = self.clean_key(key, key_alias)
         if not data_type:
-            data_type = self.frame.type_of(key)
+            data_type = self.frame.get_type(key)
         try:
             func = getattr(self, f'write_rich_{data_type}')
         except AttributeError:
@@ -74,7 +74,7 @@ class PageRowPropertyWriter(metaclass=ABCMeta):
         key = self.clean_key(key, key_alias)
         value = self.clean_values(key, value, value_aliases)
         if not data_type:
-            data_type = self.frame.type_of(key)
+            data_type = self.frame.get_type(key)
         try:
             func = getattr(self, f'write_{data_type}')
         except AttributeError:

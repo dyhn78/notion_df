@@ -4,7 +4,7 @@ from notion_zap.apps.media_scraper.location.lib_struct import (
     LibraryScrapBase, LibraryScrapResult)
 from notion_zap.apps.media_scraper.location.lib_gy import GoyangLibraryScrapBase
 from notion_zap.apps.media_scraper.location.lib_snu import SNULibraryScrapBase
-from notion_zap.apps.media_scraper.struct import ReadingPageEditor
+from notion_zap.apps.media_scraper.struct import ReadingPageManager
 from notion_zap.cli.utility import stopwatch
 
 
@@ -22,9 +22,12 @@ class LibraryScrapManager:
             for key, base_cls in self.base_classes.items()
             if key in self.targets}
 
-    def __call__(self, editor: ReadingPageEditor):
-        results = self.scrap(*editor.titles)
-        write_data(editor, results)
+    def __call__(self, manager: ReadingPageManager):
+        if manager.is_book:
+            if results := self.scrap(*manager.titles):
+                write_data(manager, results)
+                return
+            manager.mark_exception('no_location')
 
     def scrap(self, *titles: str) -> dict[str, LibraryScrapResult]:
         titles = set(remove_emoji(title) for title in titles)
@@ -45,15 +48,11 @@ class LibraryScrapManager:
             stopwatch('Selenium 종료')
 
 
-def write_data(editor: ReadingPageEditor, results: dict[str, LibraryScrapResult]):
-    page = editor.page
-    if results:
-        location, available = parse_scrap_results(results)
-        page.write_text(key_alias='location', value=location)
-        page.write_checkbox(key_alias='not_available', value=not available)
-    else:
-        if not page.read_tag('location'):
-            editor.mark_exception('no_location')
+def write_data(manager: ReadingPageManager, results: dict[str, LibraryScrapResult]):
+    page = manager.page
+    location, available = parse_scrap_results(results)
+    page.write_text(key_alias='location', value=location)
+    page.write_checkbox(key_alias='not_available', value=not available)
 
 
 def parse_scrap_results(results: dict[str, LibraryScrapResult]):

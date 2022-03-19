@@ -11,7 +11,7 @@ class ReadingTableEditor:
             *DatabaseInfo.READINGS, READING_FRAME)
 
 
-class ReadingPageEditor:
+class ReadingPageManager:
     STATUS = STATUS_COLUMN
 
     def __init__(self, page: editors.PageRow):
@@ -21,23 +21,23 @@ class ReadingPageEditor:
 
     @property
     def init_label(self):
-        return self.STATUS.label_of(self._init_value, self.STATUS.label_map['default'])
+        return self.STATUS.get_mark(self._init_value, self.STATUS.marks['default'])
 
     @property
     def success_label(self):
-        return self.STATUS.label_of(self.init_label.marks[1])
+        return self.STATUS.get_mark(self.init_label.key_aliases[1])
 
     @property
     def enable_overwrite(self):
-        return 'overwrite' in self.init_label.marks
+        return 'overwrite' in self.init_label.key_aliases
 
     @property
     def needs_metadata(self):
-        return 'metadata' in self.init_label.marks
+        return 'metadata' in self.init_label.key_aliases
 
     @property
     def needs_location(self):
-        return 'location' in self.init_label.marks
+        return 'location' in self.init_label.key_aliases
 
     def mark_exception(self, label):
         if not self._finalized:

@@ -1,5 +1,5 @@
 from notion_zap.cli.structs import \
-    PropertyFrame as Frame, PropertyColumn as Cl, PropertyValueLabel as Label
+    PropertyFrame as Frame, PropertyColumn as Cl, PropertyMarkedValue as Label
 
 
 class EMOJI:
@@ -59,7 +59,7 @@ class Columns:
     no_exp = Cl(key=EMOJI.BLACK_NOTEBOOK + '경험 없음', alias='no_exp', )
 
     media_type = Cl(key=EMOJI.BLUE_BOOK + '유형', alias='media_type',
-                    labels=[Label('📌결정 전', 'empty')])
+                    marked_values=[Label('📌결정 전', 'empty')])
     media_type_book = Cl(alias='is_book', key='📔도서류', )
 
     timestr = Cl(key=EMOJI.CALENDAR + '시간', alias='timestr', )

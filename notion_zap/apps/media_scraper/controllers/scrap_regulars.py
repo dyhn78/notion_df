@@ -1,10 +1,10 @@
 from typing import Optional, Iterable
 
 from notion_zap.apps.media_scraper.config import STATUS_COLUMN
-from notion_zap.apps.media_scraper.location.manager import LibraryScrapManager
+from notion_zap.apps.media_scraper.location.main import LibraryScrapManager
 from notion_zap.apps.media_scraper.metadata.main import MetadataScrapManager
 from notion_zap.apps.media_scraper.struct import (
-    ReadingTableEditor, ReadingPageEditor)
+    ReadingTableEditor, ReadingPageManager)
 from notion_zap.cli.editors import PageRow, Database
 from notion_zap.cli.utility import stopwatch
 
@@ -39,22 +39,22 @@ class RegularScrapController(ReadingTableEditor):
         self.get_location.quit()
 
     def process_page(self, page: PageRow):
-        editor = ReadingPageEditor(page)
-        f'개시: {page.title}'
+        manager = ReadingPageManager(page)
+        stopwatch(f'개시: {page.title}')
         edited = False
-        if editor.needs_metadata:
+        if manager.needs_metadata:
             edited = True
-            self.get_metadata(editor)
-        if editor.needs_location:
+            self.get_metadata(manager)
+        if manager.needs_location:
             edited = True
-            self.get_location(editor)
+            self.get_location(manager)
 
         if edited:
-            editor.mark_completion()
+            manager.mark_completion()
             page.save()
         else:
-            editor.mark_exception('fill_manually')
-            f' -- 편집 항목 없음!'
+            manager.mark_exception('fill_manually')
+            stopwatch(f'-- 편집 항목 없음!')
 
 
 class RegularScrapFetcher:
@@ -71,7 +71,7 @@ class RegularScrapFetcher:
 
         maker = manager.select('edit_status')
         ft &= (
-                maker.equals_to_any(STATUS_COLUMN.marked_values('queue'))
+                maker.equals_to_any(STATUS_COLUMN.filter_values('queue'))
                 | maker.is_empty()
         )
         if title:
