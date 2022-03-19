@@ -12,7 +12,7 @@ class PropertyMarkedValue:
                  tags: Optional[Iterable[Hashable]] = None):
         self.value = value
         self.alias = alias
-        self.tags = tags
+        self.tags: list[Hashable] = list(tags)
 
 
 class PropertyColumn:
