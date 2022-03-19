@@ -12,7 +12,7 @@ class PropertyMarkedValue:
                  tags: Optional[Iterable[Hashable]] = None):
         self.value = value
         self.alias = alias
-        self.tags: list[Hashable] = list(tags)
+        self.tags: list[Hashable] = list(tags) if tags else []
 
 
 class PropertyColumn:
@@ -42,11 +42,24 @@ class PropertyColumn:
     def parser_type(self):
         return VALUE_FORMATS[self.data_type]
 
-    def get_mark(self, value, default=None):
+    def coalesce_mark(self, *value_or_aliases):
+        for value_or_alias in value_or_aliases:
+            for mark in self.marks.values():
+                if value_or_alias in [mark.value, mark.alias]:
+                    return mark
+        raise KeyError
+
+    def get_mark_by_value(self, value):
         for mark in self.marks.values():
             if mark.value == value:
                 return mark
-        return default
+        raise KeyError
+
+    def get_mark_by_alias(self, alias):
+        for mark in self.marks.values():
+            if mark.alias == alias:
+                return mark
+        raise KeyError
 
     def filter_marks(self, tag: Hashable) -> list[PropertyMarkedValue]:
         res = []

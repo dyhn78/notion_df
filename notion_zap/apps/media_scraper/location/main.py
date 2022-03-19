@@ -64,5 +64,5 @@ def parse_scrap_results(results: dict[str, LibraryScrapResult]):
 
 
 if __name__ == '__main__':
-    manager = LibraryScrapManager({'gy'}, create_window=True)
-    print(manager.scrap('자기 인생의 철학자들').get('gy'))
+    lib_mg = LibraryScrapManager({'gy'}, create_window=True)
+    print(lib_mg.scrap('자기 인생의 철학자들').get('gy'))

@@ -22,11 +22,11 @@ class ReadingPageManager:
 
     @property
     def init_mark(self) -> PropertyMarkedValue:
-        return self.STATUS.get_mark(self._init_value, self.STATUS.marks['default'])
+        return self.STATUS.coalesce_mark(self._init_value, 'default')
 
     @property
-    def success_label(self):
-        return self.STATUS.get_mark(self.init_mark.tags[1])
+    def success_mark(self):
+        return self.STATUS.coalesce_mark(self.init_mark.tags[1])
 
     @property
     def enable_overwrite(self):
@@ -48,7 +48,7 @@ class ReadingPageManager:
     def mark_completion(self):
         if not self._finalized:
             self.page.write_select(key_alias='edit_status',
-                                   value_alias=self.success_label)
+                                   value_alias=self.success_mark)
             self._finalized = True
 
     @property
