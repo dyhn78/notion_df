@@ -2,10 +2,10 @@ from notion_zap.cli.structs import (
     PropertyColumn as Cl, PropertyMarkedValue as Lb, PropertyFrame)
 
 _STATUS_MARKS = [
-    Lb('📥본문(비파괴)/위치', 'default',
+    Lb('📥본문/위치(비파괴)', 'default',
        ('queue', 'manually_confirm', 'metadata', 'location',)),
     Lb('📥본문(파괴)', 'metadata', ('queue', 'completely', 'metadata', 'overwrite', )),
-    Lb('📥위치', 'location', ('queue', 'manually_confirm', 'location', 'overwrite', )),
+    Lb('📥위치(파괴)', 'location', ('queue', 'manually_confirm', 'location', 'overwrite', )),
     Lb('⛳수합 완료', 'completely', ('success', )),
     Lb('⭕정보 없음', 'pass', ('success', )),
     Lb('👤직접 입력', 'fill_manually', ('success', )),
