@@ -10,8 +10,8 @@ _STATUS_MARKS = [
     Lb('⭕정보 없음', 'pass', ('success', )),
     Lb('👤직접 입력', 'fill_manually', ('success', )),
     Lb('👤결과 검정', 'manually_confirm', ('success', )),
-    Lb('❓링크 찾기', 'no_meta_url', ('fail', )),
-    Lb('❓위치 찾기', 'no_location', ('fail', )),
+    Lb('❓링크 없음', 'no_meta_url', ('fail', )),
+    Lb('❓위치 없음', 'no_location', ('fail', )),
 ]
 STATUS_COLUMN = Cl(key='🏁준비', alias='edit_status',
                    marked_values=_STATUS_MARKS)
