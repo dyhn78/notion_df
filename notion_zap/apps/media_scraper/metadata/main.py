@@ -39,7 +39,7 @@ class SubpageEditor:
 
     def adjust_subpage(self):
         remove_dummy_blocks(self.subpage)
-        if self.subpage.block_id and self.manager.enable_overwrite:
+        if self.subpage.block_id and not self.manager.disable_overwrite:
             for child in self.subpage.children:
                 child.archive()
         link_to_contents = self.page.write_rich_text(key_alias='link_to_contents')
@@ -98,7 +98,7 @@ class BookstoreWriter:
         return False
 
     def set_data(self):
-        self.page.root.disable_overwrite = not self.editor.enable_overwrite
+        self.page.root.disable_overwrite = self.editor.disable_overwrite
 
         if true_name := self.data.get('name'):
             self.page.write_text(key_alias='true_name', value=true_name)

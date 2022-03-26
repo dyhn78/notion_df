@@ -51,8 +51,10 @@ class LibraryScrapManager:
 def write_data(manager: ReadingPageManager, results: dict[str, LibraryScrapResult]):
     page = manager.page
     location, available = parse_scrap_results(results)
+    page.root.disable_overwrite = manager.disable_overwrite
     page.write_text(key_alias='location', value=location)
     page.write_checkbox(key_alias='not_available', value=not available)
+    page.root.disable_overwrite = False
 
 
 def parse_scrap_results(results: dict[str, LibraryScrapResult]):

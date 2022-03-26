@@ -29,8 +29,8 @@ class ReadingPageManager:
         return self.STATUS.coalesce_mark(self.init_mark.tags[1])
 
     @property
-    def enable_overwrite(self):
-        return 'overwrite' in self.init_mark.tags
+    def disable_overwrite(self):
+        return 'overwrite' not in self.init_mark.tags
 
     @property
     def needs_metadata(self):

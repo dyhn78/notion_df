@@ -30,5 +30,5 @@ READING_FRAME = PropertyFrame([
     Cl(key='📚표지', alias='cover_image'),
     Cl(key='📚위치', alias='location'),
     Cl(key='📚대출중', alias='not_available'),
-    Cl(key='📦이동', alias='link_to_contents'),
+    Cl(key='📦지정', alias='link_to_contents'),
 ])
