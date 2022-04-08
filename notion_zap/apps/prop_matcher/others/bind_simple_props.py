@@ -12,7 +12,7 @@ class BindSimpleProperties(MainEditor):
                 if has_value(row, tag_copy):
                     continue
                 if tar := get_unique_page_from_relation(row, reference, tag_ref):
-                    if val_copy := tar.read_tag(tag_copy):
+                    if val_copy := tar.read_key_alias(tag_copy):
                         row.write_select(key_alias=tag_copy, value=val_copy)
 
     @property

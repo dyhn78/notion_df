@@ -54,7 +54,7 @@ class TopologyBuilder:
                         up_pagelist = down_pagelist
                     else:
                         up_pagelist = self.all[unit.edge_target]
-                    up_ids = down_page.read_tag(unit.tag)
+                    up_ids = down_page.read_key_alias(unit.tag)
                     for up_id in up_ids:
                         if up_id not in up_pagelist.ids():
                             continue
@@ -72,7 +72,7 @@ class TopologyBuilder:
                 down_frame = down_pagelist.frame
                 assert isinstance(down_frame, NetworkPropertyFrame)
                 for unit in down_frame.filter_tags('up'):
-                    up_ids = down_page.read_tag(unit.tag)
+                    up_ids = down_page.read_key_alias(unit.tag)
                     for up_id in up_ids:
                         if up_id not in self.root.ids():
                             continue

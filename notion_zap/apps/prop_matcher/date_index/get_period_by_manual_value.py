@@ -26,7 +26,7 @@ class PeriodMatcherByManualValue(MainEditor):
 
 
 def get_date_val(row: PageRow, tag_manual_value):
-    date_object: DateObject = row.read_tag(tag_manual_value)
+    date_object: DateObject = row.read_key_alias(tag_manual_value)
     return date_object.start_date
 
 

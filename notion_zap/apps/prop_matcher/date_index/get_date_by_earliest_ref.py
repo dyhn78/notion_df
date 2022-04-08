@@ -65,7 +65,7 @@ class EarliestDateFinder:
             self.update_earliest_by_date_row(date_row)
 
     def update_earliest_by_date_row(self, date_row: PageRow):
-        date_object: DateObject = date_row.read_tag('dateval_manual')
+        date_object: DateObject = date_row.read_key_alias('dateval_manual')
         date_val = date_object.start_date
         if self.earliest_date_val is None or date_val < self.earliest_date_val:
             self.earliest_date_row = date_row

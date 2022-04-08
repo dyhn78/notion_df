@@ -25,10 +25,10 @@ class PageRow(PageBlock, PageRowPropertyWriter):
         self._read_rich = {}
 
         if self.parent:
-            for prop_key in self.parent.rows.by_keys:
-                self.register_a_key(prop_key)
-            for prop_tag in self.parent.rows.by_tags:
-                self.register_a_tag(prop_tag)
+            for key in self.parent.rows.by_keys:
+                self.register_a_key(key)
+            for key_alias in self.parent.rows.by_tags:
+                self.register_a_tag(key_alias)
 
         if self.block_id:
             self._requestor = requestors.UpdatePage(self)
@@ -43,13 +43,13 @@ class PageRow(PageBlock, PageRowPropertyWriter):
             return parent
         return None
 
-    def register_a_key(self, prop_key: str):
-        return self.regs.add(('key', prop_key),
-                      lambda x: x.block.get_key(prop_key))
+    def register_a_key(self, key: str):
+        return self.regs.add(('key', key),
+                      lambda x: x.block.get_key(key))
 
-    def register_a_tag(self, prop_tag: Hashable):
-        return self.regs.add(('tag', prop_tag),
-                      lambda x: x.block.get_tag(prop_tag))
+    def register_a_tag(self, key_alias: Hashable):
+        return self.regs.add(('tag', key_alias),
+                             lambda x: x.block.get_key_alias(key_alias))
 
     @property
     def requestor(self):
@@ -68,20 +68,20 @@ class PageRow(PageBlock, PageRowPropertyWriter):
         self._read_plain = parser.values
         self._read_rich = parser.rich_values
 
-    def push_encoder(self, prop_key: str, encoder: PropertyEncoder) \
+    def push_encoder(self, key: str, encoder: PropertyEncoder) \
             -> PropertyEncoder:
         cannot_overwrite = (self.root.disable_overwrite and
-                            self.root.eval(self.read_key(prop_key)))
+                            self.root.eval(self.read_key(key)))
         if cannot_overwrite:
             return encoder
-        # if prop_key == self.frame.title_key:
+        # if key == self.frame.title_key:
         #     self._title = encoder.plain_form()
         return self.requestor.apply_prop(encoder)
 
-    def read_key(self, prop_key: str):
-        self._assert_string_key(prop_key)
+    def read_key(self, key: str):
+        self._assert_string_key(key)
         try:
-            value = self._read_plain[prop_key]
+            value = self._read_plain[key]
         except KeyError as e:
             # TODO
             from pprint import pprint
@@ -89,56 +89,56 @@ class PageRow(PageBlock, PageRowPropertyWriter):
             raise e
         return value
 
-    def richly_read_key(self, prop_key: str):
-        self._assert_string_key(prop_key)
-        value = self._read_rich[prop_key]
+    def richly_read_key(self, key: str):
+        self._assert_string_key(key)
+        value = self._read_rich[key]
         return value
 
-    def get_key(self, prop_key: str, default=None):
-        self._assert_string_key(prop_key)
-        value = self._read_plain.get(prop_key)
+    def get_key(self, key: str, default=None):
+        self._assert_string_key(key)
+        value = self._read_plain.get(key)
         if value is None:
             value = default
         return value
 
-    def richly_get_key(self, prop_key: str, default=None):
-        self._assert_string_key(prop_key)
-        value = self._read_rich.get(prop_key)
+    def richly_get_key(self, key: str, default=None):
+        self._assert_string_key(key)
+        value = self._read_rich.get(key)
         if value is None:
             value = default
         return value
 
-    def read_tag(self, prop_tag: Hashable):
-        return self.read_key(self.frame.get_key(prop_tag))
+    def read_key_alias(self, key_alias: Hashable):
+        return self.read_key(self.frame.get_key(key_alias))
 
-    def richly_read_tag(self, prop_tag: Hashable):
-        return self.richly_read_key(self.frame.get_key(prop_tag))
+    def richly_read_key_alias(self, key_alias: Hashable):
+        return self.richly_read_key(self.frame.get_key(key_alias))
 
-    def get_tag(self, prop_tag: Hashable, default=None):
+    def get_key_alias(self, key_alias: Hashable, default=None):
         try:
-            prop_key = self.frame.get_key(prop_tag)
+            key = self.frame.get_key(key_alias)
         except KeyError:
             return default
-        return self.get_key(prop_key, default)
+        return self.get_key(key, default)
 
-    def richly_get_tag(self, prop_tag: Hashable, default=None):
+    def richly_get_key_alias(self, key_alias: Hashable, default=None):
         try:
-            prop_key = self.frame.get_key(prop_tag)
+            key = self.frame.get_key(key_alias)
         except KeyError:
             return default
-        return self.richly_get_key(prop_key, default)
+        return self.richly_get_key(key, default)
 
     def read_all_keys(self):
         return self._read_plain
 
-    def read_all_tags(self):
+    def read_all_key_aliases(self):
         return {key: self._read_plain[self.frame.get_key(key)]
                 for key in self.frame.key_aliases()}
 
     def richly_read_all_keys(self):
         return self._read_rich
 
-    def richly_read_all_tags(self):
+    def richly_read_all_key_aliases(self):
         return {key: self._read_rich[self.frame.get_key(key)]
                 for key in self.frame.key_aliases()}
 
@@ -146,7 +146,7 @@ class PageRow(PageBlock, PageRowPropertyWriter):
         """this method is purely built for trickle-down reading;
         don't use it editing source.
         only shows columns with manual tag."""
-        return self.read_all_tags()
+        return self.read_all_key_aliases()
 
     def richly_read_contents(self) -> dict[str, Any]:
         """this method is purely built for trickle-down reading;
@@ -162,8 +162,8 @@ class PageRow(PageBlock, PageRowPropertyWriter):
         return res
 
     @staticmethod
-    def _assert_string_key(prop_key):
-        if not isinstance(prop_key, str):
-            comment = f"<prop_key: {prop_key}>"
+    def _assert_string_key(key: str):
+        if not isinstance(key, str):
+            comment = f"<key: {key}>"
             raise TypeError(comment)
         return

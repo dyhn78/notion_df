@@ -18,7 +18,7 @@ class ReadingPageManager:
     def __init__(self, page: editors.PageRow):
         self.page = page
         self._finalized = False
-        self._init_value = page.read_tag('edit_status')
+        self._init_value = page.read_key_alias('edit_status')
 
     @property
     def init_mark(self) -> PropertyMarkedValue:
@@ -53,12 +53,12 @@ class ReadingPageManager:
 
     @property
     def is_book(self):
-        return self.page.read_tag('is_book')
+        return self.page.read_key_alias('is_book')
 
     @property
     def titles(self) -> list[str]:
         titles = []
         for key_alias in ['docx_name', 'true_name']:
-            if title := self.page.get_tag(key_alias):
+            if title := self.page.get_key_alias(key_alias):
                 titles.append(title)
         return titles

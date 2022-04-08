@@ -72,20 +72,20 @@ class ProgressMatcherofDatesDepr(TableModuleDepr):
     def __call__(self):
         for dom in self.domain.rows:
             for to_tar in self.to_tars:
-                dom_date: DateObject = dom.read_tag('dateval_manual')
+                dom_date: DateObject = dom.read_key_alias('dateval_manual')
                 if (not dom_date.start_date
                         or dom_date.start_date > dt.date.today()):
                     continue
                 if tar_ids := self.determine_tar_ids(dom, to_tar):
                     write_extendedly(dom, to_tar, tar_ids)
-                if not dom.read_tag('sync_status'):  # False
+                if not dom.read_key_alias('sync_status'):  # False
                     dom.write_checkbox(key_alias='sync_status', value=True)
 
     def determine_tar_ids(self, dom: editors.PageRow, to_tar: str):
         refs = fetch_all_pages_of_relation(dom, self.reference, self.to_ref)
         tar_ids = []
         for ref in refs:
-            tar_ids.extend(ref.read_tag(to_tar))
+            tar_ids.extend(ref.read_key_alias(to_tar))
         return tar_ids
 
 
@@ -106,8 +106,8 @@ class ProgressMatcherofWritingsDepr(TableModuleDepr):
                 tar_ids = []
                 ref1s = fetch_all_pages_of_relation(dom, self.reference1, self.Tdoms_ref1)
                 for ref1 in ref1s:
-                    tar_ids.extend(ref1.read_tag(T_tar))
+                    tar_ids.extend(ref1.read_key_alias(T_tar))
                 ref2s = fetch_all_pages_of_relation(dom, self.reference2, self.Tdoms_ref2)
                 for ref2 in ref2s:
-                    tar_ids.extend(ref2.read_tag(T_tar))
+                    tar_ids.extend(ref2.read_key_alias(T_tar))
                 write_extendedly(dom, T_tar, tar_ids)

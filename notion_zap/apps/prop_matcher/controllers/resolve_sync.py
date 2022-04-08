@@ -47,10 +47,10 @@ class SyncResolver:
     def execute(self):
         for front in self.fronts.rows:
             front_id = front.block_id
-            back_ids = front.read_tag(self.tag_forward)
+            back_ids = front.read_key_alias(self.tag_forward)
             for back_id in back_ids:
                 back: editors.PageRow = self.backs.rows.by_id[back_id]
-                front_ids = back.read_tag(self.tag_backward)
+                front_ids = back.read_key_alias(self.tag_backward)
                 if front_id not in front_ids:
                     front_ids.append(front_id)
                     back.write_relation(key_alias=self.tag_backward, value=[front_id])

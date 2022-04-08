@@ -107,12 +107,12 @@ class GcaltoScheduleMatcher(_GcalScheduleMatcherAbs, TableModuleDepr):
         for date_val in iter_date():
             tar = self.find_or_create_tar_by_date(date_val)
             tar_ids.append(tar.block_id)
-        if tar_ids != dom.read_tag(self.T_tar):
+        if tar_ids != dom.read_key_alias(self.T_tar):
             dom.write_relation(key_alias=self.T_tar, value=tar_ids)
 
     def set_timestr(self, dom: editors.PageRow,
                     start: dt.time, end: Optional[dt.time] = None):
-        timestr = dom.get_tag(self.Ttimestr, '')
+        timestr = dom.get_key_alias(self.Ttimestr, '')
         new_timestr = TimeStringHandler(timestr).replace(start, end)
         if timestr != new_timestr:
             dom.write_text(key_alias=self.Ttimestr, value=new_timestr)
@@ -128,9 +128,9 @@ class GcalfromScheduleMatcher(_GcalScheduleMatcherAbs, TableModuleDepr):
             self.sync_dom_to_gcal(dom)
 
     def sync_dom_to_gcal(self, dom: editors.PageRow):
-        gcal_link = dom.get_tag(self.Tgcal_link, '')
-        gcal_id = dom.get_tag(self.Tgcal_id, '')
-        synced = dom.read_tag(self.Tis_synced)
+        gcal_link = dom.get_key_alias(self.Tgcal_link, '')
+        gcal_id = dom.get_key_alias(self.Tgcal_id, '')
+        synced = dom.read_key_alias(self.Tis_synced)
         if gcal_link and synced:
             return
         elif gcal_link and not synced:
@@ -149,7 +149,7 @@ class GcalfromScheduleMatcher(_GcalScheduleMatcherAbs, TableModuleDepr):
         if not dt_start:
             return
         requestor = self.Gcals.EventUpdater(
-            event_id=dom.read_tag(self.Tgcal_id),
+            event_id=dom.read_key_alias(self.Tgcal_id),
             calendar_id=self.calendar_id,
             summary=dom.title,
             start=dt_start,
@@ -194,12 +194,12 @@ class GcalfromScheduleMatcher(_GcalScheduleMatcherAbs, TableModuleDepr):
         return dt_start, dt_end
 
     def get_date_vals(self, dom: editors.PageRow):
-        tar_ids = dom.read_tag(self.T_tar)
+        tar_ids = dom.read_key_alias(self.T_tar)
         date_min: Optional[dt.date] = None
         date_max: Optional[dt.date] = None
         for tar_id in tar_ids:
             tar = self.target.rows.fetch_page(tar_id)
-            date_format: DateObject = tar.read_tag(self.Ttars_date)
+            date_format: DateObject = tar.read_key_alias(self.Ttars_date)
             date_val = date_format.start_date
             if date_min is None or date_min > date_val:
                 date_min = date_val
@@ -208,6 +208,6 @@ class GcalfromScheduleMatcher(_GcalScheduleMatcherAbs, TableModuleDepr):
         return date_min, date_max
 
     def get_time_vals(self, dom: editors.PageRow) -> list[dt.time]:
-        if timestr := dom.read_tag(self.Ttimestr):
+        if timestr := dom.read_key_alias(self.Ttimestr):
             return TimeStringHandler(timestr).time_val
         return []

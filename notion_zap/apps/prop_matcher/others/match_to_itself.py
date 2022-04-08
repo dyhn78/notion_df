@@ -5,7 +5,7 @@ class SelfMatcher(MainEditor):
     def __call__(self):
         for table in self.tables:
             for row in table.rows:
-                if row.read_tag('itself') != [row.block_id]:
+                if row.read_key_alias('itself') != [row.block_id]:
                     row.write(key_alias='itself', value=[row.block_id])
 
     @property

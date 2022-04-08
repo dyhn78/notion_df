@@ -6,12 +6,12 @@ from notion_zap.apps.prop_matcher.struct import RowEditor
 from notion_zap.cli.editors import PageRow, Database
 
 
-def has_value(row: PageRow, tag_target):
-    return bool(row.read_tag(tag_target))
+def has_value(row: PageRow, key_alias_target):
+    return bool(row.read_key_alias(key_alias_target))
 
 
-def set_value(row: PageRow, target: PageRow, tag_target):
-    row.write_relation(key_alias=tag_target, value=[target.block_id])
+def set_value(row: PageRow, target: PageRow, key_alias_target):
+    row.write_relation(key_alias=key_alias_target, value=[target.block_id])
 
 
 class ReferenceInfo:
@@ -35,7 +35,7 @@ class GetterByReference(RowEditor):
 
 
 def write_extendedly(row: PageRow, prop_tag: str, values: list[str]):
-    total = row.read_tag(prop_tag)
+    total = row.read_key_alias(prop_tag)
     changed = False
     for value in values:
         if value not in total:
@@ -47,7 +47,7 @@ def write_extendedly(row: PageRow, prop_tag: str, values: list[str]):
 
 
 def get_unique_page_from_relation(row: PageRow, target: Database, tag_tar):
-    tar_ids = row.read_tag(tag_tar)
+    tar_ids = row.read_key_alias(tag_tar)
     for tar_id in tar_ids:
         if tar := target.rows.fetch_page(tar_id):
             return tar
@@ -57,7 +57,7 @@ def get_unique_page_from_relation(row: PageRow, target: Database, tag_tar):
 def get_all_pages_from_relation(
         row: PageRow, target: Database,
         tag_tar: Hashable) -> list[PageRow]:
-    tar_ids = row.read_tag(tag_tar)
+    tar_ids = row.read_key_alias(tag_tar)
     res = []
     for tar_id in tar_ids:
         if tar := target.rows.fetch_page(tar_id):

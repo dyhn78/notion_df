@@ -10,12 +10,12 @@ class PeriodIntroducer:
     def __call__(self, period: PageRow, period_title=None):
         """provide period_title manually if yet-not-synced to server-side"""
         if period_title is None:
-            period_title = period.read_tag('title')
+            period_title = period.read_key_alias('title')
 
         date_handler = DateHandler.from_strf_year_and_week(period_title)
         date_range = DateObject(start=date_handler.first_day_of_week(),
                                 end=date_handler.last_day_of_week())
-        if date_range != period.read_tag('manual_date_range'):
+        if date_range != period.read_key_alias('manual_date_range'):
             period.root.disable_overwrite = self.disable_overwrite
             period.write_date(key_alias='manual_date_range', value=date_range)
             period.root.disable_overwrite = False

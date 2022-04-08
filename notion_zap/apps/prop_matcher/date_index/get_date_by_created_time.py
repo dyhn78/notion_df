@@ -5,7 +5,8 @@ from typing import Union
 
 from notion_zap.cli.editors import PageRow, Database
 from notion_zap.cli.structs import DateObject
-from notion_zap.apps.prop_matcher.common import has_value, set_value, query_unique_page_by_idx
+from notion_zap.apps.prop_matcher.common import (
+    has_value, set_value, query_unique_page_by_idx)
 from notion_zap.apps.prop_matcher.date_index.date_formatter import DateHandler
 from notion_zap.apps.prop_matcher.struct import EditorBase, MainEditor
 
@@ -18,8 +19,8 @@ class DateMatcherByCreatedTime(MainEditor):
         self.hour_offset = -5
 
     def __call__(self):
-        for table, tag_date in self.args:
-            for row in table.rows:
+        for rows, tag_date in self.args:
+            for row in rows:
                 if self.no_replace and has_value(row, tag_date):
                     continue
                 date_val = self.get_date_val(row)
@@ -27,7 +28,7 @@ class DateMatcherByCreatedTime(MainEditor):
                     set_value(row, date, tag_date)
 
     def get_date_val(self, row: PageRow):
-        dom_idx: DateObject = row.read_tag('auto_datetime')
+        dom_idx: DateObject = row.read_key_alias('auto_datetime')
         date_val = dom_idx.start + dt.timedelta(hours=self.hour_offset)
         return date_val
 
@@ -42,13 +43,17 @@ class DateMatcherByCreatedTime(MainEditor):
             self.bs.tasks,
             self.bs.readings,
         ]:
-            args.append((table, 'dates'))
+            args.append((table.rows, 'dates'))
+        readings = [row for row in self.bs.readings.rows
+                    if not (row.read_key_alias('is_book')
+                            and row.read_key_alias('no_exp'))]
+        args.append((readings, 'dates'))
         for table in [
             self.bs.journals,
             self.bs.checks,
             self.bs.readings,
         ]:
-            args.append((table, 'dates_created'))
+            args.append((table.rows, 'dates_created'))
         return args
 
 

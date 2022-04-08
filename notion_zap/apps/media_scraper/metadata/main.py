@@ -76,7 +76,7 @@ class BookstoreWriter:
 
     def get_url(self):
         """return True if successfully get url."""
-        if url := self.page.get_tag('url', default=''):
+        if url := self.page.get_key_alias('url', default=''):
             self.url = url
             return True
         for title in self.titles:
