@@ -2,16 +2,16 @@ from __future__ import annotations
 
 from notion_zap.cli.editors import Database
 from notion_zap.apps.prop_matcher.struct import EditorBase
-from notion_zap.apps.prop_matcher.date_index.get_date_by_created_time \
+from notion_zap.apps.prop_matcher.matchers_date.get_date_by_created_time \
     import DateMatcherByCreatedTime
-from notion_zap.apps.prop_matcher.date_index.get_date_by_earliest_ref \
+from notion_zap.apps.prop_matcher.matchers_date.get_date_by_earliest_ref \
     import DateMatcherByEarliestRef
-from notion_zap.apps.prop_matcher.date_index.get_period_by_manual_value \
+from notion_zap.apps.prop_matcher.matchers_date.get_period_by_manual_value \
     import PeriodMatcherByManualValue
-from notion_zap.apps.prop_matcher.date_index.get_period_by_date_ref \
+from notion_zap.apps.prop_matcher.matchers_date.get_period_by_date_ref \
     import PeriodMatcherByDateRef
-from notion_zap.apps.prop_matcher.others.match_to_itself import SelfMatcher
-from notion_zap.apps.prop_matcher.others.bind_simple_props import BindSimpleProperties
+from notion_zap.apps.prop_matcher.matchers.match_to_itself import SelfMatcher
+from notion_zap.apps.prop_matcher.matchers.bind_simple_props import BindSimpleProperties
 
 
 class RegularMatchProcessor:

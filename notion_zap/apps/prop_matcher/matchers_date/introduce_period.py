@@ -1,6 +1,6 @@
 from notion_zap.cli.editors import PageRow
 from notion_zap.cli.structs import DateObject
-from notion_zap.apps.prop_matcher.date_index.date_formatter import DateHandler
+from notion_zap.apps.prop_matcher.matchers_date.date_formatter import DateHandler
 
 
 class PeriodIntroducer:

@@ -4,7 +4,7 @@ from notion_zap.cli import editors
 from notion_zap.cli.utility import stopwatch
 from notion_zap.apps.config import DatabaseInfo
 from notion_zap.apps.prop_matcher.config import Frames
-from notion_zap.apps.prop_matcher.date_index.query_in_range import query_within_date_range
+from notion_zap.apps.prop_matcher.matchers_date.query_in_range import query_within_date_range
 
 
 class SyncResolveController:

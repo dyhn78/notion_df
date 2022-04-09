@@ -8,7 +8,7 @@ from googleapiclient.errors import HttpError
 import notion_zap.apps.externals.gcal
 from notion_zap.cli import editors
 from notion_zap.cli.structs import DateObject
-from ..date_index.dt_formatter import TimeStringHandler
+from ..matchers_date.dt_formatter import TimeStringHandler
 from notion_zap.apps.prop_matcher.struct import ModuleDepr, TableModuleDepr
 
 

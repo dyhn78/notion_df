@@ -5,7 +5,7 @@ import datetime as dt
 from notion_zap.cli.editors import PageRow, Database
 from notion_zap.cli.structs import DateObject
 from notion_zap.apps.prop_matcher.common import has_value, set_value, query_unique_page_by_idx
-from notion_zap.apps.prop_matcher.date_index.date_formatter import DateHandler
+from notion_zap.apps.prop_matcher.matchers_date.date_formatter import DateHandler
 from notion_zap.apps.prop_matcher.struct import EditorBase, MainEditor
 
 
