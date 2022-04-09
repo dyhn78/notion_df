@@ -41,13 +41,12 @@ class DateMatcherByCreatedTime(MainEditor):
             self.bs.topics,
             self.bs.writings,
             self.bs.tasks,
-            self.bs.readings,
         ]:
             args.append((table.rows, 'dates'))
-        readings = [row for row in self.bs.readings.rows
-                    if not (row.read_key_alias('is_book')
+        readings_rows = [row for row in self.bs.readings.rows
+                         if not (row.read_key_alias('is_book')
                             and row.read_key_alias('no_exp'))]
-        args.append((readings, 'dates'))
+        args.append((readings_rows, 'dates'))
         for table in [
             self.bs.journals,
             self.bs.checks,
