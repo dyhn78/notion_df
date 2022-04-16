@@ -25,7 +25,7 @@ class DateFormatConformer:
         """provide date_title manually if yet not synced to server-side"""
         if date_title is None:
             date_title = date.read_key_alias('title')
-        date_handler = DateFormatter.from_strf_dig6(date_title)
+        date_handler = DateFormatter.from_date_title(date_title)
         new_tar_idx = date_handler.stringify_date()
         if date_title != new_tar_idx:
             date.write(key_alias='title', value=new_tar_idx)

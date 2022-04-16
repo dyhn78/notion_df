@@ -14,8 +14,9 @@ class DateFormatter:
     def stringify_date(self):
         return self._strf_dig6_and_weekday()
 
-    def stringify_week(self):
-        return self._strf_year_and_week()
+    @classmethod
+    def from_date_title(cls, strf: str):
+        return cls._from_dig6(strf)
 
     def _strf_dig6(self):
         """예) 210101"""
@@ -26,38 +27,34 @@ class DateFormatter:
         dayname = self.korean_weekday[self.date.isoweekday() % 7]
         return f'{self.date.strftime("%y%m%d")} {dayname}'
 
+    @classmethod
+    def _from_dig6(cls, strf: str):
+        year = 2000 + int(strf[:2])
+        month = int(strf[2:4])
+        date = int(strf[4:6])
+        return cls(dt.date(year, month, date))
+
+    def stringify_week(self):
+        return self._strf_year_and_week()
+
+    @classmethod
+    def from_week_title(cls, strf: str):
+        return cls._from_strf_year_and_week(strf)
+
     def _strf_year_and_week(self):
         return self.date.strftime("%Y/%U")
+
+    @classmethod
+    def _from_strf_year_and_week(cls, strf: str):
+        year = int(strf[:2])
+        month = int(strf[3:5])
+        return cls(dt.datetime.strptime(f'{year} {month} 0', "%y %U %w"))
 
     def _strf_year_and_week_verbose(self):
         """예) 2021년 47주: 1121-1126"""
         return (self.date.strftime("%Y년 %U주: ") +
                 self.first_day_of_week().strftime("%m%d-") +
                 self.last_day_of_week().strftime("%m%d"))
-
-    def first_day_of_week(self):
-        year, week, weekday = self._augmented_iso_calendar()
-        return self.date + dt.timedelta(days=-weekday)
-
-    def last_day_of_week(self):
-        return self.first_day_of_week() + + dt.timedelta(days=6)
-
-    @classmethod
-    def from_strf_dig6(cls, strf: str):
-        year = 2000 + int(strf[:2])
-        month = int(strf[2:4])
-        date = int(strf[4:6])
-        return cls(dt.date(year, month, date))
-
-    @classmethod
-    def from_week_title(cls, strf: str):
-        return cls._from_strf_year_and_week(strf)
-
-    @classmethod
-    def _from_strf_year_and_week(cls, strf: str):
-        year = int(strf[:2])
-        month = int(strf[3:5])
-        return cls(dt.datetime.strptime(f'{year} {month} 0', "%Y %W %w"))
 
     @classmethod
     def _from_strf_year_and_week_verbose(cls, strf: str):
@@ -68,6 +65,13 @@ class DateFormatter:
         month = int(strf[dash_idx - 4: dash_idx - 2])
         date = int(strf[dash_idx - 2: dash_idx])
         return cls(dt.date(year, month, date))
+
+    def first_day_of_week(self):
+        year, week, weekday = self._augmented_iso_calendar()
+        return self.date + dt.timedelta(days=-weekday)
+
+    def last_day_of_week(self):
+        return self.first_day_of_week() + + dt.timedelta(days=6)
 
     def _augmented_iso_calendar(self):
         year, week, weekday = self.date.isocalendar()
