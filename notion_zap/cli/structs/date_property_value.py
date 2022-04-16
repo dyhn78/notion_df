@@ -9,15 +9,12 @@ LOCAL_TIMEZONE = pytz.timezone('Asia/Seoul')
 
 class DatePropertyValue:
     def __init__(self, start: Optional[Union[dt.datetime, dt.date]] = None,
-                 end: Optional[Union[dt.datetime, dt.date]] = None,
-                 cast_as_datetime = True):
+                 end: Optional[Union[dt.datetime, dt.date]] = None):
         """default value of <start> and <end> is None."""
         if start is None and end is not None:
             start, end = end, start
-        self.cast_as_datetime = cast_as_datetime
-        if self.cast_as_datetime:
-            self.start = self.__add_explicit_tz(start)
-            self.end = self.__add_explicit_tz(end)
+        self.start = self.__add_explicit_tz(start)
+        self.end = self.__add_explicit_tz(end)
 
     def is_emptylike(self):
         return self.start is None and self.end is None

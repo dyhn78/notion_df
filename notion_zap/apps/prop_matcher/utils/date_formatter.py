@@ -9,7 +9,7 @@ class DateFormatter:
     def __init__(self, date_time: Union[dt.datetime, dt.date]):
         if isinstance(date_time, dt.datetime):
             date_time = date_time.date()
-        self.date = date_time
+        self.date: dt.date = date_time
 
     def stringify_date(self):
         return self._strf_dig6_and_weekday()

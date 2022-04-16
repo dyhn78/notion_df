@@ -21,34 +21,33 @@ class DateFormatConformer:
     def __init__(self, disable_overwrite=False):
         self.disable_overwrite = disable_overwrite
 
-    def __call__(self, date: PageRow, date_title=None):
+    def __call__(self, date_row: PageRow, date_title=None):
         """provide date_title manually if yet not synced to server-side"""
         if date_title is None:
-            date_title = date.read_key_alias('title')
+            date_title = date_row.read_key_alias('title')
         date_handler = DateFormatter.from_date_title(date_title)
-        new_tar_idx = date_handler.stringify_date()
-        if date_title != new_tar_idx:
-            date.write(key_alias='title', value=new_tar_idx)
-        date_range = DatePropertyValue(date_handler.date, cast_as_datetime=False)
-        if date_range != date.read_key_alias('date_manual'):
-            date.write_date(key_alias='date_manual', value=date_range)
-        date.save()
+        date = date_handler.stringify_date()
+        if date_title != date:
+            date_row.write(key_alias='title', value=date)
+        date_range = DatePropertyValue(date_handler.date)
+        if date_range != date_row.read_key_alias('date_manual'):
+            date_row.write_date(key_alias='date_manual', value=date_range)
+        date_row.save()
 
 
 class WeekFormatConformer:
     def __init__(self, disable_overwrite=False):
         self.disable_overwrite = disable_overwrite
 
-    def __call__(self, week: PageRow, week_title=None):
+    def __call__(self, week_row: PageRow, week_title=None):
         """provide period_title manually if yet-not-synced to server-side"""
         if week_title is None:
-            week_title = week.read_key_alias('title')
+            week_title = week_row.read_key_alias('title')
 
         date_handler = DateFormatter.from_week_title(week_title)
         date_range = DatePropertyValue(start=date_handler.first_day_of_week(),
-                                       end=date_handler.last_day_of_week(),
-                                       cast_as_datetime=False)
-        if date_range != week.read_key_alias('date_manual'):
-            week.root.disable_overwrite = self.disable_overwrite
-            week.write_date(key_alias='date_manual', value=date_range)
-            week.root.disable_overwrite = False
+                                       end=date_handler.last_day_of_week())
+        if date_range != week_row.read_key_alias('date_manual'):
+            week_row.root.disable_overwrite = self.disable_overwrite
+            week_row.write_date(key_alias='date_manual', value=date_range)
+            week_row.root.disable_overwrite = False
