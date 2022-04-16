@@ -3,25 +3,19 @@ from notion_zap.cli.structs import \
 
 
 class EMOJI:
-    CYCLE = '🔁'
-    CHECKER_FLAG = '🏁'
-
-    YARN = '🧶'
-    THREAD = '🧵'
-    CALENDAR = '📆'
-    BIG_CALENDAR = '📅'
-    TIMER = '⏲️'  # 가끔 Notion 환경에 뒤 공백이 짤려 삽입된 경우가 있다.
-
     RED_CIRCLE = '🔴'
     RED_HEART = '❤'
     ORANGE_HEART = '🟠'
     ORANGE_CIRCLE = '🧡'
+    ORANGE_DIAMOND = '🔶'
     YELLOW_CIRCLE = '🟡'
     YELLOW_HEART = '💛'
     PURPLE_CIRCLE = '🟣'
     PURPLE_HEART = '💜'
     BLUE_CIRCLE = '🔵'
     BLUE_HEART = '💙'
+    BROWN_CIRCLE = '🟤'
+    BROWN_HEART = '🤎'
 
     BOOKSTACK = '📚'
     GREEN_BOOK = '📗'
@@ -31,27 +25,38 @@ class EMOJI:
     YELLOW_NOTEBOOK = '📒'
     BLACK_NOTEBOOK = '📓'
 
+    CYCLE = '🔁'
+    CHECKER_FLAG = '🏁'
+    YARN = '🧶'
+    THREAD = '🧵'
+    CALENDAR = '📆'
+    BIG_CALENDAR = '📅'
+    TIMER = '⏲️'  # 가끔 Notion 환경에 뒤 공백이 짤려 삽입된 경우가 있다.
+    GLOBE_ASIA = '🌏'
+
 
 class PREFIX:
-    PERIODS = EMOJI.YARN
-    DATES = EMOJI.THREAD
+    SYSTEMS = EMOJI.GLOBE_ASIA
+
     JOURNALS = EMOJI.PURPLE_CIRCLE
     CHECKS = EMOJI.PURPLE_HEART
     TOPICS = EMOJI.BLUE_CIRCLE
     TASKS = EMOJI.BLUE_HEART
-    WRITINGS = EMOJI.BLUE_HEART
+    READINGS = EMOJI.YELLOW_CIRCLE
+    WRITINGS = EMOJI.YELLOW_HEART
 
+    PERIODS = EMOJI.BROWN_CIRCLE
+    DATES = EMOJI.BROWN_HEART
     PROJECTS = EMOJI.RED_CIRCLE
     DOMAINS = EMOJI.RED_HEART
-    CHANNELS = EMOJI.YELLOW_CIRCLE
-    READINGS = EMOJI.YELLOW_HEART
-    PEOPLE = EMOJI.ORANGE_CIRCLE
-    LOCATIONS = EMOJI.ORANGE_HEART
+    CHANNELS = EMOJI.ORANGE_CIRCLE
+    PEOPLE = EMOJI.ORANGE_HEART
+    LOCATIONS = EMOJI.ORANGE_DIAMOND
 
 
-# basic properties
 
 class Columns:
+    # basic properties
     title_generic = Cl(key=EMOJI.ORANGE_BOOK + '제목', alias='title')
     title_datetime = Cl(key=EMOJI.GREEN_BOOK + '제목', alias='title')
     title_metadata = Cl(key=EMOJI.BOOKSTACK + '제목', alias='title')
@@ -70,8 +75,8 @@ class Columns:
     # relational properties
     itself = Cl(key=EMOJI.CYCLE + '재귀', alias='itself', )
 
-    periods = Cl(key=EMOJI.YARN + '기간', alias='periods', )
-    dates = Cl(key=EMOJI.THREAD + '날짜', alias='dates', )
+    periods = Cl(key=PREFIX.PERIODS + '주간', alias='periods', )
+    dates = Cl(key=PREFIX.DATES + '일간', alias='dates', )
 
     journals = Cl(key=PREFIX.JOURNALS + '일지', alias='journals', )
     journals_mentioned = Cl(key=PREFIX.JOURNALS + '언급', alias='journals_induced', )
@@ -131,16 +136,16 @@ class SubFrames:
         Columns.dates
     ])
     dates_deadline = Frame([
-        Cl(key=EMOJI.YARN + '기한', aliases=['periods_deadline', 'periods']),
-        Cl(key=EMOJI.THREAD + '기한', aliases=['dates_deadline', 'dates']),
+        Cl(key=PREFIX.PERIODS + '기한', aliases=['periods_deadline', 'periods']),
+        Cl(key=PREFIX.DATES + '기한', aliases=['dates_deadline', 'dates']),
     ])
     dates_begin = Frame([
-        Cl(key=EMOJI.YARN + '시작', aliases=['periods_begin', 'periods']),
-        Cl(key=EMOJI.THREAD + '시작', aliases=['dates_begin', 'dates']),
+        Cl(key=PREFIX.PERIODS + '시작', aliases=['periods_begin', 'periods']),
+        Cl(key=PREFIX.DATES + '시작', aliases=['dates_begin', 'dates']),
     ])
     dates_created = Frame([
-        Cl(key=EMOJI.YARN + '생성', alias='periods_created', ),
-        Cl(key=EMOJI.THREAD + '생성', alias='dates_created', )
+        Cl(key=PREFIX.PERIODS + '생성', alias='periods_created', ),
+        Cl(key=PREFIX.DATES + '생성', alias='dates_created', )
     ])
 
 
