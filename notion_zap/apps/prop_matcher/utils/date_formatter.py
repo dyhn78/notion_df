@@ -43,7 +43,7 @@ class DateFormatter:
 
     def _strf_year_and_week(self):
         """예) 22/13"""
-        return self.first_day_of_week().strftime("%Y/%U")
+        return self.first_day_of_week().strftime("%y/%U")
 
     @classmethod
     def _from_strf_year_and_week(cls, strf: str):
