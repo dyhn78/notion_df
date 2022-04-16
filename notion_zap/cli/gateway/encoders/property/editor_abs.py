@@ -151,7 +151,7 @@ class PageRowPropertyWriter(metaclass=ABCMeta):
             value_alias: Hashable = None):
         key = self.clean_key(key, key_alias)
         value = self.clean_value(key, value, value_alias)
-        value = DatePropertyValue.from_date_val(value)
+        value = DatePropertyValue.from_date(value)
         encoder = SimplePropertyEncoder.date(key, value)
         return self.push_encoder(key, encoder)
 

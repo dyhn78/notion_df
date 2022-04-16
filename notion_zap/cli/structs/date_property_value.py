@@ -9,30 +9,33 @@ LOCAL_TIMEZONE = pytz.timezone('Asia/Seoul')
 
 class DatePropertyValue:
     def __init__(self, start: Optional[Union[dt.datetime, dt.date]] = None,
-                 end: Optional[Union[dt.datetime, dt.date]] = None):
+                 end: Optional[Union[dt.datetime, dt.date]] = None,
+                 cast_as_datetime = True):
         """default value of <start> and <end> is None."""
         if start is None and end is not None:
             start, end = end, start
-        self.start = self.__add_explicit_tz(start)
-        self.end = self.__add_explicit_tz(end)
+        self.cast_as_datetime = cast_as_datetime
+        if self.cast_as_datetime:
+            self.start = self.__add_explicit_tz(start)
+            self.end = self.__add_explicit_tz(end)
 
     def is_emptylike(self):
         return self.start is None and self.end is None
 
     @staticmethod
-    def __add_explicit_tz(date_val: Optional[Union[dt.datetime, dt.date]]) \
+    def __add_explicit_tz(date: Optional[Union[dt.datetime, dt.date]]) \
             -> Optional[Union[dt.datetime, dt.date]]:
-        if isinstance(date_val, dt.datetime):
-            return date_val.astimezone(LOCAL_TIMEZONE)
+        if isinstance(date, dt.datetime):
+            return date.astimezone(LOCAL_TIMEZONE)
         else:
-            return date_val
+            return date
 
     @classmethod
-    def from_date_val(cls, date_val: Union[DatePropertyValue, dt.datetime, dt.date]):
-        if isinstance(date_val, cls):
-            return date_val
+    def from_date(cls, date: Union[DatePropertyValue, dt.datetime, dt.date]):
+        if isinstance(date, cls):
+            return date
         else:
-            return cls(date_val)
+            return cls(date)
 
     @classmethod
     def from_isoformat(cls, start_datestring: str, end_datestring=''):
@@ -44,10 +47,10 @@ class DatePropertyValue:
     def from_utc_isoformat(cls, start_datestring: str, end_datestring=''):
         vals = []
         for datestr in [start_datestring, end_datestring]:
-            date_val = cls.__parse_isoformat(datestr)
-            if date_val:
-                date_val = date_val.replace(tzinfo=pytz.UTC).astimezone()
-                vals.append(date_val)
+            date = cls.__parse_isoformat(datestr)
+            if date:
+                date = date.replace(tzinfo=pytz.UTC).astimezone()
+                vals.append(date)
             else:
                 vals.append(None)
         return cls(*vals)
@@ -66,7 +69,7 @@ class DatePropertyValue:
         if self.start is not None:
             res.update(start=self.start.isoformat())
         if self.end is not None:
-            res.update(end=self.to_datetime(self.end).isoformat())
+            res.update(end=self.end.isoformat())
         return res
 
     @property
@@ -86,16 +89,16 @@ class DatePropertyValue:
         return self.to_datetime(self.end)
 
     @staticmethod
-    def to_datetime(date_val: Union[dt.datetime, dt.date]):
-        if isinstance(date_val, dt.date):
-            date_val = dt.datetime.combine(date_val, dt.datetime.min.time())
-        return date_val
+    def to_datetime(date_obj: Union[dt.datetime, dt.date]):
+        if isinstance(date_obj, dt.date):
+            date_obj = dt.datetime.combine(date_obj, dt.datetime.min.time())
+        return date_obj
 
     @staticmethod
-    def to_date(date_val: Union[dt.datetime, dt.date]):
-        if isinstance(date_val, dt.datetime):
-            date_val = date_val.date()
-        return date_val
+    def to_date(date_obj: Union[dt.datetime, dt.date]):
+        if isinstance(date_obj, dt.datetime):
+            date_obj = date_obj.date()
+        return date_obj
 
     def __repr__(self):
         return self.__str__()

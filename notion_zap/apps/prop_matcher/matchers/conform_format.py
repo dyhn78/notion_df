@@ -29,7 +29,7 @@ class DateFormatConformer:
         new_tar_idx = date_handler.stringify_date()
         if date_title != new_tar_idx:
             date.write(key_alias='title', value=new_tar_idx)
-        date_range = DatePropertyValue(date_handler.date)
+        date_range = DatePropertyValue(date_handler.date, cast_as_datetime=False)
         if date_range != date.read_key_alias('date_manual'):
             date.write_date(key_alias='date_manual', value=date_range)
         date.save()
@@ -46,7 +46,8 @@ class WeekFormatConformer:
 
         date_handler = DateFormatter.from_week_title(week_title)
         date_range = DatePropertyValue(start=date_handler.first_day_of_week(),
-                                       end=date_handler.last_day_of_week())
+                                       end=date_handler.last_day_of_week(),
+                                       cast_as_datetime=False)
         if date_range != week.read_key_alias('date_manual'):
             week.root.disable_overwrite = self.disable_overwrite
             week.write_date(key_alias='date_manual', value=date_range)
