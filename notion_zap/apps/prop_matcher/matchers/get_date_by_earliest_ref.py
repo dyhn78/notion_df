@@ -4,7 +4,7 @@ from typing import Optional
 from notion_zap.cli.editors import Database, PageRow
 from notion_zap.apps.prop_matcher.struct import MainEditor, EditorBase
 from notion_zap.apps.prop_matcher.common import \
-    has_value, set_value, ReferenceInfo, get_all_pages_from_relation
+    has_relation, set_relation, ReferenceInfo, get_all_pages_from_relation
 from notion_zap.cli.structs import DatePropertyValue
 
 
@@ -17,10 +17,10 @@ class DateMatcherByEarliestRef(MainEditor):
         for table, tag_date, ref_args in self.args:
             get_date = GetterByEarliestRef(self.bs.dates, ref_args)
             for row in table.rows:
-                if self.no_replace and has_value(row, tag_date):
+                if self.no_replace and has_relation(row, tag_date):
                     continue
                 if date := get_date(row):
-                    set_value(row, date, tag_date)
+                    set_relation(row, date, tag_date)
                     self.reset_period(row)
 
     @staticmethod

@@ -1,4 +1,4 @@
-from notion_zap.apps.prop_matcher.common import has_value, get_unique_page_from_relation
+from notion_zap.apps.prop_matcher.common import has_relation, get_unique_page_from_relation
 from notion_zap.apps.prop_matcher.struct import MainEditor
 
 
@@ -9,7 +9,7 @@ class BindSimpleProperties(MainEditor):
     def __call__(self):
         for table, reference, tag_ref, tag_copy in self.args:
             for row in table.rows:
-                if has_value(row, tag_copy):
+                if has_relation(row, tag_copy):
                     continue
                 if tar := get_unique_page_from_relation(row, reference, tag_ref):
                     if val_copy := tar.read_key_alias(tag_copy):

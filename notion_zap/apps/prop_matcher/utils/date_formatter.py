@@ -42,17 +42,18 @@ class DateFormatter:
         return cls._from_strf_year_and_week(strf)
 
     def _strf_year_and_week(self):
-        return self.date.strftime("%Y/%U")
+        """예) 22/13"""
+        return self.first_day_of_week().strftime("%Y/%U")
 
     @classmethod
     def _from_strf_year_and_week(cls, strf: str):
         year = int(strf[:2])
         month = int(strf[3:5])
-        return cls(dt.datetime.strptime(f'{year} {month} 0', "%y %U %w"))
+        return cls(dt.datetime.strptime(f'{year} {month} 0', "%y %V %w"))
 
     def _strf_year_and_week_verbose(self):
         """예) 2021년 47주: 1121-1126"""
-        return (self.date.strftime("%Y년 %U주: ") +
+        return (self.first_day_of_week().strftime("%Y년 %U주: ") +
                 self.first_day_of_week().strftime("%m%d-") +
                 self.last_day_of_week().strftime("%m%d"))
 

@@ -7,8 +7,8 @@ from notion_zap.apps.prop_matcher.matchers.get_date_by_created_time \
     import DateMatcherByCreatedTime
 from notion_zap.apps.prop_matcher.matchers.get_date_by_earliest_ref \
     import DateMatcherByEarliestRef
-from notion_zap.apps.prop_matcher.matchers.get_week_by_manual_value \
-    import PeriodMatcherByManualValue
+from notion_zap.apps.prop_matcher.matchers.get_week_by_from_date \
+    import WeekRowMatcherFromDate
 from notion_zap.apps.prop_matcher.matchers.get_week_by_date_ref \
     import PeriodMatcherByDateRef
 from notion_zap.apps.prop_matcher.matchers.match_to_itself import SelfMatcher
@@ -22,10 +22,10 @@ class RegularMatchProcessor:
             [TimeFormatConformer(self.bs)],
             [DateMatcherByEarliestRef(self.bs)], # created time보다 우선순위가 높아야 한다
             [DateMatcherByCreatedTime(self.bs),
-            PeriodMatcherByManualValue(self.bs),
-            PeriodMatcherByDateRef(self.bs),
-            SelfMatcher(self.bs),
-            BindSimpleProperties(self.bs),]
+             WeekRowMatcherFromDate(self.bs),
+             PeriodMatcherByDateRef(self.bs),
+             SelfMatcher(self.bs),
+             BindSimpleProperties(self.bs), ]
         ]
 
     def __call__(self):

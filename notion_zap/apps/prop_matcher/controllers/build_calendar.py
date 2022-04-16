@@ -6,7 +6,7 @@ from notion_zap.apps.prop_matcher.struct import EditorBase
 from notion_zap.apps.prop_matcher.matchers.conform_format import DateFormatConformer, \
     WeekFormatConformer
 from notion_zap.apps.prop_matcher.matchers.get_date_by_created_time import DateGetterFromDateValue
-from notion_zap.apps.prop_matcher.matchers.get_week_by_manual_value import PeriodGetterFromDateValue
+from notion_zap.apps.prop_matcher.matchers.get_week_by_from_date import WeekRowGetterFromDate
 from notion_zap.apps.prop_matcher.utils.date_range_iterator import DateRangeIterator
 
 
@@ -37,7 +37,7 @@ class CalendarBuildController:
         create_date_if_not_found = DateGetterFromDateValue(self.bs.periods)
         for date_val in date_range:
             create_date_if_not_found(date_val)
-        create_period_if_not_found = PeriodGetterFromDateValue(self.bs.periods)
+        create_period_if_not_found = WeekRowGetterFromDate(self.bs.periods)
         for date_val in date_range:
             create_period_if_not_found(date_val)
 

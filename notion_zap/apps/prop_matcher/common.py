@@ -6,11 +6,11 @@ from notion_zap.apps.prop_matcher.struct import RowEditor
 from notion_zap.cli.editors import PageRow, Database
 
 
-def has_value(row: PageRow, key_alias_target):
+def has_relation(row: PageRow, key_alias_target):
     return bool(row.read_key_alias(key_alias_target))
 
 
-def set_value(row: PageRow, target: PageRow, key_alias_target):
+def set_relation(row: PageRow, target: PageRow, key_alias_target):
     row.write_relation(key_alias=key_alias_target, value=[target.block_id])
 
 

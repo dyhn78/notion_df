@@ -6,7 +6,7 @@ from typing import Union
 from notion_zap.cli.editors import PageRow, Database
 from notion_zap.cli.structs import DatePropertyValue
 from notion_zap.apps.prop_matcher.common import (
-    has_value, set_value, query_unique_page_by_idx)
+    has_relation, set_relation, query_unique_page_by_idx)
 from notion_zap.apps.prop_matcher.utils.date_formatter import DateFormatter
 from notion_zap.apps.prop_matcher.struct import EditorBase, MainEditor
 
@@ -21,11 +21,11 @@ class DateMatcherByCreatedTime(MainEditor):
     def __call__(self):
         for rows, tag_date in self.args:
             for row in rows:
-                if self.no_replace and has_value(row, tag_date):
+                if self.no_replace and has_relation(row, tag_date):
                     continue
                 date_val = self.get_date_val(row)
                 if date := self.get_date(date_val):
-                    set_value(row, date, tag_date)
+                    set_relation(row, date, tag_date)
 
     def get_date_val(self, row: PageRow):
         dom_idx: DatePropertyValue = row.read_key_alias('auto_datetime')

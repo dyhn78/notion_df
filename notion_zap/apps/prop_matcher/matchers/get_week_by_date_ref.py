@@ -1,5 +1,5 @@
 from notion_zap.apps.prop_matcher.struct import MainEditor, EditorBase
-from notion_zap.apps.prop_matcher.common import has_value, ReferenceInfo, GetterByReference, set_value
+from notion_zap.apps.prop_matcher.common import has_relation, ReferenceInfo, GetterByReference, set_relation
 
 
 class PeriodMatcherByDateRef(MainEditor):
@@ -10,10 +10,10 @@ class PeriodMatcherByDateRef(MainEditor):
         for table, tag_period, ref_info in self.args:
             get_period = GetterByReference(self.bs.periods, ref_info)
             for row in table.rows:
-                if has_value(row, tag_period):
+                if has_relation(row, tag_period):
                     continue
                 if period := get_period(row):
-                    set_value(row, period, tag_period)
+                    set_relation(row, period, tag_period)
 
     @property
     def args(self):
