@@ -1,58 +1,58 @@
 from __future__ import annotations
 
-from notion_zap.apps.prop_matcher.matchers.conform_format import TimeFormatConformer
+from notion_zap.apps.prop_matcher.processors.bind_simple_props import BindSimpleProperties
+from notion_zap.apps.prop_matcher.processors.conform_format import TimeFormatConformer
+from notion_zap.apps.prop_matcher.processors.get_date_by_created_time \
+    import DateProcessorByCreatedTime
+from notion_zap.apps.prop_matcher.processors.get_date_by_earliest_ref \
+    import DateProcessorByEarliestRef
+from notion_zap.apps.prop_matcher.processors.get_week_by_date_ref \
+    import PeriodProcessorByDateRef
+from notion_zap.apps.prop_matcher.processors.get_week_by_from_date \
+    import WeekRowProcessorFromDate
+from notion_zap.apps.prop_matcher.processors.match_to_itself import SelfProcessor
+from notion_zap.apps.prop_matcher.struct import MainEditorDepr
 from notion_zap.cli.editors import Database
-from notion_zap.apps.prop_matcher.struct import EditorBase
-from notion_zap.apps.prop_matcher.matchers.get_date_by_created_time \
-    import DateMatcherByCreatedTime
-from notion_zap.apps.prop_matcher.matchers.get_date_by_earliest_ref \
-    import DateMatcherByEarliestRef
-from notion_zap.apps.prop_matcher.matchers.get_week_by_from_date \
-    import WeekRowMatcherFromDate
-from notion_zap.apps.prop_matcher.matchers.get_week_by_date_ref \
-    import PeriodMatcherByDateRef
-from notion_zap.apps.prop_matcher.matchers.match_to_itself import SelfMatcher
-from notion_zap.apps.prop_matcher.matchers.bind_simple_props import BindSimpleProperties
-
-
-class RegularMatchProcessor:
-    def __init__(self, bs: EditorBase):
-        self.bs = bs
-        self.editor_groups = [
-            [TimeFormatConformer(self.bs)],
-            [DateMatcherByEarliestRef(self.bs)], # created time보다 우선순위가 높아야 한다
-            [DateMatcherByCreatedTime(self.bs),
-             WeekRowMatcherFromDate(self.bs),
-             PeriodMatcherByDateRef(self.bs),
-             SelfMatcher(self.bs),
-             BindSimpleProperties(self.bs), ]
-        ]
-
-    def __call__(self):
-        for editor_group in self.editor_groups:
-            for editor in editor_group:
-                editor()
-                self.bs.save()
 
 
 class RegularMatchController:
     def __init__(self):
-        self.bs = EditorBase()
+        self.bs = MainEditorDepr()
         self.bs.root.exclude_archived = True
-        self.fetch = RegularMatchFetcher(self.bs)
-        self.process = RegularMatchProcessor(self.bs)
+        self.fetch = RegularMatchFetchManager(self.bs)
+        self.process = RegularMatchProcessManager(self.bs)
 
     def __call__(self, request_size=0):
         self.fetch(request_size)
         self.process()
 
 
-class RegularMatchFetcher:
-    def __init__(self, bs: EditorBase):
+class RegularMatchProcessManager:
+    def __init__(self, bs: MainEditorDepr):
+        self.bs = bs
+        self.processor_groups = [
+            [TimeFormatConformer(self.bs)],
+            [DateProcessorByEarliestRef(self.bs)],  # created time보다 우선순위가 높아야 한다
+            [DateProcessorByCreatedTime(self.bs),
+             WeekRowProcessorFromDate(self.bs),
+             PeriodProcessorByDateRef(self.bs),
+             SelfProcessor(self.bs),
+             BindSimpleProperties(self.bs), ]
+        ]
+
+    def __call__(self):
+        for group in self.processor_groups:
+            for processor in group:
+                processor()
+            self.bs.save()
+
+
+class RegularMatchFetchManager:
+    def __init__(self, bs: MainEditorDepr):
         self.bs = bs
 
     def __call__(self, request_size=0):
-        for table in self.bs.root.aliased_blocks:
+        for table in self.bs.root.block_aliases.values():
             self.fetch_table(table, request_size)
 
     def fetch_table(self, table: Database, request_size):

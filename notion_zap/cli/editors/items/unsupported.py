@@ -1,13 +1,13 @@
-from typing import Any
+from typing import Any, Hashable
 
-from ..structs.base_logic import Gatherer
+from ..structs.base_logic import Space
 from ..structs.block_main import Block
 
 
 # noinspection PyMethodMayBeStatic
 class UnsupportedBlock(Block):
-    def __init__(self, caller: Gatherer, id_or_url: str):
-        super().__init__(caller, id_or_url)
+    def __init__(self, caller: Space, id_or_url: str, alias: Hashable = None):
+        super().__init__(caller, id_or_url, alias)
 
     @property
     def block_name(self):

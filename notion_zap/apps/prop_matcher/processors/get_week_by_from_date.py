@@ -2,15 +2,15 @@ from __future__ import annotations
 
 import datetime as dt
 
+from notion_zap.apps.prop_matcher.common import has_relation, set_relation, query_unique_page_by_idx
+from notion_zap.apps.prop_matcher.struct import MainEditorDepr, Processor
+from notion_zap.apps.prop_matcher.utils.date_formatter import DateFormatter
 from notion_zap.cli.editors import PageRow, Database
 from notion_zap.cli.structs import DatePropertyValue
-from notion_zap.apps.prop_matcher.common import has_relation, set_relation, query_unique_page_by_idx
-from notion_zap.apps.prop_matcher.utils.date_formatter import DateFormatter
-from notion_zap.apps.prop_matcher.struct import EditorBase, MainEditor
 
 
-class WeekRowMatcherFromDate(MainEditor):
-    def __init__(self, bs: EditorBase):
+class WeekRowProcessorFromDate(Processor):
+    def __init__(self, bs: MainEditorDepr):
         super().__init__(bs)
         self.tag_week = 'periods'
         self.get_week = WeekRowGetterFromDate(self.bs.periods)

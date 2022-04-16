@@ -1,9 +1,10 @@
-from notion_zap.apps.prop_matcher.struct import MainEditor, EditorBase
-from notion_zap.apps.prop_matcher.common import has_relation, ReferenceInfo, GetterByReference, set_relation
+from notion_zap.apps.prop_matcher.common import has_relation, ReferenceInfo, GetterByReference, \
+    set_relation
+from notion_zap.apps.prop_matcher.struct import Processor, MainEditorDepr
 
 
-class PeriodMatcherByDateRef(MainEditor):
-    def __init__(self, bs: EditorBase):
+class PeriodProcessorByDateRef(Processor):
+    def __init__(self, bs: MainEditorDepr):
         super().__init__(bs)
 
     def __call__(self):

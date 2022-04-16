@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import os
 from abc import ABCMeta, abstractmethod
 from pprint import pprint
@@ -94,13 +95,10 @@ class Root(Registry):
             client = Client(auth=self.token)
         self.client = client
 
-        self.objects = RootGatherer(self)
+        self.space = RootSpace(self)
 
         from .block_main import Block
-        self._blocks: list[Block] = []
-
-        from ..database.main import Database
-        self._by_alias: dict[Any, Database] = {}
+        self.block_aliases: dict[Any, Block] = {}
 
         # global settings, will be applied uniformly to all child-editors.
         self.exclude_archived = exclude_archived
@@ -113,18 +111,34 @@ class Root(Registry):
         self.print_request_formats = print_request_formats
         # self.enable_overwrite_by_same_value = enable_overwrite_by_same_value
 
-        # TODO : (1) enum 이용, (2) 실제로 requestor에 작동하는 로직 마련.
-        self._log_succeed_request = False
-        self._log_failed_request = True
+    @property
+    def root(self):
+        return self
+
+    def save(self):
+        return self.space.save()
+
+    def __getitem__(self, key: Hashable):
+        try:
+            return self.block_aliases[key]
+        except KeyError:
+            raise KeyError(key)
 
     @property
     def token(self):
         return os.environ['NOTION_TOKEN'].strip("'").strip('"')
 
-    def eval(self, value):
+    def eval_as_not_empty(self, value) -> bool:
         if isinstance(value, DatePropertyValue):
-            return not value.is_emptylike()
+            return bool(value)
         return str(value) not in self.emptylike_strings
+
+
+class RootSettings:
+    def __init__(self):
+        # TODO : (1) enum 이용, (2) 실제로 requestor에 작동하는 로직 마련.
+        self._log_succeed_request = False
+        self._log_failed_request = True
 
     def set_logging__silent(self):
         self._log_succeed_request = False
@@ -138,23 +152,8 @@ class Root(Registry):
         self._log_succeed_request = True
         self._log_failed_request = True
 
-    @property
-    def root(self):
-        return self
 
-    @property
-    def by_alias(self):
-        return self._by_alias
-
-    @property
-    def aliased_blocks(self):
-        return self._by_alias.values()
-
-    def save(self):
-        return self.objects.save()
-
-
-class Gatherer(Registry, Saveable, metaclass=ABCMeta):
+class Space(Registry, Saveable, metaclass=ABCMeta):
     @abstractmethod
     def __iter__(self):
         pass
@@ -178,7 +177,7 @@ class Gatherer(Registry, Saveable, metaclass=ABCMeta):
         pass
 
 
-class RootGatherer(Gatherer):
+class RootSpace(Space):
     def __init__(self, caller: Root):
         super().__init__()
         self.caller = caller
@@ -215,24 +214,28 @@ class RootGatherer(Gatherer):
     def release(self, block):
         self.direct_blocks.remove(block)
 
-    def database(self, database_alias: str, id_or_url: str,
-                 frame: Optional[PropertyFrame] = None):
+    def database(self, id_or_url: str, alias: Hashable = None, frame: PropertyFrame = None):
+        from .. import Database
+        block = Database(self, id_or_url, alias, frame)
+        return block
+
+    def page_row(self, id_or_url: str, alias: Hashable = None, frame: PropertyFrame = None):
+        from .. import PageRow
+        block = PageRow(self, id_or_url, alias, frame)
+        return block
+
+    def page_item(self, id_or_url: str, alias: Hashable = None):
+        from .. import PageItem
+        block = PageItem(self, id_or_url, alias)
+        return block
+
+    def text_item(self, id_or_url: str, alias: Hashable = None):
+        from .. import TextItem
+        block = TextItem(self, id_or_url, alias)
+        return block
+
+    def database_depr(self, database_alias: str, id_or_url: str,
+                      frame: Optional[PropertyFrame] = None):
         from .. import Database
         block = Database(self, id_or_url, database_alias, frame)
-        return block
-
-    def page_row(self, id_or_url: str,
-                 frame: Optional[PropertyFrame] = None):
-        from .. import PageRow
-        block = PageRow(self, id_or_url, frame=frame)
-        return block
-
-    def page_item(self, id_or_url: str):
-        from .. import PageItem
-        block = PageItem(self, id_or_url)
-        return block
-
-    def text_item(self, id_or_url: str):
-        from .. import TextItem
-        block = TextItem(self, id_or_url)
         return block

@@ -1,8 +1,8 @@
 from notion_zap.apps.prop_matcher.common import has_relation, get_unique_page_from_relation
-from notion_zap.apps.prop_matcher.struct import MainEditor
+from notion_zap.apps.prop_matcher.struct import Processor
 
 
-class BindSimpleProperties(MainEditor):
+class BindSimpleProperties(Processor):
     def __init__(self, bs):
         super().__init__(bs)
 

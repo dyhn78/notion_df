@@ -3,8 +3,8 @@ from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 from typing import Union, Iterable, Any
 
+from notion_zap.cli.editors.structs.base_logic import Space
 from notion_zap.cli.editors.structs.block_main import Block, Follower
-from notion_zap.cli.editors.structs.base_logic import Gatherer
 from notion_zap.cli.gateway.requestors.structs import Requestor
 
 
@@ -134,10 +134,10 @@ class BlockWithContentsAndChildren(BlockWithChildren):
                 or self.children.save_required())
 
 
-class Children(Follower, Gatherer, metaclass=ABCMeta):
+class Children(Follower, Space, metaclass=ABCMeta):
     def __init__(self, caller: BlockWithChildren):
         Follower.__init__(self, caller)
-        Gatherer.__init__(self)
+        Space.__init__(self)
         self.caller = caller
 
     @abstractmethod

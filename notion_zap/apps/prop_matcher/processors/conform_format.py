@@ -1,11 +1,11 @@
-from notion_zap.apps.prop_matcher.struct import EditorBase, MainEditor
+from notion_zap.apps.prop_matcher.struct import MainEditorDepr, Processor
+from notion_zap.apps.prop_matcher.utils.date_formatter import DateFormatter
 from notion_zap.cli.editors import PageRow
 from notion_zap.cli.structs import DatePropertyValue
-from notion_zap.apps.prop_matcher.utils.date_formatter import DateFormatter
 
 
-class TimeFormatConformer(MainEditor):
-    def __init__(self, bs: EditorBase):
+class TimeFormatConformer(Processor):
+    def __init__(self, bs: MainEditorDepr):
         super().__init__(bs)
         self.date_conformer = DateFormatConformer()
         self.week_conformer = WeekFormatConformer()

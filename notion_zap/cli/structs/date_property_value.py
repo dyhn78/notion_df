@@ -1,8 +1,9 @@
 from __future__ import annotations
-import pytz
+
 import datetime as dt
 from typing import Union, Optional
 
+import pytz
 
 LOCAL_TIMEZONE = pytz.timezone('Asia/Seoul')
 
@@ -16,8 +17,8 @@ class DatePropertyValue:
         self.start = self.__add_explicit_tz(start)
         self.end = self.__add_explicit_tz(end)
 
-    def is_emptylike(self):
-        return self.start is None and self.end is None
+    def __bool__(self):
+        return self.start is not None or self.end is not None
 
     @staticmethod
     def __add_explicit_tz(date: Optional[Union[dt.datetime, dt.date]]) \

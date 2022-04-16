@@ -55,7 +55,7 @@ class ContentsWriter:
 if __name__ == '__main__':
     writer = ContentsWriter()
     root = Root()
-    page1 = root.objects.text_item('')
+    page1 = root.space.text_item('')
     contents1 = ['1', '2', '3']
     writer(page1, contents1)
-    root.objects.save_preview()
+    root.space.save_preview()

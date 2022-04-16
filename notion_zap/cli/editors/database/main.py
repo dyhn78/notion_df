@@ -1,34 +1,35 @@
 from __future__ import annotations
+
 from pprint import pprint
 from typing import Union, Optional, Iterator, Callable, Any, Hashable
 
 from notion_client import APIResponseError
 
-from notion_zap.cli.gateway import parsers, requestors
 from notion_zap.cli.structs import PropertyFrame
 from ..row.main import PageRow
-from notion_zap.cli.editors.structs.children import Children, BlockWithChildren
 from ..shared.with_items import ItemChildren
-from ..structs.base_logic import RootGatherer
+from ..structs.base_logic import RootSpace
+from ..structs.children import Children, BlockWithChildren
 from ..structs.exceptions import InvalidBlockTypeError
 from ..structs.registry_table import IndexTable, ClassifyTable
+from ...gateway.parsers import DatabaseParser
+from ...gateway.requestors import Query, RetrieveDatabase
 from ...utility import url_to_id
 
 
 class Database(BlockWithChildren):
-    def __init__(self, caller: Union[RootGatherer, ItemChildren],
+    def __init__(self, caller: Union[RootSpace, ItemChildren],
                  id_or_url: str,
-                 database_alias='',
-                 frame: Optional[PropertyFrame] = None):
-        self.alias = database_alias
+                 alias: Hashable = None,
+                 frame: Optional[PropertyFrame] = None, ):
+        self.title = ''
         self.frame = frame if frame else PropertyFrame()
-        BlockWithChildren.__init__(self, caller, id_or_url)
-        self.root.by_alias[self.alias] = self
+        BlockWithChildren.__init__(self, caller, id_or_url, alias)
         self.rows = RowChildren(self)
 
     @property
     def block_name(self):
-        return self.alias
+        return self.title
 
     @property
     def children(self):
@@ -40,9 +41,9 @@ class Database(BlockWithChildren):
         query.execute(request_size)
 
     def retrieve(self):
-        requestor = requestors.RetrieveDatabase(self)
+        requestor = RetrieveDatabase(self)
         response = requestor.execute_silent()
-        parser = parsers.DatabaseParser(response)
+        parser = DatabaseParser(response)
         self.frame.fetch_parser(parser)
         requestor.print_comments()
 
@@ -181,7 +182,7 @@ class RowChildren(Children):
         return self.by_tags[prop_tag]
 
 
-class QueryWithCallback(requestors.Query):
+class QueryWithCallback(Query):
     def __init__(self, editor: RowChildren, frame: PropertyFrame,
                  execute_callback: Callable[[Any], list[PageRow]]):
         super().__init__(editor, frame)

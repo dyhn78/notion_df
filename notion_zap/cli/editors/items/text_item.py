@@ -1,11 +1,12 @@
 from __future__ import annotations
-from typing import Union, Callable, Optional
+
+from typing import Union, Callable, Optional, Hashable
 
 from notion_zap.cli.gateway import parsers, requestors
 from ..shared.document import Document
 from ..shared.item import Item
-from ..structs.base_logic import RootGatherer
 from ..shared.with_items import BlockWithItems, ItemChildren
+from ..structs.base_logic import RootSpace
 from ...gateway.encoders import (
     TextContentsWriter,
     RichTextContentsEncoder, ContentsEncoder,
@@ -13,11 +14,12 @@ from ...gateway.encoders import (
 
 
 class TextItem(Item, BlockWithItems, Document, TextContentsWriter):
-    def __init__(self, caller: Union[ItemChildren, RootGatherer], id_or_url: str):
+    def __init__(self, caller: Union[ItemChildren, RootSpace], id_or_url: str,
+                 alias: Hashable = None):
         self.callback: Optional[Callable[[RichTextContentsEncoder],
                                          RichTextContentsEncoder]] = None
-        Item.__init__(self, caller, id_or_url)
-        BlockWithItems.__init__(self, caller, id_or_url)
+        Item.__init__(self, caller, id_or_url, alias)
+        BlockWithItems.__init__(self, caller, id_or_url, alias)
         self._requestor = requestors.UpdateBlock(self)
 
     @property

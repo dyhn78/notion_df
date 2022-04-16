@@ -3,9 +3,8 @@ from itertools import chain
 
 import networkx as nx
 
-from notion_zap.cli import editors
-from notion_zap.apps.config import DatabaseInfo
 from notion_zap.apps.network_builder.config import NetworkFrames, NetworkPropertyFrame
+from notion_zap.cli import editors
 
 
 class TopologyBuilder:
@@ -13,10 +12,8 @@ class TopologyBuilder:
         self.request_size = request_size
         self.G = nx.DiGraph()
         self.root = editors.Root(print_response_heads=5)
-        self.themes = self.root.objects.database(
-            *DatabaseInfo.PROJECTS, NetworkFrames.THEMES).rows
-        self.ideas = self.root.objects.database(
-            *DatabaseInfo.DOMAINS, NetworkFrames.IDEAS).rows
+        self.themes = self.root.space.database_depr(NetworkFrames.THEMES, ).rows
+        self.ideas = self.root.space.database_depr(NetworkFrames.IDEAS, ).rows
         self.all: dict[str, editors.RowChildren] = {
             'themes': self.themes,
             'ideas': self.ideas

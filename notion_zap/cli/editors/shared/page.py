@@ -1,20 +1,20 @@
 from __future__ import annotations
 
 from abc import abstractmethod, ABCMeta
-from typing import Union
+from typing import Union, Hashable
 
 from notion_zap.cli.gateway import parsers, requestors
 from .document import Document
 from .with_items import BlockWithItems
-from ..structs.base_logic import Gatherer
+from ..structs.base_logic import Space
 from ..structs.registerer import Registerer
 
 
 class PageBlock(BlockWithItems, Document, metaclass=ABCMeta):
-    def __init__(self, caller: Gatherer, id_or_url: str):
-        super().__init__(caller, id_or_url)
+    def __init__(self, caller: Space, id_or_url: str, alias: Hashable = None):
+        super().__init__(caller, id_or_url, alias)
         self._title = ''
-        self.regs.add('title', lambda x: x.block.title)
+        self._regs.add('title', lambda x: x.block.title)
 
     @property
     def can_have_children(self):
@@ -51,9 +51,9 @@ class PageBlock(BlockWithItems, Document, metaclass=ABCMeta):
         requestor.print_comments()
 
     def apply_page_parser(self, parser: parsers.PageParser):
-        self.regs.un_register_from_root_and_parent()
+        self._regs.un_register_from_root_and_parent()
         self._apply_page_parser(parser)
-        self.regs.register_to_root_and_parent()
+        self._regs.register_to_root_and_parent()
 
     @abstractmethod
     def _apply_page_parser(self, parser: parsers.PageParser):

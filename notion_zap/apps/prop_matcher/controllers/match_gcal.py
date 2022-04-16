@@ -1,6 +1,6 @@
 # from __future__ import annotations
 #
-# from notion_zap.apps.prop_matcher.struct import EditorBase
+# from notion_zap.apps.prop_matcher.struct import MainEditorDepr
 # from notion_zap.cli import editors
 #
 #
@@ -19,7 +19,7 @@
 #         self.bs.save()
 #
 #
-# class GcalEditorBase(EditorBase):
+# class GcalEditorBase(MainEditorDepr):
 #     def __init__(self, request_size: int):
 #         super().__init__()
 #         self.request_size = request_size

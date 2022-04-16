@@ -1,10 +1,11 @@
 from __future__ import annotations
+
 from typing import Union, Optional, Any, Hashable
 
+from notion_zap.cli.editors.structs.children import Children
 from notion_zap.cli.structs import PropertyFrame
 from ..shared.page import PageBlock
-from notion_zap.cli.editors.structs.children import Children
-from ..structs.base_logic import RootGatherer
+from ..structs.base_logic import RootSpace
 from ...gateway import requestors, parsers
 from ...gateway.encoders import (
     PageRowPropertyWriter,
@@ -13,12 +14,12 @@ from ...gateway.encoders import (
 
 
 class PageRow(PageBlock, PageRowPropertyWriter):
-    def __init__(self, caller: Union[RootGatherer, Children],
-                 id_or_url: str,
+    def __init__(self, caller: Union[RootSpace, Children],
+                 id_or_url: str, alias: Hashable = None,
                  frame: Optional[PropertyFrame] = None):
         from ..database.main import RowChildren
-        PageBlock.__init__(self, caller, id_or_url)
-        self.caller: Union[RootGatherer, RowChildren] = caller
+        PageBlock.__init__(self, caller, id_or_url, alias)
+        self.caller: Union[RootSpace, RowChildren] = caller
 
         self.frame = frame if frame else PropertyFrame()
         self._read_plain = {}
@@ -44,12 +45,12 @@ class PageRow(PageBlock, PageRowPropertyWriter):
         return None
 
     def register_a_key(self, key: str):
-        return self.regs.add(('key', key),
-                      lambda x: x.block.get_key(key))
+        return self._regs.add(('key', key),
+                              lambda x: x.block.get_key(key))
 
     def register_a_tag(self, key_alias: Hashable):
-        return self.regs.add(('tag', key_alias),
-                             lambda x: x.block.get_key_alias(key_alias))
+        return self._regs.add(('tag', key_alias),
+                              lambda x: x.block.get_key_alias(key_alias))
 
     @property
     def requestor(self):
@@ -71,7 +72,7 @@ class PageRow(PageBlock, PageRowPropertyWriter):
     def push_encoder(self, key: str, encoder: PropertyEncoder) \
             -> PropertyEncoder:
         cannot_overwrite = (self.root.disable_overwrite and
-                            self.root.eval(self.read_key(key)))
+                            self.root.eval_as_not_empty(self.read_key(key)))
         if cannot_overwrite:
             return encoder
         # if key == self.frame.title_key:

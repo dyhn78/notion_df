@@ -1,17 +1,19 @@
 from __future__ import annotations
-from abc import ABCMeta
 
-from notion_zap.cli.gateway import requestors, parsers
+from abc import ABCMeta
+from collections import Hashable
+
 from notion_zap.cli.editors.structs.children import Children, \
     BlockWithContentsAndChildren
-from ...structs.base_logic import Gatherer
+from notion_zap.cli.gateway import requestors, parsers
+from ...structs.base_logic import Space
 from ...structs.block_main import Block
 from ...structs.exceptions import InvalidBlockTypeError
 
 
 class BlockWithItems(BlockWithContentsAndChildren, metaclass=ABCMeta):
-    def __init__(self, caller: Gatherer, id_or_url: str):
-        BlockWithContentsAndChildren.__init__(self, caller, id_or_url)
+    def __init__(self, caller: Space, id_or_url: str, alias: Hashable = None):
+        BlockWithContentsAndChildren.__init__(self, caller, id_or_url, alias)
         self.items = ItemChildren(self)
 
     @property

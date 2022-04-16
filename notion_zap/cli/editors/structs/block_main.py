@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import datetime as dt
 from abc import abstractmethod, ABCMeta
-from typing import Optional, Any
+from typing import Optional, Any, Hashable
 
 from notion_zap.cli.utility import url_to_id, id_to_url
-from .base_logic import Saveable, BaseComponent, Gatherer
+from .base_logic import Saveable, BaseComponent, Space
 
 
 class Component(BaseComponent, metaclass=ABCMeta):
@@ -73,7 +73,7 @@ class Component(BaseComponent, metaclass=ABCMeta):
 
 
 class Block(Component, Saveable, metaclass=ABCMeta):
-    def __init__(self, gatherer: Gatherer, id_or_url: str):
+    def __init__(self, gatherer: Space, id_or_url: str, alias: Hashable = None):
         if getattr(self, '_block_id', None) is not None:
             return
 
@@ -88,8 +88,23 @@ class Block(Component, Saveable, metaclass=ABCMeta):
         self.caller.contain(self)
 
         from .registerer import RegistererMap
-        self.regs = RegistererMap(self)
-        self.regs.add('id', lambda x: x.block_id)
+        self._regs = RegistererMap(self)
+        self._regs.add('id', lambda x: x.block_id)
+
+        self._alias = None
+        self.alias = alias
+
+    @property
+    def alias(self):
+        return self._alias
+
+    @alias.setter
+    def alias(self, alias: Hashable):
+        if self._alias is not None:
+            self.root.block_aliases.pop(self._alias)
+        self._alias = alias
+        if self._alias is not None:
+            self.root.block_aliases[self._alias] = self
 
     def __repr__(self):
         if self.block_name:
@@ -107,20 +122,20 @@ class Block(Component, Saveable, metaclass=ABCMeta):
         else:
             return f"new {type(self).__name__.lower()}"
 
-    def move_to(self, new_caller: Gatherer):
+    def move_to(self, new_caller: Space):
         if (prev := self.caller) != new_caller:
             prev.release(self)
-            self.regs.un_register_from_parent()
+            self._regs.un_register_from_parent()
             self.caller = new_caller
             new_caller.contain(self)
-            self.regs.register_to_parent()
+            self._regs.register_to_parent()
 
     def close(self):
         """use this method to detach a wrong block
         (probably due to nonexisting block_id)"""
-        if isinstance(prev := self.caller, Gatherer):
+        if isinstance(prev := self.caller, Space):
             prev.release(self)
-            self.regs.un_register_from_root_and_parent()
+            self._regs.un_register_from_root_and_parent()
         self.caller = None
 
     @property

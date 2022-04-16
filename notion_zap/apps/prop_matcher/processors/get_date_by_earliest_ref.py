@@ -1,15 +1,16 @@
 from __future__ import annotations
+
 from typing import Optional
 
-from notion_zap.cli.editors import Database, PageRow
-from notion_zap.apps.prop_matcher.struct import MainEditor, EditorBase
 from notion_zap.apps.prop_matcher.common import \
     has_relation, set_relation, ReferenceInfo, get_all_pages_from_relation
+from notion_zap.apps.prop_matcher.struct import Processor, MainEditorDepr
+from notion_zap.cli.editors import Database, PageRow
 from notion_zap.cli.structs import DatePropertyValue
 
 
-class DateMatcherByEarliestRef(MainEditor):
-    def __init__(self, bs: EditorBase):
+class DateProcessorByEarliestRef(Processor):
+    def __init__(self, bs: MainEditorDepr):
         super().__init__(bs)
         self.no_replace = True
 

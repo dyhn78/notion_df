@@ -2,18 +2,18 @@ from __future__ import annotations
 
 from typing import Optional
 
-from notion_zap.apps.prop_matcher.struct import EditorBase
-from notion_zap.apps.prop_matcher.matchers.conform_format import DateFormatConformer, \
+from notion_zap.apps.prop_matcher.processors.conform_format import DateFormatConformer, \
     WeekFormatConformer
-from notion_zap.apps.prop_matcher.matchers.get_date_by_created_time import DateGetterFromDateValue
-from notion_zap.apps.prop_matcher.matchers.get_week_by_from_date import WeekRowGetterFromDate
+from notion_zap.apps.prop_matcher.processors.get_date_by_created_time import DateGetterFromDateValue
+from notion_zap.apps.prop_matcher.processors.get_week_by_from_date import WeekRowGetterFromDate
+from notion_zap.apps.prop_matcher.struct import MainEditorDepr
 from notion_zap.apps.prop_matcher.utils.date_range_iterator import DateRangeIterator
 
 
 class CalendarBuildController:
     def __init__(self, disable_overwrite=False, fetch_empties=True,
                  year_range: Optional[tuple[int, int]] = None):
-        self.bs = EditorBase()
+        self.bs = MainEditorDepr()
         self.date_range = (
             DateRangeIterator(year_range) if year_range else None)
         self.fetch = CalendarBuildFetcher(self.bs, self.date_range, fetch_empties)
@@ -45,7 +45,7 @@ class CalendarBuildController:
 class CalendarBuildFetcher:
     MAX_REQUEST_SIZE = 50
 
-    def __init__(self, bs: EditorBase,
+    def __init__(self, bs: MainEditorDepr,
                  year_range: Optional[tuple[int, int]],
                  empties=True,
                  request_size=0):
@@ -79,7 +79,7 @@ class CalendarBuildFetcher:
             query.execute(1)
 
 
-class CalendarEditorBase(EditorBase):
+class CalendarMainEditorDepr(MainEditorDepr):
     MAX_REQUEST_SIZE = 50
 
     def __init__(self,

@@ -1,19 +1,20 @@
 from __future__ import annotations
 
-from typing import Union
+from typing import Union, Hashable
 
 from notion_zap.cli.gateway import parsers, requestors
 from ..shared.item import Item
 from ..shared.page import PageBlock
 from ..shared.with_items import ItemChildren
-from ..structs.base_logic import RootGatherer
+from ..structs.base_logic import RootSpace
 from ...gateway.encoders import PageContentsWriter, RichTextPropertyEncoder
 
 
 class PageItem(Item, PageBlock, PageContentsWriter):
-    def __init__(self, caller: Union[ItemChildren, RootGatherer], id_or_url: str):
-        Item.__init__(self, caller, id_or_url)
-        PageBlock.__init__(self, caller, id_or_url)
+    def __init__(self, caller: Union[ItemChildren, RootSpace], id_or_url: str,
+                 alias: Hashable = None):
+        Item.__init__(self, caller, id_or_url, alias)
+        PageBlock.__init__(self, caller, id_or_url, alias)
         if self.block_id:
             requestor = requestors.UpdatePage(self)
         else:
@@ -43,7 +44,7 @@ class PageItem(Item, PageBlock, PageContentsWriter):
     def push_encoder(self, carrier: RichTextPropertyEncoder) \
             -> RichTextPropertyEncoder:
         cannot_overwrite = (self.root.disable_overwrite and
-                            self.root.eval(self.read_contents()))
+                            self.root.eval_as_not_empty(self.read_contents()))
         if cannot_overwrite:
             return carrier
         ret = self.requestor.apply_prop(carrier)

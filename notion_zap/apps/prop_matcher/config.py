@@ -1,5 +1,7 @@
 from notion_zap.cli.structs import \
-    PropertyFrame as Frame, PropertyColumn as Cl, PropertyMarkedValue as Label
+    PropertyFrame as Frame, PropertyColumn as Column, PropertyMarkedValue as Value
+
+from ..config import BlockKey
 
 
 class EMOJI:
@@ -57,57 +59,57 @@ class PREFIX:
 
 class Columns:
     # basic properties
-    title_generic = Cl(key=EMOJI.ORANGE_BOOK + '제목', alias='title')
-    title_datetime = Cl(key=EMOJI.GREEN_BOOK + '제목', alias='title')
-    title_metadata = Cl(key=EMOJI.BOOKSTACK + '제목', alias='title')
+    title_generic = Column(key=EMOJI.ORANGE_BOOK + '제목', alias='title')
+    title_datetime = Column(key=EMOJI.GREEN_BOOK + '제목', alias='title')
+    title_metadata = Column(key=EMOJI.BOOKSTACK + '제목', alias='title')
 
-    no_exp = Cl(key=EMOJI.BLACK_NOTEBOOK + '경험 없음', alias='no_exp', )
+    no_exp = Column(key=EMOJI.BLACK_NOTEBOOK + '경험 없음', alias='no_exp', )
 
-    media_type = Cl(key=EMOJI.BLUE_BOOK + '유형', alias='media_type',
-                    marked_values=[Label('📌결정 전', 'empty')])
-    media_type_book = Cl(alias='is_book', key='📔도서류', )
+    media_type = Column(key=EMOJI.BLUE_BOOK + '유형', alias='media_type',
+                        marked_values=[Value('📌결정 전', 'empty')])
+    media_type_book = Column(alias='is_book', key='📔도서류', )
 
-    timestr = Cl(key=EMOJI.CALENDAR + '시간', alias='timestr', )
-    date_manual = Cl(key=EMOJI.CALENDAR + '날짜', alias='date_manual', )
-    date_manual_range = Cl(key=EMOJI.BIG_CALENDAR + '날짜 범위',
-                           alias='date_manual', )
+    timestr = Column(key=EMOJI.CALENDAR + '시간', alias='timestr', )
+    date_manual = Column(key=EMOJI.CALENDAR + '날짜', alias='date_manual', )
+    date_manual_range = Column(key=EMOJI.BIG_CALENDAR + '날짜 범위',
+                               alias='date_manual', )
 
     # relational properties
-    itself = Cl(key=EMOJI.CYCLE + '재귀', alias='itself', )
+    itself = Column(key=EMOJI.CYCLE + '재귀', alias='itself', )
 
-    periods = Cl(key=PREFIX.PERIODS + '주간', alias='periods', )
-    dates = Cl(key=PREFIX.DATES + '일간', alias='dates', )
+    periods = Column(key=PREFIX.PERIODS + '주간', alias='periods', )
+    dates = Column(key=PREFIX.DATES + '일간', alias='dates', )
 
-    journals = Cl(key=PREFIX.JOURNALS + '일지', alias='journals', )
-    checks = Cl(key=PREFIX.CHECKS + '진도', alias='checks', )
+    journals = Column(key=PREFIX.JOURNALS + '일지', alias='journals', )
+    checks = Column(key=PREFIX.CHECKS + '진도', alias='checks', )
 
-    topics = Cl(key=PREFIX.TOPICS + '발전', alias='topics', )
-    tasks = Cl(key=PREFIX.TASKS + '요점', alias='tasks', )
+    topics = Column(key=PREFIX.TOPICS + '발전', alias='topics', )
+    tasks = Column(key=PREFIX.TASKS + '요점', alias='tasks', )
 
-    readings = Cl(key=PREFIX.READINGS + '읽기', alias='readings', )
-    readings_begin = Cl(key=PREFIX.READINGS + '시작', alias='readings_begin')
-    writings = Cl(key=PREFIX.WRITINGS + '쓰기', alias='writings', )
+    readings = Column(key=PREFIX.READINGS + '읽기', alias='readings', )
+    readings_begin = Column(key=PREFIX.READINGS + '시작', alias='readings_begin')
+    writings = Column(key=PREFIX.WRITINGS + '쓰기', alias='writings', )
 
-    projects = Cl(key=PREFIX.PROJECTS + '실행', alias='projects', )
-    projects_main = Cl(key=PREFIX.PROJECTS + '중심', aliases=['projects_main', 'projects'])
-    projects_side = Cl(key=PREFIX.PROJECTS + '주변', alias='projects_side')
-    domains = Cl(key=PREFIX.DOMAINS + '꼭지', alias='domains', )
+    projects = Column(key=PREFIX.PROJECTS + '실행', alias='projects', )
+    projects_main = Column(key=PREFIX.PROJECTS + '중심', aliases=['projects_main', 'projects'])
+    projects_side = Column(key=PREFIX.PROJECTS + '주변', alias='projects_side')
+    domains = Column(key=PREFIX.DOMAINS + '꼭지', alias='domains', )
 
-    channels = Cl(key=PREFIX.CHANNELS + '채널', alias='channels', )
-    people = Cl(key=PREFIX.PEOPLE + '인물', alias='people', )
-    locations = Cl(key=PREFIX.LOCATIONS + '장소', alias='locations', )
+    channels = Column(key=PREFIX.CHANNELS + '채널', alias='channels', )
+    people = Column(key=PREFIX.PEOPLE + '인물', alias='people', )
+    locations = Column(key=PREFIX.LOCATIONS + '장소', alias='locations', )
 
 
 class SubFrames:
     gcal = Frame([
-        Cl(alias='gcal_sync_status', key='📔달력'),
-        Cl(alias='gcal_link', key=EMOJI.YELLOW_NOTEBOOK + '링크'),
-        Cl(alias='gcal_id', key=EMOJI.YELLOW_NOTEBOOK + 'id'),
+        Column(alias='gcal_sync_status', key='📔달력'),
+        Column(alias='gcal_link', key=EMOJI.YELLOW_NOTEBOOK + '링크'),
+        Column(alias='gcal_id', key=EMOJI.YELLOW_NOTEBOOK + 'id'),
     ])
 
     dateval_created = Frame([
-        Cl(key=EMOJI.TIMER + '일시', alias='auto_datetime', ),
-        Cl(key=EMOJI.TIMER + '날짜', alias='auto_date', ),
+        Column(key=EMOJI.TIMER + '일시', alias='auto_datetime', ),
+        Column(key=EMOJI.TIMER + '날짜', alias='auto_date', ),
     ])
 
     dates = Frame([
@@ -115,20 +117,141 @@ class SubFrames:
         Columns.dates
     ])
     dates_deadline = Frame([
-        Cl(key=PREFIX.PERIODS + '기한', aliases=['periods_deadline', 'periods']),
-        Cl(key=PREFIX.DATES + '기한', aliases=['dates_deadline', 'dates']),
+        Column(key=PREFIX.PERIODS + '기한', aliases=['periods_deadline', 'periods']),
+        Column(key=PREFIX.DATES + '기한', aliases=['dates_deadline', 'dates']),
     ])
     dates_begin = Frame([
-        Cl(key=PREFIX.PERIODS + '시작', aliases=['periods_begin', 'periods']),
-        Cl(key=PREFIX.DATES + '시작', aliases=['dates_begin', 'dates']),
+        Column(key=PREFIX.PERIODS + '시작', aliases=['periods_begin', 'periods']),
+        Column(key=PREFIX.DATES + '시작', aliases=['dates_begin', 'dates']),
     ])
     dates_created = Frame([
-        Cl(key=PREFIX.PERIODS + '생성', alias='periods_created', ),
-        Cl(key=PREFIX.DATES + '생성', alias='dates_created', )
+        Column(key=PREFIX.PERIODS + '생성', alias='periods_created', ),
+        Column(key=PREFIX.DATES + '생성', alias='dates_created', )
     ])
 
 
-class Frames:
+Frames: dict[BlockKey, Frame] = {
+    BlockKey.weeks: Frame(
+        [
+            Columns.title_datetime,
+            Columns.date_manual_range,
+
+            Columns.itself,
+        ]
+    ),
+    BlockKey.dates: Frame(
+        [
+            Columns.title_datetime, Columns.date_manual,
+            Column(key=EMOJI.CHECKER_FLAG + '동기화', alias='sync_status'),
+
+            Columns.itself,
+            Columns.periods,
+            Columns.journals,
+            Columns.locations, Columns.channels,
+        ]
+    ),
+    BlockKey.journals: Frame(
+        SubFrames.dateval_created, SubFrames.dates, SubFrames.dates_created,
+        SubFrames.gcal,
+        [
+            Columns.title_generic,
+            Columns.timestr,
+
+            Columns.itself,
+            Columns.projects_main, Columns.projects_side, Columns.domains,
+            Columns.channels, Columns.readings,
+
+            Columns.topics, Columns.writings,
+        ]
+    ),
+    BlockKey.counts: Frame(
+        SubFrames.dateval_created, SubFrames.dates, SubFrames.dates_created,
+        [
+            Columns.title_generic,
+            Columns.timestr,
+
+            Columns.itself,
+            Columns.projects,
+            Columns.channels, Columns.readings,
+            Columns.journals,
+            Columns.writings,
+        ]
+    ),
+    BlockKey.topics: Frame(
+        SubFrames.dateval_created, SubFrames.dates,
+        [
+            Columns.title_generic,
+            Columns.timestr,
+
+            Columns.itself,
+            Columns.projects_main, Columns.projects_side, Columns.domains,
+            Columns.channels, Columns.readings,
+            Columns.writings, Columns.tasks,
+
+            Columns.journals, Columns.checks,
+        ]
+    ),
+    BlockKey.tasks: Frame(
+        SubFrames.dateval_created, SubFrames.dates,
+        [
+            Columns.title_generic,
+            Columns.timestr,
+
+            Columns.itself,
+            Columns.projects, Columns.domains,
+            Columns.people, Columns.locations,
+            Columns.channels, Columns.readings,
+            Columns.journals,
+        ]
+    ),
+    BlockKey.readings: Frame(
+        SubFrames.dateval_created, SubFrames.dates_begin, SubFrames.dates_created,
+        [
+            Columns.title_metadata,
+            Columns.media_type,
+            Columns.media_type_book,
+            Columns.no_exp,
+
+            Columns.itself,
+            Columns.projects, Columns.domains,
+            Columns.channels,
+
+            Columns.journals, Columns.tasks,
+            Columns.checks, Columns.writings,
+        ]
+    ),
+    BlockKey.writings: Frame(
+        SubFrames.dateval_created, SubFrames.dates,
+        [
+            Columns.title_generic,
+            Columns.timestr,
+
+            Columns.itself,
+            Columns.projects, Columns.domains,
+            Columns.people, Columns.locations, Columns.channels,
+
+            Columns.journals, Columns.checks,
+            Columns.readings,
+        ]
+    ),
+
+    BlockKey.projects: Frame(
+        SubFrames.dateval_created,
+        [
+
+        ]
+    ),
+    BlockKey.channels: Frame(
+        [
+            Columns.title_metadata,
+            Columns.media_type,
+            Columns.media_type_book,
+        ]
+    )
+}
+
+
+class FramesDepr:
     PERIODS = Frame(
         [
             Columns.title_datetime,
@@ -140,7 +263,7 @@ class Frames:
     DATES = Frame(
         [
             Columns.title_datetime, Columns.date_manual,
-            Cl(key=EMOJI.CHECKER_FLAG + '동기화', alias='sync_status'),
+            Column(key=EMOJI.CHECKER_FLAG + '동기화', alias='sync_status'),
 
             Columns.itself,
             Columns.periods,
@@ -203,6 +326,22 @@ class Frames:
             Columns.journals,
         ]
     )
+    READINGS = Frame(
+        SubFrames.dateval_created, SubFrames.dates_begin, SubFrames.dates_created,
+        [
+            Columns.title_metadata,
+            Columns.media_type,
+            Columns.media_type_book,
+            Columns.no_exp,
+
+            Columns.itself,
+            Columns.projects, Columns.domains,
+            Columns.channels,
+
+            Columns.journals, Columns.tasks,
+            Columns.checks, Columns.writings,
+        ]
+    )
     WRITINGS = Frame(
         SubFrames.dateval_created, SubFrames.dates,
         [
@@ -229,21 +368,5 @@ class Frames:
             Columns.title_metadata,
             Columns.media_type,
             Columns.media_type_book,
-        ]
-    )
-    READINGS = Frame(
-        SubFrames.dateval_created, SubFrames.dates_begin, SubFrames.dates_created,
-        [
-            Columns.title_metadata,
-            Columns.media_type,
-            Columns.media_type_book,
-            Columns.no_exp,
-
-            Columns.itself,
-            Columns.projects, Columns.domains,
-            Columns.channels,
-
-            Columns.journals, Columns.tasks,
-            Columns.checks, Columns.writings,
         ]
     )

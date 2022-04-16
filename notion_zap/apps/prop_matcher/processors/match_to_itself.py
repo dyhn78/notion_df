@@ -1,7 +1,7 @@
-from notion_zap.apps.prop_matcher.struct import MainEditor
+from notion_zap.apps.prop_matcher.struct import Processor
 
 
-class SelfMatcher(MainEditor):
+class SelfProcessor(Processor):
     def __call__(self):
         for table in self.tables:
             for row in table.rows:

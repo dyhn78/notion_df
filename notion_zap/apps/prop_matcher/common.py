@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Hashable
 
-from notion_zap.apps.prop_matcher.struct import RowEditor
+from notion_zap.apps.prop_matcher.struct import RowHandler
 from notion_zap.cli.editors import PageRow, Database
 
 
@@ -22,13 +22,14 @@ class ReferenceInfo:
         self.refs_tag_tar = refs_tag_tar
 
 
-class GetterByReference(RowEditor):
+class GetterByReference(RowHandler):
     def __init__(self, target: Database, ref_info: ReferenceInfo):
         self.target = target
         self.ref_info = ref_info
 
     def __call__(self, row: PageRow):
-        if ref := get_unique_page_from_relation(row, self.ref_info.reference, self.ref_info.tag_ref):
+        if ref := get_unique_page_from_relation(row, self.ref_info.reference,
+                                                self.ref_info.tag_ref):
             if tar := get_unique_page_from_relation(ref, self.target, self.ref_info.refs_tag_tar):
                 return tar
             return None
