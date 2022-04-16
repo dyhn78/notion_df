@@ -79,43 +79,22 @@ class Columns:
     dates = Cl(key=PREFIX.DATES + '일간', alias='dates', )
 
     journals = Cl(key=PREFIX.JOURNALS + '일지', alias='journals', )
-    journals_mentioned = Cl(key=PREFIX.JOURNALS + '언급', alias='journals_induced', )
     checks = Cl(key=PREFIX.CHECKS + '진도', alias='checks', )
 
-    topics = Cl(key=PREFIX.TOPICS + '전개', alias='topics', )
+    topics = Cl(key=PREFIX.TOPICS + '발전', alias='topics', )
     tasks = Cl(key=PREFIX.TASKS + '요점', alias='tasks', )
-    writings = Cl(key=PREFIX.WRITINGS + '쓰기', alias='writings', )
-    writings_mentioned = Cl(key=PREFIX.WRITINGS + '언급', alias='writings_induced', )
-
-    projects = Cl(key=PREFIX.PROJECTS + '실행', alias='projects', )
-    projects_main = Cl(key=PREFIX.PROJECTS + '중심',
-                       aliases=['projects_main', 'projects'])
-    projects_side = Cl(key=PREFIX.PROJECTS + '주변', alias='projects_side')
-
-    # deprecated?
-    projects_target = Cl(key=PREFIX.PROJECTS + '구성',
-                         aliases=['projects_target', 'projects'])
-    projects_perspective = Cl(key=PREFIX.PROJECTS + '관점', alias='projects_context', )
-    projects_deadline = Cl(key=PREFIX.PROJECTS + '기한', alias='projects_deadline', )
-    projects_total = Cl(key=PREFIX.PROJECTS + '종합', alias='projects_total', )
-    #
-
-    domains = Cl(key=PREFIX.DOMAINS + '꼭지', alias='domains', )
-    domains_context = Cl(key=PREFIX.DOMAINS + '맥락', alias='domains_context', )
-    domains_total = Cl(key=PREFIX.DOMAINS + '종합', alias='domains_total', )
-
-    channels = Cl(key=PREFIX.CHANNELS + '채널', alias='channels', )
-    channels_context = Cl(key=PREFIX.CHANNELS + '맥락', alias='channels_context', )
-    channels_total = Cl(key=PREFIX.CHANNELS + '종합', alias='channels_total', )
 
     readings = Cl(key=PREFIX.READINGS + '읽기', alias='readings', )
-    readings_context = Cl(key=PREFIX.READINGS + '맥락', alias='readings_context', )
     readings_begin = Cl(key=PREFIX.READINGS + '시작', alias='readings_begin')
-    readings_deadline = Cl(key=PREFIX.READINGS + '기한', alias='readings_deadline', )
-    readings_total = Cl(key=PREFIX.READINGS + '종합', alias='readings_total', )
+    writings = Cl(key=PREFIX.WRITINGS + '쓰기', alias='writings', )
 
+    projects = Cl(key=PREFIX.PROJECTS + '실행', alias='projects', )
+    projects_main = Cl(key=PREFIX.PROJECTS + '중심', aliases=['projects_main', 'projects'])
+    projects_side = Cl(key=PREFIX.PROJECTS + '주변', alias='projects_side')
+    domains = Cl(key=PREFIX.DOMAINS + '꼭지', alias='domains', )
+
+    channels = Cl(key=PREFIX.CHANNELS + '채널', alias='channels', )
     people = Cl(key=PREFIX.PEOPLE + '인물', alias='people', )
-
     locations = Cl(key=PREFIX.LOCATIONS + '장소', alias='locations', )
 
 
@@ -127,8 +106,8 @@ class SubFrames:
     ])
 
     dateval_created = Frame([
-        Cl(key=EMOJI.TIMER + '날짜', alias='auto_datetime', ),
-        Cl(key=EMOJI.TIMER + '날짜/D', alias='auto_date', ),
+        Cl(key=EMOJI.TIMER + '일시', alias='auto_datetime', ),
+        Cl(key=EMOJI.TIMER + '날짜', alias='auto_date', ),
     ])
 
     dates = Frame([
@@ -192,7 +171,7 @@ class Frames:
 
             Columns.itself,
             Columns.projects,
-            Columns.readings, Columns.channels,
+            Columns.channels, Columns.readings,
             Columns.journals,
             Columns.writings,
         ]
@@ -204,7 +183,7 @@ class Frames:
             Columns.timestr,
 
             Columns.itself,
-            Columns.projects, Columns.domains,
+            Columns.projects_main, Columns.projects_side, Columns.domains,
             Columns.channels, Columns.readings,
             Columns.writings, Columns.tasks,
 
@@ -231,12 +210,11 @@ class Frames:
             Columns.timestr,
 
             Columns.itself,
-            Columns.projects_target, Columns.projects_perspective, Columns.domains,
-            Columns.people, Columns.locations,
-            Columns.channels, Columns.readings,
-            Columns.journals,
+            Columns.projects, Columns.domains,
+            Columns.people, Columns.locations, Columns.channels,
 
-            Columns.checks,
+            Columns.journals, Columns.checks,
+            Columns.readings,
         ]
     )
 
