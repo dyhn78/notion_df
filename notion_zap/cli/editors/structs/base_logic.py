@@ -6,7 +6,7 @@ from typing import Any, Optional, Hashable, Union
 
 from notion_client import AsyncClient, Client
 
-from notion_zap.cli.structs import DateObject, PropertyFrame
+from notion_zap.cli.structs import DatePropertyValue, PropertyFrame
 from .registry_table import RegistryTable, IndexTable, ClassifyTable
 
 
@@ -122,7 +122,7 @@ class Root(Registry):
         return os.environ['NOTION_TOKEN'].strip("'").strip('"')
 
     def eval(self, value):
-        if isinstance(value, DateObject):
+        if isinstance(value, DatePropertyValue):
             return not value.is_emptylike()
         return str(value) not in self.emptylike_strings
 

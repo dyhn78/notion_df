@@ -2,7 +2,7 @@ from abc import abstractmethod, ABCMeta
 from datetime import datetime, date
 from typing import Union, Optional, Any, Hashable
 
-from notion_zap.cli.structs import DateObject, PropertyFrame
+from notion_zap.cli.structs import DatePropertyValue, PropertyFrame
 from .carrier import (
     PropertyEncoder, RichTextPropertyEncoder,
     SimplePropertyEncoder, FilesPropertyEncoder)
@@ -147,11 +147,11 @@ class PageRowPropertyWriter(metaclass=ABCMeta):
 
     def write_date(
             self, key: str = None, key_alias: Hashable = None,
-            value: Union[DateObject, datetime, date] = None,
+            value: Union[DatePropertyValue, datetime, date] = None,
             value_alias: Hashable = None):
         key = self.clean_key(key, key_alias)
         value = self.clean_value(key, value, value_alias)
-        value = DateObject.from_date_val(value)
+        value = DatePropertyValue.from_date_val(value)
         encoder = SimplePropertyEncoder.date(key, value)
         return self.push_encoder(key, encoder)
 

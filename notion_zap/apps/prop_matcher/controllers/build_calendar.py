@@ -3,8 +3,8 @@ from __future__ import annotations
 from typing import Optional
 
 from notion_zap.apps.prop_matcher.struct import EditorBase
-from notion_zap.apps.prop_matcher.matchers.fill_date import DateIntroducer
-from notion_zap.apps.prop_matcher.matchers.fill_week import PeriodIntroducer
+from notion_zap.apps.prop_matcher.matchers.conform_format import DateFormatConformer, \
+    WeekFormatConformer
 from notion_zap.apps.prop_matcher.matchers.get_date_by_created_time import DateGetterFromDateValue
 from notion_zap.apps.prop_matcher.matchers.get_week_by_manual_value import PeriodGetterFromDateValue
 from notion_zap.apps.prop_matcher.utils.date_range_iterator import DateRangeIterator
@@ -26,10 +26,10 @@ class CalendarBuildController:
         self.bs.save()
 
     def introduce_pages(self):
-        introduce_date = DateIntroducer(self.disable_overwrite)
+        introduce_date = DateFormatConformer(self.disable_overwrite)
         for date in self.bs.dates.rows:
             introduce_date(date, None)
-        introduce_period = PeriodIntroducer(self.disable_overwrite)
+        introduce_period = WeekFormatConformer(self.disable_overwrite)
         for period in self.bs.periods.rows:
             introduce_period(period, None)
 

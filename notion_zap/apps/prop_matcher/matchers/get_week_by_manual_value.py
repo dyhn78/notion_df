@@ -3,7 +3,7 @@ from __future__ import annotations
 import datetime as dt
 
 from notion_zap.cli.editors import PageRow, Database
-from notion_zap.cli.structs import DateObject
+from notion_zap.cli.structs import DatePropertyValue
 from notion_zap.apps.prop_matcher.common import has_value, set_value, query_unique_page_by_idx
 from notion_zap.apps.prop_matcher.utils.date_formatter import DateFormatter
 from notion_zap.apps.prop_matcher.struct import EditorBase, MainEditor
@@ -26,7 +26,7 @@ class PeriodMatcherByManualValue(MainEditor):
 
 
 def get_date_val(row: PageRow, tag_manual_value):
-    date_object: DateObject = row.read_key_alias(tag_manual_value)
+    date_object: DatePropertyValue = row.read_key_alias(tag_manual_value)
     return date_object.start_date
 
 
@@ -60,7 +60,7 @@ class PeriodGetterFromDateValue:
         tar_idx = date_handler.stringify_week()
         tar.write_title(key_alias='title', value=tar_idx)
 
-        date_range = DateObject(start=date_handler.first_day_of_week(),
-                                end=date_handler.last_day_of_week())
+        date_range = DatePropertyValue(start=date_handler.first_day_of_week(),
+                                       end=date_handler.last_day_of_week())
         tar.write_date(key_alias='date_manual', value=date_range)
         return tar.save()

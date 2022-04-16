@@ -7,7 +7,7 @@ from typing import Union, Optional
 LOCAL_TIMEZONE = pytz.timezone('Asia/Seoul')
 
 
-class DateObject:
+class DatePropertyValue:
     def __init__(self, start: Optional[Union[dt.datetime, dt.date]] = None,
                  end: Optional[Union[dt.datetime, dt.date]] = None):
         """default value of <start> and <end> is None."""
@@ -28,7 +28,7 @@ class DateObject:
             return date_val
 
     @classmethod
-    def from_date_val(cls, date_val: Union[DateObject, dt.datetime, dt.date]):
+    def from_date_val(cls, date_val: Union[DatePropertyValue, dt.datetime, dt.date]):
         if isinstance(date_val, cls):
             return date_val
         else:
@@ -103,20 +103,20 @@ class DateObject:
     def __str__(self):
         return '{' + f"start: {str(self.start)}, end: {str(self.end)}" + '}'
 
-    def __gt__(self, other: Union[DateObject, dt.datetime, dt.date]):
-        if isinstance(other, DateObject):
+    def __gt__(self, other: Union[DatePropertyValue, dt.datetime, dt.date]):
+        if isinstance(other, DatePropertyValue):
             return (self.start, self.end) > (other.start, other.end)
         else:
             return self.start > self.to_datetime(other)
 
-    def __eq__(self, other: Union[DateObject, dt.datetime, dt.date]):
-        if isinstance(other, DateObject):
+    def __eq__(self, other: Union[DatePropertyValue, dt.datetime, dt.date]):
+        if isinstance(other, DatePropertyValue):
             return (self.start, self.end) == (other.start, other.end)
         else:
             return self.start == self.to_datetime(other)
 
-    def __lt__(self, other: Union[DateObject, dt.datetime, dt.date]):
-        if isinstance(other, DateObject):
+    def __lt__(self, other: Union[DatePropertyValue, dt.datetime, dt.date]):
+        if isinstance(other, DatePropertyValue):
             return (self.start, self.end) < (other.start, other.end)
         else:
             return self.start < self.to_datetime(other)

@@ -4,7 +4,7 @@ import datetime as dt
 import inspect
 from typing import Union, Any, Callable, Iterator
 
-from notion_zap.cli.structs import DateObject
+from notion_zap.cli.structs import DatePropertyValue
 from notion_zap.cli.structs.prop_types import VALUE_FORMATS
 from .rich_text import parse_rich_texts
 from ...utility import url_to_id
@@ -112,13 +112,13 @@ class PageParser:
         start = prop_object[:-1]
         # notion api returns auto-datetime
         #  with timezone of utc WITHOUT explicit timezone info.
-        return DateObject.from_utc_isoformat(start)
+        return DatePropertyValue.from_utc_isoformat(start)
 
     @staticmethod
     def _parse_manual_date(prop_object):
         if prop_object is None:
-            return DateObject()
-        return DateObject.from_isoformat(prop_object['start'], prop_object['end'])
+            return DatePropertyValue()
+        return DatePropertyValue.from_isoformat(prop_object['start'], prop_object['end'])
 
     def _parse_text(self, prop_object, prop_key, data_type):
         plain_text, rich_text = parse_rich_texts(prop_object)

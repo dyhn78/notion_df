@@ -1,6 +1,6 @@
 # import datetime as dt
 #
-# from notion_zap.cli.structs import DateObject
+# from notion_zap.cli.structs import DatePropertyValue
 # from notion_zap.apps.prop_matcher.struct import TableModuleDepr
 # from notion_zap.apps.prop_matcher.common import write_extendedly
 #
@@ -71,7 +71,7 @@
 #     def __call__(self):
 #         for dom in self.domain.rows:
 #             for to_tar in self.to_tars:
-#                 dom_date: DateObject = dom.read_key_alias('date_manual')
+#                 dom_date: DatePropertyValue = dom.read_key_alias('date_manual')
 #                 if (not dom_date.start_date
 #                         or dom_date.start_date > dt.date.today()):
 #                     continue

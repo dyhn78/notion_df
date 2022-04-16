@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from notion_zap.apps.prop_matcher.matchers.conform_format import TimeFormatConformer
 from notion_zap.cli.editors import Database
 from notion_zap.apps.prop_matcher.struct import EditorBase
 from notion_zap.apps.prop_matcher.matchers.get_date_by_created_time \
@@ -18,6 +19,7 @@ class RegularMatchProcessor:
     def __init__(self, bs: EditorBase):
         self.bs = bs
         self.editor_groups = [
+            [TimeFormatConformer(self.bs)],
             [DateMatcherByEarliestRef(self.bs)], # created time보다 우선순위가 높아야 한다
             [DateMatcherByCreatedTime(self.bs),
             PeriodMatcherByManualValue(self.bs),

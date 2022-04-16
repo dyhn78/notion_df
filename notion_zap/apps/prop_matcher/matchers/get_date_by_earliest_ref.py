@@ -5,7 +5,7 @@ from notion_zap.cli.editors import Database, PageRow
 from notion_zap.apps.prop_matcher.struct import MainEditor, EditorBase
 from notion_zap.apps.prop_matcher.common import \
     has_value, set_value, ReferenceInfo, get_all_pages_from_relation
-from notion_zap.cli.structs import DateObject
+from notion_zap.cli.structs import DatePropertyValue
 
 
 class DateMatcherByEarliestRef(MainEditor):
@@ -65,7 +65,7 @@ class EarliestDateFinder:
             self.update_earliest_by_date_row(date_row)
 
     def update_earliest_by_date_row(self, date_row: PageRow):
-        date_object: DateObject = date_row.read_key_alias('date_manual')
+        date_object: DatePropertyValue = date_row.read_key_alias('date_manual')
         date_val = date_object.start_date
         if self.earliest_date_val is None or date_val < self.earliest_date_val:
             self.earliest_date_row = date_row

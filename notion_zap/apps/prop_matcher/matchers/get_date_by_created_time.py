@@ -4,7 +4,7 @@ import datetime as dt
 from typing import Union
 
 from notion_zap.cli.editors import PageRow, Database
-from notion_zap.cli.structs import DateObject
+from notion_zap.cli.structs import DatePropertyValue
 from notion_zap.apps.prop_matcher.common import (
     has_value, set_value, query_unique_page_by_idx)
 from notion_zap.apps.prop_matcher.utils.date_formatter import DateFormatter
@@ -28,7 +28,7 @@ class DateMatcherByCreatedTime(MainEditor):
                     set_value(row, date, tag_date)
 
     def get_date_val(self, row: PageRow):
-        dom_idx: DateObject = row.read_key_alias('auto_datetime')
+        dom_idx: DatePropertyValue = row.read_key_alias('auto_datetime')
         date_val = dom_idx.start + dt.timedelta(hours=self.hour_offset)
         return date_val
 
@@ -82,6 +82,6 @@ class DateGetterFromDateValue:
         tar_idx = date_handler.stringify_date()
         tar.write(key_alias='title', value=tar_idx)
 
-        date_range = DateObject(date_handler.date)
+        date_range = DatePropertyValue(date_handler.date)
         tar.write_date(key_alias='date_manual', value=date_range)
         return tar.save()

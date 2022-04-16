@@ -7,7 +7,7 @@ from googleapiclient.errors import HttpError
 
 import notion_zap.apps.externals.gcal
 from notion_zap.cli import editors
-from notion_zap.cli.structs import DateObject
+from notion_zap.cli.structs import DatePropertyValue
 from notion_zap.apps.prop_matcher.utils.dt_formatter import TimeStringFormatter
 from notion_zap.apps.prop_matcher.struct import ModuleDepr, TableModuleDepr
 
@@ -199,7 +199,7 @@ class GcalfromScheduleMatcher(_GcalScheduleMatcherAbs, TableModuleDepr):
         date_max: Optional[dt.date] = None
         for tar_id in tar_ids:
             tar = self.target.rows.fetch_page(tar_id)
-            date_format: DateObject = tar.read_key_alias(self.Ttars_date)
+            date_format: DatePropertyValue = tar.read_key_alias(self.Ttars_date)
             date_val = date_format.start_date
             if date_min is None or date_min > date_val:
                 date_min = date_val
