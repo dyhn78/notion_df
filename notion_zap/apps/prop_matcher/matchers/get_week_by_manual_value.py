@@ -16,7 +16,7 @@ class PeriodMatcherByManualValue(MainEditor):
         self.get_period = PeriodGetterFromDateValue(self.bs.periods)
 
     def __call__(self):
-        for table, tag_manual_value in [(self.bs.dates, 'dateval_manual')]:
+        for table, tag_manual_value in [(self.bs.dates, 'date_manual')]:
             for row in table.rows:
                 if has_value(row, self.tag_period):
                     continue
@@ -62,5 +62,5 @@ class PeriodGetterFromDateValue:
 
         date_range = DateObject(start=date_handler.first_day_of_week(),
                                 end=date_handler.last_day_of_week())
-        tar.write_date(key_alias='manual_date_range', value=date_range)
+        tar.write_date(key_alias='date_manual', value=date_range)
         return tar.save()

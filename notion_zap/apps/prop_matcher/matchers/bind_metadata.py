@@ -71,7 +71,7 @@
 #     def __call__(self):
 #         for dom in self.domain.rows:
 #             for to_tar in self.to_tars:
-#                 dom_date: DateObject = dom.read_key_alias('dateval_manual')
+#                 dom_date: DateObject = dom.read_key_alias('date_manual')
 #                 if (not dom_date.start_date
 #                         or dom_date.start_date > dt.date.today()):
 #                     continue

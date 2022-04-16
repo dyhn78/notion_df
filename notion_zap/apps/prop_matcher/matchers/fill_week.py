@@ -15,7 +15,7 @@ class PeriodIntroducer:
         date_handler = DateFormatter.from_week_title(week_title)
         date_range = DateObject(start=date_handler.first_day_of_week(),
                                 end=date_handler.last_day_of_week())
-        if date_range != week.read_key_alias('manual_date_range'):
+        if date_range != week.read_key_alias('date_manual'):
             week.root.disable_overwrite = self.disable_overwrite
-            week.write_date(key_alias='manual_date_range', value=date_range)
+            week.write_date(key_alias='date_manual', value=date_range)
             week.root.disable_overwrite = False

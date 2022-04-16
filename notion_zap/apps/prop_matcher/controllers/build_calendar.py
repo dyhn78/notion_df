@@ -58,8 +58,8 @@ class CalendarBuildFetcher:
 
     def __call__(self):
         for table, tag_dateval in [
-            (self.bs.dates, 'dateval_manual'),
-            (self.bs.periods, 'manual_date_range')
+            (self.bs.dates, 'date_manual'),
+            (self.bs.periods, 'date_manual')
         ]:
             query = table.rows.open_query()
             ft = query.open_filter()
@@ -96,7 +96,7 @@ class CalendarEditorBase(EditorBase):
     def fetch_all(self):
         query = self.dates.open_query()
         ft = query.open_filter()
-        frame = query.filter_manager_by_tags.date('dateval_manual')
+        frame = query.filter_manager_by_tags.date('date_manual')
         if self.empties:
             ft |= frame.is_empty()
         if self.year_range:
@@ -111,7 +111,7 @@ class CalendarEditorBase(EditorBase):
 
         query = self.periods.open_query()
         ft = query.open_filter()
-        frame = query.filter_manager_by_tags.date('manual_date_range')
+        frame = query.filter_manager_by_tags.date('date_manual')
         if self.empties:
             ft |= frame.is_empty()
         if self.year_range:

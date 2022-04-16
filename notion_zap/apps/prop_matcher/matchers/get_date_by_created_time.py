@@ -83,5 +83,5 @@ class DateGetterFromDateValue:
         tar.write(key_alias='title', value=tar_idx)
 
         date_range = DateObject(date_handler.date)
-        tar.write_date(key_alias='dateval_manual', value=date_range)
+        tar.write_date(key_alias='date_manual', value=date_range)
         return tar.save()

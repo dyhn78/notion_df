@@ -70,12 +70,8 @@ class RegularMatchFetcher:
                     pass
 
         # OR clauses
-        if table is self.bs.dates:
-            manual_date = manager.date('dateval_manual')
-            ft |= manual_date.is_empty()
-            # sync_needed = manager.checkbox('sync_status').is_empty()
-            # before_today = dateval_manual.on_or_before(dt.date.today())
-            # ft |= (sync_needed & before_today)
+        if table in [self.bs.periods, self.bs.dates]:
+            ft |= manager.date('date_manual').is_empty()
         if table in [self.bs.checks, self.bs.journals]:
             # TODO : gcal_sync_status
             ft |= manager.relation('dates_created').is_empty()

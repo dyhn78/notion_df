@@ -16,6 +16,6 @@ class DateIntroducer:
         if date_title != new_tar_idx:
             date.write(key_alias='title', value=new_tar_idx)
         date_range = DateObject(date_handler.date)
-        if date_range != date.read_key_alias('dateval_manual'):
-            date.write_date(key_alias='dateval_manual', value=date_range)
+        if date_range != date.read_key_alias('date_manual'):
+            date.write_date(key_alias='date_manual', value=date_range)
         date.save()

@@ -68,9 +68,9 @@ class Columns:
     media_type_book = Cl(alias='is_book', key='📔도서류', )
 
     timestr = Cl(key=EMOJI.CALENDAR + '시간', alias='timestr', )
-    dateval_manual = Cl(key=EMOJI.CALENDAR + '날짜', alias='dateval_manual', )
-    dateval_manual_range = Cl(key=EMOJI.BIG_CALENDAR + '날짜 범위',
-                              alias='manual_date_range', )
+    date_manual = Cl(key=EMOJI.CALENDAR + '날짜', alias='date_manual', )
+    date_manual_range = Cl(key=EMOJI.BIG_CALENDAR + '날짜 범위',
+                           alias='date_manual', )
 
     # relational properties
     itself = Cl(key=EMOJI.CYCLE + '재귀', alias='itself', )
@@ -132,14 +132,14 @@ class Frames:
     PERIODS = Frame(
         [
             Columns.title_datetime,
-            Columns.dateval_manual_range,
+            Columns.date_manual_range,
 
             Columns.itself,
         ]
     )
     DATES = Frame(
         [
-            Columns.title_datetime, Columns.dateval_manual,
+            Columns.title_datetime, Columns.date_manual,
             Cl(key=EMOJI.CHECKER_FLAG + '동기화', alias='sync_status'),
 
             Columns.itself,
