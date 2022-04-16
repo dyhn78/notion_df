@@ -3,7 +3,7 @@ import re
 from typing import Union, Optional
 
 
-class TimeStringHandler:
+class TimeStringFormatter:
     PATTERNS = [
         # HH:MM type, exclude {digits, ':'} on both sides
         PT0 := re.compile(r"(?<![\d:])(\d{2}):(\d{2})(?![\d:])"),

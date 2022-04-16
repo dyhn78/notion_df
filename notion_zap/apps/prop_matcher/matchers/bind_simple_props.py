@@ -1,5 +1,5 @@
-from ..common import has_value, get_unique_page_from_relation
-from ..struct import MainEditor
+from notion_zap.apps.prop_matcher.common import has_value, get_unique_page_from_relation
+from notion_zap.apps.prop_matcher.struct import MainEditor
 
 
 class BindSimpleProperties(MainEditor):

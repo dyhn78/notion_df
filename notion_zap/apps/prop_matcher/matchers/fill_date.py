@@ -1,6 +1,6 @@
 from notion_zap.cli.editors import PageRow
 from notion_zap.cli.structs import DateObject
-from notion_zap.apps.prop_matcher.matchers_date.date_formatter import DateHandler
+from notion_zap.apps.prop_matcher.utils.date_formatter import DateFormatter
 
 
 class DateIntroducer:
@@ -11,8 +11,8 @@ class DateIntroducer:
         """provide date_title manually if yet not synced to server-side"""
         if date_title is None:
             date_title = date.read_key_alias('title')
-        date_handler = DateHandler.from_strf_dig6(date_title)
-        new_tar_idx = date_handler.strf_dig6_and_weekday()
+        date_handler = DateFormatter.from_strf_dig6(date_title)
+        new_tar_idx = date_handler.stringify_date()
         if date_title != new_tar_idx:
             date.write(key_alias='title', value=new_tar_idx)
         date_range = DateObject(date_handler.date)

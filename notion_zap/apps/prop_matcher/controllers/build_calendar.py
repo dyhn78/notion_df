@@ -3,11 +3,11 @@ from __future__ import annotations
 from typing import Optional
 
 from notion_zap.apps.prop_matcher.struct import EditorBase
-from ..matchers_date.introduce_date import DateIntroducer
-from ..matchers_date.introduce_period import PeriodIntroducer
-from ..matchers_date.get_date_by_created_time import DateGetterFromDateValue
-from ..matchers_date.get_period_by_manual_value import PeriodGetterFromDateValue
-from ..matchers_date.date_range_object import CalendarDateRange
+from notion_zap.apps.prop_matcher.matchers.fill_date import DateIntroducer
+from notion_zap.apps.prop_matcher.matchers.fill_week import PeriodIntroducer
+from notion_zap.apps.prop_matcher.matchers.get_date_by_created_time import DateGetterFromDateValue
+from notion_zap.apps.prop_matcher.matchers.get_week_by_manual_value import PeriodGetterFromDateValue
+from notion_zap.apps.prop_matcher.utils.date_range_iterator import DateRangeIterator
 
 
 class CalendarBuildController:
@@ -15,7 +15,7 @@ class CalendarBuildController:
                  year_range: Optional[tuple[int, int]] = None):
         self.bs = EditorBase()
         self.date_range = (
-            CalendarDateRange(year_range) if year_range else None)
+            DateRangeIterator(year_range) if year_range else None)
         self.fetch = CalendarBuildFetcher(self.bs, self.date_range, fetch_empties)
         self.disable_overwrite = disable_overwrite
 
@@ -33,7 +33,7 @@ class CalendarBuildController:
         for period in self.bs.periods.rows:
             introduce_period(period, None)
 
-    def create_if_not_found(self, date_range: CalendarDateRange):
+    def create_if_not_found(self, date_range: DateRangeIterator):
         create_date_if_not_found = DateGetterFromDateValue(self.bs.periods)
         for date_val in date_range:
             create_date_if_not_found(date_val)
@@ -53,7 +53,7 @@ class CalendarBuildFetcher:
         self.bs.root.exclude_archived = True
         self.request_size = request_size
         self.year_range = year_range
-        self.date_range = CalendarDateRange(year_range)
+        self.date_range = DateRangeIterator(year_range)
         self.empties = empties
 
     def __call__(self):
@@ -90,7 +90,7 @@ class CalendarEditorBase(EditorBase):
         self.root.exclude_archived = True
         self.request_size = request_size
         self.year_range = year_range
-        self.date_range = CalendarDateRange(year_range)
+        self.date_range = DateRangeIterator(year_range)
         self.empties = empties
 
     def fetch_all(self):

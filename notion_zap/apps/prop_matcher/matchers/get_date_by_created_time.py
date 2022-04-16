@@ -7,7 +7,7 @@ from notion_zap.cli.editors import PageRow, Database
 from notion_zap.cli.structs import DateObject
 from notion_zap.apps.prop_matcher.common import (
     has_value, set_value, query_unique_page_by_idx)
-from notion_zap.apps.prop_matcher.matchers_date.date_formatter import DateHandler
+from notion_zap.apps.prop_matcher.utils.date_formatter import DateFormatter
 from notion_zap.apps.prop_matcher.struct import EditorBase, MainEditor
 
 
@@ -67,8 +67,8 @@ class DateGetterFromDateValue:
         return self.create_tar_by_date(date_val)
 
     def find_tar_by_date(self, date_val: Union[dt.date, dt.datetime]):
-        date_handler = DateHandler(date_val)
-        tar_idx = date_handler.strf_dig6_and_weekday()
+        date_handler = DateFormatter(date_val)
+        tar_idx = date_handler.stringify_date()
         if tar := self.dates_by_title.get(tar_idx):
             return tar
         if tar := query_unique_page_by_idx(self.dates, tar_idx, 'title', 'title'):
@@ -77,9 +77,9 @@ class DateGetterFromDateValue:
 
     def create_tar_by_date(self, date_val: Union[dt.date, dt.datetime]):
         tar = self.dates.rows.open_new_page()
-        date_handler = DateHandler(date_val)
+        date_handler = DateFormatter(date_val)
 
-        tar_idx = date_handler.strf_dig6_and_weekday()
+        tar_idx = date_handler.stringify_date()
         tar.write(key_alias='title', value=tar_idx)
 
         date_range = DateObject(date_handler.date)

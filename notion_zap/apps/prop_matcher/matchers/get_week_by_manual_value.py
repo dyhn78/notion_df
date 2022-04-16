@@ -5,7 +5,7 @@ import datetime as dt
 from notion_zap.cli.editors import PageRow, Database
 from notion_zap.cli.structs import DateObject
 from notion_zap.apps.prop_matcher.common import has_value, set_value, query_unique_page_by_idx
-from notion_zap.apps.prop_matcher.matchers_date.date_formatter import DateHandler
+from notion_zap.apps.prop_matcher.utils.date_formatter import DateFormatter
 from notion_zap.apps.prop_matcher.struct import EditorBase, MainEditor
 
 
@@ -43,8 +43,8 @@ class PeriodGetterFromDateValue:
     def find_by_date_val(self, date_val: dt.date):
         if not date_val:
             return None
-        date_handler = DateHandler(date_val)
-        tar_idx = date_handler.strf_year_and_week()
+        date_handler = DateFormatter(date_val)
+        tar_idx = date_handler.stringify_week()
         if tar := self.periods_by_title.get(tar_idx):
             return tar
         if tar := query_unique_page_by_idx(self.periods, tar_idx, 'title', 'title'):
@@ -55,9 +55,9 @@ class PeriodGetterFromDateValue:
         if not date_val:
             return None
         tar = self.periods.rows.open_new_page()
-        date_handler = DateHandler(date_val)
+        date_handler = DateFormatter(date_val)
 
-        tar_idx = date_handler.strf_year_and_week()
+        tar_idx = date_handler.stringify_week()
         tar.write_title(key_alias='title', value=tar_idx)
 
         date_range = DateObject(start=date_handler.first_day_of_week(),

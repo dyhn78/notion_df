@@ -8,7 +8,7 @@ from googleapiclient.errors import HttpError
 import notion_zap.apps.externals.gcal
 from notion_zap.cli import editors
 from notion_zap.cli.structs import DateObject
-from ..matchers_date.dt_formatter import TimeStringHandler
+from notion_zap.apps.prop_matcher.utils.dt_formatter import TimeStringFormatter
 from notion_zap.apps.prop_matcher.struct import ModuleDepr, TableModuleDepr
 
 
@@ -113,7 +113,7 @@ class GcaltoScheduleMatcher(_GcalScheduleMatcherAbs, TableModuleDepr):
     def set_timestr(self, dom: editors.PageRow,
                     start: dt.time, end: Optional[dt.time] = None):
         timestr = dom.get_key_alias(self.Ttimestr, '')
-        new_timestr = TimeStringHandler(timestr).replace(start, end)
+        new_timestr = TimeStringFormatter(timestr).replace(start, end)
         if timestr != new_timestr:
             dom.write_text(key_alias=self.Ttimestr, value=new_timestr)
 
@@ -209,5 +209,5 @@ class GcalfromScheduleMatcher(_GcalScheduleMatcherAbs, TableModuleDepr):
 
     def get_time_vals(self, dom: editors.PageRow) -> list[dt.time]:
         if timestr := dom.read_key_alias(self.Ttimestr):
-            return TimeStringHandler(timestr).time_val
+            return TimeStringFormatter(timestr).time_val
         return []

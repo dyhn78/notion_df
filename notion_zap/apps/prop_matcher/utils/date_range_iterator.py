@@ -2,7 +2,7 @@ import datetime as dt
 from typing import Optional
 
 
-class CalendarDateRange:
+class DateRangeIterator:
     def __init__(self, year_range: Optional[tuple[int, int]] = None):
         self.year_range = year_range
         if year_range:
