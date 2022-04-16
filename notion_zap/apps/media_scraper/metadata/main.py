@@ -5,7 +5,7 @@ from .yes24_main import scrap_yes24_main
 from .yes24_url import scrap_yes24_url
 from notion_zap.apps.media_scraper.struct import ReadingPageManager
 from notion_zap.apps.media_scraper.metadata.write_contents import ContentsWriter
-from notion_zap.apps.media_scraper.metadata.adjust_contents import remove_dummy_blocks
+from notion_zap.apps.media_scraper.metadata.remove_dummy_blocks import remove_dummy_blocks
 
 
 class MetadataScrapManager:
@@ -52,14 +52,14 @@ class SubpageEditor:
             if (
                     isinstance(block, editors.PageItem)
                     and (self.page.title in block.title
-                         or block.title.strip() in ['', '='])
+                         or block.title.strip() in ['', '=', '>'])
             ):
                 subpage = block
                 break
         else:
             subpage = self.page.items.open_new_page()
-        if subpage.title != f'={self.page.title}':
-            subpage.write_title(f'={self.page.title}')
+        if subpage.title != f'>{self.page.title}':
+            subpage.write_title(f'>{self.page.title}')
         subpage.save()
         return subpage
 

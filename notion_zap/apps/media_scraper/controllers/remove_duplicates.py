@@ -1,6 +1,6 @@
 from notion_zap.cli.utility import stopwatch
 from notion_zap.apps.media_scraper.struct import ReadingTableEditor
-from notion_zap.apps.media_scraper.metadata.adjust_contents import remove_dummy_blocks
+from notion_zap.apps.media_scraper.metadata.remove_dummy_blocks import remove_dummy_blocks
 
 
 class ReadingTableDuplicateRemover(ReadingTableEditor):
