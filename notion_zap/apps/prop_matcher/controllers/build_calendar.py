@@ -7,7 +7,7 @@ from notion_zap.apps.prop_matcher.processors.conform_format import DateFormatCon
     WeekFormatConformer
 from notion_zap.apps.prop_matcher.processors.get_date_by_created_time import DateGetterFromDateValue
 from notion_zap.apps.prop_matcher.processors.get_week_by_from_date import WeekRowGetterFromDate
-from notion_zap.apps.prop_matcher.struct import MainEditorDepr, init_root
+from notion_zap.apps.prop_matcher.struct import init_root
 from notion_zap.apps.prop_matcher.utils.date_range_iterator import DateRangeIterator
 from notion_zap.cli.editors import Root
 
@@ -81,7 +81,7 @@ class CalendarBuildFetcher:
             query.execute(1)
 
 
-class CalendarMainEditorDepr(MainEditorDepr):
+class CalendarMainEditorDepr:
     MAX_REQUEST_SIZE = 50
 
     def __init__(self,
@@ -89,11 +89,13 @@ class CalendarMainEditorDepr(MainEditorDepr):
                  empties=True,
                  request_size=0):
         super().__init__()
-        self.root.exclude_archived = True
+        self.root = init_root()
         self.request_size = request_size
         self.year_range = year_range
         self.date_range = DateRangeIterator(year_range)
         self.empties = empties
+        self.weeks = self.root[MyBlock.weeks]
+        self.dates = self.root[MyBlock.dates]
 
     def fetch_all(self):
         query = self.dates.open_query()

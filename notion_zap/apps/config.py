@@ -5,8 +5,8 @@ from notion_zap.apps.constants import EmojiCode
 
 class MyBlock(Enum):
     def __new__(cls, title: str, id_or_url: str, prefix=''):
-        value = len(cls.__members__) + 1
-        obj = super().__new__(cls, value)
+        obj = object.__new__(cls)
+        obj._value_ = title
         obj.title = title
         obj.id_or_url = id_or_url
         obj.prefix = prefix

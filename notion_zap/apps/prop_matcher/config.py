@@ -75,25 +75,6 @@ class SubFrames:
 
 
 Frames: dict[MyBlock, Frame] = {
-    MyBlock.weeks: Frame(
-        [
-            Columns.title_datetime,
-            Columns.date_manual_range,
-
-            Columns.itself,
-        ]
-    ),
-    MyBlock.dates: Frame(
-        [
-            Columns.title_datetime, Columns.date_manual,
-            Column(key=EmojiCode.CHECKER_FLAG + '동기화', alias='sync_status'),
-
-            Columns.itself,
-            Columns.weeks,
-            Columns.journals,
-            Columns.locations, Columns.channels,
-        ]
-    ),
     MyBlock.journals: Frame(
         SubFrames.dateval_created, SubFrames.dates, SubFrames.dates_created,
         SubFrames.gcal,
@@ -179,6 +160,25 @@ Frames: dict[MyBlock, Frame] = {
         ]
     ),
 
+    MyBlock.weeks: Frame(
+        [
+            Columns.title_datetime,
+            Columns.date_manual_range,
+
+            Columns.itself,
+        ]
+    ),
+    MyBlock.dates: Frame(
+        [
+            Columns.title_datetime, Columns.date_manual,
+            Column(key=EmojiCode.CHECKER_FLAG + '동기화', alias='sync_status'),
+
+            Columns.itself,
+            Columns.weeks,
+            Columns.journals,
+            Columns.locations, Columns.channels,
+        ]
+    ),
     MyBlock.projects: Frame(
         SubFrames.dateval_created,
         [

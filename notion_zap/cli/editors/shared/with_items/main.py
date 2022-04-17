@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import ABCMeta
-from collections import Hashable
+from typing import Hashable
 
 from notion_zap.cli.editors.structs.children import Children, \
     BlockWithContentsAndChildren

@@ -6,6 +6,7 @@ from notion_zap.cli.gateway import parsers
 from notion_zap.cli.structs.prop_types import VALUE_FORMATS
 
 
+# TODO: Enum 적용
 class PropertyMarkedValue:
     def __init__(self, value: Any,
                  alias: Hashable,
@@ -18,6 +19,7 @@ class PropertyMarkedValue:
         return f"marked_value({self.value}, alias= {self.alias}, tags= {self.tags})"
 
 
+# TODO: Enum 적용
 class PropertyColumn:
     def __init__(self, key: str,
                  alias: Hashable = None,

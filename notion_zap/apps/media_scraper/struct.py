@@ -1,4 +1,4 @@
-from notion_zap.apps.config import DatabaseInfoDepr
+from notion_zap.apps.config import MyBlock
 from notion_zap.apps.media_scraper.config import (
     READING_FRAME, STATUS_COLUMN)
 from notion_zap.cli import editors
@@ -8,8 +8,8 @@ from notion_zap.cli.structs import PropertyMarkedValue
 class ReadingTableEditor:
     def __init__(self):
         self.root = editors.Root(print_response_heads=5)
-        self.table = self.root.space.database_depr(
-            *DatabaseInfoDepr.READINGS, READING_FRAME)
+        self.table = self.root.space.database(
+            MyBlock.readings.id_or_url, MyBlock.readings.title, READING_FRAME)
 
 
 class ReadingPageManager:

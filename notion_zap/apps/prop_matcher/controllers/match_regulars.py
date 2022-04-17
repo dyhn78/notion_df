@@ -52,7 +52,6 @@ class MatchController:
             self.root.save()
 
 
-# TODO : gcal_sync_status
 class MatchFetcher:
     def __init__(self, bs: MatchBase):
         self.bs = bs
@@ -62,6 +61,7 @@ class MatchFetcher:
         for key in self.bs.keys():
             self.fetch_table(key, request_size)
 
+    # TODO : gcal_sync_status
     def fetch_table(self, key: MyBlock, request_size: int):
         table = self.root.block_aliases[key]
         query = table.rows.open_query()
@@ -69,9 +69,12 @@ class MatchFetcher:
         ft = query.open_filter()
 
         block_option = self.bs.get_block_option(key)
-        for tag in ['date_manual', 'itself', 'weeks', 'dates', 'dates_created']:
+        for tag in ['itself', 'weeks', 'dates', 'dates_created']:
             if tag in block_option.keys():
                 ft |= manager.relation(tag).is_empty()
+        for tag in ['date_manual']:
+            if tag in block_option.keys():
+                ft |= manager.date(tag).is_empty()
 
         if key is MyBlock.readings:
             begin = manager.relation('periods_begin').is_empty()
