@@ -16,8 +16,8 @@
 #     Gcals = notion_zap.apps.externals.gcal.events
 #     Gcal_api_error = HttpError
 #
-#     def __init__(self, bs):
-#         super().__init__(bs)
+#     def __init__(self, root):
+#         super().__init__(root)
 #
 #
 # class _GcalScheduleMatcherAbs(GcalMatcherAbs, DateMatcherAbs, metaclass=ABCMeta):
@@ -28,17 +28,17 @@
 #     Tgcal_link = 'gcal_link'
 #     Tgcal_id = 'gcal_id'
 #
-#     def __init__(self, bs, calendar_id='primary'):
-#         GcalMatcherAbs.__init__(self, bs)
-#         DateMatcherAbs.__init__(self, bs)
-#         self.domain = self.bs.journals
+#     def __init__(self, root, calendar_id='primary'):
+#         GcalMatcherAbs.__init__(self, root)
+#         DateMatcherAbs.__init__(self, root)
+#         self.domain = self.root.journals
 #         self.domain_by_idx = self.domain.rows.index_by_tag(self.Tgcal_id)
 #         self.calendar_id = calendar_id
 #
 #
 # class GcaltoScheduleMatcher(_GcalScheduleMatcherAbs, TableModuleDepr):
-#     def __init__(self, bs, calendar_id='primary', updated_in_past_x_days=7):
-#         super().__init__(bs, calendar_id)
+#     def __init__(self, root, calendar_id='primary', updated_in_past_x_days=7):
+#         super().__init__(root, calendar_id)
 #         if updated_in_past_x_days:
 #             self.updated_min = (
 #                     dt.datetime.now() -
@@ -119,8 +119,8 @@
 #
 #
 # class GcalfromScheduleMatcher(_GcalScheduleMatcherAbs, TableModuleDepr):
-#     def __init__(self, bs, calendar_id='primary', default_event_duration_in_minutes=60):
-#         super().__init__(bs, calendar_id)
+#     def __init__(self, root, calendar_id='primary', default_event_duration_in_minutes=60):
+#         super().__init__(root, calendar_id)
 #         self.default_event_duration = default_event_duration_in_minutes
 #
 #     def __call__(self):

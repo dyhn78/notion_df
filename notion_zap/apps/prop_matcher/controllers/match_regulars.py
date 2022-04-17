@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from notion_zap.apps.config import MyBlock
 from notion_zap.apps.prop_matcher.processors.bind_simple_props import BindSimpleProperties
 from notion_zap.apps.prop_matcher.processors.conform_format import TimeFormatConformer
 from notion_zap.apps.prop_matcher.processors.get_date_by_created_time \
@@ -11,25 +12,28 @@ from notion_zap.apps.prop_matcher.processors.get_week_by_date_ref \
 from notion_zap.apps.prop_matcher.processors.get_week_by_from_date \
     import WeekRowProcessorFromDate
 from notion_zap.apps.prop_matcher.processors.match_to_itself import SelfProcessor
-from notion_zap.apps.prop_matcher.struct import MainEditorDepr
-from notion_zap.cli.editors import Database
+from notion_zap.apps.prop_matcher.struct import MatchBase
+
+REGULAR_MATCH_BASE = MatchBase({
+    MyBlock.journals: {'itself', 'weeks', 'dates', 'dates_created'},
+    MyBlock.counts: {'itself', 'weeks', 'dates', 'dates_created'},
+    MyBlock.topics: {'itself', 'weeks', 'dates'},
+    MyBlock.streams: {'itself', 'weeks', 'dates'},
+    MyBlock.readings: {'itself', 'weeks_begin',
+                       ('dates_begin', 'earliest_ref'), 'dates_created'},
+    MyBlock.writings: {'itself', 'weeks', 'dates'},
+    MyBlock.weeks: {'itself', 'date_manual'},
+    MyBlock.dates: {'itself', 'date_manual', ('weeks', 'manual_date')},
+})
 
 
-class RegularMatchController:
-    def __init__(self):
-        self.bs = MainEditorDepr()
-        self.bs.root.exclude_archived = True
-        self.fetch = RegularMatchFetchManager(self.bs)
-        self.process = RegularMatchProcessManager(self.bs)
-
-    def __call__(self, request_size=0):
-        self.fetch(request_size)
-        self.process()
-
-
-class RegularMatchProcessManager:
-    def __init__(self, bs: MainEditorDepr):
+class MatchController:
+    def __init__(self, bs: MatchBase = None):
+        if bs is None:
+            bs = REGULAR_MATCH_BASE
         self.bs = bs
+        self.root = bs.root
+        self.fetch = MatchFetcher(self.bs)
         self.processor_groups = [
             [TimeFormatConformer(self.bs)],
             [DateProcessorByEarliestRef(self.bs)],  # created time보다 우선순위가 높아야 한다
@@ -37,49 +41,39 @@ class RegularMatchProcessManager:
              WeekRowProcessorFromDate(self.bs),
              PeriodProcessorByDateRef(self.bs),
              SelfProcessor(self.bs),
-             BindSimpleProperties(self.bs), ]
+             BindSimpleProperties(self.bs)]
         ]
 
-    def __call__(self):
+    def __call__(self, request_size=0):
+        self.fetch(request_size)
         for group in self.processor_groups:
             for processor in group:
                 processor()
-            self.bs.save()
+            self.root.save()
 
 
-class RegularMatchFetchManager:
-    def __init__(self, bs: MainEditorDepr):
+# TODO : gcal_sync_status
+class MatchFetcher:
+    def __init__(self, bs: MatchBase):
         self.bs = bs
+        self.root = self.bs.root
 
     def __call__(self, request_size=0):
-        for table in self.bs.root.block_aliases.values():
-            self.fetch_table(table, request_size)
+        for key in self.bs.keys():
+            self.fetch_table(key, request_size)
 
-    def fetch_table(self, table: Database, request_size):
-        if table in [self.bs.channels, self.bs.projects]:
-            return
-
+    def fetch_table(self, key: MyBlock, request_size: int):
+        table = self.root.block_aliases[key]
         query = table.rows.open_query()
         manager = query.filter_manager_by_tags
         ft = query.open_filter()
 
-        # OR clauses
-        if table is not self.bs.readings:
-            for tag in ['itself', 'periods', 'dates']:
-                try:
-                    ft |= manager.relation(tag).is_empty()
-                except KeyError:
-                    pass
+        block_option = self.bs.get_block_option(key)
+        for tag in ['date_manual', 'itself', 'weeks', 'dates', 'dates_created']:
+            if tag in block_option.keys():
+                ft |= manager.relation(tag).is_empty()
 
-        # OR clauses
-        if table in [self.bs.periods, self.bs.dates]:
-            ft |= manager.date('date_manual').is_empty()
-        if table in [self.bs.checks, self.bs.journals]:
-            # TODO : gcal_sync_status
-            ft |= manager.relation('dates_created').is_empty()
-        if table is self.bs.readings:
-            ft |= manager.relation('itself').is_empty()
-
+        if key is MyBlock.readings:
             begin = manager.relation('periods_begin').is_empty()
             begin &= manager.checkbox('no_exp').is_empty()
             ft |= begin
@@ -88,7 +82,6 @@ class RegularMatchFetchManager:
             begin &= manager.checkbox('no_exp').is_empty()
             ft |= begin
 
-            ft |= manager.relation('dates_created').is_empty()
             ft |= manager.select('media_type').is_empty()
 
         # ft.preview()
@@ -97,4 +90,4 @@ class RegularMatchFetchManager:
 
 
 if __name__ == '__main__':
-    RegularMatchController()(request_size=20)
+    MatchController()(request_size=20)

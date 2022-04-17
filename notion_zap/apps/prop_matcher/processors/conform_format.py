@@ -1,19 +1,20 @@
-from notion_zap.apps.prop_matcher.struct import MainEditorDepr, Processor
+from notion_zap.apps.config import MyBlock
+from notion_zap.apps.prop_matcher.struct import Processor
 from notion_zap.apps.prop_matcher.utils.date_formatter import DateFormatter
 from notion_zap.cli.editors import PageRow
 from notion_zap.cli.structs import DatePropertyValue
 
 
 class TimeFormatConformer(Processor):
-    def __init__(self, bs: MainEditorDepr):
-        super().__init__(bs)
+    def __init__(self, root):
+        super().__init__(root)
         self.date_conformer = DateFormatConformer()
         self.week_conformer = WeekFormatConformer()
 
     def __call__(self):
-        for date_row in self.bs.dates.rows:
+        for date_row in self.root[MyBlock.dates].rows:
             self.date_conformer(date_row)
-        for week_row in self.bs.periods.rows:
+        for week_row in self.root[MyBlock.weeks].rows:
             self.week_conformer(week_row)
 
 

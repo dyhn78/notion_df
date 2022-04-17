@@ -98,7 +98,8 @@ class Root(Registry):
         self.space = RootSpace(self)
 
         from .block_main import Block
-        self.block_aliases: dict[Any, Block] = {}
+        from ..database.main import Database
+        self.block_aliases: dict[Any, Union[Block, Database]] = {}
 
         # global settings, will be applied uniformly to all child-editors.
         self.exclude_archived = exclude_archived

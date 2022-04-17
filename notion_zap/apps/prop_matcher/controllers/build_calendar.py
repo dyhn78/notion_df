@@ -2,42 +2,44 @@ from __future__ import annotations
 
 from typing import Optional
 
+from notion_zap.apps.config import MyBlock
 from notion_zap.apps.prop_matcher.processors.conform_format import DateFormatConformer, \
     WeekFormatConformer
 from notion_zap.apps.prop_matcher.processors.get_date_by_created_time import DateGetterFromDateValue
 from notion_zap.apps.prop_matcher.processors.get_week_by_from_date import WeekRowGetterFromDate
-from notion_zap.apps.prop_matcher.struct import MainEditorDepr
+from notion_zap.apps.prop_matcher.struct import MainEditorDepr, init_root
 from notion_zap.apps.prop_matcher.utils.date_range_iterator import DateRangeIterator
+from notion_zap.cli.editors import Root
 
 
 class CalendarBuildController:
     def __init__(self, disable_overwrite=False, fetch_empties=True,
                  year_range: Optional[tuple[int, int]] = None):
-        self.bs = MainEditorDepr()
+        self.root = init_root()
         self.date_range = (
             DateRangeIterator(year_range) if year_range else None)
-        self.fetch = CalendarBuildFetcher(self.bs, self.date_range, fetch_empties)
+        self.fetch = CalendarBuildFetcher(self.root, self.date_range, fetch_empties)
         self.disable_overwrite = disable_overwrite
 
     def execute(self):
         self.fetch()
         self.introduce_pages()
         self.create_if_not_found(self.date_range)
-        self.bs.save()
+        self.root.save()
 
     def introduce_pages(self):
         introduce_date = DateFormatConformer(self.disable_overwrite)
-        for date in self.bs.dates.rows:
+        for date in self.root.dates.rows:
             introduce_date(date, None)
         introduce_period = WeekFormatConformer(self.disable_overwrite)
-        for period in self.bs.periods.rows:
-            introduce_period(period, None)
+        for week in self.root[MyBlock.weeks].rows:
+            introduce_period(week, None)
 
     def create_if_not_found(self, date_range: DateRangeIterator):
-        create_date_if_not_found = DateGetterFromDateValue(self.bs.periods)
+        create_date_if_not_found = DateGetterFromDateValue(self.root[MyBlock.weeks])
         for date_val in date_range:
             create_date_if_not_found(date_val)
-        create_period_if_not_found = WeekRowGetterFromDate(self.bs.periods)
+        create_period_if_not_found = WeekRowGetterFromDate(self.root[MyBlock.weeks])
         for date_val in date_range:
             create_period_if_not_found(date_val)
 
@@ -45,12 +47,12 @@ class CalendarBuildController:
 class CalendarBuildFetcher:
     MAX_REQUEST_SIZE = 50
 
-    def __init__(self, bs: MainEditorDepr,
+    def __init__(self, root: Root,
                  year_range: Optional[tuple[int, int]],
                  empties=True,
                  request_size=0):
-        self.bs = bs
-        self.bs.root.exclude_archived = True
+        self.root = root
+        self.root.exclude_archived = True
         self.request_size = request_size
         self.year_range = year_range
         self.date_range = DateRangeIterator(year_range)
@@ -58,8 +60,8 @@ class CalendarBuildFetcher:
 
     def __call__(self):
         for table, tag_dateval in [
-            (self.bs.dates, 'date_manual'),
-            (self.bs.periods, 'date_manual')
+            (self.root[MyBlock.dates], 'date_manual'),
+            (self.root[MyBlock.weeks], 'date_manual')
         ]:
             query = table.rows.open_query()
             ft = query.open_filter()
@@ -109,7 +111,7 @@ class CalendarMainEditorDepr(MainEditorDepr):
             query = self.dates.rows.open_query()
             query.execute(1)
 
-        query = self.periods.open_query()
+        query = self.weeks.open_query()
         ft = query.open_filter()
         frame = query.filter_manager_by_tags.date('date_manual')
         if self.empties:
@@ -121,5 +123,5 @@ class CalendarMainEditorDepr(MainEditorDepr):
             )
         query.push_filter(ft)
         if not query.execute(self.request_size):
-            query = self.periods.rows.open_query()
+            query = self.weeks.rows.open_query()
             query.execute(1)

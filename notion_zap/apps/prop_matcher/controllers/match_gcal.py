@@ -6,17 +6,17 @@
 #
 # class GcalMatchController:
 #     def __init__(self, request_size=50):
-#         self.bs = GcalEditorBase(request_size)
+#         self.root = GcalEditorBase(request_size)
 #
 #     def execute(self):
-#         self.bs.fetch()
+#         self.root.fetch()
 #         agents: list[TableModuleDepr] = [
-#             GcaltoScheduleMatcher(self.bs),
-#             GcalfromScheduleMatcher(self.bs),
+#             GcaltoScheduleMatcher(self.root),
+#             GcalfromScheduleMatcher(self.root),
 #         ]
 #         for agent in agents:
 #             agent()
-#         self.bs.save()
+#         self.root.save()
 #
 #
 # class GcalEditorBase(MainEditorDepr):

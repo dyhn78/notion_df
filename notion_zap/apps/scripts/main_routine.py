@@ -1,15 +1,15 @@
-import traceback
 import datetime as dt
+import traceback
 
-from notion_zap.cli.utility import stopwatch
 from notion_zap.apps.media_scraper.controllers.scrap_regulars import \
     RegularScrapController
 from notion_zap.apps.prop_matcher.controllers.match_regulars import \
-    RegularMatchController
+    MatchController
+from notion_zap.cli.utility import stopwatch
 
 
 def main_logic():
-    controller = RegularMatchController()
+    controller = MatchController()
     controller(request_size=20)
     controller = RegularScrapController(targets={'metadata', 'gy'})
     controller(request_size=5)

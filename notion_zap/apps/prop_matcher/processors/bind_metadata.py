@@ -6,11 +6,11 @@
 #
 #
 # class ProgressMatcherofDates(TableModuleDepr):
-#     def __init__(self, bs):
-#         super().__init__(bs)
-#         self.domain = self.bs.dates
+#     def __init__(self, root):
+#         super().__init__(root)
+#         self.domain = self.root.dates
 #         self.ref_zip = [
-#             (self.bs.checks, 'checks'),
+#             (self.root.counts, 'counts'),
 #         ]
 #         self.collect_zip = [
 #             (
@@ -18,40 +18,40 @@
 #                 ['projects'],  # dom setter ('직결')
 #                 # list of (ref_tag, ref setter)
 #                 [
-#                     ('checks', ['projects', 'projects_context']),
+#                     ('counts', ['projects', 'projects_context']),
 #                     ('writings', ['projects', 'projects_context']),
 #                     ('journals', ['projects']),
-#                     ('tasks', ['projects']),
+#                     ('streams', ['projects']),
 #                 ]
 #             ),
 #             (
 #                 'domains_total',
 #                 ['domains'],
 #                 [
-#                     ('checks', ['domains_context']),
+#                     ('counts', ['domains_context']),
 #                     ('writings', ['domains']),
 #                     ('journals', ['domains']),
-#                     ('tasks', ['domains']),
+#                     ('streams', ['domains']),
 #                 ]
 #             ),
 #             (
 #                 'channels_total',
 #                 ['channels'],
 #                 [
-#                     ('checks', ['channels', 'channels_context']),
+#                     ('counts', ['channels', 'channels_context']),
 #                     ('writings', ['channels']),
 #                     ('journals', ['channels']),
-#                     ('tasks', ['channels']),
+#                     ('streams', ['channels']),
 #                 ]
 #             ),
 #             (
 #                 'readings_total',
 #                 ['readings_begin'],
 #                 [
-#                     ('checks', ['readings', 'readings_context']),
+#                     ('counts', ['readings', 'readings_context']),
 #                     ('writings', ['readings']),
 #                     ('journals', ['readings']),
-#                     ('tasks', ['readings']),
+#                     ('streams', ['readings']),
 #                 ]
 #             ),
 #         ]
@@ -61,11 +61,11 @@
 #
 #
 # class ProgressMatcherofDatesDepr(TableModuleDepr):
-#     def __init__(self, bs):
-#         super().__init__(bs)
-#         self.domain = self.bs.dates
-#         self.reference = self.bs.checks
-#         self.to_ref = 'checks'
+#     def __init__(self, root):
+#         super().__init__(root)
+#         self.domain = self.root.dates
+#         self.reference = self.root.counts
+#         self.to_ref = 'counts'
 #         self.to_tars = ['locations', 'channels']
 #
 #     def __call__(self):
@@ -89,15 +89,15 @@
 #
 #
 # class ProgressMatcherofWritingsDepr(TableModuleDepr):
-#     Tdoms_ref1 = 'checks'
+#     Tdoms_ref1 = 'counts'
 #     Tdoms_ref2 = 'journals'
 #     TL_tar = ['projects', 'channels', 'readings']
 #
-#     def __init__(self, bs):
-#         super().__init__(bs)
-#         self.domain = self.bs.writings
-#         self.reference1 = self.bs.checks
-#         self.reference2 = self.bs.journals
+#     def __init__(self, root):
+#         super().__init__(root)
+#         self.domain = self.root.writings
+#         self.reference1 = self.root.counts
+#         self.reference2 = self.root.journals
 #
 #     def __call__(self):
 #         for dom in self.domain.rows:

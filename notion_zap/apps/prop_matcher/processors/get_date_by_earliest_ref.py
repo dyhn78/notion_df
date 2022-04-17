@@ -2,21 +2,22 @@ from __future__ import annotations
 
 from typing import Optional
 
+from notion_zap.apps.config import MyBlock
 from notion_zap.apps.prop_matcher.common import \
     has_relation, set_relation, ReferenceInfo, get_all_pages_from_relation
-from notion_zap.apps.prop_matcher.struct import Processor, MainEditorDepr
+from notion_zap.apps.prop_matcher.struct import Processor
 from notion_zap.cli.editors import Database, PageRow
 from notion_zap.cli.structs import DatePropertyValue
 
 
 class DateProcessorByEarliestRef(Processor):
-    def __init__(self, bs: MainEditorDepr):
-        super().__init__(bs)
+    def __init__(self, root):
+        super().__init__(root)
         self.no_replace = True
 
     def __call__(self):
         for table, tag_date, ref_args in self.args:
-            get_date = GetterByEarliestRef(self.bs.dates, ref_args)
+            get_date = GetterByEarliestRef(self.root[MyBlock.dates], ref_args)
             for row in table.rows:
                 if self.no_replace and has_relation(row, tag_date):
                     continue
@@ -26,13 +27,13 @@ class DateProcessorByEarliestRef(Processor):
 
     @staticmethod
     def reset_period(row: PageRow):
-        row.write_relation(key_alias='periods', value=[])
+        row.write_relation(key_alias='weeks', value=[])
 
     @property
     def args(self):
         return [
-            (self.bs.readings, 'dates_begin',
-             [ReferenceInfo(self.bs.checks, 'checks', 'dates')])
+            (self.root[MyBlock.readings], 'dates_begin',
+             [ReferenceInfo(self.root[MyBlock.counts], 'counts', 'dates')])
         ]
 
 

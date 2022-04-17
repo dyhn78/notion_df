@@ -2,25 +2,26 @@ from __future__ import annotations
 
 import datetime as dt
 
+from notion_zap.apps.config import MyBlock
 from notion_zap.apps.prop_matcher.common import has_relation, set_relation, query_unique_page_by_idx
-from notion_zap.apps.prop_matcher.struct import MainEditorDepr, Processor
+from notion_zap.apps.prop_matcher.struct import Processor
 from notion_zap.apps.prop_matcher.utils.date_formatter import DateFormatter
 from notion_zap.cli.editors import PageRow, Database
 from notion_zap.cli.structs import DatePropertyValue
 
 
 class WeekRowProcessorFromDate(Processor):
-    def __init__(self, bs: MainEditorDepr):
-        super().__init__(bs)
-        self.tag_week = 'periods'
-        self.get_week = WeekRowGetterFromDate(self.bs.periods)
+    def __init__(self, root):
+        super().__init__(root)
+        self.tag_week = 'weeks'
+        self.get_week = WeekRowGetterFromDate(self.root[MyBlock.weeks])
 
     def __call__(self):
-        for table, tag_manual_value in [(self.bs.dates, 'date_manual')]:
+        for _, table in self.bs.filtered_pick('weeks', 'date_manual'):
             for row in table.rows:
                 if has_relation(row, self.tag_week):
                     continue
-                date = get_date(row, tag_manual_value)
+                date = get_date(row, 'date_manual')
                 if week := self.get_week(date):
                     set_relation(row, week, self.tag_week)
 
