@@ -36,11 +36,10 @@ class DateProcessorByCreatedTime(Processor):
         for _, table in self.bs.filtered_pick('dates'):
             for row in table.rows:
                 yield row, 'dates'
-        for _, table in self.bs.filtered_pick('dates', 'earliest_ref'):
+        for _, table in self.bs.filtered_pick('dates', 'ignore_book_with_no_exp'):
             for row in table.rows:
-                if row.read_key_alias('is_book') and row.read_key_alias('no_exp'):
-                    continue
-                yield row, 'dates'
+                if not row.read_key_alias('no_exp_book'):
+                    yield row, 'dates'
         for _, table in self.bs.pick('dates_created'):
             for row in table.rows:
                 yield row, 'dates_created'

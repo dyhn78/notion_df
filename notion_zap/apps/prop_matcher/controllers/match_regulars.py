@@ -20,7 +20,7 @@ REGULAR_MATCH_BASE = MatchBase({
     MyBlock.topics: {'itself', 'weeks', 'dates'},
     MyBlock.streams: {'itself', 'weeks', 'dates'},
     MyBlock.readings: {'itself', 'weeks_begin',
-                       ('dates_begin', 'earliest_ref'), 'dates_created'},
+                       ('dates_begin', 'ignore_book_with_no_exp'), 'dates_created'},
     MyBlock.writings: {'itself', 'weeks', 'dates'},
     MyBlock.weeks: {'itself', 'date_manual'},
     MyBlock.dates: {'itself', 'date_manual', ('weeks', 'manual_date')},
@@ -78,14 +78,16 @@ class MatchFetcher:
 
         if key is MyBlock.readings:
             begin = manager.relation('periods_begin').is_empty()
-            begin &= manager.checkbox('no_exp').is_empty()
+            begin &= manager.checkbox('no_exp_book').is_empty()
             ft |= begin
 
             begin = manager.relation('dates_begin').is_empty()
-            begin &= manager.checkbox('no_exp').is_empty()
+            begin &= manager.checkbox('no_exp_book').is_empty()
             ft |= begin
 
-            ft |= manager.select('media_type').is_empty()
+            media_type = manager.relation('channels').is_not_empty()
+            media_type &= manager.select('media_type').is_empty()
+            ft |= media_type
 
         # ft.preview()
         query.push_filter(ft)

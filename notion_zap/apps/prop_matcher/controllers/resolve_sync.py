@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from notion_zap.apps.prop_matcher.config import FramesDepr
+from notion_zap.apps.config import MyBlock
+from notion_zap.apps.prop_matcher.config import Frames
 from notion_zap.apps.prop_matcher.utils.query_in_range import query_within_date_range
 from notion_zap.cli import editors
 from notion_zap.cli.utility import stopwatch
@@ -14,7 +15,7 @@ class SyncResolveController:
     def __init__(self, date_range=0):
         self.root = editors.Root(print_response_heads=5)
         self.date_range = date_range
-        self.marks = self.root.space.database_depr(FramesDepr.CHECKS, )
+        self.marks = self.root.space.database(Frames[MyBlock.counts], )
 
     def execute(self):
         self.make_query()

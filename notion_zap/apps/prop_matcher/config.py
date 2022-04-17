@@ -10,16 +10,15 @@ class Columns:
     title_datetime = Column(key=EmojiCode.GREEN_BOOK + '제목', alias='title')
     title_metadata = Column(key=EmojiCode.BOOKSTACK + '제목', alias='title')
 
-    no_exp = Column(key=EmojiCode.BLACK_NOTEBOOK + '경험 없음', alias='no_exp', )
-
     media_type = Column(key=EmojiCode.BLUE_BOOK + '유형', alias='media_type',
                         marked_values=[Value('📌결정 전', 'empty')])
     media_type_book = Column(alias='is_book', key='📔도서류', )
+    no_exp = Column(key=EmojiCode.BLACK_NOTEBOOK + '경험 없음', alias='no_exp', )
+    no_exp_book = Column(key=EmojiCode.BLACK_NOTEBOOK + '도서류&경험 없음', alias='no_exp_book', )
 
     timestr = Column(key=EmojiCode.CALENDAR + '시간', alias='timestr', )
     date_manual = Column(key=EmojiCode.CALENDAR + '날짜', alias='date_manual', )
-    date_manual_range = Column(key=EmojiCode.BIG_CALENDAR + '날짜 범위',
-                               alias='date_manual', )
+    date_manual_range = Column(key=EmojiCode.BIG_CALENDAR + '날짜 범위', alias='date_manual', )
 
     # relational properties
     itself = Column(key=EmojiCode.CYCLE + '재귀', alias='itself', )
@@ -171,7 +170,6 @@ Frames: dict[MyBlock, Frame] = {
     MyBlock.dates: Frame(
         [
             Columns.title_datetime, Columns.date_manual,
-            Column(key=EmojiCode.CHECKER_FLAG + '동기화', alias='sync_status'),
 
             Columns.itself,
             Columns.weeks,
@@ -193,124 +191,3 @@ Frames: dict[MyBlock, Frame] = {
         ]
     )
 }
-
-
-class FramesDepr:
-    PERIODS = Frame(
-        [
-            Columns.title_datetime,
-            Columns.date_manual_range,
-
-            Columns.itself,
-        ]
-    )
-    DATES = Frame(
-        [
-            Columns.title_datetime, Columns.date_manual,
-            Column(key=EmojiCode.CHECKER_FLAG + '동기화', alias='sync_status'),
-
-            Columns.itself,
-            Columns.weeks,
-            Columns.journals,
-            Columns.locations, Columns.channels,
-        ]
-    )
-
-    JOURNALS = Frame(
-        SubFrames.dateval_created, SubFrames.dates, SubFrames.dates_created,
-        SubFrames.gcal,
-        [
-            Columns.title_generic,
-            Columns.timestr,
-
-            Columns.itself,
-            Columns.projects_main, Columns.projects_side, Columns.domains,
-            Columns.channels, Columns.readings,
-
-            Columns.topics, Columns.writings,
-        ]
-    )
-    CHECKS = Frame(
-        SubFrames.dateval_created, SubFrames.dates, SubFrames.dates_created,
-        [
-            Columns.title_generic,
-            Columns.timestr,
-
-            Columns.itself,
-            Columns.projects,
-            Columns.channels, Columns.readings,
-            Columns.journals,
-            Columns.writings,
-        ]
-    )
-    TOPICS = Frame(
-        SubFrames.dateval_created, SubFrames.dates,
-        [
-            Columns.title_generic,
-            Columns.timestr,
-
-            Columns.itself,
-            Columns.projects_main, Columns.projects_side, Columns.domains,
-            Columns.channels, Columns.readings,
-            Columns.writings, Columns.streams,
-
-            Columns.journals, Columns.checks,
-        ]
-    )
-    TASKS = Frame(
-        SubFrames.dateval_created, SubFrames.dates,
-        [
-            Columns.title_generic,
-            Columns.timestr,
-
-            Columns.itself,
-            Columns.projects, Columns.domains,
-            Columns.people, Columns.locations,
-            Columns.channels, Columns.readings,
-            Columns.journals,
-        ]
-    )
-    READINGS = Frame(
-        SubFrames.dateval_created, SubFrames.dates_begin, SubFrames.dates_created,
-        [
-            Columns.title_metadata,
-            Columns.media_type,
-            Columns.media_type_book,
-            Columns.no_exp,
-
-            Columns.itself,
-            Columns.projects, Columns.domains,
-            Columns.channels,
-
-            Columns.journals, Columns.streams,
-            Columns.checks, Columns.writings,
-        ]
-    )
-    WRITINGS = Frame(
-        SubFrames.dateval_created, SubFrames.dates,
-        [
-            Columns.title_generic,
-            Columns.timestr,
-
-            Columns.itself,
-            Columns.projects, Columns.domains,
-            Columns.people, Columns.locations, Columns.channels,
-
-            Columns.journals, Columns.checks,
-            Columns.readings,
-        ]
-    )
-
-    PROJECTS = Frame(
-        SubFrames.dateval_created,
-        [
-
-        ]
-    )
-    CHANNELS = Frame(
-        [
-            Columns.title_metadata,
-            Columns.media_type,
-            Columns.media_type_book,
-        ]
-    )
