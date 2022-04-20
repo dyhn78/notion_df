@@ -1,8 +1,8 @@
 class EmojiCode:
     RED_CIRCLE = '🔴'
     RED_HEART = '❤'
-    ORANGE_HEART = '🟠'
-    ORANGE_CIRCLE = '🧡'
+    ORANGE_CIRCLE = '🟠'
+    ORANGE_HEART = '🧡'
     ORANGE_DIAMOND = '🔶'
     YELLOW_CIRCLE = '🟡'
     YELLOW_HEART = '💛'

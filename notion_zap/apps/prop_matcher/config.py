@@ -134,7 +134,7 @@ Frames: dict[MyBlock, Frame] = {
             Columns.title_metadata,
             Columns.media_type,
             Columns.media_type_book,
-            Columns.no_exp,
+            Columns.no_exp, Columns.no_exp_book,
 
             Columns.itself,
             Columns.projects, Columns.domains,

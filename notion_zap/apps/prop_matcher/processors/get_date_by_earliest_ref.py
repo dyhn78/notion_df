@@ -3,9 +3,9 @@ from __future__ import annotations
 from typing import Optional
 
 from notion_zap.apps.config import MyBlock
-from notion_zap.apps.prop_matcher.common import \
-    has_relation, set_relation, ReferenceInfo, get_all_pages_from_relation
 from notion_zap.apps.prop_matcher.struct import Processor
+from notion_zap.apps.prop_matcher.utils.relation_prop_helpers import \
+    has_relation, set_relation, ReferenceInfo, get_all_pages_from_relation
 from notion_zap.cli.editors import Database, PageRow
 from notion_zap.cli.structs import DatePropertyValue
 
