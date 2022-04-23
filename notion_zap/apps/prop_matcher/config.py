@@ -17,8 +17,8 @@ class Columns:
     no_exp_book = Column(key=EmojiCode.BLACK_NOTEBOOK + '도서류&경험 없음', alias='no_exp_book', )
 
     timestr = Column(key=EmojiCode.CALENDAR + '시간', alias='timestr', )
-    date_manual = Column(key=EmojiCode.CALENDAR + '날짜', alias='date_manual', )
-    date_manual_range = Column(key=EmojiCode.BIG_CALENDAR + '날짜 범위', alias='date_manual', )
+    manual_date = Column(key=EmojiCode.CALENDAR + '날짜', alias='manual_date', )
+    manual_date_range = Column(key=EmojiCode.BIG_CALENDAR + '날짜 범위', alias='manual_date', )
 
     # relational properties
     itself = Column(key=EmojiCode.CYCLE + '재귀', alias='itself', )
@@ -54,7 +54,7 @@ class SubFrames:
         Column(alias='gcal_id', key=EmojiCode.YELLOW_NOTEBOOK + 'id'),
     ])
 
-    dateval_created = Frame([
+    date_created = Frame([
         Column(key=EmojiCode.TIMER + '일시', alias='auto_datetime', ),
         Column(key=EmojiCode.TIMER + '날짜', alias='auto_date', ),
     ])
@@ -75,7 +75,7 @@ class SubFrames:
 
 Frames: dict[MyBlock, Frame] = {
     MyBlock.journals: Frame(
-        SubFrames.dateval_created, SubFrames.dates, SubFrames.dates_created,
+        SubFrames.date_created, SubFrames.dates, SubFrames.dates_created,
         SubFrames.gcal,
         [
             Columns.title_generic,
@@ -89,7 +89,7 @@ Frames: dict[MyBlock, Frame] = {
         ]
     ),
     MyBlock.counts: Frame(
-        SubFrames.dateval_created, SubFrames.dates, SubFrames.dates_created,
+        SubFrames.date_created, SubFrames.dates, SubFrames.dates_created,
         [
             Columns.title_generic,
             Columns.timestr,
@@ -102,7 +102,7 @@ Frames: dict[MyBlock, Frame] = {
         ]
     ),
     MyBlock.topics: Frame(
-        SubFrames.dateval_created, SubFrames.dates,
+        SubFrames.date_created, SubFrames.dates_begin,
         [
             Columns.title_generic,
             Columns.timestr,
@@ -116,7 +116,7 @@ Frames: dict[MyBlock, Frame] = {
         ]
     ),
     MyBlock.streams: Frame(
-        SubFrames.dateval_created, SubFrames.dates,
+        SubFrames.date_created, SubFrames.dates,
         [
             Columns.title_generic,
             Columns.timestr,
@@ -129,7 +129,7 @@ Frames: dict[MyBlock, Frame] = {
         ]
     ),
     MyBlock.readings: Frame(
-        SubFrames.dateval_created, SubFrames.dates_begin, SubFrames.dates_created,
+        SubFrames.date_created, SubFrames.dates_begin, SubFrames.dates_created,
         [
             Columns.title_metadata,
             Columns.media_type,
@@ -145,7 +145,7 @@ Frames: dict[MyBlock, Frame] = {
         ]
     ),
     MyBlock.writings: Frame(
-        SubFrames.dateval_created, SubFrames.dates,
+        SubFrames.date_created, SubFrames.dates,
         [
             Columns.title_generic,
             Columns.timestr,
@@ -162,14 +162,14 @@ Frames: dict[MyBlock, Frame] = {
     MyBlock.weeks: Frame(
         [
             Columns.title_datetime,
-            Columns.date_manual_range,
+            Columns.manual_date_range,
 
             Columns.itself,
         ]
     ),
     MyBlock.dates: Frame(
         [
-            Columns.title_datetime, Columns.date_manual,
+            Columns.title_datetime, Columns.manual_date,
 
             Columns.itself,
             Columns.weeks,
@@ -178,7 +178,7 @@ Frames: dict[MyBlock, Frame] = {
         ]
     ),
     MyBlock.projects: Frame(
-        SubFrames.dateval_created,
+        SubFrames.date_created,
         [
 
         ]

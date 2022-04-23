@@ -11,8 +11,8 @@ from notion_zap.cli.structs import DatePropertyValue
 
 
 class DateProcessorByEarliestRef(Processor):
-    def __init__(self, root):
-        super().__init__(root)
+    def __init__(self, root, option):
+        super().__init__(root, option)
         self.no_replace = True
 
     def __call__(self):
@@ -67,7 +67,7 @@ class EarliestDateFinder:
             self.update_earliest_by_date_row(date_row)
 
     def update_earliest_by_date_row(self, date_row: PageRow):
-        date_object: DatePropertyValue = date_row.read_key_alias('date_manual')
+        date_object: DatePropertyValue = date_row.read_key_alias('manual_date')
         date_val = date_object.start_date
         if self.earliest_date_val is None or date_val < self.earliest_date_val:
             self.earliest_date_row = date_row

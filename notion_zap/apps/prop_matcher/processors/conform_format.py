@@ -6,8 +6,8 @@ from notion_zap.cli.structs import DatePropertyValue
 
 
 class TimeFormatConformer(Processor):
-    def __init__(self, root):
-        super().__init__(root)
+    def __init__(self, root, option):
+        super().__init__(root, option)
         self.date_conformer = DateFormatConformer()
         self.week_conformer = WeekFormatConformer()
 
@@ -31,8 +31,8 @@ class DateFormatConformer:
         if date_title != date:
             date_row.write(key_alias='title', value=date)
         date_range = DatePropertyValue(date_handler.date)
-        if date_range != date_row.read_key_alias('date_manual'):
-            date_row.write_date(key_alias='date_manual', value=date_range)
+        if date_range != date_row.read_key_alias('manual_date'):
+            date_row.write_date(key_alias='manual_date', value=date_range)
         date_row.save()
 
 
@@ -48,7 +48,7 @@ class WeekFormatConformer:
         date_handler = DateFormatter.from_week_title(week_title)
         date_range = DatePropertyValue(start=date_handler.first_day_of_week(),
                                        end=date_handler.last_day_of_week())
-        if date_range != week_row.read_key_alias('date_manual'):
+        if date_range != week_row.read_key_alias('manual_date'):
             week_row.root.disable_overwrite = self.disable_overwrite
-            week_row.write_date(key_alias='date_manual', value=date_range)
+            week_row.write_date(key_alias='manual_date', value=date_range)
             week_row.root.disable_overwrite = False

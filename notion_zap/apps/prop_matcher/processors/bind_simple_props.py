@@ -5,8 +5,8 @@ from notion_zap.apps.prop_matcher.utils.relation_prop_helpers import has_relatio
 
 
 class BindSimpleProperties(Processor):
-    def __init__(self, bs):
-        super().__init__(bs)
+    def __init__(self, bs, option):
+        super().__init__(bs, option)
 
     def __call__(self):
         for table, reference, tag_ref, tag_copy in self.args:

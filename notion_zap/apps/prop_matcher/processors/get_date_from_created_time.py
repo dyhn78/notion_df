@@ -13,8 +13,8 @@ from notion_zap.cli.structs import DatePropertyValue
 
 
 class DateProcessorByCreatedTime(Processor):
-    def __init__(self, root):
-        super().__init__(root)
+    def __init__(self, root, option):
+        super().__init__(root, option)
         self.get_date = DateGetterFromDateValue(self.root[MyBlock.dates])
         self.no_replace = True
         self.hour_offset = -5
@@ -33,14 +33,15 @@ class DateProcessorByCreatedTime(Processor):
         return date_val
 
     def iter_args(self):
-        for _, table in self.bs.filtered_pick('dates'):
+        for table in self.root.get_blocks(self.option.filter_pair('dates')):
             for row in table.rows:
                 yield row, 'dates'
-        for _, table in self.bs.filtered_pick('dates', 'ignore_book_with_no_exp'):
+        for table in self.root.get_blocks(
+                self.option.filter_pair('dates', 'ignore_book_with_no_exp')):
             for row in table.rows:
                 if not row.read_key_alias('no_exp_book'):
                     yield row, 'dates'
-        for _, table in self.bs.pick('dates_created'):
+        for table in self.root.get_blocks(self.option.filter_key('dates_created')):
             for row in table.rows:
                 yield row, 'dates_created'
 
@@ -72,5 +73,5 @@ class DateGetterFromDateValue:
         tar.write(key_alias='title', value=tar_idx)
 
         date_range = DatePropertyValue(date_handler.date)
-        tar.write_date(key_alias='date_manual', value=date_range)
+        tar.write_date(key_alias='manual_date', value=date_range)
         return tar.save()

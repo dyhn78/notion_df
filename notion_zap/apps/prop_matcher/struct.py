@@ -1,20 +1,19 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Hashable, Union, Any
+from typing import Hashable, Union, Any, Optional
 
 from notion_zap.apps.config import MyBlock
 from notion_zap.apps.prop_matcher.config import Frames
-from notion_zap.cli.editors import PageRow, Root, Database
+from notion_zap.cli.editors import PageRow, Root
 
 
-class MatchBase:
-    def __init__(self, items: dict[MyBlock, set[Union[Hashable, tuple[Hashable, Any]]]] = None):
-        self.root = init_root()
-        self.root.exclude_archived = True
-        self._options: dict[MyBlock] = {}
-        for block_key, option_elements in items.items():
-            block_option = self._options[block_key] = {}
+class MyOption:
+    def __init__(self, options_input: dict[MyBlock, set[Union[Hashable, tuple[Hashable, Any]]]] =
+    None):
+        self.items: dict[MyBlock, dict[Hashable, Optional[Any]]] = {}
+        for block_key, option_elements in options_input.items():
+            block_option = self.items[block_key] = {}
             for element in option_elements:
                 if isinstance(element, tuple):
                     option_key, option_value = element
@@ -23,32 +22,31 @@ class MatchBase:
                     option_value = None
                 block_option[option_key] = option_value
 
-    def get_block_option(self, key: Union[MyBlock, Hashable]):
-        if not isinstance(key, MyBlock):
-            key = MyBlock[key]
-        return self._options[key]
+    def __iter__(self):
+        return iter(self.items.keys())
 
-    def keys(self):
-        return self._options.keys()
-
-    def pick(self, option_key: Hashable):
-        for block_key, block_option in self._options.items():
+    def filter_key(self, option_key: Hashable) -> list[MyBlock]:
+        res = []
+        for block_key, block_option in self.items.items():
             if option_key in block_option.keys():
-                table: Database = self.root[block_key]
-                yield block_key, table
+                res.append(block_key)
+        return res
 
-    def filtered_pick(self, option_key: Hashable, option_value=None):
-        for block_key, block_option in self._options.items():
+    def filter_pair(
+            self, option_key: Hashable, option_value=None) -> list[MyBlock]:
+        res = []
+        for block_key, block_option in self.items.items():
             for _option_key, _option_value in block_option.items():
                 if _option_key == option_key and _option_value == option_value:
-                    table: Database = self.root[block_key]
-                    yield block_key, table
+                    res.append(block_key)
                     continue
+        return res
 
 
-def init_root(print_heads=5, print_request_formats=False):
+def init_root(exclude_archived=True, print_heads=5, print_request_formats=False):
     root = Root(print_response_heads=print_heads,
-                print_request_formats=print_request_formats)
+                print_request_formats=print_request_formats,
+                exclude_archived=exclude_archived)
     for key in MyBlock:
         key: MyBlock
         block = root.space.database(key.id_or_url, key, Frames.get(key))
@@ -57,9 +55,9 @@ def init_root(print_heads=5, print_request_formats=False):
 
 
 class Processor(ABC):
-    def __init__(self, bs: MatchBase):
-        self.bs = bs
-        self.root = self.bs.root
+    def __init__(self, root: Root, option: MyOption):
+        self.root = root
+        self.option = option
 
     @abstractmethod
     def __call__(self):

@@ -5,8 +5,10 @@ from typing import Optional
 from notion_zap.apps.config import MyBlock
 from notion_zap.apps.prop_matcher.processors.conform_format import DateFormatConformer, \
     WeekFormatConformer
-from notion_zap.apps.prop_matcher.processors.get_date_by_created_time import DateGetterFromDateValue
-from notion_zap.apps.prop_matcher.processors.get_week_by_from_date import WeekRowGetterFromDate
+from notion_zap.apps.prop_matcher.processors.get_date_from_created_time import \
+    DateGetterFromDateValue
+from notion_zap.apps.prop_matcher.processors.get_week_from_manual_date import \
+    WeekRowGetterFromManualDate
 from notion_zap.apps.prop_matcher.struct import init_root
 from notion_zap.apps.prop_matcher.utils.date_range_iterator import DateRangeIterator
 from notion_zap.cli.editors import Root
@@ -39,7 +41,7 @@ class CalendarBuildController:
         create_date_if_not_found = DateGetterFromDateValue(self.root[MyBlock.weeks])
         for date_val in date_range:
             create_date_if_not_found(date_val)
-        create_period_if_not_found = WeekRowGetterFromDate(self.root[MyBlock.weeks])
+        create_period_if_not_found = WeekRowGetterFromManualDate(self.root[MyBlock.weeks])
         for date_val in date_range:
             create_period_if_not_found(date_val)
 
@@ -60,8 +62,8 @@ class CalendarBuildFetcher:
 
     def __call__(self):
         for table, tag_dateval in [
-            (self.root[MyBlock.dates], 'date_manual'),
-            (self.root[MyBlock.weeks], 'date_manual')
+            (self.root[MyBlock.dates], 'manual_date'),
+            (self.root[MyBlock.weeks], 'manual_date')
         ]:
             query = table.rows.open_query()
             ft = query.open_filter()
@@ -100,7 +102,7 @@ class CalendarMainEditorDepr:
     def fetch_all(self):
         query = self.dates.open_query()
         ft = query.open_filter()
-        frame = query.filter_manager_by_tags.date('date_manual')
+        frame = query.filter_manager_by_tags.date('manual_date')
         if self.empties:
             ft |= frame.is_empty()
         if self.year_range:
@@ -115,7 +117,7 @@ class CalendarMainEditorDepr:
 
         query = self.weeks.open_query()
         ft = query.open_filter()
-        frame = query.filter_manager_by_tags.date('date_manual')
+        frame = query.filter_manager_by_tags.date('manual_date')
         if self.empties:
             ft |= frame.is_empty()
         if self.year_range:

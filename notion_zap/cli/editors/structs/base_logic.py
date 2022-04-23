@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 from abc import ABCMeta, abstractmethod
 from pprint import pprint
-from typing import Any, Optional, Hashable, Union
+from typing import Any, Optional, Hashable, Union, Iterable
 
 from notion_client import AsyncClient, Client
 
@@ -124,6 +124,9 @@ class Root(Registry):
             return self.block_aliases[key]
         except KeyError:
             raise KeyError(key)
+
+    def get_blocks(self, keys: Iterable[Hashable]):
+        return [self[key] for key in keys]
 
     @property
     def token(self):

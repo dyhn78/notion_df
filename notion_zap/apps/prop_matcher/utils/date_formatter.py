@@ -49,7 +49,7 @@ class DateFormatter:
     def _from_strf_year_and_week(cls, strf: str):
         year = int(strf[:2])
         month = int(strf[3:5])
-        return cls(dt.datetime.strptime(f'{year} {month} 0', "%y %V %w"))
+        return cls(dt.datetime.strptime(f'20{year} {month} 0', "%G %V %w"))
 
     def _strf_year_and_week_verbose(self):
         """예) 2021년 47주: 1121-1126"""

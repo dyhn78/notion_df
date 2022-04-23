@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import datetime as dt
+from typing import cast
 
 from notion_zap.apps.config import MyBlock
 from notion_zap.apps.prop_matcher.struct import Processor
@@ -11,18 +12,21 @@ from notion_zap.cli.editors import PageRow, Database
 from notion_zap.cli.structs import DatePropertyValue
 
 
-class WeekRowProcessorFromDate(Processor):
-    def __init__(self, root):
-        super().__init__(root)
+class WeekProcessorFromManualDate(Processor):
+    def __init__(self, root, option):
+        super().__init__(root, option)
         self.tag_week = 'weeks'
-        self.get_week = WeekRowGetterFromDate(self.root[MyBlock.weeks])
+        self.get_week = WeekRowGetterFromManualDate(self.root[MyBlock.weeks])
 
     def __call__(self):
-        for _, table in self.bs.filtered_pick('weeks', 'date_manual'):
+        for table in cast(
+                list[Database],
+                self.root.get_blocks(self.option.filter_pair('weeks', 'manual_date'))
+        ):
             for row in table.rows:
                 if has_relation(row, self.tag_week):
                     continue
-                date = get_date(row, 'date_manual')
+                date = get_date(row, 'manual_date')
                 if week := self.get_week(date):
                     set_relation(row, week, self.tag_week)
 
@@ -32,7 +36,7 @@ def get_date(date_row: PageRow, tag_manual_value):
     return date_object.start_date
 
 
-class WeekRowGetterFromDate:
+class WeekRowGetterFromManualDate:
     def __init__(self, periods: Database):
         self.periods = periods
         self.periods_by_title = self.periods.rows.index_by_tag('title')
@@ -64,5 +68,5 @@ class WeekRowGetterFromDate:
 
         date_range = DatePropertyValue(start=date_handler.first_day_of_week(),
                                        end=date_handler.last_day_of_week())
-        tar.write_date(key_alias='date_manual', value=date_range)
+        tar.write_date(key_alias='manual_date', value=date_range)
         return tar.save()
