@@ -4,11 +4,11 @@ from abc import ABC, abstractmethod
 from typing import Hashable, Union, Any, Optional
 
 from notion_zap.apps.config import MyBlock
-from notion_zap.apps.prop_matcher.config import Frames
+from notion_zap.apps.prop_matcher.configs import Frames
 from notion_zap.cli.editors import PageRow, Root
 
 
-class MyOption:
+class MatchOptions:
     def __init__(self, options_input: dict[MyBlock, set[Union[Hashable, tuple[Hashable, Any]]]] =
     None):
         self.items: dict[MyBlock, dict[Hashable, Optional[Any]]] = {}
@@ -55,7 +55,7 @@ def init_root(exclude_archived=True, print_heads=5, print_request_formats=False)
 
 
 class Processor(ABC):
-    def __init__(self, root: Root, option: MyOption):
+    def __init__(self, root: Root, option: MatchOptions):
         self.root = root
         self.option = option
 

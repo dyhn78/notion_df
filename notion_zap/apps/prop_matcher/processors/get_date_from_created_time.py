@@ -28,22 +28,22 @@ class DateProcessorByCreatedTime(Processor):
                 set_relation(row, date, tag_dates)
 
     def get_date_val(self, row: PageRow):
-        dom_idx: DatePropertyValue = row.read_key_alias('auto_datetime')
+        dom_idx: DatePropertyValue = row.read_key_alias('datetime_auto')
         date_val = dom_idx.start + dt.timedelta(hours=self.hour_offset)
         return date_val
 
     def iter_args(self):
+        for table in self.root.get_blocks(self.option.filter_key('dates_created')):
+            for row in table.rows:
+                yield row, 'dates_created'
         for table in self.root.get_blocks(self.option.filter_pair('dates')):
             for row in table.rows:
                 yield row, 'dates'
         for table in self.root.get_blocks(
-                self.option.filter_pair('dates', 'ignore_book_with_no_exp')):
+                self.option.filter_pair('dates_begin', 'ignore_book_with_no_exp')):
             for row in table.rows:
                 if not row.read_key_alias('no_exp_book'):
                     yield row, 'dates'
-        for table in self.root.get_blocks(self.option.filter_key('dates_created')):
-            for row in table.rows:
-                yield row, 'dates_created'
 
 
 class DateGetterFromDateValue:

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from notion_zap.apps.config import MyBlock
-from notion_zap.apps.prop_matcher.config import Frames
+from notion_zap.apps.prop_matcher.configs import Frames
 from notion_zap.apps.prop_matcher.utils.query_in_range import query_within_date_range
 from notion_zap.cli import editors
 from notion_zap.cli.utility import stopwatch

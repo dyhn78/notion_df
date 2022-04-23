@@ -1,7 +1,7 @@
+from notion_zap.apps.config import MyBlock
+from notion_zap.apps.constants import EmojiCode
 from notion_zap.cli.structs import \
     PropertyFrame as Frame, PropertyColumn as Column, PropertyMarkedValue as Value
-from ..config import MyBlock
-from ..constants import EmojiCode
 
 
 class Columns:
@@ -25,6 +25,7 @@ class Columns:
 
     weeks = Column(key=MyBlock.weeks.prefix_title, alias='weeks', )
     dates = Column(key=MyBlock.dates.prefix_title, alias='dates', )
+    dates_created = Column(key=MyBlock.dates.prefix + '생성', alias='dates_created', )
 
     journals = Column(key=MyBlock.journals.prefix_title, alias='journals', )
     checks = Column(key=MyBlock.counts.prefix_title, alias='counts', )
@@ -54,9 +55,9 @@ class SubFrames:
         Column(alias='gcal_id', key=EmojiCode.YELLOW_NOTEBOOK + 'id'),
     ])
 
-    date_created = Frame([
-        Column(key=EmojiCode.TIMER + '일시', alias='auto_datetime', ),
-        Column(key=EmojiCode.TIMER + '날짜', alias='auto_date', ),
+    date_auto_created = Frame([
+        Column(key=EmojiCode.TIMER + '일시', alias='datetime_auto', ),
+        Column(key=EmojiCode.TIMER + '날짜', alias='date_auto', ),
     ])
 
     dates = Frame([
@@ -64,22 +65,19 @@ class SubFrames:
         Columns.dates
     ])
     dates_begin = Frame([
-        Column(key=MyBlock.weeks.prefix + '시작', aliases=['periods_begin', 'weeks']),
-        Column(key=MyBlock.dates.prefix + '시작', aliases=['dates_begin', 'dates']),
-    ])
-    dates_created = Frame([
-        Column(key=MyBlock.weeks.prefix + '생성', alias='periods_created', ),
-        Column(key=MyBlock.dates.prefix + '생성', alias='dates_created', )
+        Column(key=MyBlock.weeks.prefix + '시작', aliases=['weeks_begin']),
+        Column(key=MyBlock.dates.prefix + '시작', aliases=['dates_begin']),
     ])
 
 
 Frames: dict[MyBlock, Frame] = {
     MyBlock.journals: Frame(
-        SubFrames.date_created, SubFrames.dates, SubFrames.dates_created,
+        SubFrames.date_auto_created, SubFrames.dates,
         SubFrames.gcal,
         [
             Columns.title_generic,
             Columns.timestr,
+            Columns.dates_created,
 
             Columns.itself,
             Columns.projects_main, Columns.projects_side, Columns.domains,
@@ -89,10 +87,11 @@ Frames: dict[MyBlock, Frame] = {
         ]
     ),
     MyBlock.counts: Frame(
-        SubFrames.date_created, SubFrames.dates, SubFrames.dates_created,
+        SubFrames.date_auto_created, SubFrames.dates,
         [
             Columns.title_generic,
             Columns.timestr,
+            Columns.dates_created,
 
             Columns.itself,
             Columns.projects,
@@ -102,7 +101,7 @@ Frames: dict[MyBlock, Frame] = {
         ]
     ),
     MyBlock.issues: Frame(
-        SubFrames.date_created, SubFrames.dates_begin,
+        SubFrames.date_auto_created, SubFrames.dates_begin,
         [
             Columns.title_generic,
             Columns.timestr,
@@ -116,7 +115,7 @@ Frames: dict[MyBlock, Frame] = {
         ]
     ),
     MyBlock.streams: Frame(
-        SubFrames.date_created, SubFrames.dates,
+        SubFrames.date_auto_created, SubFrames.dates,
         [
             Columns.title_generic,
             Columns.timestr,
@@ -129,13 +128,14 @@ Frames: dict[MyBlock, Frame] = {
         ]
     ),
     MyBlock.readings: Frame(
-        SubFrames.date_created, SubFrames.dates_begin, SubFrames.dates_created,
+        SubFrames.date_auto_created, SubFrames.dates_begin,
         [
             Columns.title_metadata,
             Columns.media_type,
             Columns.media_type_book,
             Columns.no_exp, Columns.no_exp_book,
 
+            Columns.dates_created,
             Columns.itself,
             Columns.projects, Columns.domains,
             Columns.channels,
@@ -145,7 +145,7 @@ Frames: dict[MyBlock, Frame] = {
         ]
     ),
     MyBlock.writings: Frame(
-        SubFrames.date_created, SubFrames.dates,
+        SubFrames.date_auto_created, SubFrames.dates,
         [
             Columns.title_generic,
             Columns.timestr,
@@ -178,7 +178,7 @@ Frames: dict[MyBlock, Frame] = {
         ]
     ),
     MyBlock.projects: Frame(
-        SubFrames.date_created,
+        SubFrames.date_auto_created,
         [
 
         ]
