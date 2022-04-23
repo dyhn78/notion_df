@@ -16,25 +16,24 @@ class DateProcessorByEarliestRef(Processor):
         self.no_replace = True
 
     def __call__(self):
-        for table, tag_date, ref_args in self.args:
-            get_date = GetterByEarliestRef(self.root[MyBlock.dates], ref_args)
-            for row in table.rows:
-                if self.no_replace and has_relation(row, tag_date):
-                    continue
-                if date := get_date(row):
-                    set_relation(row, date, tag_date)
-                    self.reset_period(row)
+        for row, tag_date, get_date in self.iter_args():
+            if self.no_replace and has_relation(row, tag_date):
+                continue
+            if date := get_date(row):
+                set_relation(row, date, tag_date)
+                self.reset_period(row)
 
     @staticmethod
     def reset_period(row: PageRow):
         row.write_relation(key_alias='weeks', value=[])
 
-    @property
-    def args(self):
-        return [
-            (self.root[MyBlock.readings], 'dates_begin',
-             [ReferenceInfo(self.root[MyBlock.counts], 'counts', 'dates')])
-        ]
+    def iter_args(self):
+        ref_infos = [ReferenceInfo(self.root[MyBlock.counts], 'counts', 'dates')]
+        get_date = GetterByEarliestRef(self.root[MyBlock.dates], ref_infos)
+        for row in self.root[MyBlock.readings].rows:
+            if row.read_key_alias('no_exp'):
+                continue
+            yield row, 'dates_begin', get_date
 
 
 class GetterByEarliestRef:

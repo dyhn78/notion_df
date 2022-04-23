@@ -65,8 +65,8 @@ class SubFrames:
         Columns.dates
     ])
     dates_begin = Frame([
-        Column(key=MyBlock.weeks.prefix + '시작', aliases=['weeks_begin']),
-        Column(key=MyBlock.dates.prefix + '시작', aliases=['dates_begin']),
+        Column(key=MyBlock.weeks.prefix + '시작', aliases=['weeks_begin', 'weeks']),
+        Column(key=MyBlock.dates.prefix + '시작', aliases=['dates_begin', 'dates']),
     ])
 
 

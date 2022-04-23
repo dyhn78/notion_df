@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from typing import Hashable, Union, Any, Optional
 
 from notion_zap.apps.config import MyBlock
-from notion_zap.apps.prop_matcher.configs import Frames
+from notion_zap.apps.prop_matcher.config import Frames
 from notion_zap.cli.editors import PageRow, Root
 
 
@@ -54,14 +54,28 @@ def init_root(exclude_archived=True, print_heads=5, print_request_formats=False)
     return root
 
 
-class Processor(ABC):
-    def __init__(self, root: Root, option: MatchOptions):
+class BaseProcessor(ABC):
+    def __init__(self, root: Root):
         self.root = root
+
+    @abstractmethod
+    def __call__(self):
+        pass
+
+
+class Processor(BaseProcessor, ABC):
+    def __init__(self, root: Root, option: MatchOptions):
+        super().__init__(root)
         self.option = option
 
     @abstractmethod
     def __call__(self):
         pass
+
+
+class Saver(BaseProcessor):
+    def __call__(self):
+        self.root.save()
 
 
 class RowHandler(ABC):
