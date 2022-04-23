@@ -20,8 +20,8 @@ class MyBlock(Enum):
 
     journals = ('일지', 'c226cffe6cf84ab996bbc384bf26bf1d', EmojiCode.PURPLE_CIRCLE)
     counts = ('진도', 'c8d46c01d6c941a9bf8df5d115a05f03', EmojiCode.PURPLE_HEART)
-    topics = ('발전', 'fa7d93f6fbd341f089b185745c834811', EmojiCode.BLUE_CIRCLE)
-    streams = ('조류', 'e8782fe4e1a34c9d846d57b01a370327', EmojiCode.BLUE_HEART)
+    issues = ('발전', 'fa7d93f6fbd341f089b185745c834811', EmojiCode.BLUE_CIRCLE)
+    streams = ('처리', 'e8782fe4e1a34c9d846d57b01a370327', EmojiCode.BLUE_HEART)
     readings = ('읽기', 'c326f77425a0446a8aa309478767c85b', EmojiCode.YELLOW_CIRCLE)
     writings = ('쓰기', '069bbebd632f4a6ea3044575a064cf0f', EmojiCode.YELLOW_HEART)
 

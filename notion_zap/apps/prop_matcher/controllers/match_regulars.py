@@ -20,7 +20,7 @@ from notion_zap.cli.gateway.requestors.query.filter_struct import QueryFilter
 REGULAR_MATCH_OPTIONS = MyOption({
     MyBlock.journals: {'itself', 'weeks', 'dates', 'dates_created'},
     MyBlock.counts: {'itself', 'weeks', 'dates', 'dates_created'},
-    MyBlock.topics: {'itself', 'weeks', 'dates'},
+    MyBlock.issues: {'itself', 'weeks', 'dates'},
     MyBlock.streams: {'itself', 'weeks', 'dates'},
     MyBlock.readings: {'itself', 'weeks_begin',
                        ('dates_begin', 'ignore_book_with_no_exp'), 'dates_created'},

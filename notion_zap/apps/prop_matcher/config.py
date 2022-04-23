@@ -29,7 +29,7 @@ class Columns:
     journals = Column(key=MyBlock.journals.prefix_title, alias='journals', )
     checks = Column(key=MyBlock.counts.prefix_title, alias='counts', )
 
-    topics = Column(key=MyBlock.topics.prefix_title, alias='topics', )
+    issues = Column(key=MyBlock.issues.prefix_title, alias='issues', )
     streams = Column(key=MyBlock.streams.prefix_title, alias='streams', )
 
     readings = Column(key=MyBlock.readings.prefix_title, alias='readings', )
@@ -85,7 +85,7 @@ Frames: dict[MyBlock, Frame] = {
             Columns.projects_main, Columns.projects_side, Columns.domains,
             Columns.channels, Columns.readings,
 
-            Columns.topics, Columns.writings,
+            Columns.issues, Columns.writings,
         ]
     ),
     MyBlock.counts: Frame(
@@ -101,7 +101,7 @@ Frames: dict[MyBlock, Frame] = {
             Columns.writings,
         ]
     ),
-    MyBlock.topics: Frame(
+    MyBlock.issues: Frame(
         SubFrames.date_created, SubFrames.dates_begin,
         [
             Columns.title_generic,
