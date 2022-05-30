@@ -6,6 +6,7 @@ class EmojiCode:
     ORANGE_DIAMOND = '🔶'
     YELLOW_CIRCLE = '🟡'
     YELLOW_HEART = '💛'
+    YELLOW_STAR = '⭐'
     GREEN_CIRCLE = '🟢'
     GREEN_HEART = '💚'
     BLUE_CIRCLE = '🔵'

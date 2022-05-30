@@ -1,5 +1,5 @@
 from notion_zap.apps.config import MyBlock
-from notion_zap.apps.constants import EmojiCode
+from notion_zap.apps.emoji_code import EmojiCode
 from notion_zap.cli.structs import \
     PropertyFrame as Frame, PropertyColumn as Column, PropertyMarkedValue as Value
 
@@ -31,19 +31,19 @@ class Columns:
     checks = Column(key=MyBlock.counts.prefix_title, alias='counts', )
 
     issues = Column(key=MyBlock.issues.prefix_title, alias='issues', )
-    streams = Column(key=MyBlock.streams.prefix_title, alias='streams', )
+    tasks = Column(key=MyBlock.tasks.prefix_title, alias='tasks', )
 
     readings = Column(key=MyBlock.readings.prefix_title, alias='readings', )
     readings_begin = Column(key=MyBlock.readings.prefix + '시작', alias='readings_begin')
     writings = Column(key=MyBlock.writings.prefix_title, alias='writings', )
 
-    projects = Column(key=MyBlock.projects.prefix_title, alias='projects', )
-    projects_main = Column(key=MyBlock.projects.prefix + '중심',
-                           aliases=['projects_main', 'projects'])
-    projects_side = Column(key=MyBlock.projects.prefix + '주변', alias='projects_side')
-    domains = Column(key=MyBlock.domains.prefix_title, alias='domains', )
-
+    processes = Column(key=MyBlock.processes.prefix_title, alias='processes', )
+    processes_main = Column(key=MyBlock.processes.prefix + '중심',
+                            aliases=['processes_main', 'processes'])
+    processes_side = Column(key=MyBlock.processes.prefix + '주변', alias='processes_side')
     channels = Column(key=MyBlock.channels.prefix_title, alias='channels', )
+
+    domains = Column(key=MyBlock.domains.prefix_title, alias='domains', )
     people = Column(key=MyBlock.people.prefix_title, alias='people', )
     locations = Column(key=MyBlock.locations.prefix_title, alias='locations', )
 
@@ -71,94 +71,6 @@ class SubFrames:
 
 
 Frames: dict[MyBlock, Frame] = {
-    MyBlock.journals: Frame(
-        SubFrames.date_auto_created, SubFrames.dates,
-        SubFrames.gcal,
-        [
-            Columns.title_generic,
-            Columns.timestr,
-            Columns.dates_created,
-
-            Columns.itself,
-            Columns.projects_main, Columns.projects_side, Columns.domains,
-            Columns.channels, Columns.readings,
-
-            Columns.issues, Columns.writings,
-        ]
-    ),
-    MyBlock.counts: Frame(
-        SubFrames.date_auto_created, SubFrames.dates,
-        [
-            Columns.title_generic,
-            Columns.timestr,
-            Columns.dates_created,
-
-            Columns.itself,
-            Columns.projects,
-            Columns.channels, Columns.readings,
-            Columns.journals,
-            Columns.writings,
-        ]
-    ),
-    MyBlock.issues: Frame(
-        SubFrames.date_auto_created, SubFrames.dates_begin,
-        [
-            Columns.title_generic,
-            Columns.timestr,
-
-            Columns.itself,
-            Columns.projects_main, Columns.projects_side, Columns.domains,
-            Columns.channels, Columns.readings,
-            Columns.writings, Columns.streams,
-
-            Columns.journals, Columns.checks,
-        ]
-    ),
-    MyBlock.streams: Frame(
-        SubFrames.date_auto_created, SubFrames.dates,
-        [
-            Columns.title_generic,
-            Columns.timestr,
-
-            Columns.itself,
-            Columns.projects, Columns.domains,
-            Columns.people, Columns.locations,
-            Columns.channels, Columns.readings,
-            Columns.journals,
-        ]
-    ),
-    MyBlock.readings: Frame(
-        SubFrames.date_auto_created, SubFrames.dates_begin,
-        [
-            Columns.title_metadata,
-            Columns.media_type,
-            Columns.media_type_book,
-            Columns.no_exp, Columns.no_exp_book,
-
-            Columns.dates_created,
-            Columns.itself,
-            Columns.projects, Columns.domains,
-            Columns.channels,
-
-            Columns.journals, Columns.streams,
-            Columns.checks, Columns.writings,
-        ]
-    ),
-    MyBlock.writings: Frame(
-        SubFrames.date_auto_created, SubFrames.dates,
-        [
-            Columns.title_generic,
-            Columns.timestr,
-
-            Columns.itself,
-            Columns.projects, Columns.domains,
-            Columns.people, Columns.locations, Columns.channels,
-
-            Columns.journals, Columns.checks,
-            Columns.readings,
-        ]
-    ),
-
     MyBlock.weeks: Frame(
         [
             Columns.title_datetime,
@@ -177,7 +89,101 @@ Frames: dict[MyBlock, Frame] = {
             Columns.locations, Columns.channels,
         ]
     ),
-    MyBlock.projects: Frame(
+
+    MyBlock.journals: Frame(
+        SubFrames.date_auto_created, SubFrames.dates,
+        SubFrames.gcal,
+        [
+            Columns.title_generic,
+            Columns.timestr,
+            Columns.dates_created,
+
+            Columns.itself,
+            Columns.processes_main, Columns.processes_side, Columns.domains,
+            Columns.channels, Columns.readings,
+
+            Columns.issues, Columns.writings,
+        ]
+    ),
+    MyBlock.counts: Frame(
+        SubFrames.date_auto_created, SubFrames.dates,
+        [
+            Columns.title_generic,
+            Columns.timestr,
+            Columns.dates_created,
+
+            Columns.itself,
+            Columns.processes,
+            Columns.readings, Columns.writings,
+        ]
+    ),
+
+    MyBlock.issues: Frame(
+        SubFrames.date_auto_created, SubFrames.dates_begin,
+        [
+            Columns.title_generic,
+            Columns.timestr,
+
+            Columns.itself,
+            Columns.journals, Columns.checks,
+            Columns.tasks,
+            Columns.channels,
+            Columns.readings, Columns.writings,
+        ]
+    ),
+    MyBlock.tasks: Frame(
+        SubFrames.date_auto_created, SubFrames.dates_begin,
+        [
+            Columns.title_generic,
+
+            Columns.itself,
+            Columns.people, Columns.locations, Columns.channels,
+            Columns.readings,
+        ]
+    ),
+
+    MyBlock.readings: Frame(
+        SubFrames.date_auto_created, SubFrames.dates_begin,
+        [
+            Columns.title_metadata,
+            Columns.media_type,
+            Columns.media_type_book,
+            Columns.no_exp, Columns.no_exp_book,
+
+            Columns.dates_created,
+            Columns.itself,
+            Columns.channels,
+
+            Columns.journals, Columns.tasks,
+            Columns.checks, Columns.writings,
+        ]
+    ),
+    MyBlock.points: Frame(
+        SubFrames.date_auto_created, SubFrames.dates_begin,
+        [
+            Columns.title_generic,
+
+            Columns.itself,
+            Columns.journals,
+            Columns.readings, Columns.writings,
+            Columns.processes, Columns.channels,
+            Columns.domains, Columns.people, Columns.locations,
+        ]
+    ),
+    MyBlock.writings: Frame(
+        SubFrames.date_auto_created, SubFrames.dates_begin,
+        [
+            Columns.title_generic,
+            Columns.timestr,
+
+            Columns.itself,
+            Columns.readings, Columns.writings,
+            Columns.processes, Columns.channels,
+            Columns.domains, Columns.people, Columns.locations,
+        ]
+    ),
+
+    MyBlock.processes: Frame(
         SubFrames.date_auto_created,
         [
 

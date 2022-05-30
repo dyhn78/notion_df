@@ -15,13 +15,13 @@
 #         self.collect_zip = [
 #             (
 #                 'projects_total',  # dom collector ('종합')
-#                 ['projects'],  # dom setter ('직결')
+#                 ['processes'],  # dom setter ('직결')
 #                 # list of (ref_tag, ref setter)
 #                 [
-#                     ('counts', ['projects', 'projects_context']),
-#                     ('writings', ['projects', 'projects_context']),
-#                     ('journals', ['projects']),
-#                     ('streams', ['projects']),
+#                     ('counts', ['processes', 'projects_context']),
+#                     ('writings', ['processes', 'projects_context']),
+#                     ('journals', ['processes']),
+#                     ('tasks', ['processes']),
 #                 ]
 #             ),
 #             (
@@ -31,7 +31,7 @@
 #                     ('counts', ['domains_context']),
 #                     ('writings', ['domains']),
 #                     ('journals', ['domains']),
-#                     ('streams', ['domains']),
+#                     ('tasks', ['domains']),
 #                 ]
 #             ),
 #             (
@@ -41,7 +41,7 @@
 #                     ('counts', ['channels', 'channels_context']),
 #                     ('writings', ['channels']),
 #                     ('journals', ['channels']),
-#                     ('streams', ['channels']),
+#                     ('tasks', ['channels']),
 #                 ]
 #             ),
 #             (
@@ -51,7 +51,7 @@
 #                     ('counts', ['readings', 'readings_context']),
 #                     ('writings', ['readings']),
 #                     ('journals', ['readings']),
-#                     ('streams', ['readings']),
+#                     ('tasks', ['readings']),
 #                 ]
 #             ),
 #         ]
@@ -91,7 +91,7 @@
 # class ProgressMatcherofWritingsDepr(TableModuleDepr):
 #     Tdoms_ref1 = 'counts'
 #     Tdoms_ref2 = 'journals'
-#     TL_tar = ['projects', 'channels', 'readings']
+#     TL_tar = ['processes', 'channels', 'readings']
 #
 #     def __init__(self, root):
 #         super().__init__(root)
