@@ -1,7 +1,7 @@
 from notion_zap.apps.config import MyBlock
 from notion_zap.apps.emoji_code import EmojiCode
 from notion_zap.cli.structs import \
-    PropertyFrame as Frame, PropertyColumn as Column, PropertyMarkedValue as Value
+    PropertyFrame as Frame, PropertyColumn as Column
 
 
 class Columns:
@@ -10,11 +10,11 @@ class Columns:
     title_datetime = Column(key=EmojiCode.GREEN_BOOK + '제목', alias='title')
     title_metadata = Column(key=EmojiCode.BOOKSTACK + '제목', alias='title')
 
-    media_type = Column(key=EmojiCode.BLUE_BOOK + '유형', alias='media_type',
-                        marked_values=[Value('📌결정 전', 'empty')])
-    media_type_book = Column(alias='is_book', key='📔도서류', )
-    no_exp = Column(key=EmojiCode.BLACK_NOTEBOOK + '경험 없음', alias='no_exp', )
-    no_exp_book = Column(key=EmojiCode.BLACK_NOTEBOOK + '도서류&경험 없음', alias='no_exp_book', )
+    media_type_from_below = Column(key=EmojiCode.BLUE_BOOK + '유형', alias='media_type')
+    media_type_from_above = Column(key=EmojiCode.BLUE_BOOK + '읽기', alias='media_type')
+    media_type_is_book = Column(alias='is_book', key='📔도서류', )
+    no_exp = Column(key=EmojiCode.BLACK_NOTEBOOK + '감상 전', alias='no_exp', )
+    no_exp_book = Column(key=EmojiCode.BLACK_NOTEBOOK + '도서류&감상 전', alias='no_exp_book', )
 
     timestr = Column(key=EmojiCode.CALENDAR + '시간', alias='timestr', )
     manual_date = Column(key=EmojiCode.CALENDAR + '날짜', alias='manual_date', )
@@ -28,20 +28,17 @@ class Columns:
     dates_created = Column(key=MyBlock.dates.prefix + '생성', alias='dates_created', )
 
     journals = Column(key=MyBlock.journals.prefix_title, alias='journals', )
-    checks = Column(key=MyBlock.counts.prefix_title, alias='counts', )
+    events = Column(key=MyBlock.events.prefix_title, alias='events', )
+    notes = Column(key=MyBlock.notes.prefix_title, alias='notes', )
 
     issues = Column(key=MyBlock.issues.prefix_title, alias='issues', )
     tasks = Column(key=MyBlock.tasks.prefix_title, alias='tasks', )
 
+    streams = Column(key=MyBlock.streams.prefix_title, alias='streams', )
+    channels = Column(key=MyBlock.channels.prefix_title, alias='channels', )
+
     readings = Column(key=MyBlock.readings.prefix_title, alias='readings', )
     readings_begin = Column(key=MyBlock.readings.prefix + '시작', alias='readings_begin')
-    writings = Column(key=MyBlock.writings.prefix_title, alias='writings', )
-
-    processes = Column(key=MyBlock.processes.prefix_title, alias='processes', )
-    processes_main = Column(key=MyBlock.processes.prefix + '중심',
-                            aliases=['processes_main', 'processes'])
-    processes_side = Column(key=MyBlock.processes.prefix + '주변', alias='processes_side')
-    channels = Column(key=MyBlock.channels.prefix_title, alias='channels', )
 
     domains = Column(key=MyBlock.domains.prefix_title, alias='domains', )
     people = Column(key=MyBlock.people.prefix_title, alias='people', )
@@ -85,12 +82,24 @@ Frames: dict[MyBlock, Frame] = {
 
             Columns.itself,
             Columns.weeks,
-            Columns.journals,
+            Columns.events,
             Columns.locations, Columns.channels,
         ]
     ),
 
     MyBlock.journals: Frame(
+        SubFrames.date_auto_created, SubFrames.dates,
+        [
+            Columns.title_generic,
+            Columns.timestr,
+            Columns.dates_created,
+
+            Columns.itself,
+            Columns.streams,
+            Columns.readings, Columns.notes,
+        ]
+    ),
+    MyBlock.events: Frame(
         SubFrames.date_auto_created, SubFrames.dates,
         SubFrames.gcal,
         [
@@ -99,22 +108,21 @@ Frames: dict[MyBlock, Frame] = {
             Columns.dates_created,
 
             Columns.itself,
-            Columns.processes_main, Columns.processes_side, Columns.domains,
             Columns.channels, Columns.readings,
 
-            Columns.issues, Columns.writings,
+            Columns.issues, Columns.notes,
         ]
     ),
-    MyBlock.counts: Frame(
-        SubFrames.date_auto_created, SubFrames.dates,
+    MyBlock.notes: Frame(
+        SubFrames.date_auto_created, SubFrames.dates_begin,
         [
             Columns.title_generic,
             Columns.timestr,
-            Columns.dates_created,
 
             Columns.itself,
-            Columns.processes,
-            Columns.readings, Columns.writings,
+            Columns.readings, Columns.notes,
+            Columns.streams, Columns.channels,
+            Columns.domains, Columns.people, Columns.locations,
         ]
     ),
 
@@ -125,10 +133,10 @@ Frames: dict[MyBlock, Frame] = {
             Columns.timestr,
 
             Columns.itself,
-            Columns.journals, Columns.checks,
+            Columns.events, Columns.journals,
             Columns.tasks,
             Columns.channels,
-            Columns.readings, Columns.writings,
+            Columns.readings, Columns.notes,
         ]
     ),
     MyBlock.tasks: Frame(
@@ -146,16 +154,16 @@ Frames: dict[MyBlock, Frame] = {
         SubFrames.date_auto_created, SubFrames.dates_begin,
         [
             Columns.title_metadata,
-            Columns.media_type,
-            Columns.media_type_book,
+            Columns.media_type_from_below,
+            Columns.media_type_is_book,
             Columns.no_exp, Columns.no_exp_book,
 
             Columns.dates_created,
             Columns.itself,
-            Columns.channels,
+            Columns.streams, Columns.channels,
 
-            Columns.journals, Columns.tasks,
-            Columns.checks, Columns.writings,
+            Columns.events, Columns.tasks,
+            Columns.journals, Columns.notes,
         ]
     ),
     MyBlock.points: Frame(
@@ -164,36 +172,24 @@ Frames: dict[MyBlock, Frame] = {
             Columns.title_generic,
 
             Columns.itself,
-            Columns.journals,
-            Columns.readings, Columns.writings,
-            Columns.processes, Columns.channels,
-            Columns.domains, Columns.people, Columns.locations,
-        ]
-    ),
-    MyBlock.writings: Frame(
-        SubFrames.date_auto_created, SubFrames.dates_begin,
-        [
-            Columns.title_generic,
-            Columns.timestr,
-
-            Columns.itself,
-            Columns.readings, Columns.writings,
-            Columns.processes, Columns.channels,
+            Columns.events,
+            Columns.readings, Columns.notes,
+            Columns.streams, Columns.channels,
             Columns.domains, Columns.people, Columns.locations,
         ]
     ),
 
-    MyBlock.processes: Frame(
+    MyBlock.streams: Frame(
         SubFrames.date_auto_created,
         [
-
+            Columns.media_type_from_above,
         ]
     ),
     MyBlock.channels: Frame(
         [
             Columns.title_metadata,
-            Columns.media_type,
-            Columns.media_type_book,
+            Columns.media_type_from_above,
+            Columns.media_type_is_book,
         ]
     )
 }

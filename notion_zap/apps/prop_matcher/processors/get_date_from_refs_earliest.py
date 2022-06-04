@@ -5,7 +5,7 @@ from typing import Optional
 from notion_zap.apps.config import MyBlock
 from notion_zap.apps.prop_matcher.struct import Processor
 from notion_zap.apps.prop_matcher.utils.relation_prop_helpers import \
-    has_relation, set_relation, ReferenceInfo, get_all_pages_from_relation
+    has_relation, set_relation, RelayConfiguration, get_all_pages_from_relation
 from notion_zap.cli.editors import Database, PageRow
 from notion_zap.cli.structs import DatePropertyValue
 
@@ -28,7 +28,7 @@ class DateProcessorByEarliestRef(Processor):
         row.write_relation(key_alias='weeks', value=[])
 
     def iter_args(self):
-        ref_infos = [ReferenceInfo(self.root[MyBlock.counts], 'counts', 'dates')]
+        ref_infos = [RelayConfiguration(self.root[MyBlock.journals], 'journals', 'dates')]
         get_date = GetterByEarliestRef(self.root[MyBlock.dates], ref_infos)
         for row in self.root[MyBlock.readings].rows:
             if row.read_key_alias('no_exp'):
@@ -37,7 +37,7 @@ class DateProcessorByEarliestRef(Processor):
 
 
 class GetterByEarliestRef:
-    def __init__(self, dates: Database, ref_infos: list[ReferenceInfo]):
+    def __init__(self, dates: Database, ref_infos: list[RelayConfiguration]):
         self.dates = dates
         self.ref_infos = ref_infos
 
@@ -55,7 +55,7 @@ class EarliestDateFinder:
         self.earliest_date_row: Optional[PageRow] = None
         self.earliest_date_val = None
 
-    def collect_dates_via_reference(self, ref_info: ReferenceInfo):
+    def collect_dates_via_reference(self, ref_info: RelayConfiguration):
         refs = get_all_pages_from_relation(self.row, ref_info.reference, ref_info.tag_ref)
         dates = []
         for ref in refs:

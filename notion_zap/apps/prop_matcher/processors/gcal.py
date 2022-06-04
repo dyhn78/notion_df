@@ -31,7 +31,7 @@
 #     def __init__(self, root, calendar_id='primary'):
 #         GcalMatcherAbs.__init__(self, root)
 #         DateMatcherAbs.__init__(self, root)
-#         self.domain = self.root.journals
+#         self.domain = self.root.events
 #         self.domain_by_idx = self.domain.rows.index_by_tag(self.Tgcal_id)
 #         self.calendar_id = calendar_id
 #

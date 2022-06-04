@@ -18,14 +18,14 @@ from notion_zap.cli.editors.database.main import QueryWithCallback
 from notion_zap.cli.gateway.requestors.query.filter_struct import QueryFilter
 
 REGULAR_MATCH_OPTIONS = MatchOptions({
+    MyBlock.events: {'itself', 'weeks', 'dates', 'dates_created'},
     MyBlock.journals: {'itself', 'weeks', 'dates', 'dates_created'},
-    MyBlock.counts: {'itself', 'weeks', 'dates', 'dates_created'},
     MyBlock.issues: {'itself', 'weeks', 'dates'},
     MyBlock.tasks: {'itself', 'weeks', 'dates'},
-    MyBlock.readings: {'itself', 'weeks_begin',
+    MyBlock.readings: {'itself', ('weeks', "warning: but don't make filter"),
                        ('dates_begin', 'ignore_book_with_no_exp'), 'dates_created'},
     MyBlock.points: {'itself', 'weeks', 'dates'},
-    MyBlock.writings: {'itself', 'weeks', 'dates'},
+    MyBlock.notes: {'itself', 'weeks', 'dates'},
     MyBlock.weeks: {'itself', 'manual_date'},
     MyBlock.dates: {'itself', 'manual_date', ('weeks', 'manual_date')},
 })
@@ -79,7 +79,7 @@ class MatchFetcher:
         ft = query.open_filter()
 
         for option_key in ['itself', 'weeks', 'dates', 'dates_created']:
-            if block_key in self.option.filter_key(option_key):
+            if block_key in self.option.filter_pair(option_key):
                 ft |= manager.relation(option_key).is_empty()
         for option_key in ['manual_date']:
             if block_key in self.option.filter_key(option_key):
@@ -94,9 +94,13 @@ class MatchFetcher:
             begin &= manager.checkbox('no_exp_book').is_empty()
             ft |= begin
 
-            media_type = manager.relation('channels').is_not_empty()
-            media_type &= manager.select('media_type').is_empty()
-            ft |= media_type
+            media_type_from_channel = manager.select('media_type').is_empty()
+            media_type_from_channel &= manager.relation('channels').is_not_empty()
+            ft |= media_type_from_channel
+
+            media_type_from_streams = manager.select('media_type').is_empty()
+            media_type_from_streams &= manager.relation('streams').is_not_empty()
+            ft |= media_type_from_streams
 
         return query, ft
 

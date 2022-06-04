@@ -26,13 +26,13 @@
 #         self.root.exclude_archived = True
 #
 #     def fetch(self):
-#         self.fetch_one(self.journals)
+#         self.fetch_one(self.events)
 #
 #     def fetch_one(self, domain: editors.RowChildren):
 #         query = domain.open_query()
 #         maker = query.filter_manager_by_tags
 #         ft = query.open_filter()
-#         if domain is self.journals:
+#         if domain is self.events:
 #             ft |= maker.relation('dates').is_empty()
 #             ft |= maker.checkbox('gcal_sync_status').is_empty()
 #             ft |= maker.text('gcal_link').is_empty()

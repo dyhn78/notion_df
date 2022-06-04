@@ -14,7 +14,7 @@ def set_relation(row: PageRow, target: PageRow, key_alias_target):
     row.write_relation(key_alias=key_alias_target, value=[target.block_id])
 
 
-class ReferenceInfo:
+class RelayConfiguration:
     def __init__(
             self, reference: Database, tag_ref: Hashable, refs_tag_tar: Hashable):
         self.reference = reference
@@ -23,7 +23,7 @@ class ReferenceInfo:
 
 
 class GetterByReference(RowHandler):
-    def __init__(self, target: Database, ref_info: ReferenceInfo):
+    def __init__(self, target: Database, ref_info: RelayConfiguration):
         self.target = target
         self.ref_info = ref_info
 

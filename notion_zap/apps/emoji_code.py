@@ -9,6 +9,7 @@ class EmojiCode:
     YELLOW_STAR = '⭐'
     GREEN_CIRCLE = '🟢'
     GREEN_HEART = '💚'
+    GREEN_XBOX = '❎'
     BLUE_CIRCLE = '🔵'
     BLUE_HEART = '💙'
     PURPLE_CIRCLE = '🟣'

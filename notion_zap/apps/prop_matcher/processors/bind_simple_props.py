@@ -9,14 +9,19 @@ class BindSimpleProperties(Processor):
         super().__init__(root, option)
 
     def __call__(self):
-        for table, reference, tag_ref, tag_copy in self.args:
-            for row in table.rows:
-                if has_relation(row, tag_copy):
-                    continue
-                if tar := get_unique_page_from_relation(row, reference, tag_ref):
-                    if val_copy := tar.read_key_alias(tag_copy):
-                        row.write_select(key_alias=tag_copy, value=val_copy)
+        for table, tag_copy, ref_tuples in self.args:
+            for table_ref, tag_ref in ref_tuples:
+                for row in table.rows:
+                    if has_relation(row, tag_copy):
+                        continue
+                    if tar := get_unique_page_from_relation(row, table_ref, tag_ref):
+                        if val_copy := tar.read_key_alias(tag_copy):
+                            row.write_select(key_alias=tag_copy, value=val_copy)
+                    row.write_select(key_alias=tag_copy, value='👤직접 입력')
 
     @property
     def args(self):
-        return [(self.root[My.readings], self.root[My.channels], 'channels', 'media_type')]
+        return [(self.root[My.readings], 'media_type',
+                 [(self.root[My.channels], 'channels'),
+                  (self.root[My.streams], 'streams')]
+                 )]
