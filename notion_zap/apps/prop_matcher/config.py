@@ -13,8 +13,9 @@ class Columns:
     media_type_from_below = Column(key=EmojiCode.BLUE_BOOK + '유형', alias='media_type')
     media_type_from_above = Column(key=EmojiCode.BLUE_BOOK + '읽기', alias='media_type')
     media_type_is_book = Column(alias='is_book', key='📔도서류', )
-    no_exp = Column(key=EmojiCode.BLACK_NOTEBOOK + '감상 전', alias='no_exp', )
-    no_exp_book = Column(key=EmojiCode.BLACK_NOTEBOOK + '도서류&감상 전', alias='no_exp_book', )
+    on_bucket = Column(key=EmojiCode.BLACK_NOTEBOOK + '버킷', alias='on_bucket')
+    no_exp = Column(key=EmojiCode.BLACK_NOTEBOOK + '시작 전', alias='no_exp', )
+    no_exp_book = Column(key=EmojiCode.BLACK_NOTEBOOK + '시작 전&도서류', alias='no_exp_book', )
 
     timestr = Column(key=EmojiCode.CALENDAR + '시간', alias='timestr', )
     manual_date = Column(key=EmojiCode.CALENDAR + '날짜', alias='manual_date', )
@@ -32,7 +33,7 @@ class Columns:
     notes = Column(key=MyBlock.notes.prefix_title, alias='notes', )
 
     issues = Column(key=MyBlock.issues.prefix_title, alias='issues', )
-    tasks = Column(key=MyBlock.tasks.prefix_title, alias='tasks', )
+    targets = Column(key=MyBlock.targets.prefix_title, alias='targets', )
 
     streams = Column(key=MyBlock.streams.prefix_title, alias='streams', )
     channels = Column(key=MyBlock.channels.prefix_title, alias='channels', )
@@ -110,7 +111,7 @@ Frames: dict[MyBlock, Frame] = {
             Columns.itself,
             Columns.channels, Columns.readings,
 
-            Columns.issues, Columns.notes,
+            Columns.targets, Columns.notes,
         ]
     ),
     MyBlock.notes: Frame(
@@ -130,23 +131,23 @@ Frames: dict[MyBlock, Frame] = {
         SubFrames.date_auto_created, SubFrames.dates_begin,
         [
             Columns.title_generic,
-            Columns.timestr,
-
-            Columns.itself,
-            Columns.events, Columns.journals,
-            Columns.tasks,
-            Columns.channels,
-            Columns.readings, Columns.notes,
-        ]
-    ),
-    MyBlock.tasks: Frame(
-        SubFrames.date_auto_created, SubFrames.dates_begin,
-        [
-            Columns.title_generic,
 
             Columns.itself,
             Columns.people, Columns.locations, Columns.channels,
             Columns.readings,
+        ]
+    ),
+    MyBlock.targets: Frame(
+        SubFrames.date_auto_created, SubFrames.dates_begin,
+        [
+            Columns.title_generic,
+            Columns.timestr,
+
+            Columns.itself,
+            Columns.events, Columns.journals,
+            Columns.issues,
+            Columns.channels,
+            Columns.readings, Columns.notes,
         ]
     ),
 
@@ -156,13 +157,13 @@ Frames: dict[MyBlock, Frame] = {
             Columns.title_metadata,
             Columns.media_type_from_below,
             Columns.media_type_is_book,
-            Columns.no_exp, Columns.no_exp_book,
+            Columns.no_exp, Columns.no_exp_book, Columns.on_bucket,
 
             Columns.dates_created,
             Columns.itself,
             Columns.streams, Columns.channels,
 
-            Columns.events, Columns.tasks,
+            Columns.events, Columns.issues,
             Columns.journals, Columns.notes,
         ]
     ),

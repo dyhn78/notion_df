@@ -20,8 +20,8 @@ from notion_zap.cli.gateway.requestors.query.filter_struct import QueryFilter
 REGULAR_MATCH_OPTIONS = MatchOptions({
     MyBlock.events: {'itself', 'weeks', 'dates', 'dates_created'},
     MyBlock.journals: {'itself', 'weeks', 'dates', 'dates_created'},
+    MyBlock.targets: {'itself', 'weeks', 'dates'},
     MyBlock.issues: {'itself', 'weeks', 'dates'},
-    MyBlock.tasks: {'itself', 'weeks', 'dates'},
     MyBlock.readings: {'itself', ('weeks', "warning: but don't make filter"),
                        ('dates_begin', 'ignore_book_with_no_exp'), 'dates_created'},
     MyBlock.points: {'itself', 'weeks', 'dates'},
@@ -86,13 +86,19 @@ class MatchFetcher:
                 ft |= manager.date(option_key).is_empty()
 
         if block_key is MyBlock.readings:
-            begin = manager.relation('weeks_begin').is_empty()
-            begin &= manager.checkbox('no_exp_book').is_empty()
-            ft |= begin
+            weeks_begin = manager.relation('weeks_begin').is_empty()
+            weeks_begin &= manager.relation('dates_begin').is_not_empty()
+            ft |= weeks_begin
 
-            begin = manager.relation('dates_begin').is_empty()
-            begin &= manager.checkbox('no_exp_book').is_empty()
-            ft |= begin
+            dates_begin_book = manager.relation('dates_begin').is_empty()
+            dates_begin_book &= manager.checkbox('is_book').is_not_empty()
+            dates_begin_book &= manager.checkbox('no_exp').is_empty()
+            ft |= dates_begin_book
+
+            dates_begin_not_book = manager.relation('dates_begin').is_empty()
+            dates_begin_not_book &= manager.checkbox('is_book').is_empty()
+            dates_begin_not_book &= manager.checkbox('on_bucket').is_empty()
+            ft |= dates_begin_not_book
 
             media_type_from_channel = manager.select('media_type').is_empty()
             media_type_from_channel &= manager.relation('channels').is_not_empty()

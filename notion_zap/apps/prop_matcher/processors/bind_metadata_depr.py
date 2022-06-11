@@ -21,7 +21,7 @@
 #                     ('journals', ['streams', 'projects_context']),
 #                     ('notes', ['streams', 'projects_context']),
 #                     ('events', ['streams']),
-#                     ('tasks', ['streams']),
+#                     ('issues', ['streams']),
 #                 ]
 #             ),
 #             (
@@ -31,7 +31,7 @@
 #                     ('journals', ['domains_context']),
 #                     ('notes', ['domains']),
 #                     ('events', ['domains']),
-#                     ('tasks', ['domains']),
+#                     ('issues', ['domains']),
 #                 ]
 #             ),
 #             (
@@ -41,7 +41,7 @@
 #                     ('journals', ['channels', 'channels_context']),
 #                     ('notes', ['channels']),
 #                     ('events', ['channels']),
-#                     ('tasks', ['channels']),
+#                     ('issues', ['channels']),
 #                 ]
 #             ),
 #             (
@@ -51,7 +51,7 @@
 #                     ('journals', ['readings', 'readings_context']),
 #                     ('notes', ['readings']),
 #                     ('events', ['readings']),
-#                     ('tasks', ['readings']),
+#                     ('issues', ['readings']),
 #                 ]
 #             ),
 #         ]
