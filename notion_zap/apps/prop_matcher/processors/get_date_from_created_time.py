@@ -36,11 +36,11 @@ class DateProcessorByCreatedTime(Processor):
         for table in self.root.get_blocks(self.option.filter_key('dates_created')):
             for row in table.rows:
                 yield row, 'dates_created'
-        for table in self.root.get_blocks(self.option.filter_pair('dates')):
+        for table in self.root.get_blocks(self.option.filter_key('dates')):
             for row in table.rows:
                 yield row, 'dates'
         for table in self.root.get_blocks(
-                self.option.filter_pair('dates_begin', 'ignore_book_with_no_exp')):
+                self.option.filter_key('dates_begin')):
             for row in table.rows:
                 if not row.read_key_alias('no_exp'):
                     yield row, 'dates'
