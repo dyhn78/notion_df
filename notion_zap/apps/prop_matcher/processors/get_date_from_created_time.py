@@ -42,7 +42,7 @@ class DateProcessorByCreatedTime(Processor):
         for table in self.root.get_blocks(
                 self.option.filter_key('dates_begin')):
             for row in table.rows:
-                if not row.read_key_alias('no_exp'):
+                if row.read_key_alias('get_dates_begin_from_created_time'):
                     yield row, 'dates'
 
 

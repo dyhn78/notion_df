@@ -93,10 +93,14 @@ class MatchFetcher:
             weeks_begin &= manager.relation('dates_begin').is_not_empty()
             ft |= weeks_begin
 
-            dates_begin = manager.relation('dates_begin').is_empty()
-            dates_begin &= manager.checkbox('on_bucket').is_empty()
-            dates_begin &= manager.checkbox('no_exp_book').is_empty()
-            ft |= dates_begin
+            dates_begin_by_earliest_ref = manager.relation('dates_begin').is_empty()
+            dates_begin_by_earliest_ref &= manager.relation('journals').is_not_empty()
+            ft |= dates_begin_by_earliest_ref
+
+            dates_begin_from_created_time = manager.relation('dates_begin').is_empty()
+            dates_begin_from_created_time &= manager.checkbox(
+                'get_dates_begin_from_created_time').is_not_empty()
+            ft |= dates_begin_from_created_time
 
             media_type_from_channel = manager.select('media_type').is_empty()
             media_type_from_channel &= manager.relation('channels').is_not_empty()

@@ -13,9 +13,9 @@ class Columns:
     media_type_from_below = Column(key=EmojiCode.BLUE_BOOK + '유형', alias='media_type')
     media_type_from_above = Column(key=EmojiCode.BLUE_BOOK + '읽기', alias='media_type')
     media_type_is_book = Column(alias='is_book', key='📔도서류', )
-    on_bucket = Column(key=EmojiCode.BLACK_NOTEBOOK + '버킷', alias='on_bucket')
-    no_exp = Column(key=EmojiCode.BLACK_NOTEBOOK + '시작 전', alias='no_exp', )
-    no_exp_book = Column(key=EmojiCode.BLACK_NOTEBOOK + '시작 전&도서류', alias='no_exp_book', )
+    get_dates_begin_from_created_time = Column(
+        alias='get_dates_begin_from_created_time',
+        key=EmojiCode.BLACK_NOTEBOOK + '시작일<-생성시간')
 
     timestr = Column(key=EmojiCode.CALENDAR + '시간', alias='timestr', )
     manual_date = Column(key=EmojiCode.CALENDAR + '날짜', alias='manual_date', )
@@ -157,7 +157,7 @@ Frames: dict[MyBlock, Frame] = {
             Columns.title_metadata,
             Columns.media_type_from_below,
             Columns.media_type_is_book,
-            Columns.no_exp, Columns.no_exp_book, Columns.on_bucket,
+            Columns.get_dates_begin_from_created_time,
 
             Columns.dates_created,
             Columns.itself,
