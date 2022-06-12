@@ -31,8 +31,6 @@ class DateProcessorByEarliestRef(Processor):
         ref_infos = [RelayConfiguration(self.root[MyBlock.journals], 'journals', 'dates')]
         get_date = GetterByEarliestRef(self.root[MyBlock.dates], ref_infos)
         for row in self.root[MyBlock.readings].rows:
-            if row.read_key_alias('on_bucket') or row.read_key_alias('no_exp_book'):
-                continue
             yield row, 'dates_begin', get_date
 
 
