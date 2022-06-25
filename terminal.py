@@ -8,6 +8,7 @@ from notion_zap.cli.utility import stopwatch
 def main():
     controller = MatchController()
     controller(request_size=20)
+    print('='*40)
     controller = RegularScrapController(targets={'metadata', 'gy'})
     controller(request_size=5)
     stopwatch('모든 작업 완료')
