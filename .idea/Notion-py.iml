@@ -9,6 +9,7 @@
   </component>
   <component name="PackageRequirementsSettings">
     <option name="versionSpecifier" value="강력한 상등 (==x.y.z)" />
+    <option name="removeUnused" value="true" />
     <option name="modifyBaseFiles" value="true" />
   </component>
   <component name="PyDocumentationSettings">
