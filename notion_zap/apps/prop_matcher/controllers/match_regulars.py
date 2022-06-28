@@ -67,7 +67,8 @@ class MatchFetcher:
         self.option = option
 
     def __call__(self, request_size=0):
-        for block_key in self.option:
+        block_keys = (block for block in MyBlock if block in self.option)
+        for block_key in block_keys:
             query, ft = self.get_query_filter(block_key)
             query.push_filter(ft)
             query.execute(request_size)
