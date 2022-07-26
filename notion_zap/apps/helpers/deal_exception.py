@@ -1,9 +1,10 @@
 import datetime as dt
 import traceback
 from typing import Callable
+
 import pytz
 
-from notion_zap.cli.editors import Root
+from notion_zap.cli.editors import Root, TextItem
 
 LOCAL_TIMEZONE = pytz.timezone('Asia/Seoul')
 LOG_DEST_ID = '6d16dc6747394fca95dc169c8c736e2d'
@@ -16,8 +17,9 @@ class ExceptionLogger:
         log_page = self.root.space.page_item(LOG_DEST_ID, "[NP.log] 서버 로그")
         log_page.children.fetch()
         for child in log_page.children[:-30]:
-            child.archive()
-        log_page.save()
+            child: TextItem
+            child.requestor.delete()
+        # log_page.save()
         self.log_block = log_page.children.open_new_text()
         self.log_contents = self.log_block.write_rich_paragraph()
 

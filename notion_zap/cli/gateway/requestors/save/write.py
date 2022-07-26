@@ -1,7 +1,7 @@
 from typing import Any, Optional
 
-from notion_zap.cli.utility import stopwatch, id_to_url
 from notion_zap.cli.editors.structs.block_main import Component
+from notion_zap.cli.utility import stopwatch, id_to_url
 from .stash import BlockChildrenStash, PagePropertyStash
 from ..structs import Requestor, print_response_error, drop_empty_request
 from ...encoders import ContentsEncoder
@@ -151,6 +151,12 @@ class UpdateBlock(Requestor):
             form = ['update_block', self.target_url]
         comments = ' '.join(form)
         stopwatch(comments)
+
+    @print_response_error
+    def delete(self):
+        res = self.client.blocks.delete(self.target_id)
+        self.print_comments()
+        return res
 
 
 class AppendBlockChildren(Requestor, BlockChildrenStash):
