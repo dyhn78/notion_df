@@ -24,22 +24,22 @@ class ExceptionLogger:
     def __call__(self, func: Callable) -> Callable:
         def wrapper(*args):
             start_time = dt.datetime.now()
-            mention_message = ""
             time_message = f"last execution: {start_time.astimezone(LOCAL_TIMEZONE).strftime('%Y-%m-%d %H:%M:%S')}"
             traceback_message = ""
             try:
                 func(*args)
             except Exception as err:
                 self.log_contents.mention_user(MY_USER_ID)
+                self.log_contents.write_text('\n')
                 with open('debug.log', 'w+', encoding='utf-8') as log_file:
                     traceback.print_exc(file=log_file)
                     log_file.seek(0)
-                    traceback_message = log_file.read()
+                    traceback_message = "\n" + log_file.read()
                 raise err
             finally:
                 delta = dt.datetime.now() - start_time
                 time_message += f" ({delta.seconds}.{str(delta.microseconds)[:3]} seconds)"
-                self.log_contents.write_text("\n".join([mention_message, time_message, traceback_message]).strip())
+                self.log_contents.write_text(time_message + traceback_message)
                 self.log_block.save()
 
         return wrapper
