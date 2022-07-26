@@ -14,7 +14,6 @@ class ItemsUpdater(ListEditor):
         from ..item import Item
         from ...items.parser_logic import get_type_of_block_parser
         for parser in children_parser:
-            print(parser)
             block_type = get_type_of_block_parser(parser)
             child = block_type(self.caller, parser.block_id)
             if isinstance(child, Item):
