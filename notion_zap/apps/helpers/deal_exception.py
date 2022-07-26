@@ -51,7 +51,7 @@ class ExceptionLogger:
 
     def __call__(self, func: Callable) -> Callable:
         def wrapper(*args):
-            message = f"last execution: {dt.datetime.now()}" + "\n"
+            message = f"last execution: {dt.datetime.now()}"
             try:
                 func(*args)
             except Exception as err:
