@@ -11,9 +11,9 @@ def main():
     print('='*40)
     controller = RegularScrapController(targets={'metadata', 'gy'})
     controller(request_size=5)
-    stopwatch('모든 작업 완료')
 
 
 if __name__ == '__main__':
     main()
+    stopwatch('모든 작업 완료')
     # x = input("아무 키나 누르십시오...")
