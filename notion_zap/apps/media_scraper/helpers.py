@@ -1,10 +1,10 @@
 from typing import Callable, Any, Iterable
 
-import emoji
+from emoji import demojize
 
 
-def remove_emoji(text: str):
-    return emoji.get_emoji_regexp().sub(u'', text)
+def remove_emojis(data):
+    demojize(data)
 
 
 def enumerate_method(function: Callable[[Any, str], Any]):
