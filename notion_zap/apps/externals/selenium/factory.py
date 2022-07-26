@@ -10,8 +10,8 @@ from notion_zap.cli.utility import stopwatch
 
 
 class WebDriverFactory:
-    ON_WINDOWS = os.name == 'nt'
     ON_LINUX = os.name == 'posix'
+    ON_WINDOWS = os.name == 'nt'
 
     def __init__(self, create_window=False):
         self.drivers: list[webdriver.Chrome] = []
@@ -30,11 +30,13 @@ class WebDriverFactory:
         return driver
 
     @classmethod
-    def get_driver_path(cls):
+    def get_driver_path(cls) -> str:
+        pwd = os.path.dirname(__file__)
         if cls.ON_WINDOWS:
-            return os.path.join(os.path.dirname(__file__), 'chromedriver.exe')
-        elif cls.ON_LINUX:
-            return os.path.join(os.path.dirname(__file__), 'chromedriver_linux')
+            default = os.path.join(pwd, 'chromedriver.exe')
+        else:
+            default = os.path.join(pwd, 'chromedriver')
+        return os.environ.get("CHROMEDRIVER_PATH", default)
 
 
     def get_service_without_window(self):
