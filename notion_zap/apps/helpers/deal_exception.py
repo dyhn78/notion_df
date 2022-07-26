@@ -16,7 +16,7 @@ class ExceptionLogger:
         self.root = Root()
         self.log_page = self.root.space.page_item(LOG_DEST_ID, "[NP.log] 서버 로그")
         self.log_page.children.fetch()
-        for child in self.log_page.children[:-30]:
+        for child in self.log_page.children[:-10]:
             child: TextItem
             child.requestor.delete()
         # log_page.save() -- TODO
