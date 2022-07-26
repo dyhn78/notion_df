@@ -24,6 +24,7 @@ class ExceptionLogger:
     def __call__(self, func: Callable) -> Callable:
         def wrapper(*args):
             start_time = dt.datetime.now()
+            mention_message = ""
             time_message = f"last execution: {start_time.astimezone(LOCAL_TIMEZONE).strftime('%Y-%m-%d %H:%M:%S')}"
             traceback_message = ""
             try:
@@ -36,9 +37,9 @@ class ExceptionLogger:
                     traceback_message = log_file.read()
                 raise err
             finally:
-                time_elapsed = dt.datetime.now() - start_time
-                time_message += f" ({time_elapsed.seconds}.{str(time_elapsed.microseconds)[:3]} seconds)"
-                self.log_contents.write_text('\n'.join([time_message, traceback_message]).strip())
+                delta = dt.datetime.now() - start_time
+                time_message += f" ({delta.seconds}.{str(delta.microseconds)[:3]} seconds)"
+                self.log_contents.write_text("\n".join([mention_message, time_message, traceback_message]).strip())
                 self.log_block.save()
 
         return wrapper
