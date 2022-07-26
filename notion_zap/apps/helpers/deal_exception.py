@@ -31,8 +31,6 @@ class ExceptionLogger:
             try:
                 func(*args)
             except Exception as err:
-                for child in self.log_page.children[:-1]:
-                    child.requestor.delete()
                 self.log_contents.mention_user(MY_USER_ID)
                 self.log_contents.write_text('\n')
                 with open('debug.log', 'w+', encoding='utf-8') as log_file:
