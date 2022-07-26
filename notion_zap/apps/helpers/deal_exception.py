@@ -16,11 +16,11 @@ class ExceptionLogger:
         self.root = Root()
         self.log_page = self.root.space.page_item(LOG_DEST_ID, "[NP.log] 서버 로그")
         self.log_page.children.fetch()
-        for child in self.log_page.children[:-10]:
+        for child in self.log_page.children[:-5]:
             child: TextItem
             child.requestor.delete()
         # log_page.save() -- TODO
-        self.log_block = log_page.children.open_new_text()
+        self.log_block = self.log_page.children.open_new_text()
         self.log_contents = self.log_block.write_rich_paragraph()
 
     def __call__(self, func: Callable) -> Callable:
@@ -31,6 +31,10 @@ class ExceptionLogger:
             try:
                 func(*args)
             except Exception as err:
+                for child in self.log_page.children:
+                    child: TextItem
+                    if child.block_id:
+                        child.requestor.delete()
                 self.log_contents.mention_user(MY_USER_ID)
                 self.log_contents.write_text('\n')
                 with open('debug.log', 'w+', encoding='utf-8') as log_file:
