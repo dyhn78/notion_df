@@ -14,12 +14,12 @@ MY_USER_ID = 'a007d150-bc67-422c-87db-030a71867dd9'
 class ExceptionLogger:
     def __init__(self):
         self.root = Root()
-        log_page = self.root.space.page_item(LOG_DEST_ID, "[NP.log] 서버 로그")
-        log_page.children.fetch()
-        for child in log_page.children[:-30]:
+        self.log_page = self.root.space.page_item(LOG_DEST_ID, "[NP.log] 서버 로그")
+        self.log_page.children.fetch()
+        for child in self.log_page.children[:-30]:
             child: TextItem
             child.requestor.delete()
-        # log_page.save()
+        # log_page.save() -- TODO
         self.log_block = log_page.children.open_new_text()
         self.log_contents = self.log_block.write_rich_paragraph()
 
@@ -31,6 +31,8 @@ class ExceptionLogger:
             try:
                 func(*args)
             except Exception as err:
+                for child in self.log_page.children[:-1]:
+                    child.requestor.delete()
                 self.log_contents.mention_user(MY_USER_ID)
                 self.log_contents.write_text('\n')
                 with open('debug.log', 'w+', encoding='utf-8') as log_file:
