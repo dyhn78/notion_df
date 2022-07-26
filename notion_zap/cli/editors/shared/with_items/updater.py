@@ -14,11 +14,12 @@ class ItemsUpdater(ListEditor):
         from ..item import Item
         from ...items.parser_logic import get_type_of_block_parser
         for parser in children_parser:
+            print(parser)
             block_type = get_type_of_block_parser(parser)
             child = block_type(self.caller, parser.block_id)
             if isinstance(child, Item):
                 child.apply_block_parser(parser)
-            self.attach_item(child)
+            # do not self.attach_item(child); child will attach to parent themselves
 
     def attach_item(self, child):
         self.values.append(child)

@@ -1,10 +1,10 @@
 from notion_zap.apps.media_scraper.controllers.scrap_regulars import RegularScrapController
 from notion_zap.apps.prop_matcher.controllers.match_regulars import MatchController
-from notion_zap.apps.helpers.deal_exception import deal_exception_with_logs
+from notion_zap.apps.helpers.deal_exception import deal_exception_with_logs, ExceptionLogger
 from notion_zap.cli.utility import stopwatch
 
 
-@deal_exception_with_logs
+@ExceptionLogger()
 def main():
     controller = MatchController()
     controller(request_size=20)

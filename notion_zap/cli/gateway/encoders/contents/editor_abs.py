@@ -50,6 +50,9 @@ class RichTextContentsWriter(ABC):
     def write_rich_toggle(self) -> RichTextContentsEncoder:
         return self.push_encoder(RichTextContentsEncoder('toggle', True))
 
+    def write_rich_code_block(self) -> RichTextContentsEncoder:
+        return self.push_encoder(RichTextContentsEncoder('code', True))
+
 
 class TextContentsWriter(RichTextContentsWriter, metaclass=ABCMeta):
     def write_paragraph(self, value: str) -> RichTextContentsEncoder:
@@ -89,6 +92,11 @@ class TextContentsWriter(RichTextContentsWriter, metaclass=ABCMeta):
 
     def write_toggle(self, value: str) -> RichTextContentsEncoder:
         writer = self.write_rich_toggle()
+        writer.write_text(value)
+        return writer
+
+    def write_code_block(self, value: str) -> RichTextContentsEncoder:
+        writer = self.write_rich_code_block()
         writer.write_text(value)
         return writer
 

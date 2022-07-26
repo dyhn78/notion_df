@@ -48,6 +48,9 @@ class ItemChildren(Children):
     def __getitem__(self, idx: int):
         return self.list_all()[idx]
 
+    def __len__(self):
+        return len(self.list_all())
+
     def list_all(self) -> list[Block]:
         return self._updater.values + self._creator.values
 
