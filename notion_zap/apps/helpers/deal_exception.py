@@ -39,7 +39,7 @@ class ExceptionLogger:
             finally:
                 delta = dt.datetime.now() - start_time
                 time_message += f" ({delta.seconds}.{str(delta.microseconds)[:3]} seconds)"
-                self.log_contents.write_text(time_message + traceback_message)
+                self.log_contents.write_text(time_message + traceback_message[-1800:])
                 self.log_block.save()
 
         return wrapper

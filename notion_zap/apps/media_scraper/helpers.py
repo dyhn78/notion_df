@@ -1,11 +1,5 @@
 from typing import Callable, Any, Iterable
 
-from emoji import demojize
-
-
-def remove_emojis(data):
-    demojize(data)
-
 
 def enumerate_method(function: Callable[[Any, str], Any]):
     def wrapper(self, strings: Iterable[str]):

@@ -1,5 +1,6 @@
+from emoji import demojize
+
 from notion_zap.apps.externals.selenium.factory import WebDriverFactory
-from notion_zap.apps.media_scraper.helpers import remove_emoji
 from notion_zap.apps.media_scraper.location.lib_struct import (
     LibraryScrapBase, LibraryScrapResult)
 from notion_zap.apps.media_scraper.location.lib_gy import GoyangLibraryScrapBase
@@ -30,7 +31,7 @@ class LibraryScrapManager:
             manager.mark_exception('no_location')
 
     def scrap(self, *titles: str) -> dict[str, LibraryScrapResult]:
-        titles = set(remove_emoji(title) for title in titles)
+        titles = set(demojize(title) for title in titles)
         results = {}
         for key, base in self.bases.items():
             for title in titles:
