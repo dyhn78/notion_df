@@ -37,7 +37,7 @@ class ExceptionLogger:
                 raise err
             finally:
                 time_elapsed = dt.datetime.now() - start_time
-                time_message += f" ({str(time_elapsed)}"
+                time_message += f" ({time_elapsed.seconds}.{str(time_elapsed.microseconds)[:3]} seconds)"
                 self.log_contents.write_text('\n'.join([time_message, traceback_message]))
                 self.log_block.save()
 
