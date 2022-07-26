@@ -1,14 +1,15 @@
 from enum import Enum
 
-from notion_zap.apps.emoji_code import EmojiCode
+from notion_zap.cli.utility.page_id_to_url import url_to_id
+from notion_zap.apps.helpers.emoji_code import EmojiCode
 
 
 class MyBlock(Enum):
-    def __new__(cls, title: str, id_or_url: str, prefix=''):
+    def __new__(cls, title: str, id_or_url: str, prefix: str):
         obj = object.__new__(cls)
         obj._value_ = title
         obj.title = title
-        obj.id_or_url = id_or_url
+        obj.block_id = url_to_id(id_or_url)
         obj.prefix = prefix
         return obj
 
@@ -44,4 +45,4 @@ if __name__ == '__main__':
     # for testing
     from notion_zap.cli.utility.page_id_to_url import id_to_url
 
-    print(id_to_url(MyBlock.events.id_or_url))
+    print(id_to_url(MyBlock.events.block_id))

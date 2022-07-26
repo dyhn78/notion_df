@@ -1,5 +1,5 @@
 from notion_zap.apps.config import MyBlock
-from notion_zap.apps.emoji_code import EmojiCode
+from notion_zap.apps.helpers.emoji_code import EmojiCode
 from notion_zap.cli.structs import \
     PropertyFrame as Frame, PropertyColumn as Column
 

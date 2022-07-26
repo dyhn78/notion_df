@@ -49,7 +49,7 @@ def init_root(exclude_archived=True, print_heads=5, print_request_formats=False)
                 exclude_archived=exclude_archived)
     for key in MyBlock:
         key: MyBlock
-        block = root.space.database(key.id_or_url, key, Frames.get(key))
+        block = root.space.database(key.block_id, key, Frames.get(key))
         block.title = key.title
     return root
 

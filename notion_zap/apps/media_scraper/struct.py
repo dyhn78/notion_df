@@ -9,7 +9,7 @@ class ReadingTableEditor:
     def __init__(self):
         self.root = editors.Root(print_response_heads=5)
         self.table = self.root.space.database(
-            MyBlock.readings.id_or_url, MyBlock.readings.title, READING_FRAME)
+            MyBlock.readings.block_id, MyBlock.readings.title, READING_FRAME)
 
 
 class ReadingPageManager:
