@@ -17,6 +17,7 @@ class BindSimpleProperties(Processor):
                     if tar := get_unique_page_from_relation(row, table_ref, tag_ref):
                         if val_copy := tar.read_key_alias(tag_copy):
                             row.write_select(key_alias=tag_copy, value=val_copy)
+                            continue
                     row.write_select(key_alias=tag_copy, value='👤직접 입력')
 
     @property

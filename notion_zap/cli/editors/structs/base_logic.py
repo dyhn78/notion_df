@@ -78,6 +78,10 @@ class Registry(BaseComponent, metaclass=ABCMeta):
 
 
 class Root(Registry):
+    @property
+    def token(self) -> str:
+        return os.environ['NOTION_TOKEN'].strip("'").strip('"')
+
     def __init__(
             self,
             async_client=False,
@@ -127,10 +131,6 @@ class Root(Registry):
 
     def get_blocks(self, keys: Iterable[Hashable]):
         return [self[key] for key in keys]
-
-    @property
-    def token(self):
-        return os.environ['NOTION_TOKEN'].strip("'").strip('"')
 
     def eval_as_not_empty(self, value) -> bool:
         if isinstance(value, DatePropertyValue):

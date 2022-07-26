@@ -11,26 +11,26 @@ from notion_zap.apps.prop_matcher.processors.get_week_from_manual_date \
     import WeekProcessorFromManualDate
 from notion_zap.apps.prop_matcher.processors.get_week_from_ref_date \
     import WeekProcessorFromRefDate
-from notion_zap.apps.prop_matcher.processors.match_to_itself import SelfProcessor
+from notion_zap.apps.prop_matcher.processors.match_to_itself import SelfProcessorDepr
 from notion_zap.apps.prop_matcher.struct import MatchOptions, init_root, Saver
 from notion_zap.cli.editors import Root
 from notion_zap.cli.editors.database.main import QueryWithCallback
 from notion_zap.cli.gateway.requestors.query.filter_struct import QueryFilter
 
 REGULAR_MATCH_OPTIONS = MatchOptions({
-    MyBlock.journals: {'itself', 'weeks', 'dates', 'dates_created'},
-    MyBlock.events: {'itself', 'weeks', 'dates', 'dates_created'},
+    MyBlock.journals: {'weeks', 'dates', 'dates_created'},
+    MyBlock.events: {'weeks', 'dates', 'dates_created'},
 
-    MyBlock.issues: {'itself', 'weeks', 'dates'},
-    MyBlock.targets: {'itself', 'weeks', 'dates'},
+    MyBlock.issues: {'weeks', 'dates'},
+    MyBlock.targets: {'weeks', 'dates'},
 
-    MyBlock.readings: {'itself', ('weeks', "warning: but don't make filter"),
+    MyBlock.readings: {('weeks', "warning: but don't make filter"),
                        ('dates', "warning: but don't make filter"),
                        'dates_begin', 'dates_created'},
-    MyBlock.points: {'itself', 'weeks', 'dates'},
-    MyBlock.notes: {'itself', 'weeks', 'dates'},
-    MyBlock.weeks: {'itself', 'manual_date'},
-    MyBlock.dates: {'itself', 'manual_date', ('weeks', 'manual_date')},
+    MyBlock.points: {'weeks', 'dates'},
+    MyBlock.notes: {'weeks', 'dates'},
+    MyBlock.weeks: {'manual_date'},
+    MyBlock.dates: {'manual_date', ('weeks', 'manual_date')},
 })
 
 
@@ -50,7 +50,7 @@ class MatchController:
             DateProcessorByCreatedTime(self.root, self.option),
             WeekProcessorFromManualDate(self.root, self.option),
             WeekProcessorFromRefDate(self.root, self.option),
-            SelfProcessor(self.root, self.option),
+            SelfProcessorDepr(self.root, self.option),
             BindSimpleProperties(self.root, self.option),
             Saver(self.root),
         ]
@@ -82,7 +82,7 @@ class MatchFetcher:
         manager = query.filter_manager_by_tags
         ft = query.open_filter()
 
-        for option_key in ['itself', 'weeks', 'dates', 'dates_created']:
+        for option_key in ['weeks', 'dates', 'dates_created']:
             if block_key in self.option.filter_pair(option_key):
                 ft |= manager.relation(option_key).is_empty()
         for option_key in ['manual_date']:

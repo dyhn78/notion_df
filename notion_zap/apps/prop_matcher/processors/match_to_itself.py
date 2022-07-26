@@ -1,7 +1,7 @@
 from notion_zap.apps.prop_matcher.struct import Processor
 
 
-class SelfProcessor(Processor):
+class SelfProcessorDepr(Processor):
     def __call__(self):
         for table in self.root.get_blocks(self.option.filter_key('itself')):
             for row in table.rows:

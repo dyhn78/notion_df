@@ -7,7 +7,7 @@ from notion_zap.cli.editors import PageRow, Database
 
 
 def has_relation(row: PageRow, key_alias_target):
-    return bool(row.read_key_alias(key_alias_target))
+    return bool(row.get_key_alias(key_alias_target))
 
 
 def set_relation(row: PageRow, target: PageRow, key_alias_target):
