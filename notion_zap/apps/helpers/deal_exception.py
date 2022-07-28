@@ -16,10 +16,6 @@ class ExceptionLogger:
         self.root = Root()
         self.log_page = self.root.space.page_item(LOG_DEST_ID, "[NP.log] 서버 로그")
         self.log_page.children.fetch()
-        for child in self.log_page.children[:-30]:
-            child: TextItem
-            child.requestor.delete()
-        # log_page.save() -- TODO
         self.log_block = self.log_page.children.open_new_text()
         self.log_contents = self.log_block.write_rich_paragraph()
 
@@ -30,6 +26,9 @@ class ExceptionLogger:
             traceback_message = ""
             try:
                 func(*args)
+                for child in self.log_page.children[:-30]:
+                    child.requestor.delete()
+                # log_page.save() -- TODO
             except Exception as err:
                 for child in self.log_page.children:
                     child: TextItem
