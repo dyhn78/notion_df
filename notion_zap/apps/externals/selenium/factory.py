@@ -6,6 +6,8 @@ from selenium.common.exceptions import (
     NoSuchElementException, StaleElementReferenceException)
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
+
 from notion_zap.cli.utility import stopwatch
 
 
@@ -21,12 +23,12 @@ class WebDriverFactory:
         if create_window is None:
             create_window = self.create_window
         if create_window:
-            driver = webdriver.Chrome(self.get_driver_path())
+            driver = webdriver.Chrome(ChromeDriverManager().install())
         else:
-            driver = webdriver.Chrome(service=self.get_service_without_window(),
+            driver = webdriver.Chrome(ChromeDriverManager().install(),
+                                      service=self.get_service_without_window(),
                                       options=self.get_options())
         self.drivers.append(driver)
-        # driver.start_client()
         return driver
 
     @classmethod
