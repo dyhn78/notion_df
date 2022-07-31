@@ -19,7 +19,7 @@ class WebDriverFactory:
         self.drivers: list[webdriver.Chrome] = []
         self.create_window = create_window
 
-    def __call__(self, create_window: Optional[bool] = None):
+    def __call__(self, create_window: Optional[bool] = None) -> webdriver.Chrome:
         if create_window is None:
             create_window = self.create_window
         if create_window:
@@ -33,12 +33,13 @@ class WebDriverFactory:
 
     @classmethod
     def get_driver_path(cls) -> str:
+        if path := os.environ.get("CHROMEDRIVER_PATH"):
+            return path
         pwd = os.path.dirname(__file__)
         if cls.ON_WINDOWS:
-            default = os.path.join(pwd, 'chromedriver.exe')
+            return os.path.join(pwd, 'chromedriver.exe')
         else:
-            default = os.path.join(pwd, 'chromedriver')
-        return os.environ.get("CHROMEDRIVER_PATH", default)
+            return os.path.join(pwd, 'chromedriver')
 
 
     def get_service_without_window(self):
