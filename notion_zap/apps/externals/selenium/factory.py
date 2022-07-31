@@ -65,7 +65,7 @@ def retry_webdriver(function: Callable, recursion_limit=1) -> Callable:
     def wrapper(self, *args):
         for recursion in range(recursion_limit):
             if recursion != 0:
-                stopwatch(f'selenium 재시작 {recursion}/{recursion_limit}회')
+                stopwatch(f'selenium 재접속 {recursion}/{recursion_limit}회')
             try:
                 response = function(self, *args)
                 return response
