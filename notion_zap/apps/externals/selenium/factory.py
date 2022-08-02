@@ -6,6 +6,8 @@ from selenium.common.exceptions import (
     NoSuchElementException, StaleElementReferenceException)
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
+
 from notion_zap.cli.utility import stopwatch
 
 
@@ -17,26 +19,27 @@ class WebDriverFactory:
         self.drivers: list[webdriver.Chrome] = []
         self.create_window = create_window
 
-    def __call__(self, create_window: Optional[bool] = None):
+    def __call__(self, create_window: Optional[bool] = None) -> webdriver.Chrome:
         if create_window is None:
             create_window = self.create_window
         if create_window:
-            driver = webdriver.Chrome(self.get_driver_path())
+            driver = webdriver.Chrome(ChromeDriverManager().install())
         else:
-            driver = webdriver.Chrome(service=self.get_service_without_window(),
+            driver = webdriver.Chrome(ChromeDriverManager().install(),
+                                      service=self.get_service_without_window(),
                                       options=self.get_options())
         self.drivers.append(driver)
-        # driver.start_client()
         return driver
 
     @classmethod
     def get_driver_path(cls) -> str:
+        if path := os.environ.get("CHROMEDRIVER_PATH"):
+            return path
         pwd = os.path.dirname(__file__)
         if cls.ON_WINDOWS:
-            default = os.path.join(pwd, 'chromedriver.exe')
+            return os.path.join(pwd, 'chromedriver.exe')
         else:
-            default = os.path.join(pwd, 'chromedriver')
-        return os.environ.get("CHROMEDRIVER_PATH", default)
+            return os.path.join(pwd, 'chromedriver')
 
 
     def get_service_without_window(self):
@@ -62,7 +65,7 @@ def retry_webdriver(function: Callable, recursion_limit=1) -> Callable:
     def wrapper(self, *args):
         for recursion in range(recursion_limit):
             if recursion != 0:
-                stopwatch(f'selenium 재시작 {recursion}/{recursion_limit}회')
+                stopwatch(f'selenium 재접속 {recursion}/{recursion_limit}회')
             try:
                 response = function(self, *args)
                 return response
