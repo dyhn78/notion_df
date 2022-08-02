@@ -24,14 +24,14 @@ class MyBlock(Enum):
     issues = ('꼭지', 'e8782fe4e1a34c9d846d57b01a370327', EmojiCode.BLUE_CIRCLE)
     targets = ('체계', 'fa7d93f6fbd341f089b185745c834811', EmojiCode.BLUE_HEART)
 
-    domains = ('주제', 'eca1ba6d4831459ca8becc283f1f8c4e', EmojiCode.ORANGE_CIRCLE)
-    projects = ('분야', '69b4e661c4ee43b6a5e40c8b28e6f9d1', EmojiCode.ORANGE_HEART)
+    projects = ('주제', '69b4e661c4ee43b6a5e40c8b28e6f9d1', EmojiCode.ORANGE_CIRCLE)
+    domains = ('분야', 'eca1ba6d4831459ca8becc283f1f8c4e', EmojiCode.ORANGE_HEART)
     channels = ('채널', '2d3f4ea770854b8e9e30abecd4d31a86', EmojiCode.ORANGE_DIAMOND)
 
     readings = ('읽기', 'c326f77425a0446a8aa309478767c85b', EmojiCode.YELLOW_CIRCLE)
     points = ('요점', '2c5411ba6a0f43a0a8aa06295751e37a', EmojiCode.YELLOW_HEART)
 
-    streams = ('줄기', 'eb2f09a1de41412e8b2357bc04f26e74', EmojiCode.RED_CIRCLE)
+    streams = ('활동', 'eb2f09a1de41412e8b2357bc04f26e74', EmojiCode.RED_CIRCLE)
     groups = ('갈래', '679c2515870d46e3a107b42cd2a5ffc3', EmojiCode.RED_HEART)
 
     people = ('인물', '3c08cdba5a044e9c9b7e31ee8509f506', EmojiCode.BROWN_CIRCLE)
