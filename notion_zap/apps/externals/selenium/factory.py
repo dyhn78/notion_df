@@ -22,7 +22,7 @@ class WebDriverFactory:
     def __call__(self, create_window: Optional[bool] = None) -> webdriver.Chrome:
         if create_window is None:
             create_window = self.create_window
-        service=ChromeService(ChromeDriverManager().install())
+        service = Service(ChromeDriverManager().install())
         if not create_window:
             service = self.get_service_without_window(service)
         driver = webdriver.Chrome(service, options=self.get_options())
