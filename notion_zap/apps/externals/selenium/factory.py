@@ -25,7 +25,7 @@ class WebDriverFactory:
         service = Service(ChromeDriverManager().install())
         if not create_window:
             service = self.get_service_without_window(service)
-        driver = webdriver.Chrome(service, options=self.get_options())
+        driver = webdriver.Chrome(service=service, options=self.get_options())
         self.drivers.append(driver)
         return driver
 
