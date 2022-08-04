@@ -22,12 +22,10 @@ class WebDriverFactory:
     def __call__(self, create_window: Optional[bool] = None) -> webdriver.Chrome:
         if create_window is None:
             create_window = self.create_window
-        if create_window:
-            driver = webdriver.Chrome(self.get_driver_path())
-        else:
-            driver = webdriver.Chrome(self.get_driver_path(),
-                                      service=self.get_service_without_window(),
-                                      options=self.get_options())
+        service=ChromeService(ChromeDriverManager().install())
+        if not create_window:
+            service = self.get_service_without_window(service)
+        driver = webdriver.Chrome(service, options=self.get_options())
         self.drivers.append(driver)
         return driver
 
@@ -43,12 +41,8 @@ class WebDriverFactory:
         else:
             return os.path.join(pwd, 'chromedriver')
 
-
-    def get_service_without_window(self):
+    def get_service_without_window(service: Service):
         # https://www.zacoding.com/en/post/python-selenium-hide-console/
-        service = Service(
-            self.get_driver_path(),
-        )
         if self.ON_WINDOWS:
             from subprocess import CREATE_NO_WINDOW
             service.creationflags = CREATE_NO_WINDOW
