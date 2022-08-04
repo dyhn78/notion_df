@@ -23,9 +23,9 @@ class WebDriverFactory:
         if create_window is None:
             create_window = self.create_window
         if create_window:
-            driver = webdriver.Chrome(ChromeDriverManager().install())
+            driver = webdriver.Chrome(self.get_driver_path())
         else:
-            driver = webdriver.Chrome(ChromeDriverManager().install(),
+            driver = webdriver.Chrome(self.get_driver_path(),
                                       service=self.get_service_without_window(),
                                       options=self.get_options())
         self.drivers.append(driver)
@@ -34,6 +34,8 @@ class WebDriverFactory:
     @classmethod
     def get_driver_path(cls) -> str:
         if path := os.environ.get("CHROMEDRIVER_PATH"):
+            return path
+        if path := ChromeDriverManager().install():
             return path
         pwd = os.path.dirname(__file__)
         if cls.ON_WINDOWS:
