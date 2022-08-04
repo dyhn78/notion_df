@@ -44,7 +44,7 @@ class WebDriverFactory:
     @classmethod
     def get_service_without_window(cls, service: Service):
         # https://www.zacoding.com/en/post/python-selenium-hide-console/
-        if self.ON_WINDOWS:
+        if cls.ON_WINDOWS:
             from subprocess import CREATE_NO_WINDOW
             service.creationflags = CREATE_NO_WINDOW
         return service
