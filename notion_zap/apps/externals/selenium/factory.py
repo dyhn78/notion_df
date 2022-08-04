@@ -41,6 +41,7 @@ class WebDriverFactory:
         else:
             return os.path.join(pwd, 'chromedriver')
 
+    @staticmethod
     def get_service_without_window(service: Service):
         # https://www.zacoding.com/en/post/python-selenium-hide-console/
         if self.ON_WINDOWS:
