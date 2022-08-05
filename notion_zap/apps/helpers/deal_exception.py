@@ -46,7 +46,9 @@ class ExceptionLogger:
             finally:
                 delta = dt.datetime.now() - start_time
                 time_message += f" ({delta.seconds}.{str(delta.microseconds)[:3]} seconds)"
-                self.log_contents.write_text(time_message + traceback_message[-1800:])
+                if len(traceback_message) > 1800:
+                    traceback_message = traceback_message[:800] + "\n\n...\n\n" + traceback_message[-1000:]
+                self.log_contents.write_text(time_message + traceback_message)
                 self.log_block.save()
                 stopwatch('모든 작업 완료')
 
