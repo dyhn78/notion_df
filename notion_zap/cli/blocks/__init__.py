@@ -1,4 +1,4 @@
-from .database.database import Database, RowChildren
+from .database import Database, RowChildren
 from .items.page_item import PageItem
 from .items.text_item import TextItem
 from .items.unsupported import UnsupportedBlock

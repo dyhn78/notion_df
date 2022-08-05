@@ -1,8 +1,9 @@
 from notion_zap.apps.config import MyBlock
 from notion_zap.apps.media_scraper.config import (
     READING_FRAME, STATUS_COLUMN)
+from notion_zap.cli import Root
 from notion_zap.cli.blocks import PageRow
-from notion_zap.cli.core import Root, PropertyMarkedValue
+from notion_zap.cli.core import PropertyMarkedValue
 
 
 class ReadingTableEditor:

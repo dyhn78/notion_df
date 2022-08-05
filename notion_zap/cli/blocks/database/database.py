@@ -5,11 +5,11 @@ from typing import Union, Optional, Iterator, Callable, Any, Hashable
 
 from notion_client import APIResponseError
 
-from notion_zap.cli.blocks.shared.children import Children, BlockWithChildren
 from notion_zap.cli.core import PropertyFrame
 from notion_zap.cli.core.exceptions import InvalidBlockTypeError
 from notion_zap.cli.core.registry_table import IndexTable, ClassifyTable
 from ..row.main import PageRow
+from ..shared.children import Children, BlockWithChildren
 from ..shared.with_items import ItemChildren
 from ...core.base import RootSpace
 from ...gateway.parsers import DatabaseParser
