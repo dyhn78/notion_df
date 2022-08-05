@@ -29,8 +29,8 @@ class MyBlock(Enum):
     readings = ('읽기', 'c326f77425a0446a8aa309478767c85b', EmojiCode.YELLOW_CIRCLE)
     points = ('꼭지', '2c5411ba6a0f43a0a8aa06295751e37a', EmojiCode.YELLOW_HEART)
 
-    streams = ('구분', 'eb2f09a1de41412e8b2357bc04f26e74', EmojiCode.RED_CIRCLE)
-    groups = ('갈래', '679c2515870d46e3a107b42cd2a5ffc3', EmojiCode.RED_HEART)
+    streams = ('갈래', 'eb2f09a1de41412e8b2357bc04f26e74', EmojiCode.RED_CIRCLE)
+    groups = ('구분', '679c2515870d46e3a107b42cd2a5ffc3', EmojiCode.RED_HEART)
 
     domains = ('주제', 'eca1ba6d4831459ca8becc283f1f8c4e', EmojiCode.ORANGE_CIRCLE)
     people = ('인물', '3c08cdba5a044e9c9b7e31ee8509f506', EmojiCode.ORANGE_HEART)
