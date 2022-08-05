@@ -34,9 +34,8 @@ class MyBlock(Enum):
 
     domains = ('주제', 'eca1ba6d4831459ca8becc283f1f8c4e', EmojiCode.ORANGE_CIRCLE)
     people = ('인물', '3c08cdba5a044e9c9b7e31ee8509f506', EmojiCode.ORANGE_HEART)
-
-    channels = ('채널', '2d3f4ea770854b8e9e30abecd4d31a86', EmojiCode.BROWN_CIRCLE)
-    locations = ('장소', '920e2e10225d450d8bb084697f6d0fc6', EmojiCode.BROWN_HEART)
+    channels = ('채널', '2d3f4ea770854b8e9e30abecd4d31a86', EmojiCode.ORANGE_HEART)
+    locations = ('장소', '920e2e10225d450d8bb084697f6d0fc6', EmojiCode.ORANGE_HEART)
 
     weeks = ('주간', 'd020b399cf5947a59d11a0b9e0ea45d0', EmojiCode.GREEN_CIRCLE)
     dates = ('일간', '961d1ca0a3d24a46b838ba85e710f18d', EmojiCode.GREEN_HEART)
