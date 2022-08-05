@@ -18,7 +18,7 @@ class MyBlock(Enum):
         return self.prefix + self.title
 
     projects = ('활동', '69b4e661c4ee43b6a5e40c8b28e6f9d1', EmojiCode.GLOBE_ASIA)
-    events = ('일과', 'c226cffe6cf84ab996bbc384bf26bf1d', EmojiCode.CLOCK_1200)
+    events = ('일과', 'c226cffe6cf84ab996bbc384bf26bf1d', EmojiCode.CLOCK_1230)
     
     journals = ('진행', 'c8d46c01d6c941a9bf8df5d115a05f03', EmojiCode.PURPLE_CIRCLE)
     targets = ('요점', 'fa7d93f6fbd341f089b185745c834811', EmojiCode.PURPLE_HEART)
