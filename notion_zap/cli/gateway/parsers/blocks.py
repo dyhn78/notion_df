@@ -2,13 +2,10 @@ from __future__ import annotations
 
 import datetime as dt
 
+from notion_zap.cli.core.block_types import PAGE_TYPES, TEXT_TYPES, CAN_HAVE_CHILDREN, SUPPORTED, UNSUPPORTED
+from notion_zap.cli.core.mixins import Printable
+from notion_zap.cli.utility import url_to_id
 from .rich_text import parse_rich_texts
-from ...structs.base_logic import Printable
-from ...structs.block_types import (
-    PAGE_TYPES, TEXT_TYPES, CAN_HAVE_CHILDREN, SUPPORTED,
-    UNSUPPORTED
-)
-from ...utility import url_to_id
 
 
 class BlockChildrenParser:

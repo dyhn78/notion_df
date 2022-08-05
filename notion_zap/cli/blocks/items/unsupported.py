@@ -1,7 +1,6 @@
 from typing import Any, Hashable
 
-from ..structs.base_logic import Space
-from ..structs.block_main import Block
+from ...core.base import Block, Space
 
 
 # noinspection PyMethodMayBeStatic

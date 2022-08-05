@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Hashable
 
 from notion_zap.apps.prop_matcher.struct import RowHandler
-from notion_zap.cli.editors import PageRow, Database
+from notion_zap.cli.blocks import PageRow, Database
 
 
 def has_relation(row: PageRow, key_alias_target):

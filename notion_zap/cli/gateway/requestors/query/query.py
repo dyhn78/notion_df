@@ -1,5 +1,5 @@
-from notion_zap.cli.editors.structs.block_main import Component
-from notion_zap.cli.structs import PropertyFrame
+from notion_zap.cli.core import PropertyFrame
+from notion_zap.cli.core.base import Component
 from notion_zap.cli.utility import id_to_url, stopwatch
 from .filter_struct import QueryFilter, EmptyFilter
 from ..structs import LongRequestor, print_response_error

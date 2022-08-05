@@ -1,6 +1,6 @@
 from notion_zap.apps.media_scraper.config import READING_FRAME
-from notion_zap.cli import editors
 from notion_zap.apps.media_scraper.struct import ReadingTableEditor
+from notion_zap.cli import blocks
 
 
 class ReadingTableStatusResolver(ReadingTableEditor):
@@ -24,7 +24,7 @@ class ReadingTableStatusResolver(ReadingTableEditor):
         query.push_filter(ft)
         query.execute(request_size)
 
-    def edit(self, page: editors.PageRow):
+    def edit(self, page: blocks.PageRow):
         value = self.status_enum['append']
         page.write_select(key_alias='edit_status', value=value)
         page.write_checkbox(key_alias='not_available', value=False)

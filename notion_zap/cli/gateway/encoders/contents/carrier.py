@@ -1,7 +1,7 @@
 from abc import abstractmethod
 
+from notion_zap.cli.core.mixins import ValueCarrier
 from ..rich_text import RichTextObjectEncoder
-from notion_zap.cli.structs.base_logic import ValueCarrier
 
 
 class ContentsEncoder(ValueCarrier):

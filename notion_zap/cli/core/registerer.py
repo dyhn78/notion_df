@@ -1,9 +1,10 @@
 from __future__ import annotations
+
 from abc import ABCMeta
 from typing import Any, Callable, Union
 
-from .block_main import Follower
-from .exceptions import DanglingBlockError
+from notion_zap.cli.core.base import Follower
+from notion_zap.cli.core.exceptions import DanglingBlockError
 
 
 class RegistererMap(Follower):

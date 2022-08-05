@@ -8,8 +8,8 @@ from notion_zap.apps.prop_matcher.struct import Processor
 from notion_zap.apps.prop_matcher.utils.date_formatter import DateFormatter
 from notion_zap.apps.prop_matcher.utils.relation_prop_helpers import has_relation, set_relation, \
     query_unique_page_by_idx
-from notion_zap.cli.editors import PageRow, Database
-from notion_zap.cli.structs import DatePropertyValue
+from notion_zap.cli.blocks import PageRow, Database
+from notion_zap.cli.core import DatePropertyValue
 
 
 class WeekProcessorFromManualDate(Processor):

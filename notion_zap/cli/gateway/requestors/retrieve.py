@@ -1,6 +1,6 @@
-from ...editors.structs.block_main import Component
 from notion_zap.cli.utility import stopwatch
 from .structs import Requestor, LongRequestor, print_response_error
+from ...core.base import Component
 
 
 class RetrieveDatabase(Requestor):

@@ -5,13 +5,13 @@ from typing import Union, Optional, Iterator, Callable, Any, Hashable
 
 from notion_client import APIResponseError
 
-from notion_zap.cli.structs import PropertyFrame
+from notion_zap.cli.blocks.shared.children import Children, BlockWithChildren
+from notion_zap.cli.core import PropertyFrame
+from notion_zap.cli.core.exceptions import InvalidBlockTypeError
+from notion_zap.cli.core.registry_table import IndexTable, ClassifyTable
 from ..row.main import PageRow
 from ..shared.with_items import ItemChildren
-from ..structs.base_logic import RootSpace
-from ..structs.children import Children, BlockWithChildren
-from ..structs.exceptions import InvalidBlockTypeError
-from ..structs.registry_table import IndexTable, ClassifyTable
+from ...core.base import RootSpace
 from ...gateway.parsers import DatabaseParser
 from ...gateway.requestors import Query, RetrieveDatabase
 from ...utility import url_to_id

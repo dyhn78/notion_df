@@ -3,12 +3,11 @@ from __future__ import annotations
 from abc import ABCMeta
 from typing import Hashable
 
-from notion_zap.cli.editors.structs.children import Children, \
+from notion_zap.cli.blocks.shared.children import Children, \
     BlockWithContentsAndChildren
+from notion_zap.cli.core.base import Block, Space
+from notion_zap.cli.core.exceptions import InvalidBlockTypeError
 from notion_zap.cli.gateway import requestors, parsers
-from ...structs.base_logic import Space
-from ...structs.block_main import Block
-from ...structs.exceptions import InvalidBlockTypeError
 
 
 class BlockWithItems(BlockWithContentsAndChildren, metaclass=ABCMeta):

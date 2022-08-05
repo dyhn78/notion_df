@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-from typing import Optional
+from typing import Optional, Iterable, Tuple, Callable
 
 from notion_zap.apps.config import MyBlock
 from notion_zap.apps.prop_matcher.struct import Processor
 from notion_zap.apps.prop_matcher.utils.relation_prop_helpers import \
     has_relation, set_relation, RelayConfiguration, get_all_pages_from_relation
-from notion_zap.cli.editors import Database, PageRow
-from notion_zap.cli.structs import DatePropertyValue
+from notion_zap.cli.blocks import Database, PageRow
+from notion_zap.cli.core import DatePropertyValue
 
 
 class DateProcessorByEarliestRef(Processor):
@@ -20,17 +20,25 @@ class DateProcessorByEarliestRef(Processor):
             if self.no_replace and has_relation(row, tag_date):
                 continue
             if date := get_date(row):
+                print('✔️', row, row.block_url)
                 set_relation(row, date, tag_date)
                 self.reset_period(row)
+            else:
+                print('❌', row, row.block_url)
+
+            # temporary measure
+            row.save()
+            row.retrieve()
 
     @staticmethod
     def reset_period(row: PageRow):
         row.write_relation(key_alias='weeks', value=[])
 
-    def iter_args(self):
+    def iter_args(self) -> Iterable[Tuple[PageRow, str, Callable]]:
         ref_infos = [RelayConfiguration(self.root[MyBlock.journals], 'journals', 'dates')]
         get_date = GetterByEarliestRef(self.root[MyBlock.dates], ref_infos)
-        for row in self.root[MyBlock.readings].rows:
+        readings: Database = self.root[MyBlock.readings]
+        for row in readings.rows:
             yield row, 'dates_begin', get_date
 
 

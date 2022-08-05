@@ -1,13 +1,13 @@
 from notion_zap.apps.config import MyBlock
 from notion_zap.apps.media_scraper.config import (
     READING_FRAME, STATUS_COLUMN)
-from notion_zap.cli import editors
-from notion_zap.cli.structs import PropertyMarkedValue
+from notion_zap.cli.blocks import PageRow
+from notion_zap.cli.core import Root, PropertyMarkedValue
 
 
 class ReadingTableEditor:
     def __init__(self):
-        self.root = editors.Root(print_response_heads=5)
+        self.root = Root(print_response_heads=5)
         self.table = self.root.space.database(
             MyBlock.readings.block_id, MyBlock.readings.title, READING_FRAME)
 
@@ -15,7 +15,7 @@ class ReadingTableEditor:
 class ReadingPageManager:
     STATUS = STATUS_COLUMN
 
-    def __init__(self, page: editors.PageRow):
+    def __init__(self, page: PageRow):
         self.page = page
         self._finalized = False
         self._init_value = page.read_key_alias('edit_status')

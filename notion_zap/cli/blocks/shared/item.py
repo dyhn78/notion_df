@@ -3,11 +3,10 @@ from __future__ import annotations
 from abc import ABCMeta
 from typing import Union, Optional, Hashable
 
+from notion_zap.cli.core.exceptions import NoParentFoundError
 from notion_zap.cli.gateway import parsers
-from .with_items.main import BlockWithItems, ItemChildren
-from ..structs.base_logic import RootSpace
-from ..structs.block_main import Block
-from ..structs.exceptions import NoParentFoundError
+from .with_items.with_items import BlockWithItems, ItemChildren
+from ...core.base import Block, RootSpace
 
 
 class Item(Block, metaclass=ABCMeta):

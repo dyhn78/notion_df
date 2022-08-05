@@ -1,6 +1,6 @@
 from typing import Any, Optional
 
-from notion_zap.cli.editors.structs.block_main import Component
+from notion_zap.cli.core.base import Component
 from notion_zap.cli.utility import stopwatch, id_to_url
 from .stash import BlockChildrenStash, PagePropertyStash
 from ..structs import Requestor, print_response_error, drop_empty_request

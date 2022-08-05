@@ -5,7 +5,7 @@ from notion_zap.apps.media_scraper.location.main import LibraryScrapManager
 from notion_zap.apps.media_scraper.metadata.main import MetadataScrapManager
 from notion_zap.apps.media_scraper.struct import (
     ReadingTableEditor, ReadingPageManager)
-from notion_zap.cli.editors import PageRow, Database
+from notion_zap.cli.blocks import PageRow, Database
 from notion_zap.cli.utility import stopwatch
 
 

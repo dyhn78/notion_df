@@ -1,15 +1,15 @@
 from __future__ import annotations
 
 import datetime as dt
-from typing import Union
+from typing import Union, Tuple, Iterable
 
 from notion_zap.apps.config import MyBlock
 from notion_zap.apps.prop_matcher.struct import Processor
 from notion_zap.apps.prop_matcher.utils.date_formatter import DateFormatter
 from notion_zap.apps.prop_matcher.utils.relation_prop_helpers import (
     has_relation, set_relation, query_unique_page_by_idx)
-from notion_zap.cli.editors import PageRow, Database
-from notion_zap.cli.structs import DatePropertyValue
+from notion_zap.cli.blocks import PageRow, Database
+from notion_zap.cli.core import DatePropertyValue
 
 
 class DateProcessorByCreatedTime(Processor):
@@ -25,14 +25,17 @@ class DateProcessorByCreatedTime(Processor):
                 continue
             date_val = self.get_date_val(row)
             if date := self.get_date(date_val):
+                print('✔️', row, row.block_url, tag_dates)
                 set_relation(row, date, tag_dates)
+            else:
+                print('❌', row, row.block_url, tag_dates)
 
     def get_date_val(self, row: PageRow):
         dom_idx: DatePropertyValue = row.read_key_alias('datetime_auto')
         date_val = dom_idx.start + dt.timedelta(hours=self.hour_offset)
         return date_val
 
-    def iter_args(self):
+    def iter_args(self) -> Iterable[Tuple[PageRow, str]]:
         for table in self.root.get_blocks(self.option.filter_key('dates_created')):
             for row in table.rows:
                 yield row, 'dates_created'

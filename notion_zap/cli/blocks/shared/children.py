@@ -3,9 +3,34 @@ from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 from typing import Union, Iterable, Any
 
-from notion_zap.cli.editors.structs.base_logic import Space
-from notion_zap.cli.editors.structs.block_main import Block, Follower
+from notion_zap.cli.core.base import Follower, Block, Space
 from notion_zap.cli.gateway.requestors.structs import Requestor
+
+
+class Children(Follower, Space, metaclass=ABCMeta):
+    def __init__(self, caller: BlockWithChildren):
+        Follower.__init__(self, caller)
+        Space.__init__(self)
+        self.caller = caller
+
+    @abstractmethod
+    def list_all(self) -> list[Block]:
+        pass
+
+    def __iter__(self):
+        """this will return ALL child blocks on the editor at the moment,
+         even yet-not-created or archived ones."""
+        return iter(self.list_all())
+
+    def read(self, max_rank_diff=0) -> dict[str, Any]:
+        return {'children': [child.read(max_rank_diff) for child in self.list_all()]}
+
+    def richly_read(self, max_rank_diff=0) -> dict[str, Any]:
+        return {'children': [child.richly_read(max_rank_diff)
+                             for child in self.list_all()]}
+
+    def save_info(self):
+        return {'children': [child.save_info() for child in self.list_all()]}
 
 
 class BlockWithChildren(Block, metaclass=ABCMeta):
@@ -132,29 +157,3 @@ class BlockWithContentsAndChildren(BlockWithChildren):
         save_this_required = self.requestor.__bool__()
         return (save_this_required()
                 or self.children.save_required())
-
-
-class Children(Follower, Space, metaclass=ABCMeta):
-    def __init__(self, caller: BlockWithChildren):
-        Follower.__init__(self, caller)
-        Space.__init__(self)
-        self.caller = caller
-
-    @abstractmethod
-    def list_all(self) -> list[Block]:
-        pass
-
-    def __iter__(self):
-        """this will return ALL child blocks on the editor at the moment,
-         even yet-not-created or archived ones."""
-        return iter(self.list_all())
-
-    def read(self, max_rank_diff=0) -> dict[str, Any]:
-        return {'children': [child.read(max_rank_diff) for child in self.list_all()]}
-
-    def richly_read(self, max_rank_diff=0) -> dict[str, Any]:
-        return {'children': [child.richly_read(max_rank_diff)
-                             for child in self.list_all()]}
-
-    def save_info(self):
-        return {'children': [child.save_info() for child in self.list_all()]}

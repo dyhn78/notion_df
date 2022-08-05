@@ -3,7 +3,8 @@ from __future__ import annotations
 from notion_zap.apps.config import MyBlock
 from notion_zap.apps.prop_matcher.config import Frames
 from notion_zap.apps.prop_matcher.utils.query_in_range import query_within_date_range
-from notion_zap.cli import editors
+from notion_zap.cli.blocks import Database, PageRow
+from notion_zap.cli.core.base import Root
 from notion_zap.cli.utility import stopwatch
 
 
@@ -13,7 +14,7 @@ class SyncResolveController:
     tag__doms_downdom = 'down_self'
 
     def __init__(self, date_range=0):
-        self.root = editors.Root(print_response_heads=5)
+        self.root = Root(print_response_heads=5)
         self.date_range = date_range
         self.marks = self.root.space.database(Frames[MyBlock.journals], )
 
@@ -34,8 +35,8 @@ class SyncResolveController:
 
 
 class SyncResolver:
-    def __init__(self, fronts: editors.Database,
-                 backs: editors.Database,
+    def __init__(self, fronts: Database,
+                 backs: Database,
                  tag_forward: str,
                  tag_backward: str):
         self.fronts = fronts
@@ -48,7 +49,7 @@ class SyncResolver:
             front_id = front.block_id
             back_ids = front.read_key_alias(self.tag_forward)
             for back_id in back_ids:
-                back: editors.PageRow = self.backs.rows.by_id[back_id]
+                back: PageRow = self.backs.rows.by_id[back_id]
                 front_ids = back.read_key_alias(self.tag_backward)
                 if front_id not in front_ids:
                     front_ids.append(front_id)

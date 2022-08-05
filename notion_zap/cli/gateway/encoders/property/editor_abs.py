@@ -2,7 +2,7 @@ from abc import abstractmethod, ABCMeta
 from datetime import datetime, date
 from typing import Union, Optional, Any, Hashable
 
-from notion_zap.cli.structs import DatePropertyValue, PropertyFrame
+from notion_zap.cli.core import PropertyFrame, DatePropertyValue
 from .carrier import (
     PropertyEncoder, RichTextPropertyEncoder,
     SimplePropertyEncoder, FilesPropertyEncoder)

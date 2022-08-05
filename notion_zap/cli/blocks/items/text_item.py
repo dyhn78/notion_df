@@ -6,7 +6,7 @@ from notion_zap.cli.gateway import parsers, requestors
 from ..shared.document import Document
 from ..shared.item import Item
 from ..shared.with_items import BlockWithItems, ItemChildren
-from ..structs.base_logic import RootSpace
+from ...core.base import RootSpace
 from ...gateway.encoders import (
     TextContentsWriter,
     RichTextContentsEncoder, ContentsEncoder,

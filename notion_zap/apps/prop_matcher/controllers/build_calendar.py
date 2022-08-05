@@ -11,7 +11,7 @@ from notion_zap.apps.prop_matcher.processors.get_week_from_manual_date import \
     WeekRowGetterFromManualDate
 from notion_zap.apps.prop_matcher.struct import init_root
 from notion_zap.apps.prop_matcher.utils.date_range_iterator import DateRangeIterator
-from notion_zap.cli.editors import Root
+from notion_zap.cli.core.base import Root
 
 
 class CalendarBuildController:

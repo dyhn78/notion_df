@@ -1,7 +1,7 @@
 from abc import ABCMeta
 
-from notion_zap.cli.structs.base_logic import ValueCarrier
-from ...structs import DatePropertyValue
+from notion_zap.cli.core import DatePropertyValue
+from notion_zap.cli.core.mixins import ValueCarrier
 
 
 class RichTextObjectEncoder(ValueCarrier, metaclass=ABCMeta):

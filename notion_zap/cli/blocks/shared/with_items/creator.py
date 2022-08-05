@@ -2,13 +2,13 @@ from __future__ import annotations
 
 from typing import Union
 
-from .main import ItemChildren
-from ...structs.save_agents import SingularEditor, RequestEditor
-from ...structs.base_logic import Saveable
-from ...structs.block_main import Follower
+from notion_zap.cli.core.base import Follower
+from notion_zap.cli.core.mixins import Saveable
+from notion_zap.cli.core.save_agents import SingularEditor, RequestEditor
 from notion_zap.cli.gateway.encoders import ContentsEncoder
 from notion_zap.cli.gateway.parsers import BlockChildrenParser
 from notion_zap.cli.gateway.requestors import AppendBlockChildren
+from .with_items import ItemChildren
 
 
 class ItemsCreator(Follower, Saveable):

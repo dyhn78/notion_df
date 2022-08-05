@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from notion_zap.cli.structs import PropertyColumn, PropertyFrame
+from notion_zap.cli.core import PropertyColumn, PropertyFrame
 
 
 # noinspection PyUnresolvedReferences

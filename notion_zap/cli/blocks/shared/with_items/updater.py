@@ -1,7 +1,7 @@
+from notion_zap.cli.core.base import Block
+from notion_zap.cli.core.save_agents import ListEditor
 from notion_zap.cli.gateway import parsers
-from .main import ItemChildren
-from ...structs.block_main import Block
-from ...structs.save_agents import ListEditor
+from .with_items import ItemChildren
 
 
 class ItemsUpdater(ListEditor):

@@ -4,9 +4,9 @@ from typing import Callable
 
 from notion_client.errors import APIResponseError
 
+from notion_zap.cli.core.base import Component
+from notion_zap.cli.core.mixins import Executable, ValueCarrier
 from notion_zap.cli.utility import stopwatch
-from notion_zap.cli.editors.structs.block_main import Component
-from notion_zap.cli.structs.base_logic import Executable, ValueCarrier
 
 
 class Requestor(Executable, ValueCarrier, metaclass=ABCMeta):

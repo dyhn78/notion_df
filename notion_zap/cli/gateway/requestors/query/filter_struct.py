@@ -1,6 +1,6 @@
 from abc import abstractmethod, ABCMeta
 
-from notion_zap.cli.structs.base_logic import ValueCarrier
+from notion_zap.cli.core.mixins import ValueCarrier
 
 
 class QueryFilter(ValueCarrier):

@@ -1,6 +1,7 @@
 import re
 
-from notion_zap.cli.editors import PageItem, Root
+from notion_zap.cli.blocks import PageItem
+from notion_zap.cli.core.base import Root
 
 
 class ContentsWriter:

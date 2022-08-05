@@ -1,4 +1,4 @@
-from notion_zap.cli.structs import (
+from notion_zap.cli.core import (
     PropertyColumn as Cl, PropertyMarkedValue as Lb, PropertyFrame)
 
 _STATUS_MARKS = [

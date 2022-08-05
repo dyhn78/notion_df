@@ -13,8 +13,8 @@ from notion_zap.apps.prop_matcher.processors.get_week_from_ref_date \
     import WeekProcessorFromRefDate
 from notion_zap.apps.prop_matcher.processors.match_to_itself import SelfProcessorDepr
 from notion_zap.apps.prop_matcher.struct import MatchOptions, init_root, Saver
-from notion_zap.cli.editors import Root
-from notion_zap.cli.editors.database.main import QueryWithCallback
+from notion_zap.cli.blocks.database.database import QueryWithCallback, Database
+from notion_zap.cli.core.base import Root
 from notion_zap.cli.gateway.requestors.query.filter_struct import QueryFilter
 
 REGULAR_MATCH_OPTIONS = MatchOptions({
@@ -42,11 +42,7 @@ class MatchController:
         self.fetch = MatchFetcher(self.root, self.option)
         self.processes = [
             TimeFormatConformer(self.root, self.option),
-            Saver(self.root),
-
             DateProcessorByEarliestRef(self.root, self.option),
-            Saver(self.root),
-
             DateProcessorByCreatedTime(self.root, self.option),
             WeekProcessorFromManualDate(self.root, self.option),
             WeekProcessorFromRefDate(self.root, self.option),
@@ -77,7 +73,7 @@ class MatchFetcher:
 
     # TODO : gcal_sync_status
     def get_query_filter(self, block_key: MyBlock) -> tuple[QueryWithCallback, QueryFilter]:
-        table = self.root.block_aliases[block_key]
+        table: Database = self.root[block_key]
         query = table.rows.open_query()
         manager = query.filter_manager_by_tags
         ft = query.open_filter()

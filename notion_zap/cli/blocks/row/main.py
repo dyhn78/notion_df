@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from typing import Union, Optional, Any, Hashable
 
-from notion_zap.cli.editors.structs.children import Children
-from notion_zap.cli.structs import PropertyFrame
+from notion_zap.cli.blocks.shared.children import Children
+from notion_zap.cli.core import PropertyFrame
 from ..shared.page import PageBlock
-from ..structs.base_logic import RootSpace
+from ...core.base import RootSpace
 from ...gateway import requestors, parsers
 from ...gateway.encoders import (
     PageRowPropertyWriter,
@@ -17,7 +17,7 @@ class PageRow(PageBlock, PageRowPropertyWriter):
     def __init__(self, caller: Union[RootSpace, Children],
                  id_or_url: str, alias: Hashable = None,
                  frame: Optional[PropertyFrame] = None):
-        from ..database.main import RowChildren
+        from ..database.database import RowChildren
         PageBlock.__init__(self, caller, id_or_url, alias)
         self.caller: Union[RootSpace, RowChildren] = caller
 
@@ -38,7 +38,7 @@ class PageRow(PageBlock, PageRowPropertyWriter):
 
     @property
     def parent(self):
-        from ..database.main import Database
+        from ..database.database import Database
         if parent := super().parent:
             assert isinstance(parent, Database)
             return parent

@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
 
-from notion_zap.cli.structs import DatePropertyValue
+from notion_zap.cli.core.date_property_value import DatePropertyValue
+from notion_zap.cli.core.mixins import ValueCarrier
 from ..rich_text import RichTextObjectEncoder
-from notion_zap.cli.structs.base_logic import ValueCarrier
 
 
 class PropertyEncoder(ValueCarrier, metaclass=ABCMeta):

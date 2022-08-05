@@ -4,7 +4,8 @@ from typing import Callable
 
 import pytz
 
-from notion_zap.cli.editors import Root, TextItem
+from notion_zap.cli.blocks import TextItem
+from notion_zap.cli.core.base import Root
 
 LOCAL_TIMEZONE = pytz.timezone('Asia/Seoul')
 LOG_DEST_ID = '6d16dc6747394fca95dc169c8c736e2d'

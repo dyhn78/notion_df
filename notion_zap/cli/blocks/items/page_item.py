@@ -6,7 +6,7 @@ from notion_zap.cli.gateway import parsers, requestors
 from ..shared.item import Item
 from ..shared.page import PageBlock
 from ..shared.with_items import ItemChildren
-from ..structs.base_logic import RootSpace
+from ...core.base import RootSpace
 from ...gateway.encoders import PageContentsWriter, RichTextPropertyEncoder
 
 

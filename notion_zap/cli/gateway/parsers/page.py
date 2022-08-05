@@ -4,9 +4,9 @@ import datetime as dt
 import inspect
 from typing import Union, Any, Callable, Iterator
 
-from notion_zap.cli.structs import DatePropertyValue
-from notion_zap.cli.structs.prop_types import VALUE_FORMATS
+from notion_zap.cli.core.prop_types import VALUE_FORMATS
 from .rich_text import parse_rich_texts
+from ...core.date_property_value import DatePropertyValue
 from ...utility import url_to_id
 
 

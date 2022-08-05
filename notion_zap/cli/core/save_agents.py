@@ -1,8 +1,8 @@
 from abc import ABCMeta, abstractmethod
 
-from .base_logic import Saveable
-from .block_main import Block, Follower, Component
-from ...gateway.requestors.structs import Requestor
+from notion_zap.cli.core.base import Component, Follower, Block
+from notion_zap.cli.core.mixins import Saveable
+from notion_zap.cli.gateway.requestors.structs import Requestor
 
 
 class ListEditor(Follower, Saveable, metaclass=ABCMeta):

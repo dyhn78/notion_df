@@ -1,8 +1,8 @@
 from notion_zap.apps.config import MyBlock
 from notion_zap.apps.prop_matcher.struct import Processor
 from notion_zap.apps.prop_matcher.utils.date_formatter import DateFormatter
-from notion_zap.cli.editors import PageRow
-from notion_zap.cli.structs import DatePropertyValue
+from notion_zap.cli.blocks import PageRow
+from notion_zap.cli.core import DatePropertyValue
 
 
 class TimeFormatConformer(Processor):

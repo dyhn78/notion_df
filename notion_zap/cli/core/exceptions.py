@@ -1,5 +1,4 @@
-from .base_logic import Registry
-from .block_main import Block
+from notion_zap.cli.core.base import Registry, Block
 
 
 class InvalidBlockTypeError(TypeError):

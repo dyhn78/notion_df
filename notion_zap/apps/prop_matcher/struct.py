@@ -5,7 +5,8 @@ from typing import Hashable, Union, Any, Optional
 
 from notion_zap.apps.config import MyBlock
 from notion_zap.apps.prop_matcher.config import Frames
-from notion_zap.cli.editors import PageRow, Root
+from notion_zap.cli.blocks import PageRow
+from notion_zap.cli.core.base import Root
 
 
 class MatchOptions:

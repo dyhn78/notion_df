@@ -1,7 +1,7 @@
-from notion_zap.cli import editors
+from notion_zap.cli import blocks
 
 
-def query_within_date_range(pagelist: editors.RowChildren,
+def query_within_date_range(pagelist: blocks.RowChildren,
                             date_index_tag: str, date_range=0):
     query = pagelist.open_query()
     if date_range:

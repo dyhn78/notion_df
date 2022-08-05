@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import Optional, Union, Any, Hashable, Iterable
 
+from notion_zap.cli.core.prop_types import VALUE_FORMATS
 from notion_zap.cli.gateway import parsers
-from notion_zap.cli.structs.prop_types import VALUE_FORMATS
 
 
 # TODO: Enum 적용

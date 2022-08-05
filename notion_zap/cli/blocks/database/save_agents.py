@@ -1,10 +1,10 @@
 from typing import Any
 
-from .main import RowChildren
-from ..row.main import PageRow
-from ..structs.save_agents import ListEditor
+from notion_zap.cli.core.save_agents import ListEditor
 from notion_zap.cli.gateway import parsers
-from ...structs import PropertyFrame
+from .database import RowChildren
+from ..row.main import PageRow
+from ...core import PropertyFrame
 
 
 class RowChildrenUpdater(ListEditor):

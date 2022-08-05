@@ -3,11 +3,11 @@ from __future__ import annotations
 from abc import abstractmethod, ABCMeta
 from typing import Union, Hashable
 
+from notion_zap.cli.core.registerer import Registerer
 from notion_zap.cli.gateway import parsers, requestors
 from .document import Document
 from .with_items import BlockWithItems
-from ..structs.base_logic import Space
-from ..structs.registerer import Registerer
+from ...core.base import Space
 
 
 class PageBlock(BlockWithItems, Document, metaclass=ABCMeta):

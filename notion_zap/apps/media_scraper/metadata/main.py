@@ -1,11 +1,11 @@
-from notion_zap.cli import editors
-from notion_zap.cli.editors import PageItem
+from notion_zap.apps.media_scraper.metadata.remove_dummy_blocks import remove_dummy_blocks
+from notion_zap.apps.media_scraper.metadata.write_contents import ContentsWriter
+from notion_zap.apps.media_scraper.struct import ReadingPageManager
+from notion_zap.cli import blocks
+from notion_zap.cli.blocks import PageItem
 from notion_zap.cli.utility import stopwatch
 from .yes24_main import scrap_yes24_main
 from .yes24_url import scrap_yes24_url
-from notion_zap.apps.media_scraper.struct import ReadingPageManager
-from notion_zap.apps.media_scraper.metadata.write_contents import ContentsWriter
-from notion_zap.apps.media_scraper.metadata.remove_dummy_blocks import remove_dummy_blocks
 
 
 class MetadataScrapManager:
@@ -46,11 +46,11 @@ class SubpageEditor:
         link_to_contents.mention_page(self.subpage.block_id)
         return self.subpage
 
-    def _get_subpage(self) -> editors.PageItem:
+    def _get_subpage(self) -> blocks.PageItem:
         self.page.items.fetch()
         for block in self.page.items:
             if (
-                    isinstance(block, editors.PageItem)
+                    isinstance(block, blocks.PageItem)
                     and (self.page.title in block.title
                          or block.title.strip() in ['', '=', '>'])
             ):

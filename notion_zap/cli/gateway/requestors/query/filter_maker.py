@@ -1,8 +1,9 @@
 from __future__ import annotations
-from typing import Union
-from datetime import datetime as datetimeclass, date as dateclass
 
-from notion_zap.cli.structs import PropertyColumn
+from datetime import datetime as datetimeclass, date as dateclass
+from typing import Union
+
+from notion_zap.cli.core import PropertyColumn
 from .filter_struct import SimpleFilter, OrFilter, AndFilter
 from .query import Query
 
