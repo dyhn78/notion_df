@@ -17,8 +17,8 @@ class MyBlock(Enum):
     def prefix_title(self):
         return self.prefix + self.title
 
-    events = ('일과', 'c226cffe6cf84ab996bbc384bf26bf1d', EmojiCode.GLOBE_ASIA)
-    projects = ('종합', '69b4e66c4ee43b6a5e40c8b28e6f9d1', EmojiCode.DIRECT_HIT)
+    events = ('일과', 'c226cffe6cf84ab996bbc384bf26bf1d', EmojiCode.CLOCK_1230)
+    projects = ('종합', '69b4e66c4ee43b6a5e40c8b28e6f9d1', EmojiCode.GLOBE_ASIA)
 
     journals = ('진행', 'c8d46c01d6c941a9bf8df5d115a05f03', EmojiCode.PURPLE_CIRCLE)
     targets = ('처리', 'fa7d93f6fbd341f089b185745c834811', EmojiCode.PURPLE_HEART)
