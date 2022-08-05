@@ -24,7 +24,7 @@ class MyBlock(Enum):
     targets = ('처리', 'fa7d93f6fbd341f089b185745c834811', EmojiCode.PURPLE_HEART)
 
     issues = ('줄기', 'e8782fe4e1a34c9d846d57b01a370327', EmojiCode.BLUE_CIRCLE)
-    notes = ('요점', '069bbebd632f4a6ea3044575a064cf0f', EmojiCode.BLUE_HEART)
+    notes = ('정리', '069bbebd632f4a6ea3044575a064cf0f', EmojiCode.BLUE_HEART)
 
     readings = ('읽기', 'c326f77425a0446a8aa309478767c85b', EmojiCode.YELLOW_CIRCLE)
     points = ('꼭지', '2c5411ba6a0f43a0a8aa06295751e37a', EmojiCode.YELLOW_HEART)
