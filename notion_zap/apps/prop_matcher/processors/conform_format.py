@@ -1,4 +1,4 @@
-from notion_zap.apps.config import MyBlock
+from notion_zap.apps.my_block import MyBlock
 from notion_zap.apps.prop_matcher.struct import Processor
 from notion_zap.apps.prop_matcher.utils.date_formatter import DateFormatter
 from notion_zap.cli.blocks import PageRow

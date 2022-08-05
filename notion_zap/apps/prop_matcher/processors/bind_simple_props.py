@@ -1,4 +1,4 @@
-from notion_zap.apps.config import MyBlock as My
+from notion_zap.apps.my_block import MyBlock as My
 from notion_zap.apps.prop_matcher.struct import Processor
 from notion_zap.apps.prop_matcher.utils.relation_prop_helpers import has_relation, \
     get_unique_page_from_relation

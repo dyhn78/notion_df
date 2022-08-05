@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Optional
 
-from notion_zap.apps.config import MyBlock
+from notion_zap.apps.my_block import MyBlock
 from notion_zap.apps.prop_matcher.processors.conform_format import DateFormatConformer, \
     WeekFormatConformer
 from notion_zap.apps.prop_matcher.processors.get_date_from_created_time import \

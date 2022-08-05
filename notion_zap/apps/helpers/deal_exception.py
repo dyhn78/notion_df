@@ -6,6 +6,7 @@ import pytz
 
 from notion_zap.cli.blocks import TextItem
 from notion_zap.cli.core.base import Root
+from notion_zap.cli.utility import stopwatch
 
 LOCAL_TIMEZONE = pytz.timezone('Asia/Seoul')
 LOG_DEST_ID = '6d16dc6747394fca95dc169c8c736e2d'
@@ -47,6 +48,7 @@ class ExceptionLogger:
                 time_message += f" ({delta.seconds}.{str(delta.microseconds)[:3]} seconds)"
                 self.log_contents.write_text(time_message + traceback_message[-1800:])
                 self.log_block.save()
+                stopwatch('모든 작업 완료')
 
         return wrapper
 
