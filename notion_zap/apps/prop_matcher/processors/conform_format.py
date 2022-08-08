@@ -34,6 +34,7 @@ class DateFormatConformer:
         if date_range != date_row.read_key_alias('manual_date'):
             date_row.write_date(key_alias='manual_date', value=date_range)
         date_row.save()
+        date_row.retrieve()
 
 
 class WeekFormatConformer:
