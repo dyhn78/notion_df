@@ -18,6 +18,6 @@ class WeekProcessorFromRefDate(Processor):
                     set_relation(row, week_row, week_tag)
 
     def iter_args(self):
-        for table in self.root.get_blocks(self.option.filter_key('weeks')):
+        for table in self.root.get_blocks(self.option.filter_pair('weeks')):
             yield (table, 'weeks',
                    RelayConfiguration(self.root[MyBlock.dates], 'dates', 'weeks'))

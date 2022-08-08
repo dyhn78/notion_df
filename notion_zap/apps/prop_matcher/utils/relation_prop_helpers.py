@@ -21,6 +21,9 @@ class RelayConfiguration:
         self.tag_ref = tag_ref
         self.refs_tag_tar = refs_tag_tar
 
+    def __repr__(self):
+        return f"RelayConfiguration({str(vars(self))[1:-1]})"
+
 
 class GetterByReference(RowHandler):
     def __init__(self, target: Database, ref_info: RelayConfiguration):

@@ -19,10 +19,8 @@ class WeekProcessorFromManualDate(Processor):
         self.get_week = WeekRowGetterFromManualDate(self.root[MyBlock.weeks])
 
     def __call__(self):
-        for table in cast(
-                list[Database],
-                self.root.get_blocks(self.option.filter_pair('weeks', 'manual_date'))
-        ):
+        tables = cast(list[Database], self.root.get_blocks(self.option.filter_pair('weeks', 'manual_date')))
+        for table in tables:
             for row in table.rows:
                 if has_relation(row, self.tag_week):
                     continue
