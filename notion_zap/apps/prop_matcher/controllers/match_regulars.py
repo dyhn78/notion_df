@@ -1,17 +1,17 @@
 from __future__ import annotations
 
 from notion_zap.apps.my_block import MyBlock
-from notion_zap.apps.prop_matcher.processors.bind_simple_props import BindSimpleProperties
-from notion_zap.apps.prop_matcher.processors.conform_format import TimeFormatConformer
-from notion_zap.apps.prop_matcher.processors.get_date_from_created_time \
+from notion_zap.apps.prop_matcher.processors.bind_simple_properties import BindSimpleProperties
+from notion_zap.apps.prop_matcher.processors.date_by_created_time \
     import DateProcessorByCreatedTime
-from notion_zap.apps.prop_matcher.processors.get_date_from_refs_earliest \
-    import DateProcessorByEarliestRef
-from notion_zap.apps.prop_matcher.processors.get_week_from_manual_date \
-    import WeekProcessorFromManualDate
-from notion_zap.apps.prop_matcher.processors.get_week_from_ref_date \
+from notion_zap.apps.prop_matcher.processors.date_by_ref_earliest \
+    import DateProcessorByRefEarliest
+from notion_zap.apps.prop_matcher.processors.time_format_conformer import TimeFormatConformer
+from notion_zap.apps.prop_matcher.processors.week_by_manual_date \
+    import WeekProcessorByManualDate
+from notion_zap.apps.prop_matcher.processors.week_by_ref_date \
     import WeekProcessorFromRefDate
-from notion_zap.apps.prop_matcher.processors.match_to_itself import SelfProcessorDepr
+from notion_zap.apps.prop_matcher.processors_depr.self_depr import SelfProcessorDepr
 from notion_zap.apps.prop_matcher.struct import MatchOptions, init_root, Saver
 from notion_zap.cli.blocks.database.database import QueryWithCallback, Database
 from notion_zap.cli.core.base import Root
@@ -42,9 +42,9 @@ class MatchController:
         self.fetch = MatchFetcher(self.root, self.option)
         self.processes = [
             TimeFormatConformer(self.root, self.option),
-            DateProcessorByEarliestRef(self.root, self.option),
+            DateProcessorByRefEarliest(self.root, self.option),
             DateProcessorByCreatedTime(self.root, self.option),
-            WeekProcessorFromManualDate(self.root, self.option),
+            WeekProcessorByManualDate(self.root, self.option),
             WeekProcessorFromRefDate(self.root, self.option),
             SelfProcessorDepr(self.root, self.option),
             BindSimpleProperties(self.root, self.option),

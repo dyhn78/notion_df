@@ -10,7 +10,7 @@ from notion_zap.cli.blocks import Database, PageRow
 from notion_zap.cli.core import DatePropertyValue
 
 
-class DateProcessorByEarliestRef(Processor):
+class DateProcessorByRefEarliest(Processor):
     def __init__(self, root, option):
         super().__init__(root, option)
         self.no_replace = True

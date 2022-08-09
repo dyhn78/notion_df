@@ -12,11 +12,11 @@ from notion_zap.cli.blocks import PageRow, Database
 from notion_zap.cli.core import DatePropertyValue
 
 
-class WeekProcessorFromManualDate(Processor):
+class WeekProcessorByManualDate(Processor):
     def __init__(self, root, option):
         super().__init__(root, option)
         self.tag_week = 'weeks'
-        self.get_week = WeekRowGetterFromManualDate(self.root[MyBlock.weeks])
+        self.get_week = WeekRowGetterByManualDate(self.root[MyBlock.weeks])
 
     def __call__(self):
         tables = cast(list[Database], self.root.get_blocks(self.option.filter_pair('weeks', 'manual_date')))
@@ -34,7 +34,7 @@ def get_date(date_row: PageRow, tag_manual_value):
     return date_object.start_date
 
 
-class WeekRowGetterFromManualDate:
+class WeekRowGetterByManualDate:
     def __init__(self, periods: Database):
         self.periods = periods
         self.periods_by_title = self.periods.rows.index_by_tag('title')

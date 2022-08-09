@@ -3,12 +3,12 @@ from __future__ import annotations
 from typing import Optional
 
 from notion_zap.apps.my_block import MyBlock
-from notion_zap.apps.prop_matcher.processors.conform_format import DateFormatConformer, \
-    WeekFormatConformer
-from notion_zap.apps.prop_matcher.processors.get_date_from_created_time import \
+from notion_zap.apps.prop_matcher.processors.date_by_created_time import \
     DateGetterFromDateValue
-from notion_zap.apps.prop_matcher.processors.get_week_from_manual_date import \
-    WeekRowGetterFromManualDate
+from notion_zap.apps.prop_matcher.processors.time_format_conformer import DateFormatConformer, \
+    WeekFormatConformer
+from notion_zap.apps.prop_matcher.processors.week_by_manual_date import \
+    WeekRowGetterByManualDate
 from notion_zap.apps.prop_matcher.struct import init_root
 from notion_zap.apps.prop_matcher.utils.date_range_iterator import DateRangeIterator
 from notion_zap.cli.core.base import Root
@@ -41,7 +41,7 @@ class CalendarBuildController:
         create_date_if_not_found = DateGetterFromDateValue(self.root[MyBlock.weeks])
         for date_val in date_range:
             create_date_if_not_found(date_val)
-        create_period_if_not_found = WeekRowGetterFromManualDate(self.root[MyBlock.weeks])
+        create_period_if_not_found = WeekRowGetterByManualDate(self.root[MyBlock.weeks])
         for date_val in date_range:
             create_period_if_not_found(date_val)
 
