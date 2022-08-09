@@ -20,15 +20,16 @@ class DateProcessorByRefEarliest(Processor):
             if self.no_replace and has_relation(row, tag_date):
                 continue
             if date := get_date(row):
-                print('✔️', row, row.block_url)
+                # print('✔️', row, row.block_url)
                 set_relation(row, date, tag_date)
                 self.reset_period(row)
-            else:
-                print('❌', row, row.block_url)
+            # else:
+            #     print('❌', row, row.block_url)
 
             # temporary measure
-            row.save()
-            row.retrieve()
+            if row.save_required():
+                row.save()
+                row.retrieve()
 
     @staticmethod
     def reset_period(row: PageRow):
