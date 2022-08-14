@@ -4,6 +4,7 @@
 
 /venv
 __pycache__/
+.pytest_cache
 debug.log
 *.ppk
 *.pem

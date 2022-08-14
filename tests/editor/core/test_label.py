@@ -1,13 +1,16 @@
-from notion_zap.editor.core.label import LabelEnum
+from notion_zap.editor.core.label import Label
 
 
-class MyLabelEnum(LabelEnum):
-    a = 0
-    b = 0
-    c = a
-    d = a, b
-    e = c, d
+class MyLabel(Label):
+    a = 'aa'
+    b = 'bb'
+    c = 'cc', a
+    d = 'dd', b, c
+    e = 'ee', c, d
 
 
 def test_label_enum():
-    assert MyLabelEnum.a.value
+    assert [label.superlabels for label in MyLabel] == [
+        set(), set(), {MyLabel.a}, {MyLabel.a, MyLabel.b, MyLabel.c},
+        {MyLabel.a, MyLabel.b, MyLabel.c, MyLabel.d}
+    ]
