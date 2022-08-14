@@ -21,3 +21,7 @@ class WeekProcessorFromRefDate(Processor):
         for table in self.root.get_blocks(self.option.filter_pair('weeks')):
             yield (table, 'weeks',
                    RelayConfiguration(self.root[MyBlock.dates], 'dates', 'weeks'))
+
+        for table in self.root.get_blocks(self.option.filter_pair('weeks_begin')):
+            yield (table, 'weeks_begin',
+                   RelayConfiguration(self.root[MyBlock.dates], 'dates_begin', 'weeks'))
