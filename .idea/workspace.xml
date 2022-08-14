@@ -4,15 +4,6 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="2e27c02f-ddcd-4c1f-9397-9918c925276b" name="Changes" comment="create 'notion_zap/editor' directory">
-      <change afterPath="$PROJECT_DIR$/tests/editor/core/test.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/notion_zap.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/notion_zap.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/2022-08-14__3_25_________Changes_.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notion_zap/editor/core/label.py" beforeDir="false" afterPath="$PROJECT_DIR$/notion_zap/editor/core/label.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/editor/core/test_label.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/editor/core/test_label.py" afterDir="false" />
-    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -178,8 +169,8 @@
     <recent_temporary>
       <list>
         <item itemvalue="Python 테스트.test_label.py 내 Python 테스트" />
-        <item itemvalue="Python 테스트.test_label.test_label_enum의 Python 테스트" />
         <item itemvalue="Python 테스트.tests 내 Python 테스트" />
+        <item itemvalue="Python 테스트.test_label.test_label_enum의 Python 테스트" />
         <item itemvalue="Python.terminal" />
         <item itemvalue="Python.match_regulars" />
       </list>
@@ -299,7 +290,21 @@
       <option name="project" value="LOCAL" />
       <updated>1660463176622</updated>
     </task>
-    <option name="localTasksCounter" value="16" />
+    <task id="LOCAL-00016" summary="try binding Label and LabelEnum into single class">
+      <created>1660469195175</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1660469195175</updated>
+    </task>
+    <task id="LOCAL-00017" summary="IDE config">
+      <created>1660469213058</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1660469213058</updated>
+    </task>
+    <option name="localTasksCounter" value="18" />
     <servers />
   </component>
   <component name="UnknownFeatures">
@@ -329,6 +334,8 @@
     <MESSAGE value="update configs" />
     <MESSAGE value="update ide configs" />
     <MESSAGE value="create 'notion_zap/editor' directory" />
-    <option name="LAST_COMMIT_MESSAGE" value="create 'notion_zap/editor' directory" />
+    <MESSAGE value="try binding Label and LabelEnum into single class" />
+    <MESSAGE value="IDE config" />
+    <option name="LAST_COMMIT_MESSAGE" value="IDE config" />
   </component>
 </project>
