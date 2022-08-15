@@ -11,7 +11,6 @@ from notion_zap.apps.prop_matcher.processors.week_by_manual_date \
     import WeekProcessorByManualDate
 from notion_zap.apps.prop_matcher.processors.week_by_ref_date \
     import WeekProcessorFromRefDate
-from notion_zap.apps.prop_matcher.processors_depr.self_depr import SelfProcessorDepr
 from notion_zap.apps.prop_matcher.struct import MatchOptions, init_root, Saver
 from notion_zap.cli.blocks.database.database import QueryWithCallback, Database
 from notion_zap.cli.core.base import Root
@@ -26,7 +25,7 @@ REGULAR_MATCH_OPTIONS = MatchOptions({
 
     MyBlock.readings: {('weeks', "warning: but don't make filter"),
                        ('dates', "warning: but don't make filter"),
-                       'dates_begin', 'dates_created'},
+                       'weeks_begin', 'dates_begin', 'dates_created'},
     MyBlock.points: {'weeks', 'dates'},
     MyBlock.notes: {'weeks', 'dates'},
     MyBlock.weeks: {'manual_date'},
@@ -44,9 +43,8 @@ class MatchController:
             TimeFormatConformer(self.root, self.option),
             DateProcessorByRefEarliest(self.root, self.option),
             DateProcessorByCreatedTime(self.root, self.option),
-            WeekProcessorByManualDate(self.root, self.option),
             WeekProcessorFromRefDate(self.root, self.option),
-            SelfProcessorDepr(self.root, self.option),
+            WeekProcessorByManualDate(self.root, self.option),
             BindSimpleProperties(self.root, self.option),
             Saver(self.root),
         ]

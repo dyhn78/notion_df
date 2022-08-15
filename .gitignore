@@ -3,9 +3,13 @@
 # Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
 
 /venv
-__pycache__/
+
+/.idea
+workspace.xml
+
+__pycache__
 .pytest_cache
+
 debug.log
 *.ppk
 *.pem
-workspace.xml

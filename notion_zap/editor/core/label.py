@@ -2,33 +2,42 @@ from __future__ import annotations
 
 import logging
 from enum import Enum
-from typing import Iterable, Optional
+from typing import Iterable
 
 from notion_zap.editor.core.helpers import repr_object
 
 
 class Label:
     # TODO: change "supers" arg to "Self" after python 3.11
-    def __init__(self, *superlabels: Label | LabelEnum | tuple[(Label | LabelEnum), ...]):
-        superlabel_inputs = superlabels
-        superlabels: Iterable[Label] = self._parse_superlabel_input(superlabels)
-        logging.debug(f"{self=}, {superlabel_inputs=}, {superlabels=}")
+    def __init__(self, *supers: Label | LabelEnum | tuple[(Label | LabelEnum), ...]):
+        supers_input = supers
+        supers: Iterable[Label] = self._parse_super_label_input(supers)
+        logging.debug(f"{self=}, {supers_input=}, {supers=}")
 
         self.supers: set[Label] = set()
-        for superlabel in superlabels:
-            self._recursively_add_superlabels(superlabel)
+        for super_label in supers:
+            self._recursively_add_supers(super_label)
+        self._enum = None
 
-        self.enum: Optional[LabelEnum] = None
+    @property
+    def enum(self) -> LabelEnum | None:
+        return self._enum
 
-    def _recursively_add_superlabels(self, superlabel: Label):
-        if superlabel in self.supers:
+    @enum.setter
+    def enum(self, value: LabelEnum):
+        if self.enum is not None:
+            raise ValueError(str(self.enum), f"new_value={str(value)}")
+        self._enum = value
+
+    def _recursively_add_supers(self, super_label: Label):
+        if super_label in self.supers:
             return
-        self.supers.add(superlabel)
-        for super_superlabel in superlabel.supers:
-            self._recursively_add_superlabels(super_superlabel)
+        self.supers.add(super_label)
+        for super_super_label in super_label.supers:
+            self._recursively_add_supers(super_super_label)
 
-    def _parse_superlabel_input(
-            self, superlabel_inputs: tuple[Label | LabelEnum | tuple[(Label | LabelEnum), ...]]) -> Iterable[Label]:
+    def _parse_super_label_input(
+            self, supers_input: tuple[Label | LabelEnum | tuple[(Label | LabelEnum), ...]]) -> Iterable[Label] | None:
         def get_from_label_or_label_enum(arg: Label | LabelEnum):
             if isinstance(label_ := arg, Label):
                 return label_
@@ -36,19 +45,19 @@ class Label:
                 return label_enum.value
             return None
 
-        for superlabel_input in superlabel_inputs:
-            if (label := get_from_label_or_label_enum(superlabel_input)) is not None:
+        for super_label_input in supers_input:
+            if (label := get_from_label_or_label_enum(super_label_input)) is not None:
                 yield label
-            elif isinstance(superlabel_input, tuple) and \
-                    (label := get_from_label_or_label_enum(superlabel_input[0])) is not None:
+            elif isinstance(super_label_input, tuple) and \
+                    (label := get_from_label_or_label_enum(super_label_input[0])) is not None:
                 yield label
             else:
-                raise ValueError(f"{self=}, {superlabel_inputs=}")
+                raise ValueError(f"{self=}, {supers_input=}")
 
 
 class LabelEnum(Enum):
     def __init__(self, value: Label):
-        if not (isinstance(value, Label) and value.enum is None):
+        if not isinstance(value, Label):
             raise ValueError(f"{self=}, {value=}")
         self._value_ = value
         value.enum = self
@@ -56,7 +65,7 @@ class LabelEnum(Enum):
     def __str__(self):
         args = [self.name]
         if supers := self.supers:
-            args.append(f"supers={', '.join(sorted(superkey.name for superkey in supers))}")
+            args.append(f"supers={', '.join(sorted(super_enum.name for super_enum in supers))}")
         return repr_object(self, args)
 
     @property
