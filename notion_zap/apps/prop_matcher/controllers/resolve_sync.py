@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from notion_zap.apps.my_block import MyBlock
+from notion_zap.apps.myblock import MyBlock
 from notion_zap.apps.prop_matcher.prop_frame import Frames
 from notion_zap.apps.prop_matcher.utils.query_in_range import query_within_date_range
 from notion_zap.cli.blocks import Database, PageRow

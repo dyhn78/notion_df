@@ -1,5 +1,5 @@
 from notion_zap.apps.helpers.emoji_code import EmojiCode
-from notion_zap.apps.my_block import MyBlock
+from notion_zap.apps.myblock import MyBlock
 from notion_zap.cli.core import \
     PropertyFrame as Frame, PropertyColumn as Column
 
@@ -69,37 +69,6 @@ class SubFrames:
 
 
 Frames: dict[MyBlock, Frame] = {
-    MyBlock.weeks: Frame(
-        [
-            Columns.title_datetime,
-            Columns.manual_date_range,
-
-            Columns.itself,
-        ]
-    ),
-    MyBlock.dates: Frame(
-        [
-            Columns.title_datetime, Columns.manual_date,
-
-            Columns.itself,
-            Columns.weeks,
-            Columns.events,
-            Columns.locations, Columns.channels,
-        ]
-    ),
-
-    MyBlock.journals: Frame(
-        SubFrames.date_auto_created, SubFrames.dates,
-        [
-            Columns.title_generic,
-            Columns.timestr,
-            Columns.dates_created,
-
-            Columns.itself,
-            Columns.streams,
-            Columns.readings, Columns.notes,
-        ]
-    ),
     MyBlock.events: Frame(
         SubFrames.date_auto_created, SubFrames.dates,
         SubFrames.gcal,
@@ -114,6 +83,32 @@ Frames: dict[MyBlock, Frame] = {
             Columns.targets, Columns.notes,
         ]
     ),
+    MyBlock.targets: Frame(
+        SubFrames.date_auto_created, SubFrames.dates,
+        [
+            Columns.title_generic,
+            Columns.timestr,
+
+            Columns.itself,
+            Columns.events, Columns.journals,
+            Columns.issues,
+            Columns.channels,
+            Columns.readings, Columns.notes,
+        ]
+    ),
+    MyBlock.journals: Frame(
+        SubFrames.date_auto_created, SubFrames.dates,
+        [
+            Columns.title_generic,
+            Columns.timestr,
+            Columns.dates_created,
+
+            Columns.itself,
+            Columns.streams,
+            Columns.readings, Columns.notes,
+        ]
+    ),
+
     MyBlock.notes: Frame(
         SubFrames.date_auto_created, SubFrames.dates_begin,
         [
@@ -135,19 +130,6 @@ Frames: dict[MyBlock, Frame] = {
             Columns.itself,
             Columns.people, Columns.locations, Columns.channels,
             Columns.readings,
-        ]
-    ),
-    MyBlock.targets: Frame(
-        SubFrames.date_auto_created, SubFrames.dates_begin,
-        [
-            Columns.title_generic,
-            Columns.timestr,
-
-            Columns.itself,
-            Columns.events, Columns.journals,
-            Columns.issues,
-            Columns.channels,
-            Columns.readings, Columns.notes,
         ]
     ),
 
@@ -186,11 +168,31 @@ Frames: dict[MyBlock, Frame] = {
             Columns.media_type_from_above,
         ]
     ),
+
     MyBlock.channels: Frame(
         [
             Columns.title_metadata,
             Columns.media_type_from_above,
             Columns.media_type_is_book,
         ]
-    )
+    ),
+
+    MyBlock.weeks: Frame(
+        [
+            Columns.title_datetime,
+            Columns.manual_date_range,
+
+            Columns.itself,
+        ]
+    ),
+    MyBlock.dates: Frame(
+        [
+            Columns.title_datetime, Columns.manual_date,
+
+            Columns.itself,
+            Columns.weeks,
+            Columns.events,
+            Columns.locations, Columns.channels,
+        ]
+    ),
 }

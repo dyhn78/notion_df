@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from notion_zap.apps.my_block import MyBlock
+from notion_zap.apps.myblock import MyBlock
 from notion_zap.apps.prop_matcher.processors.bind_simple_properties import BindSimpleProperties
 from notion_zap.apps.prop_matcher.processors.date_by_created_time \
     import DateProcessorByCreatedTime
