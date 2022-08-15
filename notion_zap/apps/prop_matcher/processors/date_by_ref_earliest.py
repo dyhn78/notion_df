@@ -27,7 +27,7 @@ class DateProcessorByRefEarliest(Processor):
             #     print('❌', row, row.block_url)
 
             # temporary measure
-            if row.save_required():
+            if row.save_required:
                 row.save()
                 row.retrieve()
 
