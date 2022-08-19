@@ -22,7 +22,7 @@ class MyBlock(Enum):
     events = ('일과', 'c226cffe6cf84ab996bbc384bf26bf1d', EmojiCode.CLOCK_1230)
 
     targets = ('전개', 'fa7d93f6fbd341f089b185745c834811', EmojiCode.PURPLE_CIRCLE)
-    journals = ('진행', 'c8d46c01d6c941a9bf8df5d115a05f03', EmojiCode.PURPLE_HEART)
+    journals = ('진행', 'c8d46c01d6c941a9bf8df5d115a05f03', EmojiCode.PURPLE_CIRCLE)
     
     issues = ('줄기', 'e8782fe4e1a34c9d846d57b01a370327', EmojiCode.BLUE_CIRCLE)
     notes = ('표현', '069bbebd632f4a6ea3044575a064cf0f', EmojiCode.BLUE_HEART)
