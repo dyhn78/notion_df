@@ -37,3 +37,4 @@ class EmojiCode:
     CALENDAR = '📆'
     BIG_CALENDAR = '📅'
     TIMER = '⏲️'  # 가끔 Notion 환경에 뒤 공백이 짤려 삽입된 경우가 있다.
+    VOLLEYBALL = '🏐'

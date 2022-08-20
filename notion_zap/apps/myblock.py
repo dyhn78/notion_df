@@ -18,8 +18,7 @@ class MyBlock(Enum):
         return self.prefix + self.title
 
     projects = ('활동', '69b4e66c4ee43b6a5e40c8b28e6f9d1', EmojiCode.GLOBE_ASIA)
-
-    targets = ('전개', 'fa7d93f6fbd341f089b185745c834811', EmojiCode.CLOCK_1230)
+    targets = ('전개', 'fa7d93f6fbd341f089b185745c834811', EmojiCode.VOLLEYBALL)
 
     events = ('일과', 'c226cffe6cf84ab996bbc384bf26bf1d', EmojiCode.PURPLE_HEART)
     journals = ('진행', 'c8d46c01d6c941a9bf8df5d115a05f03', EmojiCode.PURPLE_CIRCLE)
@@ -31,7 +30,6 @@ class MyBlock(Enum):
     points = ('꼭지', '2c5411ba6a0f43a0a8aa06295751e37a', EmojiCode.YELLOW_HEART)
 
     streams = ('바탕', 'eb2f09a1de41412e8b2357bc04f26e74', EmojiCode.RED_CIRCLE)
-
     groups = ('갈래', '679c2515870d46e3a107b42cd2a5ffc3', EmojiCode.ORANGE_CIRCLE)
     domains = ('분야', 'eca1ba6d4831459ca8becc283f1f8c4e', EmojiCode.ORANGE_HEART)
 
