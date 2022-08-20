@@ -4,7 +4,7 @@ from notion_zap.apps.prop_matcher.utils.relation_prop_helpers import has_relatio
     get_unique_page_from_relation
 
 
-class BindSimpleProperties(Processor):
+class PropertyProcessorByReference(Processor):
     def __init__(self, root, option):
         super().__init__(root, option)
 
@@ -22,7 +22,4 @@ class BindSimpleProperties(Processor):
 
     @property
     def args(self):
-        return [(self.root[My.readings], 'media_type',
-                 [(self.root[My.channels], 'channels'),
-                  (self.root[My.streams], 'streams')]
-                 )]
+        return [(self.root[My.readings], 'media_type', [(self.root[My.streams], 'streams')])]

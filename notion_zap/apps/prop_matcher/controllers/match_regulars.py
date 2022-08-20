@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from notion_zap.apps.myblock import MyBlock
-from notion_zap.apps.prop_matcher.processors.bind_simple_properties import BindSimpleProperties
+from notion_zap.apps.prop_matcher.processors.property_by_ref import PropertyProcessorByReference
 from notion_zap.apps.prop_matcher.processors.date_by_created_time \
     import DateProcessorByCreatedTime
 from notion_zap.apps.prop_matcher.processors.date_by_ref_earliest \
@@ -45,7 +45,7 @@ class MatchController:
             DateProcessorByCreatedTime(self.root, self.option),
             WeekProcessorFromRefDate(self.root, self.option),
             WeekProcessorByManualDate(self.root, self.option),
-            BindSimpleProperties(self.root, self.option),
+            PropertyProcessorByReference(self.root, self.option),
             Saver(self.root),
         ]
 
@@ -69,7 +69,6 @@ class MatchFetcher:
             ft.preview()
             print('')
 
-    # TODO : gcal_sync_status
     def get_query_filter(self, block_key: MyBlock) -> tuple[QueryWithCallback, QueryFilter]:
         table: Database = self.root[block_key]
         query = table.rows.open_query()
@@ -96,10 +95,6 @@ class MatchFetcher:
             dates_begin_from_created_time &= manager.checkbox(
                 'get_dates_begin_from_created_time').is_not_empty()
             ft |= dates_begin_from_created_time
-
-            media_type_from_channel = manager.select('media_type').is_empty()
-            media_type_from_channel &= manager.relation('channels').is_not_empty()
-            ft |= media_type_from_channel
 
             media_type_from_streams = manager.select('media_type').is_empty()
             media_type_from_streams &= manager.relation('streams').is_not_empty()

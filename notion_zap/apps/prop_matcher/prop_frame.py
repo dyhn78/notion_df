@@ -68,6 +68,7 @@ class SubFrames:
     ])
 
 
+
 Frames: dict[MyBlock, Frame] = {
     MyBlock.events: Frame(
         SubFrames.date_auto_created, SubFrames.dates,
@@ -143,10 +144,12 @@ Frames: dict[MyBlock, Frame] = {
 
             Columns.dates_created,
             Columns.itself,
-            Columns.streams, Columns.channels,
+            Columns.streams,
 
             Columns.events, Columns.issues,
             Columns.journals, Columns.notes,
+
+            Columns.channels,
         ]
     ),
     MyBlock.points: Frame(
