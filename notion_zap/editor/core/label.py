@@ -1,25 +1,34 @@
 from __future__ import annotations
 
 import logging
-from abc import ABCMeta
 from enum import Enum
+from typing import Iterable, Literal
 
 from notion_zap.editor.core.core_utils import repr_object
 from notion_zap.editor.core.exceptions import CircularLabelException
 
 _frozen_super_members_dict: dict[Label, frozenset[Label]] = {}
-_direct_super_names_dict: dict[Label, list[str]] = {}
+_direct_super_names_dict: dict[Label, Iterable[str]] = {}
 
 
-class Label(Enum, metaclass=ABCMeta):
+class Label(Enum):
+    """to use, create a subclass"""
+
     @property
     def supers(self) -> frozenset[Label]:
         return _frozen_super_members_dict[self]
 
-    def __init__(self, supers: list[str]):
+    def __init__(self, *supers_input: str | Literal[0, None, '']):
         self._value_ = self.name
+        supers = self._cast_supers_input(supers_input)
         _direct_super_names_dict[self] = supers
         logging.debug(f"\t\t{self=}, {supers=}")
+
+    @staticmethod
+    def _cast_supers_input(supers: Iterable[str | Literal[0, None, '']]) -> Iterable[str]:
+        if all(supers):
+            return supers
+        return []
 
     @classmethod
     def _update_super_members(cls, label: Label) -> frozenset[Label]:
@@ -45,7 +54,9 @@ class Label(Enum, metaclass=ABCMeta):
     def __init_subclass__(cls):
         logging.debug(f"Label.__init_subclass__({cls})")
         super.__init_subclass__()
+        print(cls)  # TODO : this seems like not triggered at all. consider using debugger.
         for label in cls:
+            print(label)
             cls._update_super_members(label)
         logging.debug(f"\t{cls=}, {[f'{label.supers=}' for label in cls]}")
 

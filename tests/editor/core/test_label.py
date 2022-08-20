@@ -1,4 +1,9 @@
+import logging
+import sys
+
 from notion_zap.editor.core.label import Label
+
+logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
 
 
 class MyLabel(Label):
@@ -9,5 +14,6 @@ class MyLabel(Label):
 
 
 def test_label():
-    assert [getattr(MyLabel, key).supers for key in "abcde"] == [
+    print([label for label in MyLabel])
+    assert [label.supers for label in MyLabel] == [
         set(), set(), {MyLabel.a}, {MyLabel.a, MyLabel.b, MyLabel.c}]
