@@ -11,7 +11,7 @@ from notion_zap.apps.prop_matcher.processors.week_by_manual_date \
     import WeekProcessorByManualDate
 from notion_zap.apps.prop_matcher.processors.week_by_ref_date \
     import WeekProcessorFromRefDate
-from notion_zap.apps.prop_matcher.struct import MatchOptions, init_root, Saver
+from notion_zap.apps.prop_matcher.match_struct import MatchOptions, init_root, Saver
 from notion_zap.cli.blocks.database.database import QueryWithCallback, Database
 from notion_zap.cli.core.base import Root
 from notion_zap.cli.gateway.requestors.query.filter_struct import QueryFilter

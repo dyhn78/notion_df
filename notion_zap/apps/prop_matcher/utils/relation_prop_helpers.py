@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Hashable
 
-from notion_zap.apps.prop_matcher.struct import RowHandler
+from notion_zap.apps.prop_matcher.match_struct import RowHandler
 from notion_zap.cli.blocks import PageRow, Database
 
 

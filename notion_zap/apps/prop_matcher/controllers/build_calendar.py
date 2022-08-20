@@ -9,7 +9,7 @@ from notion_zap.apps.prop_matcher.processors.time_format_conformer import DateFo
     WeekFormatConformer
 from notion_zap.apps.prop_matcher.processors.week_by_manual_date import \
     WeekRowGetterByManualDate
-from notion_zap.apps.prop_matcher.struct import init_root
+from notion_zap.apps.prop_matcher.match_struct import init_root
 from notion_zap.apps.prop_matcher.utils.date_range_iterator import DateRangeIterator
 from notion_zap.cli.core.base import Root
 

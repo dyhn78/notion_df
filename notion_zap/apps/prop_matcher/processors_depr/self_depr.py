@@ -1,4 +1,4 @@
-from notion_zap.apps.prop_matcher.struct import Processor
+from notion_zap.apps.prop_matcher.match_struct import Processor
 
 
 class SelfProcessorDepr(Processor):

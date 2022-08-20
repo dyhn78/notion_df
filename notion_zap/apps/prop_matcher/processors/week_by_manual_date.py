@@ -4,7 +4,7 @@ import datetime as dt
 from typing import cast
 
 from notion_zap.apps.myblock import MyBlock
-from notion_zap.apps.prop_matcher.struct import Processor
+from notion_zap.apps.prop_matcher.match_struct import Processor
 from notion_zap.apps.prop_matcher.utils.date_formatter import DateFormatter
 from notion_zap.apps.prop_matcher.utils.relation_prop_helpers import has_relation, set_relation, \
     query_unique_page_by_idx

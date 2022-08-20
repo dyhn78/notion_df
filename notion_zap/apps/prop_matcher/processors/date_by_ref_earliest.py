@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Optional, Iterable, Tuple, Callable
 
 from notion_zap.apps.myblock import MyBlock
-from notion_zap.apps.prop_matcher.struct import Processor
+from notion_zap.apps.prop_matcher.match_struct import Processor
 from notion_zap.apps.prop_matcher.utils.relation_prop_helpers import \
     has_relation, set_relation, RelayConfiguration, get_all_pages_from_relation
 from notion_zap.cli.blocks import Database, PageRow

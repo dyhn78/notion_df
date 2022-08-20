@@ -5,7 +5,7 @@ from notion_zap.apps.media_scraper.location.lib_struct import (
     LibraryScrapBase, LibraryScrapResult)
 from notion_zap.apps.media_scraper.location.lib_gy import GoyangLibraryScrapBase
 from notion_zap.apps.media_scraper.location.lib_snu import SNULibraryScrapBase
-from notion_zap.apps.media_scraper.struct import ReadingPageManager
+from notion_zap.apps.media_scraper.common.media_struct import ReadingPageManager
 from notion_zap.cli.utility import stopwatch
 
 

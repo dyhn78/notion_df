@@ -1,6 +1,6 @@
 from notion_zap.apps.media_scraper.metadata.remove_dummy_blocks import remove_dummy_blocks
 from notion_zap.apps.media_scraper.metadata.write_contents import ContentsWriter
-from notion_zap.apps.media_scraper.struct import ReadingPageManager
+from notion_zap.apps.media_scraper.common.media_struct import ReadingPageManager
 from notion_zap.cli import blocks
 from notion_zap.cli.blocks import PageItem
 from notion_zap.cli.utility import stopwatch

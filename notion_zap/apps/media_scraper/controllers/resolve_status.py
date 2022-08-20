@@ -1,5 +1,5 @@
 from notion_zap.apps.media_scraper.config import READING_FRAME
-from notion_zap.apps.media_scraper.struct import ReadingTableEditor
+from notion_zap.apps.media_scraper.common.media_struct import ReadingTableEditor
 from notion_zap.cli import blocks
 
 

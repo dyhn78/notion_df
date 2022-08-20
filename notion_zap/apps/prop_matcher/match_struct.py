@@ -4,14 +4,13 @@ from abc import ABC, abstractmethod
 from typing import Hashable, Union, Any, Optional
 
 from notion_zap.apps.myblock import MyBlock
-from notion_zap.apps.prop_matcher.prop_frame import Frames
+from notion_zap.apps.prop_matcher.match_config import Frames
 from notion_zap.cli.blocks import PageRow
 from notion_zap.cli.core.base import Root
 
 
 class MatchOptions:
-    def __init__(self, options_input: dict[MyBlock, set[Union[Hashable, tuple[Hashable, Any]]]] =
-    None):
+    def __init__(self, options_input: dict[MyBlock, set[Union[Hashable, tuple[Hashable, Any]]]] = None):
         self.items: dict[MyBlock, dict[Hashable, Optional[Any]]] = {}
         for block_key, option_elements in options_input.items():
             block_option = self.items[block_key] = {}

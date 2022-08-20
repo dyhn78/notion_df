@@ -1,5 +1,5 @@
 from notion_zap.cli.utility import stopwatch
-from notion_zap.apps.media_scraper.struct import ReadingTableEditor
+from notion_zap.apps.media_scraper.common.media_struct import ReadingTableEditor
 from notion_zap.apps.media_scraper.metadata.remove_dummy_blocks import remove_dummy_blocks
 
 
