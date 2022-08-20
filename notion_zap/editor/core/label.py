@@ -1,20 +1,49 @@
 from __future__ import annotations
 
 import logging
+from abc import ABCMeta
+from collections import defaultdict
 from enum import Enum
 from typing import Iterable
 
-from notion_zap.editor.core.helpers import repr_object
+from notion_zap.editor.core.core_utils import repr_object
+
+_super_members_dict: dict[Label, set[Label]] = defaultdict(set)
+_super_names_dict: dict[Label, list[str]] = {}
 
 
-class Label:
+class Label(Enum, metaclass=ABCMeta):
+    @property
+    def supers(self):
+        return _super_members_dict[self]
+
+    def __init__(self, supers: list[str]):
+        self._value_ = self.name
+        _super_names_dict[self] = supers
+
+    @classmethod
+    def _update_super_members(cls, label: Label):
+        super_names = _super_names_dict[label]
+        direct_super_members = [cls[super_name] for super_name in super_names]
+        super_members = {}
+        # TODO
+        #  업데이트 중에 자기 자신이 발견되면 "Circular hierarchy" 던지기
+        _super_members_dict[label] = super_members
+
+    def __init_subclass__(cls):
+        super.__init_subclass__()
+        for label in cls:
+            cls._update_super_members(label)
+
+
+class LabelDepr:
     # TODO: change "supers" arg to "Self" after python 3.11
-    def __init__(self, *supers: Label | LabelEnum | tuple[(Label | LabelEnum), ...]):
+    def __init__(self, *supers: LabelDepr | LabelEnum | tuple[(LabelDepr | LabelEnum), ...]):
         supers_input = supers
-        supers: Iterable[Label] = self._parse_super_label_input(supers)
+        supers: Iterable[LabelDepr] = self._parse_super_label_input(supers)
         logging.debug(f"{self=}, {supers_input=}, {supers=}")
 
-        self.supers: set[Label] = set()
+        self.supers: set[LabelDepr] = set()
         for super_label in supers:
             self._recursively_add_supers(super_label)
         self._enum = None
@@ -29,7 +58,7 @@ class Label:
             raise ValueError(str(self.enum), f"new_value={str(value)}")
         self._enum = value
 
-    def _recursively_add_supers(self, super_label: Label):
+    def _recursively_add_supers(self, super_label: LabelDepr):
         if super_label in self.supers:
             return
         self.supers.add(super_label)
@@ -37,9 +66,10 @@ class Label:
             self._recursively_add_supers(super_super_label)
 
     def _parse_super_label_input(
-            self, supers_input: tuple[Label | LabelEnum | tuple[(Label | LabelEnum), ...]]) -> Iterable[Label] | None:
-        def get_from_label_or_label_enum(arg: Label | LabelEnum):
-            if isinstance(label_ := arg, Label):
+            self, supers_input: tuple[LabelDepr | LabelEnum | tuple[(LabelDepr | LabelEnum), ...]]) -> Iterable[
+                                                                                                           LabelDepr] | None:
+        def get_from_label_or_label_enum(arg: LabelDepr | LabelEnum):
+            if isinstance(label_ := arg, LabelDepr):
                 return label_
             if isinstance(label_enum := arg, LabelEnum):
                 return label_enum.value
@@ -56,8 +86,8 @@ class Label:
 
 
 class LabelEnum(Enum):
-    def __init__(self, value: Label):
-        if not isinstance(value, Label):
+    def __init__(self, value: LabelDepr):
+        if not isinstance(value, LabelDepr):
             raise ValueError(f"{self=}, {value=}")
         self._value_ = value
         value.enum = self
@@ -69,7 +99,7 @@ class LabelEnum(Enum):
         return repr_object(self, args)
 
     @property
-    def value(self) -> Label:
+    def value(self) -> LabelDepr:
         return self._value_
 
     @property
