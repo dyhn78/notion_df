@@ -10,10 +10,9 @@ class MyLabel(Label):
     a = ''
     b = 0
     c = 'a'
-    d = 'a', 'b'
+    d = 'a', 'c'
 
 
 def test_label():
-    print([label for label in MyLabel])
-    assert [label.supers for label in MyLabel] == [
-        set(), set(), {MyLabel.a}, {MyLabel.a, MyLabel.b, MyLabel.c}]
+    assert [set(label.supers) for label in MyLabel] == [
+        set(), set(), {MyLabel.a}, {MyLabel.a, MyLabel.c}]
