@@ -1,8 +1,15 @@
+# 공통 Property는 Block 차원에서 기본으로 정의
+# BlockMeta는 BaseBlock 딱 하나에서만 상속할 것.
+# 용어 정리: "Block" 이라 하면 (BaseBlock, PageBlock, PageRow, ...) 를 모두 가리킨다
 from __future__ import annotations
 
 from typing import Type
 
 from notion_zap.editor.core.entity import EntityMeta, BaseProperty, BaseEntity
+
+
+class BaseBlockMeta(EntityMeta):
+    pass
 
 
 class BlockId(BaseProperty[str]):
@@ -31,13 +38,6 @@ class DateField(Field):
 
 class RelationField(Field):
     ...
-
-
-# 공통 Property는 Block 차원에서 기본으로 정의
-# BlockMeta는 BaseBlock 딱 하나에서만 상속할 것.
-# 용어 정리: "Block" 이라 하면 (BaseBlock, PageBlock, PageRow, ...) 를 모두 가리킨다
-class BaseBlockMeta(EntityMeta):
-    pass
 
 
 class BaseBlock(BaseEntity, metaclass=BaseBlockMeta):

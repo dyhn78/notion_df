@@ -1,4 +1,11 @@
+from abc import ABC
 from typing import Iterable
+
+
+class NotionZapException(Exception, ABC):
+    """the base exception class."""
+    # TODO: think cooler project name
+    pass
 
 
 def repr_object(self, args: Iterable[str]) -> str:

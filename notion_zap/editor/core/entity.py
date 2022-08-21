@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import abstractmethod
 from typing import Type, Any, cast, TypeVar, Generic, Optional
 
-from notion_zap.editor.core.exceptions import NotionZapException
+from notion_zap.editor.core.utils import NotionZapException
 
 
 class EntityMeta(type):
