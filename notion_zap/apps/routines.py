@@ -1,4 +1,4 @@
-from notion_zap.apps.helpers.deal_exception import ExceptionLogger
+from notion_zap.apps.app_utils.deal_exception import ExceptionLogger
 
 
 @ExceptionLogger()
