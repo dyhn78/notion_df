@@ -4,7 +4,7 @@ import logging
 from enum import Enum
 from typing import Iterable, Literal
 
-from notion_zap.editor.core.core_utils import repr_object
+from notion_zap.editor.core.utils import repr_object
 
 
 class Label(Enum):
