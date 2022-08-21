@@ -1,6 +1,6 @@
 from enum import Enum
 
-from notion_zap.apps.app_utils.emoji_code import EmojiCode
+from notion_zap.apps.helpers.emoji_code import EmojiCode
 from notion_zap.cli.utility.page_id_to_url import url_to_id
 
 
