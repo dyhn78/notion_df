@@ -5,13 +5,13 @@ from __future__ import annotations
 
 from typing import Type, Any, cast
 
-from notion_zap.editor.core.entity import EntityMeta, BaseField, BaseEntity, Entity
+from notion_zap.editor.core.entity import EntityMeta, BaseField, BaseEntity
 from notion_zap.editor.core.utils import NotionZapException
 
 
 class BaseBlockMeta(EntityMeta):
     def __new__(mcs, name, bases, namespace: dict[str, Any]):
-        cls = cast(Type[Entity], type.__new__(mcs, name, bases, namespace))
+        cls = cast(Type[BaseBlock], type.__new__(mcs, name, bases, namespace))
         for key, value in namespace.items():
             if isinstance(value, BaseField):
                 if not any(isinstance(value, allowed_property_type)
@@ -56,13 +56,17 @@ class RelationProperty(PageRowProperty):
 
 
 class BaseBlock(BaseEntity, metaclass=BaseBlockMeta):
-    allowed_property_types: list[Type[BaseField]] = []
-    id = BlockId()
-    temp_id = TempId()
+    allowed_property_types: list[Type[BaseField]] = []  # TODO: delete
+    _id = BlockId()
+    _temp_id = TempId()
 
     @property
     def pk(self):
-        return self.id if self.id else self.temp_id
+        return self._id if self._id else self._temp_id
+
+    @property
+    def id(self):
+        return self._id
 
 
 class PageBlock(BaseBlock, metaclass=BaseBlockMeta):
