@@ -28,10 +28,7 @@ class BaseField(Generic[Entity, FieldValue]):
         remind that you cannot actually store null value on Notion."""  # TODO: better documentation
         self.default_value: Optional[FieldValue] = default_value
         self.index: dict[Entity, FieldValue] = {}
-
-    @property
-    def all_inverted_index(self) -> dict[Type[InvertedIndex], InvertedIndex]:
-        return InvertedIndex.registry[self]
+        self._inverted_index_dict: dict[str, InvertedIndex] = {}
 
     def __get__(self, entity: Optional[Entity], entity_type: Type[Entity]) -> FieldValue:
         if entity is None:
@@ -47,17 +44,20 @@ class BaseField(Generic[Entity, FieldValue]):
             self.default_value = value
         else:
             self.index[entity] = value
-            for inverted_index in self.all_inverted_index.values():
+            for inverted_index in self._inverted_index_dict.values():
                 inverted_index.update(entity, value)
 
-    def get_inverted_index_last(self):
-        # TODO: use decorator to register the method to method_dict
-        if inverted_index := self.all_inverted_index.get(InvertedIndexLast):
-            return inverted_index
-        else:
-            inverted_index = InvertedIndexLast(self)
-            self.all_inverted_index[InvertedIndexLast] = inverted_index
-            return inverted_index
+    @property
+    def inverted_index_all(self):
+        return self._inverted_index_dict.get('all', InvertedIndexAll(self))
+
+    @property
+    def inverted_index_first(self):
+        return self._inverted_index_dict.get('first', InvertedIndexFirst(self))
+
+    @property
+    def inverted_index_last(self):
+        return self._inverted_index_dict.get('last', InvertedIndexLast(self))
 
 
 class InvertedIndex(Generic[Entity, FieldValue]):
