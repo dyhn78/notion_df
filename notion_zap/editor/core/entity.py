@@ -21,7 +21,7 @@ class Entity(metaclass=EntityMeta):
 
 
 T_Entity = TypeVar('T_Entity', bound=Entity, covariant=True)
-T_FieldValue = TypeVar('T_FieldValue')
+T_FieldValue = TypeVar('T_FieldValue', covariant=True)
 T_FieldValueInput = TypeVar('T_FieldValueInput')
 
 
