@@ -39,6 +39,7 @@ class EntityBaseView(Generic[T_Entity]):
     ...
 
 
+# TODO: ii_base, ii_head based on entity/entity_view?
 class Field(Generic[T_Entity, T_FieldValue, T_FieldValueInput]):
     def __init__(self, _default_value: T_FieldValueInput = None):
         """
