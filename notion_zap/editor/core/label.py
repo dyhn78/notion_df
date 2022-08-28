@@ -11,16 +11,15 @@ _super_names_input = str | Literal[0, None, '']
 
 class Label(Enum):
     """to use, create a subclass"""
-
     @property
     def supers(self) -> frozenset[Label]:
         return self._supers
 
-    def __init__(self, *super_names_input: _super_names_input):
+    def __init__(self, *super_names: _super_names_input):
         self._value_ = self.name
 
         super_members = set()
-        direct_super_names = self._read_super_names(super_names_input)
+        direct_super_names = self._read_super_names(super_names)
         for direct_super_name in direct_super_names:
             direct_super_member = type(self)[direct_super_name]
             super_members.add(direct_super_member)
@@ -30,9 +29,9 @@ class Label(Enum):
         logging.debug(f"{self=}, {direct_super_names=}, {self._supers=}")
 
     @staticmethod
-    def _read_super_names(super_names_input: Iterable[_super_names_input]) -> Iterable[str]:
-        if all(super_names_input):
-            return super_names_input
+    def _read_super_names(super_names: Iterable[_super_names_input]) -> Iterable[str]:
+        if all(super_names):
+            return super_names
         return []
 
     def __str__(self):

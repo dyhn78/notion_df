@@ -20,16 +20,16 @@ class Entity(metaclass=EntityMeta):
         pass
 
 
-T_Entity = TypeVar('T_Entity', bound=Entity, covariant=True)
+T_Entity = TypeVar('T_Entity', bound=Entity, covariant=True)  # TODO: is 'covariant' option really needed?
 T_FieldValue = TypeVar('T_FieldValue', covariant=True)
 T_FieldValueInput = TypeVar('T_FieldValueInput')
 
 
 class Field(Generic[T_Entity, T_FieldValue, T_FieldValueInput]):
-    def __init__(self, *, default_value_input: T_FieldValueInput = None, entity_type: Type[T_Entity] = Entity):
-        """None default_value_input means no default field_value_input. 
+    def __init__(self, *, default_value: T_FieldValueInput = None, entity_type: Type[T_Entity] = Entity):
+        """None default_value means no default field_value_input. 
         remind that you cannot actually store null field_value_input on Notion."""  # TODO: better documentation
-        self.default_value: Optional[T_FieldValue] = self._read_field_value(default_value_input)
+        self.default_value: Optional[T_FieldValue] = self._read_field_value(default_value)
         self.entity_type: Type[T_Entity] = entity_type
         self.index: dict[T_Entity, T_FieldValue] = {}
         self._inverted_index_dict: dict[str, InvertedIndex[T_Entity, T_FieldValue]] = {}
