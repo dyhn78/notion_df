@@ -1,5 +1,6 @@
 from abc import ABC
-from typing import Iterable
+from itertools import chain
+from typing import Any
 
 
 class NotionZapException(Exception, ABC):
@@ -8,8 +9,9 @@ class NotionZapException(Exception, ABC):
     pass
 
 
-def repr_object(self, args: Iterable[str]) -> str:
-    return f"{type(self).__name__}({', '.join(args)})"
+def repr_object(obj, params: dict[str, Any] = None, **kwargs: Any) -> str:
+    items = chain(params.items() if params is not None else (), kwargs.items())
+    return f"{type(obj).__name__}({', '.join(f'{k}={v}' for k, v in items if v is not None)})"
 
 
 def get_num_iterator():
