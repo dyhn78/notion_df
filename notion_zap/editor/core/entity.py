@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from abc import abstractmethod
 from collections import defaultdict
-from typing import Type, Any, TypeVar, Generic, Optional
+from typing import Type, Any, TypeVar, Generic, Optional, Literal
+
+from notion_zap.editor.core.utils import repr_object
 
 
 class EntityMeta(type):
@@ -19,124 +21,141 @@ class Entity(metaclass=EntityMeta):
     def pk(self) -> str:
         pass
 
+    def base(self):
+        return EntityBaseView(self)
+
 
 T_Entity = TypeVar('T_Entity', bound=Entity, covariant=True)  # TODO: is 'covariant' option really needed?
 T_FieldValue = TypeVar('T_FieldValue', covariant=True)
 T_FieldValueInput = TypeVar('T_FieldValueInput')
 
 
+class EntityBaseView(Generic[T_Entity]):
+    """represents the server-side status."""
+
+    def __init__(self, entity: T_Entity):
+        self.entity = entity
+
+    ...
+
+
 class Field(Generic[T_Entity, T_FieldValue, T_FieldValueInput]):
-    def __init__(self, *, default_value: T_FieldValueInput = None, entity_type: Type[T_Entity] = Entity):
-        """None default_value means no default field_value_input. 
-        remind that you cannot actually store null field_value_input on Notion."""  # TODO: better documentation
-        self.default_value: Optional[T_FieldValue] = self._read_field_value(default_value)
-        self.entity_type: Type[T_Entity] = entity_type
-        self.index: dict[T_Entity, T_FieldValue] = {}
-        self._inverted_index_dict: dict[str, InvertedIndex[T_Entity, T_FieldValue]] = {}
+    def __init__(self, _default_value: T_FieldValueInput = None):
+        """
+        - default_value: None default_value means there is no default value.
+        remind that you cannot actually store null value on Notion.
+        - index_base: represents the server-side status. naming inspired by git 'base commit'.
+        - index_head: represents the latest status, both the server-side and the local modification.
+        """
+        self.default_value: Optional[T_FieldValue] = self.read_value(_default_value)
+        self.index_base: dict[T_Entity, T_FieldValue] = {}
+        self.index_head: dict[T_Entity, T_FieldValue] = {}
+        self._inverted_index_base: Optional[InvertedIndexMulti[T_Entity, T_FieldValue]] = None
+        self._inverted_index_head: Optional[InvertedIndexMulti[T_Entity, T_FieldValue]] = None
 
-    def __get__(self, entity: Optional[T_Entity], entity_type: Type[T_Entity]) -> T_FieldValue:
-        if entity is None:
+    def __get__(self, _entity: Optional[T_Entity | EntityBaseView[T_Entity]],
+                entity_type: Type[T_Entity]) -> T_FieldValue:
+        if _entity is None:
             return self.default_value
-        else:
+        elif isinstance(_entity, EntityBaseView):
+            entity = _entity.entity
             if self.default_value is None:
-                return self.index[entity]
+                return self.index_base[entity]
             else:
-                return self.index.get(entity, self.default_value)
+                return self.index_base.get(entity, self.default_value)
+        elif isinstance(_entity, Entity):
+            entity = _entity
+            if self.default_value is None:
+                return self.index_head[entity]
+            else:
+                return self.index_head.get(entity, self.default_value)
 
-    def __set__(self, entity: Optional[T_Entity], field_value_input: T_FieldValueInput) -> None:
-        field_value = self._read_field_value(field_value_input)
-        if entity is None:
-            self.default_value = field_value
-        else:
-            if self.index[entity] == field_value != self.default_value:
-                return
-            self.index[entity] = field_value
-            for inverted_index in self._inverted_index_dict.values():
-                inverted_index.update((entity, field_value))
+    def __set__(self, entity: T_Entity, _field_value: T_FieldValueInput) -> None:
+        field_value = self.read_value(_field_value)
+        if self.index_head[entity] == field_value != self.default_value:
+            return
+        if entity not in self.index_base:
+            self.index_base[entity] = field_value
+        self.index_head[entity] = field_value
+        self.inverted_index_head.update((entity, field_value))
+
+    def clear(self):
+        self.index_base = self.index_head = self._inverted_index_base = self._inverted_index_head = {}
+
+    def sync(self):
+        self.index_base = self.index_head
+        self._inverted_index_base = self._inverted_index_head
 
     @classmethod
     @abstractmethod
-    def _read_field_value(cls, field_value_input: T_FieldValueInput) -> T_FieldValue:
-        return field_value_input
+    def read_value(cls, _field_value: T_FieldValueInput) -> T_FieldValue:
+        return _field_value
 
     @property
-    def inverted_index_all(self) -> InvertedIndexAll[T_Entity, T_FieldValue]:
-        """initiate the inverted index if there isn't. otherwise return from cache."""
-        return self._inverted_index_dict.get('all', InvertedIndexAll(self))
+    def inverted_index_base(self) -> InvertedIndexMulti[T_Entity, T_FieldValue]:
+        if not (ii := self._inverted_index_base):
+            self._inverted_index_base = InvertedIndexMulti(self)
+        return ii
 
     @property
-    def inverted_index_first(self) -> InvertedIndexFirst[T_Entity, T_FieldValue]:
-        return self._inverted_index_dict.get('first', InvertedIndexFirst(self))
+    def inverted_index_head(self) -> InvertedIndexMulti[T_Entity, T_FieldValue]:
+        if not (ii := self._inverted_index_head):
+            self._inverted_index_head = InvertedIndexMulti(self)
+        return ii
 
     @property
-    def inverted_index_last(self) -> InvertedIndexLast[T_Entity, T_FieldValue]:
-        return self._inverted_index_dict.get('last', InvertedIndexLast(self))
+    def ii_base(self) -> InvertedIndexMulti[T_Entity, T_FieldValue]:
+        """alias of inverted_index_base()"""
+        return self.inverted_index_base
 
     @property
-    def ii_all(self) -> InvertedIndexAll[T_Entity, T_FieldValue]:
-        """alias of get_inverted_index_all()"""
-        return self.inverted_index_all
-
-    @property
-    def ii_first(self) -> InvertedIndexFirst[T_Entity, T_FieldValue]:
-        """alias of get_inverted_index_first()"""
-        return self.inverted_index_first
-
-    @property
-    def ii_last(self) -> InvertedIndexLast[T_Entity, T_FieldValue]:
-        """alias of get_inverted_index_last()"""
-        return self.inverted_index_last
+    def ii_head(self) -> InvertedIndexMulti[T_Entity, T_FieldValue]:
+        """alias of inverted_index_head()"""
+        return self.inverted_index_head
 
 
-class InvertedIndex(Generic[T_Entity, T_FieldValue]):
+class InvertedIndexMulti(Generic[T_Entity, T_FieldValue]):
     def __init__(self, field: Field):
         self.field = field
+        self._data: dict[T_FieldValue, list[T_Entity]] = defaultdict(list)
 
-    @abstractmethod
+    def __repr__(self) -> str:
+        return repr_object(self, field=type(self.field).__name__, data=self._data)
+
+    def __getitem__(self, field_value: T_FieldValue) -> list[T_Entity]:
+        return self._data.__getitem__(field_value)
+
     def update(self, *entity_to_value: tuple[T_Entity, T_FieldValue]):
-        pass
-
-    @abstractmethod
-    def __getitem__(self, item: T_FieldValue):
-        pass
-
-
-class InvertedIndexAll(InvertedIndex, Generic[T_Entity, T_FieldValue]):
-    def __init__(self, field: Field):
-        super().__init__(field)
-        self._data: dict[T_FieldValue, set[T_Entity]] = defaultdict(set)
-
-    def update(self, *entity_to_value: tuple[T_Entity, T_FieldValue]) -> None:
         for entity, value in entity_to_value:
-            self._data[value].add(entity)
+            self._data[value].append(entity)
 
-    def __getitem__(self, item: T_FieldValue) -> set[T_Entity]:
-        return self._data.__getitem__(item)
+    @property
+    def first(self) -> InvertedIndexUnique[T_Entity, T_FieldValue]:
+        return InvertedIndexUnique(self.field, self._data, 'first')
 
+    @property
+    def last(self) -> InvertedIndexUnique[T_Entity, T_FieldValue]:
+        return InvertedIndexUnique(self.field, self._data, 'last')
 
-class InvertedIndexFirst(InvertedIndex, Generic[T_Entity, T_FieldValue]):
-    def __init__(self, field: Field):
-        super().__init__(field)
-        self._data: dict[T_FieldValue, T_Entity] = {}
-
-    def update(self, *entity_to_value: tuple[T_Entity, T_FieldValue]) -> None:
-        for entity, value in entity_to_value:
-            if value not in self._data:
-                self._data[value] = entity
-
-    def __getitem__(self, item: T_FieldValue) -> T_Entity:
-        return self._data.__getitem__(item)
+    def clear(self):
+        self._data.clear()
 
 
-class InvertedIndexLast(InvertedIndex, Generic[T_Entity, T_FieldValue]):
-    def __init__(self, field: Field):
-        super().__init__(field)
-        self._data: dict[T_FieldValue, T_Entity] = {}
+class InvertedIndexUnique(Generic[T_Entity, T_FieldValue]):
+    def __init__(self, field: Field, _data: dict[T_FieldValue, list[T_Entity]], position: Literal['first', 'last']):
+        super().__init__()
+        self.field = field
+        self._data: dict[T_FieldValue, list[T_Entity]] = _data
+        self.position = 0 if position == 'first' else -1
 
-    def update(self, *entity_to_value: tuple[T_Entity, T_FieldValue]) -> None:
-        for entity, value in entity_to_value:
-            self._data[value] = entity
-        self._data.update()
+    def __repr__(self) -> str:
+        return repr_object(self, field=type(self.field).__name__, data={k: self[k] for k in self._data})
 
-    def __getitem__(self, value: T_FieldValue) -> T_Entity:
-        return self._data.__getitem__(value)
+    def __getitem__(self, field_value: T_FieldValue) -> T_Entity:
+        return self._data[field_value][self.position]
+
+    def get(self, field_value: T_FieldValue) -> T_Entity | None:
+        try:
+            return self[field_value]
+        except IndexError:
+            return None

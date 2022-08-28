@@ -11,6 +11,7 @@ _super_names_input = str | Literal[0, None, '']
 
 class Label(Enum):
     """to use, create a subclass"""
+
     @property
     def supers(self) -> frozenset[Label]:
         return self._supers
@@ -35,7 +36,7 @@ class Label(Enum):
         return []
 
     def __str__(self):
-        args = [self.name]
+        args = {'name': self.name}
         if supers := self.supers:
-            args.append(f"supers={sorted(super_enum.name for super_enum in supers)}")
+            args['supers'] = sorted(super_enum.name for super_enum in supers)
         return repr_object(self, args)
