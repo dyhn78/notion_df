@@ -39,7 +39,7 @@ class EntityBaseView(Generic[T_Entity]):
     ...
 
 
-# TODO: ii_base, ii_head based on entity/entity_view?
+# TODO: separate field/field_index; Field.dual(...) -> tuple(Field, Field)
 class Field(Generic[T_Entity, T_FieldValue, T_FieldValueInput]):
     def __init__(self, _default_value: T_FieldValueInput = None):
         """
