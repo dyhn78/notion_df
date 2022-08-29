@@ -44,16 +44,16 @@ class Title(Field):
     ...
 
 
-class PageRowProperty(Field):
+class Column(Field):
     """available on PageRow"""
     ...
 
 
-class DateProperty(PageRowProperty):
+class DateColumn(Column):
     ...
 
 
-class RelationProperty(PageRowProperty):
+class RelationColumn(Column):
     ...
 
 
