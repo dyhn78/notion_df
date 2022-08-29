@@ -29,31 +29,31 @@ class PropertyTypeException(NotionZapException):
         self.args = (f"{block_type_name}.{block_property_name}: {type(block_property_value).__name__}",)
 
 
-class BlockId(Field['Block', str, str]):
+class BlockIdField(Field['Block', str, str]):
     """real id on the server"""
     ...
 
 
-class TempId(Field):
+class TempIdField(Field):
     """temporary identification for yet-not-created entities"""
     ...
 
 
-class Title(Field):
+class TitleField(Field):
     """available on PageBlock"""
     ...
 
 
-class Column(Field):
+class ColumnField(Field):
     """available on PageRow"""
     ...
 
 
-class DateColumn(Column):
+class DateColumn(ColumnField):
     ...
 
 
-class RelationColumn(Column):
+class RelationColumn(ColumnField):
     ...
 
 
