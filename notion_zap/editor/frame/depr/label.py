@@ -4,7 +4,7 @@ import logging
 from enum import Enum
 from typing import Iterable, Literal
 
-from notion_zap.editor.core.utils import repr_object
+from notion_zap.editor.frame.utils import repr_object
 
 _super_names_input = str | Literal[0, None, '']
 

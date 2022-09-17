@@ -5,8 +5,8 @@ from __future__ import annotations
 
 from typing import Type, Any
 
-from notion_zap.editor.core.entity import EntityMeta, Field, Entity
-from notion_zap.editor.core.utils import NotionZapException
+from notion_zap.editor.frame.core import EntityMeta, Entity, Field
+from notion_zap.editor.frame.utils import NotionZapException
 
 
 class BaseBlockMeta(EntityMeta):
@@ -59,8 +59,8 @@ class RelationColumn(ColumnField):
 
 class Block(Entity, metaclass=BaseBlockMeta):
     allowed_property_types: list[Type[Field]] = []  # TODO: delete
-    _id = BlockId()
-    _temp_id = TempId()
+    _id = BlockIdField()
+    _temp_id = TempIdField()
 
     @property
     def pk(self):
@@ -72,7 +72,7 @@ class Block(Entity, metaclass=BaseBlockMeta):
 
 
 class PageBlock(Block, metaclass=BaseBlockMeta):
-    title = Title()
+    title = TitleField()
 
 
 class PageItem(PageBlock, metaclass=EntityMeta):
