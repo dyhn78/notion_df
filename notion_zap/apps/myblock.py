@@ -17,7 +17,7 @@ class MyBlock(Enum):
     def prefix_title(self):
         return self.prefix + self.title
 
-    projects = ('활동', '69b4e66c4ee43b6a5e40c8b28e6f9d1', EmojiCode.GLOBE_ASIA)
+    projects = ('활동', '69b4e66c4ee43b6a5e40c8b28e6f9d1', EmojiCode.PURPLE_CIRCLE)
     targets = ('전개', 'fa7d93f6fbd341f089b185745c834811', EmojiCode.VOLLEYBALL)  #TODO
 
     events = ('일과', 'c226cffe6cf84ab996bbc384bf26bf1d', EmojiCode.ORANGE_HEART)
@@ -30,8 +30,8 @@ class MyBlock(Enum):
     points = ('요점', '2c5411ba6a0f43a0a8aa06295751e37a', EmojiCode.YELLOW_HEART)
 
     streams = ('줄기', 'eb2f09a1de41412e8b2357bc04f26e74', EmojiCode.RED_CIRCLE)
-    groups = ('바탕', '679c2515870d46e3a107b42cd2a5ffc3', EmojiCode.ORANGE_CIRCLE)  #
-    domains = ('분야', 'eca1ba6d4831459ca8becc283f1f8c4e', EmojiCode.ORANGE_HEART)  #
+    groups = ('바탕', '679c2515870d46e3a107b42cd2a5ffc3', EmojiCode.PURPLE_HEART)
+    domains = ('꼭지', 'eca1ba6d4831459ca8becc283f1f8c4e', EmojiCode.RED_HEART)
 
     weeks = ('주간', 'd020b399cf5947a59d11a0b9e0ea45d0', EmojiCode.GREEN_CIRCLE)
     dates = ('일간', '961d1ca0a3d24a46b838ba85e710f18d', EmojiCode.GREEN_HEART)
