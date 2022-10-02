@@ -28,12 +28,13 @@ class Columns:
     dates = Column(key=MyBlock.dates.prefix_title, alias='dates', )
     dates_created = Column(key=MyBlock.dates.prefix + '생성', alias='dates_created', )
 
-    journals = Column(key=MyBlock.journals.prefix_title, alias='journals', )
-    events = Column(key=MyBlock.events.prefix_title, alias='events', )
     notes = Column(key=MyBlock.notes.prefix_title, alias='notes', )
 
+    journals = Column(key=MyBlock.journals.prefix_title, alias='journals', )
+    events = Column(key=MyBlock.events.prefix_title, alias='events', )
+
     issues = Column(key=MyBlock.issues.prefix_title, alias='issues', )
-    targets = Column(key=MyBlock.targets.prefix_title, alias='targets', )
+    writings = Column(key=MyBlock.writings.prefix_title, alias='writings', )
 
     streams = Column(key=MyBlock.streams.prefix_title, alias='streams', )
     channels = Column(key=MyBlock.channels.prefix_title, alias='channels', )
@@ -81,10 +82,10 @@ Frames: dict[MyBlock, Frame] = {
             Columns.itself,
             Columns.channels, Columns.readings,
 
-            Columns.targets, Columns.notes,
+            Columns.notes, Columns.writings,
         ]
     ),
-    MyBlock.targets: Frame(
+    MyBlock.notes: Frame(
         SubFrames.date_auto_created, SubFrames.dates,
         [
             Columns.title_generic,
@@ -94,7 +95,7 @@ Frames: dict[MyBlock, Frame] = {
             Columns.events, Columns.journals,
             Columns.issues,
             Columns.channels,
-            Columns.readings, Columns.notes,
+            Columns.readings, Columns.writings,
         ]
     ),
     MyBlock.journals: Frame(
@@ -106,18 +107,18 @@ Frames: dict[MyBlock, Frame] = {
 
             Columns.itself,
             Columns.streams,
-            Columns.readings, Columns.notes,
+            Columns.readings, Columns.writings,
         ]
     ),
 
-    MyBlock.notes: Frame(
+    MyBlock.writings: Frame(
         SubFrames.date_auto_created, SubFrames.dates_begin,
         [
             Columns.title_generic,
             Columns.timestr,
 
             Columns.itself,
-            Columns.readings, Columns.notes,
+            Columns.readings, Columns.writings,
             Columns.streams, Columns.channels,
             Columns.domains, Columns.people, Columns.locations,
         ]
@@ -147,7 +148,7 @@ Frames: dict[MyBlock, Frame] = {
             Columns.streams,
 
             Columns.events, Columns.issues,
-            Columns.journals, Columns.notes,
+            Columns.journals, Columns.writings,
 
             Columns.channels,
         ]
@@ -159,7 +160,7 @@ Frames: dict[MyBlock, Frame] = {
 
             Columns.itself,
             Columns.events,
-            Columns.readings, Columns.notes,
+            Columns.readings, Columns.writings,
             Columns.streams, Columns.channels,
             Columns.domains, Columns.people, Columns.locations,
         ]

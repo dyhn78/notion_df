@@ -155,5 +155,5 @@ class BlockWithContentsAndChildren(BlockWithChildren):
 
     def save_required(self) -> bool:
         save_this_required = self.requestor.__bool__()
-        return (save_this_required()
+        return (save_this_required
                 or self.children.save_required())

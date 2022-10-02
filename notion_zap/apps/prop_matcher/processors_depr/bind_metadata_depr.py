@@ -19,7 +19,7 @@
 #                 # list of (ref_tag, ref setter)
 #                 [
 #                     ('journals', ['streams', 'projects_context']),
-#                     ('notes', ['streams', 'projects_context']),
+#                     ('writings', ['streams', 'projects_context']),
 #                     ('events', ['streams']),
 #                     ('issues', ['streams']),
 #                 ]
@@ -29,7 +29,7 @@
 #                 ['domains'],
 #                 [
 #                     ('journals', ['domains_context']),
-#                     ('notes', ['domains']),
+#                     ('writings', ['domains']),
 #                     ('events', ['domains']),
 #                     ('issues', ['domains']),
 #                 ]
@@ -39,7 +39,7 @@
 #                 ['channels'],
 #                 [
 #                     ('journals', ['channels', 'channels_context']),
-#                     ('notes', ['channels']),
+#                     ('writings', ['channels']),
 #                     ('events', ['channels']),
 #                     ('issues', ['channels']),
 #                 ]
@@ -49,7 +49,7 @@
 #                 ['readings_begin'],
 #                 [
 #                     ('journals', ['readings', 'readings_context']),
-#                     ('notes', ['readings']),
+#                     ('writings', ['readings']),
 #                     ('events', ['readings']),
 #                     ('issues', ['readings']),
 #                 ]
@@ -95,7 +95,7 @@
 #
 #     def __init__(self, root):
 #         super().__init__(root)
-#         self.domain = self.root.notes
+#         self.domain = self.root.writings
 #         self.reference1 = self.root.journals
 #         self.reference2 = self.root.events
 #
