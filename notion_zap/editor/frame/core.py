@@ -107,7 +107,7 @@ class Field(Generic[Entity_T, FieldValue_T, FieldValueInput_T]):
         """
         self.default_value: Optional[FieldValue_T] = self.read_value(_default_value)
         self._index: dict[Entity_T, FieldValue_T] = {}
-        self._inverted_index_model = Optional[InvertedIndexModel[FieldValue_T, Entity_T]] = None
+        self._inverted_index = Optional[InvertedIndex[FieldValue_T, Entity_T]] = None
 
     def __get__(self: Field_T, _entity: Optional[Entity_T], entity_type: Type[Entity_T]) -> FieldValue_T | Field_T:
         if _entity is None:
@@ -123,46 +123,43 @@ class Field(Generic[Entity_T, FieldValue_T, FieldValueInput_T]):
         if entity in self._index and self._index[entity] == value:
             return
         self._index[entity] = value
-        if self._inverted_index_model is not None:
-            self._inverted_index_model.update({entity: value})
+        if self._inverted_index is not None:
+            self._inverted_index.update({entity: value})
 
-    @classmethod
-    def read_value(cls, _value: FieldValueInput_T) -> FieldValue_T:
+    @abstractmethod
+    def read_value(self, _value: FieldValueInput_T) -> FieldValue_T:
+        if _value is None:
+            return self.default_value
         return _value
 
     @property
     def index(self) -> DictView[Entity_T, FieldValue_T]:
         return DictView(self._index, type='index', field_type=type(self).__name__)
 
-    def _get_inverted_index_model(self) -> InvertedIndexModel[FieldValue_T, Entity_T]:
-        if self._inverted_index_model is None:
-            self._inverted_index_model = InvertedIndexModel(self._index, type(self).__name__)
-        return self._inverted_index_model
+    def _get_inverted_index(self) -> InvertedIndex[FieldValue_T, Entity_T]:
+        if self._inverted_index is None:
+            self._inverted_index = InvertedIndex(self._index, type(self).__name__)
+        return self._inverted_index
 
     @property
     def inverted_index_all(self) -> DictView[FieldValue_T, list[Entity_T]]:
-        return self._get_inverted_index_model().view_all
+        return self._get_inverted_index().view_all
 
     @property
     def inverted_index_first(self) -> InvertedIndexUnique[FieldValue_T, Entity_T]:
-        return self._get_inverted_index_model().view_first
+        return self._get_inverted_index().view_first
 
     @property
     def inverted_index_last(self) -> InvertedIndexUnique[FieldValue_T, Entity_T]:
-        return self._get_inverted_index_model().view_last
+        return self._get_inverted_index().view_last
 
 
 class MutableField(Generic[Entity_T, FieldValue_T, FieldValueInput_T], Field, metaclass=ABCMeta):
     def __set__(self, entity: Entity_T, _value: FieldValueInput_T) -> None:
         self._set(entity, _value)
 
-    @classmethod
-    @abstractmethod
-    def read_value(cls, _value: FieldValueInput_T) -> FieldValue_T:
-        return _value
 
-
-class InvertedIndexModel(Generic[FieldValue_T, Entity_T]):
+class InvertedIndex(Generic[FieldValue_T, Entity_T]):
     def __init__(self, field_index: Mapping[Entity_T, FieldValue_T], field_type: str):
         self._value_to_entities: dict[FieldValue_T, list[Entity_T]] = defaultdict(list)
         self.update(field_index)
