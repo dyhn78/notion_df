@@ -1,8 +1,8 @@
 # import datetime as dt
 #
-# from notion_zap.cli.structs import DatePropertyValue
-# from notion_zap.apps.prop_matcher.struct import TableModuleDepr
-# from notion_zap.apps.prop_matcher.common import write_extendedly
+# from depr.cli.structs import DatePropertyValue
+# from depr.apps.prop_matcher.struct import TableModuleDepr
+# from depr.apps.prop_matcher.common import write_extendedly
 #
 #
 # class ProgressMatcherofDates(TableModuleDepr):

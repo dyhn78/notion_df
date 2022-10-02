@@ -5,15 +5,15 @@
 # # noinspection PyPackageRequirements
 # from googleapiclient.errors import HttpError
 #
-# import notion_zap.apps.externals.gcal
-# from notion_zap.cli import editors
-# from notion_zap.cli.structs import DatePropertyValue
-# from notion_zap.apps.prop_matcher.utils.dt_formatter import TimeStringFormatter
-# from notion_zap.apps.prop_matcher.struct import ModuleDepr, TableModuleDepr
+# import depr.apps.externals.gcal
+# from depr.cli import editors
+# from depr.cli.structs import DatePropertyValue
+# from depr.apps.prop_matcher.utils.dt_formatter import TimeStringFormatter
+# from depr.apps.prop_matcher.struct import ModuleDepr, TableModuleDepr
 #
 #
 # class GcalMatcherAbs(ModuleDepr, metaclass=ABCMeta):
-#     Gcals = notion_zap.apps.externals.gcal.events
+#     Gcals = depr.apps.externals.gcal.events
 #     Gcal_api_error = HttpError
 #
 #     def __init__(self, root):
