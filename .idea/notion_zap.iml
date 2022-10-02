@@ -4,9 +4,7 @@
     <content url="file://$MODULE_DIR$">
       <excludeFolder url="file://$MODULE_DIR$/venv" />
       <excludeFolder url="file://$MODULE_DIR$/tests/.pytest_cache/v" />
-      <excludeFolder url="file://$MODULE_DIR$/tests/editor/core/.pytest_cache/v" />
-      <excludeFolder url="file://$MODULE_DIR$/notion_zap/cli" />
-      <excludeFolder url="file://$MODULE_DIR$/notion_zap/apps" />
+      <excludeFolder url="file://$MODULE_DIR$/tests/notion_df/core/.pytest_cache/v" />
     </content>
     <orderEntry type="jdk" jdkName="Python 3.10 (notion_zap)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />

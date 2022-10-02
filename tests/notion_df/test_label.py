@@ -1,7 +1,7 @@
 import logging
 import sys
 
-from notion_zap.editor.frame.depr.label import Label
+from notion_df.depr.label import Label
 
 logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
 

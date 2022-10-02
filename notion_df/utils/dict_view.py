@@ -1,6 +1,6 @@
 from typing import Mapping, TypeVar, Iterator, Final
 
-from notion_zap.editor.frame.utils import repr_object
+from notion_df.utils import repr_object
 
 _T_co = TypeVar('_T_co', covariant=True)
 _VT_co = TypeVar('_VT_co', covariant=True)

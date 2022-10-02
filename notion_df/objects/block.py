@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from notion_zap.editor.frame.core import EntityMeta, Entity, MutableField, Field, FieldValueInput_T, FieldValue_T
+from notion_df.core import EntityMeta, Entity, MutableField, Field, FieldValueInput_T, FieldValue_T
 
 
 class BaseBlockMeta(EntityMeta):
