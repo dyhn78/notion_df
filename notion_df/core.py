@@ -3,13 +3,12 @@ from __future__ import annotations
 from abc import abstractmethod, ABCMeta
 from collections import defaultdict
 from collections.abc import Mapping
-from typing import Any, TypeVar, Generic, Optional, Type, Literal, Final, Union, ClassVar, Iterator
+from typing import Any, TypeVar, Generic, Optional, Type, Literal, Final, ClassVar, Iterator, overload
 
 from notion_df.utils import repr_object, NotionZapException
 from notion_df.utils.dict_view import DictView
 
 Entity_T = TypeVar('Entity_T', bound='Entity', covariant=True)  # TODO: is 'covariant' option really needed?
-EntityGetItemKey_T = TypeVar('EntityGetItemKey_T')
 Field_T = TypeVar('Field_T', bound='MutableField')
 FieldValue_T = TypeVar('FieldValue_T', covariant=True)
 FieldValueInput_T = TypeVar('FieldValueInput_T')
@@ -17,6 +16,8 @@ FieldValueInput_T = TypeVar('FieldValueInput_T')
 
 # TODO
 #  - FieldClaim->MutableField 방식으로는 여러 필드 묶음에 대해서 구현 불가능. -> MyBaseBlock.__init_subclass__/__new__()
+#  - https://docs.python.org/ko/3/reference/datamodel.html?highlight=__set_name__#object.__set_name__
+#  - overload
 
 
 class FieldTypeError(NotionZapException):
@@ -33,17 +34,7 @@ class FieldNotBoundError(NotionZapException):
         self.args = self._set_args(entity=entity, field_type=field, field_keys=field_keys)
 
 
-class EntityMeta(type):  # TODO(later): remove if possible
-    def __new__(mcs, name, bases, namespace: dict[str, Any]):
-        ...
-        # _field_keys = namespace['_field_keys']
-        # for attr_name, attr in namespace.items():
-        #     if isinstance(attr, Field):
-        #         field = cast(Field, attr)
-        # return super().__new__(mcs, name, bases, namespace)
-
-
-class Entity(Generic[EntityGetItemKey_T], metaclass=EntityMeta):
+class Entity:
     """
     the building block of Notion. represents any entities - blocks, workspaces, users, and others.
     """
@@ -67,15 +58,21 @@ class Entity(Generic[EntityGetItemKey_T], metaclass=EntityMeta):
             return field_key
         raise FieldNotBoundError(self, field, self._field_keys)
 
-    def __getitem__(self: Entity_T, key: Field[Entity_T, FieldValue_T, Any] | EntityGetItemKey_T) \
-            -> Union[FieldValue_T, Any]:
+    @overload
+    def __getitem__(self: Entity_T, key: Field[Entity_T, FieldValue_T, Any]) -> FieldValue_T:
+        ...
+
+    def __getitem__(self, key):
         if isinstance(field := key, Field):
             field_key = self.get_field_key(field)
             return getattr(self, field_key)
         raise KeyError(self, key)
 
-    def get(self: Entity_T, key: Field[Entity_T, FieldValue_T, Any] | EntityGetItemKey_T,
-            default=None) -> Union[FieldValue_T, Any]:
+    @overload
+    def get(self: Entity_T, key: Field[Entity_T, FieldValue_T, Any], default=None) -> FieldValue_T:
+        ...
+
+    def get(self, key, default=None):
         try:
             return self[key]
         except KeyError:
@@ -109,7 +106,15 @@ class Field(Generic[Entity_T, FieldValue_T, FieldValueInput_T]):
         self._index: dict[Entity_T, FieldValue_T] = {}
         self._inverted_index = Optional[InvertedIndex[FieldValue_T, Entity_T]] = None
 
-    def __get__(self: Field_T, _entity: Optional[Entity_T], entity_type: Type[Entity_T]) -> FieldValue_T | Field_T:
+    @overload
+    def __get__(self: Field_T, _entity: None, entity_type: Type[Entity_T]) -> Field_T:
+        ...
+
+    @overload
+    def __get__(self: Field_T, _entity: Entity_T, entity_type: Type[Entity_T]) -> FieldValue_T:
+        ...
+
+    def __get__(self, _entity, entity_type):
         if _entity is None:
             return self
         entity: Entity_T = _entity

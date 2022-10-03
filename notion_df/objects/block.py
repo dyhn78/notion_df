@@ -3,23 +3,7 @@
 # 용어 정리: "Block" 이라 하면 (Block, PageBlock, PageRow, ...) 를 모두 가리킨다
 from __future__ import annotations
 
-from typing import Any
-
-from notion_df.core import EntityMeta, Entity, MutableField, Field, FieldValueInput_T, FieldValue_T
-
-
-class BaseBlockMeta(EntityMeta):
-    def __new__(mcs, name, bases, namespace: dict[str, Any]):
-        # cls = cast(Type[Block], type.__new__(mcs, name, bases, namespace))
-        cls = type.__new__(mcs, name, bases, namespace)
-        # for key, value in namespace.items():
-        #     if isinstance(value, MutableField):
-        #         if not any(isinstance(value, allowed_property_type)
-        #                    for allowed_property_type in cls.allowed_property_types):
-        #             raise FieldTypeError(name, key, value)
-        return cls
-
-    ...
+from notion_df.core import Entity, MutableField, Field, FieldValueInput_T, FieldValue_T
 
 
 class BlockIdField(Field['Block', str, str]):
@@ -58,7 +42,7 @@ class RelationColumn(ColumnField):
     ...
 
 
-class Block(Entity, metaclass=BaseBlockMeta):
+class Block(Entity):
     _id = BlockIdField()
     _temp_id = TempIdField()
 
@@ -71,13 +55,13 @@ class Block(Entity, metaclass=BaseBlockMeta):
         return self._id
 
 
-class PageBlock(Block, metaclass=BaseBlockMeta):
+class PageBlock(Block):
     title = TitleField()
 
 
-class PageItem(PageBlock, metaclass=EntityMeta):
+class PageItem(PageBlock):
     def __new__(cls): ...  # Field를 사용할 수 있도록 설정
 
 
-class PageRow(PageBlock, metaclass=EntityMeta):
+class PageRow(PageBlock):
     def __new__(cls): ...  # Field를 사용할 수 있도록 설정
