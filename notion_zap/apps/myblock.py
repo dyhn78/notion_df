@@ -23,7 +23,7 @@ class MyBlock(Enum):
     journals = ('진행', 'c8d46c01d6c941a9bf8df5d115a05f03', EmojiCode.ORANGE_CIRCLE)
     events = ('일과', 'c226cffe6cf84ab996bbc384bf26bf1d', EmojiCode.ORANGE_HEART)
 
-    streams = ('줄기', 'eb2f09a1de41412e8b2357bc04f26e74', EmojiCode.BLUE_CIRCLE)
+    streams = ('줄기', 'eb2f09a1de41412e8b2357bc04f26e74', EmojiCode.RED_CIRCLE)
     domains = ('꼭지', 'eca1ba6d4831459ca8becc283f1f8c4e', EmojiCode.RED_HEART)
 
     readings = ('읽기', 'c326f77425a0446a8aa309478767c85b', EmojiCode.YELLOW_CIRCLE)
