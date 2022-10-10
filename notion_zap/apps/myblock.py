@@ -5,13 +5,11 @@ from notion_zap.cli.utility.page_id_to_url import url_to_id
 
 
 class MyBlock(Enum):
-    def __new__(cls, title: str, id_or_url: str, prefix: str):
-        obj = object.__new__(cls)
-        obj._value_ = title
-        obj.title = title
-        obj.block_id = url_to_id(id_or_url)
-        obj.prefix = prefix
-        return obj
+    def __init__(self, title: str, id_or_url: str, prefix: str):
+        self._value_ = self._name_
+        self.title = title
+        self.block_id = url_to_id(id_or_url)
+        self.prefix = prefix
 
     @property
     def prefix_title(self):
@@ -48,4 +46,4 @@ if __name__ == '__main__':
     from notion_zap.cli.utility.page_id_to_url import id_to_url
 
     for block in MyBlock:
-        print(f"name={block.name}, title={block.prefix_title}, {id_to_url(block.block_id)}")
+        print(f"name/value={block.value}, title={block.prefix_title}, {id_to_url(block.block_id)}")
