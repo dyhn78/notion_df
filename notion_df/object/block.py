@@ -3,7 +3,7 @@
 # 용어 정리: "Block" 이라 하면 (Block, PageBlock, PageRow, ...) 를 모두 가리킨다
 from __future__ import annotations
 
-from notion_df.core import Entity, MutableField, Field, FieldValueInput_T, FieldValue_T
+from notion_df.core import Entity, MutableField, Field, ValueInput_T, Value_T, Property
 
 
 class BlockIdField(Field['Block', str, str]):
@@ -13,14 +13,14 @@ class BlockIdField(Field['Block', str, str]):
         super().__init__('')
 
     @classmethod
-    def read_value(cls, _value: FieldValueInput_T) -> FieldValue_T:
-        return _value
+    def _read_value(cls, value_input: ValueInput_T) -> Value_T:
+        return value_input
 
     ...
 
 
 class TempIdField(Field):
-    """temporary identification for yet-not-created entities"""
+    """temporary identification for yet-not-created entity_types"""
     ...
 
 
@@ -31,7 +31,11 @@ class TitleField(MutableField):
 
 class ColumnField(MutableField):
     """available on PageRow"""
-    ...
+
+    def read_property(self, property_input) -> Property:
+        ...
+        # TODO: type hinting for property_input (also __init__)
+        # TODO: self.gen_property(property_input, entity) or self.read_property(property_name) ?
 
 
 class DateColumn(ColumnField):
@@ -43,16 +47,12 @@ class RelationColumn(ColumnField):
 
 
 class Block(Entity):
-    _id = BlockIdField()
-    _temp_id = TempIdField()
+    id = BlockIdField()
+    id_temp = TempIdField()
 
     @property
     def pk(self):
-        return self._id if self._id else self._temp_id
-
-    @property
-    def id(self):
-        return self._id
+        return self.id if self.id else self.id_temp
 
 
 class PageBlock(Block):
