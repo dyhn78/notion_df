@@ -97,13 +97,13 @@ class Field(Generic[Entity_T, Value_T, ValueInput_T]):
         field_name = type(self).__name__
         self._index_data = FieldIndexModel(self)
         self._inverted_index_data = FieldInvertedIndexModel(self)
-        self.index: Final[DictView[Entity_T, Value_T]] \
+        self.index: Final[Mapping[Entity_T, Value_T]] \
             = DictView(self._index_data, view_type='index', field_type=field_name)
-        self.inverted_index_all: Final[DictView[Value_T, list[Entity_T]]] \
+        self.inverted_index_all: Final[Mapping[Value_T, list[Entity_T]]] \
             = DictView(self._inverted_index_data, view_type='inverted_index_all', field_type=field_name)
-        self.inverted_index_first: Final[FieldInvertedIndexUnique[Value_T, Entity_T]] \
+        self.inverted_index_first: Final[Mapping[Value_T, Entity_T]] \
             = FieldInvertedIndexUnique(self._inverted_index_data, 'first', field_name)
-        self.inverted_index_last: Final[FieldInvertedIndexUnique[Value_T, Entity_T]] \
+        self.inverted_index_last: Final[Mapping[Value_T, Entity_T]] \
             = FieldInvertedIndexUnique(self._inverted_index_data, 'last', field_name)
 
     def __set_name__(self, entity: Entity_T, entity_type_name: str):
