@@ -13,11 +13,6 @@ Value_T = TypeVar('Value_T', covariant=True)
 ValueInput_T = TypeVar('ValueInput_T')
 
 
-# TODO
-#  - FieldClaim->MutableField 방식으로는 여러 필드 묶음에 대해서 구현 불가능. -> MyBaseBlock.__init_subclass__/__new__()
-#  - https://docs.python.org/ko/3/reference/datamodel.html?highlight=__set_name__#object.__set_name__
-
-
 class Entity(Generic[Entity_T]):
     """
     the entity represents the concrete objects - for example workspaces, blocks, users, and comments.
@@ -93,18 +88,18 @@ class Field(Generic[Entity_T, Value_T, ValueInput_T]):
         self.entity_types: set[Type[Entity_T]] = set()
         self.listeners: list[FieldEventListener] = []
 
-        from notion_df.core.field_index import FieldIndexModel, FieldInvertedIndexModel, FieldInvertedIndexUnique
+        from notion_df.core.field_index import IndexModel, InvertedIndexModel, InvertedIndexUnique
         field_name = type(self).__name__
-        self._index_data = FieldIndexModel(self)
-        self._inverted_index_data = FieldInvertedIndexModel(self)
-        self.index: Final[DictView[Entity_T, Value_T]] \
-            = DictView(self._index_data, view_type='index', field_type=field_name)
-        self.inverted_index_all: Final[DictView[Value_T, list[Entity_T]]] \
-            = DictView(self._inverted_index_data, view_type='inverted_index_all', field_type=field_name)
-        self.inverted_index_first: Final[FieldInvertedIndexUnique[Value_T, Entity_T]] \
-            = FieldInvertedIndexUnique(self._inverted_index_data, 'first', field_name)
-        self.inverted_index_last: Final[FieldInvertedIndexUnique[Value_T, Entity_T]] \
-            = FieldInvertedIndexUnique(self._inverted_index_data, 'last', field_name)
+        self._index_model: Final = IndexModel[Entity_T, Value_T](self)
+        self._inverted_index_model: Final = InvertedIndexModel[Entity_T, Value_T](self)
+        self.index: Final = DictView[Entity_T, Value_T](
+            self._index_model, field_type=field_name, view_type='index')
+        self.inverted_index_all: Final = DictView[Value_T, list[Entity_T]](
+            self._inverted_index_model, field_type=field_name, view_type='inverted_index_all')
+        self.inverted_index_first: Final = InvertedIndexUnique[Value_T, Entity_T](
+            self._inverted_index_model, 'first', field_name)
+        self.inverted_index_last: Final = InvertedIndexUnique[Value_T, Entity_T](
+            self._inverted_index_model, 'last', field_name)
 
     def __set_name__(self, entity: Entity_T, entity_type_name: str):
         entity.fields.add(self)
