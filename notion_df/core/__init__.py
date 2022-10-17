@@ -13,6 +13,11 @@ Value_T = TypeVar('Value_T', covariant=True)
 ValueInput_T = TypeVar('ValueInput_T')
 
 
+# TODO
+#  - FieldClaim->MutableField 방식으로는 여러 필드 묶음에 대해서 구현 불가능. -> MyBaseBlock.__init_subclass__/__new__()
+#  - https://docs.python.org/ko/3/reference/datamodel.html?highlight=__set_name__#object.__set_name__
+
+
 class Entity(Generic[Entity_T]):
     """
     the entity represents the concrete objects - for example workspaces, blocks, users, and comments.
