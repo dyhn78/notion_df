@@ -41,6 +41,7 @@ class InvertedIndexModel(FieldLateSync[Entity_T, Value_T], metaclass=ABCMeta):
         return super().resolve()
 
 
+# TODO remove. Store full dict and serve with DictView
 class InvertedIndexUnique(Mapping[Value_T, Entity_T]):
     def __init__(self, _data_input: InvertedIndexModel[Entity_T, Value_T],
                  position: Literal['first', 'last'], field_typename: str):
