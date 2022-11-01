@@ -10,7 +10,7 @@
 #         super().__init__(root)
 #         self.domain = self.root.dates
 #         self.ref_zip = [
-#             (self.root.journals, 'journals'),
+#             (self.root.processes, 'processes'),
 #         ]
 #         self.collect_zip = [
 #             (
@@ -18,7 +18,7 @@
 #                 ['streams'],  # dom setter ('직결')
 #                 # list of (ref_tag, ref setter)
 #                 [
-#                     ('journals', ['streams', 'projects_context']),
+#                     ('processes', ['streams', 'projects_context']),
 #                     ('writings', ['streams', 'projects_context']),
 #                     ('events', ['streams']),
 #                     ('issues', ['streams']),
@@ -26,19 +26,19 @@
 #             ),
 #             (
 #                 'domains_total',
-#                 ['domains'],
+#                 ['summaries'],
 #                 [
-#                     ('journals', ['domains_context']),
-#                     ('writings', ['domains']),
-#                     ('events', ['domains']),
-#                     ('issues', ['domains']),
+#                     ('processes', ['domains_context']),
+#                     ('writings', ['summaries']),
+#                     ('events', ['summaries']),
+#                     ('issues', ['summaries']),
 #                 ]
 #             ),
 #             (
 #                 'channels_total',
 #                 ['channels'],
 #                 [
-#                     ('journals', ['channels', 'channels_context']),
+#                     ('processes', ['channels', 'channels_context']),
 #                     ('writings', ['channels']),
 #                     ('events', ['channels']),
 #                     ('issues', ['channels']),
@@ -48,7 +48,7 @@
 #                 'readings_total',
 #                 ['readings_begin'],
 #                 [
-#                     ('journals', ['readings', 'readings_context']),
+#                     ('processes', ['readings', 'readings_context']),
 #                     ('writings', ['readings']),
 #                     ('events', ['readings']),
 #                     ('issues', ['readings']),
@@ -64,8 +64,8 @@
 #     def __init__(self, root):
 #         super().__init__(root)
 #         self.domain = self.root.dates
-#         self.reference = self.root.journals
-#         self.to_ref = 'journals'
+#         self.reference = self.root.processes
+#         self.to_ref = 'processes'
 #         self.to_tars = ['locations', 'channels']
 #
 #     def __call__(self):
@@ -89,14 +89,14 @@
 #
 #
 # class ProgressMatcherofWritingsDepr(TableModuleDepr):
-#     Tdoms_ref1 = 'journals'
+#     Tdoms_ref1 = 'processes'
 #     Tdoms_ref2 = 'events'
 #     TL_tar = ['streams', 'channels', 'readings']
 #
 #     def __init__(self, root):
 #         super().__init__(root)
 #         self.domain = self.root.writings
-#         self.reference1 = self.root.journals
+#         self.reference1 = self.root.processes
 #         self.reference2 = self.root.events
 #
 #     def __call__(self):

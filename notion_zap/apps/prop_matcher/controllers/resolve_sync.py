@@ -16,7 +16,7 @@ class SyncResolveController:
     def __init__(self, date_range=0):
         self.root = Root(print_response_heads=5)
         self.date_range = date_range
-        self.marks = self.root.space.database(Frames[MyBlock.journals], )
+        self.marks = self.root.space.database(Frames[MyBlock.processes], )
 
     def execute(self):
         self.make_query()

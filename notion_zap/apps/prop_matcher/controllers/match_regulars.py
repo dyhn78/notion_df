@@ -17,19 +17,21 @@ from notion_zap.cli.core.base import Root
 from notion_zap.cli.gateway.requestors.query.filter_struct import QueryFilter
 
 REGULAR_MATCH_OPTIONS = MatchOptions({
-    MyBlock.journals: {'weeks', 'dates', 'dates_created'},
-    MyBlock.events: {'weeks', 'dates', 'dates_created'},
+    MyBlock.weeks: {'manual_date'},
+    MyBlock.dates: {'manual_date', ('weeks', 'manual_date')},
 
-    MyBlock.issues: {'weeks', 'dates'},
+    MyBlock.journals: {'weeks', 'dates'},
     MyBlock.notes: {'weeks', 'dates'},
+
+    MyBlock.processes: {'weeks', 'dates', 'dates_created'},
+    MyBlock.events: {'weeks', 'dates', 'dates_created'},
 
     MyBlock.readings: {('weeks', "warning: but don't make filter"),
                        ('dates', "warning: but don't make filter"),
                        'weeks_begin', 'dates_begin', 'dates_created'},
-    MyBlock.points: {'weeks', 'dates'},
-    MyBlock.writings: {'weeks', 'dates'},
-    MyBlock.weeks: {'manual_date'},
-    MyBlock.dates: {'manual_date', ('weeks', 'manual_date')},
+    MyBlock.grounds: {'weeks', 'dates'},
+
+    MyBlock.issues: {'weeks', 'dates'},
 })
 
 
@@ -88,7 +90,7 @@ class MatchFetcher:
             ft |= weeks_begin
 
             dates_begin_by_earliest_ref = manager.relation('dates_begin').is_empty()
-            dates_begin_by_earliest_ref &= manager.relation('journals').is_not_empty()
+            dates_begin_by_earliest_ref &= manager.relation('processes').is_not_empty()
             ft |= dates_begin_by_earliest_ref
 
             dates_begin_from_created_time = manager.relation('dates_begin').is_empty()
