@@ -27,6 +27,7 @@ class Entity(Generic[Entity_T]):
 
     def __init__(self: Type[Entity_T]):
         self.instances.append(self)
+        self.property_dict: dict[str, Property_T] = {}  # property_name to property
 
     def __init_subclass__(cls, **kwargs):
         ...
@@ -95,7 +96,7 @@ class Field(Generic[Entity_T, Value_T, ValueInput_T]):
         self.inverted_index_first: DictView[Value_T, Entity_T] = FieldInvertedIndexFirst(self).view
         self.inverted_index_last: DictView[Value_T, Entity_T] = FieldInvertedIndexLast(self).view
 
-    def __set_name__(self, entity: Entity_T, entity_type_name: str):
+    def __set_name__(self, entity: Entity_T, alias: str):
         entity.fields.add(self)
         # TODO: discover the required (one or more) properties; if not exists, make new one. then bind itself to them.
 
@@ -153,6 +154,21 @@ class MutableField(Generic[Entity_T, Value_T, ValueInput_T], Field, metaclass=AB
         self._set(entity, value_input)
 
 
+class Property(Field[Entity_T, Value_T, ValueInput_T], metaclass=ABCMeta):
+    def __init__(self, name: str, default_value_input: ValueInput_T = None):
+        super().__init__(default_value_input)
+        self.name = name
+
+    def __set_name__(self, entity: Entity_T, alias: str):
+        super().__set_name__(entity, alias)
+        entity.property_dict[self.name] = self
+
+
+class MutableProperty(Property[Entity_T, Value_T, ValueInput_T],
+                      MutableField[Entity_T, Value_T, ValueInput_T], metaclass=ABCMeta):
+    pass
+
+
 class FieldEventListener(Generic[Entity_T, Value_T], metaclass=ABCMeta):
     def __init__(self, field: Field[Entity_T, Value_T, Any]):
         self.field: Final = field
@@ -165,14 +181,6 @@ class FieldEventListener(Generic[Entity_T, Value_T], metaclass=ABCMeta):
         for entity_type in self.field.entity_types:
             for entity in entity_type.instances:
                 yield entity, self.field.__get__(entity, entity_type)
-
-
-class Property(Field[Entity_T, Value_T, ValueInput_T]):
-    ...
-
-
-class MutableProperty(Property[Entity_T]):
-    ...
 
 
 class FieldTypeError(NotionZapException):
