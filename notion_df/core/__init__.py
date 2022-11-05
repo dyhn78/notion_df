@@ -13,11 +13,6 @@ Value_T = TypeVar('Value_T', covariant=True)
 ValueInput_T = TypeVar('ValueInput_T')
 
 
-# TODO
-#  - FieldClaim->MutableField 방식으로는 여러 필드 묶음에 대해서 구현 불가능. -> MyBaseBlock.__init_subclass__/__new__()
-#  - https://docs.python.org/ko/3/reference/datamodel.html?highlight=__set_name__#object.__set_name__
-
-
 class Entity(Generic[Entity_T]):
     """
     the entity represents the concrete objects - for example workspaces, blocks, users, and comments.
@@ -89,7 +84,7 @@ class Field(Generic[Entity_T, Value_T, ValueInput_T]):
         None default_value means there is no default value.
         remind that you cannot actually store null value on Notion.
         """
-        self.default_value: Optional[Value_T] = self._read_value(default_value_input)
+        self.default_value: Optional[Value_T] = self._parse_value(default_value_input)
         self.entity_types: set[Type[Entity_T]] = set()
         self.listeners: list[FieldEventListener] = []
 
@@ -132,7 +127,7 @@ class Field(Generic[Entity_T, Value_T, ValueInput_T]):
 
     @final
     def _set(self, entity: Entity_T, value_input: ValueInput_T) -> None:
-        value = self._read_value(value_input)
+        value = self._parse_value(value_input)
         try:
             if self._get_value(entity) == value:
                 return
@@ -147,7 +142,7 @@ class Field(Generic[Entity_T, Value_T, ValueInput_T]):
         pass
 
     @abstractmethod
-    def _read_value(self, value_input: ValueInput_T) -> Value_T:
+    def _parse_value(self, value_input: ValueInput_T) -> Value_T:
         if value_input is None:
             return self.default_value
         return value_input
@@ -172,7 +167,7 @@ class FieldEventListener(Generic[Entity_T, Value_T], metaclass=ABCMeta):
                 yield entity, self.field.__get__(entity, entity_type)
 
 
-class Property(Generic[Entity_T]):
+class Property(Field[Entity_T, Value_T, ValueInput_T]):
     ...
 
 

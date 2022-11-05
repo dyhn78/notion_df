@@ -13,7 +13,7 @@ class BlockIdField(Field['Block', str, str]):
         super().__init__('')
 
     @classmethod
-    def _read_value(cls, value_input: ValueInput_T) -> Value_T:
+    def _parse_value(cls, value_input: ValueInput_T) -> Value_T:
         return value_input
 
     ...

@@ -20,7 +20,7 @@ class Label(Enum):
         self._value_ = self.name
 
         super_members = set()
-        direct_super_names = self._read_super_names(super_names)
+        direct_super_names = self._parse_super_names(super_names)
         for direct_super_name in direct_super_names:
             direct_super_member = type(self)[direct_super_name]
             super_members.add(direct_super_member)
@@ -30,7 +30,7 @@ class Label(Enum):
         logging.debug(f"{self=}, {direct_super_names=}, {self._supers=}")
 
     @staticmethod
-    def _read_super_names(super_names: Iterable[_super_names_input]) -> Iterable[str]:
+    def _parse_super_names(super_names: Iterable[_super_names_input]) -> Iterable[str]:
         if all(super_names):
             return super_names
         return []
