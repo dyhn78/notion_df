@@ -93,18 +93,12 @@ class Field(Generic[Entity_T, Value_T, ValueInput_T]):
         self.entity_types: set[Type[Entity_T]] = set()
         self.listeners: list[FieldEventListener] = []
 
-        from notion_df.core.field_index import IndexModel, InvertedIndexModel, InvertedIndexUnique
-        field_name = type(self).__name__
-        self._index_model: Final = IndexModel[Entity_T, Value_T](self)
-        self._inverted_index_model: Final = InvertedIndexModel[Entity_T, Value_T](self)
-        self.index: Final = DictView[Entity_T, Value_T](
-            self._index_model, field_type=field_name, view_type='index')
-        self.inverted_index_all: Final = DictView[Value_T, list[Entity_T]](
-            self._inverted_index_model, field_type=field_name, view_type='inverted_index_all')
-        self.inverted_index_first: Final = InvertedIndexUnique[Value_T, Entity_T](
-            self._inverted_index_model, 'first', field_name)
-        self.inverted_index_last: Final = InvertedIndexUnique[Value_T, Entity_T](
-            self._inverted_index_model, 'last', field_name)
+        from notion_df.core.field_index import (
+            FieldIndex, FieldInvertedIndexAll, FieldInvertedIndexFirst, FieldInvertedIndexLast)
+        self.index: DictView[Entity_T, Value_T] = FieldIndex(self).view
+        self.inverted_index_all: DictView[Value_T, list[Entity_T]] = FieldInvertedIndexAll(self).view
+        self.inverted_index_first: DictView[Value_T, Entity_T] = FieldInvertedIndexFirst(self).view
+        self.inverted_index_last: DictView[Value_T, Entity_T] = FieldInvertedIndexLast(self).view
 
     def __set_name__(self, entity: Entity_T, entity_type_name: str):
         entity.fields.add(self)
@@ -169,11 +163,7 @@ class FieldEventListener(Generic[Entity_T, Value_T], metaclass=ABCMeta):
         self.field: Final = field
 
     @abstractmethod
-    def update(self, entity_to_value: Mapping[Entity_T, Value_T]):
-        pass
-
-    @abstractmethod
-    def clear(self) -> None:
+    def update(self, items: Mapping[Entity_T, Value_T] | Iterable[tuple[Entity_T, Value_T]]):
         pass
 
     def _fetch(self) -> Iterator[tuple[Entity_T, Value_T]]:
