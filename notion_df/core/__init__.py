@@ -3,6 +3,8 @@ from __future__ import annotations
 from abc import abstractmethod, ABCMeta
 from typing import Any, TypeVar, Generic, Optional, Type, Final, overload, Iterable, Mapping, final, Iterator
 
+from typing_extensions import Self
+
 from notion_df.utils import NotionZapException
 from notion_df.utils.dict_view import DictView
 
@@ -13,10 +15,6 @@ Value_T = TypeVar('Value_T', covariant=True)
 ValueInput_T = TypeVar('ValueInput_T')
 
 
-# TODO
-#  - upgrade to python 3.11 to use 'Self' type hinting
-
-
 class Entity(Generic[Entity_T]):
     """
     the entity represents the concrete objects - for example workspaces, blocks, users, and comments.
@@ -25,15 +23,15 @@ class Entity(Generic[Entity_T]):
     otherwise if you want to keep it small, use generic class with functional API.
     """
 
-    def __init__(self: Entity_T):
-        self.field_set: set[Field[Entity_T, Value_T, ValueInput_T]] = set()
+    def __init__(self):
+        self.field_set: set[Field[Self, Value_T, ValueInput_T]] = set()
         self.property_dict: dict[str, Property_T] = {}  # property_name to property
 
     def __init_subclass__(cls, **kwargs):
         ...
 
     @overload
-    def __getitem__(self: Entity_T, key: Field[Entity_T, Value_T, Any]) -> Value_T:
+    def __getitem__(self, key: Field[Self, Value_T, Any]) -> Value_T:
         ...
 
     def __getitem__(self, key):
@@ -42,7 +40,7 @@ class Entity(Generic[Entity_T]):
         raise KeyError(self, key)
 
     @overload
-    def get(self: Entity_T, key: Field[Entity_T, Value_T, Any], default=None) -> Value_T:
+    def get(self, key: Field[Self, Value_T, Any], default=None) -> Value_T:
         ...
 
     def get(self, key, default=None):
@@ -101,7 +99,7 @@ class Field(Generic[Entity_T, Value_T, ValueInput_T]):
         # TODO: discover the required (one or more) properties; if not exists, make new one. then bind itself to them.
 
     @overload
-    def __get__(self: Field_T & Field, entity: None, entity_type: Type[Entity_T]) -> Field_T:
+    def __get__(self, entity: None, entity_type: Type[Entity_T]) -> Self:
         ...
 
     @overload
