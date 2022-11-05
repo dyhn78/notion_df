@@ -36,7 +36,7 @@ class DateProcessorByRefEarliest(Processor):
         row.write_relation(key_alias='weeks', value=[])
 
     def iter_args(self) -> Iterable[Tuple[PageRow, str, Callable]]:
-        ref_infos = [RelayConfiguration(self.root[MyBlock.journals], 'journals', 'dates')]
+        ref_infos = [RelayConfiguration(self.root[MyBlock.processes], 'processes', 'dates')]
         get_date = GetterByEarliestRef(self.root[MyBlock.dates], ref_infos)
         readings: Database = self.root[MyBlock.readings]
         for row in readings.rows:
