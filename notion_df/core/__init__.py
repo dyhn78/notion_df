@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import abstractmethod, ABCMeta
-from typing import Any, TypeVar, Generic, Optional, Type, Final, ClassVar, overload, Iterable, Mapping, final, Iterator
+from typing import Any, TypeVar, Generic, Optional, Type, Final, overload, Iterable, Mapping, final, Iterator
 
 from notion_df.utils import NotionZapException
 from notion_df.utils.dict_view import DictView
@@ -13,6 +13,10 @@ Value_T = TypeVar('Value_T', covariant=True)
 ValueInput_T = TypeVar('ValueInput_T')
 
 
+# TODO
+#  - upgrade to python 3.11 to use 'Self' type hinting
+
+
 class Entity(Generic[Entity_T]):
     """
     the entity represents the concrete objects - for example workspaces, blocks, users, and comments.
@@ -20,20 +24,16 @@ class Entity(Generic[Entity_T]):
     custom entity class is useful to describe a detailed blueprint of your workspaces structure.
     otherwise if you want to keep it small, use generic class with functional API.
     """
-    _field_keys: ClassVar[dict[Field, str]] = {}
-    fields: Final[ClassVar[set[Field]]] = {}
-    properties: Final[ClassVar[set[Property]]] = {}
-    instances: Final[ClassVar[list[Entity_T]]] = []
 
-    def __init__(self: Type[Entity_T]):
-        self.instances.append(self)
+    def __init__(self: Entity_T):
+        self.field_set: set[Field[Entity_T, Value_T, ValueInput_T]] = set()
         self.property_dict: dict[str, Property_T] = {}  # property_name to property
 
     def __init_subclass__(cls, **kwargs):
         ...
 
     @overload
-    def __getitem__(self: Entity_T & Entity, key: Field[Entity_T, Value_T, Any]) -> Value_T:
+    def __getitem__(self: Entity_T, key: Field[Entity_T, Value_T, Any]) -> Value_T:
         ...
 
     def __getitem__(self, key):
@@ -42,7 +42,7 @@ class Entity(Generic[Entity_T]):
         raise KeyError(self, key)
 
     @overload
-    def get(self: Entity_T & Entity, key: Field[Entity_T, Value_T, Any], default=None) -> Value_T:
+    def get(self: Entity_T, key: Field[Entity_T, Value_T, Any], default=None) -> Value_T:
         ...
 
     def get(self, key, default=None):
@@ -97,7 +97,7 @@ class Field(Generic[Entity_T, Value_T, ValueInput_T]):
         self.inverted_index_last: DictView[Value_T, Entity_T] = FieldInvertedIndexLast(self).view
 
     def __set_name__(self, entity: Entity_T, alias: str):
-        entity.fields.add(self)
+        entity.field_set.add(self)
         # TODO: discover the required (one or more) properties; if not exists, make new one. then bind itself to them.
 
     @overload
