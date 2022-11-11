@@ -1,5 +1,6 @@
 import datetime as dt
 import traceback
+from json import JSONDecodeError
 from typing import Callable
 
 import pytz
@@ -31,6 +32,8 @@ class ExceptionLogger:
                 for child in self.log_page.children[:-30]:
                     child.requestor.delete()
                 # log_page.save() -- TODO
+            except JSONDecodeError as err:
+                traceback_message = f"failed - {err}"
             except Exception as err:
                 for child in self.log_page.children:
                     child: TextItem
@@ -41,14 +44,14 @@ class ExceptionLogger:
                 with open('debug.log', 'w+', encoding='utf-8') as log_file:
                     traceback.print_exc(file=log_file)
                     log_file.seek(0)
-                    traceback_message = "\n" + log_file.read()
+                    traceback_message = log_file.read()
                 raise err
             finally:
                 delta = dt.datetime.now() - start_time
                 time_message += f" ({delta.seconds}.{str(delta.microseconds)[:3]} seconds)"
                 if len(traceback_message) > 1800:
                     traceback_message = traceback_message[:800] + "\n\n...\n\n" + traceback_message[-1000:]
-                self.log_contents.write_text(time_message + traceback_message)
+                self.log_contents.write_text((time_message + " " + traceback_message).strip())
                 self.log_block.save()
                 stopwatch('모든 작업 완료')
 
