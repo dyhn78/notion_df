@@ -20,7 +20,6 @@ class MyBlock(Enum):
     dates = ('일간', '961d1ca0a3d24a46b838ba85e710f18d', EmojiCode.GREEN_HEART)
 
     journals = ('바탕', 'fa7d93f6fbd341f089b185745c834811', EmojiCode.WHITE_CIRCLE)
-    notes = ('생활', '52df5fae504b4d35918b03bb82080500', EmojiCode.WHITE_HEART)
 
     processes = ('진행', 'c8d46c01d6c941a9bf8df5d115a05f03', EmojiCode.ORANGE_CIRCLE)
     events = ('일과', 'c226cffe6cf84ab996bbc384bf26bf1d', EmojiCode.ORANGE_HEART)
@@ -41,6 +40,7 @@ class MyBlock(Enum):
     channels = ('채널', '2d3f4ea770854b8e9e30abecd4d31a86', EmojiCode.BLACK_HEART)
     locations = ('장소', '920e2e10225d450d8bb084697f6d0fc6', EmojiCode.BLACK_HEART)
     writings = ('표현', '069bbebd632f4a6ea3044575a064cf0f', EmojiCode.BLACK_HEART)
+    notes = ('생활', '52df5fae504b4d35918b03bb82080500', EmojiCode.WHITE_HEART)
 
 
 if __name__ == '__main__':
