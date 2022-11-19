@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 
-from notion_df.blueprint.create_a_database import Dictable
+from notion_df.utils.mixin import Dictable
 
 
 @dataclass

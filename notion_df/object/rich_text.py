@@ -1,10 +1,11 @@
 from __future__ import annotations as __
 
 from abc import ABCMeta, abstractmethod
+from dataclasses import dataclass
 from typing import Optional, Any, Literal
 
-from notion_df.blueprint.create_a_database import DatePropertyValue
 from notion_df.object.misc import Annotations
+from notion_df.property.date_property import DatePropertyValue
 from notion_df.utils.mixin import Dictable
 
 
