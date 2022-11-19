@@ -2,36 +2,42 @@ from __future__ import annotations as __
 
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
-from typing import Optional, Any, Literal
+from typing import Optional, Any, Literal, Callable
 
 from notion_df.object.misc import Annotations
 from notion_df.property.date_property import DatePropertyValue
 from notion_df.utils.mixin import Dictable
 
 
+@dataclass(init=False)
 class RichText(Dictable, metaclass=ABCMeta):
-    def __init__(self, annotations: Optional[Annotations] = None,
-                 plain_text: Optional[str] = None, href: Optional[str] = None):
-        """https://developers.notion.com/reference/rich-text"""
-        self.plain_text = plain_text
-        self.href = href
-        self.annotations = annotations
-
-    @abstractmethod
-    def to_dict(self) -> dict[str, Any]:
-        return {'annotations': self.annotations} if self.annotations else {}
+    ...
 
 
-class Text(RichText):
-    def __init__(self, content: str, link: Optional[str] = None,
-                 annotations: Optional[Annotations] = None,
-                 plain_text: Optional[str] = None, href: Optional[str] = None):
-        super().__init__(annotations, plain_text, href)
-        self.content = content
-        self.link = link
+@dataclass
+class _RichTextDefault(Dictable, metaclass=ABCMeta):
+    annotations: Optional[Annotations] = None
+    plain_text: Optional[str] = None
+    href: Optional[str] = None
+
+    def __init_subclass__(cls: type[RichText], **kwargs):
+        print('YEAH')
+        to_dict = cls.to_dict
+
+        def wrapper(self: _RichTextDefault):
+            _default_to_dict = {'annotations': self.annotations.to_dict()} if self.annotations else {}
+            return to_dict(self) | _default_to_dict
+
+        cls.to_dict = wrapper
+
+
+@dataclass
+class _Text(RichText):
+    content: str
+    link: str
 
     def to_dict(self):
-        return super().to_dict() | {
+        return {
             'type': 'text',
             'text': {
                 'content': self.content,
@@ -41,6 +47,11 @@ class Text(RichText):
                 } if self.link else None
             }
         }
+
+
+@dataclass
+class Text(_RichTextDefault, _Text):
+    pass
 
 
 class Equation(RichText):
