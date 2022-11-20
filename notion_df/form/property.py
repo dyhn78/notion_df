@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 
-from notion_df.utils.mixin import Dictable
+from notion_df.util.mixin import Dictable
 
 
 @dataclass

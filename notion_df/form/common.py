@@ -3,11 +3,11 @@ from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime
-from enum import Enum
 from typing import Optional, Any, Literal
 
 from notion_df.form.property import DatePropertyValue
-from notion_df.utils.mixin import Dictable
+from notion_df.util.collection import StrEnum
+from notion_df.util.mixin import Dictable
 
 
 class RichText(Dictable, metaclass=ABCMeta):
@@ -21,7 +21,6 @@ class _RichText(Dictable, metaclass=ABCMeta):
     href: Optional[str] = None
 
     def __init_subclass__(cls: type[RichText], **kwargs):
-        print('YEAH')
         to_dict = cls.to_dict
 
         def wrapper(self: _RichText):
@@ -242,7 +241,7 @@ class ExternalFile(File):
         }
 
 
-class Color(Enum):
+class Color(StrEnum):
     default = 'default'
     gray = 'gray'
     brown = 'brown'
@@ -273,7 +272,7 @@ class Annotations(Dictable):
     code: bool = False
     color: Color | str = Color.default
 
-    def to_dict(self):
+    def to_dict(self) -> dict[str, str]:
         return {
             'bold': self.bold,
             'italic': self.italic,

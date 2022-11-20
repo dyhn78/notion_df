@@ -1,17 +1,11 @@
-from abc import abstractmethod
-from typing import Mapping, TypeVar, Iterator, Final, Generic
+from enum import Enum
+from typing import Mapping, TypeVar, Iterator, Final
 
-from notion_df.utils import repr_object
+from notion_df.util import repr_object
+from notion_df.util.mixin import Promise
 
-_T = TypeVar('_T')
 _T_co = TypeVar('_T_co', covariant=True)
 _VT_co = TypeVar('_VT_co', covariant=True)
-
-
-class Promise(Generic[_T]):
-    @abstractmethod
-    def resolve(self) -> _T:
-        pass
 
 
 class DictView(Mapping[_T_co, _VT_co]):
@@ -39,3 +33,9 @@ class DictView(Mapping[_T_co, _VT_co]):
 
     def __repr__(self) -> str:
         return repr_object(self, **self.description, data=self._model)
+
+
+class StrEnum(Enum):
+    @property
+    def value(self) -> str:
+        return self._value_

@@ -5,7 +5,8 @@ from collections import defaultdict
 from typing import Final, Mapping, TypeVar, Any, Iterable, Callable
 
 from notion_df.core import Entity_T, Value_T, Field, FieldEventListener
-from notion_df.utils.dict_view import DictView, Promise
+from notion_df.util.collection import DictView
+from notion_df.util.mixin import Promise
 
 _KT = TypeVar('_KT')
 _VT = TypeVar('_VT')

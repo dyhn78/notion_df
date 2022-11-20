@@ -1,5 +1,5 @@
 from notion_df.core import Entity
-from notion_df.utils import get_num_iterator
+from notion_df.util import get_num_iterator
 
 _num_iterator = get_num_iterator()
 
