@@ -4,8 +4,8 @@
     <content url="file://$MODULE_DIR$">
       <excludeFolder url="file://$MODULE_DIR$/venv" />
       <excludeFolder url="file://$MODULE_DIR$/tests/.pytest_cache/v" />
-      <excludeFolder url="file://$MODULE_DIR$/tests/notion_df/core/.pytest_cache/v" />
       <excludeFolder url="file://$MODULE_DIR$/notion_zap" />
+      <excludeFolder url="file://$MODULE_DIR$/tests/notion_df/core/.pytest_cache/v" />
     </content>
     <orderEntry type="jdk" jdkName="Python 3.10 (notion_zap)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
@@ -17,5 +17,8 @@
   <component name="PyDocumentationSettings">
     <option name="format" value="PLAIN" />
     <option name="myDocStringFormat" value="Plain" />
+  </component>
+  <component name="TestRunnerService">
+    <option name="PROJECT_TEST_RUNNER" value="py.test" />
   </component>
 </module>
