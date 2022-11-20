@@ -3,8 +3,7 @@ from __future__ import annotations
 from abc import abstractmethod, ABCMeta
 from dataclasses import dataclass
 
-from notion_df.object.misc import Emoji, File
-from notion_df.object.rich_text import RichText
+from notion_df.form.common import RichText, Emoji, File
 from notion_df.utils.mixin import Dictable
 
 
