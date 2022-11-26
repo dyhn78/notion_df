@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional, Any, Literal
+from typing import Optional, Any, Literal, ClassVar
 
 from notion_df.component.property import DatePropertyValue
 from notion_df.util.collection import StrEnum
@@ -200,6 +200,7 @@ class LinkPreviewMention(_RichText, _LinkPreviewMention):
 @dataclass
 class Emoji(Dictable):
     value: str
+    TYPE: ClassVar = 'emoji'
 
     def to_dict(self):
         return {
@@ -207,10 +208,14 @@ class Emoji(Dictable):
             "emoji": self.value
         }
 
+    @classmethod
+    def from_dict(cls, d: dict) -> Emoji:
+        return cls(d['emoji'])
+
 
 @dataclass
 class File(Dictable, metaclass=ABCMeta):
-    pass
+    TYPE: ClassVar = 'file'
 
 
 @dataclass

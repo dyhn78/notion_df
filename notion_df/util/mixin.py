@@ -6,6 +6,9 @@ _P = ParamSpec('_P')
 
 
 class Dictable(ABC):
+    def __init_subclass__(cls, **kwargs):
+        ...  # TODO: register class to deserialize(); <파이썬 코딩의 기술> p.163
+
     @abstractmethod
     def to_dict(self) -> dict[str, Any]: ...
 

@@ -1,50 +1,53 @@
 from __future__ import annotations
 
-import os
-from abc import abstractmethod
 from dataclasses import dataclass
+from typing import Any
 
-import requests
+from typing_extensions import Self
 
+from notion_df.component.api import NotionRequest, NotionResponse, NotionRequestSettings
 from notion_df.component.common import RichText, Emoji, File
-from notion_df.component.api import APIRequest
 from notion_df.component.schema import PropertySchema
-from notion_df.util.mixin import Dictable
-
-NOTION_API_KEY = os.getenv('NOTION_API_KEY')
-
-headers = {
-    'Authorization': f"Bearer {NOTION_API_KEY}",
-    'Notion-Version': '2022-06-28',
-}
-
-json_data = {
-    'x': 'y',
-}
-
-response = requests.post('https://api.notion.com/v1/databases/', headers=headers, json=json_data)
+from notion_df.util.parser import parse_datetime
 
 
-class CreateDatabase(APIRequest):
+class CreateDatabaseResponse(NotionResponse):
+    def __init__(self, data: dict[str, Any]):
+        self.id = data['id']
+        self.created_time = parse_datetime(data['created_time'])
+        self.icon = ...  # TODO: first implement Dictable.deserialize()
+
+        self.parent_id_type = data['parent']['type']
+        self.parent_id = data['parent'][self.parent_id_type]
+        self.archived = data['archived']
+
     @classmethod
-    @abstractmethod
-    def _get_entrypoint(cls):
-        return "https://api.notion.com/v1/databases/"
-
-    def request(self):  # TODO
-        url = 'https://api.notion.com/v1/databases/'
-        response = requests.post(url, data=data, headers=self.headers)
+    def parse(cls, response: dict[str, Any]) -> Self:
+        pass
 
 
 @dataclass
-class CreateDatabaseRequest(Dictable):
+class CreateDatabaseRequest(NotionRequest[CreateDatabaseResponse]):
+    """https://developers.notion.com/reference/create-a-database"""
     parent_id: str
     icon: Emoji | File
     cover: File
     title: list[RichText]
-    properties: dict[str, PropertySchema]
+    properties: dict[str, PropertySchema]  # TODO: make this a list
 
-    def to_dict(self) -> dict:
+    @classmethod
+    def get_settings(cls) -> NotionRequestSettings:
+        return NotionRequestSettings(
+            notion_version='2022-06-28',
+            endpoint='https://api.notion.com/v1/databases/',
+            method='POST',
+            response_type=CreateDatabaseResponse
+        )
+
+    def get_path(self) -> str:
+        return ''
+
+    def get_body(self) -> dict:
         return {
             "parent": {
                 "type": "page_id",

@@ -1,22 +1,56 @@
 from __future__ import annotations
 
-from abc import ABCMeta
+from abc import ABCMeta, abstractmethod
+from dataclasses import dataclass
+from typing import Literal, TypeVar, Any, Generic, final
 
-from notion_df.util.mixin import input_based_cache
+import requests
+from typing_extensions import Self
 
-NOTION_VERSION = '2022-06-28'
-
-
-@input_based_cache
-def _get_headers(notion_api_key: str):
-    return {
-        'Authorization': f"Bearer {notion_api_key}",
-        'Notion-Version': NOTION_VERSION,
-    }
+NotionResponse_T = TypeVar('NotionResponse_T', bound='NotionResponse')
 
 
-class APIRequest(metaclass=ABCMeta):
-    ENDPOINT = "https://api.notion.com/v1/"
+@dataclass
+class NotionResponse(metaclass=ABCMeta):
+    @classmethod
+    @abstractmethod
+    def parse(cls, response: dict | list) -> Self:
+        pass
 
-    def __init__(self, notion_api_key: str):
-        self.headers = _get_headers(notion_api_key)
+
+@dataclass
+class NotionRequestSettings(Generic[NotionResponse_T]):
+    notion_version: str
+    endpoint: str
+    method: Literal['GET', 'OPTIONS', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE']
+    response_type: type[NotionResponse_T]
+
+
+@dataclass
+class NotionRequest(Generic[NotionResponse_T], metaclass=ABCMeta):
+    api_key: str
+
+    @classmethod
+    @abstractmethod
+    def get_settings(cls) -> NotionRequestSettings:
+        pass
+
+    @abstractmethod
+    def get_path(self) -> str:
+        pass
+
+    @abstractmethod
+    def get_body(self) -> Any:
+        pass
+
+    @final
+    def request(self) -> NotionResponse_T:
+        settings = self.get_settings()
+        headers = {
+            'Authorization': f"Bearer {self.api_key}",
+            'Notion-Version': settings.notion_version,
+        }
+        response = requests.request(settings.method, f'{settings.endpoint}{self.get_path()}',
+                                    data=self.get_body(), headers=headers)
+        response.raise_for_status()
+        return settings.response_type.parse(response.json())
