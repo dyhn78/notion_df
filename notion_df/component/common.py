@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional, Any, Literal
 
-from notion_df.form.property import DatePropertyValue
+from notion_df.component.property import DatePropertyValue
 from notion_df.util.collection import StrEnum
 from notion_df.util.mixin import Dictable
 

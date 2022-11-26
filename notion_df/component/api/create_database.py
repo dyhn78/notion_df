@@ -6,9 +6,9 @@ from dataclasses import dataclass
 
 import requests
 
-from notion_df.form.common import RichText, Emoji, File
-from notion_df.form.request import RequestBuilder
-from notion_df.form.schema import PropertySchema
+from notion_df.component.common import RichText, Emoji, File
+from notion_df.component.api import APIRequest
+from notion_df.component.schema import PropertySchema
 from notion_df.util.mixin import Dictable
 
 NOTION_API_KEY = os.getenv('NOTION_API_KEY')
@@ -25,7 +25,7 @@ json_data = {
 response = requests.post('https://api.notion.com/v1/databases/', headers=headers, json=json_data)
 
 
-class CreateDatabase(RequestBuilder):
+class CreateDatabase(APIRequest):
     @classmethod
     @abstractmethod
     def _get_entrypoint(cls):
@@ -37,7 +37,7 @@ class CreateDatabase(RequestBuilder):
 
 
 @dataclass
-class CreateDatabaseParams(Dictable):
+class CreateDatabaseRequest(Dictable):
     parent_id: str
     icon: Emoji | File
     cover: File
