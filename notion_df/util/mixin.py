@@ -52,7 +52,7 @@ class DataObject(ABC):
             raise ValueError(f"d[{full_key}] is not a string nor an object :: d[{full_key}]={value}")
 
 
-class Promise(Generic[_T]):
+class Promise(Generic[_T]):  # TODO: fix name - this does not match JS promise
     @abstractmethod
     def resolve(self) -> _T:
         pass
