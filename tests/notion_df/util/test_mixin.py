@@ -11,6 +11,3 @@ def test_input_based_cache():
     assert hello('yes') is hello('yes')  # two outputs have identical id
     assert world('yes') is not hello('yes')  # cache id is different
 
-
-def test_api_object():
-    ...

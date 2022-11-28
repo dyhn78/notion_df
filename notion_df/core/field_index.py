@@ -6,13 +6,13 @@ from typing import Final, Mapping, TypeVar, Any, Iterable, Callable
 
 from notion_df.core import Entity_T, Value_T, Field, FieldEventListener
 from notion_df.util.collection import DictView
-from notion_df.util.mixin import Promise
+from notion_df.util.mixin import Resolvable
 
 _KT = TypeVar('_KT')
 _VT = TypeVar('_VT')
 
 
-class FieldStat(FieldEventListener[Entity_T, Value_T], Promise, metaclass=ABCMeta):
+class FieldStat(FieldEventListener[Entity_T, Value_T], Resolvable, metaclass=ABCMeta):
     def __init__(self, field: Field[Entity_T, Value_T, Any],
                  generate_init_model: Callable[[], Any]):
         FieldEventListener.__init__(self, field)

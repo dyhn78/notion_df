@@ -1,14 +1,13 @@
 import os
 from typing import Callable, Optional
 
+from notion_zap.cli.utility import stopwatch
 from selenium import webdriver
 from selenium.common.exceptions import (
     NoSuchElementException, StaleElementReferenceException)
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
-
-from notion_zap.cli.utility import stopwatch
 
 
 class WebDriverFactory:

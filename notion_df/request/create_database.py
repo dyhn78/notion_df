@@ -5,29 +5,29 @@ from typing import Any
 
 from typing_extensions import Self
 
-from notion_df.component.common import RichText, Emoji, File
-from notion_df.component.request import RequestForm, ResponseForm, RequestSettings
-from notion_df.component.schema import PropertySchema
+from notion_df.request import Request, Response, RequestSettings
+from notion_df.resource.common import RichText, Emoji, File
+from notion_df.resource.schema import PropertySchema
 from notion_df.util.parser import parse_datetime
 
 
-class CreateDatabaseResponseForm(ResponseForm):
+class DatabaseResponse(Response):
     def __init__(self, data: dict[str, Any]):
         self.id = data['id']
         self.created_time = parse_datetime(data['created_time'])
-        self.icon = ...  # TODO: first implement DataObject.deserialize()
+        self.icon = ...  # TODO: first implement Resource.deserialize()
 
         self.parent_id_type = data['parent']['type']
         self.parent_id = data['parent'][self.parent_id_type]
         self.archived = data['archived']
 
     @classmethod
-    def parse(cls, response: dict[str, Any]) -> Self:
+    def from_raw_data(cls, data: dict[str, Any]) -> Self:
         pass
 
 
 @dataclass
-class CreateDatabaseRequestForm(RequestForm[CreateDatabaseResponseForm]):
+class CreateDatabaseRequest(Request[DatabaseResponse]):
     """https://developers.notion.com/reference/create-a-database"""
     parent_id: str
     icon: Emoji | File

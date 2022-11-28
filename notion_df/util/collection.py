@@ -2,7 +2,7 @@ from enum import Enum
 from typing import Mapping, TypeVar, Iterator, Final
 
 from notion_df.util import repr_object
-from notion_df.util.mixin import Promise
+from notion_df.util.mixin import Resolvable
 
 _T_co = TypeVar('_T_co', covariant=True)
 _VT_co = TypeVar('_VT_co', covariant=True)
@@ -11,7 +11,7 @@ _VT_co = TypeVar('_VT_co', covariant=True)
 class DictView(Mapping[_T_co, _VT_co]):
     """immutable, synchronized view of dictionary."""
 
-    def __init__(self, _data_input: dict[_T_co, _VT_co] | Promise[dict[_T_co, _VT_co]], **description: str):
+    def __init__(self, _data_input: dict[_T_co, _VT_co] | Resolvable[dict[_T_co, _VT_co]], **description: str):
         self._data_input = _data_input
         self._is_promise = hasattr(_data_input, 'resolve')
         self.description: Final = description
