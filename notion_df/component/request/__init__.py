@@ -37,7 +37,9 @@ class RequestForm(Generic[ResponseForm_T], metaclass=ABCMeta):
         try:
             generic_class = cls.__orig_bases__[0]  # type: ignore
             response_type = get_args(generic_class)[0]
-        except (AttributeError, IndexError):
+            if response_type == ResponseForm_T:
+                raise ValueError
+        except (AttributeError, ValueError):
             print(f'WARNING: {cls.__name__} does not have response type')
             response_type = ResponseForm
         cls.response_type = response_type
