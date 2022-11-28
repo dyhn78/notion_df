@@ -7,11 +7,11 @@ from typing import Literal, TypeVar, Any, Generic, final
 import requests
 from typing_extensions import Self
 
-NotionResponse_T = TypeVar('NotionResponse_T', bound='NotionResponse')
+NotionResponse_T = TypeVar('NotionResponse_T', bound='ResponseForm')
 
 
 @dataclass
-class NotionResponse(metaclass=ABCMeta):
+class ResponseForm(metaclass=ABCMeta):
     @classmethod
     @abstractmethod
     def parse(cls, response: dict | list) -> Self:
@@ -19,7 +19,7 @@ class NotionResponse(metaclass=ABCMeta):
 
 
 @dataclass
-class NotionRequestSettings(Generic[NotionResponse_T]):
+class RequestSettings(Generic[NotionResponse_T]):
     notion_version: str
     endpoint: str
     method: Literal['GET', 'OPTIONS', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE']
@@ -27,12 +27,12 @@ class NotionRequestSettings(Generic[NotionResponse_T]):
 
 
 @dataclass
-class NotionRequest(Generic[NotionResponse_T], metaclass=ABCMeta):
+class RequestForm(Generic[NotionResponse_T], metaclass=ABCMeta):
     api_key: str
 
     @classmethod
     @abstractmethod
-    def get_settings(cls) -> NotionRequestSettings:
+    def get_settings(cls) -> RequestSettings:
         pass
 
     @abstractmethod

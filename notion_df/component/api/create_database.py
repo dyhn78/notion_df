@@ -5,13 +5,13 @@ from typing import Any
 
 from typing_extensions import Self
 
-from notion_df.component.api import NotionRequest, NotionResponse, NotionRequestSettings
+from notion_df.component.api import RequestForm, ResponseForm, RequestSettings
 from notion_df.component.common import RichText, Emoji, File
 from notion_df.component.schema import PropertySchema
 from notion_df.util.parser import parse_datetime
 
 
-class CreateDatabaseResponse(NotionResponse):
+class CreateDatabaseResponseForm(ResponseForm):
     def __init__(self, data: dict[str, Any]):
         self.id = data['id']
         self.created_time = parse_datetime(data['created_time'])
@@ -27,7 +27,7 @@ class CreateDatabaseResponse(NotionResponse):
 
 
 @dataclass
-class CreateDatabaseRequest(NotionRequest[CreateDatabaseResponse]):
+class CreateDatabaseRequestForm(RequestForm[CreateDatabaseResponseForm]):
     """https://developers.notion.com/reference/create-a-database"""
     parent_id: str
     icon: Emoji | File
@@ -36,12 +36,12 @@ class CreateDatabaseRequest(NotionRequest[CreateDatabaseResponse]):
     properties: dict[str, PropertySchema]  # TODO: make this a list
 
     @classmethod
-    def get_settings(cls) -> NotionRequestSettings:
-        return NotionRequestSettings(
+    def get_settings(cls) -> RequestSettings:
+        return RequestSettings(
             notion_version='2022-06-28',
             endpoint='https://api.notion.com/v1/databases/',
             method='POST',
-            response_type=CreateDatabaseResponse
+            response_type=CreateDatabaseResponseForm
         )
 
     def get_path(self) -> str:
