@@ -1,8 +1,8 @@
 # import os
 # from notion_client import AsyncClient, Client
 #
-# from depr.gateway.gateway.query import Query
-# from depr.gateway.utility import stopwatch
+# from notion_zap.gateway.gateway.query import Query
+# from notion_zap.gateway.utility import stopwatch
 #
 #
 # os.environ['NOTION_TOKEN'] = ***REMOVED***
