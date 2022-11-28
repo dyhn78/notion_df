@@ -7,7 +7,7 @@ _P = ParamSpec('_P')
 
 class Dictable(ABC):
     def __init_subclass__(cls, **kwargs):
-        ...  # TODO: register class to deserialize(); <파이썬 코딩의 기술> p.163
+        ...  # TODO: register class to deserialize() - https://www.notion.so/dyhn/df-Serializable-Trie-0607a9f6456a46ed875f7df404ab82b0
 
     @abstractmethod
     def to_dict(self) -> dict[str, Any]: ...
