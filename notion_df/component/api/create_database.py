@@ -41,7 +41,6 @@ class CreateDatabaseRequestForm(RequestForm[CreateDatabaseResponseForm]):
             notion_version='2022-06-28',
             endpoint='https://api.notion.com/v1/databases/',
             method='POST',
-            response_type=CreateDatabaseResponseForm
         )
 
     def get_path(self) -> str:

@@ -2,16 +2,18 @@ from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
-from typing import Literal, TypeVar, Any, Generic, final
+from typing import Literal, TypeVar, Any, Generic, final, ClassVar, get_args
 
 import requests
 from typing_extensions import Self
 
-NotionResponse_T = TypeVar('NotionResponse_T', bound='ResponseForm')
+from notion_df.util.mixin import input_based_cache
+
+ResponseForm_T = TypeVar('ResponseForm_T', bound='ResponseForm')
 
 
 @dataclass
-class ResponseForm(metaclass=ABCMeta):
+class ResponseForm:
     @classmethod
     @abstractmethod
     def parse(cls, response: dict | list) -> Self:
@@ -19,19 +21,30 @@ class ResponseForm(metaclass=ABCMeta):
 
 
 @dataclass
-class RequestSettings(Generic[NotionResponse_T]):
+class RequestSettings(Generic[ResponseForm_T]):
     notion_version: str
     endpoint: str
     method: Literal['GET', 'OPTIONS', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE']
-    response_type: type[NotionResponse_T]
 
 
 @dataclass
-class RequestForm(Generic[NotionResponse_T], metaclass=ABCMeta):
+class RequestForm(Generic[ResponseForm_T], metaclass=ABCMeta):
+    """base request form. type argument `ResponseForm_T` is strongly recommended."""
+    response_type: ClassVar[type[ResponseForm_T]]
     api_key: str
+
+    def __init_subclass__(cls, **kwargs):
+        try:
+            generic_class = cls.__orig_bases__[0]  # type: ignore
+            response_type = get_args(generic_class)[0]
+        except (AttributeError, IndexError):
+            print(f'WARNING: {cls.__name__} does not have response type')
+            response_type = ResponseForm
+        cls.response_type = response_type
 
     @classmethod
     @abstractmethod
+    @input_based_cache
     def get_settings(cls) -> RequestSettings:
         pass
 
@@ -44,7 +57,7 @@ class RequestForm(Generic[NotionResponse_T], metaclass=ABCMeta):
         pass
 
     @final
-    def request(self) -> NotionResponse_T:
+    def request(self) -> ResponseForm_T:
         settings = self.get_settings()
         headers = {
             'Authorization': f"Bearer {self.api_key}",
@@ -53,4 +66,4 @@ class RequestForm(Generic[NotionResponse_T], metaclass=ABCMeta):
         response = requests.request(settings.method, f'{settings.endpoint}{self.get_path()}',
                                     data=self.get_body(), headers=headers)
         response.raise_for_status()
-        return settings.response_type.parse(response.json())
+        return self.response_type.parse(response.json())
