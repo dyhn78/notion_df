@@ -1,7 +1,7 @@
 # from __future__ import annotations
 #
-# from depr.apps.prop_matcher.struct import MainEditorDepr
-# from depr.cli import editors
+# from notion_zap.apps.prop_matcher.struct import MainEditorDepr
+# from notion_zap.cli import editors
 #
 #
 # class GcalMatchController:
