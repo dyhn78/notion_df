@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 from datetime import datetime
 
-from notion_df.util.mixin import Dictable
+from notion_df.util.mixin import DataObject
 
 
 @dataclass
-class DatePropertyValue(Dictable):
+class DatePropertyValue(DataObject):
     # timezone option is disabled. you should handle timezone inside 'start' and 'end'.
     start: datetime
     end: datetime

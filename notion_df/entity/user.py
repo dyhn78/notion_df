@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 
-from notion_df.util.mixin import Dictable
+from notion_df.util.mixin import DataObject
 
 
 @dataclass
-class User(Dictable):
+class User(DataObject):
     ...  # TODO

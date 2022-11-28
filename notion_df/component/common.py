@@ -7,15 +7,15 @@ from typing import Optional, Any, Literal, ClassVar
 
 from notion_df.component.property import DatePropertyValue
 from notion_df.util.collection import StrEnum
-from notion_df.util.mixin import Dictable
+from notion_df.util.mixin import DataObject
 
 
-class RichText(Dictable, metaclass=ABCMeta):
+class RichText(DataObject, metaclass=ABCMeta):
     ...
 
 
 @dataclass
-class _RichText(Dictable, metaclass=ABCMeta):
+class _RichText(DataObject, metaclass=ABCMeta):
     annotations: Optional[Annotations] = None
     plain_text: Optional[str] = None
     href: Optional[str] = None
@@ -198,7 +198,7 @@ class LinkPreviewMention(_RichText, _LinkPreviewMention):
 
 
 @dataclass
-class Emoji(Dictable):
+class Emoji(DataObject):
     value: str
     TYPE: ClassVar = 'emoji'
 
@@ -214,7 +214,7 @@ class Emoji(Dictable):
 
 
 @dataclass
-class File(Dictable, metaclass=ABCMeta):
+class File(DataObject, metaclass=ABCMeta):
     TYPE: ClassVar = 'file'
 
 
@@ -269,7 +269,7 @@ class Color(StrEnum):
 
 
 @dataclass
-class Annotations(Dictable):
+class Annotations(DataObject):
     bold: bool = False
     italic: bool = False
     strikethrough: bool = False

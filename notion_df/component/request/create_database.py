@@ -15,7 +15,7 @@ class CreateDatabaseResponseForm(ResponseForm):
     def __init__(self, data: dict[str, Any]):
         self.id = data['id']
         self.created_time = parse_datetime(data['created_time'])
-        self.icon = ...  # TODO: first implement Dictable.deserialize()
+        self.icon = ...  # TODO: first implement DataObject.deserialize()
 
         self.parent_id_type = data['parent']['type']
         self.parent_id = data['parent'][self.parent_id_type]
