@@ -1,22 +1,53 @@
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
-from typing import Any, Generic, TypeVar, Callable, ParamSpec
+from typing import Any, Generic, TypeVar, Callable, ParamSpec, Final, final
+
+from typing_extensions import Self
 
 _T = TypeVar('_T')
 _P = ParamSpec('_P')
 
 
+class Trie(Generic[_T]):
+    def __init__(self):
+        ...
+
+    def __getitem__(self, key: tuple[str, ...]) -> _T:
+        ...
+
+    def __setitem__(self, key: tuple[str, ...], value: _T):
+        ...
+
+
 class Dictable(ABC):
+    registry = Final[Trie[Self]]()
+
     def __init_subclass__(cls, **kwargs):
-        ...  # TODO: register class to deserialize() - https://www.notion.so/dyhn/df-Serializable-Trie-0607a9f6456a46ed875f7df404ab82b0
+        super().__init_subclass__(**kwargs)
+        self = cls()  # TODO: initiate cls with default values (ex) None, object()
+        full_path = Dictable.find_type_key(self.to_dict())
+        Dictable.registry[full_path] = cls
 
     @abstractmethod
-    def to_dict(self) -> dict[str, Any]: ...
+    def to_dict(self) -> dict[str, Any]:
+        pass
 
+    @classmethod
+    @abstractmethod
+    def from_dict(cls, d: dict) -> Self:
+        subclass = cls.registry[cls.find_type_key(d)]
+        return subclass.from_dict(d)
 
-# class Dictable2(Dictable):
-#     @classmethod
-#     @abstractmethod
-#     def from_dict(cls, value: dict) -> Self: ...
+    @classmethod
+    @final
+    def find_type_key(cls, d: dict) -> tuple[str, ...]:
+        """
+        find the key "type". if d[d[type]] is a string, return. if it is a dict, repeat. keep the whole path.
+        if there is no key 'type', or d[type] is not string or dict, raise ValueError.
+        return (full_path, value)
+        """
+
 
 class Promise(Generic[_T]):
     @abstractmethod
