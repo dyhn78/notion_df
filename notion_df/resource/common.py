@@ -5,8 +5,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional, Any, Literal, ClassVar
 
-from notion_df.resource import Resource
 from notion_df.resource.property import DatePropertyValue
+from notion_df.resource.resource import Resource
 from notion_df.util.collection import StrEnum
 
 
@@ -21,6 +21,7 @@ class _RichText(Resource, metaclass=ABCMeta):
     href: Optional[str] = None
 
     def __init_subclass__(cls: type[RichText], **kwargs):
+        super().__init_subclass__(**kwargs)
         to_dict = cls.to_dict
 
         def wrapper(self: _RichText):
@@ -31,7 +32,7 @@ class _RichText(Resource, metaclass=ABCMeta):
 
 
 @dataclass
-class _Text(RichText):
+class _Text(RichText, metaclass=ABCMeta):
     content: str
     link: str
 

@@ -5,7 +5,7 @@ from typing import Any
 
 from typing_extensions import Self
 
-from notion_df.request import Request, Response, RequestSettings
+from notion_df.request.request import Response, Request, RequestSettings
 from notion_df.resource.common import RichText, Emoji, File
 from notion_df.resource.schema import PropertySchema
 from notion_df.util.parser import parse_datetime

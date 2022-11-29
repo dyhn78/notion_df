@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 
-from notion_df.resource import Resource
+from notion_df.resource.resource import Resource
 
 
 @dataclass
@@ -15,3 +15,9 @@ class DatePropertyValue(Resource):
             'start': self.start.isoformat(),  # TODO: check Notion time format
             'end': self.start.isoformat(),
         }
+
+
+import inspect
+
+signature = inspect.signature(DatePropertyValue.__init__).parameters
+print(signature)

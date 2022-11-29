@@ -1,4 +1,4 @@
-from notion_df.resource import Resource
+from notion_df.resource.resource import Resource
 
 
 def test_resource():

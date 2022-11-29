@@ -16,6 +16,7 @@ from googleapiclient.errors import HttpError
 from notion_zap.cli.core.mixins import Executable, ValueCarrier
 
 import notion_df.resource
+import notion_df.resource.resource
 
 # If modifying these scopes, delete the file token.json.
 #  https://developers.google.com/calendar/api/guides/auth
@@ -25,7 +26,7 @@ PATH_CREDENTIALS = os.path.join(os.path.dirname(__file__), 'credentials.json')
 PATH_TOKEN = os.path.join(os.path.dirname(__file__), 'token.json')
 
 
-def open_gcal_service() -> notion_df.resource.Resource:
+def open_gcal_service() -> notion_df.resource.resource.Resource:
     """Shows basic usage of the Google Calendar API.
     Prints the start and name of the next 10 events on the user's calendar.
     """
