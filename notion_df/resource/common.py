@@ -59,7 +59,7 @@ class _Equation(RichText):
     expression: str
 
     def to_dict(self) -> dict[str, Any]:
-        return super().to_dict() | {
+        return {
             'type': 'equation',
             'expression': self.expression
         }
@@ -72,7 +72,7 @@ class Equation(_RichText, _Equation):
 
 class Mention(RichText):
     def to_dict(self) -> dict[str, Any]:
-        return super().to_dict() | {
+        return {
             'type': 'mention',
             'mention': self._mention_to_dict()
         }
