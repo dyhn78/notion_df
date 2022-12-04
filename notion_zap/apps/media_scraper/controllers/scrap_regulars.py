@@ -1,10 +1,10 @@
 from typing import Optional, Iterable
 
+from notion_zap.apps.media_scraper.common.media_struct import (
+    ReadingTableEditor, ReadingPageManager)
 from notion_zap.apps.media_scraper.config import STATUS_COLUMN
 from notion_zap.apps.media_scraper.location.main import LibraryScrapManager
 from notion_zap.apps.media_scraper.metadata.main import MetadataScrapManager
-from notion_zap.apps.media_scraper.common.media_struct import (
-    ReadingTableEditor, ReadingPageManager)
 from notion_zap.cli.blocks import PageRow, Database
 from notion_zap.cli.utility import stopwatch
 
@@ -89,4 +89,4 @@ if __name__ == '__main__':
     controller = RegularScrapController()
     controller.fetch(request_size=3)
     controller.process()
-    # RegularScrapController(issues={'metadata'}).execute(request_size=5)
+    # RegularScrapController(tasks={'metadata'}).execute(request_size=5)

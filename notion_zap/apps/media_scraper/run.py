@@ -7,4 +7,4 @@ if __name__ == '__main__':
     controller = RegularScrapController()
     controller.fetch(request_size=3)
     controller.process()
-    # RegularScrapController(issues={'metadata'}).execute(request_size=5)
+    # RegularScrapController(tasks={'metadata'}).execute(request_size=5)
