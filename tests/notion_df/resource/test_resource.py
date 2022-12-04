@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from notion_df.resource.resource import Resource, ResourceDefinitionParser, get_type_key_chain
+from notion_df.resource.resource import Resource, ResourceDefinitionParser, get_type_key_chain, AttributeMock
 
 
 def test_resource_find_type_key_chain():
@@ -35,11 +35,11 @@ def test_resource_mock__simple():
     assert ResourceDefinitionParser(__TestResource).mock_to_dict == {
         'type': 'text',
         'text': {
-            'content': 'self.content',
+            'content': AttributeMock('content'),
             'link': {
                 'type': 'url',
-                'url': 'self.link'
-            } if 'self.link' else None
+                'url': AttributeMock('link')
+            } if AttributeMock('link') else None
         }
     }
 
@@ -70,7 +70,7 @@ def test_resource_mock__complex():
             'type': 'user',
             'user': {
                 'object': 'user',
-                'id': 'self.user_id'
+                'id': AttributeMock('user_id')
             }
         }
     }
