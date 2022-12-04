@@ -6,6 +6,8 @@ from typing import ClassVar, Any
 
 from typing_extensions import Self
 
+from notion_df.util import NotionDfValueError
+
 
 @dataclass
 class Resource(metaclass=ABCMeta):
@@ -16,7 +18,7 @@ class Resource(metaclass=ABCMeta):
         super().__init_subclass__(**kwargs)
         if getattr(cls, '__mock__', False):
             return
-        type_key_chain = get_type_key_chain(ResourceParser(cls).to_dict)
+        type_key_chain = ResourceDefinitionParser(cls).type_key_chain
         Resource.registry[type_key_chain] = cls
 
     @abstractmethod
@@ -30,7 +32,7 @@ class Resource(metaclass=ABCMeta):
         return subclass.from_dict(d)
 
 
-class ResourceParser:
+class ResourceDefinitionParser:
     def __init__(self, resource_cls: type[Resource]):
         class ResourceMock(resource_cls, metaclass=ABCMeta):
             __mock__ = True
@@ -40,23 +42,39 @@ class ResourceParser:
 
             def __getattr__(self, key: str):
                 try:
-                    return super().__getattr__(key)  # type: ignore
+                    return getattr(super(), key)
                 except AttributeError:
-                    return f'self.{key}'
+                    return AttributeMock(key)
 
-        self.mock = ResourceMock()
-        self.to_dict = self.mock.to_dict()
+        self.mock_to_dict = ResourceMock().to_dict()
+        self.type_key_chain = get_type_key_chain(self.mock_to_dict)
+
+        self.attr_dict: dict[tuple[str, ...], AttributeMock] = {}
+        items = [((k,), v) for k, v in self.mock_to_dict.items()]
+        while items:
+            key_chain, value = items.pop()
+            if isinstance(value, AttributeMock):
+                if self.attr_dict.get(key_chain) == value:
+                    raise NotionDfValueError(f"Resource.to_dict() cannot have value made of multiple attributes")
+                self.attr_dict[key_chain] = value
+            elif isinstance(value, dict):
+                ...  # TODO
+
+
+@dataclass
+class AttributeMock:
+    name: str
 
 
 def get_type_key_chain(d: dict) -> tuple[str, ...]:
-    full_type = []
+    current_key_chain = []
     if 'type' not in d:
-        raise ValueError(f"'type' not in d :: {d.keys()=}")
+        raise NotionDfValueError(f"'type' not in d :: {d.keys()=}")
     while True:
         key = d['type']
         value = d[key]
-        full_type.append(key)
+        current_key_chain.append(key)
         if isinstance(value, dict) and 'type' in value:
             d = value
             continue
-        return tuple(full_type)
+        return tuple(current_key_chain)

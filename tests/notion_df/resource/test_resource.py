@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from notion_df.resource.resource import Resource, ResourceParser, get_type_key_chain
+from notion_df.resource.resource import Resource, ResourceDefinitionParser, get_type_key_chain
 
 
 def test_resource_find_type_key_chain():
@@ -32,7 +32,7 @@ def test_resource_mock__simple():
                 }
             }
 
-    assert ResourceParser(__TestResource).to_dict == {
+    assert ResourceDefinitionParser(__TestResource).mock_to_dict == {
         'type': 'text',
         'text': {
             'content': 'self.content',
@@ -64,7 +64,7 @@ def test_resource_mock__complex():
                 }
             }
 
-    assert ResourceParser(__TestResource).to_dict == {
+    assert ResourceDefinitionParser(__TestResource).mock_to_dict == {
         'type': 'mention',
         'mention': {
             'type': 'user',

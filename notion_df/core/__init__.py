@@ -5,7 +5,7 @@ from typing import Any, TypeVar, Generic, Optional, Type, Final, overload, Itera
 
 from typing_extensions import Self
 
-from notion_df.util import NotionZapException
+from notion_df.util import NotionDfException
 from notion_df.util.collection import DictView
 
 Entity_T = TypeVar('Entity_T', bound='Entity', covariant=True)  # TODO: is 'covariant' option really needed?
@@ -117,7 +117,7 @@ class Field(Generic[Entity_T, Value_T, ValueInput_T]):
         else:
             try:
                 return self._get_value(entity)
-            except NotionZapException:  # TODO: error class
+            except NotionDfException:  # TODO: error class
                 return self.default_value
 
     @abstractmethod
@@ -130,7 +130,7 @@ class Field(Generic[Entity_T, Value_T, ValueInput_T]):
         try:
             if self._get_value(entity) == value:
                 return
-        except NotionZapException:
+        except NotionDfException:
             pass
         self._set_value(entity, value)
         for listener in self.listeners:
@@ -181,14 +181,14 @@ class FieldEventListener(Generic[Entity_T, Value_T], metaclass=ABCMeta):
                 yield entity, self.field.__get__(entity, entity_type)
 
 
-class FieldTypeError(NotionZapException):
+class FieldTypeError(NotionDfException):
     """this field type is not supported for the entity type."""  # TODO: entity 가 field_type 을 검증
 
     def __init__(self, entity_name: str, field_key: str, field_type_name: Field):
         self.args = self._set_args(entity=entity_name, field_name=field_type_name, field_key=field_key)
 
 
-class FieldNotBoundError(NotionZapException):
+class FieldNotBoundError(NotionDfException):
     """this field is not bound on the entity."""
 
     def __init__(self, entity_name: str, fields: Iterable[Field], field_type_name: str):

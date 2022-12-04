@@ -3,7 +3,7 @@ from itertools import chain
 from typing import Any, Optional, Iterable, cast, Hashable
 
 
-class NotionZapException(Exception, ABC):
+class NotionDfException(Exception, ABC):
     """the base exception class."""
 
     # TODO: think cooler project name
@@ -11,6 +11,10 @@ class NotionZapException(Exception, ABC):
         items = _get_items(params, kwargs)
         self.args = (self.__doc__,) + tuple(f'{k} - {v}' for k, v in items)
         return self.args
+
+
+class NotionDfValueError(NotionDfException, ValueError):
+    pass
 
 
 def repr_object(obj: Any, params: dict[Hashable, Any] = None, **kwargs: Any) -> str:
