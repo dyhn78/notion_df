@@ -209,10 +209,6 @@ class Emoji(Resource):
             "emoji": self.value
         }
 
-    @classmethod
-    def from_dict(cls, d: dict) -> Emoji:
-        return cls(d['emoji'])
-
 
 @dataclass
 class File(Resource, metaclass=ABCMeta):

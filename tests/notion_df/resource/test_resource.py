@@ -1,11 +1,13 @@
 from dataclasses import dataclass
 
-from notion_df.resource.resource import Resource, ResourceDefinitionParser, get_type_key_chain, AttributeMock
+import pytest
+
+from notion_df.resource.resource import Resource
 
 
-def test_resource_find_type_key_chain():
-    assert get_type_key_chain({'type': 'checkbox', 'checkbox': True}) == ('checkbox',)
-    assert get_type_key_chain({'type': 'mention', 'mention': {
+def test_resource__find_type_key_chain():
+    assert Resource._get_type_key_chain({'type': 'checkbox', 'checkbox': True}) == ('checkbox',)
+    assert Resource._get_type_key_chain({'type': 'mention', 'mention': {
         'type': 'user',
         'user': {
             'object': 'user',
@@ -14,7 +16,7 @@ def test_resource_find_type_key_chain():
     }}) == ('mention', 'user')
 
 
-def test_resource_mock__simple():
+def test_resource__init_subclass__simple():
     @dataclass
     class __TestResource(Resource):
         content: str
@@ -32,19 +34,24 @@ def test_resource_mock__simple():
                 }
             }
 
-    assert ResourceDefinitionParser(__TestResource).mock_to_dict == {
+    assert Resource._registry[('text',)] == __TestResource
+    assert __TestResource._attr_name_dict == {
+        ('text', 'content'): 'content',
+        ('text', 'link', 'url'): 'link',
+    }
+    assert Resource.from_dict({
         'type': 'text',
         'text': {
-            'content': AttributeMock('content'),
+            'content': 'self.content',
             'link': {
                 'type': 'url',
-                'url': AttributeMock('link')
-            } if AttributeMock('link') else None
+                'url': 'self.link'
+            }
         }
-    }
+    }) == __TestResource('self.content', 'self.link')
 
 
-def test_resource_mock__complex():
+def test_resource__init_subclass__complex():
     @dataclass
     class __TestResource(Resource):
         user_id: str
@@ -64,13 +71,18 @@ def test_resource_mock__complex():
                 }
             }
 
-    assert ResourceDefinitionParser(__TestResource).mock_to_dict == {
-        'type': 'mention',
-        'mention': {
-            'type': 'user',
-            'user': {
-                'object': 'user',
-                'id': AttributeMock('user_id')
-            }
-        }
+    assert Resource._registry[('mention', 'user')] == __TestResource
+    assert __TestResource._attr_name_dict == {
+        ('mention', 'user', 'id'): 'user_id'
     }
+    with pytest.raises(KeyError):
+        Resource.from_dict({
+            'type': 'text',
+            'text': {
+                'content': 'self.content',
+                'link': {
+                    'type': 'url',
+                    'url': 'self.link'
+                }
+            }
+        })
