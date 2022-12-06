@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional, Any, Literal, ClassVar
+from typing import Optional, Any, Literal, ClassVar, Final
 
 from notion_df.resource.property import DatePropertyValue
 from notion_df.resource.resource import Resource
@@ -15,16 +15,23 @@ class RichText(Resource, metaclass=ABCMeta):
 
 
 @dataclass
-class _RichText(Resource, metaclass=ABCMeta):
+class _RichTextDefault(Resource, metaclass=ABCMeta):
     annotations: Optional[Annotations] = None
-    plain_text: Optional[str] = None
-    href: Optional[str] = None
+    """
+    * set as `None` (the default value) to leave it unchanged.
+    * set as `Annotations()` to remove the annotations and make a plain text.
+    """
+
+    plain_text: Final[Optional[str]] = None
+    """read-only. will be ignored in requests."""
+    href: Final[Optional[str]] = None
+    """read-only. will be ignored in requests."""
 
     def __init_subclass__(cls: type[RichText], **kwargs):
         super().__init_subclass__(**kwargs)
         to_dict = cls.to_dict
 
-        def wrapper(self: _RichText):
+        def wrapper(self: _RichTextDefault):
             _default_to_dict = {'annotations': self.annotations.to_dict()} if self.annotations else {}
             return to_dict(self) | _default_to_dict
 
@@ -50,7 +57,7 @@ class _Text(RichText, metaclass=ABCMeta):
 
 
 @dataclass
-class Text(_RichText, _Text):
+class Text(_RichTextDefault, _Text):
     pass
 
 
@@ -66,7 +73,7 @@ class _Equation(RichText):
 
 
 @dataclass
-class Equation(_RichText, _Equation):
+class Equation(_RichTextDefault, _Equation):
     pass
 
 
@@ -97,7 +104,7 @@ class _UserMention(Mention):
 
 
 @dataclass
-class UserMention(_RichText, _UserMention):
+class UserMention(_RichTextDefault, _UserMention):
     pass
 
 
@@ -113,7 +120,7 @@ class _PageMention(Mention):
 
 
 @dataclass
-class PageMention(_RichText, _PageMention):
+class PageMention(_RichTextDefault, _PageMention):
     pass
 
 
@@ -129,7 +136,7 @@ class _DatabaseMention(Mention):
 
 
 @dataclass
-class DatabaseMention(_RichText, _DatabaseMention):
+class DatabaseMention(_RichTextDefault, _DatabaseMention):
     pass
 
 
@@ -145,7 +152,7 @@ class _DateMention(Mention):
 
 
 @dataclass
-class DateMention(_RichText, _DateMention):
+class DateMention(_RichTextDefault, _DateMention):
     pass
 
 
@@ -161,7 +168,7 @@ class _TemplateDateMention(Mention):
 
 
 @dataclass
-class TemplateDateMention(_RichText, _TemplateDateMention):
+class TemplateDateMention(_RichTextDefault, _TemplateDateMention):
     pass
 
 
@@ -177,7 +184,7 @@ class _TemplateUserMention(Mention):
 
 
 @dataclass
-class TemplateUserMention(_RichText, _TemplateUserMention):
+class TemplateUserMention(_RichTextDefault, _TemplateUserMention):
     pass
 
 
@@ -194,7 +201,7 @@ class _LinkPreviewMention(Mention):
 
 
 @dataclass
-class LinkPreviewMention(_RichText, _LinkPreviewMention):
+class LinkPreviewMention(_RichTextDefault, _LinkPreviewMention):
     pass
 
 
