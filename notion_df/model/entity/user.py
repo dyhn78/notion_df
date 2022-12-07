@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from notion_df.resource.resource import Resource
+from notion_df.resource.core import Resource
 
 
 @dataclass

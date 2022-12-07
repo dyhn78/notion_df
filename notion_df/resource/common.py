@@ -5,8 +5,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional, Any, Literal, ClassVar, Final
 
+from notion_df.resource.core import Resource
 from notion_df.resource.property import DatePropertyValue
-from notion_df.resource.resource import Resource
 from notion_df.util.collection import StrEnum
 
 

@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 import pytest
 
-from notion_df.resource.resource import Resource
+from notion_df.resource.core import Resource
 
 
 def test_resource__find_type_key_chain():

@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 from abc import abstractmethod, ABCMeta
-from typing import Any, TypeVar, Generic, Optional, Type, Final, overload, Iterable, Mapping, final, Iterator
+from typing import TypeVar, Generic, overload, Any, Final, Optional, Type, final, Mapping, Iterable, Iterator
 
 from typing_extensions import Self
 
-from notion_df.util import NotionDfException
 from notion_df.util.collection import DictView
+from notion_df.util.util import NotionDfException
 
 Entity_T = TypeVar('Entity_T', bound='Entity', covariant=True)  # TODO: is 'covariant' option really needed?
 Field_T = TypeVar('Field_T', bound='Field')
@@ -87,7 +87,7 @@ class Field(Generic[Entity_T, Value_T, ValueInput_T]):
         self.entity_types: set[Type[Entity_T]] = set()
         self.listeners: list[FieldEventListener] = []
 
-        from notion_df.core.field_index import (
+        from notion_df.model.field_index import (
             FieldIndex, FieldInvertedIndexAll, FieldInvertedIndexFirst, FieldInvertedIndexLast)
         self.index: DictView[Entity_T, Value_T] = FieldIndex(self).view
         self.inverted_index_all: DictView[Value_T, list[Entity_T]] = FieldInvertedIndexAll(self).view

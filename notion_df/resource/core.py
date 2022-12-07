@@ -6,7 +6,7 @@ from typing import Any, final, ClassVar
 
 from typing_extensions import Self
 
-from notion_df.util import NotionDfValueError
+from notion_df.util.util import NotionDfValueError
 
 
 @dataclass
@@ -23,27 +23,27 @@ class Resource(metaclass=ABCMeta):
         if getattr(cls, '__mock__', False):
             return
 
-        class ResourceMock(cls, metaclass=ABCMeta):
+        class MockResource(cls, metaclass=ABCMeta):
             __mock__ = True
 
             def __getattr__(self, key: str):
                 try:
                     return getattr(super(), key)
                 except AttributeError:
-                    return AttributeMock(key)
+                    return MockAttribute(key)
 
         @dataclass
-        class AttributeMock:
+        class MockAttribute:
             name: str
 
-        mock_to_dict = ResourceMock().to_dict()
-        Resource._registry[cls._get_type_key_chain(mock_to_dict)] = cls
+        mock_dict = MockResource().to_dict()
+        Resource._registry[cls._get_type_key_chain(mock_dict)] = cls
 
         cls._attr_name_dict = {}
-        items: list[tuple[tuple[str, ...], Any]] = [((k,), v) for k, v in mock_to_dict.items()]
+        items: list[tuple[tuple[str, ...], Any]] = [((k,), v) for k, v in mock_dict.items()]
         while items:
             key_chain, value = items.pop()
-            if isinstance(value, AttributeMock):
+            if isinstance(value, MockAttribute):
                 if cls._attr_name_dict.get(key_chain) == value:
                     raise NotionDfValueError(f"Resource.to_dict() cannot have value made of multiple attributes")
                 cls._attr_name_dict[key_chain] = value.name

@@ -1,7 +1,7 @@
 from abc import ABCMeta
 from types import new_class
 
-from notion_df.request.request import Response, Request
+from notion_df.request.core import Response, Request
 
 
 def test_request_form():
