@@ -1,17 +1,17 @@
 from __future__ import annotations
 
 from notion_zap.apps.myblock import MyBlock
-from notion_zap.apps.prop_matcher.processors.property_by_ref import PropertyProcessorByReference
+from notion_zap.apps.prop_matcher.match_struct import MatchOptions, init_root, Saver
 from notion_zap.apps.prop_matcher.processors.date_by_created_time \
     import DateProcessorByCreatedTime
 from notion_zap.apps.prop_matcher.processors.date_by_ref_earliest \
     import DateProcessorByRefEarliest
+from notion_zap.apps.prop_matcher.processors.property_by_ref import PropertyProcessorByReference
 from notion_zap.apps.prop_matcher.processors.time_format_conformer import TimeFormatConformer
 from notion_zap.apps.prop_matcher.processors.week_by_manual_date \
     import WeekProcessorByManualDate
 from notion_zap.apps.prop_matcher.processors.week_by_ref_date \
     import WeekProcessorFromRefDate
-from notion_zap.apps.prop_matcher.match_struct import MatchOptions, init_root, Saver
 from notion_zap.cli.blocks.database.database import QueryWithCallback, Database
 from notion_zap.cli.core.base import Root
 from notion_zap.cli.gateway.requestors.query.filter_struct import QueryFilter
@@ -20,18 +20,17 @@ REGULAR_MATCH_OPTIONS = MatchOptions({
     MyBlock.weeks: {'manual_date'},
     MyBlock.dates: {'manual_date', ('weeks', 'manual_date')},
 
-    MyBlock.journals: {'weeks', 'dates'},
-    MyBlock.notes: {'weeks', 'dates'},
-
     MyBlock.processes: {'weeks', 'dates', 'dates_created'},
     MyBlock.events: {'weeks', 'dates', 'dates_created'},
+
+    MyBlock.journals: {'weeks', 'dates'},
+    MyBlock.issues: {'weeks', 'dates'},
+    MyBlock.tasks: {'weeks', 'dates'},
 
     MyBlock.readings: {('weeks', "warning: but don't make filter"),
                        ('dates', "warning: but don't make filter"),
                        'weeks_begin', 'dates_begin', 'dates_created'},
-    MyBlock.grounds: {'weeks', 'dates'},
-
-    MyBlock.issues: {'weeks', 'dates'},
+    MyBlock.points: {'weeks', 'dates'},
 })
 
 

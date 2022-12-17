@@ -13,7 +13,7 @@ _STATUS_MARKS = [
     Lb('❓링크 없음', 'no_meta_url', ('fail', )),
     Lb('❓위치 없음', 'no_location', ('fail', )),
 ]
-STATUS_COLUMN = Cl(key='⚙️준비', alias='edit_status',
+STATUS_COLUMN = Cl(key='🔰준비', alias='edit_status',
                    marked_values=_STATUS_MARKS)
 
 READING_FRAME = PropertyFrame([

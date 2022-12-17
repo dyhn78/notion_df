@@ -24,19 +24,18 @@ class Columns:
     # relational properties
     itself = Column(key=EmojiCode.CYCLE + '재귀', alias='itself', )
 
-    weeks = Column(key=MyBlock.weeks.prefix_title, alias='weeks', )
     dates = Column(key=MyBlock.dates.prefix_title, alias='dates', )
     dates_created = Column(key=MyBlock.dates.prefix + '생성', alias='dates_created', )
+    weeks = Column(key=MyBlock.weeks.prefix_title, alias='weeks', )
 
     journals = Column(key=MyBlock.journals.prefix_title, alias='journals', )
 
     processes = Column(key=MyBlock.processes.prefix_title, alias='processes', )
     events = Column(key=MyBlock.events.prefix_title, alias='events', )
 
-    issues = Column(key=MyBlock.issues.prefix_title, alias='issues', )
+    tasks = Column(key=MyBlock.tasks.prefix_title, alias='tasks', )
 
     streams = Column(key=MyBlock.streams.prefix_title, alias='streams', )
-    channels = Column(key=MyBlock.channels.prefix_title, alias='channels', )
 
     readings = Column(key=MyBlock.readings.prefix_title, alias='readings', )
     readings_begin = Column(key=MyBlock.readings.prefix + '시작', alias='readings_begin')
@@ -45,6 +44,7 @@ class Columns:
     people = Column(key=MyBlock.people.prefix_title, alias='people', )
     locations = Column(key=MyBlock.locations.prefix_title, alias='locations', )
     writings = Column(key=MyBlock.writings.prefix_title, alias='writings', )
+    channels = Column(key=MyBlock.channels.prefix_title, alias='channels', )
 
 
 class SubFrames:
@@ -70,14 +70,6 @@ class SubFrames:
 
 
 Frames: dict[MyBlock, Frame] = {
-    MyBlock.weeks: Frame(
-        [
-            Columns.title_datetime,
-            Columns.manual_date_range,
-
-            Columns.itself,
-        ]
-    ),
     MyBlock.dates: Frame(
         [
             Columns.title_datetime, Columns.manual_date,
@@ -86,27 +78,12 @@ Frames: dict[MyBlock, Frame] = {
             Columns.events,
         ]
     ),
-
-    MyBlock.journals: Frame(
-        SubFrames.date_auto_created, SubFrames.dates,
+    MyBlock.weeks: Frame(
         [
-            Columns.title_generic,
-            Columns.timestr,
+            Columns.title_datetime,
+            Columns.manual_date_range,
 
-            Columns.processes, Columns.events,
-            Columns.issues,
-            Columns.readings, Columns.writings,
-        ]
-    ),
-    MyBlock.notes: Frame(
-        SubFrames.date_auto_created, SubFrames.dates,
-        [
-            Columns.title_generic,
-            Columns.timestr,
-
-            Columns.events,
-            Columns.issues,
-            Columns.readings, Columns.writings,
+            Columns.itself,
         ]
     ),
 
@@ -136,7 +113,27 @@ Frames: dict[MyBlock, Frame] = {
         ]
     ),
 
+    MyBlock.journals: Frame(
+        SubFrames.date_auto_created, SubFrames.dates,
+        [
+            Columns.title_generic,
+            Columns.timestr,
+
+            Columns.processes, Columns.events,
+            Columns.tasks,
+            Columns.readings, Columns.writings,
+        ]
+    ),
     MyBlock.issues: Frame(
+        SubFrames.date_auto_created, SubFrames.dates_begin,
+        [
+            Columns.title_generic,
+
+            Columns.people, Columns.locations, Columns.channels,
+            Columns.readings,
+        ]
+    ),
+    MyBlock.tasks: Frame(
         SubFrames.date_auto_created, SubFrames.dates_begin,
         [
             Columns.title_generic,
@@ -157,13 +154,13 @@ Frames: dict[MyBlock, Frame] = {
             Columns.dates_created,
             Columns.streams,
 
-            Columns.events, Columns.issues,
+            Columns.events, Columns.tasks,
             Columns.processes, Columns.writings,
 
             Columns.channels,
         ]
     ),
-    MyBlock.grounds: Frame(
+    MyBlock.points: Frame(
         SubFrames.date_auto_created, SubFrames.dates_begin,
         [
             Columns.title_generic,
@@ -182,6 +179,7 @@ Frames: dict[MyBlock, Frame] = {
         ]
     ),
 
+    # the followings are deprecated
     MyBlock.channels: Frame(
         [
             Columns.title_metadata,
@@ -189,7 +187,6 @@ Frames: dict[MyBlock, Frame] = {
             Columns.media_type_is_book,
         ]
     ),
-
     MyBlock.writings: Frame(
         SubFrames.date_auto_created, SubFrames.dates_begin,
         [
@@ -199,6 +196,17 @@ Frames: dict[MyBlock, Frame] = {
             Columns.readings, Columns.writings,
             Columns.streams, Columns.channels,
             Columns.summaries, Columns.people, Columns.locations,
+        ]
+    ),
+    MyBlock.statuses: Frame(
+        SubFrames.date_auto_created, SubFrames.dates,
+        [
+            Columns.title_generic,
+            Columns.timestr,
+
+            Columns.events,
+            Columns.tasks,
+            Columns.readings, Columns.writings,
         ]
     ),
 }
