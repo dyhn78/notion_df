@@ -3,12 +3,13 @@ from datetime import datetime
 
 import pytest
 
-from notion_df.resource.core import Resource, serialize
+from notion_df.resource.core import UniqueResource, Resource, deserialize
+from notion_df.util.collection import StrEnum
 
 
-def test_resource__find_type_key_chain():
-    assert Resource._get_type_key_chain({'type': 'checkbox', 'checkbox': True}) == ('checkbox',)
-    assert Resource._get_type_key_chain({'type': 'mention', 'mention': {
+def test_resource__find_type_keychain():
+    assert UniqueResource._get_type_keychain({'type': 'checkbox', 'checkbox': True}) == ('checkbox',)
+    assert UniqueResource._get_type_keychain({'type': 'mention', 'mention': {
         'type': 'user',
         'user': {
             'object': 'user',
@@ -19,7 +20,7 @@ def test_resource__find_type_key_chain():
 
 def test_resource__simple():
     @dataclass
-    class __TestResource(Resource):
+    class __TestResource(UniqueResource):
         content: str
         link: str
 
@@ -34,15 +35,13 @@ def test_resource__simple():
                     } if self.link else None
                 }
             }
-
-    print(Resource._registry)
-
-    assert Resource._registry[('text',)] == __TestResource
-    assert __TestResource._attr_name_dict == {
+    print(UniqueResource._registry)
+    assert UniqueResource._registry[('text',)] == __TestResource
+    assert __TestResource._attr_location_dict == {
         ('text', 'content'): 'content',
         ('text', 'link', 'url'): 'link',
     }
-    assert Resource.deserialize({
+    assert UniqueResource.deserialize({
         'type': 'text',
         'text': {
             'content': 'self.content',
@@ -55,10 +54,10 @@ def test_resource__simple():
 
 
 def test_resource__call_its_method():
-    Resource._registry.clear()
+    UniqueResource._registry.clear()
 
     @dataclass
-    class __TestResource(Resource):
+    class __TestResource(UniqueResource):
         user_id: str
 
         def serialize(self):
@@ -76,12 +75,12 @@ def test_resource__call_its_method():
                 }
             }
 
-    assert Resource._registry[('mention', 'user')] == __TestResource
-    assert __TestResource._attr_name_dict == {
+    assert UniqueResource._registry[('mention', 'user')] == __TestResource
+    assert __TestResource._attr_location_dict == {
         ('mention', 'user', 'id'): 'user_id'
     }
     with pytest.raises(KeyError):
-        Resource.deserialize({
+        UniqueResource.deserialize({
             'type': 'text',
             'text': {
                 'content': 'self.content',
@@ -95,13 +94,50 @@ def test_resource__call_its_method():
 
 def test_resource__external():
     @dataclass
-    class DatePropertyValue(Resource):
-        # timezone option is disabled. you should handle timezone inside 'start' and 'end'.
+    class __TestResource(Resource):
         start: datetime
         end: datetime
 
         def serialize(self):
             return {
-                'start': serialize(self.start),
-                'end': serialize(self.end),
+                'start': self.start,
+                'end': self.end,
             }
+
+    resource = __TestResource(datetime(2022, 1, 1), datetime(2023, 1, 1))
+    serialized = {'start': '2022-01-01T00:00:00', 'end': '2023-01-01T00:00:00'}
+    assert resource.serialize() == serialized
+    assert deserialize(serialized, __TestResource) == resource
+
+
+def test_resource__external_2():
+    class _Color(StrEnum):
+        default = 'default'
+        gray = 'gray'
+
+    @dataclass
+    class _Link(Resource):
+        value: str
+
+        def serialize(self):
+            return {'value': self.value}
+
+    @dataclass
+    class __TestResource(Resource):
+        url: str
+        bold: bool = False
+        color: _Color = _Color.default
+        link: _Link = None
+
+        def serialize(self):
+            return {
+                'url1': self.url,
+                'bold1': self.bold,
+                'color1': self.color,
+                'link': self.link,
+            }
+
+    resource = __TestResource(url='url', bold=True, link=_Link('link'), color=_Color.gray)
+    serialized = {'url1': 'url', 'bold1': True, 'link': {'value': 'link'}, 'color1': 'gray'}
+    assert resource.serialize() == serialized
+    assert deserialize(serialized, __TestResource) == resource

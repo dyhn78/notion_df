@@ -5,17 +5,17 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional, Any, Literal, ClassVar, Final
 
-from notion_df.resource.core import Resource
+from notion_df.resource.core import UniqueResource
 from notion_df.resource.property import DatePropertyValue
 from notion_df.util.collection import StrEnum
 
 
-class RichText(Resource, metaclass=ABCMeta):
+class RichText(UniqueResource, metaclass=ABCMeta):
     ...
 
 
 @dataclass
-class _RichTextDefault(Resource, metaclass=ABCMeta):
+class _RichTextDefault(UniqueResource, metaclass=ABCMeta):
     annotations: Optional[Annotations] = None
     """
     * set as `None` (the default value) to leave it unchanged.
@@ -28,14 +28,14 @@ class _RichTextDefault(Resource, metaclass=ABCMeta):
     """read-only. will be ignored in requests."""
 
     def __init_subclass__(cls: type[RichText], **kwargs):
+        base_serialize = cls.serialize
+
+        def wrap_serialize(self: _RichTextDefault):
+            _default_to_dict = {'annotations': self.annotations} if self.annotations else {}
+            return base_serialize(self) | _default_to_dict
+
+        cls.serialize = wrap_serialize
         super().__init_subclass__(**kwargs)
-        to_dict = cls.serialize
-
-        def wrapper(self: _RichTextDefault):
-            _default_to_dict = {'annotations': self.annotations.serialize()} if self.annotations else {}
-            return to_dict(self) | _default_to_dict
-
-        cls.serialize = wrapper
 
 
 @dataclass
@@ -147,7 +147,7 @@ class _DateMention(Mention):
     def _mention_to_dict(self) -> dict[str, Any]:
         return {
             'type': 'date',
-            'date': self.date.serialize()
+            'date': self.date
         }
 
 
@@ -205,8 +205,12 @@ class LinkPreviewMention(_RichTextDefault, _LinkPreviewMention):
     pass
 
 
+class Icon(UniqueResource, metaclass=ABCMeta):
+    pass
+
+
 @dataclass
-class Emoji(Resource):
+class Emoji(Icon):
     value: str
     TYPE: ClassVar = 'emoji'
 
@@ -218,11 +222,8 @@ class Emoji(Resource):
 
 
 @dataclass
-class File(Resource, metaclass=ABCMeta):
+class File(Icon, metaclass=ABCMeta):
     TYPE: ClassVar = 'file'
-
-
-Icon = Emoji | File
 
 
 @dataclass
@@ -276,7 +277,7 @@ class Color(StrEnum):
 
 
 @dataclass
-class Annotations(Resource):
+class Annotations(UniqueResource):
     bold: bool = False
     italic: bool = False
     strikethrough: bool = False

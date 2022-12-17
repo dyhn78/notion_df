@@ -177,7 +177,7 @@ class DatabaseResponse(Serializable):
     # def __init__(self, data: dict[str, Any]):
     #     self.id = data['id']
     #     self.created_time = parse_datetime(data['created_time'])
-    #     self.icon = ...  # TODO: first implement Resource.deserialize()
+    #     self.icon = ...  # TODO: first implement UniqueResource.deserialize()
     #
     #     self.parent_id_type = data['parent']['type']
     #     self.parent_id = data['parent'][self.parent_id_type]
