@@ -5,21 +5,11 @@ from dataclasses import dataclass
 from typing import TypeVar, Generic, ClassVar, get_args, Any, final, Literal
 
 import requests
-from typing_extensions import Self
 
+from notion_df.resource.core import Serializable, PlainSerializable  # PlainSerializable
 from notion_df.util.mixin import input_based_cache
 
-Response_T = TypeVar('Response_T', bound='Response')
-
-
-@dataclass
-class Response:
-    """base response form made of various Resources."""
-
-    @classmethod
-    @abstractmethod
-    def from_raw_data(cls, data: dict | list) -> Self:
-        pass
+Response_T = TypeVar('Response_T', bound=Serializable)
 
 
 @dataclass
@@ -37,8 +27,8 @@ class Request(Generic[Response_T], metaclass=ABCMeta):
             if response_type == Response_T:
                 raise ValueError
         except (AttributeError, ValueError):
-            print(f'WARNING: {cls.__name__} does not have response_data type')
-            response_type = Response
+            print(f'WARNING: {cls.__name__} does not have explicit response data type, use PlainSerializable instead')
+            response_type = PlainSerializable
         cls.response_type = response_type
 
     @classmethod
@@ -65,7 +55,7 @@ class Request(Generic[Response_T], metaclass=ABCMeta):
         response = requests.request(settings.method, f'{settings.endpoint}{self.get_path()}',
                                     data=self.get_body(), headers=headers)
         response.raise_for_status()
-        return self.response_type.from_raw_data(response.json())
+        return self.response_type.deserialize(response.json())
 
 
 @dataclass

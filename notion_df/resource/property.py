@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from datetime import datetime
 
+from typing_extensions import Self
+
 from notion_df.resource.core import Resource
 
 
@@ -10,11 +12,18 @@ class DatePropertyValue(Resource):
     start: datetime
     end: datetime
 
-    def to_dict(self) -> dict[str, str]:
+    def serialize(self):
+        # TODO: utilize ExternalSerializable
+        # TODO: check Notion time format
         return {
-            'start': self.start.isoformat(),  # TODO: check Notion time format
+            'start': self.start.isoformat(),
             'end': self.start.isoformat(),
         }
+
+    @classmethod
+    def deserialize(cls, serialized: dict) -> Self:
+        return cls(datetime.fromisoformat(serialized['start']),
+                   datetime.fromisoformat(serialized['end']))
 
 
 import inspect

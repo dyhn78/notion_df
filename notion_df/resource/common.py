@@ -29,13 +29,13 @@ class _RichTextDefault(Resource, metaclass=ABCMeta):
 
     def __init_subclass__(cls: type[RichText], **kwargs):
         super().__init_subclass__(**kwargs)
-        to_dict = cls.to_dict
+        to_dict = cls.serialize
 
         def wrapper(self: _RichTextDefault):
-            _default_to_dict = {'annotations': self.annotations.to_dict()} if self.annotations else {}
+            _default_to_dict = {'annotations': self.annotations.serialize()} if self.annotations else {}
             return to_dict(self) | _default_to_dict
 
-        cls.to_dict = wrapper
+        cls.serialize = wrapper
 
 
 @dataclass
@@ -43,7 +43,7 @@ class _Text(RichText, metaclass=ABCMeta):
     content: str
     link: str
 
-    def to_dict(self):
+    def serialize(self):
         return {
             'type': 'text',
             'text': {
@@ -65,7 +65,7 @@ class Text(_RichTextDefault, _Text):
 class _Equation(RichText):
     expression: str
 
-    def to_dict(self) -> dict[str, Any]:
+    def serialize(self) -> dict[str, Any]:
         return {
             'type': 'equation',
             'expression': self.expression
@@ -78,7 +78,7 @@ class Equation(_RichTextDefault, _Equation):
 
 
 class Mention(RichText):
-    def to_dict(self) -> dict[str, Any]:
+    def serialize(self) -> dict[str, Any]:
         return {
             'type': 'mention',
             'mention': self._mention_to_dict()
@@ -147,7 +147,7 @@ class _DateMention(Mention):
     def _mention_to_dict(self) -> dict[str, Any]:
         return {
             'type': 'date',
-            'date': self.date.to_dict()
+            'date': self.date.serialize()
         }
 
 
@@ -210,7 +210,7 @@ class Emoji(Resource):
     value: str
     TYPE: ClassVar = 'emoji'
 
-    def to_dict(self):
+    def serialize(self):
         return {
             "type": "emoji",
             "emoji": self.value
@@ -222,12 +222,15 @@ class File(Resource, metaclass=ABCMeta):
     TYPE: ClassVar = 'file'
 
 
+Icon = Emoji | File
+
+
 @dataclass
 class InternalFile(File):
     url: str
     expiry_time: datetime
 
-    def to_dict(self):
+    def serialize(self):
         return {
             "type": "file",
             "file": {
@@ -241,7 +244,7 @@ class InternalFile(File):
 class ExternalFile(File):
     url: str
 
-    def to_dict(self):
+    def serialize(self):
         return {
             "type": "external",
             "external": {
@@ -281,7 +284,7 @@ class Annotations(Resource):
     code: bool = False
     color: Color | str = Color.default
 
-    def to_dict(self) -> dict[str, str]:
+    def serialize(self) -> dict[str, str]:
         return {
             'bold': self.bold,
             'italic': self.italic,

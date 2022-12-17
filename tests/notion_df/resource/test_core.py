@@ -1,8 +1,9 @@
 from dataclasses import dataclass
+from datetime import datetime
 
 import pytest
 
-from notion_df.resource.core import Resource
+from notion_df.resource.core import Resource, serialize
 
 
 def test_resource__find_type_key_chain():
@@ -16,13 +17,13 @@ def test_resource__find_type_key_chain():
     }}) == ('mention', 'user')
 
 
-def test_resource__init_subclass__simple():
+def test_resource__simple():
     @dataclass
     class __TestResource(Resource):
         content: str
         link: str
 
-        def to_dict(self):
+        def serialize(self):
             return {
                 'type': 'text',
                 'text': {
@@ -34,12 +35,14 @@ def test_resource__init_subclass__simple():
                 }
             }
 
+    print(Resource._registry)
+
     assert Resource._registry[('text',)] == __TestResource
     assert __TestResource._attr_name_dict == {
         ('text', 'content'): 'content',
         ('text', 'link', 'url'): 'link',
     }
-    assert Resource.from_dict({
+    assert Resource.deserialize({
         'type': 'text',
         'text': {
             'content': 'self.content',
@@ -51,12 +54,14 @@ def test_resource__init_subclass__simple():
     }) == __TestResource('self.content', 'self.link')
 
 
-def test_resource__init_subclass__complex():
+def test_resource__call_its_method():
+    Resource._registry.clear()
+
     @dataclass
     class __TestResource(Resource):
         user_id: str
 
-        def to_dict(self):
+        def serialize(self):
             return {
                 'type': 'mention',
                 'mention': self._mention_to_dict()
@@ -76,7 +81,7 @@ def test_resource__init_subclass__complex():
         ('mention', 'user', 'id'): 'user_id'
     }
     with pytest.raises(KeyError):
-        Resource.from_dict({
+        Resource.deserialize({
             'type': 'text',
             'text': {
                 'content': 'self.content',
@@ -86,3 +91,17 @@ def test_resource__init_subclass__complex():
                 }
             }
         })
+
+
+def test_resource__external():
+    @dataclass
+    class DatePropertyValue(Resource):
+        # timezone option is disabled. you should handle timezone inside 'start' and 'end'.
+        start: datetime
+        end: datetime
+
+        def serialize(self):
+            return {
+                'start': serialize(self.start),
+                'end': serialize(self.end),
+            }
