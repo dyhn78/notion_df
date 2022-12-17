@@ -5,17 +5,17 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional, Any, Literal, ClassVar, Final
 
-from notion_df.resource.core import UniqueResource
+from notion_df.resource.core import TypedResource, Resource
 from notion_df.resource.property import DatePropertyValue
 from notion_df.util.collection import StrEnum
 
 
-class RichText(UniqueResource, metaclass=ABCMeta):
+class RichText(TypedResource, metaclass=ABCMeta):
     ...
 
 
 @dataclass
-class _RichTextDefault(UniqueResource, metaclass=ABCMeta):
+class _RichTextDefault(TypedResource, metaclass=ABCMeta):
     annotations: Optional[Annotations] = None
     """
     * set as `None` (the default value) to leave it unchanged.
@@ -205,7 +205,7 @@ class LinkPreviewMention(_RichTextDefault, _LinkPreviewMention):
     pass
 
 
-class Icon(UniqueResource, metaclass=ABCMeta):
+class Icon(TypedResource, metaclass=ABCMeta):
     pass
 
 
@@ -236,7 +236,7 @@ class InternalFile(File):
             "type": "file",
             "file": {
                 "url": self.url,
-                "expiry_time": self.expiry_time.isoformat()
+                "expiry_time": self.expiry_time
             }
         }
 
@@ -277,7 +277,7 @@ class Color(StrEnum):
 
 
 @dataclass
-class Annotations(UniqueResource):
+class Annotations(Resource):
     bold: bool = False
     italic: bool = False
     strikethrough: bool = False
@@ -292,5 +292,5 @@ class Annotations(UniqueResource):
             'strikethrough': self.strikethrough,
             'underline': self.underline,
             'code': self.code,
-            'color': Color(self.color).value
+            'color': self.color
         }

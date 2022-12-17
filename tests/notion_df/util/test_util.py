@@ -1,4 +1,4 @@
-from notion_df.util.util import _concat_items
+from notion_df.util.misc import _concat_items
 
 
 def test_concat_items():

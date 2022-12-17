@@ -1,17 +1,18 @@
 from __future__ import annotations
 
 import functools
+import inspect
+import typing
 from abc import abstractmethod, ABCMeta
-from copy import copy, deepcopy
 from dataclasses import dataclass, fields
 from datetime import datetime
+from enum import Enum
 from inspect import isabstract
-from typing import Any, final, ClassVar, TypeVar, Optional
+from typing import Any, final, ClassVar, TypeVar, get_origin
 
 from typing_extensions import Self
 
-from notion_df.util.collection import StrEnum
-from notion_df.util.util import NotionDfValueError
+from notion_df.util.misc import NotionDfValueError
 
 _T = TypeVar('_T')
 KeyChain = tuple[str, ...]
@@ -49,27 +50,52 @@ def serialize(serializable: Any):
     """unified serializer for both Serializable and builtin classes."""
     if isinstance(serializable, Serializable):
         return serializable.serialize()
+    if isinstance(serializable, dict):
+        return {k: serialize(v) for k, v in serializable.items()}
+    if isinstance(serializable, list) or isinstance(serializable, set):
+        return [serialize(e) for e in serializable]
+    if isinstance(serializable, Enum):
+        return serializable.value
     if isinstance(serializable, datetime):
         return serializable.isoformat()  # TODO: check Notion time format
-    if isinstance(serializable, StrEnum):
-        return serializable.value
     return serializable
 
 
-def deserialize(serialized: Any, typ: Optional[type[_T]] = None) -> _T:
+def deserialize(serialized: Any, typ: type[_T]) -> _T:
     """unified serializer for both Serializable and builtin classes."""
-    if issubclass(typ, Serializable):
+    origin: type = get_origin(typ) if get_origin(typ) else typ
+    if issubclass(origin, Serializable):
         return typ.deserialize(serialized)
+    if issubclass(origin, dict):
+        try:
+            value_type = typing.get_args(typ)[1]
+        except IndexError:
+            value_type = Any
+        return {k: deserialize(v, value_type) for k, v in serialized.items()}
+    if issubclass(origin, list):
+        try:
+            element_type = typing.get_args(typ)[0]
+        except IndexError:
+            element_type = Any
+        return [deserialize(e, element_type) for e in serialized]
+    if issubclass(origin, set):
+        try:
+            element_type = typing.get_args(typ)[0]
+        except IndexError:
+            element_type = Any
+        return {deserialize(e, element_type) for e in serialized}
+    if issubclass(typ, Enum):
+        return typ(serialized)
     if typ == datetime:
         return datetime.fromisoformat(serialized)
-    if issubclass(typ, StrEnum):  # type: ignore
-        return typ(serialized)
     return serialized
 
 
 @dataclass
 class Resource(Serializable, metaclass=ABCMeta):
-    """representation of the resources defined in Notion REST API. interchangeable to JSON object."""
+    """dataclass representation of the resources defined in Notion REST API.
+    automatically transforms subclasses into dataclass.
+    interchangeable to JSON object."""
     _attr_type_dict: ClassVar[dict[str, type]]
     _attr_location_dict: ClassVar[dict[KeyChain, str]]
     _mock_serialized: ClassVar[dict[str, Any]]
@@ -90,15 +116,21 @@ class Resource(Serializable, metaclass=ABCMeta):
         if cls._skip_init_subclass():
             return
         super().__init_subclass__(**kwargs)
+        dataclass(cls)
+        cls._attr_type_dict = {field.name: field.type for field in fields(cls)}
 
         @dataclass
         class MockSerializable(cls, metaclass=ABCMeta):
+            # def __init__(self, **kwargs):
+            #     ...
+
             @classmethod
             def _skip_init_subclass(cls) -> bool:
                 return True
 
-            def __getattribute__(self, key: str):
-                if key in cls.__annotations__:
+            def __getattr__(self, key: str):
+                print(self)
+                if key in fields(cls):
                     return MockAttribute(key)
                 try:
                     return getattr(super(), key)
@@ -109,7 +141,12 @@ class Resource(Serializable, metaclass=ABCMeta):
         class MockAttribute:
             name: str
 
-        cls._mock_serialized = MockSerializable().serialize()
+        init_param_keys = list(inspect.signature(MockSerializable.__init__).parameters.keys())[1:]
+        mock_init_param = {k: MockAttribute(k) for k in init_param_keys}
+        _mock = MockSerializable(**mock_init_param)  # type: ignore
+        for field in fields(MockSerializable):
+            setattr(_mock, field.name, MockAttribute(field.name))
+        cls._mock_serialized = _mock.serialize()
         cls._attr_location_dict = {}
         items: list[tuple[KeyChain, Any]] = [((k,), v) for k, v in cls._mock_serialized.items()]
         while items:
@@ -135,9 +172,6 @@ class Resource(Serializable, metaclass=ABCMeta):
 
         cls.serialize = wrap_serialize
 
-        dataclass(cls)
-        cls._attr_type_dict = {field.name: field.type for field in fields(cls)}
-
     @abstractmethod
     def serialize(self) -> dict[str, Any]:
         """NOTE: this method automatically serialize nested attributes."""
@@ -155,24 +189,24 @@ class Resource(Serializable, metaclass=ABCMeta):
 
 
 @dataclass
-class UniqueResource(Resource, metaclass=ABCMeta):
-    """Resource object with a unified deserializer entrypoint."""
-    _registry: ClassVar[dict[KeyChain, type[UniqueResource]]] = {}
+class TypedResource(Resource, metaclass=ABCMeta):
+    """Resource object with the unified deserializer entrypoint."""
+    _registry: ClassVar[dict[KeyChain, type[TypedResource]]] = {}
 
     def __init_subclass__(cls, **kwargs):
         if cls._skip_init_subclass():
             return
         super().__init_subclass__(**kwargs)
-        UniqueResource._registry[cls._get_type_keychain(cls._mock_serialized)] = cls
+        TypedResource._registry[cls._get_type_keychain(cls._mock_serialized)] = cls
 
     @classmethod
     def _skip_init_subclass(cls) -> bool:
-        return isabstract(cls) or cls.deserialize.__code__ != UniqueResource.deserialize.__code__
+        return isabstract(cls) or cls.deserialize.__code__ != TypedResource.deserialize.__code__
 
     @classmethod
     @final
     def deserialize(cls, serialized: dict[str, Any]) -> Self:
-        if cls is UniqueResource:
+        if cls is TypedResource:
             subclass = cls._registry[cls._get_type_keychain(serialized)]
             return subclass.deserialize(serialized)
         return super().deserialize(serialized)
@@ -185,9 +219,8 @@ class UniqueResource(Resource, metaclass=ABCMeta):
             raise NotionDfValueError(f"'type' not in d :: {serialized.keys()=}")
         while True:
             key = serialized['type']
-            value = serialized[key]
             current_keychain += key,
-            if isinstance(value, dict) and 'type' in value:
+            if (value := serialized.get(key)) and isinstance(value, dict) and 'type' in value:
                 serialized = value
                 continue
             return current_keychain

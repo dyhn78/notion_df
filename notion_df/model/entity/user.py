@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 
-from notion_df.resource.core import UniqueResource
+from notion_df.resource.core import TypedResource
 
 
 @dataclass
-class User(UniqueResource):
+class User(TypedResource):
     ...  # TODO

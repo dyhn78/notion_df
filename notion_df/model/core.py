@@ -6,7 +6,7 @@ from typing import TypeVar, Generic, overload, Any, Final, Optional, Type, final
 from typing_extensions import Self
 
 from notion_df.util.collection import DictView
-from notion_df.util.util import NotionDfException
+from notion_df.util.misc import NotionDfException
 
 Entity_T = TypeVar('Entity_T', bound='Entity', covariant=True)  # TODO: is 'covariant' option really needed?
 Field_T = TypeVar('Field_T', bound='Field')

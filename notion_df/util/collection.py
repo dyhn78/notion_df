@@ -2,7 +2,7 @@ from enum import Enum
 from typing import Mapping, TypeVar, Iterator, Final
 
 from notion_df.util.mixin import Resolvable
-from notion_df.util.util import repr_object
+from notion_df.util.misc import repr_object
 
 _T_co = TypeVar('_T_co', covariant=True)
 _VT_co = TypeVar('_VT_co', covariant=True)

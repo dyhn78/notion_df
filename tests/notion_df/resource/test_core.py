@@ -1,15 +1,15 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 
 import pytest
 
-from notion_df.resource.core import UniqueResource, Resource, deserialize
+from notion_df.resource.core import TypedResource, Resource, deserialize
 from notion_df.util.collection import StrEnum
 
 
 def test_resource__find_type_keychain():
-    assert UniqueResource._get_type_keychain({'type': 'checkbox', 'checkbox': True}) == ('checkbox',)
-    assert UniqueResource._get_type_keychain({'type': 'mention', 'mention': {
+    assert TypedResource._get_type_keychain({'type': 'checkbox', 'checkbox': True}) == ('checkbox',)
+    assert TypedResource._get_type_keychain({'type': 'mention', 'mention': {
         'type': 'user',
         'user': {
             'object': 'user',
@@ -20,7 +20,7 @@ def test_resource__find_type_keychain():
 
 def test_resource__simple():
     @dataclass
-    class __TestResource(UniqueResource):
+    class __TestResource(TypedResource):
         content: str
         link: str
 
@@ -35,13 +35,13 @@ def test_resource__simple():
                     } if self.link else None
                 }
             }
-    print(UniqueResource._registry)
-    assert UniqueResource._registry[('text',)] == __TestResource
+    print(TypedResource._registry)
+    assert TypedResource._registry[('text',)] == __TestResource
     assert __TestResource._attr_location_dict == {
         ('text', 'content'): 'content',
         ('text', 'link', 'url'): 'link',
     }
-    assert UniqueResource.deserialize({
+    assert TypedResource.deserialize({
         'type': 'text',
         'text': {
             'content': 'self.content',
@@ -54,10 +54,10 @@ def test_resource__simple():
 
 
 def test_resource__call_its_method():
-    UniqueResource._registry.clear()
+    TypedResource._registry.clear()
 
     @dataclass
-    class __TestResource(UniqueResource):
+    class __TestResource(TypedResource):
         user_id: str
 
         def serialize(self):
@@ -75,12 +75,12 @@ def test_resource__call_its_method():
                 }
             }
 
-    assert UniqueResource._registry[('mention', 'user')] == __TestResource
+    assert TypedResource._registry[('mention', 'user')] == __TestResource
     assert __TestResource._attr_location_dict == {
         ('mention', 'user', 'id'): 'user_id'
     }
     with pytest.raises(KeyError):
-        UniqueResource.deserialize({
+        TypedResource.deserialize({
             'type': 'text',
             'text': {
                 'content': 'self.content',
@@ -125,6 +125,7 @@ def test_resource__external_2():
     @dataclass
     class __TestResource(Resource):
         url: str
+        hrefs: dict[str, _Link] = field(default_factory=dict)
         bold: bool = False
         color: _Color = _Color.default
         link: _Link = None
@@ -135,9 +136,12 @@ def test_resource__external_2():
                 'bold1': self.bold,
                 'color1': self.color,
                 'link': self.link,
+                'hrefs': self.hrefs
             }
 
-    resource = __TestResource(url='url', bold=True, link=_Link('link'), color=_Color.gray)
-    serialized = {'url1': 'url', 'bold1': True, 'link': {'value': 'link'}, 'color1': 'gray'}
+    resource = __TestResource(url='url', bold=True, link=_Link('link'), color=_Color.gray,
+                              hrefs={'a': _Link('a'), 'b': _Link('b')})
+    serialized = {'url1': 'url', 'bold1': True, 'link': {'value': 'link'}, 'color1': 'gray',
+                  'hrefs': {'a': {'value': 'a'}, 'b': {'value': 'b'}}}
     assert resource.serialize() == serialized
     assert deserialize(serialized, __TestResource) == resource

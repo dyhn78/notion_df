@@ -1,7 +1,7 @@
 from abc import ABCMeta
 
-from notion_df.resource.core import UniqueResource
+from notion_df.resource.core import TypedResource
 
 
-class PropertySchema(UniqueResource, metaclass=ABCMeta):
+class PropertySchema(TypedResource, metaclass=ABCMeta):
     ...

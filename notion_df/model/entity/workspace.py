@@ -1,7 +1,7 @@
 import os
 
 from notion_df.model.core import Entity
-from notion_df.util.util import get_num_iterator
+from notion_df.util.misc import get_num_iterator
 
 _num_iterator = get_num_iterator()
 

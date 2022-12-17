@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from abc import ABC
 from itertools import chain
 from typing import Hashable, Any, Optional, Iterable, Iterator
@@ -31,3 +33,7 @@ def get_num_iterator() -> Iterator[int]:
     while True:
         yield num
         num += 1
+
+
+def remove_falsy_values(d: dict) -> dict:
+    return {k: v for k, v in d.items() if v}

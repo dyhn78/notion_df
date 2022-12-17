@@ -1,52 +1,35 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from datetime import datetime
 from typing import Any
 
-from notion_df.request.core import Serializable, Request, RequestSettings
-from notion_df.resource.common import RichText, File, Icon
+from notion_df.request.core import Request, RequestSettings
+from notion_df.resource.common import RichText, File, Icon, ExternalFile
+from notion_df.resource.core import Resource
 from notion_df.resource.schema import PropertySchema
+from notion_df.util.misc import remove_falsy_values
 
 
 @dataclass
-class DatabaseResponse(Serializable):
+class DatabaseResponse(Resource):
     id: str
-    created_time_iso: str
-    last_edited_time_iso: str
+    created_time: datetime
+    last_edited_time: datetime
     icon: Icon
+    cover: ExternalFile
+    url: str
+    title: RichText
 
     def serialize(self) -> dict[str, Any]:
         return {
             "id": self.id,
-            "created_time": self.created_time_iso,
-            "last_edited_time": self.last_edited_time_iso,
+            "created_time": self.created_time,
+            "last_edited_time": self.last_edited_time,
             "icon": self.icon,
-            "cover": {
-                "type": "external",
-                "external": {
-                    "url": "https://website.domain/images/image.png"
-                }
-            },
-            "url": "https://www.notion.so/bc1211cae3f14939ae34260b16f627c",
-            "title": [
-                {
-                    "type": "text",
-                    "text": {
-                        "content": "Grocery List",
-                        "link": None
-                    },
-                    "annotations": {
-                        "bold": False,
-                        "italic": False,
-                        "strikethrough": False,
-                        "underline": False,
-                        "code": False,
-                        "color": "default"
-                    },
-                    "plain_text": "Grocery List",
-                    "href": None
-                }
-            ],
+            "cover": self.cover,
+            "url": self.url,
+            "title": self.title,
             "properties": {
                 "+1": {
                     "id": "Wp%3DC",
@@ -177,7 +160,7 @@ class DatabaseResponse(Serializable):
     # def __init__(self, data: dict[str, Any]):
     #     self.id = data['id']
     #     self.created_time = parse_datetime(data['created_time'])
-    #     self.icon = ...  # TODO: first implement UniqueResource.deserialize()
+    #     self.icon = ...  # TODO: first implement TypedResource.deserialize()
     #
     #     self.parent_id_type = data['parent']['type']
     #     self.parent_id = data['parent'][self.parent_id_type]
@@ -192,10 +175,10 @@ class DatabaseResponse(Serializable):
 class CreateDatabaseRequest(Request[DatabaseResponse]):
     """https://developers.notion.com/reference/create-a-database"""
     parent_id: str
-    icon: Icon
-    cover: File
-    title: list[RichText]
-    properties: dict[str, PropertySchema]  # TODO: make this a list
+    title: list[RichText] = field(default_factory=list)
+    icon: Icon = field(default=None)
+    cover: File = field(default=None)
+    properties: dict[str, PropertySchema] = field(default_factory=dict)
 
     @classmethod
     def get_settings(cls) -> RequestSettings:
@@ -209,13 +192,16 @@ class CreateDatabaseRequest(Request[DatabaseResponse]):
         return ''
 
     def get_body(self) -> dict:
-        return {
+        return remove_falsy_values({
             "parent": {
                 "type": "page_id",
                 "page_id": self.parent_id
             },
-            "icon": self.icon.serialize(),
-            "cover": self.cover.serialize(),
-            "title": [rich_text.serialize() for rich_text in self.title],
-            "properties": {name: schema.serialize() for name, schema in self.properties.items()}
-        }
+            "icon": self.icon,
+            "cover": self.cover,
+            "title": [rich_text for rich_text in self.title],
+            "properties": self.properties
+        })
+
+
+CreateDatabaseRequest('yes', 'yes')
