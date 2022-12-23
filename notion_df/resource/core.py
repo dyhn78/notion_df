@@ -2,13 +2,14 @@ from __future__ import annotations
 
 import functools
 import inspect
+import types
 import typing
 from abc import abstractmethod, ABCMeta
-from dataclasses import dataclass, fields
+from dataclasses import dataclass, fields, InitVar
 from datetime import datetime
 from enum import Enum
 from inspect import isabstract
-from typing import Any, final, ClassVar, TypeVar, get_origin
+from typing import Any, final, ClassVar, TypeVar
 
 from typing_extensions import Self
 
@@ -50,44 +51,51 @@ def serialize(serializable: Any):
     """unified serializer for both Serializable and builtin classes."""
     if isinstance(serializable, Serializable):
         return serializable.serialize()
-    if isinstance(serializable, dict):
-        return {k: serialize(v) for k, v in serializable.items()}
-    if isinstance(serializable, list) or isinstance(serializable, set):
-        return [serialize(e) for e in serializable]
     if isinstance(serializable, Enum):
         return serializable.value
     if isinstance(serializable, datetime):
         return serializable.isoformat()  # TODO: check Notion time format
+    if isinstance(serializable, dict):
+        return {k: serialize(v) for k, v in serializable.items()}
+    if isinstance(serializable, list) or isinstance(serializable, set):
+        return [serialize(e) for e in serializable]
     return serializable
 
 
-def deserialize(serialized: Any, typ: type[_T]) -> _T:
+def deserialize(serialized: Any, typ: type):
     """unified serializer for both Serializable and builtin classes."""
-    origin: type = get_origin(typ) if get_origin(typ) else typ
-    if issubclass(origin, Serializable):
+    if issubclass(typ, Serializable):
         return typ.deserialize(serialized)
-    if issubclass(origin, dict):
-        try:
-            value_type = typing.get_args(typ)[1]
-        except IndexError:
-            value_type = Any
-        return {k: deserialize(v, value_type) for k, v in serialized.items()}
-    if issubclass(origin, list):
-        try:
-            element_type = typing.get_args(typ)[0]
-        except IndexError:
-            element_type = Any
-        return [deserialize(e, element_type) for e in serialized]
-    if issubclass(origin, set):
-        try:
-            element_type = typing.get_args(typ)[0]
-        except IndexError:
-            element_type = Any
-        return {deserialize(e, element_type) for e in serialized}
+    if isinstance(typ, InitVar):
+        return deserialize(serialized, typ.type)
     if issubclass(typ, Enum):
         return typ(serialized)
-    if typ == datetime:
-        return datetime.fromisoformat(serialized)
+    if issubclass(typ, datetime):
+        return typ.fromisoformat(serialized)
+    if isinstance(typ, types.GenericAlias):
+        origin: type = typing.get_origin(typ)
+        args = typing.get_args(typ)
+        if issubclass(origin, dict):
+            try:
+                value_type = args[1]
+            except IndexError:
+                value_type = Any
+            return {k: deserialize(v, value_type) for k, v in serialized.items()}
+        if issubclass(origin, list):
+            try:
+                element_type = args[0]
+            except IndexError:
+                element_type = Any
+            return [deserialize(e, element_type) for e in serialized]
+        if issubclass(origin, set):
+            try:
+                element_type = args[0]
+            except IndexError:
+                element_type = Any
+            return {deserialize(e, element_type) for e in serialized}
+        raise NotImplementedError
+    if isinstance(typ, types.UnionType):
+        raise NotImplementedError  # TODO: resolve (StrEnum | str) to str
     return serialized
 
 
@@ -184,7 +192,7 @@ class Resource(Serializable, metaclass=ABCMeta):
         for keychain, attr_name in cls._attr_location_dict.items():
             typ = cls._attr_type_dict[attr_name]
             value = get_item(serialized, keychain)
-            kwargs[attr_name] = deserialize(value, typ)  # type: ignore
+            kwargs[attr_name] = deserialize(value, typ)
         return cls(**kwargs)
 
 
