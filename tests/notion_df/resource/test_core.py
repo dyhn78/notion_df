@@ -4,18 +4,18 @@ from datetime import datetime
 import pytest
 
 from notion_df.resource.core import TypedResource, Resource, deserialize
-from notion_df.util.collection import StrEnum
+from notion_df.util.collection import StrEnum, KeyChain
 
 
 def test_resource__find_type_keychain():
-    assert TypedResource._get_type_keychain({'type': 'checkbox', 'checkbox': True}) == ('checkbox',)
+    assert TypedResource._get_type_keychain({'type': 'checkbox', 'checkbox': True}) == KeyChain(('checkbox',))
     assert TypedResource._get_type_keychain({'type': 'mention', 'mention': {
         'type': 'user',
         'user': {
             'object': 'user',
             'id': 'some_user_id'
         }
-    }}) == ('mention', 'user')
+    }}) == KeyChain(('mention', 'user'))
 
 
 def test_resource__simple():
@@ -24,7 +24,7 @@ def test_resource__simple():
         content: str
         link: str
 
-        def serialize(self):
+        def serialize_plain(self):
             return {
                 'type': 'text',
                 'text': {
@@ -36,8 +36,8 @@ def test_resource__simple():
                 }
             }
     print(TypedResource._registry)
-    assert TypedResource._registry[('text',)] == __TestResource
-    assert __TestResource._attr_location_dict == {
+    assert TypedResource._registry[KeyChain(('text',))] == __TestResource
+    assert __TestResource._field_location_dict == {
         ('text', 'content'): 'content',
         ('text', 'link', 'url'): 'link',
     }
@@ -60,7 +60,7 @@ def test_resource__call_its_method():
     class __TestResource(TypedResource):
         user_id: str
 
-        def serialize(self):
+        def serialize_plain(self):
             return {
                 'type': 'mention',
                 'mention': self._mention_to_dict()
@@ -75,8 +75,8 @@ def test_resource__call_its_method():
                 }
             }
 
-    assert TypedResource._registry[('mention', 'user')] == __TestResource
-    assert __TestResource._attr_location_dict == {
+    assert TypedResource._registry[KeyChain(('mention', 'user'))] == __TestResource
+    assert __TestResource._field_location_dict == {
         ('mention', 'user', 'id'): 'user_id'
     }
     with pytest.raises(KeyError):
@@ -98,7 +98,7 @@ def test_resource__external():
         start: datetime
         end: datetime
 
-        def serialize(self):
+        def serialize_plain(self):
             return {
                 'start': self.start,
                 'end': self.end,
@@ -119,7 +119,7 @@ def test_resource__external_2():
     class _Link(Resource):
         value: str
 
-        def serialize(self):
+        def serialize_plain(self):
             return {'value': self.value}
 
     @dataclass
@@ -130,7 +130,7 @@ def test_resource__external_2():
         color: _Color = _Color.default
         link: _Link = None
 
-        def serialize(self):
+        def serialize_plain(self):
             return {
                 'url1': self.url,
                 'bold1': self.bold,

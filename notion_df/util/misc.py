@@ -73,5 +73,5 @@ def get_num_iterator() -> Iterator[int]:
         num += 1
 
 
-def remove_falsy_values(d: dict) -> dict:
+def dict_remove_falsy_values(d: dict) -> dict:
     return {k: v for k, v in d.items() if v}

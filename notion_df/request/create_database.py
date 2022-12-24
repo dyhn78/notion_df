@@ -8,7 +8,7 @@ from notion_df.request.core import Request, RequestSettings
 from notion_df.resource.common import RichText, File, Icon, ExternalFile
 from notion_df.resource.core import Resource
 from notion_df.resource.schema import PropertySchema
-from notion_df.util.misc import remove_falsy_values
+from notion_df.util.misc import dict_remove_falsy_values
 
 
 @dataclass
@@ -21,7 +21,7 @@ class DatabaseResponse(Resource):
     url: str
     title: RichText
 
-    def serialize(self) -> dict[str, Any]:
+    def serialize_plain(self) -> dict[str, Any]:
         return {
             "id": self.id,
             "created_time": self.created_time,
@@ -192,7 +192,7 @@ class CreateDatabaseRequest(Request[DatabaseResponse]):
         return ''
 
     def get_body(self) -> dict:
-        return remove_falsy_values({
+        return dict_remove_falsy_values({
             "parent": {
                 "type": "page_id",
                 "page_id": self.parent_id

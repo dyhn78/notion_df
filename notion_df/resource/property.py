@@ -10,7 +10,7 @@ class DatePropertyValue(Resource):
     start: datetime
     end: datetime
 
-    def serialize(self):
+    def serialize_plain(self):
         return {
             'start': self.start,
             'end': self.end,

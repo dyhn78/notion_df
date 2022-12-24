@@ -28,13 +28,13 @@ class _RichTextDefault(TypedResource, metaclass=ABCMeta):
     """read-only. will be ignored in requests."""
 
     def __init_subclass__(cls: type[RichText], **kwargs):
-        base_serialize = cls.serialize
+        base_serialize = cls.serialize_plain
 
         def wrap_serialize(self: _RichTextDefault):
             _default_to_dict = {'annotations': self.annotations} if self.annotations else {}
             return base_serialize(self) | _default_to_dict
 
-        cls.serialize = wrap_serialize
+        cls.serialize_plain = wrap_serialize
         super().__init_subclass__(**kwargs)
 
 
@@ -43,7 +43,7 @@ class _Text(RichText, metaclass=ABCMeta):
     content: str
     link: str
 
-    def serialize(self):
+    def serialize_plain(self):
         return {
             'type': 'text',
             'text': {
@@ -65,7 +65,7 @@ class Text(_RichTextDefault, _Text):
 class _Equation(RichText):
     expression: str
 
-    def serialize(self) -> dict[str, Any]:
+    def serialize_plain(self) -> dict[str, Any]:
         return {
             'type': 'equation',
             'expression': self.expression
@@ -78,7 +78,7 @@ class Equation(_RichTextDefault, _Equation):
 
 
 class Mention(RichText):
-    def serialize(self) -> dict[str, Any]:
+    def serialize_plain(self) -> dict[str, Any]:
         return {
             'type': 'mention',
             'mention': self._mention_to_dict()
@@ -214,7 +214,7 @@ class Emoji(Icon):
     value: str
     TYPE: ClassVar = 'emoji'
 
-    def serialize(self):
+    def serialize_plain(self):
         return {
             "type": "emoji",
             "emoji": self.value
@@ -231,7 +231,7 @@ class InternalFile(File):
     url: str
     expiry_time: datetime
 
-    def serialize(self):
+    def serialize_plain(self):
         return {
             "type": "file",
             "file": {
@@ -245,7 +245,7 @@ class InternalFile(File):
 class ExternalFile(File):
     url: str
 
-    def serialize(self):
+    def serialize_plain(self):
         return {
             "type": "external",
             "external": {
@@ -285,7 +285,7 @@ class Annotations(Resource):
     code: bool = False
     color: Color | str = Color.default
 
-    def serialize(self) -> dict[str, str]:
+    def serialize_plain(self) -> dict[str, str]:
         return {
             'bold': self.bold,
             'italic': self.italic,

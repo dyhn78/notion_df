@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import functools
 import inspect
 import types
 import typing
@@ -8,29 +7,12 @@ from abc import abstractmethod, ABCMeta
 from dataclasses import dataclass, fields, InitVar
 from datetime import datetime
 from enum import Enum
-from inspect import isabstract
-from typing import Any, final, ClassVar, TypeVar
+from typing import Any, final, ClassVar
 
 from typing_extensions import Self
 
+from notion_df.util.collection import KeyChain
 from notion_df.util.misc import NotionDfValueError
-
-_T = TypeVar('_T')
-KeyChain = tuple[str, ...]
-
-
-def get_item(d: dict, keychain: KeyChain) -> Any:
-    for key in keychain:
-        d = d[key]
-    return d
-
-
-def set_item(d: dict, keychain: KeyChain, value) -> None:
-    if not keychain:
-        return
-    for key in keychain[:-1]:
-        d = d[key]
-    d[keychain[-1]] = value
 
 
 @dataclass
@@ -66,14 +48,6 @@ def deserialize(serialized: Any, typ: type):
     """unified serializer for both Serializable and builtin classes."""
     err_description = 'cannot parse serialized value'
     err_vars = {'typ': typ, 'serialized': serialized}
-    if issubclass(typ, Serializable):
-        return typ.deserialize(serialized)
-    if isinstance(typ, InitVar):  # TODO: is this really needed?
-        return deserialize(serialized, typ.type)
-    if issubclass(typ, Enum):
-        return typ(serialized)
-    if issubclass(typ, datetime):
-        return typ.fromisoformat(serialized)
     if isinstance(typ, types.GenericAlias):
         origin: type = typing.get_origin(typ)
         args = typing.get_args(typ)
@@ -93,7 +67,32 @@ def deserialize(serialized: Any, typ: type):
     if isinstance(typ, types.UnionType):
         # TODO: resolve (StrEnum | str) to str - or, is that really needed?
         err_description = 'UnionType is (currently) not supported'
+    if inspect.isclass(typ):
+        if issubclass(typ, Serializable):
+            return typ.deserialize(serialized)
+        if typ in {bool, str, int, float}:
+            if type(serialized) == typ:
+                return serialized
+            err_description = 'serialized value does not match with typ'
+        if issubclass(typ, Enum):
+            return typ(serialized)
+        if issubclass(typ, datetime):
+            return typ.fromisoformat(serialized)
+        if isinstance(typ, InitVar):  # TODO: is this really needed?
+            return deserialize(serialized, typ.type)
     raise NotionDfValueError(err_description, err_vars)
+
+
+@dataclass
+class PlainSerializable(Serializable):
+    data: Any
+
+    def serialize(self):
+        return self.data
+
+    @classmethod
+    def deserialize(cls, serialized) -> Self:
+        return cls(serialized)
 
 
 @dataclass
@@ -101,8 +100,8 @@ class Resource(Serializable, metaclass=ABCMeta):
     """dataclass representation of the resources defined in Notion REST API.
     automatically transforms subclasses into dataclass.
     interchangeable to JSON object."""
-    _attr_type_dict: ClassVar[dict[str, type]]
-    _attr_location_dict: ClassVar[dict[KeyChain, str]]
+    _field_type_dict: ClassVar[dict[str, type]]
+    _field_location_dict: ClassVar[dict[KeyChain, str]]
     _mock_serialized: ClassVar[dict[str, Any]]
 
     def __init__(self, **kwargs):
@@ -113,16 +112,16 @@ class Resource(Serializable, metaclass=ABCMeta):
 
     @classmethod
     def _skip_init_subclass(cls) -> bool:
-        return isabstract(cls) or cls.deserialize.__code__ != Resource.deserialize.__code__
+        return inspect.isabstract(
+            cls) or cls.deserialize_plain.__code__ != Resource.deserialize_plain.__code__
 
-    def __init_subclass__(cls, **kwargs):
-        """NOTE: when overriding, you should call super method on end of the definition
-        (to properly auto-decorate methods)"""
-        if cls._skip_init_subclass():
-            return
+    def __init_subclass__(cls, **kwargs) -> bool:
         super().__init_subclass__(**kwargs)
+        if cls._skip_init_subclass():
+            return False
+
         dataclass(cls)
-        cls._attr_type_dict = {field.name: field.type for field in fields(cls)}
+        cls._field_type_dict = {field.name: field.type for field in fields(cls)}
 
         @dataclass
         class MockSerializable(cls, metaclass=ABCMeta):
@@ -151,47 +150,49 @@ class Resource(Serializable, metaclass=ABCMeta):
         _mock = MockSerializable(**mock_init_param)  # type: ignore
         for field in fields(MockSerializable):
             setattr(_mock, field.name, MockAttribute(field.name))
-        cls._mock_serialized = _mock.serialize()
-        cls._attr_location_dict = {}
-        items: list[tuple[KeyChain, Any]] = [((k,), v) for k, v in cls._mock_serialized.items()]
+        cls._mock_serialized = _mock.serialize_plain()
+        cls._field_location_dict = {}
+        items: list[tuple[KeyChain, Any]] = [(KeyChain((k,)), v) for k, v in cls._mock_serialized.items()]
         while items:
             keychain, value = items.pop()
             if isinstance(value, MockAttribute):
-                if cls._attr_location_dict.get(keychain) == value:
+                if cls._field_location_dict.get(keychain) == value:
                     raise NotionDfValueError.br(
                         f"serialize() definition cannot have element depending on multiple attributes",
-                        {'cls': cls, 'keychain': keychain, '__code__': cls.serialize.__code__})
+                        {'cls': cls, 'keychain': keychain, '__code__': cls.serialize_plain.__code__})
                 attr_name = value.name
-                cls._attr_location_dict[keychain] = attr_name
+                cls._field_location_dict[keychain] = attr_name
             elif isinstance(value, dict):
                 items.extend((keychain + (k,), v) for k, v in value.items())
+        return True
 
-        plain_serialize = cls.serialize
-
-        @functools.wraps(cls.serialize)
-        def wrap_serialize(self: cls):
-            serialized = plain_serialize(self)
-            for _keychain, _attr_name in cls._attr_location_dict.items():
-                _value = get_item(serialized, _keychain)
-                set_item(serialized, _keychain, serialize(_value))
-            return serialized
-
-        cls.serialize = wrap_serialize
+    @final
+    def serialize(self):
+        field_value_dict = {f.name: getattr(self, f.name) for f in fields(self)}
+        each_field_serialized_obj = type(self)(**{n: serialize(v) for n, v in field_value_dict.items()})
+        return each_field_serialized_obj.serialize_plain()
 
     @abstractmethod
-    def serialize(self) -> dict[str, Any]:
-        """NOTE: this method automatically serialize nested attributes."""
+    def serialize_plain(self) -> dict[str, Any]:
+        """serialize only the first depth structure, leaving each field value not serialized."""
         pass
 
     @classmethod
+    @final
     def deserialize(cls, serialized: dict[str, Any]) -> Self:
-        """NOTE: this method automatically deserialize nested attributes."""
-        kwargs = {}
-        for keychain, attr_name in cls._attr_location_dict.items():
-            typ = cls._attr_type_dict[attr_name]
-            value = get_item(serialized, keychain)
-            kwargs[attr_name] = deserialize(value, typ)
-        return cls(**kwargs)
+        each_field_serialized_dict = cls.deserialize_plain(serialized)
+        field_value_dict = {}
+        for n, v in each_field_serialized_dict.items():
+            field_value_dict[n] = deserialize(v, cls._field_type_dict[n])
+        return cls(**field_value_dict)
+
+    @classmethod
+    def deserialize_plain(cls, serialized: dict[str, Any]) -> dict[str, Any]:
+        """return **{field_name: serialized_field_value}."""
+        each_field_serialized_dict = {}
+        for keychain, n in cls._field_location_dict.items():
+            each_field_serialized_dict[n] = keychain.get(serialized)
+        return each_field_serialized_dict
 
 
 @dataclass
@@ -200,15 +201,10 @@ class TypedResource(Resource, metaclass=ABCMeta):
     _registry: ClassVar[dict[KeyChain, type[TypedResource]]] = {}
 
     def __init_subclass__(cls, **kwargs):
-        if cls._skip_init_subclass():
-            return
-        super().__init_subclass__(**kwargs)
-        TypedResource._registry[cls._get_type_keychain(cls._mock_serialized)] = cls
+        if super().__init_subclass__(**kwargs):
+            TypedResource._registry[cls._get_type_keychain(cls._mock_serialized)] = cls
 
-    @classmethod
-    def _skip_init_subclass(cls) -> bool:
-        return isabstract(cls) or cls.deserialize.__code__ != TypedResource.deserialize.__code__
-
+    # noinspection PyFinal
     @classmethod
     @final
     def deserialize(cls, serialized: dict[str, Any]) -> Self:
@@ -220,7 +216,7 @@ class TypedResource(Resource, metaclass=ABCMeta):
     @staticmethod
     @final
     def _get_type_keychain(serialized: dict[str, Any]) -> KeyChain:
-        current_keychain = ()
+        current_keychain = KeyChain()
         if 'type' not in serialized:
             raise NotionDfValueError.br(f"'type' key not found",
                                         {'serialized.keys()': list(serialized.keys()), 'serialized': serialized})
@@ -231,15 +227,3 @@ class TypedResource(Resource, metaclass=ABCMeta):
                 serialized = value
                 continue
             return current_keychain
-
-
-@dataclass
-class PlainSerializable(Serializable):
-    data: Any
-
-    def serialize(self):
-        return self.data
-
-    @classmethod
-    def deserialize(cls, serialized) -> Self:
-        return cls(serialized)
