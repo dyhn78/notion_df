@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 from abc import abstractmethod, ABCMeta
-from typing import TypeVar, Generic, overload, Any, Final, Optional, Type, final, Mapping, Iterable, Iterator
+from dataclasses import dataclass
+from typing import TypeVar, Generic, overload, Any, Final, Optional, Type, final, Mapping, Iterable, Iterator, TypedDict
 
 from typing_extensions import Self
 
 from notion_df.util.collection import DictView
-from notion_df.util.misc import NotionDfException
+from notion_df.util.misc import NotionDfException, NotionDfStateError
 
 Entity_T = TypeVar('Entity_T', bound='Entity', covariant=True)  # TODO: is 'covariant' option really needed?
 Field_T = TypeVar('Field_T', bound='Field')
@@ -111,7 +112,17 @@ class Field(Generic[Entity_T, Value_T, ValueInput_T]):
             return self
         entity: Entity_T = instance
         if not any(isinstance(entity, entity_type) for entity_type in self.entity_types):
-            raise FieldNotBoundError(type(entity).__name__, entity.fields, type(self).__name__)
+            # TODO: define entity and field's __str__ method so that we don't need the following thing manually
+            #  {
+            #     'entity_name': type(entity).__name__,
+            #     'field_keys': entity.fields,
+            #     'field_type_name': type(self).__name__,
+            #  }
+            raise NotionDfStateError('field is not bound on the entity', {
+                'field': self,
+                'entity': entity,
+                'entity.field_set': entity.field_set,
+            })
         if self.default_value is None:
             return self._get_value(entity)
         else:
@@ -181,15 +192,7 @@ class FieldEventListener(Generic[Entity_T, Value_T], metaclass=ABCMeta):
                 yield entity, self.field.__get__(entity, entity_type)
 
 
+@dataclass
 class FieldTypeError(NotionDfException):
     """this field type is not supported for the entity type."""  # TODO: entity 가 field_type 을 검증
-
-    def __init__(self, entity_name: str, field_key: str, field_type_name: Field):
-        self.args = self._set_args(entity=entity_name, field_name=field_type_name, field_key=field_key)
-
-
-class FieldNotBoundError(NotionDfException):
-    """this field is not bound on the entity."""
-
-    def __init__(self, entity_name: str, fields: Iterable[Field], field_type_name: str):
-        self.args = self._set_args(entity=entity_name, field_keys=fields, field_type_name=field_type_name)
+    vars: TypedDict('vars', {'entity': Entity, 'field': Field, 'field_name': str})

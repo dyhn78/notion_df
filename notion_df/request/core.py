@@ -27,6 +27,7 @@ class Request(Generic[Response_T], metaclass=ABCMeta):
             if response_type == Response_T:
                 raise ValueError
         except (AttributeError, ValueError):
+            # TODO - change to ValueError?
             print(f'WARNING: {cls.__name__} does not have explicit response data type, use PlainSerializable instead')
             response_type = PlainSerializable
         cls.response_type = response_type

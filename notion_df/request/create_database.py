@@ -204,4 +204,4 @@ class CreateDatabaseRequest(Request[DatabaseResponse]):
         })
 
 
-CreateDatabaseRequest('yes', 'yes')
+CreateDatabaseRequest('yes', 'yes')  # TODO delete

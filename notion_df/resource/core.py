@@ -64,9 +64,11 @@ def serialize(serializable: Any):
 
 def deserialize(serialized: Any, typ: type):
     """unified serializer for both Serializable and builtin classes."""
+    err_description = 'cannot parse serialized value'
+    err_vars = {'typ': typ, 'serialized': serialized}
     if issubclass(typ, Serializable):
         return typ.deserialize(serialized)
-    if isinstance(typ, InitVar):
+    if isinstance(typ, InitVar):  # TODO: is this really needed?
         return deserialize(serialized, typ.type)
     if issubclass(typ, Enum):
         return typ(serialized)
@@ -75,28 +77,23 @@ def deserialize(serialized: Any, typ: type):
     if isinstance(typ, types.GenericAlias):
         origin: type = typing.get_origin(typ)
         args = typing.get_args(typ)
-        if issubclass(origin, dict):
-            try:
+        try:
+            if issubclass(origin, dict):
                 value_type = args[1]
-            except IndexError:
-                value_type = Any
-            return {k: deserialize(v, value_type) for k, v in serialized.items()}
-        if issubclass(origin, list):
-            try:
-                element_type = args[0]
-            except IndexError:
-                element_type = Any
-            return [deserialize(e, element_type) for e in serialized]
-        if issubclass(origin, set):
-            try:
-                element_type = args[0]
-            except IndexError:
-                element_type = Any
-            return {deserialize(e, element_type) for e in serialized}
-        raise NotImplementedError
+                return {k: deserialize(v, value_type) for k, v in serialized.items()}
+            element_type = args[0]
+            if issubclass(origin, list):
+                return [deserialize(e, element_type) for e in serialized]
+            if issubclass(origin, set):
+                return {deserialize(e, element_type) for e in serialized}
+            err_description = 'cannot parse GenericAlias with invalid origin'
+        except IndexError:
+            err_description = 'cannot parse GenericAlias with invalid args'
+        err_vars.update({'typ.origin': origin, 'typ.args': args})
     if isinstance(typ, types.UnionType):
-        raise NotImplementedError  # TODO: resolve (StrEnum | str) to str
-    return serialized
+        # TODO: resolve (StrEnum | str) to str - or, is that really needed?
+        err_description = 'UnionType is (currently) not supported'
+    raise NotionDfValueError(err_description, err_vars)
 
 
 @dataclass
@@ -143,7 +140,7 @@ class Resource(Serializable, metaclass=ABCMeta):
                 try:
                     return getattr(super(), key)
                 except AttributeError:
-                    raise NotionDfValueError("cannot parse resource definition", cls, key)
+                    raise NotionDfValueError("cannot parse resource definition", {'cls': cls, 'key': key})
 
         @dataclass
         class MockAttribute:
@@ -161,8 +158,9 @@ class Resource(Serializable, metaclass=ABCMeta):
             keychain, value = items.pop()
             if isinstance(value, MockAttribute):
                 if cls._attr_location_dict.get(keychain) == value:
-                    raise NotionDfValueError(
-                        f"serialize() definition cannot have element depending on multiple attributes")
+                    raise NotionDfValueError.br(
+                        f"serialize() definition cannot have element depending on multiple attributes",
+                        {'cls': cls, 'keychain': keychain, '__code__': cls.serialize.__code__})
                 attr_name = value.name
                 cls._attr_location_dict[keychain] = attr_name
             elif isinstance(value, dict):
@@ -224,7 +222,8 @@ class TypedResource(Resource, metaclass=ABCMeta):
     def _get_type_keychain(serialized: dict[str, Any]) -> KeyChain:
         current_keychain = ()
         if 'type' not in serialized:
-            raise NotionDfValueError(f"'type' not in d :: {serialized.keys()=}")
+            raise NotionDfValueError.br(f"'type' key not found",
+                                        {'serialized.keys()': list(serialized.keys()), 'serialized': serialized})
         while True:
             key = serialized['type']
             current_keychain += key,
