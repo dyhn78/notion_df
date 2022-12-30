@@ -100,6 +100,7 @@ class Resource(Serializable, metaclass=ABCMeta):
     """dataclass representation of the resources defined in Notion REST API.
     automatically transforms subclasses into dataclass.
     interchangeable to JSON object."""
+    _mock = False
     _field_type_dict: ClassVar[dict[str, type]]
     _field_location_dict: ClassVar[dict[KeyChain, str]]
     _mock_serialized: ClassVar[dict[str, Any]]
@@ -110,27 +111,21 @@ class Resource(Serializable, metaclass=ABCMeta):
     def __post_init__(self):
         ...
 
-    @classmethod
-    def _skip_init_subclass(cls) -> bool:
-        return inspect.isabstract(
-            cls) or cls.deserialize_plain.__code__ != Resource.deserialize_plain.__code__
-
     def __init_subclass__(cls, **kwargs) -> bool:
         super().__init_subclass__(**kwargs)
-        if cls._skip_init_subclass():
+        if inspect.isabstract(cls):
             return False
-
         dataclass(cls)
         cls._field_type_dict = {field.name: field.type for field in fields(cls)}
 
+        if (cls.deserialize_plain.__code__ != Resource.deserialize_plain.__code__) or cls._mock:
+            # if deserialize_plain() is overridden, in other words, manually configured,
+            #  it need not be generated from serialize_plain()
+            return False
+
         @dataclass
         class MockSerializable(cls, metaclass=ABCMeta):
-            # def __init__(self, **kwargs):
-            #     ...
-
-            @classmethod
-            def _skip_init_subclass(cls) -> bool:
-                return True
+            _mock = True
 
             def __getattr__(self, key: str):
                 print(self)
