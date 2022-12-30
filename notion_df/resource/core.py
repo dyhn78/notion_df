@@ -157,9 +157,10 @@ class Resource(Serializable, metaclass=ABCMeta):
             keychain, value = items.pop()
             if isinstance(value, MockAttribute):
                 if cls._field_location_dict.get(keychain) == value:
-                    raise NotionDfValueError.br(
+                    raise NotionDfValueError(
                         f"serialize() definition cannot have element depending on multiple attributes",
-                        {'cls': cls, 'keychain': keychain, '__code__': cls.serialize_plain.__code__})
+                        {'cls': cls, 'keychain': keychain, '__code__': cls.serialize_plain.__code__},
+                        linebreak=True)
                 attr_name = value.name
                 cls._field_location_dict[keychain] = attr_name
             elif isinstance(value, dict):
@@ -218,8 +219,9 @@ class TypedResource(Resource, metaclass=ABCMeta):
     def _get_type_keychain(serialized: dict[str, Any]) -> KeyChain:
         current_keychain = KeyChain()
         if 'type' not in serialized:
-            raise NotionDfValueError.br(f"'type' key not found",
-                                        {'serialized.keys()': list(serialized.keys()), 'serialized': serialized})
+            raise NotionDfValueError(f"'type' key not found",
+                                     {'serialized.keys()': list(serialized.keys()), 'serialized': serialized},
+                                     linebreak=True)
         while True:
             key = serialized['type']
             current_keychain += key,
