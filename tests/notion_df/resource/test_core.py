@@ -63,10 +63,10 @@ def test_resource__call_its_method():
         def serialize_plain(self):
             return {
                 'type': 'mention',
-                'mention': self._mention_to_dict()
+                'mention': self._serialize_inner_value()
             }
 
-        def _mention_to_dict(self):
+        def _serialize_inner_value(self):
             return {
                 'type': 'user',
                 'user': {

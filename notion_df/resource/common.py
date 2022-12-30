@@ -6,16 +6,18 @@ from datetime import datetime
 from typing import Optional, Any, Literal, ClassVar, Final
 
 from notion_df.resource.core import TypedResource, Resource
-from notion_df.resource.property import DatePropertyValue
 from notion_df.util.collection import StrEnum
 
 
 class RichText(TypedResource, metaclass=ABCMeta):
+    # https://developers.notion.com/reference/rich-text
     ...
 
 
 @dataclass
 class _RichTextDefault(TypedResource, metaclass=ABCMeta):
+    # this is a helper class we need to put common, default, annotation-like variables
+    #  AFTER subclass-specific, important ones.
     annotations: Optional[Annotations] = None
     """
     * set as `None` (the default value) to leave it unchanged.
@@ -27,15 +29,8 @@ class _RichTextDefault(TypedResource, metaclass=ABCMeta):
     href: Final[Optional[str]] = None
     """read-only. will be ignored in requests."""
 
-    def __init_subclass__(cls: type[RichText], **kwargs):
-        base_serialize = cls.serialize_plain
-
-        def wrap_serialize(self: _RichTextDefault):
-            _default_to_dict = {'annotations': self.annotations} if self.annotations else {}
-            return base_serialize(self) | _default_to_dict
-
-        cls.serialize_plain = wrap_serialize
-        super().__init_subclass__(**kwargs)
+    def serialize_plain(self) -> dict[str, Any]:
+        return {'annotations': self.annotations} if self.annotations else {}
 
 
 @dataclass
@@ -81,11 +76,11 @@ class Mention(RichText):
     def serialize_plain(self) -> dict[str, Any]:
         return {
             'type': 'mention',
-            'mention': self._mention_to_dict()
+            'mention': self._serialize_inner_value()
         }
 
     @abstractmethod
-    def _mention_to_dict(self) -> dict[str, Any]:
+    def _serialize_inner_value(self) -> dict[str, Any]:
         pass
 
 
@@ -93,7 +88,7 @@ class Mention(RichText):
 class _UserMention(Mention):
     user_id: str
 
-    def _mention_to_dict(self) -> dict[str, Any]:
+    def _serialize_inner_value(self) -> dict[str, Any]:
         return {
             'type': 'user',
             'user': {
@@ -112,7 +107,7 @@ class UserMention(_RichTextDefault, _UserMention):
 class _PageMention(Mention):
     page_id: str
 
-    def _mention_to_dict(self) -> dict[str, Any]:
+    def _serialize_inner_value(self) -> dict[str, Any]:
         return {
             'type': 'page',
             'user': self.page_id
@@ -128,7 +123,7 @@ class PageMention(_RichTextDefault, _PageMention):
 class _DatabaseMention(Mention):
     database_id: str
 
-    def _mention_to_dict(self) -> dict[str, Any]:
+    def _serialize_inner_value(self) -> dict[str, Any]:
         return {
             'type': 'database',
             'user': self.database_id
@@ -142,9 +137,9 @@ class DatabaseMention(_RichTextDefault, _DatabaseMention):
 
 @dataclass
 class _DateMention(Mention):
-    date: DatePropertyValue
+    date: DateValue
 
-    def _mention_to_dict(self) -> dict[str, Any]:
+    def _serialize_inner_value(self) -> dict[str, Any]:
         return {
             'type': 'date',
             'date': self.date
@@ -160,7 +155,7 @@ class DateMention(_RichTextDefault, _DateMention):
 class _TemplateDateMention(Mention):
     template_mention_date: Literal["today", "now"]
 
-    def _mention_to_dict(self) -> dict[str, Any]:
+    def _serialize_inner_value(self) -> dict[str, Any]:
         return {
             'type': 'template_mention_date',
             'template_mention_date': self.template_mention_date
@@ -176,7 +171,7 @@ class TemplateDateMention(_RichTextDefault, _TemplateDateMention):
 class _TemplateUserMention(Mention):
     template_mention_user: Literal["me"]
 
-    def _mention_to_dict(self) -> dict[str, Any]:
+    def _serialize_inner_value(self) -> dict[str, Any]:
         return {
             'type': 'template_mention_user',
             'template_mention_user': self.template_mention_user
@@ -193,7 +188,7 @@ class _LinkPreviewMention(Mention):
     """https://developers.notion.com/reference/rich-text#link-preview-mentions"""
     url: str
 
-    def _mention_to_dict(self) -> dict[str, Any]:
+    def _serialize_inner_value(self) -> dict[str, Any]:
         return {
             'type': 'equation',
             'url': self.url
@@ -211,6 +206,7 @@ class Icon(TypedResource, metaclass=ABCMeta):
 
 @dataclass
 class Emoji(Icon):
+    # https://developers.notion.com/reference/emoji-object
     value: str
     TYPE: ClassVar = 'emoji'
 
@@ -218,39 +214,6 @@ class Emoji(Icon):
         return {
             "type": "emoji",
             "emoji": self.value
-        }
-
-
-@dataclass
-class File(Icon, metaclass=ABCMeta):
-    TYPE: ClassVar = 'file'
-
-
-@dataclass
-class InternalFile(File):
-    url: str
-    expiry_time: datetime
-
-    def serialize_plain(self):
-        return {
-            "type": "file",
-            "file": {
-                "url": self.url,
-                "expiry_time": self.expiry_time
-            }
-        }
-
-
-@dataclass
-class ExternalFile(File):
-    url: str
-
-    def serialize_plain(self):
-        return {
-            "type": "external",
-            "external": {
-                "url": self.url
-            }
         }
 
 
@@ -293,4 +256,17 @@ class Annotations(Resource):
             'underline': self.underline,
             'code': self.code,
             'color': self.color
+        }
+
+
+@dataclass
+class DateValue(Resource):
+    # timezone option is disabled. you should handle timezone inside 'start' and 'end'.
+    start: datetime
+    end: datetime
+
+    def serialize_plain(self):
+        return {
+            'start': self.start,
+            'end': self.end,
         }

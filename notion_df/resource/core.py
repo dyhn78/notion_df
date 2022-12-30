@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import functools
 import inspect
 import types
 import typing
@@ -7,7 +8,7 @@ from abc import abstractmethod, ABCMeta
 from dataclasses import dataclass, fields, InitVar
 from datetime import datetime
 from enum import Enum
-from typing import Any, final, ClassVar
+from typing import Any, final, ClassVar, Callable
 
 from typing_extensions import Self
 
@@ -113,8 +114,24 @@ class Resource(Serializable, metaclass=ABCMeta):
 
     def __init_subclass__(cls, **kwargs) -> bool:
         super().__init_subclass__(**kwargs)
+
         if inspect.isabstract(cls):
             return False
+
+        # TODO (conditional): let this decoration optional -
+        #  let decoration happen only when '@union' decorator is present on super().serialize_plain()
+        def union_with_super(serialize_plain: Callable) -> Callable:
+            @functools.wraps(serialize_plain)
+            def wrap_serialize_plain(self):
+                super_serialize_plain = super(cls, self).serialize_plain()  # type: ignore
+                if super_serialize_plain is None:
+                    super_serialize_plain = {}
+                return super_serialize_plain | serialize_plain(self)
+
+            return wrap_serialize_plain
+
+        cls.serialize_plain = union_with_super(cls.serialize_plain)
+
         dataclass(cls)
         cls._field_type_dict = {field.name: field.type for field in fields(cls)}
 
@@ -124,7 +141,7 @@ class Resource(Serializable, metaclass=ABCMeta):
             return False
 
         @dataclass
-        class MockSerializable(cls, metaclass=ABCMeta):
+        class MockResource(cls, metaclass=ABCMeta):
             _mock = True
 
             def __getattr__(self, key: str):
@@ -140,10 +157,10 @@ class Resource(Serializable, metaclass=ABCMeta):
         class MockAttribute:
             name: str
 
-        init_param_keys = list(inspect.signature(MockSerializable.__init__).parameters.keys())[1:]
+        init_param_keys = list(inspect.signature(MockResource.__init__).parameters.keys())[1:]
         mock_init_param = {k: MockAttribute(k) for k in init_param_keys}
-        _mock = MockSerializable(**mock_init_param)  # type: ignore
-        for field in fields(MockSerializable):
+        _mock = MockResource(**mock_init_param)  # type: ignore
+        for field in fields(MockResource):
             setattr(_mock, field.name, MockAttribute(field.name))
         cls._mock_serialized = _mock.serialize_plain()
         cls._field_location_dict = {}
@@ -163,7 +180,7 @@ class Resource(Serializable, metaclass=ABCMeta):
         return True
 
     @final
-    def serialize(self):
+    def serialize(self) -> dict[str, Any]:
         field_value_dict = {f.name: getattr(self, f.name) for f in fields(self)}
         each_field_serialized_obj = type(self)(**{n: serialize(v) for n, v in field_value_dict.items()})
         return each_field_serialized_obj.serialize_plain()

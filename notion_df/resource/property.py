@@ -1,17 +1,34 @@
+from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
-from datetime import datetime
+from typing import Any, ClassVar, final
 
-from notion_df.resource.core import Resource
+from notion_df.resource.core import TypedResource
 
 
 @dataclass
-class DatePropertyValue(Resource):
-    # timezone option is disabled. you should handle timezone inside 'start' and 'end'.
-    start: datetime
-    end: datetime
+class Property(TypedResource, metaclass=ABCMeta):
+    # https://developers.notion.com/reference/property-object
+    id: str
+    name: str
+    type: ClassVar[str]
 
-    def serialize_plain(self):
+    @final
+    def serialize_plain(self) -> dict[str, Any]:
         return {
-            'start': self.start,
-            'end': self.end,
+            "id": self.id,
+            "name": self.name,
+            "type": self.type,
+            self.type: self._serialize_inner_value()
         }
+
+    @abstractmethod
+    def _serialize_inner_value(self):
+        pass
+
+
+@dataclass
+class TitleProperty(Property):
+    type = 'title'
+
+    def _serialize_inner_value(self):
+        return {}
