@@ -3,8 +3,8 @@ from __future__ import annotations
 from enum import Enum
 from typing import Mapping, TypeVar, Iterator, Final, Any
 
-from notion_df.util.mixin import Resolvable
 from notion_df.util.misc import repr_object
+from notion_df.util.mixin import Resolvable
 
 _T_co = TypeVar('_T_co', covariant=True)
 _VT_co = TypeVar('_VT_co', covariant=True)
@@ -37,7 +37,7 @@ class DictView(Mapping[_T_co, _VT_co]):
         return repr_object(self, **self.description, data=self._model)
 
 
-class StrEnum(Enum):
+class StrEnum(str, Enum):
     @property
     def value(self) -> str:
         return self._value_

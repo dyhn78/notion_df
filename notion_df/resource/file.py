@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import ClassVar
 
-from notion_df.resource.common import Icon
+from notion_df.resource.misc import Icon
 
 
 @dataclass
@@ -19,7 +19,7 @@ class InternalFile(File):
     url: str
     expiry_time: datetime
 
-    def serialize_plain(self):
+    def plain_serialize(self):
         return {
             "type": "file",
             "file": {
@@ -33,7 +33,7 @@ class InternalFile(File):
 class ExternalFile(File):
     url: str
 
-    def serialize_plain(self):
+    def plain_serialize(self):
         return {
             "type": "external",
             "external": {

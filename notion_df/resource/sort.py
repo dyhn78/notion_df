@@ -1,0 +1,36 @@
+from abc import ABCMeta
+from dataclasses import dataclass
+from typing import Any, Literal
+
+from notion_df.resource.core import Resource
+from notion_df.resource.misc import Timestamp
+
+Direction = Literal['ascending', 'descending']
+
+
+class Sort(Resource, metaclass=ABCMeta):
+    pass
+
+
+@dataclass
+class PropertySort(Sort):
+    property: str
+    direction: Direction
+
+    def plain_serialize(self) -> dict[str, Any]:
+        return {
+            "property": self.property,
+            "direction": self.direction
+        }
+
+
+@dataclass
+class TimestampSort(Sort):
+    timestamp: Timestamp
+    direction: Direction
+
+    def plain_serialize(self) -> dict[str, Any]:
+        return {
+            "timestamp": self.timestamp,
+            "direction": self.direction
+        }

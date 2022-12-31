@@ -2,14 +2,15 @@ from __future__ import annotations
 
 from abc import abstractmethod, ABCMeta
 from dataclasses import dataclass
-from typing import TypeVar, Generic, ClassVar, get_args, Any, final, Literal
+from typing import TypeVar, Generic, ClassVar, get_args, Any, final
 
 import requests
+from html5lib import serialize
 
-from notion_df.resource.core import Serializable, PlainSerializable  # PlainSerializable
-from notion_df.util.mixin import input_based_cache
+from notion_df.resource.core import PlainSerializable, DualResource
+from notion_df.util.collection import StrEnum
 
-Response_T = TypeVar('Response_T', bound=Serializable)
+Response_T = TypeVar('Response_T', bound=DualResource)
 
 
 @dataclass
@@ -17,7 +18,7 @@ class Request(Generic[Response_T], metaclass=ABCMeta):
     """base request form made of various Resources.
     type argument `Response_T` is strongly recommended on subclassing.
     get api_key from https://www.notion.so/my-integrations"""
-    response_type: ClassVar[type[Response_T]]
+    response_type: ClassVar[type[DualResource]]
     api_key: str
 
     def __init_subclass__(cls, **kwargs):
@@ -27,19 +28,13 @@ class Request(Generic[Response_T], metaclass=ABCMeta):
             if response_type == Response_T:
                 raise ValueError
         except (AttributeError, ValueError):
-            # TODO - change to ValueError?
+            # TODO - change to NotionDfValueError?
             print(f'WARNING: {cls.__name__} does not have explicit response data type, use PlainSerializable instead')
             response_type = PlainSerializable
         cls.response_type = response_type
 
-    @classmethod
     @abstractmethod
-    @input_based_cache
-    def get_settings(cls) -> RequestSettings:
-        pass
-
-    @abstractmethod
-    def get_path(self) -> str:
+    def get_settings(self) -> RequestSettings:
         pass
 
     @abstractmethod
@@ -51,16 +46,35 @@ class Request(Generic[Response_T], metaclass=ABCMeta):
         settings = self.get_settings()
         headers = {
             'Authorization': f"Bearer {self.api_key}",
-            'Notion-Version': settings.notion_version,
+            'Notion-Version': settings.version.value,
         }
-        response = requests.request(settings.method, f'{settings.endpoint}{self.get_path()}',
-                                    data=self.get_body(), headers=headers)
+        response = requests.request(settings.method.value, settings.url,
+                                    headers=headers, data=serialize(self.get_body()))
         response.raise_for_status()
         return self.response_type.deserialize(response.json())
 
 
 @dataclass
 class RequestSettings:
-    notion_version: str
-    endpoint: str
-    method: Literal['GET', 'OPTIONS', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE']
+    """
+    - version: Version (enum)
+    - method: Method
+    - url: str
+    """
+    version: Version
+    method: Method
+    url: str
+
+
+class Method(StrEnum):
+    GET = 'GET'
+    POST = 'POST'
+    PUT = 'PUT'
+    PATCH = 'PATCH'
+    DELETE = 'DELETE'
+    # HEAD = 'HEAD'
+    # OPTIONS = 'OPTIONS'
+
+
+class Version(StrEnum):
+    v20220628 = '2022-06-28'

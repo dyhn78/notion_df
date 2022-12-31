@@ -2,8 +2,8 @@ from abc import ABCMeta
 from dataclasses import dataclass
 from typing import Any, ClassVar
 
-from notion_df.resource.common import DateValue
 from notion_df.resource.core import TypedResource
+from notion_df.resource.misc import DateRange
 
 
 @dataclass
@@ -13,7 +13,7 @@ class PropertyValue(TypedResource, metaclass=ABCMeta):
     name: str
     type: ClassVar[str]
 
-    def serialize_plain(self) -> dict[str, Any]:
+    def plain_serialize(self) -> dict[str, Any]:
         return {
             "id": self.id,
             "type": self.type,
@@ -23,9 +23,9 @@ class PropertyValue(TypedResource, metaclass=ABCMeta):
 @dataclass
 class DatePropertyValue(PropertyValue):
     type = 'date'
-    date: DateValue
+    date: DateRange
 
-    def serialize_plain(self) -> dict[str, Any]:
+    def plain_serialize(self) -> dict[str, Any]:
         return {
             self.type: self.date
         }
