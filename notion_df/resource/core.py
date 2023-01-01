@@ -12,7 +12,7 @@ from typing import Any, final, ClassVar, Optional, cast, Final
 import dateutil.parser
 from typing_extensions import Self
 
-from notion_df.util.collection import KeyChain, UniqueDict
+from notion_df.util.collection import KeyChain, FinalDict
 from notion_df.util.misc import NotionDfValueError
 from notion_df.variables import Variables
 
@@ -116,7 +116,6 @@ class Deserializable(Serializable, metaclass=ABCMeta):
     automatically transforms subclasses into dataclass.
     if decorated with '@master', it also provides a unified deserializer entrypoint."""
     _mock: ClassVar[bool] = False
-    _mock_serialized: ClassVar[dict[str, Any]]
     _field_type_dict: ClassVar[dict[str, type]]
     _field_keychain_dict: ClassVar[dict[KeyChain, str]]
 
@@ -132,16 +131,15 @@ class Deserializable(Serializable, metaclass=ABCMeta):
         dataclass(cls)
         if inspect.isabstract(cls) or cls._mock:
             return
-        cls._mock_serialized = cls._get_mock_serialized()
+
         cls._field_type_dict = {field.name: field.type for field in fields(cls)}
+        mock_serialized = cls._get_mock_serialized()
+        deserializable_registry.add_child(cls, mock_serialized)
         if cls.plain_deserialize.__code__ != Deserializable.plain_deserialize.__code__:
             # if plain_deserialize() is overridden, in other words, manually configured,
             #  it need not be generated from plain_serialize()
             return
-        cls._field_keychain_dict = cls._get_field_keychain_dict(cls._mock_serialized)
-        if _master := deserializable_registry.get_master(cls):
-            type_keychain = deserializable_registry.get_type_keychain(cls._mock_serialized)
-            deserializable_registry.add_child(_master, cls, type_keychain)
+        cls._field_keychain_dict = cls._get_field_keychain_dict(mock_serialized)
 
     @classmethod
     def _get_mock_serialized(cls) -> dict[str, Any]:
@@ -158,7 +156,7 @@ class Deserializable(Serializable, metaclass=ABCMeta):
 
     @classmethod
     def _get_field_keychain_dict(cls, mock_serialized: dict[str, Any]) -> dict[KeyChain, str]:
-        field_keychain_dict = UniqueDict[KeyChain, str]()
+        field_keychain_dict = FinalDict[KeyChain, str]()
         items: list[tuple[KeyChain, Any]] = [(KeyChain((k,)), v) for k, v in mock_serialized.items()]
         while items:
             keychain, value = items.pop()
@@ -193,10 +191,10 @@ class Deserializable(Serializable, metaclass=ABCMeta):
 
 class _DeserializableRegistry:
     def __init__(self):
-        self._data: dict[type[Deserializable], UniqueDict[KeyChain, type[Deserializable]]] = {}
+        self._data: dict[type[Deserializable], FinalDict[KeyChain, type[Deserializable]]] = {}
 
     def add_master(self, _master: type[Deserializable]) -> None:
-        self._data[_master] = UniqueDict()
+        self._data[_master] = FinalDict()
 
     def is_master(self, _master: type[Deserializable]) -> bool:
         return _master in self._data
@@ -208,8 +206,10 @@ class _DeserializableRegistry:
                 return base
         return None
 
-    def add_child(self, _master: type[Deserializable], child: type[Deserializable],
-                  child_type_keychain: KeyChain) -> None:
+    def add_child(self, child: type[Deserializable], child_mock_serialized: dict[str, Any]):
+        if not (_master := self.get_master(child)):
+            return
+        child_type_keychain = self.get_type_keychain(child_mock_serialized)
         self._data[_master][child_type_keychain] = child
 
     def get_child(self, _master: type[Deserializable], serialized: dict[str, Any]):

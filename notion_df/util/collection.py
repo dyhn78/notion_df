@@ -64,9 +64,11 @@ _KT = TypeVar('_KT')
 _VT = TypeVar('_VT')
 
 
-class UniqueDict(dict[_KT, _VT]):
+class FinalDict(dict[_KT, _VT]):
+    """dictionary which raises KeyError if trying to overwrite existing value."""
+
     def __setitem__(self, k: _KT, v: _VT) -> None:
         if cv := self.get(k):
-            raise NotionDfKeyError('cannot overwrite UniqueDict',
+            raise NotionDfKeyError('cannot overwrite FinalDict',
                                    {'key': k, 'new_value': v, 'current_value': cv})
         super().__setitem__(k, v)

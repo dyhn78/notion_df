@@ -10,6 +10,16 @@ from notion_df.util.collection import StrEnum, KeyChain
 from notion_df.variables import Variables
 
 
+@pytest.fixture
+def master_deserializer() -> type[Deserializable]:
+    @dataclass
+    @master
+    class MasterDeserializer(Deserializable, metaclass=ABCMeta):
+        pass
+
+    return MasterDeserializer
+
+
 def test__find_type_keychain():
     assert deserializable_registry.get_type_keychain({'type': 'checkbox', 'checkbox': True}) == KeyChain(('checkbox',))
     assert deserializable_registry.get_type_keychain({'type': 'mention', 'mention': {
@@ -21,14 +31,9 @@ def test__find_type_keychain():
     }}) == KeyChain(('mention', 'user'))
 
 
-def test__typed_resource__simple():
+def test__deserializer__simple(master_deserializer):
     @dataclass
-    @master
-    class TypedResource(Deserializable, metaclass=ABCMeta):
-        pass
-
-    @dataclass
-    class __TestResource(TypedResource):
+    class __TestDeserializer(master_deserializer):
         content: str
         link: str
 
@@ -44,12 +49,12 @@ def test__typed_resource__simple():
                 }
             }
 
-    assert deserializable_registry._data[TypedResource][KeyChain(('text',))] == __TestResource
-    assert __TestResource._field_keychain_dict == {
+    assert deserializable_registry._data[master_deserializer][KeyChain(('text',))] == __TestDeserializer
+    assert __TestDeserializer._field_keychain_dict == {
         ('text', 'content'): 'content',
         ('text', 'link', 'url'): 'link',
     }
-    assert TypedResource.deserialize({
+    assert master_deserializer.deserialize({
         'type': 'text',
         'text': {
             'content': 'self.content',
@@ -58,17 +63,12 @@ def test__typed_resource__simple():
                 'url': 'self.link'
             }
         }
-    }) == __TestResource('self.content', 'self.link')
+    }) == __TestDeserializer('self.content', 'self.link')
 
 
-def test_resource__call_its_method():
+def test_deserializable__call_method(master_deserializer):
     @dataclass
-    @master
-    class TypedResource(Deserializable, metaclass=ABCMeta):
-        pass
-
-    @dataclass
-    class __TestResource(TypedResource):
+    class __TestDeserializer(master_deserializer):
         user_id: str
 
         def plain_serialize(self):
@@ -86,12 +86,12 @@ def test_resource__call_its_method():
                 }
             }
 
-    assert deserializable_registry._data[TypedResource][KeyChain(('mention', 'user'))] == __TestResource
-    assert __TestResource._field_keychain_dict == {
+    assert deserializable_registry._data[master_deserializer][KeyChain(('mention', 'user'))] == __TestDeserializer
+    assert __TestDeserializer._field_keychain_dict == {
         ('mention', 'user', 'id'): 'user_id'
     }
     with pytest.raises(KeyError):
-        TypedResource.deserialize({
+        master_deserializer.deserialize({
             'type': 'text',
             'text': {
                 'content': 'self.content',
@@ -103,7 +103,7 @@ def test_resource__call_its_method():
         })
 
 
-def test_resource__external():
+def test_deserializable__datetime():
     @dataclass
     class __TestDeserializable(Deserializable):
         start: datetime
@@ -116,13 +116,13 @@ def test_resource__external():
             }
 
     Variables.timezone = pytz.utc
-    resource = __TestDeserializable(datetime(2022, 1, 1), datetime(2023, 1, 1))
+    deserializable = __TestDeserializable(datetime(2022, 1, 1), datetime(2023, 1, 1))
     serialized = {'start': '2022-01-01T00:00:00', 'end': '2023-01-01T00:00:00'}
-    assert resource.serialize() == serialized
-    assert deserialize_any(serialized, __TestDeserializable) == resource
+    assert deserializable.serialize() == serialized
+    assert deserialize_any(serialized, __TestDeserializable) == deserializable
 
 
-def test_resource__external_2():
+def test_deserializable__collections():
     class _Color(StrEnum):
         default = 'default'
         gray = 'gray'
@@ -151,9 +151,9 @@ def test_resource__external_2():
                 'hrefs': self.hrefs
             }
 
-    resource = __TestDeserializable(url='url', bold=True, link=_Link('link'), color=_Color.gray,
-                                    hrefs={'a': _Link('a'), 'b': _Link('b')})
+    deserializable = __TestDeserializable(url='url', bold=True, link=_Link('link'), color=_Color.gray,
+                                          hrefs={'a': _Link('a'), 'b': _Link('b')})
     serialized = {'url1': 'url', 'bold1': True, 'link': {'value': 'link'}, 'color1': 'gray',
                   'hrefs': {'a': {'value': 'a'}, 'b': {'value': 'b'}}}
-    assert resource.serialize() == serialized
-    assert deserialize_any(serialized, __TestDeserializable) == resource
+    assert deserializable.serialize() == serialized
+    assert deserialize_any(serialized, __TestDeserializable) == deserializable
