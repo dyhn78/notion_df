@@ -194,9 +194,14 @@ class Deserializable(Serializable, metaclass=ABCMeta):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
+    @classmethod
+    @final
+    def _skip_init_subclass(cls) -> bool:
+        return cls._mock or inspect.isabstract(cls) or cls.__name__.startswith('_')
+
     def __init_subclass__(cls, **kwargs) -> None:
         super().__init_subclass__(**kwargs)
-        if inspect.isabstract(cls) or cls._mock:
+        if cls._skip_init_subclass():
             return
 
         cls._field_type_dict = {field.name: field.type for field in fields(cls)}
@@ -214,6 +219,7 @@ class Deserializable(Serializable, metaclass=ABCMeta):
         class MockResource(cls, metaclass=ABCMeta):
             _mock = True
 
+        MockResource.__name__ = cls.__name__
         init_param_keys = list(inspect.signature(MockResource.__init__).parameters.keys())[1:]
         mock_init_param = {k: cls._MockAttribute(k) for k in init_param_keys}
         _mock = MockResource(**mock_init_param)  # type: ignore

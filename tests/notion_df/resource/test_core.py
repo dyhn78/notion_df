@@ -37,7 +37,7 @@ def test__deserializer__simple(master_deserializable):
     from notion_df.resource.core import _deserializable_registry
 
     @dataclass
-    class __TestDeserializable(master_deserializable):
+    class TestDeserializable(master_deserializable):
         content: str
         link: str
 
@@ -53,8 +53,8 @@ def test__deserializer__simple(master_deserializable):
                 }
             }
 
-    assert _deserializable_registry.data[master_deserializable][KeyChain(('text',))] == __TestDeserializable
-    assert __TestDeserializable._field_keychain_dict == {
+    assert _deserializable_registry.data[master_deserializable][KeyChain(('text',))] == TestDeserializable
+    assert TestDeserializable._field_keychain_dict == {
         ('text', 'content'): 'content',
         ('text', 'link', 'url'): 'link',
     }
@@ -67,14 +67,14 @@ def test__deserializer__simple(master_deserializable):
                 'url': 'self.link'
             }
         }
-    }) == __TestDeserializable('self.content', 'self.link')
+    }) == TestDeserializable('self.content', 'self.link')
 
 
 def test_deserializable__call_method(master_deserializable):
     from notion_df.resource.core import _deserializable_registry
 
     @dataclass
-    class __TestDeserializable(master_deserializable):
+    class TestDeserializable(master_deserializable):
         user_id: str
 
         def plain_serialize(self):
@@ -93,8 +93,8 @@ def test_deserializable__call_method(master_deserializable):
             }
 
     assert _deserializable_registry.data[master_deserializable][KeyChain(('mention', 'user'))] \
-           == __TestDeserializable
-    assert __TestDeserializable._field_keychain_dict == {
+           == TestDeserializable
+    assert TestDeserializable._field_keychain_dict == {
         ('mention', 'user', 'id'): 'user_id'
     }
     with pytest.raises(KeyError):
@@ -112,7 +112,7 @@ def test_deserializable__call_method(master_deserializable):
 
 def test_deserializable__datetime():
     @dataclass
-    class __TestDeserializable(Deserializable):
+    class TestDeserializable(Deserializable):
         start: datetime
         end: datetime
 
@@ -123,31 +123,31 @@ def test_deserializable__datetime():
             }
 
     Variables.timezone = pytz.utc
-    deserializable = __TestDeserializable(datetime(2022, 1, 1), datetime(2023, 1, 1))
+    deserializable = TestDeserializable(datetime(2022, 1, 1), datetime(2023, 1, 1))
     serialized = {'start': '2022-01-01T00:00:00', 'end': '2023-01-01T00:00:00'}
     assert deserializable.serialize() == serialized
-    assert deserialize_any(serialized, __TestDeserializable) == deserializable
+    assert deserialize_any(serialized, TestDeserializable) == deserializable
 
 
 def test_deserializable__collections():
-    class _Color(StrEnum):
+    class TestColor(StrEnum):
         default = 'default'
         gray = 'gray'
 
     @dataclass
-    class _Link(Deserializable):
+    class TestLink(Deserializable):
         value: str
 
         def plain_serialize(self):
             return {'value': self.value}
 
     @dataclass
-    class __TestDeserializable(Deserializable):
+    class TestDeserializable(Deserializable):
         url: str
-        hrefs: dict[str, _Link] = field(default_factory=dict)
+        hrefs: dict[str, TestLink] = field(default_factory=dict)
         bold: bool = False
-        color: _Color = _Color.default
-        link: _Link = None
+        color: TestColor = TestColor.default
+        link: TestLink = None
 
         def plain_serialize(self):
             return {
@@ -158,9 +158,9 @@ def test_deserializable__collections():
                 'hrefs': self.hrefs
             }
 
-    deserializable = __TestDeserializable(url='url', bold=True, link=_Link('link'), color=_Color.gray,
-                                          hrefs={'a': _Link('a'), 'b': _Link('b')})
+    deserializable = TestDeserializable(url='url', bold=True, link=TestLink('link'), color=TestColor.gray,
+                                        hrefs={'a': TestLink('a'), 'b': TestLink('b')})
     serialized = {'url1': 'url', 'bold1': True, 'link': {'value': 'link'}, 'color1': 'gray',
                   'hrefs': {'a': {'value': 'a'}, 'b': {'value': 'b'}}}
     assert deserializable.serialize() == serialized
-    assert deserialize_any(serialized, __TestDeserializable) == deserializable
+    assert deserialize_any(serialized, TestDeserializable) == deserializable

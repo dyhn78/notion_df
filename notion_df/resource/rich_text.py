@@ -12,7 +12,6 @@ from notion_df.resource.misc import Annotations, DateRange, UUID
 @dataclass(init=False)
 class RichText(Deserializable, metaclass=ABCMeta):
     # https://developers.notion.com/reference/rich-text
-    # noinspection PyUnresolvedReferences
     @final
     def plain_serialize(self) -> dict[str, Any]:
         serialized = self._plain_serialize_value()
