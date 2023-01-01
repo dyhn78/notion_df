@@ -118,8 +118,6 @@ _Deserializable_T = TypeVar('_Deserializable_T', bound='Deserializable')
 
 
 class _DeserializableRegistry:
-    """data structure to handle master-subclasses relation of deserializable classes."""
-
     def __init__(self):
         self.data: dict[type[Deserializable], FinalDict[KeyChain, type[Deserializable]]] = {}
         """schema: '{master: {keychain: {subclasses} } }'"""
@@ -148,11 +146,15 @@ class _DeserializableRegistry:
         subclass_type_keychain = self.get_type_keychain(subclass_mock_serialized)
         self.data[master][subclass_type_keychain] = subclass
 
-    def get_subclass(self, master: type[Deserializable], serialized: dict[str, Any]) -> Optional[type[Deserializable]]:
-        if not self.is_master(master):
-            return None
+    def deserialize_subclass(self, master: type[Deserializable], serialized: dict[str, Any]) -> Deserializable:
         type_keychain = self.get_type_keychain(serialized)
-        return self.data[master][type_keychain]
+        if master not in self.data:
+            raise NotionDfValueError('cannot proxy-deserialize from non-master abstract class', {'cls': master})
+        if type_keychain not in self.data[master]:
+            raise NotionDfValueError('cannot proxy-deserialize: unexpected type keychain',
+                                     {'cls': master, 'type_keychain': type_keychain})
+        subclass = self.data[master][type_keychain]
+        return subclass.deserialize(serialized)
 
     @staticmethod
     def get_type_keychain(serialized: dict[str, Any]) -> KeyChain:
@@ -182,10 +184,12 @@ class Deserializable(Serializable, metaclass=ABCMeta):
     interchangeable to JSON object.
     automatically transforms subclasses into dataclass.
     if decorated with '@set_master', it also provides a unified deserializer entrypoint."""
-    _mock: ClassVar[bool] = False
-    _field_type_dict: ClassVar[dict[str, type]]
-    _field_keychain_dict: ClassVar[dict[KeyChain, str]]
     __registry: ClassVar[_DeserializableRegistry] = _deserializable_registry
+    """data structure to handle master-subclasses relation of deserializable classes."""
+    _field_type_dict: ClassVar[dict[str, type]]
+    """helper attribute used to generate deserialize() from parsing plain_serialize()."""
+    _field_keychain_dict: ClassVar[dict[KeyChain, str]]
+    """helper attribute used to generate plain_deserialize() from parsing plain_serialize()."""
 
     @dataclass(frozen=True)
     class _MockAttribute:
@@ -195,9 +199,8 @@ class Deserializable(Serializable, metaclass=ABCMeta):
         super().__init__(**kwargs)
 
     @classmethod
-    @final
     def _skip_init_subclass(cls) -> bool:
-        return cls._mock or inspect.isabstract(cls) or cls.__name__.startswith('_')
+        return inspect.isabstract(cls) or cls.__name__.startswith('_')
 
     def __init_subclass__(cls, **kwargs) -> None:
         super().__init_subclass__(**kwargs)
@@ -217,7 +220,9 @@ class Deserializable(Serializable, metaclass=ABCMeta):
     def _get_mock_serialized(cls) -> dict[str, Any]:
         @dataclass
         class MockResource(cls, metaclass=ABCMeta):
-            _mock = True
+            @classmethod
+            def _skip_init_subclass(cls):
+                return True
 
         MockResource.__name__ = cls.__name__
         init_param_keys = list(inspect.signature(MockResource.__init__).parameters.keys())[1:]
@@ -243,14 +248,14 @@ class Deserializable(Serializable, metaclass=ABCMeta):
     @classmethod
     @final
     def deserialize(cls, serialized: dict[str, Any]) -> Self:
-        if subclass := cls.__registry.get_subclass(cls, serialized):
-            return subclass.deserialize(serialized)
-
-        each_field_serialized_dict = cls.plain_deserialize(serialized)
-        field_value_dict = {}
-        for n, v in each_field_serialized_dict.items():
-            field_value_dict[n] = deserialize_any(v, cls._field_type_dict[n])
-        return cls(**field_value_dict)
+        if inspect.isabstract(cls):
+            return cls.__registry.deserialize_subclass(cls, serialized)
+        else:
+            each_field_serialized_dict = cls.plain_deserialize(serialized)
+            field_value_dict = {}
+            for n, v in each_field_serialized_dict.items():
+                field_value_dict[n] = deserialize_any(v, cls._field_type_dict[n])
+            return cls(**field_value_dict)
 
     @classmethod
     def plain_deserialize(cls, serialized: dict[str, Any]) -> dict[str, Any]:
