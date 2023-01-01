@@ -4,11 +4,11 @@ from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
 from typing import Optional, Any, Literal, final
 
-from notion_df.resource.core import Deserializable, master
+from notion_df.resource.core import Deserializable, set_master
 from notion_df.resource.misc import Annotations, DateRange, UUID
 
 
-@master
+@set_master
 @dataclass(init=False)
 class RichText(Deserializable, metaclass=ABCMeta):
     # https://developers.notion.com/reference/rich-text

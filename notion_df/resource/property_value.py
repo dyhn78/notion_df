@@ -2,11 +2,11 @@ from abc import ABCMeta
 from dataclasses import dataclass
 from typing import Any, ClassVar
 
-from notion_df.resource.core import Deserializable, master
+from notion_df.resource.core import Deserializable, set_master
 from notion_df.resource.misc import DateRange
 
 
-@master
+@set_master
 @dataclass
 class PropertyValue(Deserializable, metaclass=ABCMeta):
     # https://developers.notion.com/reference/page-property-values

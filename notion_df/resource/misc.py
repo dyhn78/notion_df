@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import ClassVar, Any, NewType, Literal
 
-from notion_df.resource.core import Deserializable, master
+from notion_df.resource.core import Deserializable, set_master
 from notion_df.util.collection import StrEnum
 
 UUID = NewType('UUID', str)
@@ -67,7 +67,7 @@ class Annotations(Deserializable):
         }
 
 
-@master
+@set_master
 class Icon(Deserializable, metaclass=ABCMeta):
     pass
 

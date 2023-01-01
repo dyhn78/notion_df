@@ -3,7 +3,7 @@ from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, field
 from typing import Any, ClassVar
 
-from notion_df.resource.core import Deserializable, master
+from notion_df.resource.core import Deserializable, set_master
 from notion_df.resource.filter import FilterBuilder, TextFilterBuilder
 from notion_df.resource.misc import SelectOption, StatusGroups, RollupFunction, NumberFormat, UUID
 from notion_df.util.misc import NotionDfValueError
@@ -37,7 +37,7 @@ class PropertySchema(Deserializable, metaclass=ABCMeta):
 
 
 @dataclass
-@master
+@set_master
 class Property(PropertySchema, metaclass=ABCMeta):
     # https://developers.notion.com/reference/property-object
     name: str
