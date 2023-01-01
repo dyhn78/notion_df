@@ -18,27 +18,30 @@ from notion_df.variables import Variables
 
 
 def serialize_any(obj: Any):
-    """unified serializer for both Serializable and builtin classes."""
+    """unified serializer for both Serializable and external classes."""
     if isinstance(obj, dict):
         return {k: serialize_any(v) for k, v in obj.items()}
     if isinstance(obj, list) or isinstance(obj, set):
         return [serialize_any(e) for e in obj]
     if isinstance(obj, Serializable):
         return obj.serialize()
+    for typ in {bool, str, int, float}:
+        if isinstance(obj, typ):
+            return obj
     if isinstance(obj, Enum):
         return obj.value
     if isinstance(obj, datetime):
         return DateTimeSerializer.serialize(obj)
-    return obj
+    raise NotionDfValueError('cannot serialize', {'obj': obj})
 
 
 def deserialize_any(serialized: Any, typ: type):
-    """unified serializer for both Serializable and builtin classes."""
-    err_description = 'cannot parse serialized value'
+    """unified deserializer for both Deserializable and external classes."""
     err_vars = {'typ': typ, 'serialized': serialized}
     if isinstance(typ, types.GenericAlias):
         origin: type = typing.get_origin(typ)
         args = typing.get_args(typ)
+        err_vars.update({'typ.origin': origin, 'typ.args': args})
         try:
             if issubclass(origin, dict):
                 value_type = args[1]
@@ -48,27 +51,27 @@ def deserialize_any(serialized: Any, typ: type):
                 return [deserialize_any(e, element_type) for e in serialized]
             if issubclass(origin, set):
                 return {deserialize_any(e, element_type) for e in serialized}
-            err_description = 'cannot parse GenericAlias with invalid origin'
+            raise NotionDfValueError('cannot deserialize: GenericAlias type with invalid origin', err_vars)
         except IndexError:
-            err_description = 'cannot parse GenericAlias with invalid args'
-        err_vars.update({'typ.origin': origin, 'typ.args': args})
-    if isinstance(typ, types.UnionType):
-        # TODO: resolve (StrEnum | str) to str - or, is that really needed?
-        err_description = 'UnionType is (currently) not supported'
-    if inspect.isclass(typ):
-        if issubclass(typ, Deserializable):
-            return typ.deserialize(serialized)
-        if typ in {bool, str, int, float}:
-            if type(serialized) == typ:
-                return serialized
-            err_description = 'serialized value does not match with typ'
-        if issubclass(typ, Enum):
-            return typ(serialized)
-        if issubclass(typ, datetime):
-            return DateTimeSerializer.deserialize(serialized)
-        if isinstance(typ, InitVar):  # TODO: is this really needed?
-            return deserialize_any(serialized, typ.type)
-    raise NotionDfValueError(err_description, err_vars)
+            raise NotionDfValueError('cannot deserialize: GenericAlias type with invalid args', err_vars)
+    # TODO: resolve (StrEnum | str) to str - or, is that really needed?
+    # if isinstance(typ, types.UnionType):
+    #    err_description = 'UnionType is (currently) not supported'
+    if not inspect.isclass(typ):
+        raise NotionDfValueError('cannot deserialize: not supported type', err_vars)
+    if issubclass(typ, Deserializable):
+        return typ.deserialize(serialized)
+    if typ in {bool, str, int, float}:
+        if type(serialized) != typ:
+            raise NotionDfValueError('cannot deserialize: type(serialized) != typ', err_vars)
+        return serialized
+    if issubclass(typ, Enum):
+        return typ(serialized)
+    if issubclass(typ, datetime):
+        return DateTimeSerializer.deserialize(serialized)
+    if isinstance(typ, InitVar):  # TODO: is this really needed?
+        return deserialize_any(serialized, typ.type)
+    raise NotionDfValueError('cannot deserialize: not supported class', err_vars)
 
 
 class DateTimeSerializer:
