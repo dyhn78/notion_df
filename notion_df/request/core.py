@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import inspect
 from abc import abstractmethod, ABCMeta
 from dataclasses import dataclass
 from typing import TypeVar, Generic, ClassVar, get_args, Any, final
@@ -7,10 +8,11 @@ from typing import TypeVar, Generic, ClassVar, get_args, Any, final
 import requests
 from html5lib import serialize
 
-from notion_df.resource.core import PlainSerializable, DualResource
+from notion_df.resource.core import Deserializable
 from notion_df.util.collection import StrEnum
+from notion_df.util.misc import NotionDfValueError
 
-Response_T = TypeVar('Response_T', bound=DualResource)
+Response_T = TypeVar('Response_T', bound=Deserializable)
 
 
 @dataclass
@@ -18,19 +20,17 @@ class Request(Generic[Response_T], metaclass=ABCMeta):
     """base request form made of various Resources.
     type argument `Response_T` is strongly recommended on subclassing.
     get api_key from https://www.notion.so/my-integrations"""
-    response_type: ClassVar[type[DualResource]]
+    response_type: ClassVar[type[Deserializable]]
     api_key: str
 
     def __init_subclass__(cls, **kwargs):
         try:
             generic_class = cls.__orig_bases__[0]  # type: ignore
             response_type = get_args(generic_class)[0]
-            if response_type == Response_T:
+            if not inspect.isclass(response_type):
                 raise ValueError
         except (AttributeError, ValueError):
-            # TODO - change to NotionDfValueError?
-            print(f'WARNING: {cls.__name__} does not have explicit response data type, use PlainSerializable instead')
-            response_type = PlainSerializable
+            raise NotionDfValueError('Request must have explicit response data type', {'cls': cls})
         cls.response_type = response_type
 
     @abstractmethod

@@ -2,13 +2,13 @@ from abc import ABCMeta
 from dataclasses import dataclass
 from typing import Any, Literal
 
-from notion_df.resource.core import Resource
+from notion_df.resource.core import Serializable
 from notion_df.resource.misc import Timestamp
 
 Direction = Literal['ascending', 'descending']
 
 
-class Sort(Resource, metaclass=ABCMeta):
+class Sort(Serializable, metaclass=ABCMeta):
     pass
 
 

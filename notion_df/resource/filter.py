@@ -6,7 +6,7 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Any, ClassVar, ParamSpec, Literal
 
-from notion_df.resource.core import Resource
+from notion_df.resource.core import Serializable
 from notion_df.resource.misc import UUID, Timestamp
 
 _P = ParamSpec('_P')
@@ -54,7 +54,7 @@ def date_condition(func: Callable[_P, ...]) -> Callable[_P, DateFilterCondition]
 
 
 @dataclass
-class Filter(Resource, metaclass=ABCMeta):
+class Filter(Serializable, metaclass=ABCMeta):
     pass
 
 

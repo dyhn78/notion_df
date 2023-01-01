@@ -56,7 +56,7 @@ def deserialize_any(serialized: Any, typ: type):
         # TODO: resolve (StrEnum | str) to str - or, is that really needed?
         err_description = 'UnionType is (currently) not supported'
     if inspect.isclass(typ):
-        if issubclass(typ, DualSerializable):
+        if issubclass(typ, Deserializable):
             return typ.deserialize(serialized)
         if typ in {bool, str, int, float}:
             if type(serialized) == typ:
@@ -88,37 +88,9 @@ class DateTimeSerializer:
 
 @dataclass
 class Serializable(metaclass=ABCMeta):
-    """base dataclass used for Notion-df. transformable to JSON."""
+    """dataclass representation of the resources defined in Notion REST API.
+    transformable into JSON object."""
 
-    @abstractmethod
-    def serialize(self):
-        pass
-
-
-@dataclass
-class DualSerializable(Serializable):
-    """base dataclass used for Notion-df. interchangeable to JSON."""
-
-    @classmethod
-    @abstractmethod
-    def deserialize(cls, serialized) -> Self:
-        pass
-
-
-@dataclass
-class PlainSerializable(DualSerializable):
-    data: Any
-
-    def serialize(self):
-        return self.data
-
-    @classmethod
-    def deserialize(cls, serialized) -> Self:
-        return cls(serialized)
-
-
-@dataclass
-class Resource(Serializable, metaclass=ABCMeta):
     def __init__(self, **kwargs):
         pass
 
@@ -135,10 +107,10 @@ class Resource(Serializable, metaclass=ABCMeta):
 
 
 @dataclass
-class DualResource(DualSerializable, Resource, metaclass=ABCMeta):
+class Deserializable(Serializable, metaclass=ABCMeta):
     """dataclass representation of the resources defined in Notion REST API.
-    automatically transforms subclasses into dataclass.
-    interchangeable to JSON object."""
+    interchangeable to JSON object.
+    automatically transforms subclasses into dataclass."""
     _field_type_dict: ClassVar[dict[str, type]]
     _field_keychain_dict: ClassVar[dict[KeyChain, str]]
     _mock_serialized: ClassVar[dict[str, Any]]
@@ -156,7 +128,7 @@ class DualResource(DualSerializable, Resource, metaclass=ABCMeta):
         dataclass(cls)
         cls._field_type_dict = {field.name: field.type for field in fields(cls)}
 
-        if (cls.plain_deserialize.__code__ != DualResource.plain_deserialize.__code__) or cls._mock:
+        if (cls.plain_deserialize.__code__ != Deserializable.plain_deserialize.__code__) or cls._mock:
             # if plain_deserialize() is overridden, in other words, manually configured,
             #  it need not be generated from plain_serialize()
             return False
@@ -218,7 +190,7 @@ class DualResource(DualSerializable, Resource, metaclass=ABCMeta):
 
 
 @dataclass
-class TypedResource(DualResource, metaclass=ABCMeta):
+class TypedResource(Deserializable, metaclass=ABCMeta):
     """Resource object with the unified deserializer entrypoint."""
     _registry: ClassVar[dict[KeyChain, type[TypedResource]]] = {}
 

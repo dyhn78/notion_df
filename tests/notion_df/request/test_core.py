@@ -1,16 +1,19 @@
 from abc import ABCMeta
 from types import new_class
+from typing import TypeVar
+
+import pytest
 
 from notion_df.request.core import Request
-from notion_df.resource.core import PlainSerializable
+from notion_df.util.misc import NotionDfValueError
+
+not_a_class = TypeVar('not_a_class')
 
 
 def test_request_form():
-    class __TestRequestDefault(Request, metaclass=ABCMeta):
-        pass
-
-    assert __TestRequestDefault.response_type == PlainSerializable
-    assert new_class('test', (Request,)).response_type == PlainSerializable  # type: ignore
+    with pytest.raises(NotionDfValueError):
+        class __TestRequestDefault(Request, metaclass=ABCMeta):
+            pass
 
     class __TestRequestArg(Request[int], metaclass=ABCMeta):
         pass

@@ -4,7 +4,7 @@ from datetime import datetime
 import pytest
 import pytz
 
-from notion_df.resource.core import TypedResource, DualResource, deserialize_any
+from notion_df.resource.core import TypedResource, Deserializable, deserialize_any
 from notion_df.util.collection import StrEnum, KeyChain
 from notion_df.variables import Variables
 
@@ -96,7 +96,7 @@ def test_resource__call_its_method():
 
 def test_resource__external():
     @dataclass
-    class __TestDualResource(DualResource):
+    class __TestDeserializable(Deserializable):
         start: datetime
         end: datetime
 
@@ -107,10 +107,10 @@ def test_resource__external():
             }
 
     Variables.timezone = pytz.utc
-    resource = __TestDualResource(datetime(2022, 1, 1), datetime(2023, 1, 1))
+    resource = __TestDeserializable(datetime(2022, 1, 1), datetime(2023, 1, 1))
     serialized = {'start': '2022-01-01T00:00:00', 'end': '2023-01-01T00:00:00'}
     assert resource.serialize() == serialized
-    assert deserialize_any(serialized, __TestDualResource) == resource
+    assert deserialize_any(serialized, __TestDeserializable) == resource
 
 
 def test_resource__external_2():
@@ -119,14 +119,14 @@ def test_resource__external_2():
         gray = 'gray'
 
     @dataclass
-    class _Link(DualResource):
+    class _Link(Deserializable):
         value: str
 
         def plain_serialize(self):
             return {'value': self.value}
 
     @dataclass
-    class __TestDualResource(DualResource):
+    class __TestDeserializable(Deserializable):
         url: str
         hrefs: dict[str, _Link] = field(default_factory=dict)
         bold: bool = False
@@ -142,9 +142,9 @@ def test_resource__external_2():
                 'hrefs': self.hrefs
             }
 
-    resource = __TestDualResource(url='url', bold=True, link=_Link('link'), color=_Color.gray,
-                                  hrefs={'a': _Link('a'), 'b': _Link('b')})
+    resource = __TestDeserializable(url='url', bold=True, link=_Link('link'), color=_Color.gray,
+                                    hrefs={'a': _Link('a'), 'b': _Link('b')})
     serialized = {'url1': 'url', 'bold1': True, 'link': {'value': 'link'}, 'color1': 'gray',
                   'hrefs': {'a': {'value': 'a'}, 'b': {'value': 'b'}}}
     assert resource.serialize() == serialized
-    assert deserialize_any(serialized, __TestDualResource) == resource
+    assert deserialize_any(serialized, __TestDeserializable) == resource

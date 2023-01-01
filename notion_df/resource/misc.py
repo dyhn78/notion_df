@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import ClassVar, Any, NewType, Literal
 
-from notion_df.resource.core import TypedResource, DualResource
+from notion_df.resource.core import TypedResource, Deserializable
 from notion_df.util.collection import StrEnum
 
 UUID = NewType('UUID', str)
@@ -48,7 +48,7 @@ class TextColor(StrEnum):
 
 
 @dataclass
-class Annotations(DualResource):
+class Annotations(Deserializable):
     bold: bool = False
     italic: bool = False
     strikethrough: bool = False
@@ -85,7 +85,7 @@ class Emoji(Icon):
 
 
 @dataclass
-class DateRange(DualResource):
+class DateRange(Deserializable):
     # timezone option is disabled. you should handle timezone inside 'start' and 'end'.
     start: datetime
     end: datetime
@@ -98,7 +98,7 @@ class DateRange(DualResource):
 
 
 @dataclass
-class SelectOption(DualResource):
+class SelectOption(Deserializable):
     name: str
     id: str = field()
     """Identifier of the option, which does not change if the name is changed. 
@@ -114,7 +114,7 @@ class SelectOption(DualResource):
 
 
 @dataclass
-class StatusGroups(DualResource):
+class StatusGroups(Deserializable):
     name: str
     id: str = field()
     """Identifier of the option, which does not change if the name is changed. 

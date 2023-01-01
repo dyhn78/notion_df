@@ -4,12 +4,12 @@ from abc import ABCMeta
 from dataclasses import dataclass
 from typing import Any
 
-from notion_df.resource.core import DualResource
+from notion_df.resource.core import Deserializable
 from notion_df.resource.misc import UUID
 
 
 @dataclass
-class Parent(DualResource, metaclass=ABCMeta):
+class Parent(Deserializable, metaclass=ABCMeta):
     # https://developers.notion.com/reference/parent-object
     id: UUID
 

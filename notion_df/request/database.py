@@ -6,7 +6,7 @@ from typing import Any, Optional
 
 from notion_df.request.core import Request, RequestSettings, Version, Method
 from notion_df.request.page import PageResponse
-from notion_df.resource.core import DualResource
+from notion_df.resource.core import Deserializable
 from notion_df.resource.file import File, ExternalFile
 from notion_df.resource.filter import Filter
 from notion_df.resource.misc import Icon, UUID
@@ -18,7 +18,7 @@ from notion_df.util.misc import dict_remove_falsy_values
 
 
 @dataclass
-class QueryDatabaseResponse(DualResource):
+class QueryDatabaseResponse(Deserializable):
     results: list[PageResponse]
     next_cursor: Optional[str]
     has_more: bool
@@ -60,7 +60,7 @@ class QueryDatabase(Request[QueryDatabaseResponse]):
 
 
 @dataclass
-class DatabaseResponse(DualResource):
+class DatabaseResponse(Deserializable):
     id: UUID
     url: str
     title: RichText

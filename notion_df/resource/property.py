@@ -3,14 +3,14 @@ from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, field
 from typing import Any, ClassVar
 
-from notion_df.resource.core import TypedResource, DualResource
+from notion_df.resource.core import TypedResource, Deserializable
 from notion_df.resource.filter import FilterBuilder, TextFilterBuilder
 from notion_df.resource.misc import SelectOption, StatusGroups, RollupFunction, NumberFormat, UUID
 from notion_df.util.misc import NotionDfValueError
 
 
 @dataclass
-class PropertySchema(DualResource, metaclass=ABCMeta):
+class PropertySchema(Deserializable, metaclass=ABCMeta):
     # https://developers.notion.com/reference/property-schema-object
     # https://developers.notion.com/reference/update-property-schema-object
     type: ClassVar[str]
