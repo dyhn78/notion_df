@@ -4,12 +4,13 @@ from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
 from typing import Optional, Any, Literal, final
 
-from notion_df.resource.core import TypedResource
+from notion_df.resource.core import Deserializable, master
 from notion_df.resource.misc import Annotations, DateRange, UUID
 
 
+@master
 @dataclass(init=False)
-class RichText(TypedResource, metaclass=ABCMeta):
+class RichText(Deserializable, metaclass=ABCMeta):
     # https://developers.notion.com/reference/rich-text
     # noinspection PyUnresolvedReferences
     @final
@@ -25,7 +26,7 @@ class RichText(TypedResource, metaclass=ABCMeta):
 
 
 @dataclass
-class _RichTextDefault(TypedResource, metaclass=ABCMeta):
+class _RichTextDefault(Deserializable, metaclass=ABCMeta):
     # this is a helper class we need to put common, default, annotation-like variables
     #  AFTER subclass-specific, important ones.
     annotations: Optional[Annotations] = None
