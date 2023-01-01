@@ -7,12 +7,12 @@ from abc import abstractmethod, ABCMeta
 from dataclasses import dataclass, fields, InitVar
 from datetime import datetime
 from enum import Enum
-from typing import Any, final, ClassVar
+from typing import Any, final, ClassVar, Optional, cast, Final
 
 import dateutil.parser
 from typing_extensions import Self
 
-from notion_df.util.collection import KeyChain
+from notion_df.util.collection import KeyChain, UniqueDict
 from notion_df.util.misc import NotionDfValueError
 from notion_df.variables import Variables
 
@@ -113,70 +113,69 @@ class Serializable(metaclass=ABCMeta):
 class Deserializable(Serializable, metaclass=ABCMeta):
     """dataclass representation of the resources defined in Notion REST API.
     interchangeable to JSON object.
-    automatically transforms subclasses into dataclass."""
+    automatically transforms subclasses into dataclass.
+    if decorated with '@master', it also provides a unified deserializer entrypoint."""
+    _mock: ClassVar[bool] = False
+    _mock_serialized: ClassVar[dict[str, Any]]
     _field_type_dict: ClassVar[dict[str, type]]
     _field_keychain_dict: ClassVar[dict[KeyChain, str]]
-    _mock_serialized: ClassVar[dict[str, Any]]
-    _mock = False
+
+    @dataclass(frozen=True)
+    class _MockAttribute:
+        name: str
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    def __init_subclass__(cls, **kwargs) -> bool:
+    def __init_subclass__(cls, **kwargs) -> None:
         super().__init_subclass__(**kwargs)
-
-        if inspect.isabstract(cls):
-            return False
-
         dataclass(cls)
+        if inspect.isabstract(cls) or cls._mock:
+            return
+        cls._mock_serialized = cls._get_mock_serialized()
         cls._field_type_dict = {field.name: field.type for field in fields(cls)}
-
-        if (cls.plain_deserialize.__code__ != Deserializable.plain_deserialize.__code__) or cls._mock:
+        if cls.plain_deserialize.__code__ != Deserializable.plain_deserialize.__code__:
             # if plain_deserialize() is overridden, in other words, manually configured,
             #  it need not be generated from plain_serialize()
-            return False
+            return
+        cls._field_keychain_dict = cls._get_field_keychain_dict(cls._mock_serialized)
+        if _master := deserializable_registry.get_master(cls):
+            type_keychain = deserializable_registry.get_type_keychain(cls._mock_serialized)
+            deserializable_registry.add_child(_master, cls, type_keychain)
 
+    @classmethod
+    def _get_mock_serialized(cls) -> dict[str, Any]:
         @dataclass
         class MockResource(cls, metaclass=ABCMeta):
             _mock = True
 
-            def __getattr__(self, key: str):
-                if key in cls._field_type_dict:
-                    return MockAttribute(key)
-                try:
-                    return getattr(super(), key)
-                except AttributeError:
-                    raise NotionDfValueError("cannot parse resource definition", {'cls': cls, 'key': key})
-
-        @dataclass(frozen=True)
-        class MockAttribute:
-            name: str
-
         init_param_keys = list(inspect.signature(MockResource.__init__).parameters.keys())[1:]
-        mock_init_param = {k: MockAttribute(k) for k in init_param_keys}
+        mock_init_param = {k: cls._MockAttribute(k) for k in init_param_keys}
         _mock = MockResource(**mock_init_param)  # type: ignore
         for field in fields(MockResource):
-            setattr(_mock, field.name, MockAttribute(field.name))
-        cls._mock_serialized = _mock.plain_serialize()
-        cls._field_keychain_dict = {}
-        items: list[tuple[KeyChain, Any]] = [(KeyChain((k,)), v) for k, v in cls._mock_serialized.items()]
+            setattr(_mock, field.name, cls._MockAttribute(field.name))
+        return _mock.plain_serialize()
+
+    @classmethod
+    def _get_field_keychain_dict(cls, mock_serialized: dict[str, Any]) -> dict[KeyChain, str]:
+        field_keychain_dict = UniqueDict[KeyChain, str]()
+        items: list[tuple[KeyChain, Any]] = [(KeyChain((k,)), v) for k, v in mock_serialized.items()]
         while items:
             keychain, value = items.pop()
-            if isinstance(value, MockAttribute):
-                if cls._field_keychain_dict.get(keychain) == value:
-                    raise NotionDfValueError(
-                        f"serialize() definition cannot have element depending on multiple attributes",
-                        {'cls': cls, 'keychain': keychain, '__code__': cls.plain_serialize.__code__},
-                        linebreak=True)
+            if isinstance(value, cls._MockAttribute):
                 attr_name = value.name
-                cls._field_keychain_dict[keychain] = attr_name
+                field_keychain_dict[keychain] = attr_name
             elif isinstance(value, dict):
                 items.extend((keychain + (k,), v) for k, v in value.items())
-        return True
+        return field_keychain_dict
 
     @classmethod
     @final
     def deserialize(cls, serialized: dict[str, Any]) -> Self:
+        if deserializable_registry.is_master(cls):
+            subclass = deserializable_registry.get_child(cls, serialized)
+            return subclass.deserialize(serialized)
+
         each_field_serialized_dict = cls.plain_deserialize(serialized)
         field_value_dict = {}
         for n, v in each_field_serialized_dict.items():
@@ -192,27 +191,33 @@ class Deserializable(Serializable, metaclass=ABCMeta):
         return each_field_serialized_dict
 
 
-@dataclass
-class TypedResource(Deserializable, metaclass=ABCMeta):
-    """Resource object with the unified deserializer entrypoint."""
-    _registry: ClassVar[dict[KeyChain, type[TypedResource]]] = {}
+class _DeserializableRegistry:
+    def __init__(self):
+        self._data: dict[type[Deserializable], UniqueDict[KeyChain, type[Deserializable]]] = {}
 
-    def __init_subclass__(cls, **kwargs):
-        if super().__init_subclass__(**kwargs):
-            TypedResource._registry[cls._get_type_keychain(cls._mock_serialized)] = cls
+    def add_master(self, _master: type[Deserializable]) -> None:
+        self._data[_master] = UniqueDict()
 
-    # noinspection PyFinal
-    @classmethod
-    @final
-    def deserialize(cls, serialized: dict[str, Any]) -> Self:
-        if cls is TypedResource:
-            subclass = cls._registry[cls._get_type_keychain(serialized)]
-            return subclass.deserialize(serialized)
-        return super().deserialize(serialized)
+    def is_master(self, _master: type[Deserializable]) -> bool:
+        return _master in self._data
+
+    def get_master(self, child: type[Deserializable]) -> Optional[type[Deserializable]]:
+        for base in child.__mro__:
+            base = cast(type[Deserializable], base)
+            if issubclass(base, Deserializable) and self.is_master(base):
+                return base
+        return None
+
+    def add_child(self, _master: type[Deserializable], child: type[Deserializable],
+                  child_type_keychain: KeyChain) -> None:
+        self._data[_master][child_type_keychain] = child
+
+    def get_child(self, _master: type[Deserializable], serialized: dict[str, Any]):
+        type_keychain = self.get_type_keychain(serialized)
+        return self._data[_master][type_keychain]
 
     @staticmethod
-    @final
-    def _get_type_keychain(serialized: dict[str, Any]) -> KeyChain:
+    def get_type_keychain(serialized: dict[str, Any]) -> KeyChain:
         current_keychain = KeyChain()
         if 'type' not in serialized:
             raise NotionDfValueError(f"'type' key not found",
@@ -225,3 +230,13 @@ class TypedResource(Deserializable, metaclass=ABCMeta):
                 serialized = value
                 continue
             return current_keychain
+
+
+deserializable_registry: Final = _DeserializableRegistry()
+
+
+def master(_master: type[Deserializable]):
+    """make an abstract base deserializable class a representative resource,
+    allowing it to distinguish its several subclasses' serialized form."""
+    deserializable_registry.add_master(_master)
+    return _master

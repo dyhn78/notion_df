@@ -1,17 +1,18 @@
+from abc import ABCMeta
 from dataclasses import dataclass, field
 from datetime import datetime
 
 import pytest
 import pytz
 
-from notion_df.resource.core import TypedResource, Deserializable, deserialize_any
+from notion_df.resource.core import Deserializable, deserialize_any, master, deserializable_registry
 from notion_df.util.collection import StrEnum, KeyChain
 from notion_df.variables import Variables
 
 
-def test_resource__find_type_keychain():
-    assert TypedResource._get_type_keychain({'type': 'checkbox', 'checkbox': True}) == KeyChain(('checkbox',))
-    assert TypedResource._get_type_keychain({'type': 'mention', 'mention': {
+def test__find_type_keychain():
+    assert deserializable_registry.get_type_keychain({'type': 'checkbox', 'checkbox': True}) == KeyChain(('checkbox',))
+    assert deserializable_registry.get_type_keychain({'type': 'mention', 'mention': {
         'type': 'user',
         'user': {
             'object': 'user',
@@ -20,7 +21,12 @@ def test_resource__find_type_keychain():
     }}) == KeyChain(('mention', 'user'))
 
 
-def test_resource__simple():
+def test__typed_resource__simple():
+    @dataclass
+    @master
+    class TypedResource(Deserializable, metaclass=ABCMeta):
+        pass
+
     @dataclass
     class __TestResource(TypedResource):
         content: str
@@ -37,8 +43,8 @@ def test_resource__simple():
                     } if self.link else None
                 }
             }
-    print(TypedResource._registry)
-    assert TypedResource._registry[KeyChain(('text',))] == __TestResource
+
+    assert deserializable_registry._data[TypedResource][KeyChain(('text',))] == __TestResource
     assert __TestResource._field_keychain_dict == {
         ('text', 'content'): 'content',
         ('text', 'link', 'url'): 'link',
@@ -56,7 +62,10 @@ def test_resource__simple():
 
 
 def test_resource__call_its_method():
-    TypedResource._registry.clear()
+    @dataclass
+    @master
+    class TypedResource(Deserializable, metaclass=ABCMeta):
+        pass
 
     @dataclass
     class __TestResource(TypedResource):
@@ -77,7 +86,7 @@ def test_resource__call_its_method():
                 }
             }
 
-    assert TypedResource._registry[KeyChain(('mention', 'user'))] == __TestResource
+    assert deserializable_registry._data[TypedResource][KeyChain(('mention', 'user'))] == __TestResource
     assert __TestResource._field_keychain_dict == {
         ('mention', 'user', 'id'): 'user_id'
     }

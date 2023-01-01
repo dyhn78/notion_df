@@ -39,6 +39,11 @@ class NotionDfException(Exception, ABC):
 
 
 @dataclass
+class NotionDfKeyError(NotionDfException, KeyError):
+    pass
+
+
+@dataclass
 class NotionDfValueError(NotionDfException, ValueError):
     pass
 

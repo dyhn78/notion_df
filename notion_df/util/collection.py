@@ -3,7 +3,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import Mapping, TypeVar, Iterator, Final, Any
 
-from notion_df.util.misc import repr_object
+from notion_df.util.misc import repr_object, NotionDfKeyError
 from notion_df.util.mixin import Resolvable
 
 _T_co = TypeVar('_T_co', covariant=True)
@@ -58,3 +58,15 @@ class KeyChain(tuple[str, ...]):
         for key in self[:-1]:
             d = d[key]
         d[self[-1]] = value
+
+
+_KT = TypeVar('_KT')
+_VT = TypeVar('_VT')
+
+
+class UniqueDict(dict[_KT, _VT]):
+    def __setitem__(self, k: _KT, v: _VT) -> None:
+        if cv := self.get(k):
+            raise NotionDfKeyError('cannot overwrite UniqueDict',
+                                   {'key': k, 'new_value': v, 'current_value': cv})
+        super().__setitem__(k, v)
