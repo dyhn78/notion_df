@@ -15,14 +15,17 @@ class MyBlock(Enum):
     def prefix_title(self):
         return self.prefix + self.title
 
-    projects = ('활동', '69b4e66c4ee43b6a5e40c8b28e6f9d1', EmojiCode.BROWN_CIRCLE)
+    projects = ('활동', '69b4e66c4ee43b6a5e40c8b28e6f9d1', EmojiCode.BLACK_HEART)
+
     dates = ('일간', '961d1ca0a3d24a46b838ba85e710f18d', EmojiCode.GREEN_CIRCLE)
     weeks = ('주간', 'd020b399cf5947a59d11a0b9e0ea45d0', EmojiCode.GREEN_HEART)
+    
+    # MOMENTS
+    events = ('일지', 'c226cffe6cf84ab996bbc384bf26bf1d', EmojiCode.ORANGE_CIRCLE)
+    journals = ('바탕', 'fa7d93f6fbd341f089b185745c834811', EmojiCode.ORANGE_HEART)
 
     processes = ('진행', 'c8d46c01d6c941a9bf8df5d115a05f03', EmojiCode.BLUE_CIRCLE)
-    events = ('일지', 'c226cffe6cf84ab996bbc384bf26bf1d', EmojiCode.ORANGE_CIRCLE)
-
-    journals = ('바탕', 'fa7d93f6fbd341f089b185745c834811', EmojiCode.ORANGE_HEART)
+    # ISSUES
     tasks = ('꼭지', 'e8782fe4e1a34c9d846d57b01a370327', EmojiCode.BLUE_HEART)
 
     readings = ('읽기', 'c326f77425a0446a8aa309478767c85b', EmojiCode.YELLOW_CIRCLE)
