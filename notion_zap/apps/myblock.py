@@ -26,7 +26,7 @@ class MyBlock(Enum):
     # ISSUES
     journals = ('바탕', 'fa7d93f6fbd341f089b185745c834811', EmojiCode.ORANGE_HEART)
 
-    processes = ('진행', 'c8d46c01d6c941a9bf8df5d115a05f03', EmojiCode.BLUE_CIRCLE)
+    processes = ('일과', 'c8d46c01d6c941a9bf8df5d115a05f03', EmojiCode.BLUE_CIRCLE)
     # AGENDAS
     tasks = ('꼭지', 'e8782fe4e1a34c9d846d57b01a370327', EmojiCode.BLUE_HEART)
 
