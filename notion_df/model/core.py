@@ -9,10 +9,10 @@ from typing_extensions import Self
 from notion_df.util.collection import DictView
 from notion_df.util.misc import NotionDfException, NotionDfStateError
 
-Entity_T = TypeVar('Entity_T', bound='Entity', covariant=True)  # TODO: is 'covariant' option really needed?
+Entity_T = TypeVar('Entity_T', bound='Entity')
 Field_T = TypeVar('Field_T', bound='Field')
 Property_T = TypeVar('Property_T', bound='Property')
-Value_T = TypeVar('Value_T', covariant=True)
+Value_T = TypeVar('Value_T')
 ValueInput_T = TypeVar('ValueInput_T')
 
 

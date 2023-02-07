@@ -50,7 +50,7 @@ class Request(Generic[Response_T], metaclass=ABCMeta):
         response = requests.request(settings.method.value, settings.url,
                                     headers=headers, data=serialize(self.get_body()))
         response.raise_for_status()
-        return self.response_type.deserialize(response.json())
+        return self.response_type.deserialize(response.json())  # nomypy
 
 
 @dataclass

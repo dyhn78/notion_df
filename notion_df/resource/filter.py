@@ -37,7 +37,7 @@ class DateFilterCondition(FilterCondition):
         return TimestampFilter(self, option)
 
 
-def condition(func: Callable[_P, ...]) -> Callable[_P, FilterCondition]:
+def condition(func: Callable[_P, Any]) -> Callable[_P, FilterCondition]:
     @functools.wraps(func)
     def wrapper(self: PropertyFilterBuilder, *args: _P.args, **kwargs: _P.kwargs):
         return FilterCondition(func.__name__, func(self, *args, **kwargs))
@@ -45,7 +45,7 @@ def condition(func: Callable[_P, ...]) -> Callable[_P, FilterCondition]:
     return wrapper
 
 
-def date_condition(func: Callable[_P, ...]) -> Callable[_P, DateFilterCondition]:
+def date_condition(func: Callable[_P, Any]) -> Callable[_P, DateFilterCondition]:
     @functools.wraps(func)
     def wrapper(self: PropertyFilterBuilder, *args: _P.args, **kwargs: _P.kwargs):
         return DateFilterCondition(func.__name__, func(self, *args, **kwargs))

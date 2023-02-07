@@ -44,8 +44,8 @@ class StrEnum(str, Enum):
 
 
 class KeyChain(tuple[str, ...]):
-    def __add__(self, other: list[str] | tuple[str, ...]) -> KeyChain:
-        return KeyChain(tuple(self) + tuple(other))
+    def __add__(self, other: tuple[str, ...]) -> KeyChain:
+        return KeyChain(tuple(self) + other)
 
     def get(self, d: dict) -> Any:
         for key in self:

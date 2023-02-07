@@ -253,14 +253,14 @@ class Deserializable(Serializable, metaclass=ABCMeta):
         else:
             each_field_serialized_dict = cls.plain_deserialize(serialized)
             field_value_dict = {}
-            for n, v in each_field_serialized_dict.items():
-                field_value_dict[n] = deserialize(v, cls._field_type_dict[n])
-            return cls(**field_value_dict)
+            for field_name, field_serialized in each_field_serialized_dict.items():
+                field_value_dict[field_name] = deserialize(field_serialized, cls._field_type_dict[field_name])
+            return cls(**field_value_dict)  # nomypy
 
     @classmethod
     def plain_deserialize(cls, serialized: dict[str, Any]) -> dict[str, Any]:
         """return **{field_name: serialized_field_value}."""
         each_field_serialized_dict = {}
-        for keychain, n in cls._field_keychain_dict.items():
-            each_field_serialized_dict[n] = keychain.get(serialized)
+        for keychain, field_name in cls._field_keychain_dict.items():
+            each_field_serialized_dict[field_name] = keychain.get(serialized)
         return each_field_serialized_dict

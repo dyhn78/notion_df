@@ -97,8 +97,8 @@ class CreateDatabase(Request[DatabaseResponse]):
     parent_id: UUID
     title: list[RichText] = field(default_factory=list)
     properties: dict[str, PropertySchema] = field(default_factory=dict)
-    icon: Icon = field(default=None)
-    cover: File = field(default=None)
+    icon: Optional[Icon] = field(default=None)
+    cover: Optional[File] = field(default=None)
     """the dict keys are same as each property's name or id (depending on request)"""
 
     def get_settings(self) -> RequestSettings:

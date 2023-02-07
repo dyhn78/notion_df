@@ -244,7 +244,7 @@ class FormulaPropertySchema(PropertySchema):
     r'''example value: "if(prop(\"In stock\"), 0, prop(\"Price\"))"'''
 
     def _plain_serialize_value(self) -> dict[str, Any]:
-        pass
+        pass  # TODO
 
 
 @dataclass

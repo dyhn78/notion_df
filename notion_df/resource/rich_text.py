@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
-from typing import Optional, Any, Literal, final
+from typing import Optional, Any, Literal, final, cast
 
 from notion_df.resource.core import Deserializable, set_master
 from notion_df.resource.misc import Annotations, DateRange, UUID
@@ -15,8 +15,8 @@ class RichText(Deserializable, metaclass=ABCMeta):
     @final
     def plain_serialize(self) -> dict[str, Any]:
         serialized = self._plain_serialize_value()
-        if self.annotations:
-            serialized['annotations'] = self.annotations
+        if _annotations := cast(_RichTextDefault, self).annotations:
+            serialized['annotations'] = _annotations
         return serialized
 
     @abstractmethod
