@@ -17,12 +17,12 @@ from notion_df.util.misc import NotionDfValueError
 from notion_df.variables import Variables
 
 
-def serialize_any(obj: Any):
+def serialize(obj: Any):
     """unified serializer for both Serializable and external classes."""
     if isinstance(obj, dict):
-        return {k: serialize_any(v) for k, v in obj.items()}
+        return {k: serialize(v) for k, v in obj.items()}
     if isinstance(obj, list) or isinstance(obj, set):
-        return [serialize_any(e) for e in obj]
+        return [serialize(e) for e in obj]
     if isinstance(obj, Serializable):
         return obj.serialize()
     for typ in {bool, str, int, float}:
@@ -35,7 +35,7 @@ def serialize_any(obj: Any):
     raise NotionDfValueError('cannot serialize', {'obj': obj})
 
 
-def deserialize_any(serialized: Any, typ: type):
+def deserialize(serialized: Any, typ: type):
     """unified deserializer for both Deserializable and external classes."""
     err_vars = {'typ': typ, 'serialized': serialized}
     if isinstance(typ, types.GenericAlias):
@@ -45,12 +45,12 @@ def deserialize_any(serialized: Any, typ: type):
         try:
             if issubclass(origin, dict):
                 value_type = args[1]
-                return {k: deserialize_any(v, value_type) for k, v in serialized.items()}
+                return {k: deserialize(v, value_type) for k, v in serialized.items()}
             element_type = args[0]
             if issubclass(origin, list):
-                return [deserialize_any(e, element_type) for e in serialized]
+                return [deserialize(e, element_type) for e in serialized]
             if issubclass(origin, set):
-                return {deserialize_any(e, element_type) for e in serialized}
+                return {deserialize(e, element_type) for e in serialized}
             raise NotionDfValueError('cannot deserialize: GenericAlias type with invalid origin', err_vars)
         except IndexError:
             raise NotionDfValueError('cannot deserialize: GenericAlias type with invalid args', err_vars)
@@ -70,7 +70,7 @@ def deserialize_any(serialized: Any, typ: type):
     if issubclass(typ, datetime):
         return DateTimeSerializer.deserialize(serialized)
     if isinstance(typ, InitVar):  # TODO: is this really needed?
-        return deserialize_any(serialized, typ.type)
+        return deserialize(serialized, typ.type)
     raise NotionDfValueError('cannot deserialize: not supported class', err_vars)
 
 
@@ -105,7 +105,7 @@ class Serializable(metaclass=ABCMeta):
     @final
     def serialize(self) -> dict[str, Any]:
         field_value_dict = {f.name: getattr(self, f.name) for f in fields(self)}
-        each_field_serialized_obj = type(self)(**{n: serialize_any(v) for n, v in field_value_dict.items()})
+        each_field_serialized_obj = type(self)(**{n: serialize(v) for n, v in field_value_dict.items()})
         return each_field_serialized_obj.plain_serialize()
 
     @abstractmethod
@@ -254,7 +254,7 @@ class Deserializable(Serializable, metaclass=ABCMeta):
             each_field_serialized_dict = cls.plain_deserialize(serialized)
             field_value_dict = {}
             for n, v in each_field_serialized_dict.items():
-                field_value_dict[n] = deserialize_any(v, cls._field_type_dict[n])
+                field_value_dict[n] = deserialize(v, cls._field_type_dict[n])
             return cls(**field_value_dict)
 
     @classmethod

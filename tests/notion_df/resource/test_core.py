@@ -5,7 +5,7 @@ from datetime import datetime
 import pytest
 import pytz
 
-from notion_df.resource.core import Deserializable, deserialize_any, set_master
+from notion_df.resource.core import Deserializable, deserialize, set_master
 from notion_df.util.collection import StrEnum, KeyChain
 from notion_df.variables import Variables
 
@@ -126,7 +126,7 @@ def test_deserializable__datetime():
     deserializable = TestDeserializable(datetime(2022, 1, 1), datetime(2023, 1, 1))
     serialized = {'start': '2022-01-01T00:00:00', 'end': '2023-01-01T00:00:00'}
     assert deserializable.serialize() == serialized
-    assert deserialize_any(serialized, TestDeserializable) == deserializable
+    assert deserialize(serialized, TestDeserializable) == deserializable
 
 
 def test_deserializable__collections():
@@ -163,4 +163,4 @@ def test_deserializable__collections():
     serialized = {'url1': 'url', 'bold1': True, 'link': {'value': 'link'}, 'color1': 'gray',
                   'hrefs': {'a': {'value': 'a'}, 'b': {'value': 'b'}}}
     assert deserializable.serialize() == serialized
-    assert deserialize_any(serialized, TestDeserializable) == deserializable
+    assert deserialize(serialized, TestDeserializable) == deserializable

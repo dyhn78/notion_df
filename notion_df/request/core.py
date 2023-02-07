@@ -7,7 +7,7 @@ from typing import TypeVar, Generic, ClassVar, get_args, Any, final
 
 import requests
 
-from notion_df.resource.core import Deserializable, serialize_any
+from notion_df.resource.core import Deserializable, serialize
 from notion_df.util.collection import StrEnum
 from notion_df.util.misc import NotionDfValueError
 
@@ -48,7 +48,7 @@ class Request(Generic[Response_T], metaclass=ABCMeta):
             'Notion-Version': settings.version.value,
         }
         response = requests.request(settings.method.value, settings.url,
-                                    headers=headers, data=serialize_any(self.get_body()))
+                                    headers=headers, data=serialize(self.get_body()))
         response.raise_for_status()
         return self.response_type.deserialize(response.json())
 
