@@ -17,11 +17,10 @@ class PropertySchema(Deserializable, metaclass=ABCMeta):
     def _get_type(cls) -> str:
         pass
 
-    def __init_subclass__(cls, **kwargs):
-        if cls._skip_init_subclass():
-            return
+    @classmethod
+    def _init_subclass(cls, **kwargs):
         cls.type = cls._get_type()
-        super().__init_subclass__(**kwargs)
+        super()._init_subclass(**kwargs)
 
     def plain_serialize(self) -> dict[str, Any]:
         return {

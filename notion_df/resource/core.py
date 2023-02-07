@@ -130,34 +130,30 @@ class _DeserializableRegistry:
         self.data[master] = FinalDict()
         return master
 
-    def is_master(self, master: type[Deserializable]) -> bool:
-        return master in self.data
-
     def get_master(self, subclass: type[Deserializable]) -> Optional[type[Deserializable]]:
         for base in subclass.__mro__:
-            base = cast(type[Deserializable], base)
-            if issubclass(base, Deserializable) and self.is_master(base):
-                return base
+            if base in self.data:  # if base is master
+                return cast(type[Deserializable], base)
         return None
 
     def set_subclass(self, subclass: type[Deserializable], subclass_mock_serialized: dict[str, Any]):
         if not (master := self.get_master(subclass)):
             return
-        subclass_type_keychain = self.get_type_keychain(subclass_mock_serialized)
+        subclass_type_keychain = self.find_type_keychain(subclass_mock_serialized)
         self.data[master][subclass_type_keychain] = subclass
 
-    def deserialize_subclass(self, master: type[Deserializable], serialized: dict[str, Any]) -> Deserializable:
-        type_keychain = self.get_type_keychain(serialized)
+    def find_subclass(self, master: type[Deserializable], serialized: dict[str, Any]) -> type[Deserializable]:
+        type_keychain = self.find_type_keychain(serialized)
         if master not in self.data:
             raise NotionDfValueError('cannot proxy-deserialize from non-master abstract class', {'cls': master})
         if type_keychain not in self.data[master]:
             raise NotionDfValueError('cannot proxy-deserialize: unexpected type keychain',
                                      {'cls': master, 'type_keychain': type_keychain})
         subclass = self.data[master][type_keychain]
-        return subclass.deserialize(serialized)
+        return subclass
 
     @staticmethod
-    def get_type_keychain(serialized: dict[str, Any]) -> KeyChain:
+    def find_type_keychain(serialized: dict[str, Any]) -> KeyChain:
         current_keychain = KeyChain()
         if 'type' not in serialized:
             raise NotionDfValueError(
@@ -185,7 +181,7 @@ class Deserializable(Serializable, metaclass=ABCMeta):
     automatically transforms subclasses into dataclass.
     if decorated with '@set_master', it also provides a unified deserializer entrypoint."""
     __registry: ClassVar[_DeserializableRegistry] = _deserializable_registry
-    """data structure to handle master-subclasses relation of deserializable classes."""
+    """data structure to handle master-subclasses relation of deserializable."""
     _field_type_dict: ClassVar[dict[str, type]]
     """helper attribute used to generate deserialize() from parsing plain_serialize()."""
     _field_keychain_dict: ClassVar[dict[KeyChain, str]]
@@ -202,11 +198,15 @@ class Deserializable(Serializable, metaclass=ABCMeta):
     def _skip_init_subclass(cls) -> bool:
         return inspect.isabstract(cls) or cls.__name__.startswith('_')
 
-    def __init_subclass__(cls, **kwargs) -> None:
+    @final
+    def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
         if cls._skip_init_subclass():
             return
+        cls._init_subclass(**kwargs)
 
+    @classmethod
+    def _init_subclass(cls, **kwargs) -> None:
         cls._field_type_dict = {field.name: field.type for field in fields(cls)}
         mock_serialized = cls._get_mock_serialized()
         cls.__registry.set_subclass(cls, mock_serialized)
@@ -249,7 +249,7 @@ class Deserializable(Serializable, metaclass=ABCMeta):
     @final
     def deserialize(cls, serialized: dict[str, Any]) -> Self:
         if inspect.isabstract(cls):
-            return cls.__registry.deserialize_subclass(cls, serialized)
+            return cls.__registry.find_subclass(cls, serialized).deserialize(serialized)
         else:
             each_field_serialized_dict = cls.plain_deserialize(serialized)
             field_value_dict = {}

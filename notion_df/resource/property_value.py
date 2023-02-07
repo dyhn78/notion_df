@@ -14,11 +14,10 @@ class PropertyValue(Deserializable, metaclass=ABCMeta):
     name: str
     type: ClassVar[str]
 
-    def __init_subclass__(cls, **kwargs):
-        if cls._skip_init_subclass():
-            return
+    @classmethod
+    def _init_subclass(cls, **kwargs):
         cls.type = cls._get_type()
-        super().__init_subclass__(**kwargs)
+        super()._init_subclass(**kwargs)
 
     @classmethod
     @abstractmethod
