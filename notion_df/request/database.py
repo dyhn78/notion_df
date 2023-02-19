@@ -14,7 +14,7 @@ from notion_df.resource.parent import Parent
 from notion_df.resource.property import PropertySchema, Property
 from notion_df.resource.rich_text import RichText
 from notion_df.resource.sort import Sort
-from notion_df.util.misc import dict_remove_falsy_values
+from notion_df.util.misc import dict_filter_truthy
 
 
 @dataclass
@@ -51,7 +51,7 @@ class QueryDatabase(Request[QueryDatabaseResponse]):
                                f'https://api.notion.com/v1/databases/{self.database_id}/query')
 
     def get_body(self) -> Any:
-        return dict_remove_falsy_values({
+        return dict_filter_truthy({
             'filter': self.filter,
             'sorts': self.sort,
             'start_cursor': self.start_cursor,
@@ -106,7 +106,7 @@ class CreateDatabase(Request[DatabaseResponse]):
                                'https://api.notion.com/v1/databases/')
 
     def get_body(self) -> dict:
-        return dict_remove_falsy_values({
+        return dict_filter_truthy({
             "parent": {
                 "type": "page_id",
                 "page_id": self.parent_id
@@ -132,7 +132,7 @@ class UpdateDatabase(Request[DatabaseResponse]):
         return f'https://api.notion.com/v1/databases/{self.database_id}'
 
     def get_body(self) -> Any:
-        return dict_remove_falsy_values({
+        return dict_filter_truthy({
             'title': self.title,
             'properties': self.properties,
         })

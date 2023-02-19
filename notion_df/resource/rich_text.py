@@ -2,49 +2,59 @@ from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
-from typing import Optional, Any, Literal, final, cast
+from typing import Optional, Any, Literal, final, Final
 
 from notion_df.resource.core import Deserializable, set_master
 from notion_df.resource.misc import Annotations, DateRange, UUID
+from notion_df.util.misc import dict_filter_truthy
 
 
 @set_master
-@dataclass(init=False)
 class RichText(Deserializable, metaclass=ABCMeta):
     # https://developers.notion.com/reference/rich-text
+    annotations: Optional[Annotations]
+    """
+    * set `None` (the default value) to leave it unchanged.
+    * set `Annotations()` to remove the annotations and make a plain text.
+    """
+    plain_text: Optional[str]
+    """read-only. will be ignored in requests."""
+    href: Optional[str]
+    """read-only. will be ignored in requests."""
+
     @final
     def plain_serialize(self) -> dict[str, Any]:
-        serialized = self._plain_serialize_value()
-        if _annotations := cast(_RichTextDefault, self).annotations:
-            serialized['annotations'] = _annotations
-        return serialized
+        return self._plain_serialize_main() | self._plain_serialize_defaults()
 
     @abstractmethod
-    def _plain_serialize_value(self) -> dict[str, Any]:
+    def _plain_serialize_main(self) -> dict[str, Any]:
         pass
 
-
-@dataclass
-class _RichTextDefault(Deserializable, metaclass=ABCMeta):
-    # this is a helper class we need to put common, default, annotation-like variables
-    #  AFTER subclass-specific, important ones.
-    annotations: Optional[Annotations] = None
-    """
-    * set as `None` (the default value) to leave it unchanged.
-    * set as `Annotations()` to remove the annotations and make a plain text.
-    """
-    plain_text: Optional[str] = None
-    """read-only. will be ignored in requests."""
-    href: Optional[str] = None
-    """read-only. will be ignored in requests."""
+    @final
+    def _plain_serialize_defaults(self) -> dict[str, Any]:
+        return dict_filter_truthy({
+            'annotations': self.annotations,
+            'plain_text': self.plain_text,
+            'href': self.href,
+        })
 
 
 @dataclass
-class _Text(RichText, metaclass=ABCMeta):
+class Text(RichText, metaclass=ABCMeta):
     content: str
     link: str
+    # ---
+    annotations: Optional[Annotations] = None
+    """
+    * set `None` (the default value) to leave it unchanged.
+    * set `Annotations()` to remove the annotations and make a plain text.
+    """
+    plain_text: Final[Optional[str]] = None
+    """read-only. will be ignored in requests."""
+    href: Final[Optional[str]] = None
+    """read-only. will be ignored in requests."""
 
-    def _plain_serialize_value(self) -> dict[str, Any]:
+    def _plain_serialize_main(self) -> dict[str, Any]:
         return {
             'type': 'text',
             'text': {
@@ -58,10 +68,20 @@ class _Text(RichText, metaclass=ABCMeta):
 
 
 @dataclass
-class _Equation(RichText):
+class Equation(RichText):
     expression: str
+    # ---
+    annotations: Optional[Annotations] = None
+    """
+    * set `None` (the default value) to leave it unchanged.
+    * set `Annotations()` to remove the annotations and make a plain text.
+    """
+    plain_text: Final[Optional[str]] = None
+    """read-only. will be ignored in requests."""
+    href: Final[Optional[str]] = None
+    """read-only. will be ignored in requests."""
 
-    def _plain_serialize_value(self) -> dict[str, Any]:
+    def _plain_serialize_main(self) -> dict[str, Any]:
         return {
             'type': 'equation',
             'expression': self.expression
@@ -69,22 +89,32 @@ class _Equation(RichText):
 
 
 class Mention(RichText):
-    def _plain_serialize_value(self) -> dict[str, Any]:
+    def _plain_serialize_main(self) -> dict[str, Any]:
         return {
             'type': 'mention',
-            'mention': self._plain_serialize_inner_value()
+            'mention': self._plain_serialize_target()
         }
 
     @abstractmethod
-    def _plain_serialize_inner_value(self) -> dict[str, Any]:
+    def _plain_serialize_target(self) -> dict[str, Any]:
         pass
 
 
 @dataclass
-class _UserMention(Mention):
+class UserMention(Mention):
     user_id: UUID
+    # ---
+    annotations: Optional[Annotations] = None
+    """
+    * set `None` (the default value) to leave it unchanged.
+    * set `Annotations()` to remove the annotations and make a plain text.
+    """
+    plain_text: Final[Optional[str]] = None
+    """read-only. will be ignored in requests."""
+    href: Final[Optional[str]] = None
+    """read-only. will be ignored in requests."""
 
-    def _plain_serialize_inner_value(self) -> dict[str, Any]:
+    def _plain_serialize_target(self) -> dict[str, Any]:
         return {
             'type': 'user',
             'user': {
@@ -95,10 +125,20 @@ class _UserMention(Mention):
 
 
 @dataclass
-class _PageMention(Mention):
+class PageMention(Mention):
     page_id: UUID
+    # ---
+    annotations: Optional[Annotations] = None
+    """
+    * set `None` (the default value) to leave it unchanged.
+    * set `Annotations()` to remove the annotations and make a plain text.
+    """
+    plain_text: Final[Optional[str]] = None
+    """read-only. will be ignored in requests."""
+    href: Final[Optional[str]] = None
+    """read-only. will be ignored in requests."""
 
-    def _plain_serialize_inner_value(self) -> dict[str, Any]:
+    def _plain_serialize_target(self) -> dict[str, Any]:
         return {
             'type': 'page',
             'user': self.page_id
@@ -106,10 +146,20 @@ class _PageMention(Mention):
 
 
 @dataclass
-class _DatabaseMention(Mention):
+class DatabaseMention(Mention):
     database_id: UUID
+    # ---
+    annotations: Optional[Annotations] = None
+    """
+    * set `None` (the default value) to leave it unchanged.
+    * set `Annotations()` to remove the annotations and make a plain text.
+    """
+    plain_text: Final[Optional[str]] = None
+    """read-only. will be ignored in requests."""
+    href: Final[Optional[str]] = None
+    """read-only. will be ignored in requests."""
 
-    def _plain_serialize_inner_value(self) -> dict[str, Any]:
+    def _plain_serialize_target(self) -> dict[str, Any]:
         return {
             'type': 'database',
             'user': self.database_id
@@ -117,10 +167,20 @@ class _DatabaseMention(Mention):
 
 
 @dataclass
-class _DateMention(Mention):
+class DateMention(Mention):
     date: DateRange
+    # ---
+    annotations: Optional[Annotations] = None
+    """
+    * set `None` (the default value) to leave it unchanged.
+    * set `Annotations()` to remove the annotations and make a plain text.
+    """
+    plain_text: Final[Optional[str]] = None
+    """read-only. will be ignored in requests."""
+    href: Final[Optional[str]] = None
+    """read-only. will be ignored in requests."""
 
-    def _plain_serialize_inner_value(self) -> dict[str, Any]:
+    def _plain_serialize_target(self) -> dict[str, Any]:
         return {
             'type': 'date',
             'date': self.date
@@ -128,10 +188,20 @@ class _DateMention(Mention):
 
 
 @dataclass
-class _TemplateDateMention(Mention):
+class TemplateDateMention(Mention):
     template_mention_date: Literal["today", "now"]
+    # ---
+    annotations: Optional[Annotations] = None
+    """
+    * set `None` (the default value) to leave it unchanged.
+    * set `Annotations()` to remove the annotations and make a plain text.
+    """
+    plain_text: Final[Optional[str]] = None
+    """read-only. will be ignored in requests."""
+    href: Final[Optional[str]] = None
+    """read-only. will be ignored in requests."""
 
-    def _plain_serialize_inner_value(self) -> dict[str, Any]:
+    def _plain_serialize_target(self) -> dict[str, Any]:
         return {
             'type': 'template_mention_date',
             'template_mention_date': self.template_mention_date
@@ -141,8 +211,18 @@ class _TemplateDateMention(Mention):
 @dataclass
 class _TemplateUserMention(Mention):
     template_mention_user = 'me'
+    # ---
+    annotations: Optional[Annotations] = None
+    """
+    * set `None` (the default value) to leave it unchanged.
+    * set `Annotations()` to remove the annotations and make a plain text.
+    """
+    plain_text: Final[Optional[str]] = None
+    """read-only. will be ignored in requests."""
+    href: Final[Optional[str]] = None
+    """read-only. will be ignored in requests."""
 
-    def _plain_serialize_inner_value(self) -> dict[str, Any]:
+    def _plain_serialize_target(self) -> dict[str, Any]:
         return {
             'type': 'template_mention_user',
             'template_mention_user': self.template_mention_user
@@ -153,54 +233,19 @@ class _TemplateUserMention(Mention):
 class _LinkPreviewMention(Mention):
     """https://developers.notion.com/reference/rich-text#link-preview-mentions"""
     url: str
+    # ---
+    annotations: Optional[Annotations] = None
+    """
+    * set `None` (the default value) to leave it unchanged.
+    * set `Annotations()` to remove the annotations and make a plain text.
+    """
+    plain_text: Final[Optional[str]] = None
+    """read-only. will be ignored in requests."""
+    href: Final[Optional[str]] = None
+    """read-only. will be ignored in requests."""
 
-    def _plain_serialize_inner_value(self) -> dict[str, Any]:
+    def _plain_serialize_target(self) -> dict[str, Any]:
         return {
             'type': 'equation',
             'url': self.url
         }
-
-
-@dataclass
-class Text(_RichTextDefault, _Text):
-    pass
-
-
-@dataclass
-class Equation(_RichTextDefault, _Equation):
-    pass
-
-
-@dataclass
-class UserMention(_RichTextDefault, _UserMention):
-    pass
-
-
-@dataclass
-class PageMention(_RichTextDefault, _PageMention):
-    pass
-
-
-@dataclass
-class DatabaseMention(_RichTextDefault, _DatabaseMention):
-    pass
-
-
-@dataclass
-class DateMention(_RichTextDefault, _DateMention):
-    pass
-
-
-@dataclass
-class TemplateDateMention(_RichTextDefault, _TemplateDateMention):
-    pass
-
-
-@dataclass
-class TemplateUserMention(_RichTextDefault, _TemplateUserMention):
-    pass
-
-
-@dataclass
-class LinkPreviewMention(_RichTextDefault, _LinkPreviewMention):
-    pass

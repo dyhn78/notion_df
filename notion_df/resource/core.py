@@ -92,21 +92,33 @@ class DateTimeSerializer:
 @dataclass
 class Serializable(metaclass=ABCMeta):
     """dataclass representation of the resources defined in Notion REST API.
-    transformable into JSON object.
-    automatically transforms subclasses into dataclass."""
+    transformable into JSON object."""
 
     def __init__(self, **kwargs):
         pass
 
-    def __init_subclass__(cls, **kwargs) -> None:
+    @final
+    def __init_subclass__(cls, **kwargs):
+        """this method is reserved. use cls._init_subclass() instead"""
         super().__init_subclass__(**kwargs)
+        if cls._skip_init_subclass():
+            return
+        cls._init_subclass(**kwargs)
+
+    @classmethod
+    def _init_subclass(cls, **kwargs):
         dataclass(cls)
+
+    @classmethod
+    def _skip_init_subclass(cls) -> bool:
+        return inspect.isabstract(cls) or cls.__name__.startswith('_')
 
     @final
     def serialize(self) -> dict[str, Any]:
-        field_value_dict = {f.name: getattr(self, f.name) for f in fields(self)}
-        each_field_serialized_obj = type(self)(**{n: serialize(v) for n, v in field_value_dict.items()})
-        return each_field_serialized_obj.plain_serialize()
+        field_value_dict = {fd.name: getattr(self, fd.name) for fd in fields(self)}
+        data_obj_with_each_field_serialized = type(self)(
+            **{fd_name: serialize(fd_value) for fd_name, fd_value in field_value_dict.items()})
+        return data_obj_with_each_field_serialized.plain_serialize()
 
     @abstractmethod
     def plain_serialize(self) -> dict[str, Any]:
@@ -123,8 +135,9 @@ class _DeserializableRegistry:
         """schema: '{master: {keychain: {subclasses} } }'"""
 
     def set_master(self, master: type[_Deserializable_T]) -> type[_Deserializable_T]:
-        """decorator that set an abstract base deserializable class a representative resource,
-        allowing it to distinguish its several subclasses' serialized form."""
+        """set an abstract base deserializable class as a representative resource,
+        allowing it to distinguish its several subclasses' serialized form.
+        use as a decorator."""
         if not inspect.isabstract(master):
             raise NotionDfValueError('master class must be abstract', {'cls': master})
         self.data[master] = FinalDict()
@@ -178,8 +191,7 @@ set_master = _deserializable_registry.set_master
 class Deserializable(Serializable, metaclass=ABCMeta):
     """dataclass representation of the resources defined in Notion REST API.
     interchangeable to JSON object.
-    automatically transforms subclasses into dataclass.
-    if decorated with '@set_master', it also provides a unified deserializer entrypoint."""
+    decorate with '@set_master' to use as a unified deserializer entrypoint."""
     __registry: ClassVar[_DeserializableRegistry] = _deserializable_registry
     """data structure to handle master-subclasses relation of deserializable."""
     _field_type_dict: ClassVar[dict[str, type]]
@@ -195,18 +207,8 @@ class Deserializable(Serializable, metaclass=ABCMeta):
         super().__init__(**kwargs)
 
     @classmethod
-    def _skip_init_subclass(cls) -> bool:
-        return inspect.isabstract(cls) or cls.__name__.startswith('_')
-
-    @final
-    def __init_subclass__(cls, **kwargs):
-        super().__init_subclass__(**kwargs)
-        if cls._skip_init_subclass():
-            return
-        cls._init_subclass(**kwargs)
-
-    @classmethod
     def _init_subclass(cls, **kwargs) -> None:
+        super()._init_subclass(**kwargs)
         cls._field_type_dict = {field.name: field.type for field in fields(cls)}
         mock_serialized = cls._get_mock_serialized()
         cls.__registry.set_subclass(cls, mock_serialized)
@@ -250,12 +252,11 @@ class Deserializable(Serializable, metaclass=ABCMeta):
     def deserialize(cls, serialized: dict[str, Any]) -> Self:
         if inspect.isabstract(cls):
             return cls.__registry.find_subclass(cls, serialized).deserialize(serialized)
-        else:
-            each_field_serialized_dict = cls.plain_deserialize(serialized)
-            field_value_dict = {}
-            for field_name, field_serialized in each_field_serialized_dict.items():
-                field_value_dict[field_name] = deserialize(field_serialized, cls._field_type_dict[field_name])
-            return cls(**field_value_dict)  # nomypy
+        each_field_serialized_dict = cls.plain_deserialize(serialized)
+        field_value_dict = {}
+        for field_name, field_serialized in each_field_serialized_dict.items():
+            field_value_dict[field_name] = deserialize(field_serialized, cls._field_type_dict[field_name])
+        return cls(**field_value_dict)  # nomypy
 
     @classmethod
     def plain_deserialize(cls, serialized: dict[str, Any]) -> dict[str, Any]:
