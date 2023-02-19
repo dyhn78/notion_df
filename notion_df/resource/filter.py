@@ -4,7 +4,7 @@ from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
-from typing import ClassVar, Literal, TypeVar, Generic, Optional, Callable, final, overload
+from typing import Literal, TypeVar, Generic, Optional, Callable, overload
 
 from typing_extensions import Self
 
@@ -12,18 +12,20 @@ from notion_df.resource.core import Serializable
 from notion_df.resource.misc import UUID, Timestamp
 
 _T = TypeVar('_T')
-AggregateType = Literal['any', 'every', 'none']
-
-
-# TODO
-#  - implement following 'reduce-like' properties on model-side (i.e. entity and fields).
-#    - rollup: number, date
-#    - formula: string, checkbox, number, date
 
 
 @dataclass
 class Filter(Serializable, metaclass=ABCMeta):
     clause: dict
+
+
+@dataclass
+class CompoundFilter(Filter):
+    operator: Literal['and', 'or']
+    elements: list[Filter]
+
+    def plain_serialize(self):
+        return {self.operator: self.elements}
 
 
 @dataclass
@@ -41,7 +43,7 @@ class PropertyFilter(Filter):
 
 @dataclass
 class ArrayRollupFilter(PropertyFilter):
-    aggregate_type: AggregateType
+    aggregate_type: Literal['any', 'every', 'none']
 
     def plain_serialize(self):
         return {
@@ -72,15 +74,6 @@ class TimestampFilter(Filter):
             "timestamp": self.timestamp,
             self.timestamp: self.clause
         }
-
-
-@dataclass
-class CompoundFilter(Filter):
-    operator: Literal['and', 'or']
-    elements: list[Filter]
-
-    def plain_serialize(self):
-        return {self.operator: self.elements}
 
 
 class Predicate(Generic[_T]):
@@ -124,28 +117,15 @@ class UnaryPredicate(Predicate[_T]):
 
 
 class FilterBuilder(metaclass=ABCMeta):
-    @property
-    @final
-    def init_filter(self) -> Callable[[dict], Filter]:
-        # TODO
-        if ...:
-            timestamp = ...  # from instance
-            return lambda clause: TimestampFilter(clause, timestamp)
-        elif ...:
-            property_name = property_type = aggregate_type = ...  # from instance
-            return lambda clause: ArrayRollupFilter(clause, property_name, property_type, aggregate_type)
-        else:
-            property_name = property_type = ...  # from instance
-            return lambda clause: PropertyFilter(clause, property_name, property_type)
+    def __init__(self, init_filter: Callable[[dict], Filter]):
+        self.init_filter = init_filter
+        # TODO - implement from caller's side
+        #  -  init_filter = lambda clause: PropertyFilter(clause, property_name, property_type)
+        #  -  init_filter = lambda clause: ArrayRollupFilter(clause, property_name, property_type, aggregate_type)
+        #  -  init_filter = lambda clause: TimestampFilter(clause, timestamp)
 
 
-@dataclass
-class PropertyFilterBuilder(FilterBuilder):
-    property_type: ClassVar[str]
-
-
-@dataclass
-class TextFilterBuilder(PropertyFilterBuilder, metaclass=ABCMeta):
+class TextFilterBuilder(FilterBuilder, metaclass=ABCMeta):
     """available property types: "title", "rich_text", "url", "email", and "phone_number\""""
     equals = UnaryPredicate[str]()
     does_not_equal = UnaryPredicate[str]()
@@ -157,8 +137,7 @@ class TextFilterBuilder(PropertyFilterBuilder, metaclass=ABCMeta):
     is_not_empty = NullaryPredicate(True)
 
 
-@dataclass
-class NumberFilterBuilder(PropertyFilterBuilder):
+class NumberFilterBuilder(FilterBuilder):
     """available property types: 'number'"""
     equals = UnaryPredicate[int | Decimal]()
     does_not_equal = UnaryPredicate[int | Decimal]()
@@ -170,15 +149,13 @@ class NumberFilterBuilder(PropertyFilterBuilder):
     is_not_empty = NullaryPredicate(True)
 
 
-@dataclass
-class CheckboxFilterBuilder(PropertyFilterBuilder):
+class CheckboxFilterBuilder(FilterBuilder):
     """available property types: 'checkbox'"""
     is_empty = NullaryPredicate(True)
     is_not_empty = NullaryPredicate(True)
 
 
-@dataclass
-class SelectFilterBuilder(PropertyFilterBuilder):
+class SelectFilterBuilder(FilterBuilder):
     """available property types: 'select'"""
     equals = UnaryPredicate[str]()
     does_not_equal = UnaryPredicate[str]()
@@ -186,8 +163,7 @@ class SelectFilterBuilder(PropertyFilterBuilder):
     is_not_empty = NullaryPredicate(True)
 
 
-@dataclass
-class MultiSelectFilterBuilder(PropertyFilterBuilder):
+class MultiSelectFilterBuilder(FilterBuilder):
     """available property types: 'multi_select'"""
     contains = UnaryPredicate[str]()
     does_not_contain = UnaryPredicate[str]()
@@ -195,8 +171,7 @@ class MultiSelectFilterBuilder(PropertyFilterBuilder):
     is_not_empty = NullaryPredicate(True)
 
 
-@dataclass
-class StatusFilterBuilder(PropertyFilterBuilder):
+class StatusFilterBuilder(FilterBuilder):
     """available property types: 'status'"""
     equals = UnaryPredicate[str]()
     does_not_equal = UnaryPredicate[str]()
@@ -204,8 +179,7 @@ class StatusFilterBuilder(PropertyFilterBuilder):
     is_not_empty = NullaryPredicate(True)
 
 
-@dataclass
-class DateFilterBuilder(PropertyFilterBuilder):
+class DateFilterBuilder(FilterBuilder):
     """available property types: "date", "created_time", and "last_edited_time\""""
     equals = UnaryPredicate[datetime]()
     before = UnaryPredicate[datetime]()
@@ -222,8 +196,7 @@ class DateFilterBuilder(PropertyFilterBuilder):
     next_year = NullaryPredicate({})
 
 
-@dataclass
-class PeopleFilterBuilder(PropertyFilterBuilder):
+class PeopleFilterBuilder(FilterBuilder):
     """available property types: "people", "created_by", and "last_edited_by\""""
     contains = UnaryPredicate[str]()
     does_not_contain = UnaryPredicate[str]()
@@ -231,15 +204,13 @@ class PeopleFilterBuilder(PropertyFilterBuilder):
     is_not_empty = NullaryPredicate(True)
 
 
-@dataclass
-class FilesFilterBuilder(PropertyFilterBuilder):
+class FilesFilterBuilder(FilterBuilder):
     """available property types: 'files'"""
     is_empty = NullaryPredicate(True)
     is_not_empty = NullaryPredicate(True)
 
 
-@dataclass
-class RelationFilterBuilder(PropertyFilterBuilder):
+class RelationFilterBuilder(FilterBuilder):
     """available property types: 'relation'"""
     contains = UnaryPredicate[UUID]()
     does_not_contain = UnaryPredicate[UUID]()
