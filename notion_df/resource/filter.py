@@ -1,10 +1,8 @@
-import functools
-from abc import ABCMeta
-from collections.abc import Callable
+from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
-from typing import Any, ClassVar, ParamSpec, Literal
+from typing import Any, ClassVar, ParamSpec, Literal, TypeVar, Generic
 
 from notion_df.resource.core import Serializable
 from notion_df.resource.misc import UUID, Timestamp
@@ -12,11 +10,45 @@ from notion_df.resource.misc import UUID, Timestamp
 _P = ParamSpec('_P')
 AggregateOption = Literal['any', 'every', 'none']
 
-
 # TODO
 #  - implement following 'reduce-like' properties on model-side (i.e. entity and fields).
 #    - rollup: number, date
 #    - formula: string, checkbox, number, date
+
+
+_T = TypeVar('_T')
+
+
+class Predicate(Generic[_T]):
+    name: str
+
+    def __set_name__(self, owner, name: str):
+        # TODO: allow reusing one descriptor for multiple filter_builders
+        assert not getattr(self, 'owner')
+        self.owner = owner
+        self.name = name
+
+    @abstractmethod
+    def __call__(self, **kwargs) -> dict[str, _T]:
+        pass
+
+
+class UnaryPredicate(Predicate[_T]):
+    def __call__(self, value: _T) -> dict[str, _T]:
+        return {self.name: value}
+
+
+class FixedPredicate(Predicate[_T]):
+    def __init__(self, value: _T):
+        self.value = value
+
+    def __call__(self) -> dict[str, _T]:
+        return {self.name: self.value}
+
+
+class EmptyPredicate(Predicate):
+    def __call__(self) -> dict:
+        return {}
 
 
 @dataclass
@@ -35,22 +67,6 @@ class FilterCondition:
 class DateFilterCondition(FilterCondition):
     def timestamp(self, option: Timestamp):
         return TimestampFilter(self, option)
-
-
-def condition(func: Callable[_P, Any]) -> Callable[_P, FilterCondition]:
-    @functools.wraps(func)
-    def wrapper(self: PropertyFilterBuilder, *args: _P.args, **kwargs: _P.kwargs):
-        return FilterCondition(func.__name__, func(self, *args, **kwargs))
-
-    return wrapper
-
-
-def date_condition(func: Callable[_P, Any]) -> Callable[_P, DateFilterCondition]:
-    @functools.wraps(func)
-    def wrapper(self: PropertyFilterBuilder, *args: _P.args, **kwargs: _P.kwargs):
-        return DateFilterCondition(func.__name__, func(self, *args, **kwargs))
-
-    return wrapper
 
 
 @dataclass
@@ -111,10 +127,10 @@ class TimestampFilter(Filter):
 @dataclass
 class CompoundFilter(Filter):
     operator: Literal['and', 'or']
-    filters: list[Filter]
+    elements: list[Filter]
 
     def plain_serialize(self):
-        return {self.operator: self.filters}
+        return {self.operator: self.elements}
 
 
 class FilterBuilder(metaclass=ABCMeta):
@@ -129,264 +145,101 @@ class PropertyFilterBuilder(FilterBuilder):
 @dataclass
 class TextFilterBuilder(PropertyFilterBuilder, metaclass=ABCMeta):
     """available property types: "title", "rich_text", "url", "email", and "phone_number\""""
-
-    @condition
-    def equals(self, string: str):
-        return string
-
-    @condition
-    def does_not_equal(self, string: str):
-        return string
-
-    @condition
-    def contains(self, string: str):
-        return string
-
-    @condition
-    def does_not_contain(self, string: str):
-        return string
-
-    @condition
-    def starts_with(self, string: str):
-        return string
-
-    @condition
-    def ends_with(self, string: str):
-        return string
-
-    @condition
-    def is_empty(self):
-        return True
-
-    @condition
-    def is_not_empty(self):
-        return True
+    equals = UnaryPredicate[str]()
+    does_not_equal = UnaryPredicate[str]()
+    contains = UnaryPredicate[str]()
+    does_not_contain = UnaryPredicate[str]()
+    starts_with = UnaryPredicate[str]()
+    ends_with = UnaryPredicate[str]()
+    is_empty = FixedPredicate(True)
+    is_not_empty = FixedPredicate(True)
 
 
 @dataclass
 class NumberFilterBuilder(PropertyFilterBuilder):
     """available property types: 'number'"""
-
-    @condition
-    def equals(self, number: int | Decimal):
-        return number
-
-    @condition
-    def does_not_equal(self, number: int | Decimal):
-        return number
-
-    @condition
-    def greater_than(self, number: int | Decimal):
-        return number
-
-    @condition
-    def less_than(self, number: int | Decimal):
-        return number
-
-    @condition
-    def greater_than_or_equal_to(self, number: int | Decimal):
-        return number
-
-    @condition
-    def less_than_or_equal_to(self, number: int | Decimal):
-        return number
-
-    @condition
-    def is_empty(self):
-        return True
-
-    @condition
-    def is_not_empty(self):
-        return True
+    equals = UnaryPredicate[int | Decimal]()
+    does_not_equal = UnaryPredicate[int | Decimal]()
+    greater_than = UnaryPredicate[int | Decimal]()
+    less_than = UnaryPredicate[int | Decimal]()
+    greater_than_or_equal_to = UnaryPredicate[int | Decimal]()
+    less_than_or_equal_to = UnaryPredicate[int | Decimal]()
+    is_empty = FixedPredicate(True)
+    is_not_empty = FixedPredicate(True)
 
 
 @dataclass
 class CheckboxFilterBuilder(PropertyFilterBuilder):
     """available property types: 'checkbox'"""
-
-    @condition
-    def is_empty(self):
-        return True
-
-    @condition
-    def is_not_empty(self):
-        return True
+    is_empty = FixedPredicate(True)
+    is_not_empty = FixedPredicate(True)
 
 
 @dataclass
 class SelectFilterBuilder(PropertyFilterBuilder):
     """available property types: 'select'"""
-
-    @condition
-    def equals(self, string: str):
-        return string
-
-    @condition
-    def does_not_equal(self, string: str):
-        return string
-
-    @condition
-    def is_empty(self):
-        return True
-
-    @condition
-    def is_not_empty(self):
-        return True
+    equals = UnaryPredicate[str]()
+    does_not_equal = UnaryPredicate[str]()
+    is_empty = FixedPredicate(True)
+    is_not_empty = FixedPredicate(True)
 
 
 @dataclass
 class MultiSelectFilterBuilder(PropertyFilterBuilder):
     """available property types: 'multi_select'"""
-
-    @condition
-    def contains(self, string: str):
-        return string
-
-    @condition
-    def does_not_contain(self, string: str):
-        return string
-
-    @condition
-    def is_empty(self):
-        return True
-
-    @condition
-    def is_not_empty(self):
-        return True
+    contains = UnaryPredicate[str]()
+    does_not_contain = UnaryPredicate[str]()
+    is_empty = FixedPredicate(True)
+    is_not_empty = FixedPredicate(True)
 
 
 @dataclass
 class StatusFilterBuilder(PropertyFilterBuilder):
     """available property types: 'status'"""
-
-    @condition
-    def equals(self, string: str):
-        return string
-
-    @condition
-    def does_not_equal(self, string: str):
-        return string
-
-    @condition
-    def is_empty(self):
-        return True
-
-    @condition
-    def is_not_empty(self):
-        return True
+    equals = UnaryPredicate[str]()
+    does_not_equal = UnaryPredicate[str]()
+    is_empty = FixedPredicate(True)
+    is_not_empty = FixedPredicate(True)
 
 
 @dataclass
 class DateFilterBuilder(PropertyFilterBuilder):
     """available property types: "date", "created_time", and "last_edited_time\""""
-
-    @date_condition
-    def equals(self, dt: datetime):
-        return dt
-
-    @date_condition
-    def before(self, dt: datetime):
-        return dt
-
-    @date_condition
-    def after(self, dt: datetime):
-        return dt
-
-    @date_condition
-    def on_or_before(self, dt: datetime):
-        return dt
-
-    @date_condition
-    def on_or_after(self, dt: datetime):
-        return dt
-
-    @date_condition
-    def is_empty(self):
-        return True
-
-    @date_condition
-    def is_not_empty(self):
-        return True
-
-    @date_condition
-    def past_week(self):
-        return {}
-
-    @date_condition
-    def past_month(self):
-        return {}
-
-    @date_condition
-    def past_year(self):
-        return {}
-
-    @date_condition
-    def this_week(self):
-        return {}
-
-    @date_condition
-    def next_week(self):
-        return {}
-
-    @date_condition
-    def next_month(self):
-        return {}
-
-    @date_condition
-    def next_year(self):
-        return {}
+    equals = UnaryPredicate[datetime]()
+    before = UnaryPredicate[datetime]()
+    after = UnaryPredicate[datetime]()
+    on_or_before = UnaryPredicate[datetime]()
+    on_or_after = UnaryPredicate[datetime]()
+    is_empty = FixedPredicate(True)
+    is_not_empty = FixedPredicate(True)
+    past_week = EmptyPredicate()
+    past_month = EmptyPredicate()
+    past_year = EmptyPredicate()
+    next_week = EmptyPredicate()
+    next_month = EmptyPredicate()
+    next_year = EmptyPredicate()
 
 
 @dataclass
 class PeopleFilterBuilder(PropertyFilterBuilder):
     """available property types: "people", "created_by", and "last_edited_by\""""
-
-    @condition
-    def contains(self, string: str):
-        return string
-
-    @condition
-    def does_not_contain(self, string: str):
-        return string
-
-    @condition
-    def is_empty(self):
-        return True
-
-    @condition
-    def is_not_empty(self):
-        return True
+    contains = UnaryPredicate[str]()
+    does_not_contain = UnaryPredicate[str]()
+    is_empty = FixedPredicate(True)
+    is_not_empty = FixedPredicate(True)
 
 
 @dataclass
 class FilesFilterBuilder(PropertyFilterBuilder):
     """available property types: 'files'"""
-
-    @condition
-    def is_empty(self):
-        return True
-
-    @condition
-    def is_not_empty(self):
-        return True
+    is_empty = FixedPredicate(True)
+    is_not_empty = FixedPredicate(True)
 
 
 @dataclass
 class RelationFilterBuilder(PropertyFilterBuilder):
     """available property types: 'relation'"""
-
-    @condition
-    def contains(self, string: UUID):
-        return string
-
-    @condition
-    def does_not_contain(self, string: UUID):
-        return string
-
-    @condition
-    def is_empty(self):
-        return True
-
-    @condition
-    def is_not_empty(self):
-        return True
+    contains = UnaryPredicate[UUID]()
+    does_not_contain = UnaryPredicate[UUID]()
+    is_empty = FixedPredicate(True)
+    is_not_empty = FixedPredicate(True)
