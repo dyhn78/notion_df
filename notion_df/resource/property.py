@@ -7,6 +7,7 @@ from notion_df.resource.misc import SelectOption, StatusGroups, RollupFunction, 
 
 
 @dataclass
+@set_master
 class PropertySchema(Deserializable, metaclass=ABCMeta):
     # https://developers.notion.com/reference/property-schema-object
     # https://developers.notion.com/reference/update-property-schema-object
@@ -37,7 +38,6 @@ PropertySchema_T = TypeVar('PropertySchema_T', bound=PropertySchema)
 
 
 @dataclass
-@set_master
 class PropertySchemaResponse(Deserializable, Generic[PropertySchema_T], metaclass=ABCMeta):
     # https://developers.notion.com/reference/property-object
     schema: PropertySchema_T
