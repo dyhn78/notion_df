@@ -141,7 +141,7 @@ class PageMention(Mention):
     def _plain_serialize_target(self) -> dict[str, Any]:
         return {
             'type': 'page',
-            'user': self.page_id
+            'page': self.page_id
         }
 
 
@@ -162,7 +162,7 @@ class DatabaseMention(Mention):
     def _plain_serialize_target(self) -> dict[str, Any]:
         return {
             'type': 'database',
-            'user': self.database_id
+            'database': self.database_id
         }
 
 
