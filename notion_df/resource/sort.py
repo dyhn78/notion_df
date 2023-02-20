@@ -17,7 +17,7 @@ class PropertySort(Sort):
     property: str
     direction: Direction
 
-    def plain_serialize(self) -> dict[str, Any]:
+    def _plain_serialize(self) -> dict[str, Any]:
         return {
             "property": self.property,
             "direction": self.direction
@@ -29,7 +29,7 @@ class TimestampSort(Sort):
     timestamp: Timestamp
     direction: Direction
 
-    def plain_serialize(self) -> dict[str, Any]:
+    def _plain_serialize(self) -> dict[str, Any]:
         return {
             "timestamp": self.timestamp,
             "direction": self.direction

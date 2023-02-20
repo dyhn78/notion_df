@@ -22,14 +22,14 @@ class PropertySchema(Deserializable, metaclass=ABCMeta):
         cls.type = cls._get_type()
         super()._init_subclass(**kwargs)
 
-    def plain_serialize(self) -> dict[str, Any]:
+    def _plain_serialize(self) -> dict[str, Any]:
         return {
             'type': self.type,
-            self.type: self._plain_serialize_value()
+            self.type: self._plain_serialize_main()
         }
 
     @abstractmethod
-    def _plain_serialize_value(self) -> dict[str, Any]:
+    def _plain_serialize_main(self) -> dict[str, Any]:
         pass
 
 
@@ -40,17 +40,17 @@ class Property(PropertySchema, metaclass=ABCMeta):
     name: str
     id: str
 
-    def plain_serialize(self) -> dict[str, Any]:
+    def _plain_serialize(self) -> dict[str, Any]:
         return {
             "name": self.name,
             "id": self.id,
-            **super().plain_serialize()
+            **super()._plain_serialize()
         }
 
 
 @dataclass
 class _PlainPropertySchema(PropertySchema, metaclass=ABCMeta):
-    def _plain_serialize_value(self) -> dict[str, Any]:
+    def _plain_serialize_main(self) -> dict[str, Any]:
         return {}
 
 
@@ -86,7 +86,7 @@ class NumberPropertySchema(PropertySchema):
 
     format: NumberFormat
 
-    def _plain_serialize_value(self) -> dict[str, Any]:
+    def _plain_serialize_main(self) -> dict[str, Any]:
         return {'format': self.format}
 
 
@@ -103,7 +103,7 @@ class SelectPropertySchema(PropertySchema):
 
     options: list[SelectOption]
 
-    def _plain_serialize_value(self) -> dict[str, Any]:
+    def _plain_serialize_main(self) -> dict[str, Any]:
         return {'options': self.options}
 
 
@@ -121,7 +121,7 @@ class StatusPropertySchema(PropertySchema):
     options: list[SelectOption]
     groups: list[StatusGroups]
 
-    def _plain_serialize_value(self) -> dict[str, Any]:
+    def _plain_serialize_main(self) -> dict[str, Any]:
         return {
             'options': self.options,
             'groups': self.groups
@@ -141,7 +141,7 @@ class MultiSelectPropertySchema(PropertySchema):
 
     options: list[SelectOption]
 
-    def _plain_serialize_value(self) -> dict[str, Any]:
+    def _plain_serialize_main(self) -> dict[str, Any]:
         return {'options': self.options}
 
 
@@ -243,7 +243,7 @@ class FormulaPropertySchema(PropertySchema):
     expression: str = field()
     r'''example value: "if(prop(\"In stock\"), 0, prop(\"Price\"))"'''
 
-    def _plain_serialize_value(self) -> dict[str, Any]:
+    def _plain_serialize_main(self) -> dict[str, Any]:
         pass  # TODO
 
 
@@ -256,7 +256,7 @@ class FormulaProperty(Property, FormulaPropertySchema):
 class RelationPropertySchema(PropertySchema):
     database_id: UUID
 
-    def _plain_serialize_value(self) -> dict[str, Any]:
+    def _plain_serialize_main(self) -> dict[str, Any]:
         return {
             'database_id': self.database_id,
             'type': self.type,
@@ -321,7 +321,7 @@ class RollupPropertySchema(PropertySchema):
     rollup_property_id: str
     function: RollupFunction
 
-    def _plain_serialize_value(self) -> dict[str, Any]:
+    def _plain_serialize_main(self) -> dict[str, Any]:
         return {
             'relation_property_name': self.relation_property_name,
             'relation_property_id': self.relation_property_id,

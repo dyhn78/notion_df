@@ -23,7 +23,7 @@ class QueryDatabaseResponse(Deserializable):
     next_cursor: Optional[str]
     has_more: bool
 
-    def plain_serialize(self) -> dict[str, Any]:
+    def _plain_serialize(self) -> dict[str, Any]:
         return {
             'object': 'list',
             'results': self.results,
@@ -74,7 +74,7 @@ class DatabaseResponse(Deserializable):
     archived: bool
     is_inline: bool
 
-    def plain_serialize(self) -> dict[str, Any]:
+    def _plain_serialize(self) -> dict[str, Any]:
         return {
             "object": 'database',
             "id": self.id,

@@ -24,7 +24,7 @@ class PropertyValue(Deserializable, metaclass=ABCMeta):
     def _get_type(cls) -> str:
         pass
 
-    def plain_serialize(self) -> dict[str, Any]:
+    def _plain_serialize(self) -> dict[str, Any]:
         return {
             "id": self.id,
             "type": self.type,

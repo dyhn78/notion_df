@@ -23,7 +23,7 @@ class RichText(Deserializable, metaclass=ABCMeta):
     """read-only. will be ignored in requests."""
 
     @final
-    def plain_serialize(self) -> dict[str, Any]:
+    def _plain_serialize(self) -> dict[str, Any]:
         return self._plain_serialize_main() | self._plain_serialize_defaults()
 
     @abstractmethod

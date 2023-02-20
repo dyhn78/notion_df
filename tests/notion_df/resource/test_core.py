@@ -117,7 +117,7 @@ def test_deserializable__datetime():
         start: datetime
         end: datetime
 
-        def plain_serialize(self):
+        def _plain_serialize(self):
             return {
                 'start': self.start,
                 'end': self.end,
@@ -140,7 +140,7 @@ def test_deserializable__collections():
     class TestLink(Deserializable):
         value: str
 
-        def plain_serialize(self):
+        def _plain_serialize(self):
             return {'value': self.value}
 
     @dataclass
@@ -151,7 +151,7 @@ def test_deserializable__collections():
         color: TestColor = TestColor.default
         link: TestLink = None
 
-        def plain_serialize(self):
+        def _plain_serialize(self):
             return {
                 'url1': self.url,
                 'bold1': self.bold,

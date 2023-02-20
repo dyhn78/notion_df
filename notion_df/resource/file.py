@@ -19,7 +19,7 @@ class InternalFile(File):
     url: str
     expiry_time: datetime
 
-    def plain_serialize(self):
+    def _plain_serialize(self):
         return {
             "type": "file",
             "file": {
@@ -33,7 +33,7 @@ class InternalFile(File):
 class ExternalFile(File):
     url: str
 
-    def plain_serialize(self):
+    def _plain_serialize(self):
         return {
             "type": "external",
             "external": {

@@ -125,7 +125,7 @@ class Annotations(Deserializable):
     code: bool = False
     color: TextColor = TextColor.DEFAULT
 
-    def plain_serialize(self) -> dict[str, Any]:
+    def _plain_serialize(self) -> dict[str, Any]:
         return {
             'bold': self.bold,
             'italic': self.italic,
@@ -147,7 +147,7 @@ class Emoji(Icon):
     value: str
     TYPE: ClassVar = 'emoji'
 
-    def plain_serialize(self):
+    def _plain_serialize(self):
         return {
             "type": "emoji",
             "emoji": self.value
@@ -160,7 +160,7 @@ class DateRange(Deserializable):
     start: datetime
     end: datetime
 
-    def plain_serialize(self):
+    def _plain_serialize(self):
         return {
             'start': self.start,
             'end': self.end,
@@ -175,7 +175,7 @@ class SelectOption(Deserializable):
     These are sometimes, but not always, UUIDs."""
     color: Color
 
-    def plain_serialize(self) -> dict[str, Any]:
+    def _plain_serialize(self) -> dict[str, Any]:
         return {
             'name': self.name,
             'id': self.id,
@@ -193,7 +193,7 @@ class StatusGroups(Deserializable):
     option_ids: list[str] = field()
     """Sorted list of ids of all options that belong to a group."""
 
-    def plain_serialize(self) -> dict[str, Any]:
+    def _plain_serialize(self) -> dict[str, Any]:
         return {
             'name': self.name,
             'id': self.id,

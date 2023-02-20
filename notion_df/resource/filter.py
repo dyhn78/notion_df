@@ -24,7 +24,7 @@ class CompoundFilter(Filter):
     operator: Literal['and', 'or']
     elements: list[Filter]
 
-    def plain_serialize(self):
+    def _plain_serialize(self):
         return {self.operator: self.elements}
 
 
@@ -34,7 +34,7 @@ class PropertyFilter(Filter):
     property_name: str
     property_type: str
 
-    def plain_serialize(self):
+    def _plain_serialize(self):
         return {
             "property": self.property_name,
             self.property_type: self.clause
@@ -45,7 +45,7 @@ class PropertyFilter(Filter):
 class ArrayRollupFilter(PropertyFilter):
     aggregate_type: Literal['any', 'every', 'none']
 
-    def plain_serialize(self):
+    def _plain_serialize(self):
         return {
             "property": self.property_name,
             "rollup": {
@@ -69,7 +69,7 @@ class ArrayRollupFilter(PropertyFilter):
 class TimestampFilter(Filter):
     timestamp: Timestamp
 
-    def plain_serialize(self):
+    def _plain_serialize(self):
         return {
             "timestamp": self.timestamp,
             self.timestamp: self.clause

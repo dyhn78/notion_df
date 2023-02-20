@@ -16,7 +16,7 @@ class Parent(Deserializable, metaclass=ABCMeta):
 
 @dataclass
 class DatabaseParent(Parent):
-    def plain_serialize(self) -> dict[str, Any]:
+    def _plain_serialize(self) -> dict[str, Any]:
         return {
             "type": "database_id",
             "database_id": self.id
@@ -25,7 +25,7 @@ class DatabaseParent(Parent):
 
 @dataclass
 class PageParent(Parent):
-    def plain_serialize(self) -> dict[str, Any]:
+    def _plain_serialize(self) -> dict[str, Any]:
         return {
             "type": "page_id",
             "page_id": self.id
@@ -34,7 +34,7 @@ class PageParent(Parent):
 
 @dataclass
 class BlockParent(Parent):
-    def plain_serialize(self) -> dict[str, Any]:
+    def _plain_serialize(self) -> dict[str, Any]:
         return {
             "type": "block_id",
             "block_id": self.id

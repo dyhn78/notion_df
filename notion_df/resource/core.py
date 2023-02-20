@@ -118,10 +118,10 @@ class Serializable(metaclass=ABCMeta):
         field_value_dict = {fd.name: getattr(self, fd.name) for fd in fields(self)}
         data_obj_with_each_field_serialized = type(self)(
             **{fd_name: serialize(fd_value) for fd_name, fd_value in field_value_dict.items()})
-        return data_obj_with_each_field_serialized.plain_serialize()
+        return data_obj_with_each_field_serialized._plain_serialize()
 
     @abstractmethod
-    def plain_serialize(self) -> dict[str, Any]:
+    def _plain_serialize(self) -> dict[str, Any]:
         """serialize only the first depth structure, leaving each field value not serialized."""
         pass
 
@@ -195,9 +195,9 @@ class Deserializable(Serializable, metaclass=ABCMeta):
     __registry: ClassVar[_DeserializableRegistry] = _deserializable_registry
     """data structure to handle master-subclasses relation of deserializable."""
     _field_type_dict: ClassVar[dict[str, type]]
-    """helper attribute used to generate deserialize() from parsing plain_serialize()."""
+    """helper attribute used to generate deserialize() from parsing _plain_serialize()."""
     _field_keychain_dict: ClassVar[dict[KeyChain, str]]
-    """helper attribute used to generate plain_deserialize() from parsing plain_serialize()."""
+    """helper attribute used to generate plain_deserialize() from parsing _plain_serialize()."""
 
     @dataclass(frozen=True)
     class _MockAttribute:
@@ -214,7 +214,7 @@ class Deserializable(Serializable, metaclass=ABCMeta):
         cls.__registry.set_subclass(cls, mock_serialized)
         if cls.plain_deserialize.__code__ != Deserializable.plain_deserialize.__code__:
             # if plain_deserialize() is overridden, in other words, manually configured,
-            #  it need not be generated from plain_serialize()
+            #  it need not be generated from _plain_serialize()
             return
         cls._field_keychain_dict = cls._get_field_keychain_dict(mock_serialized)
 
@@ -232,7 +232,7 @@ class Deserializable(Serializable, metaclass=ABCMeta):
         _mock = MockResource(**mock_init_param)  # type: ignore
         for field in fields(MockResource):
             setattr(_mock, field.name, cls._MockAttribute(field.name))
-        return _mock.plain_serialize()
+        return _mock._plain_serialize()
 
     @classmethod
     def _get_field_keychain_dict(cls, mock_serialized: dict[str, Any]) -> dict[KeyChain, str]:
