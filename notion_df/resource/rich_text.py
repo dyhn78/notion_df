@@ -203,13 +203,16 @@ class TemplateDateMention(Mention):
 
     def _plain_serialize_target(self) -> dict[str, Any]:
         return {
-            'type': 'template_mention_date',
-            'template_mention_date': self.template_mention_date
+            "type": "template_mention",
+            "template_mention": {
+                "type": "template_mention_date",
+                "template_mention_date": self.template_mention_date
+            }
         }
 
 
 @dataclass
-class _TemplateUserMention(Mention):
+class TemplateUserMention(Mention):
     template_mention_user = 'me'
     # ---
     annotations: Optional[Annotations] = None
@@ -224,13 +227,16 @@ class _TemplateUserMention(Mention):
 
     def _plain_serialize_target(self) -> dict[str, Any]:
         return {
-            'type': 'template_mention_user',
-            'template_mention_user': self.template_mention_user
+            "type": "template_mention",
+            "template_mention": {
+                "type": "template_mention_user",
+                "template_mention_user": self.template_mention_user
+            }
         }
 
 
 @dataclass
-class _LinkPreviewMention(Mention):
+class LinkPreviewMention(Mention):
     """https://developers.notion.com/reference/rich-text#link-preview-mentions"""
     url: str
     # ---
@@ -246,6 +252,8 @@ class _LinkPreviewMention(Mention):
 
     def _plain_serialize_target(self) -> dict[str, Any]:
         return {
-            'type': 'equation',
-            'url': self.url
+            'type': 'link_preview',
+            'link_preview': {
+                'url': self.url
+            }
         }
