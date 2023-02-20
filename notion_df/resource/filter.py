@@ -142,7 +142,7 @@ class FilterBuilder(metaclass=ABCMeta):
 
 
 class TextFilterBuilder(FilterBuilder, metaclass=ABCMeta):
-    """available property types: "title", "rich_text", "url", "email", and "phone_number\""""
+    """matching property types: "title", "rich_text", "url", "email", and "phone_number\""""
     equals = UnaryPredicate[str]()
     does_not_equal = UnaryPredicate[str]()
     contains = UnaryPredicate[str]()
@@ -154,7 +154,7 @@ class TextFilterBuilder(FilterBuilder, metaclass=ABCMeta):
 
 
 class NumberFilterBuilder(FilterBuilder):
-    """available property types: 'number'"""
+    """matching property types: 'number'"""
     equals = UnaryPredicate[int | Decimal]()
     does_not_equal = UnaryPredicate[int | Decimal]()
     greater_than = UnaryPredicate[int | Decimal]()
@@ -166,13 +166,13 @@ class NumberFilterBuilder(FilterBuilder):
 
 
 class CheckboxFilterBuilder(FilterBuilder):
-    """available property types: 'checkbox'"""
+    """matching property types: 'checkbox'"""
     is_empty = NullaryPredicate(True)
     is_not_empty = NullaryPredicate(True)
 
 
 class SelectFilterBuilder(FilterBuilder):
-    """available property types: 'select'"""
+    """matching property types: 'select'"""
     equals = UnaryPredicate[str]()
     does_not_equal = UnaryPredicate[str]()
     is_empty = NullaryPredicate(True)
@@ -180,7 +180,7 @@ class SelectFilterBuilder(FilterBuilder):
 
 
 class MultiSelectFilterBuilder(FilterBuilder):
-    """available property types: 'multi_select'"""
+    """matching property types: 'multi_select'"""
     contains = UnaryPredicate[str]()
     does_not_contain = UnaryPredicate[str]()
     is_empty = NullaryPredicate(True)
@@ -188,7 +188,7 @@ class MultiSelectFilterBuilder(FilterBuilder):
 
 
 class StatusFilterBuilder(FilterBuilder):
-    """available property types: 'status'"""
+    """matching property types: 'status'"""
     equals = UnaryPredicate[str]()
     does_not_equal = UnaryPredicate[str]()
     is_empty = NullaryPredicate(True)
@@ -196,7 +196,7 @@ class StatusFilterBuilder(FilterBuilder):
 
 
 class DateFilterBuilder(FilterBuilder):
-    """available property types: "date", "created_time", and "last_edited_time\""""
+    """matching property types: "date", "created_time", and "last_edited_time\""""
     equals = UnaryPredicate[datetime]()
     before = UnaryPredicate[datetime]()
     after = UnaryPredicate[datetime]()
@@ -213,7 +213,7 @@ class DateFilterBuilder(FilterBuilder):
 
 
 class PeopleFilterBuilder(FilterBuilder):
-    """available property types: "people", "created_by", and "last_edited_by\""""
+    """matching property types: "people", "created_by", and "last_edited_by\""""
     contains = UnaryPredicate[str]()
     does_not_contain = UnaryPredicate[str]()
     is_empty = NullaryPredicate(True)
@@ -221,13 +221,13 @@ class PeopleFilterBuilder(FilterBuilder):
 
 
 class FilesFilterBuilder(FilterBuilder):
-    """available property types: 'files'"""
+    """matching property types: 'files'"""
     is_empty = NullaryPredicate(True)
     is_not_empty = NullaryPredicate(True)
 
 
 class RelationFilterBuilder(FilterBuilder):
-    """available property types: 'relation'"""
+    """matching property types: 'relation'"""
     contains = UnaryPredicate[UUID]()
     does_not_contain = UnaryPredicate[UUID]()
     is_empty = NullaryPredicate(True)

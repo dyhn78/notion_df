@@ -1,26 +1,21 @@
+from __future__ import annotations
+
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, field
-from typing import Any, ClassVar
+from typing import Any, ClassVar, overload
+
+from typing_extensions import Self
 
 from notion_df.resource.core import Deserializable, set_master
 from notion_df.resource.misc import SelectOption, StatusGroups, RollupFunction, NumberFormat, UUID
 
 
 @dataclass
+@set_master
 class PropertySchema(Deserializable, metaclass=ABCMeta):
     # https://developers.notion.com/reference/property-schema-object
     # https://developers.notion.com/reference/update-property-schema-object
-    type: ClassVar[str]
-
-    @classmethod
-    @abstractmethod
-    def _get_type(cls) -> str:
-        pass
-
-    @classmethod
-    def _init_subclass(cls, **kwargs):
-        cls.type = cls._get_type()
-        super()._init_subclass(**kwargs)
+    type: str
 
     def _plain_serialize(self) -> dict[str, Any]:
         return {
@@ -33,10 +28,10 @@ class PropertySchema(Deserializable, metaclass=ABCMeta):
         pass
 
 
-@dataclass
 @set_master
-class Property(PropertySchema, metaclass=ABCMeta):
+class Property(Deserializable, metaclass=ABCMeta):
     # https://developers.notion.com/reference/property-object
+    schema: PropertySchema
     name: str
     id: str
 
@@ -44,38 +39,38 @@ class Property(PropertySchema, metaclass=ABCMeta):
         return {
             "name": self.name,
             "id": self.id,
-            **super()._plain_serialize()
+            **self.schema
         }
+
+    @classmethod
+    def deserialize(cls, serialized: dict[str, Any]) -> Self:
+        return Property(PropertySchema.deserialize(serialized), serialized['name'], serialized['id'])
 
 
 @dataclass
-class _PlainPropertySchema(PropertySchema, metaclass=ABCMeta):
+class PlainPropertySchema(PropertySchema, metaclass=ABCMeta):
+    """matching property types: 'title', 'rich_text', 'text', 'date', 'people', 'files', 'checkbox', 'url',
+    'email', 'created_time', 'created_by', 'last_edited_time', 'last_edited_by'"""
+
     def _plain_serialize_main(self) -> dict[str, Any]:
         return {}
 
 
-@dataclass
-class TitlePropertySchema(_PlainPropertySchema):
-    @classmethod
-    def _get_type(cls) -> str:
-        return 'title'
-
-
-@dataclass
-class TitleProperty(Property, TitlePropertySchema):
-    pass
-
-
-@dataclass
-class TextPropertySchema(_PlainPropertySchema):
-    @classmethod
-    def _get_type(cls) -> str:
-        return 'rich_text'
-
-
-@dataclass
-class TextProperty(Property, TextPropertySchema):
-    pass
+class PropertyBuilder:
+    # implement schema/property branching
+    title = PlainPropertySchema('title')
+    rich_text = PlainPropertySchema('rich_text')
+    text = PlainPropertySchema('text')
+    date = PlainPropertySchema('date')
+    people = PlainPropertySchema('people')
+    files = PlainPropertySchema('files')
+    checkbox = PlainPropertySchema('files')
+    url = PlainPropertySchema('url')
+    email = PlainPropertySchema('email')
+    created_time = PlainPropertySchema('created_time')
+    created_by = PlainPropertySchema('created_by')
+    last_edited_time = PlainPropertySchema('last_edited_time')
+    last_edited_by = PlainPropertySchema('last_edited_by')
 
 
 @dataclass
@@ -147,90 +142,6 @@ class MultiSelectPropertySchema(PropertySchema):
 
 @dataclass
 class MultiSelectProperty(Property, MultiSelectPropertySchema):
-    pass
-
-
-@dataclass
-class DatePropertySchema(_PlainPropertySchema):
-    @classmethod
-    def _get_type(cls) -> str:
-        return 'date'
-
-
-@dataclass
-class DateProperty(Property, DatePropertySchema):
-    pass
-
-
-@dataclass
-class PeoplePropertySchema(_PlainPropertySchema):
-    @classmethod
-    def _get_type(cls) -> str:
-        return 'people'
-
-
-@dataclass
-class PeopleProperty(Property, PeoplePropertySchema):
-    pass
-
-
-@dataclass
-class FilesPropertySchema(_PlainPropertySchema):
-    @classmethod
-    def _get_type(cls) -> str:
-        return 'files'
-
-
-@dataclass
-class FilesProperty(Property, FilesPropertySchema):
-    pass
-
-
-@dataclass
-class CheckboxPropertySchema(_PlainPropertySchema):
-    @classmethod
-    def _get_type(cls) -> str:
-        return 'checkbox'
-
-
-@dataclass
-class CheckboxProperty(Property, CheckboxPropertySchema):
-    pass
-
-
-@dataclass
-class URLPropertySchema(_PlainPropertySchema):
-    @classmethod
-    def _get_type(cls) -> str:
-        return 'url'
-
-
-@dataclass
-class URLProperty(Property, URLPropertySchema):
-    pass
-
-
-@dataclass
-class EmailPropertySchema(_PlainPropertySchema):
-    @classmethod
-    def _get_type(cls) -> str:
-        return 'email'
-
-
-@dataclass
-class EmailProperty(Property, EmailPropertySchema):
-    pass
-
-
-@dataclass
-class PhoneNumberPropertySchema(_PlainPropertySchema):
-    @classmethod
-    def _get_type(cls) -> str:
-        return 'phone_number'
-
-
-@dataclass
-class PhoneNumberProperty(Property, PhoneNumberPropertySchema):
     pass
 
 
@@ -333,52 +244,4 @@ class RollupPropertySchema(PropertySchema):
 
 @dataclass
 class RollupProperty(Property, RollupPropertySchema):
-    pass
-
-
-@dataclass
-class CreatedTimePropertySchema(_PlainPropertySchema):
-    @classmethod
-    def _get_type(cls) -> str:
-        return 'created_time'
-
-
-@dataclass
-class CreatedTimeProperty(Property, CreatedTimePropertySchema):
-    pass
-
-
-@dataclass
-class CreatedByPropertySchema(_PlainPropertySchema):
-    @classmethod
-    def _get_type(cls) -> str:
-        return 'created_by'
-
-
-@dataclass
-class CreatedByProperty(Property, CreatedByPropertySchema):
-    pass
-
-
-@dataclass
-class LastEditedTimePropertySchema(_PlainPropertySchema):
-    @classmethod
-    def _get_type(cls) -> str:
-        return 'last_edited_time'
-
-
-@dataclass
-class LastEditedTimeProperty(Property, LastEditedTimePropertySchema):
-    pass
-
-
-@dataclass
-class LastEditedByPropertySchema(_PlainPropertySchema):
-    @classmethod
-    def _get_type(cls) -> str:
-        return 'last_edited_by'
-
-
-@dataclass
-class LastEditedByProperty(Property, LastEditedByPropertySchema):
     pass

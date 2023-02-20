@@ -138,19 +138,19 @@ class _DeserializableRegistry:
         """set an abstract base deserializable class as a representative resource,
         allowing it to distinguish its several subclasses' serialized form.
         use as a decorator."""
+        assert issubclass(master, Deserializable)
         if not inspect.isabstract(master):
             raise NotionDfValueError('master class must be abstract', {'cls': master})
         self.data[master] = FinalDict()
         return master
 
-    def get_master(self, subclass: type[Deserializable]) -> Optional[type[Deserializable]]:
+    def set_subclass(self, subclass: type[Deserializable], subclass_mock_serialized: dict[str, Any]) -> None:
+        master: Optional[type[Deserializable]] = None
         for base in subclass.__mro__:
             if base in self.data:  # if base is master
-                return cast(type[Deserializable], base)
-        return None
-
-    def set_subclass(self, subclass: type[Deserializable], subclass_mock_serialized: dict[str, Any]):
-        if not (master := self.get_master(subclass)):
+                master = cast(type[Deserializable], base)  # type: ignore
+                break
+        if master is None:
             return
         subclass_type_keychain = self.find_type_keychain(subclass_mock_serialized)
         self.data[master][subclass_type_keychain] = subclass
@@ -197,7 +197,7 @@ class Deserializable(Serializable, metaclass=ABCMeta):
     _field_type_dict: ClassVar[dict[str, type]]
     """helper attribute used to generate deserialize() from parsing _plain_serialize()."""
     _field_keychain_dict: ClassVar[dict[KeyChain, str]]
-    """helper attribute used to generate plain_deserialize() from parsing _plain_serialize()."""
+    """helper attribute used to generate _plain_deserialize() from parsing _plain_serialize()."""
 
     @dataclass(frozen=True)
     class _MockAttribute:
@@ -212,9 +212,9 @@ class Deserializable(Serializable, metaclass=ABCMeta):
         cls._field_type_dict = {field.name: field.type for field in fields(cls)}
         mock_serialized = cls._get_mock_serialized()
         cls.__registry.set_subclass(cls, mock_serialized)
-        if cls.plain_deserialize.__code__ != Deserializable.plain_deserialize.__code__:
-            # if plain_deserialize() is overridden, in other words, manually configured,
-            #  it need not be generated from _plain_serialize()
+        if inspect.getsource(cls.deserialize) != inspect.getsource(Deserializable.deserialize):
+            # if deserialize() is overridden, in other words, manually configured,
+            #  it need not be generated from deserialize()
             return
         cls._field_keychain_dict = cls._get_field_keychain_dict(mock_serialized)
 
@@ -248,20 +248,13 @@ class Deserializable(Serializable, metaclass=ABCMeta):
         return field_keychain_dict
 
     @classmethod
-    @final
     def deserialize(cls, serialized: dict[str, Any]) -> Self:
         if inspect.isabstract(cls):
             return cls.__registry.find_subclass(cls, serialized).deserialize(serialized)
-        each_field_serialized_dict = cls.plain_deserialize(serialized)
+        each_field_serialized_dict = {}
+        for keychain, field_name in cls._field_keychain_dict.items():
+            each_field_serialized_dict[field_name] = keychain.get(serialized)
         field_value_dict = {}
         for field_name, field_serialized in each_field_serialized_dict.items():
             field_value_dict[field_name] = deserialize(field_serialized, cls._field_type_dict[field_name])
         return cls(**field_value_dict)  # nomypy
-
-    @classmethod
-    def plain_deserialize(cls, serialized: dict[str, Any]) -> dict[str, Any]:
-        """return **{field_name: serialized_field_value}."""
-        each_field_serialized_dict = {}
-        for keychain, field_name in cls._field_keychain_dict.items():
-            each_field_serialized_dict[field_name] = keychain.get(serialized)
-        return each_field_serialized_dict
