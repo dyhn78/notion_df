@@ -101,7 +101,15 @@ class NullaryPredicate(Predicate[_T]):
         super().__init__()
         self.value = value
 
-    def __get__(self, instance: Optional[FilterBuilder], owner: type[FilterBuilder]) -> Callable[..., Filter] | Self:
+    @overload
+    def __get__(self, instance: None, owner: type[FilterBuilder]) -> Self:
+        pass
+
+    @overload
+    def __get__(self, instance: FilterBuilder, owner: type[FilterBuilder]) -> Callable[[], Filter]:
+        pass
+
+    def __get__(self, instance: Optional[FilterBuilder], owner: type[FilterBuilder]) -> Callable[[], Filter] | Self:
         if instance is None:
             return self
         name = self._owner_name_dict[owner]
@@ -109,7 +117,15 @@ class NullaryPredicate(Predicate[_T]):
 
 
 class UnaryPredicate(Predicate[_T]):
-    def __get__(self, instance: Optional[FilterBuilder], owner: type[FilterBuilder]) -> Callable[..., Filter] | Self:
+    @overload
+    def __get__(self, instance: None, owner: type[FilterBuilder]) -> Self:
+        pass
+
+    @overload
+    def __get__(self, instance: FilterBuilder, owner: type[FilterBuilder]) -> Callable[[_T], Filter]:
+        pass
+
+    def __get__(self, instance: Optional[FilterBuilder], owner: type[FilterBuilder]) -> Callable[[_T], Filter] | Self:
         if instance is None:
             return self
         name = self._owner_name_dict[owner]
