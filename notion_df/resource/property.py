@@ -111,6 +111,7 @@ class StatusPropertySchema(PropertySchema):
             'groups': self.groups
         }
 
+
 @dataclass
 class MultiSelectPropertySchema(PropertySchema):
     @classmethod
@@ -158,7 +159,6 @@ class URLPropertySchema(_PlainPropertySchema):
         return 'url'
 
 
-
 @dataclass
 class EmailPropertySchema(_PlainPropertySchema):
     @classmethod
@@ -166,13 +166,11 @@ class EmailPropertySchema(_PlainPropertySchema):
         return 'email'
 
 
-
 @dataclass
 class PhoneNumberPropertySchema(_PlainPropertySchema):
     @classmethod
     def _get_type(cls) -> str:
         return 'phone_number'
-
 
 
 @dataclass
@@ -273,10 +271,8 @@ class LastEditedTimePropertySchema(_PlainPropertySchema):
         return 'last_edited_time'
 
 
-
 @dataclass
 class LastEditedByPropertySchema(_PlainPropertySchema):
     @classmethod
     def _get_type(cls) -> str:
         return 'last_edited_by'
-
