@@ -5,6 +5,15 @@ from typing import Any, ClassVar, Final, TypeVar, Generic
 from notion_df.resource.core import Deserializable, set_master
 from notion_df.resource.misc import SelectOption, StatusGroups, RollupFunction, NumberFormat, UUID
 
+# TODO 1: configure Property -> PropertySchema 1:1 mapping, from Property's side.
+#  access this mapping from Property (NOT DatabaseResponse), the base class.
+#  Property.from_schema(schema: PropertySchema) -> Property
+#  then, make Page or Database utilize it,
+#  so that they could auto-configure itself and its children with the retrieved data.
+# TODO 2: fix PropertySchema.type as instance attribute, like FilterBuilder.
+#  receive type value from Property's side.
+#  DO NOT check the literal type's validity from PropertySchema's side - there's simply no need to.
+
 
 @dataclass
 @set_master
