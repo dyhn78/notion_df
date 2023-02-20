@@ -11,14 +11,14 @@ from notion_df.resource.file import File, ExternalFile
 from notion_df.resource.filter import Filter
 from notion_df.resource.misc import Icon, UUID
 from notion_df.resource.parent import Parent
-from notion_df.resource.property import PropertySchema, Property
+from notion_df.resource.property import PropertySchema, PropertySchemaResponse
 from notion_df.resource.rich_text import RichText
 from notion_df.resource.sort import Sort
 from notion_df.util.misc import dict_filter_truthy
 
 
 @dataclass
-class QueryDatabaseResponse(Deserializable):
+class DatabaseQueryResponse(Deserializable):
     results: list[PageResponse]
     next_cursor: Optional[str]
     has_more: bool
@@ -35,7 +35,7 @@ class QueryDatabaseResponse(Deserializable):
 
 
 @dataclass
-class QueryDatabase(Request[QueryDatabaseResponse]):
+class DatabaseQueryRequest(Request[DatabaseQueryResponse]):
     database_id: UUID
     filter: Filter
     sort: list[Sort]
@@ -64,7 +64,7 @@ class DatabaseResponse(Deserializable):
     id: UUID
     url: str
     title: RichText
-    properties: dict[str, Property] = field()
+    properties: dict[str, PropertySchemaResponse] = field()
     """the dict keys are same as each property's name or id (depending on request)"""
     parent: Parent
     icon: Icon
@@ -92,7 +92,7 @@ class DatabaseResponse(Deserializable):
 
 
 @dataclass
-class CreateDatabase(Request[DatabaseResponse]):
+class DatabaseCreateRequest(Request[DatabaseResponse]):
     """https://developers.notion.com/reference/create-a-database"""
     parent_id: UUID
     title: list[RichText] = field(default_factory=list)
@@ -119,7 +119,7 @@ class CreateDatabase(Request[DatabaseResponse]):
 
 
 @dataclass
-class UpdateDatabase(Request[DatabaseResponse]):
+class DatabaseUpdateRequest(Request[DatabaseResponse]):
     database_id: UUID
     title: list[RichText] = field(default_factory=list)
     properties: dict[str, PropertySchema] = field(default_factory=dict)
@@ -139,7 +139,7 @@ class UpdateDatabase(Request[DatabaseResponse]):
 
 
 @dataclass
-class RetrieveDatabase(Request[DatabaseResponse]):
+class DatabaseRetrieveRequest(Request[DatabaseResponse]):
     database_id: UUID
 
     def get_settings(self) -> RequestSettings:

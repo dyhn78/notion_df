@@ -1,6 +1,6 @@
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, field
-from typing import Any, ClassVar
+from typing import Any, ClassVar, Final, TypeVar, Generic
 
 from notion_df.resource.core import Deserializable, set_master
 from notion_df.resource.misc import SelectOption, StatusGroups, RollupFunction, NumberFormat, UUID
@@ -33,10 +33,14 @@ class PropertySchema(Deserializable, metaclass=ABCMeta):
         pass
 
 
+PropertySchema_T = TypeVar('PropertySchema_T', bound=PropertySchema)
+
+
 @dataclass
 @set_master
-class Property(PropertySchema, metaclass=ABCMeta):
+class PropertySchemaResponse(Deserializable, Generic[PropertySchema_T], metaclass=ABCMeta):
     # https://developers.notion.com/reference/property-object
+    schema: PropertySchema_T
     name: str
     id: str
 
@@ -44,7 +48,7 @@ class Property(PropertySchema, metaclass=ABCMeta):
         return {
             "name": self.name,
             "id": self.id,
-            **super()._plain_serialize()
+            "schema": self.schema,
         }
 
 
@@ -62,20 +66,10 @@ class TitlePropertySchema(_PlainPropertySchema):
 
 
 @dataclass
-class TitleProperty(Property, TitlePropertySchema):
-    pass
-
-
-@dataclass
 class TextPropertySchema(_PlainPropertySchema):
     @classmethod
     def _get_type(cls) -> str:
         return 'rich_text'
-
-
-@dataclass
-class TextProperty(Property, TextPropertySchema):
-    pass
 
 
 @dataclass
@@ -91,11 +85,6 @@ class NumberPropertySchema(PropertySchema):
 
 
 @dataclass
-class NumberProperty(Property, NumberPropertySchema):
-    pass
-
-
-@dataclass
 class SelectPropertySchema(PropertySchema):
     @classmethod
     def _get_type(cls) -> str:
@@ -105,11 +94,6 @@ class SelectPropertySchema(PropertySchema):
 
     def _plain_serialize_main(self) -> dict[str, Any]:
         return {'options': self.options}
-
-
-@dataclass
-class SelectProperty(Property, SelectPropertySchema):
-    pass
 
 
 @dataclass
@@ -127,12 +111,6 @@ class StatusPropertySchema(PropertySchema):
             'groups': self.groups
         }
 
-
-@dataclass
-class StatusProperty(Property, StatusPropertySchema):
-    pass
-
-
 @dataclass
 class MultiSelectPropertySchema(PropertySchema):
     @classmethod
@@ -146,20 +124,10 @@ class MultiSelectPropertySchema(PropertySchema):
 
 
 @dataclass
-class MultiSelectProperty(Property, MultiSelectPropertySchema):
-    pass
-
-
-@dataclass
 class DatePropertySchema(_PlainPropertySchema):
     @classmethod
     def _get_type(cls) -> str:
         return 'date'
-
-
-@dataclass
-class DateProperty(Property, DatePropertySchema):
-    pass
 
 
 @dataclass
@@ -170,20 +138,10 @@ class PeoplePropertySchema(_PlainPropertySchema):
 
 
 @dataclass
-class PeopleProperty(Property, PeoplePropertySchema):
-    pass
-
-
-@dataclass
 class FilesPropertySchema(_PlainPropertySchema):
     @classmethod
     def _get_type(cls) -> str:
         return 'files'
-
-
-@dataclass
-class FilesProperty(Property, FilesPropertySchema):
-    pass
 
 
 @dataclass
@@ -194,20 +152,11 @@ class CheckboxPropertySchema(_PlainPropertySchema):
 
 
 @dataclass
-class CheckboxProperty(Property, CheckboxPropertySchema):
-    pass
-
-
-@dataclass
 class URLPropertySchema(_PlainPropertySchema):
     @classmethod
     def _get_type(cls) -> str:
         return 'url'
 
-
-@dataclass
-class URLProperty(Property, URLPropertySchema):
-    pass
 
 
 @dataclass
@@ -217,10 +166,6 @@ class EmailPropertySchema(_PlainPropertySchema):
         return 'email'
 
 
-@dataclass
-class EmailProperty(Property, EmailPropertySchema):
-    pass
-
 
 @dataclass
 class PhoneNumberPropertySchema(_PlainPropertySchema):
@@ -228,10 +173,6 @@ class PhoneNumberPropertySchema(_PlainPropertySchema):
     def _get_type(cls) -> str:
         return 'phone_number'
 
-
-@dataclass
-class PhoneNumberProperty(Property, PhoneNumberPropertySchema):
-    pass
 
 
 @dataclass
@@ -245,11 +186,6 @@ class FormulaPropertySchema(PropertySchema):
 
     def _plain_serialize_main(self) -> dict[str, Any]:
         pass  # TODO
-
-
-@dataclass
-class FormulaProperty(Property, FormulaPropertySchema):
-    pass
 
 
 @dataclass
@@ -269,11 +205,6 @@ class RelationPropertySchema(PropertySchema):
 
 
 @dataclass
-class RelationProperty(Property, RelationPropertySchema, metaclass=ABCMeta):
-    pass
-
-
-@dataclass
 class SingleRelationPropertySchema(RelationPropertySchema):
     @classmethod
     def _get_type(cls) -> str:
@@ -281,11 +212,6 @@ class SingleRelationPropertySchema(RelationPropertySchema):
 
     def _plain_serialize_inner_value(self) -> dict[str, Any]:
         return {}
-
-
-@dataclass
-class SingleRelationProperty(RelationProperty, SingleRelationPropertySchema):
-    pass
 
 
 @dataclass
@@ -302,11 +228,6 @@ class DualRelationPropertySchema(RelationPropertySchema):
             'synced_property_name': self.synced_property_name,
             'synced_property_id': self.synced_property_id,
         }
-
-
-@dataclass
-class DualRelationProperty(RelationProperty, DualRelationPropertySchema):
-    pass
 
 
 @dataclass
@@ -332,20 +253,10 @@ class RollupPropertySchema(PropertySchema):
 
 
 @dataclass
-class RollupProperty(Property, RollupPropertySchema):
-    pass
-
-
-@dataclass
 class CreatedTimePropertySchema(_PlainPropertySchema):
     @classmethod
     def _get_type(cls) -> str:
         return 'created_time'
-
-
-@dataclass
-class CreatedTimeProperty(Property, CreatedTimePropertySchema):
-    pass
 
 
 @dataclass
@@ -356,20 +267,11 @@ class CreatedByPropertySchema(_PlainPropertySchema):
 
 
 @dataclass
-class CreatedByProperty(Property, CreatedByPropertySchema):
-    pass
-
-
-@dataclass
 class LastEditedTimePropertySchema(_PlainPropertySchema):
     @classmethod
     def _get_type(cls) -> str:
         return 'last_edited_time'
 
-
-@dataclass
-class LastEditedTimeProperty(Property, LastEditedTimePropertySchema):
-    pass
 
 
 @dataclass
@@ -378,7 +280,3 @@ class LastEditedByPropertySchema(_PlainPropertySchema):
     def _get_type(cls) -> str:
         return 'last_edited_by'
 
-
-@dataclass
-class LastEditedByProperty(Property, LastEditedByPropertySchema):
-    pass
