@@ -7,6 +7,17 @@ from notion_df.resource.misc import UUID
 from notion_df.util.misc import dict_filter_truthy
 
 
+@dataclass
+class PartialUser(Deserializable):
+    id: UUID
+
+    def _plain_serialize(self) -> dict[str, Any]:
+        return {
+            'object': 'user',
+            'id': self.id,
+        }
+
+
 @set_master
 @dataclass
 class User(Deserializable, metaclass=ABCMeta):

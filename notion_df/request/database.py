@@ -11,7 +11,7 @@ from notion_df.resource.file import File, ExternalFile
 from notion_df.resource.filter import Filter
 from notion_df.resource.misc import Icon, UUID
 from notion_df.resource.parent import Parent
-from notion_df.resource.property_schema import PropertySchema, PropertySchemaFull
+from notion_df.resource.property_schema import PartialPropertySchema, PropertySchema
 from notion_df.resource.rich_text import RichText
 from notion_df.resource.sort import Sort
 from notion_df.util.misc import dict_filter_truthy
@@ -62,15 +62,15 @@ class DatabaseQueryRequest(Request[DatabaseQueryResponse]):
 @dataclass
 class DatabaseResponse(Deserializable):
     id: UUID
-    url: str
-    title: list[RichText]
-    properties: dict[str, PropertySchemaFull] = field()
-    """the dict keys are same as each property's name or id (depending on request)"""
-    parent: Parent
-    icon: Icon
-    cover: ExternalFile
     created_time: datetime
     last_edited_time: datetime
+    icon: Icon
+    cover: ExternalFile
+    url: str
+    title: list[RichText]
+    properties: dict[str, PropertySchema] = field()
+    """the dict keys are same as each property's name or id (depending on request)"""
+    parent: Parent
     archived: bool
     is_inline: bool
 
@@ -96,7 +96,7 @@ class DatabaseCreateRequest(Request[DatabaseResponse]):
     """https://developers.notion.com/reference/create-a-database"""
     parent_id: UUID
     title: list[RichText]
-    properties: dict[str, PropertySchema] = field(default_factory=dict)
+    properties: dict[str, PartialPropertySchema] = field(default_factory=dict)
     """the dict keys are same as each property's name or id (depending on request)"""
     icon: Optional[Icon] = field(default=None)
     cover: Optional[File] = field(default=None)
@@ -122,7 +122,7 @@ class DatabaseCreateRequest(Request[DatabaseResponse]):
 class DatabaseUpdateRequest(Request[DatabaseResponse]):
     database_id: UUID
     title: list[RichText]
-    properties: dict[str, PropertySchema] = field(default_factory=dict)
+    properties: dict[str, PartialPropertySchema] = field(default_factory=dict)
 
     def get_settings(self) -> RequestSettings:
         return RequestSettings(Version.v20220628, Method.PATCH,

@@ -19,7 +19,7 @@ PropertySchemaClause_T = TypeVar('PropertySchemaClause_T')
 
 
 @dataclass
-class PropertySchema(Serializable, Generic[PropertySchemaClause_T], metaclass=ABCMeta):
+class PartialPropertySchema(Serializable, Generic[PropertySchemaClause_T], metaclass=ABCMeta):
     # https://developers.notion.com/reference/property-schema-object
     # https://developers.notion.com/reference/update-property-schema-object
     clause: PropertySchemaClause_T
@@ -34,7 +34,7 @@ class PropertySchema(Serializable, Generic[PropertySchemaClause_T], metaclass=AB
 
 
 @dataclass
-class PropertySchemaFull(Deserializable, PropertySchema, metaclass=ABCMeta):
+class PropertySchema(Deserializable, PartialPropertySchema, metaclass=ABCMeta):
     # https://developers.notion.com/reference/property-object
     id: str
 
@@ -124,7 +124,7 @@ class SingleRelationPropertySchemaClause:
 
 
 @dataclass
-class SingleRelationPropertySchemaFull:
+class SingleRelationPropertySchema:
     """property types: ['relation']"""
     database_id: UUID
 
@@ -149,7 +149,7 @@ class DualRelationPropertySchemaClause:
 
 
 @dataclass
-class DualRelationPropertySchemaFull:
+class DualRelationPropertySchema:
     """property types: ['relation']"""
     database_id: UUID
     synced_property_name: str
