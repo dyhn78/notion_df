@@ -12,8 +12,8 @@ PropertyValueClause_T = TypeVar('PropertyValueClause_T')
 @dataclass
 class PropertyValue(Deserializable, metaclass=ABCMeta):
     # https://developers.notion.com/reference/page-property-values
-    type: ClassVar[str]
     clause: PropertyValueClause_T
+    type: ClassVar[str]
     name: str
     id: str
 
