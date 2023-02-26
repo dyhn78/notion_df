@@ -15,13 +15,6 @@ from notion_df.resource.misc import SelectOption, StatusGroups, RollupFunction, 
 #  DO NOT check the literal type's validity from PropertySchema's side - there's simply no need to.
 
 
-"""
-SchemaClause
-type 속성을 빼고 정의
-PlainClause.serialize() = {}
-"""
-
-
 PropertySchemaClause_T = TypeVar('PropertySchemaClause_T')
 
 
