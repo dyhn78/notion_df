@@ -8,7 +8,7 @@ from notion_df.resource.core import Deserializable, set_master
 from notion_df.resource.misc import UUID
 
 
-@set_master
+@set_master('type')
 @dataclass
 class Parent(Deserializable, metaclass=ABCMeta):
     # https://developers.notion.com/reference/parent-object

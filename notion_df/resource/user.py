@@ -18,7 +18,7 @@ class PartialUser(Deserializable):
         }
 
 
-@set_master
+@set_master('type')
 @dataclass
 class User(Deserializable, metaclass=ABCMeta):
     id: UUID

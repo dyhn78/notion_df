@@ -141,7 +141,7 @@ class Annotations(Deserializable):
         }
 
 
-@set_master
+@set_master('type')
 class Icon(Deserializable, metaclass=ABCMeta):
     pass
 

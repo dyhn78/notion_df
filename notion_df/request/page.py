@@ -1,12 +1,15 @@
+from abc import ABCMeta
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any
+from typing import Any, Optional
 
-from notion_df.resource.core import Deserializable
+from notion_df.request.core import Request, RequestSettings, Version, Method
+from notion_df.resource.block_item import BlockItem
+from notion_df.resource.core import Deserializable, set_master
 from notion_df.resource.file import ExternalFile
 from notion_df.resource.misc import UUID, Icon
 from notion_df.resource.parent import Parent
-from notion_df.resource.property_value import PropertyValue
+from notion_df.resource.property_item import PropertyItem
 from notion_df.resource.rich_text import RichText
 from notion_df.resource.user import PartialUser
 
@@ -22,7 +25,7 @@ class PageResponse(Deserializable):
     cover: ExternalFile
     url: str
     title: list[RichText]
-    properties: dict[str, PropertyValue] = field()
+    properties: dict[str, PropertyItem] = field()
     """the dict keys are same as each property's name or id (depending on request)"""
     parent: Parent
     archived: bool
@@ -43,3 +46,116 @@ class PageResponse(Deserializable):
             "properties": self.properties,
             "url": self.url,
         }
+
+
+@dataclass
+class PageRetrieveRequest(Request[PageResponse]):
+    """https://developers.notion.com/reference/retrieve-a-database"""
+    id: UUID
+
+    def get_settings(self) -> RequestSettings:
+        return RequestSettings(Version.v20220628, Method.GET,
+                               f'https://api.notion.com/v1/databases/{self.id}')
+
+    def get_body(self) -> Any:
+        return
+
+
+@dataclass
+class PageCreateRequest(Request[PageResponse]):
+    """https://developers.notion.com/reference/create-a-database"""
+    parent: Parent
+    icon: Icon
+    cover: ExternalFile
+    properties: dict[str, PropertyItem] = field()
+    """the dict keys are same as each property's name or id (depending on request)"""
+    children: list[BlockItem] = field()
+
+    def get_settings(self) -> RequestSettings:
+        return RequestSettings(Version.v20220628, Method.POST,
+                               f'https://api.notion.com/v1/pages')
+
+    def get_body(self) -> Any:
+        return {
+            "parent": self.parent,
+            "icon": self.icon,
+            "cover": self.cover,
+            "properties": self.properties,
+            "children": self.children,
+        }
+
+
+@dataclass
+class PageUpdateRequest(Request[PageResponse]):
+    """https://developers.notion.com/reference/update-a-database"""
+    id: UUID
+    icon: Icon
+    cover: ExternalFile
+    properties: dict[str, PropertyItem] = field()
+    """the dict keys are same as each property's name or id (depending on request)"""
+    archived: bool
+
+    def get_settings(self) -> RequestSettings:
+        return RequestSettings(Version.v20220628, Method.PATCH,
+                               f'https://api.notion.com/v1/pages/{self.id}')
+
+    def get_body(self) -> Any:
+        return {
+            "icon": self.icon,
+            "cover": self.cover,
+            "properties": self.properties,
+            "archived": self.archived,
+        }
+
+
+@set_master('object')
+class PagePropertyItemBaseResponse(Deserializable, metaclass=ABCMeta):
+    pass
+
+
+@dataclass
+class PagePropertyItemResponse(Deserializable):
+    property_item: PropertyItem
+
+    def _plain_serialize(self) -> dict[str, Any]:
+        return {
+            "object": "property_item",
+            "id": "kjPO",
+            **self.property_item
+        }
+
+    @classmethod
+    def _plain_deserialize(cls, serialized: dict[str, Any]) -> dict[str, Any]:
+        return {'property_item': serialized}
+
+
+@dataclass
+class PagePropertyItemListResponse(Deserializable):
+    property_item: PropertyItem
+    results: list[PagePropertyItemResponse]
+    next_cursor: Optional[str]
+    has_more: bool
+
+    def _plain_serialize(self) -> dict[str, Any]:
+        return {
+            "object": "list",
+            "results": self.results,
+            "next_cursor": self.next_cursor,
+            "has_more": self.has_more,
+            "property_item": self.property_item,
+            "type": "property_item"
+        }
+
+
+@dataclass
+class PagePropertyItemRetrieveRequest(Request[PagePropertyItemBaseResponse]):
+    """https://developers.notion.com/reference/retrieve-a-page-property"""
+    page_id: UUID
+    property_id: UUID
+
+    def get_settings(self) -> RequestSettings:
+        return RequestSettings(Version.v20220628, Method.GET,
+                               f'https://api.notion.com/v1/pages/{self.page_id}/properties/{self.property_id}')
+
+    def get_body(self) -> Any:
+        return

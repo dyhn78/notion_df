@@ -92,6 +92,18 @@ class DatabaseResponse(Deserializable):
 
 
 @dataclass
+class DatabaseRetrieveRequest(Request[DatabaseResponse]):
+    id: UUID
+
+    def get_settings(self) -> RequestSettings:
+        return RequestSettings(Version.v20220628, Method.GET,
+                               f'https://api.notion.com/v1/databases/{self.id}')
+
+    def get_body(self) -> Any:
+        return
+
+
+@dataclass
 class DatabaseCreateRequest(Request[DatabaseResponse]):
     """https://developers.notion.com/reference/create-a-database"""
     parent_id: UUID
@@ -136,15 +148,3 @@ class DatabaseUpdateRequest(Request[DatabaseResponse]):
             'title': self.title,
             'properties': self.properties,
         })
-
-
-@dataclass
-class DatabaseRetrieveRequest(Request[DatabaseResponse]):
-    database_id: UUID
-
-    def get_settings(self) -> RequestSettings:
-        return RequestSettings(Version.v20220628, Method.GET,
-                               f'https://api.notion.com/v1/databases/{self.database_id}')
-
-    def get_body(self) -> Any:
-        return

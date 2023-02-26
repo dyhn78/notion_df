@@ -9,7 +9,7 @@ from notion_df.resource.misc import Annotations, DateRange, UUID
 from notion_df.util.misc import dict_filter_truthy
 
 
-@set_master
+@set_master('type')
 class RichText(Deserializable, metaclass=ABCMeta):
     # https://developers.notion.com/reference/rich-text
     annotations: Optional[Annotations]

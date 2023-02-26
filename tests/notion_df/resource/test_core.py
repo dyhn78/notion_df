@@ -14,7 +14,7 @@ from notion_df.variables import Variables
 @pytest.fixture
 def master_deserializable() -> type[Deserializable]:
     @dataclass
-    @set_master
+    @set_master('type')
     class MasterDeserializable(Deserializable, metaclass=ABCMeta):
         pass
 
@@ -24,8 +24,9 @@ def master_deserializable() -> type[Deserializable]:
 def test__find_type_keychain():
     from notion_df.resource.core import _DeserializableRegistry
 
-    assert _DeserializableRegistry.find_type_keychain({'type': 'checkbox', 'checkbox': True}) == KeyChain(('checkbox',))
-    assert _DeserializableRegistry.find_type_keychain({'type': 'mention', 'mention': {
+    assert _DeserializableRegistry.resolve_type_keychain({'type': 'checkbox', 'checkbox': True}) == KeyChain(
+        ('checkbox',))
+    assert _DeserializableRegistry.resolve_type_keychain({'type': 'mention', 'mention': {
         'type': 'user',
         'user': {
             'object': 'user',
@@ -54,7 +55,7 @@ def test__deserializer__simple(master_deserializable):
                 }
             }
 
-    assert _deserializable_registry.data[master_deserializable][KeyChain(('text',))] == TestDeserializable
+    assert _deserializable_registry.subclass_dict[master_deserializable][KeyChain(('text',))] == TestDeserializable
     assert TestDeserializable._field_keychain_dict == {
         ('text', 'content'): 'content',
         ('text', 'link', 'url'): 'link',
@@ -93,8 +94,8 @@ def test_deserializable__call_method(master_deserializable):
                 }
             }
 
-    print(_deserializable_registry.data)
-    assert _deserializable_registry.data[master_deserializable][KeyChain(('mention', 'user'))] \
+    print(_deserializable_registry.subclass_dict)
+    assert _deserializable_registry.subclass_dict[master_deserializable][KeyChain(('mention', 'user'))] \
            == TestDeserializable
     assert TestDeserializable._field_keychain_dict == {
         ('mention', 'user', 'id'): 'user_id'

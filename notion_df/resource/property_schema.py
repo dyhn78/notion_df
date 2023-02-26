@@ -2,7 +2,7 @@ from abc import ABCMeta
 from dataclasses import dataclass, field
 from typing import Any, TypeVar, Generic
 
-from notion_df.resource.core import Deserializable, Serializable
+from notion_df.resource.core import Deserializable
 from notion_df.resource.misc import SelectOption, StatusGroups, RollupFunction, NumberFormat, UUID, RelationType
 
 # TODO 1: configure Property -> PropertySchema 1:1 mapping, from Property's side.
@@ -19,12 +19,11 @@ PropertySchemaClause_T = TypeVar('PropertySchemaClause_T')
 
 
 @dataclass
-class PartialPropertySchema(Serializable, Generic[PropertySchemaClause_T], metaclass=ABCMeta):
+class PartialPropertySchema(Deserializable, Generic[PropertySchemaClause_T], metaclass=ABCMeta):
     # https://developers.notion.com/reference/property-schema-object
     # https://developers.notion.com/reference/update-property-schema-object
     clause: PropertySchemaClause_T
     type: str
-    name: str
 
     def _plain_serialize(self) -> dict[str, Any]:
         return {
@@ -34,8 +33,9 @@ class PartialPropertySchema(Serializable, Generic[PropertySchemaClause_T], metac
 
 
 @dataclass
-class PropertySchema(Deserializable, PartialPropertySchema, metaclass=ABCMeta):
+class PropertySchema(PartialPropertySchema, metaclass=ABCMeta):
     # https://developers.notion.com/reference/property-object
+    name: str
     id: str
 
     def _plain_serialize(self) -> dict[str, Any]:
