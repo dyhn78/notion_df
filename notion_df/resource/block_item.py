@@ -6,5 +6,5 @@ from notion_df.resource.core import Deserializable, set_master
 
 @set_master('type')
 @dataclass
-class User(Deserializable, metaclass=ABCMeta):
-    ...  # TODO
+class BlockItem(Deserializable, metaclass=ABCMeta):
+    ...

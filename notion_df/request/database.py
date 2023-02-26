@@ -11,14 +11,14 @@ from notion_df.resource.file import File, ExternalFile
 from notion_df.resource.filter import Filter
 from notion_df.resource.misc import Icon, UUID
 from notion_df.resource.parent import Parent
-from notion_df.resource.property import PropertySchema, Property
+from notion_df.resource.property_schema import PartialPropertySchema, PropertySchema
 from notion_df.resource.rich_text import RichText
 from notion_df.resource.sort import Sort
 from notion_df.util.misc import dict_filter_truthy
 
 
 @dataclass
-class QueryDatabaseResponse(Deserializable):
+class DatabaseQueryResponse(Deserializable):
     results: list[PageResponse]
     next_cursor: Optional[str]
     has_more: bool
@@ -35,7 +35,7 @@ class QueryDatabaseResponse(Deserializable):
 
 
 @dataclass
-class QueryDatabase(Request[QueryDatabaseResponse]):
+class DatabaseQueryRequest(Request[DatabaseQueryResponse]):
     database_id: UUID
     filter: Filter
     sort: list[Sort]
@@ -62,15 +62,15 @@ class QueryDatabase(Request[QueryDatabaseResponse]):
 @dataclass
 class DatabaseResponse(Deserializable):
     id: UUID
-    url: str
-    title: RichText
-    properties: dict[str, Property] = field()
-    """the dict keys are same as each property's name or id (depending on request)"""
-    parent: Parent
-    icon: Icon
-    cover: ExternalFile
     created_time: datetime
     last_edited_time: datetime
+    icon: Icon
+    cover: ExternalFile
+    url: str
+    title: list[RichText]
+    properties: dict[str, PropertySchema] = field()
+    """the dict keys are same as each property's name or id (depending on request)"""
+    parent: Parent
     archived: bool
     is_inline: bool
 
@@ -92,14 +92,26 @@ class DatabaseResponse(Deserializable):
 
 
 @dataclass
-class CreateDatabase(Request[DatabaseResponse]):
+class DatabaseRetrieveRequest(Request[DatabaseResponse]):
+    id: UUID
+
+    def get_settings(self) -> RequestSettings:
+        return RequestSettings(Version.v20220628, Method.GET,
+                               f'https://api.notion.com/v1/databases/{self.id}')
+
+    def get_body(self) -> Any:
+        return
+
+
+@dataclass
+class DatabaseCreateRequest(Request[DatabaseResponse]):
     """https://developers.notion.com/reference/create-a-database"""
     parent_id: UUID
-    title: list[RichText] = field(default_factory=list)
-    properties: dict[str, PropertySchema] = field(default_factory=dict)
+    title: list[RichText]
+    properties: dict[str, PartialPropertySchema] = field(default_factory=dict)
+    """the dict keys are same as each property's name or id (depending on request)"""
     icon: Optional[Icon] = field(default=None)
     cover: Optional[File] = field(default=None)
-    """the dict keys are same as each property's name or id (depending on request)"""
 
     def get_settings(self) -> RequestSettings:
         return RequestSettings(Version.v20220628, Method.POST,
@@ -119,10 +131,10 @@ class CreateDatabase(Request[DatabaseResponse]):
 
 
 @dataclass
-class UpdateDatabase(Request[DatabaseResponse]):
+class DatabaseUpdateRequest(Request[DatabaseResponse]):
     database_id: UUID
-    title: list[RichText] = field(default_factory=list)
-    properties: dict[str, PropertySchema] = field(default_factory=dict)
+    title: list[RichText]
+    properties: dict[str, PartialPropertySchema] = field(default_factory=dict)
 
     def get_settings(self) -> RequestSettings:
         return RequestSettings(Version.v20220628, Method.PATCH,
@@ -136,15 +148,3 @@ class UpdateDatabase(Request[DatabaseResponse]):
             'title': self.title,
             'properties': self.properties,
         })
-
-
-@dataclass
-class RetrieveDatabase(Request[DatabaseResponse]):
-    database_id: UUID
-
-    def get_settings(self) -> RequestSettings:
-        return RequestSettings(Version.v20220628, Method.GET,
-                               f'https://api.notion.com/v1/databases/{self.database_id}')
-
-    def get_body(self) -> Any:
-        return

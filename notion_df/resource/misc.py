@@ -89,6 +89,11 @@ class NumberFormat(StrEnum):
     SINGAPORE_DOLLAR = 'singapore_dollar'
 
 
+class RelationType(StrEnum):
+    SINGLE_PROPERTY = 'single_property'
+    DUAL_PROPERTY = 'dual_property'
+
+
 class RollupFunction(StrEnum):
     COUNT = 'count'
     COUNT_VALUES = 'count_values'
@@ -136,7 +141,7 @@ class Annotations(Deserializable):
         }
 
 
-@set_master
+@set_master('type')
 class Icon(Deserializable, metaclass=ABCMeta):
     pass
 
