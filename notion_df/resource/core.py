@@ -126,9 +126,6 @@ class Serializable(metaclass=ABCMeta):
         pass
 
 
-_Deserializable_T = TypeVar('_Deserializable_T', bound='Deserializable')
-
-
 class _DeserializableRegistry:
     def __init__(self):
         self.data: dict[type[Deserializable], FinalDict[KeyChain, type[Deserializable]]] = {}
@@ -265,3 +262,6 @@ class Deserializable(Serializable, metaclass=ABCMeta):
         for keychain, field_name in cls._field_keychain_dict.items():
             each_field_serialized_dict[field_name] = keychain.get(serialized)
         return each_field_serialized_dict
+
+
+_Deserializable_T = TypeVar('_Deserializable_T', bound=Deserializable)

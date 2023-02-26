@@ -42,7 +42,7 @@ def test__deserializer__simple(master_deserializable):
         content: str
         link: str
 
-        def plain_serialize(self):
+        def _plain_serialize(self):
             return {
                 'type': 'text',
                 'text': {
@@ -78,7 +78,7 @@ def test_deserializable__call_method(master_deserializable):
     class TestDeserializable(master_deserializable):
         user_id: str
 
-        def plain_serialize(self):
+        def _plain_serialize(self):
             return {
                 'type': 'mention',
                 'mention': self._serialize_inner_value()
@@ -93,6 +93,7 @@ def test_deserializable__call_method(master_deserializable):
                 }
             }
 
+    print(_deserializable_registry.data)
     assert _deserializable_registry.data[master_deserializable][KeyChain(('mention', 'user'))] \
            == TestDeserializable
     assert TestDeserializable._field_keychain_dict == {
