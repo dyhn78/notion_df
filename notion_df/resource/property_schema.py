@@ -22,14 +22,7 @@ PlainClause.serialize() = {}
 """
 
 
-@dataclass
-class PropertySchemaClause(Deserializable, metaclass=ABCMeta):
-    # https://developers.notion.com/reference/property-schema-object
-    # https://developers.notion.com/reference/update-property-schema-object
-    ...
-
-
-PropertySchemaClause_T = TypeVar('PropertySchemaClause_T', bound=PropertySchemaClause)
+PropertySchemaClause_T = TypeVar('PropertySchemaClause_T')
 
 
 @dataclass
@@ -62,16 +55,17 @@ class PropertySchemaFull(PropertySchema, metaclass=ABCMeta):
 
 
 @dataclass
-class PlainPropertySchemaClause(PropertySchemaClause, metaclass=ABCMeta):
+class PlainPropertySchemaClause:
     """available property types: ["title", "rich_text", "date", "people", "files", "checkbox", "url",
     "email", "phone_number", "created_time", "created_by", "last_edited_time", "last_edited_by"]"""
 
+    # noinspection PyMethodMayBeStatic
     def _plain_serialize(self) -> dict[str, Any]:
         return {}
 
 
 @dataclass
-class NumberPropertySchemaClause(PropertySchemaClause):
+class NumberPropertySchemaClause:
     """property types: ['number']"""
     format: NumberFormat
 
@@ -80,7 +74,7 @@ class NumberPropertySchemaClause(PropertySchemaClause):
 
 
 @dataclass
-class SelectPropertySchemaClause(PropertySchemaClause):
+class SelectPropertySchemaClause:
     """property types: ['select', 'multi_select']"""
     options: list[SelectOption]
 
@@ -89,7 +83,7 @@ class SelectPropertySchemaClause(PropertySchemaClause):
 
 
 @dataclass
-class StatusPropertySchemaClause(PropertySchemaClause):
+class StatusPropertySchemaClause:
     """property types: ['status']"""
     options: list[SelectOption]
     groups: list[StatusGroups]
@@ -102,7 +96,7 @@ class StatusPropertySchemaClause(PropertySchemaClause):
 
 
 @dataclass
-class FormulaPropertySchemaClause(PropertySchemaClause):
+class FormulaPropertySchemaClause:
     """property types: ['formula']"""
     expression: str = field()
     r'''example value: "if(prop(\"In stock\"), 0, prop(\"Price\"))"'''
@@ -112,7 +106,7 @@ class FormulaPropertySchemaClause(PropertySchemaClause):
 
 
 @dataclass
-class RelationPropertySchemaClause(PropertySchemaClause):
+class _RelationPropertySchemaClause:
     """property types: ['relation']"""
     database_id: UUID
     relation_type: RelationType
@@ -126,7 +120,60 @@ class RelationPropertySchemaClause(PropertySchemaClause):
 
 
 @dataclass
-class RollupPropertySchemaClause(PropertySchemaClause):
+class SingleRelationPropertySchemaClause:
+    """property types: ['relation']"""
+    database_id: UUID
+
+    def _plain_serialize(self) -> dict[str, Any]:
+        return {
+            'database_id': self.database_id,
+            'type': 'single_property',
+            'single_property': {}
+        }
+
+
+@dataclass
+class SingleRelationPropertySchemaFull:
+    """property types: ['relation']"""
+    database_id: UUID
+
+    def _plain_serialize(self) -> dict[str, Any]:
+        return {
+            'database_id': self.database_id,
+            'single_property': {},
+        }
+
+
+@dataclass
+class DualRelationPropertySchemaClause:
+    """property types: ['relation']"""
+    database_id: UUID
+
+    def _plain_serialize(self) -> dict[str, Any]:
+        return {
+            'database_id': self.database_id,
+            'type': 'dual_property',
+            'dual_property': {}
+        }
+
+
+@dataclass
+class DualRelationPropertySchemaFull:
+    """property types: ['relation']"""
+    database_id: UUID
+    synced_property_name: str
+    synced_property_id: str
+
+    def _plain_serialize(self) -> dict[str, Any]:
+        return {
+            "database_id": self.database_id,
+            "synced_property_name": self.synced_property_name,
+            "synced_property_id": self.synced_property_id,
+        }
+
+
+@dataclass
+class RollupPropertySchemaClause:
     """property types: ['rollup']"""
     relation_property_name: str
     relation_property_id: str

@@ -11,7 +11,7 @@ from notion_df.resource.file import File, ExternalFile
 from notion_df.resource.filter import Filter
 from notion_df.resource.misc import Icon, UUID
 from notion_df.resource.parent import Parent
-from notion_df.resource.property import PropertySchema, PropertySchemaFull
+from notion_df.resource.property_schema import PropertySchema, PropertySchemaFull
 from notion_df.resource.rich_text import RichText
 from notion_df.resource.sort import Sort
 from notion_df.util.misc import dict_filter_truthy
