@@ -63,7 +63,7 @@ class DatabaseQueryRequest(Request[DatabaseQueryResponse]):
 class DatabaseResponse(Deserializable):
     id: UUID
     url: str
-    title: RichText
+    title: list[RichText]
     properties: dict[str, PropertySchemaFull] = field()
     """the dict keys are same as each property's name or id (depending on request)"""
     parent: Parent
@@ -95,11 +95,11 @@ class DatabaseResponse(Deserializable):
 class DatabaseCreateRequest(Request[DatabaseResponse]):
     """https://developers.notion.com/reference/create-a-database"""
     parent_id: UUID
-    title: list[RichText] = field(default_factory=list)
+    title: list[RichText]
     properties: dict[str, PropertySchema] = field(default_factory=dict)
+    """the dict keys are same as each property's name or id (depending on request)"""
     icon: Optional[Icon] = field(default=None)
     cover: Optional[File] = field(default=None)
-    """the dict keys are same as each property's name or id (depending on request)"""
 
     def get_settings(self) -> RequestSettings:
         return RequestSettings(Version.v20220628, Method.POST,
@@ -121,7 +121,7 @@ class DatabaseCreateRequest(Request[DatabaseResponse]):
 @dataclass
 class DatabaseUpdateRequest(Request[DatabaseResponse]):
     database_id: UUID
-    title: list[RichText] = field(default_factory=list)
+    title: list[RichText]
     properties: dict[str, PropertySchema] = field(default_factory=dict)
 
     def get_settings(self) -> RequestSettings:
