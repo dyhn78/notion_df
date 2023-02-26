@@ -236,6 +236,10 @@ class Deserializable(Serializable, metaclass=ABCMeta):
             return
         cls._field_keychain_dict = cls._get_field_keychain_dict(mock_serialized)
 
+    # TODO: support {..., **attr} or {...} | {...} expressions
+    #  1. allow _MockAttribute supports '**' expression
+    #  2. allow _get_field_keychain_dict to recognize blank keychains
+
     @dataclass(frozen=True)
     class _MockAttribute:
         name: str
@@ -258,20 +262,6 @@ class Deserializable(Serializable, metaclass=ABCMeta):
         return _mock._plain_serialize()
 
     @classmethod
-    def _get_field_keychain_dict(cls, mock_serialized: dict[str, Any]) -> dict[KeyChain, str]:
-        # breadth-first search through mock_serialized
-        field_keychain_dict = FinalDict[KeyChain, str]()
-        items: list[tuple[KeyChain, Any]] = [(KeyChain((k,)), v) for k, v in mock_serialized.items()]
-        while items:
-            keychain, value = items.pop()
-            if isinstance(value, cls._MockAttribute):
-                attr_name = value.name
-                field_keychain_dict[keychain] = attr_name
-            elif isinstance(value, dict):
-                items.extend((keychain + (k,), v) for k, v in value.items())
-        return field_keychain_dict
-
-    @classmethod
     @final
     def deserialize(cls, serialized: dict[str, Any]) -> Self:
         if inspect.isabstract(cls):
@@ -289,6 +279,20 @@ class Deserializable(Serializable, metaclass=ABCMeta):
         for keychain, field_name in cls._field_keychain_dict.items():
             each_field_serialized_dict[field_name] = keychain.get(serialized)
         return each_field_serialized_dict
+
+    @classmethod
+    def _get_field_keychain_dict(cls, mock_serialized: dict[str, Any]) -> dict[KeyChain, str]:
+        # breadth-first search through mock_serialized
+        field_keychain_dict = FinalDict[KeyChain, str]()
+        items: list[tuple[KeyChain, Any]] = [(KeyChain((k,)), v) for k, v in mock_serialized.items()]
+        while items:
+            keychain, value = items.pop()
+            if isinstance(value, cls._MockAttribute):
+                attr_name = value.name
+                field_keychain_dict[keychain] = attr_name
+            elif isinstance(value, dict):
+                items.extend((keychain + (k,), v) for k, v in value.items())
+        return field_keychain_dict
 
 
 _Deserializable_T = TypeVar('_Deserializable_T', bound=Deserializable)
