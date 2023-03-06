@@ -17,7 +17,7 @@ STATUS_COLUMN = Cl(key='🔰준비', alias='edit_status',
                    marked_values=_STATUS_MARKS)
 
 READING_FRAME = PropertyFrame([
-    Cl(key='📘유형', alias='media_type', ),
+    Cl(key='📕유형', alias='media_type', ),
     Cl(key='📔도서류', alias='is_book'),
     STATUS_COLUMN,
     Cl(key='📚제목', aliases=['docx_name', 'title']),
