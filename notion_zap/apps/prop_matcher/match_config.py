@@ -10,8 +10,8 @@ class Columns:
     title_datetime = Column(key=EmojiCode.GREEN_BOOK + '제목', alias='title')
     title_metadata = Column(key=EmojiCode.BOOKSTACK + '제목', alias='title')
 
-    media_type_from_below = Column(key=EmojiCode.BLUE_BOOK + '유형', alias='media_type')
-    media_type_from_above = Column(key=EmojiCode.BLUE_BOOK + '읽기', alias='media_type')
+    media_type_from_below = Column(key=EmojiCode.RED_BOOK + '유형', alias='media_type')
+    media_type_from_above = Column(key=EmojiCode.RED_BOOK + '읽기', alias='media_type')
     media_type_is_book = Column(alias='is_book', key='📔도서류', )
     get_dates_begin_from_created_time = Column(
         alias='get_dates_begin_from_created_time',
