@@ -51,7 +51,7 @@ def test__deserializer__simple(master_deserializable):
                 }
             }
 
-    assert master_deserializable.subclass_resolver.subclass_dict[KeyChain(('text',))] == TestDeserializable
+    assert master_deserializable.get_subclass_resolver().subclass_dict[KeyChain(('text',))] == TestDeserializable
     assert TestDeserializable._field_keychain_dict == {
         ('text', 'content'): 'content',
         ('text', 'link', 'url'): 'link',
@@ -88,7 +88,7 @@ def test_deserializable__call_method(master_deserializable):
                 }
             }
 
-    assert master_deserializable.subclass_resolver.subclass_dict[KeyChain(('mention', 'user'))] \
+    assert master_deserializable.get_subclass_resolver().subclass_dict[KeyChain(('mention', 'user'))] \
            == TestDeserializable
     assert TestDeserializable._field_keychain_dict == {
         ('mention', 'user', 'id'): 'user_id'
