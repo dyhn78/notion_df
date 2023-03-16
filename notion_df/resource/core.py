@@ -268,5 +268,4 @@ class DeserializableResolverByKeyChain:
             return current_keychain
 
 
-def resolve_by_keychain(unique_key: str):
-    return DeserializableResolverByKeyChain(unique_key)
+resolve_by_keychain = DeserializableResolverByKeyChain
