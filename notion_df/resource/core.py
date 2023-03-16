@@ -143,10 +143,8 @@ class Deserializable(Serializable, metaclass=ABCMeta):
     """used to generate _plain_deserialize() from parsing _plain_serialize()."""
     mock_serialized: ClassVar[dict[str, Any]]
     """example serialized value but every field is MockAttribute."""
-    _resolver: ClassVar[Optional[DeserializableResolverByKeyChain]] = None
-    """this should not be set directly; should use proper decorators.
-    if provided, deserialize() can receive subclasses' serialized values,
-    'resolving' and 'delegating' to matching subclass."""
+    _subclass_by_keychain_dict: ClassVar[Optional[FinalDict[KeyChain, type[Deserializable]]]]
+    """should not be set directly; set by DeserializableResolverByKeyChain decorator."""
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -221,14 +219,13 @@ Deserializable_T = typing.TypeVar('Deserializable_T', bound=Deserializable)
 class DeserializableResolverByKeyChain:
     def __init__(self, unique_key: str):
         self.unique_key = unique_key
-        self.master_subclass_dict = dict[type[Deserializable], FinalDict[KeyChain, type[Deserializable]]]()
 
     def __call__(self, master: type[Deserializable_T]) -> type[Deserializable_T]:
         if not inspect.isabstract(master):
             raise NotionDfValueError('master class must be abstract', {'master': master})
 
-        master._resolver = self  # TODO: delete
-        subclass_dict = self.master_subclass_dict[master] = FinalDict[KeyChain, type[Deserializable]]()
+        master._subclass_by_keychain_dict = subclass_dict = FinalDict[KeyChain, type[Deserializable]]()
+
         init_subclass_prev = master.init_subclass.__func__  # type: ignore
         deserialize_prev = master.deserialize.__func__  # type: ignore
 
