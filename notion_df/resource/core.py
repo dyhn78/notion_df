@@ -7,7 +7,7 @@ from abc import abstractmethod, ABCMeta
 from dataclasses import dataclass, fields, InitVar
 from datetime import datetime
 from enum import Enum
-from typing import Any, final, ClassVar, Optional, cast, TypeVar, Callable
+from typing import Any, final, ClassVar, Optional, TypeVar
 
 import dateutil.parser
 from typing_extensions import Self
@@ -103,17 +103,16 @@ class Serializable(metaclass=ABCMeta):
     def __init_subclass__(cls, **kwargs):
         """this method is reserved. use cls._init_subclass() instead"""
         super().__init_subclass__(**kwargs)
-        if cls._skip_init_subclass():
-            return
-        cls._init_subclass(**kwargs)
-
-    @classmethod
-    def _init_subclass(cls, **kwargs):
-        dataclass(cls)
+        if not cls._skip_init_subclass():
+            cls.init_subclass(**kwargs)
 
     @classmethod
     def _skip_init_subclass(cls) -> bool:
         return inspect.isabstract(cls) or cls.__name__.startswith('_')
+
+    @classmethod
+    def init_subclass(cls, **kwargs) -> None:
+        dataclass(cls)
 
     @final
     def serialize(self) -> dict[str, Any]:
@@ -128,47 +127,30 @@ class Serializable(metaclass=ABCMeta):
         pass
 
 
-class _DeserializableRegistry:
-    def __init__(self):
-        self.subclass_dict: dict[type[Deserializable], FinalDict[KeyChain, type[Deserializable]]] = {}
-        """{master: {keychain: {subclasses} } }"""
-        self.unique_key_dict: dict[type[Deserializable], str] = {}
+class SubclassResolverByKeyChain:
+    def __init__(self, master: type[Deserializable], unique_key: str):
+        if not inspect.isabstract(master):
+            raise NotionDfValueError('master class must be abstract', {'master': master})
 
-    def set_master(self, unique_key: str) -> Callable[[type[_Deserializable_T]], type[_Deserializable_T]]:
-        """set an abstract base deserializable class as a representative resource,
-        allowing it to distinguish its several subclasses' serialized form.
-        use as a decorator."""
+        self.master = master
+        self.unique_key = unique_key
+        self.subclass_dict = FinalDict[KeyChain, type[Deserializable]]()
 
-        def wrapper(master: type[_Deserializable_T]) -> type[_Deserializable_T]:
-            if not inspect.isabstract(master):
-                raise NotionDfValueError('master class must be abstract', {'cls': master})
-            self.subclass_dict[master] = FinalDict()
-            self.unique_key_dict[master] = unique_key
-            return master
+        init_subclass_prev = self.master.init_subclass.__func__  # type: ignore
 
-        return wrapper
+        def init_subclass(cls: type[Deserializable], **kwargs):
+            init_subclass_prev(cls, **kwargs)
+            subclass_type_keychain = self.resolve_keychain(cls.mock_serialized, self.unique_key)
+            self.subclass_dict[subclass_type_keychain] = cls
 
-    def get_master(self, subclass: type[Deserializable]) -> Optional[type[Deserializable]]:
-        for base in subclass.__mro__:
-            if base in self.subclass_dict:  # if base is master
-                return cast(type[Deserializable], base)
-        return None
+        self.master.init_subclass = classmethod(init_subclass)
 
-    def set_subclass(self, subclass: type[Deserializable], subclass_mock_serialized: dict[str, Any]):
-        if not (master := self.get_master(subclass)):
-            return
-        subclass_type_keychain = self.resolve_keychain(subclass_mock_serialized, self.unique_key_dict[master])
-        self.subclass_dict[master][subclass_type_keychain] = subclass
-
-    def resolve_subclass(self, master: type[Deserializable], serialized: dict[str, Any]) -> type[Deserializable]:
-        type_keychain = self.resolve_keychain(serialized, self.unique_key_dict[master])
-        if master not in self.subclass_dict:
-            raise NotionDfValueError('cannot proxy-deserialize from non-master abstract class', {'cls': master})
-        if type_keychain not in self.subclass_dict[master]:
+    def resolve_serialized(self, serialized: dict[str, Any]) -> type[Deserializable]:
+        type_keychain = self.resolve_keychain(serialized, self.unique_key)
+        if type_keychain not in self.subclass_dict:
             raise NotionDfValueError('cannot proxy-deserialize: unexpected type keychain',
-                                     {'cls': master, 'type_keychain': type_keychain})
-        subclass = self.subclass_dict[master][type_keychain]
-        return subclass
+                                     {'master': self.master, 'type_keychain': type_keychain})
+        return self.subclass_dict[type_keychain]
 
     @staticmethod
     def resolve_keychain(serialized: dict[str, Any], unique_key: str) -> KeyChain:
@@ -187,26 +169,12 @@ class _DeserializableRegistry:
                 continue
             return current_keychain
 
-    @staticmethod
-    def resolve_type_keychain(serialized: dict[str, Any]) -> KeyChain:
-        current_keychain = KeyChain()
-        if 'type' not in serialized:
-            raise NotionDfValueError(
-                "cannot deserialize via master: 'type' key not found in serialized data",
-                {'serialized.keys()': list(serialized.keys()), 'serialized': serialized},
-                linebreak=True
-            )
-        while True:
-            key = serialized['type']
-            current_keychain += key,
-            if (value := serialized.get(key)) and isinstance(value, dict) and 'type' in value:
-                serialized = value
-                continue
-            return current_keychain
 
-
-_deserializable_registry = _DeserializableRegistry()
-set_master = _deserializable_registry.set_master
+def resolve_by_keychain(unique_key: str):
+    def wrapper(master: type[Deserializable]) -> type[Deserializable]:
+        master.subclass_resolver = SubclassResolverByKeyChain(master, unique_key)
+        return master
+    return wrapper
 
 
 @dataclass
@@ -214,58 +182,55 @@ class Deserializable(Serializable, metaclass=ABCMeta):
     """dataclass representation of the resources defined in Notion REST API.
     interchangeable to JSON object.
     decorate with '@set_master' to use as a unified deserializer entrypoint."""
-    __registry: ClassVar[_DeserializableRegistry] = _deserializable_registry
-    """data structure to handle master-subclasses relation of deserializable."""
     _field_type_dict: ClassVar[dict[str, type]]
-    """helper attribute used to generate deserialize() from parsing _plain_serialize()."""
+    """used to generate deserialize() from parsing _plain_serialize()."""
     _field_keychain_dict: ClassVar[dict[KeyChain, str]]
-    """helper attribute used to generate _plain_deserialize() from parsing _plain_serialize()."""
+    """used to generate _plain_deserialize() from parsing _plain_serialize()."""
+    mock_serialized: ClassVar[dict[str, Any]]
+    """example serialized value but every field is MockAttribute."""
+    subclass_resolver: ClassVar[Optional[SubclassResolverByKeyChain]] = None
+    """if this one is provided, deserialize() can proxy-deserialize subclasses."""
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
     @classmethod
-    def _init_subclass(cls, **kwargs) -> None:
-        super()._init_subclass(**kwargs)
+    def init_subclass(cls, **kwargs) -> None:
+        super().init_subclass(**kwargs)
         cls._field_type_dict = {field.name: field.type for field in fields(cls)}
-        mock_serialized = cls._get_mock_serialized()
-        cls.__registry.set_subclass(cls, mock_serialized)
+        cls.mock_serialized = cls._get_mock_serialized()
         if inspect.getsource(cls._plain_deserialize) != inspect.getsource(Deserializable._plain_deserialize):
             # if _plain_deserialize() is overridden, in other words, manually configured,
             #  it need not be generated from _plain_serialize()
             return
-        cls._field_keychain_dict = cls._get_field_keychain_dict(mock_serialized)
+        cls._field_keychain_dict = cls._get_field_keychain_dict(cls.mock_serialized)
 
     # TODO: support {..., **attr} or {...} | {...} expressions
-    #  1. allow _MockAttribute supports '**' expression
+    #  1. allow MockAttribute supports '**' expression
     #  2. allow _get_field_keychain_dict to recognize blank keychains
-
-    @dataclass(frozen=True)
-    class _MockAttribute:
-        name: str
 
     @classmethod
     @final
     def _get_mock_serialized(cls) -> dict[str, Any]:
         @dataclass
-        class MockResource(cls, metaclass=ABCMeta):
+        class MockDeserializable(cls, metaclass=ABCMeta):
             @classmethod
             def _skip_init_subclass(cls):
                 return True
 
-        MockResource.__name__ = cls.__name__
-        init_param_keys = list(inspect.signature(MockResource.__init__).parameters.keys())[1:]
-        mock_init_param = {k: cls._MockAttribute(k) for k in init_param_keys}
-        _mock = MockResource(**mock_init_param)  # type: ignore
-        for field in fields(MockResource):
-            setattr(_mock, field.name, cls._MockAttribute(field.name))
+        MockDeserializable.__name__ = cls.__name__
+        init_param_keys = list(inspect.signature(MockDeserializable.__init__).parameters.keys())[1:]
+        mock_init_param = {k: MockAttribute(k) for k in init_param_keys}
+        _mock = MockDeserializable(**mock_init_param)  # type: ignore
+        for field in fields(MockDeserializable):
+            setattr(_mock, field.name, MockAttribute(field.name))
         return _mock._plain_serialize()
 
     @classmethod
     @final
     def deserialize(cls, serialized: dict[str, Any]) -> Self:
-        if inspect.isabstract(cls):
-            return cls.__registry.resolve_subclass(cls, serialized).deserialize(serialized)
+        if cls.subclass_resolver:
+            return cls.subclass_resolver.resolve_serialized(serialized).deserialize(serialized)
         each_field_serialized_dict = cls._plain_deserialize(serialized)
         field_value_dict = {}
         for field_name, field_serialized in each_field_serialized_dict.items():
@@ -287,12 +252,17 @@ class Deserializable(Serializable, metaclass=ABCMeta):
         items: list[tuple[KeyChain, Any]] = [(KeyChain((k,)), v) for k, v in mock_serialized.items()]
         while items:
             keychain, value = items.pop()
-            if isinstance(value, cls._MockAttribute):
+            if isinstance(value, MockAttribute):
                 attr_name = value.name
                 field_keychain_dict[keychain] = attr_name
             elif isinstance(value, dict):
                 items.extend((keychain + (k,), v) for k, v in value.items())
         return field_keychain_dict
+
+
+@dataclass(frozen=True)
+class MockAttribute:
+    name: str
 
 
 _Deserializable_T = TypeVar('_Deserializable_T', bound=Deserializable)

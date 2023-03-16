@@ -2,7 +2,7 @@ from abc import ABCMeta
 from dataclasses import dataclass
 from typing import Optional, Any
 
-from notion_df.resource.core import Deserializable, set_master
+from notion_df.resource.core import Deserializable, set_master, resolve_by_keychain
 from notion_df.resource.misc import UUID
 from notion_df.util.misc import dict_filter_truthy
 
@@ -18,7 +18,7 @@ class PartialUser(Deserializable):
         }
 
 
-@set_master('type')
+@resolve_by_keychain('type')
 @dataclass
 class User(Deserializable, metaclass=ABCMeta):
     id: UUID

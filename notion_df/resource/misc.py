@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import ClassVar, Any, NewType, Literal
 
-from notion_df.resource.core import Deserializable, set_master
+from notion_df.resource.core import Deserializable, resolve_by_keychain
 from notion_df.util.collection import StrEnum
 
 UUID = NewType('UUID', str)
@@ -141,7 +141,7 @@ class Annotations(Deserializable):
         }
 
 
-@set_master('type')
+@resolve_by_keychain('type')
 class Icon(Deserializable, metaclass=ABCMeta):
     pass
 
