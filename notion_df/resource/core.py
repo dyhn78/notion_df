@@ -187,7 +187,7 @@ class Deserializable(Serializable, metaclass=ABCMeta):
     @final
     def deserialize(cls, serialized: dict[str, Any]) -> Self:
         if resolver := cls.resolver:
-            return resolver.resolve_serialized(serialized).deserialize(serialized)
+            return resolver.resolve_serialized(cls, serialized).deserialize(serialized)
 
         each_field_serialized_dict = cls._plain_deserialize(serialized)
         field_value_dict = {}
@@ -219,57 +219,58 @@ class Deserializable(Serializable, metaclass=ABCMeta):
 
 
 class DeserializableResolverByKeyChain:
-    # TODO: deduplicate with descriptor protocol or class decorator pattern [__call__(master) -> master]
-    #  - master.resolver = resolver(master)
-    #  - Resolver // resolve_by_keychain()
-    def __init__(self, master: type[Deserializable], unique_key: str):
+    def __init__(self, unique_key: str):
+        self.unique_key = unique_key
+        self.master_subclasses_dict = dict[type[Deserializable], FinalDict[KeyChain, type[Deserializable]]]()
+
+    def __call__(self, master: type[Deserializable]):
         if not inspect.isabstract(master):
             raise NotionDfValueError('master class must be abstract', {'master': master})
 
-        self.master = master
-        self.unique_key = unique_key
-        self.subclass_dict = FinalDict[KeyChain, type[Deserializable]]()
+        master.resolver = self
+        self.master_subclasses_dict[master] = FinalDict[KeyChain, type[Deserializable]]()
 
-        init_subclass_prev = self.master.init_subclass.__func__  # type: ignore
+        init_subclass_prev = master.init_subclass.__func__  # type: ignore
 
         def init_subclass(cls: type[Deserializable], **kwargs):
             init_subclass_prev(cls, **kwargs)
-            subclass_type_keychain = self.resolve_keychain(cls.mock_serialized, self.unique_key)
-            self.subclass_dict[subclass_type_keychain] = cls
+            keychain = self.resolve_keychain(cls.mock_serialized)
+            self.master_subclasses_dict[master][keychain] = cls
 
-        self.master.init_subclass = classmethod(init_subclass)
+        master.init_subclass = classmethod(init_subclass)
+        return master
 
     def __get__(self, instance, owner) -> Optional[Self]:
-        if owner == self.master:
+        if owner in self.master_subclasses_dict:
             return self
 
-    def resolve_serialized(self, serialized: dict[str, Any]) -> type[Deserializable]:
-        type_keychain = self.resolve_keychain(serialized, self.unique_key)
-        if type_keychain not in self.subclass_dict:
+    def resolve_serialized(self, master: type[Deserializable], serialized: dict[str, Any]) -> type[Deserializable]:
+        keychain = self.resolve_keychain(serialized)
+        if keychain not in self.master_subclasses_dict[master]:
             raise NotionDfValueError('cannot proxy-deserialize: unexpected type keychain',
-                                     {'master': self.master, 'type_keychain': type_keychain})
-        return self.subclass_dict[type_keychain]
+                                     {'master': master, 'keychain': keychain})
+        return self.master_subclasses_dict[master][keychain]
 
-    @staticmethod
-    def resolve_keychain(serialized: dict[str, Any], unique_key: str) -> KeyChain:
+    def resolve_keychain(self, serialized: dict[str, Any]) -> KeyChain:
         current_keychain = KeyChain()
-        if unique_key not in serialized:
+        if self.unique_key not in serialized:
             raise NotionDfValueError(
-                f"cannot resolve keychain: unique key {unique_key} not found in serialized data",
-                {'serialized.keys()': list(serialized.keys()), 'serialized': serialized},
+                f"cannot resolve keychain: unique key {self.unique_key} not found in serialized data",
+                {
+                    'unique_key': self.unique_key,
+                    'serialized.keys()': list(serialized.keys()),
+                    'serialized': serialized
+                },
                 linebreak=True
             )
         while True:
-            key = serialized[unique_key]
+            key = serialized[self.unique_key]
             current_keychain += key,
-            if (value := serialized.get(key)) and isinstance(value, dict) and unique_key in value:
+            if (value := serialized.get(key)) and isinstance(value, dict) and self.unique_key in value:
                 serialized = value
                 continue
             return current_keychain
 
 
 def resolve_by_keychain(unique_key: str):
-    def wrapper(master: type[Deserializable]) -> type[Deserializable]:
-        master.resolver = DeserializableResolverByKeyChain(master, unique_key)
-        return master
-    return wrapper
+    return DeserializableResolverByKeyChain(unique_key)
