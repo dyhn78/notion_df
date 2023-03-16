@@ -143,7 +143,7 @@ class Deserializable(Serializable, metaclass=ABCMeta):
     """used to generate _plain_deserialize() from parsing _plain_serialize()."""
     mock_serialized: ClassVar[dict[str, Any]]
     """example serialized value but every field is MockAttribute."""
-    resolver: ClassVar[Optional[DeserializableResolverByKeyChain]] = None
+    _resolver: ClassVar[Optional[DeserializableResolverByKeyChain]] = None
     """this should not be set directly; should use proper decorators.
     if provided, deserialize() can receive subclasses' serialized values,
     'resolving' and 'delegating' to matching subclass."""
@@ -186,9 +186,6 @@ class Deserializable(Serializable, metaclass=ABCMeta):
     @classmethod
     @final
     def deserialize(cls, serialized: dict[str, Any]) -> Self:
-        if resolver := cls.resolver:
-            return resolver.resolve_serialized(cls, serialized).deserialize(serialized)
-
         each_field_serialized_dict = cls._plain_deserialize(serialized)
         field_value_dict = {}
         for field_name, field_serialized in each_field_serialized_dict.items():
@@ -218,38 +215,40 @@ class Deserializable(Serializable, metaclass=ABCMeta):
         return field_keychain_dict
 
 
+Deserializable_T = typing.TypeVar('Deserializable_T', bound=Deserializable)
+
+
 class DeserializableResolverByKeyChain:
     def __init__(self, unique_key: str):
         self.unique_key = unique_key
-        self.master_subclasses_dict = dict[type[Deserializable], FinalDict[KeyChain, type[Deserializable]]]()
+        self.master_subclass_dict = dict[type[Deserializable], FinalDict[KeyChain, type[Deserializable]]]()
 
-    def __call__(self, master: type[Deserializable]):
+    def __call__(self, master: type[Deserializable_T]) -> type[Deserializable_T]:
         if not inspect.isabstract(master):
             raise NotionDfValueError('master class must be abstract', {'master': master})
 
-        master.resolver = self
-        self.master_subclasses_dict[master] = FinalDict[KeyChain, type[Deserializable]]()
-
+        master._resolver = self  # TODO: delete
+        subclass_dict = self.master_subclass_dict[master] = FinalDict[KeyChain, type[Deserializable]]()
         init_subclass_prev = master.init_subclass.__func__  # type: ignore
+        deserialize_prev = master.deserialize.__func__  # type: ignore
 
-        def init_subclass(cls: type[Deserializable], **kwargs):
+        def init_subclass(cls: type[Deserializable_T], **kwargs) -> None:
             init_subclass_prev(cls, **kwargs)
             keychain = self.resolve_keychain(cls.mock_serialized)
-            self.master_subclasses_dict[master][keychain] = cls
+            subclass_dict[keychain] = cls
+
+        def _deserialize(cls: type[Deserializable_T], serialized: dict[str, Any]) -> Deserializable_T:
+            if master != cls:
+                return deserialize_prev(cls, serialized)
+            keychain = self.resolve_keychain(serialized)
+            if keychain not in subclass_dict:
+                raise NotionDfValueError('cannot deserialize: unexpected type keychain',
+                                         {'master': master, 'keychain': keychain})
+            return subclass_dict[keychain].deserialize(serialized)
 
         master.init_subclass = classmethod(init_subclass)
+        master.deserialize = classmethod(_deserialize)
         return master
-
-    def __get__(self, instance, owner) -> Optional[Self]:
-        if owner in self.master_subclasses_dict:
-            return self
-
-    def resolve_serialized(self, master: type[Deserializable], serialized: dict[str, Any]) -> type[Deserializable]:
-        keychain = self.resolve_keychain(serialized)
-        if keychain not in self.master_subclasses_dict[master]:
-            raise NotionDfValueError('cannot proxy-deserialize: unexpected type keychain',
-                                     {'master': master, 'keychain': keychain})
-        return self.master_subclasses_dict[master][keychain]
 
     def resolve_keychain(self, serialized: dict[str, Any]) -> KeyChain:
         current_keychain = KeyChain()
