@@ -143,16 +143,13 @@ class Deserializable(Serializable, metaclass=ABCMeta):
     """used to generate _plain_deserialize() from parsing _plain_serialize()."""
     mock_serialized: ClassVar[dict[str, Any]]
     """example serialized value but every field is MockAttribute."""
+    resolver: ClassVar[Optional[DeserializableResolverByKeyChain]] = None
+    """this should not be set directly; should use proper decorators.
+    if provided, deserialize() can receive subclasses' serialized values,
+    'resolving' and 'delegating' to matching subclass."""
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-
-    @classmethod
-    def get_subclass_resolver(cls) -> Optional[SubclassResolverByKeyChain]:
-        """this should not be set directly; should use proper decorators.
-        if provided, deserialize() can receive subclasses' serialized values,
-        'resolving' and 'delegating' to matching subclass."""
-        return subclass_resolver_dict.get(cls)
 
     @classmethod
     def init_subclass(cls, **kwargs) -> None:
@@ -189,7 +186,7 @@ class Deserializable(Serializable, metaclass=ABCMeta):
     @classmethod
     @final
     def deserialize(cls, serialized: dict[str, Any]) -> Self:
-        if resolver := cls.get_subclass_resolver():
+        if resolver := cls.resolver:
             return resolver.resolve_serialized(serialized).deserialize(serialized)
 
         each_field_serialized_dict = cls._plain_deserialize(serialized)
@@ -221,7 +218,10 @@ class Deserializable(Serializable, metaclass=ABCMeta):
         return field_keychain_dict
 
 
-class SubclassResolverByKeyChain:
+class DeserializableResolverByKeyChain:
+    # TODO: deduplicate with descriptor protocol or class decorator pattern [__call__(master) -> master]
+    #  - master.resolver = resolver(master)
+    #  - Resolver // resolve_by_keychain()
     def __init__(self, master: type[Deserializable], unique_key: str):
         if not inspect.isabstract(master):
             raise NotionDfValueError('master class must be abstract', {'master': master})
@@ -238,6 +238,10 @@ class SubclassResolverByKeyChain:
             self.subclass_dict[subclass_type_keychain] = cls
 
         self.master.init_subclass = classmethod(init_subclass)
+
+    def __get__(self, instance, owner) -> Optional[Self]:
+        if owner == self.master:
+            return self
 
     def resolve_serialized(self, serialized: dict[str, Any]) -> type[Deserializable]:
         type_keychain = self.resolve_keychain(serialized, self.unique_key)
@@ -264,11 +268,8 @@ class SubclassResolverByKeyChain:
             return current_keychain
 
 
-subclass_resolver_dict: dict[type, SubclassResolverByKeyChain] = {}
-
-
 def resolve_by_keychain(unique_key: str):
     def wrapper(master: type[Deserializable]) -> type[Deserializable]:
-        subclass_resolver_dict[master] = SubclassResolverByKeyChain(master, unique_key)
+        master.resolver = DeserializableResolverByKeyChain(master, unique_key)
         return master
     return wrapper
