@@ -32,6 +32,15 @@ class PartialPropertySchema(Deserializable, metaclass=ABCMeta):
             self.type: self.clause,
         }
 
+    @classmethod
+    def deserialize(cls, serialized: dict[str, Any]) -> Self:
+        if cls != PartialPropertySchema:
+            return super().deserialize(serialized)
+        property_type = serialized['type']
+        schema_clause_type = schema_clause_by_property_type_dict[property_type]
+        clause = schema_clause_type.deserialize(serialized)
+        return cls(clause, property_type)
+
 
 @dataclass
 class PropertySchema(PartialPropertySchema, metaclass=ABCMeta):
@@ -44,6 +53,13 @@ class PropertySchema(PartialPropertySchema, metaclass=ABCMeta):
             "name": self.name,
             "id": self.id,
         }
+
+    @classmethod
+    def deserialize(cls, serialized: dict[str, Any]) -> Self:
+        if cls != PropertySchema:
+            return super().deserialize(serialized)
+        partial = super().deserialize(serialized)
+        return cls(partial.clause, partial.type, serialized['name'], serialized['id'])
 
 
 schema_clause_by_property_type_dict: FinalDict[str, type[PropertySchemaClause]] = FinalDict()
@@ -60,14 +76,6 @@ class PropertySchemaClause(Deserializable, metaclass=ABCMeta):
         super().__init_subclass__(**kwargs)
         for property_type in cls._eligible_property_types():
             schema_clause_by_property_type_dict[property_type] = cls
-
-    @classmethod
-    def deserialize(cls, serialized: dict[str, Any]) -> Self:
-        if cls != PropertySchemaClause:
-            return super().deserialize(serialized)
-        property_type = serialized['type']
-        schema_clause_type = schema_clause_by_property_type_dict[property_type]
-        return schema_clause_type.deserialize(serialized)
 
 
 @dataclass
