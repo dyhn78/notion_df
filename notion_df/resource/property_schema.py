@@ -5,17 +5,13 @@ from typing import Any, TypeVar, Generic
 from notion_df.resource.core import Deserializable
 from notion_df.resource.misc import SelectOption, StatusGroups, RollupFunction, NumberFormat, UUID, RelationType
 
-# TODO 1: configure Property -> PropertySchema 1:1 mapping, from Property's side.
+# TODO: configure Property -> PropertySchema 1:1 mapping, from Property's side.
 #  access this mapping from Property (NOT DatabaseResponse), the base class.
 #  Property.from_schema(schema: PropertySchema) -> Property
 #  then, make Page or Database utilize it,
 #  so that they could auto-configure itself and its children with the retrieved data.
-# TODO 2: fix PropertySchema.type as instance attribute, like FilterBuilder.
-#  receive type value from Property's side.
-#  DO NOT check the literal type's validity from PropertySchema's side - there's simply no need to.
 
-
-PropertySchemaClause_T = TypeVar('PropertySchemaClause_T')
+PropertySchemaClause_T = TypeVar('PropertySchemaClause_T', bound=Deserializable)
 
 
 @dataclass
@@ -46,7 +42,7 @@ class PropertySchema(PartialPropertySchema, metaclass=ABCMeta):
 
 
 @dataclass
-class PlainPropertySchemaClause:
+class PlainPropertySchemaClause(Deserializable):
     """available property types: ["title", "rich_text", "date", "people", "files", "checkbox", "url",
     "email", "phone_number", "created_time", "created_by", "last_edited_time", "last_edited_by"]"""
 
@@ -56,7 +52,7 @@ class PlainPropertySchemaClause:
 
 
 @dataclass
-class NumberPropertySchemaClause:
+class NumberPropertySchemaClause(Deserializable):
     """property types: ['number']"""
     format: NumberFormat
 
@@ -65,7 +61,7 @@ class NumberPropertySchemaClause:
 
 
 @dataclass
-class SelectPropertySchemaClause:
+class SelectPropertySchemaClause(Deserializable):
     """property types: ['select', 'multi_select']"""
     options: list[SelectOption]
 
@@ -74,7 +70,7 @@ class SelectPropertySchemaClause:
 
 
 @dataclass
-class StatusPropertySchemaClause:
+class StatusPropertySchemaClause(Deserializable):
     """property types: ['status']"""
     options: list[SelectOption]
     groups: list[StatusGroups]
@@ -87,7 +83,7 @@ class StatusPropertySchemaClause:
 
 
 @dataclass
-class FormulaPropertySchemaClause:
+class FormulaPropertySchemaClause(Deserializable):
     """property types: ['formula']"""
     expression: str = field()
     r'''example value: "if(prop(\"In stock\"), 0, prop(\"Price\"))"'''
@@ -97,7 +93,7 @@ class FormulaPropertySchemaClause:
 
 
 @dataclass
-class _RelationPropertySchemaClause:
+class _RelationPropertySchemaClause(Deserializable):
     """property types: ['relation']"""
     database_id: UUID
     relation_type: RelationType
@@ -111,7 +107,7 @@ class _RelationPropertySchemaClause:
 
 
 @dataclass
-class SingleRelationPropertySchemaClause:
+class SingleRelationPropertySchemaClause(Deserializable):
     """property types: ['relation']"""
     database_id: UUID
 
@@ -136,7 +132,7 @@ class SingleRelationPropertySchema:
 
 
 @dataclass
-class DualRelationPropertySchemaClause:
+class DualRelationPropertySchemaClause(Deserializable):
     """property types: ['relation']"""
     database_id: UUID
 
@@ -164,7 +160,7 @@ class DualRelationPropertySchema:
 
 
 @dataclass
-class RollupPropertySchemaClause:
+class RollupPropertySchemaClause(Deserializable):
     """property types: ['rollup']"""
     relation_property_name: str
     relation_property_id: str
