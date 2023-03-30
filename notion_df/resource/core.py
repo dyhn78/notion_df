@@ -7,6 +7,7 @@ from abc import abstractmethod, ABCMeta
 from dataclasses import dataclass, fields, InitVar
 from datetime import datetime
 from enum import Enum
+from functools import cache
 from typing import Any, final, ClassVar, Optional
 
 import dateutil.parser
@@ -101,18 +102,20 @@ class Serializable(metaclass=ABCMeta):
 
     @final
     def __init_subclass__(cls, **kwargs):
-        """this method is reserved. use cls._init_subclass() instead"""
+        """this method is reserved. use cls._init_subclass() to intercept subclass generation process"""
         super().__init_subclass__(**kwargs)
-        if not cls._skip_init_subclass():
-            cls.init_subclass(**kwargs)
+        if inspect.isabstract(cls) or cls._skip_init_subclass():
+            return
+        dataclass(cls)
+        cls._init_subclass()
 
     @classmethod
     def _skip_init_subclass(cls) -> bool:
-        return inspect.isabstract(cls) or cls.__name__.startswith('_')
+        return False
 
     @classmethod
-    def init_subclass(cls, **kwargs) -> None:
-        dataclass(cls)
+    def _init_subclass(cls) -> None:
+        pass
 
     @final
     def serialize(self) -> dict[str, Any]:
@@ -127,22 +130,11 @@ class Serializable(metaclass=ABCMeta):
         pass
 
 
-@dataclass(frozen=True)
-class MockAttribute:
-    name: str
-
-
 @dataclass
 class Deserializable(Serializable, metaclass=ABCMeta):
     """dataclass representation of the resources defined in Notion REST API.
     interchangeable to JSON object.
-    decorate with '@set_master' to use as a unified deserializer entrypoint."""
-    _field_type_dict: ClassVar[dict[str, type]]
-    """used to generate deserialize() from parsing _plain_serialize()."""
-    _field_keychain_dict: ClassVar[dict[KeyChain, str]]
-    """used to generate _plain_deserialize() from parsing _plain_serialize()."""
-    mock_serialized: ClassVar[dict[str, Any]]
-    """example serialized value but every field is MockAttribute."""
+    decorate a base class with resolvers to use as a unified deserializer entrypoint."""
     _subclass_by_keychain_dict: ClassVar[Optional[FinalDict[KeyChain, type[Deserializable]]]]
     """should not be set directly; set by DeserializableResolverByKeyChain decorator."""
 
@@ -150,23 +142,33 @@ class Deserializable(Serializable, metaclass=ABCMeta):
         super().__init__(**kwargs)
 
     @classmethod
-    def init_subclass(cls, **kwargs) -> None:
-        super().init_subclass(**kwargs)
-        cls._field_type_dict = {field.name: field.type for field in fields(cls)}
-        cls.mock_serialized = cls._get_mock_serialized()
-        if inspect.getsource(cls._plain_deserialize) != inspect.getsource(Deserializable._plain_deserialize):
-            # if _plain_deserialize() is overridden, in other words, manually configured,
-            #  it need not be generated from _plain_serialize()
-            return
-        cls._field_keychain_dict = cls._get_field_keychain_dict(cls.mock_serialized)
+    @final
+    def deserialize(cls, serialized: dict[str, Any]) -> Self:
+        each_field_serialized_dict = cls._plain_deserialize(serialized)
+        field_value_dict = {}
+        for field_name, field_serialized in each_field_serialized_dict.items():
+            field_value_dict[field_name] = deserialize(field_serialized, cls._get_field_type_dict()[field_name])
+        return cls(**field_value_dict)  # nomypy
 
-    # TODO: support {..., **attr} or {...} | {...} expressions
-    #  1. allow MockAttribute supports '**' expression
-    #  2. allow _get_field_keychain_dict to recognize blank keychains
+    @classmethod
+    def _plain_deserialize(cls, serialized: dict[str, Any]) -> dict[str, Any]:
+        """return **{field_name: serialized_field_value}."""
+        each_field_serialized_dict = {}
+        for keychain, field_name in cls._get_field_keychain_dict().items():
+            each_field_serialized_dict[field_name] = keychain.get(serialized)
+        return each_field_serialized_dict
 
     @classmethod
     @final
-    def _get_mock_serialized(cls) -> dict[str, Any]:
+    @cache
+    def get_mock_serialized(cls) -> dict[str, Any]:
+        """example serialized value by _plain_serialize(), with every field is replaced as MockAttribute.
+        used to generate _plain_deserialize()."""
+
+        # TODO: support {..., **attr} or {...} | {...} expressions
+        #  1. allow MockAttribute supports '**' expression
+        #  2. allow _get_field_keychain_dict to recognize blank keychains
+
         @dataclass
         class MockDeserializable(cls, metaclass=ABCMeta):
             @classmethod
@@ -179,30 +181,22 @@ class Deserializable(Serializable, metaclass=ABCMeta):
         _mock = MockDeserializable(**mock_init_param)  # type: ignore
         for field in fields(MockDeserializable):
             setattr(_mock, field.name, MockAttribute(field.name))
-        return _mock._plain_serialize()
+        try:
+            return _mock._plain_serialize()
+        except AttributeError:
+            raise NotionDfValueError('_plain_serialize() not parsable', {'cls': cls})
 
     @classmethod
-    @final
-    def deserialize(cls, serialized: dict[str, Any]) -> Self:
-        each_field_serialized_dict = cls._plain_deserialize(serialized)
-        field_value_dict = {}
-        for field_name, field_serialized in each_field_serialized_dict.items():
-            field_value_dict[field_name] = deserialize(field_serialized, cls._field_type_dict[field_name])
-        return cls(**field_value_dict)  # nomypy
+    @cache
+    def _get_field_type_dict(cls) -> dict[str, type]:
+        return {field.name: field.type for field in fields(cls)}
 
     @classmethod
-    def _plain_deserialize(cls, serialized: dict[str, Any]) -> dict[str, Any]:
-        """return **{field_name: serialized_field_value}."""
-        each_field_serialized_dict = {}
-        for keychain, field_name in cls._field_keychain_dict.items():
-            each_field_serialized_dict[field_name] = keychain.get(serialized)
-        return each_field_serialized_dict
-
-    @classmethod
-    def _get_field_keychain_dict(cls, mock_serialized: dict[str, Any]) -> dict[KeyChain, str]:
+    @cache
+    def _get_field_keychain_dict(cls) -> dict[KeyChain, str]:
         # breadth-first search through mock_serialized
         field_keychain_dict = FinalDict[KeyChain, str]()
-        items: list[tuple[KeyChain, Any]] = [(KeyChain((k,)), v) for k, v in mock_serialized.items()]
+        items: list[tuple[KeyChain, Any]] = [(KeyChain((k,)), v) for k, v in cls.get_mock_serialized().items()]
         while items:
             keychain, value = items.pop()
             if isinstance(value, MockAttribute):
@@ -211,6 +205,11 @@ class Deserializable(Serializable, metaclass=ABCMeta):
             elif isinstance(value, dict):
                 items.extend((keychain + (k,), v) for k, v in value.items())
         return field_keychain_dict
+
+
+@dataclass(frozen=True)
+class MockAttribute:
+    name: str
 
 
 Deserializable_T = typing.TypeVar('Deserializable_T', bound=Deserializable)
@@ -226,12 +225,12 @@ class DeserializableResolverByKeyChain:
 
         master._subclass_by_keychain_dict = subclass_dict = FinalDict[KeyChain, type[Deserializable]]()
 
-        init_subclass_prev = master.init_subclass.__func__  # type: ignore
-        deserialize_prev = master.deserialize.__func__  # type: ignore
+        _init_subclass_prev = getattr(master, '_init_subclass').__func__
+        deserialize_prev = getattr(master, 'deserialize').__func__
 
-        def init_subclass(cls: type[Deserializable_T], **kwargs) -> None:
-            init_subclass_prev(cls, **kwargs)
-            keychain = self.resolve_keychain(cls.mock_serialized)
+        def _init_subclass(cls: type[Deserializable_T], **kwargs) -> None:
+            _init_subclass_prev(cls, **kwargs)
+            keychain = self.resolve_keychain(cls.get_mock_serialized())
             subclass_dict[keychain] = cls
 
         def _deserialize(cls: type[Deserializable_T], serialized: dict[str, Any]) -> Deserializable_T:
@@ -243,8 +242,8 @@ class DeserializableResolverByKeyChain:
                                          {'master': master, 'keychain': keychain})
             return subclass_dict[keychain].deserialize(serialized)
 
-        master.init_subclass = classmethod(init_subclass)
-        master.deserialize = classmethod(_deserialize)
+        setattr(master, '_init_subclass', classmethod(_init_subclass))
+        setattr(master, 'deserialize', classmethod(_deserialize))
         return master
 
     def resolve_keychain(self, serialized: dict[str, Any]) -> KeyChain:
