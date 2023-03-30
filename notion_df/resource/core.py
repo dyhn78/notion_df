@@ -104,9 +104,10 @@ class Serializable(metaclass=ABCMeta):
     def __init_subclass__(cls, **kwargs):
         """this method is reserved. use cls._init_subclass() to intercept subclass generation process"""
         super().__init_subclass__(**kwargs)
-        if inspect.isabstract(cls) or cls._skip_init_subclass():
+        if not inspect.isabstract(cls):
+            dataclass(cls)
+        if cls._skip_init_subclass():
             return
-        dataclass(cls)
         cls._init_subclass()
 
     @classmethod
@@ -133,8 +134,7 @@ class Serializable(metaclass=ABCMeta):
 @dataclass
 class Deserializable(Serializable, metaclass=ABCMeta):
     """dataclass representation of the resources defined in Notion REST API.
-    interchangeable to JSON object.
-    decorate a base class with resolvers to use as a unified deserializer entrypoint."""
+    interchangeable to JSON object."""
     _subclass_by_keychain_dict: ClassVar[Optional[FinalDict[KeyChain, type[Deserializable]]]]
     """should not be set directly; set by DeserializableResolverByKeyChain decorator."""
 
@@ -142,8 +142,8 @@ class Deserializable(Serializable, metaclass=ABCMeta):
         super().__init__(**kwargs)
 
     @classmethod
-    @final
     def deserialize(cls, serialized: dict[str, Any]) -> Self:
+        """Note: override this method if you need to implement a unified deserializer entrypoint."""
         each_field_serialized_dict = cls._plain_deserialize(serialized)
         field_value_dict = {}
         for field_name, field_serialized in each_field_serialized_dict.items():
@@ -152,7 +152,8 @@ class Deserializable(Serializable, metaclass=ABCMeta):
 
     @classmethod
     def _plain_deserialize(cls, serialized: dict[str, Any]) -> dict[str, Any]:
-        """return **{field_name: serialized_field_value}."""
+        """return **{field_name: serialized_field_value}.
+        Note: override this method if plain_serialize() definition is not parsable."""
         each_field_serialized_dict = {}
         for keychain, field_name in cls._get_field_keychain_dict().items():
             each_field_serialized_dict[field_name] = keychain.get(serialized)
@@ -216,6 +217,7 @@ Deserializable_T = typing.TypeVar('Deserializable_T', bound=Deserializable)
 
 
 class DeserializableResolverByKeyChain:
+    """decorator for base Deserializable class to add unified deserializer entrypoint feature."""
     def __init__(self, unique_key: str):
         self.unique_key = unique_key
 
