@@ -54,10 +54,10 @@ class PropertySchemaClause(Deserializable, metaclass=ABCMeta):
     @classmethod
     @abstractmethod
     def _eligible_property_types(cls) -> list[str]:
-        return []
+        pass
 
-    @classmethod
-    def _init_subclass(cls) -> None:
+    def __init_subclass__(cls, **kwargs) -> None:
+        super().__init_subclass__(**kwargs)
         for property_type in cls._eligible_property_types():
             schema_clause_by_property_type_dict[property_type] = cls
 

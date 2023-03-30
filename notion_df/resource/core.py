@@ -100,23 +100,14 @@ class Serializable(metaclass=ABCMeta):
     def __init__(self, **kwargs):
         pass
 
-    @final
     def __init_subclass__(cls, **kwargs):
-        """this method is reserved. use cls._init_subclass() to intercept subclass generation process"""
         super().__init_subclass__(**kwargs)
         if not inspect.isabstract(cls):
             dataclass(cls)
-        if cls._skip_init_subclass():
-            return
-        cls._init_subclass()
 
     @classmethod
     def _skip_init_subclass(cls) -> bool:
         return False
-
-    @classmethod
-    def _init_subclass(cls) -> None:
-        pass
 
     @final
     def serialize(self) -> dict[str, Any]:
@@ -170,15 +161,20 @@ class Deserializable(Serializable, metaclass=ABCMeta):
         #  1. allow MockAttribute supports '**' expression
         #  2. allow _get_field_keychain_dict to recognize blank keychains
 
+        __init_subclass__ = getattr(cls, '__init_subclass__').__func__
+        setattr(cls, '__init_subclass__', lambda **kwargs: None)
+
         @dataclass
         class MockDeserializable(cls, metaclass=ABCMeta):
             @classmethod
             def _skip_init_subclass(cls):
                 return True
 
+        setattr(cls, '__init_subclass__', classmethod(__init_subclass__))
+
         MockDeserializable.__name__ = cls.__name__
-        init_param_keys = list(inspect.signature(MockDeserializable.__init__).parameters.keys())[1:]
-        mock_init_param = {k: MockAttribute(k) for k in init_param_keys}
+        init_params = list(inspect.signature(MockDeserializable.__init__).parameters.keys())[1:]
+        mock_init_param = {param: MockAttribute(param) for param in init_params}
         _mock = MockDeserializable(**mock_init_param)  # type: ignore
         for field in fields(MockDeserializable):
             setattr(_mock, field.name, MockAttribute(field.name))
@@ -227,11 +223,11 @@ class DeserializableResolverByKeyChain:
 
         master._subclass_by_keychain_dict = subclass_dict = FinalDict[KeyChain, type[Deserializable]]()
 
-        _init_subclass_prev = getattr(master, '_init_subclass').__func__
+        __init_subclass_prev__ = getattr(master, '__init_subclass__').__func__
         deserialize_prev = getattr(master, 'deserialize').__func__
 
-        def _init_subclass(cls: type[Deserializable_T], **kwargs) -> None:
-            _init_subclass_prev(cls, **kwargs)
+        def __init_subclass__(cls: type[Deserializable_T], **kwargs) -> None:
+            __init_subclass_prev__(cls, **kwargs)
             keychain = self.resolve_keychain(cls.get_mock_serialized())
             subclass_dict[keychain] = cls
 
@@ -244,7 +240,7 @@ class DeserializableResolverByKeyChain:
                                          {'master': master, 'keychain': keychain})
             return subclass_dict[keychain].deserialize(serialized)
 
-        setattr(master, '_init_subclass', classmethod(_init_subclass))
+        setattr(master, '__init_subclass__', classmethod(__init_subclass__))
         setattr(master, 'deserialize', classmethod(_deserialize))
         return master
 
