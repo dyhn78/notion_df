@@ -2,9 +2,9 @@ from abc import ABCMeta
 from dataclasses import dataclass
 from typing import Optional, Any
 
-from notion_df.resource.core import Deserializable, set_master, resolve_by_keychain
+from notion_df.resource.core import Deserializable, resolve_by_keychain
 from notion_df.resource.misc import UUID
-from notion_df.util.misc import dict_filter_truthy
+from notion_df.util.collection import filter_truthy
 
 
 @dataclass
@@ -26,7 +26,7 @@ class User(Deserializable, metaclass=ABCMeta):
     avatar_url: Optional[str]
 
     def _plain_serialize(self) -> dict[str, Any]:
-        return dict_filter_truthy({
+        return filter_truthy({
             'object': 'user',
             'id': self.id,
             'name': self.name,

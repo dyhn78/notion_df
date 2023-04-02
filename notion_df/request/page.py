@@ -5,7 +5,7 @@ from typing import Any, Optional
 
 from notion_df.request.core import Request, RequestSettings, Version, Method
 from notion_df.resource.block_item import BlockItem
-from notion_df.resource.core import Deserializable, set_master
+from notion_df.resource.core import Deserializable, resolve_by_keychain
 from notion_df.resource.file import ExternalFile
 from notion_df.resource.misc import UUID, Icon
 from notion_df.resource.parent import Parent
@@ -108,7 +108,7 @@ class PageUpdateRequest(Request[PageResponse]):
         }
 
 
-@set_master('object')
+@resolve_by_keychain('object')
 class PagePropertyItemBaseResponse(Deserializable, metaclass=ABCMeta):
     pass
 
