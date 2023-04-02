@@ -3,17 +3,52 @@ from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
-from decimal import Decimal
-from typing import Any, Union, Literal
+from typing import Any, Literal, Union
 
+from _decimal import Decimal
 from typing_extensions import Self
 
 from notion_df.object.core import Deserializable
-from notion_df.object.file import File
-from notion_df.object.misc import DateRange, SelectOption, UUID, RollupFunction
+from notion_df.object.file import ExternalFile, File
+from notion_df.object.misc import UUID, Icon, DateRange, SelectOption, RollupFunction
+from notion_df.object.parent import Parent
 from notion_df.object.rich_text import RichText
 from notion_df.object.user import User
 from notion_df.util.collection import FinalClassDict
+
+
+@dataclass
+class Page(Deserializable):
+    id: UUID
+    created_time: datetime
+    last_edited_time: datetime
+    created_by: User
+    last_edited_by: User
+    icon: Icon
+    cover: ExternalFile
+    url: str
+    title: list[RichText]
+    properties: dict[str, PageProperty] = field()
+    """the dict keys are same as each property's name or id (depending on request)"""
+    parent: Parent
+    archived: bool
+    is_inline: bool
+
+    def _plain_serialize(self) -> dict[str, Any]:
+        return {
+            "object": "page",
+            "id": self.id,
+            "created_time": self.created_by,
+            "last_edited_time": self.last_edited_by,
+            "created_by": self.created_by,
+            "last_edited_by": self.last_edited_by,
+            "cover": self.cover,
+            "icon": self.icon,
+            "parent": self.parent,
+            "archived": False,
+            "properties": self.properties,
+            "url": self.url,
+        }
 
 
 @dataclass

@@ -1,25 +1,82 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime
 from typing import Any, Optional
 
 from notion_df.endpoint.core import Request, RequestSettings, Version, Method
-from notion_df.endpoint.page import PageResponse
 from notion_df.object.core import Deserializable
-from notion_df.object.database_property import DatabaseProperty
-from notion_df.object.file import File, ExternalFile
+from notion_df.object.database import Database, DatabaseProperty
+from notion_df.object.file import File
 from notion_df.object.filter import Filter
 from notion_df.object.misc import Icon, UUID
-from notion_df.object.parent import Parent
+from notion_df.object.page import Page
 from notion_df.object.rich_text import RichText
 from notion_df.object.sort import Sort
 from notion_df.util.collection import filter_truthy
 
 
 @dataclass
+class DatabaseRetrieveRequest(Request[Database]):
+    id: UUID
+
+    def get_settings(self) -> RequestSettings:
+        return RequestSettings(Version.v20220628, Method.GET,
+                               f'https://api.notion.com/v1/databases/{self.id}')
+
+    def get_body(self) -> Any:
+        return
+
+
+@dataclass
+class DatabaseCreateRequest(Request[Database]):
+    """https://developers.notion.com/reference/create-a-database"""
+    parent_id: UUID
+    title: list[RichText]
+    properties: dict[str, DatabaseProperty] = field(default_factory=dict)
+    """the dict keys are same as each property's name or id (depending on request)"""
+    icon: Optional[Icon] = field(default=None)
+    cover: Optional[File] = field(default=None)
+
+    def get_settings(self) -> RequestSettings:
+        return RequestSettings(Version.v20220628, Method.POST,
+                               'https://api.notion.com/v1/databases/')
+
+    def get_body(self) -> dict:
+        return filter_truthy({
+            "parent": {
+                "type": "page_id",
+                "page_id": self.parent_id
+            },
+            "icon": self.icon,
+            "cover": self.cover,
+            "title": self.title,
+            "properties": self.properties,
+        })
+
+
+@dataclass
+class DatabaseUpdateRequest(Request[Database]):
+    database_id: UUID
+    title: list[RichText]
+    properties: dict[str, DatabaseProperty] = field(default_factory=dict)
+
+    def get_settings(self) -> RequestSettings:
+        return RequestSettings(Version.v20220628, Method.PATCH,
+                               f'https://api.notion.com/v1/databases/{self.database_id}')
+
+    def get_url(self) -> str:
+        return f'https://api.notion.com/v1/databases/{self.database_id}'
+
+    def get_body(self) -> Any:
+        return filter_truthy({
+            'title': self.title,
+            'properties': self.properties,
+        })
+
+
+@dataclass
 class DatabaseQueryResponse(Deserializable):
-    results: list[PageResponse]
+    results: list[Page]
     next_cursor: Optional[str]
     has_more: bool
 
@@ -56,95 +113,4 @@ class DatabaseQueryRequest(Request[DatabaseQueryResponse]):
             'sorts': self.sort,
             'start_cursor': self.start_cursor,
             'page_size': self.page_size,
-        })
-
-
-@dataclass
-class DatabaseResponse(Deserializable):
-    id: UUID
-    created_time: datetime
-    last_edited_time: datetime
-    icon: Icon
-    cover: ExternalFile
-    url: str
-    title: list[RichText]
-    properties: dict[str, DatabaseProperty] = field()
-    """the dict keys are same as each property's name or id (depending on request)"""
-    parent: Parent
-    archived: bool
-    is_inline: bool
-
-    def _plain_serialize(self) -> dict[str, Any]:
-        return {
-            "object": 'database',
-            "id": self.id,
-            "created_time": self.created_time,
-            "last_edited_time": self.last_edited_time,
-            "icon": self.icon,
-            "cover": self.cover,
-            "url": self.url,
-            "title": self.title,
-            "properties": self.properties,
-            "parent": self.parent,
-            "archived": self.archived,
-            "is_inline": self.is_inline,
-        }
-
-
-@dataclass
-class DatabaseRetrieveRequest(Request[DatabaseResponse]):
-    id: UUID
-
-    def get_settings(self) -> RequestSettings:
-        return RequestSettings(Version.v20220628, Method.GET,
-                               f'https://api.notion.com/v1/databases/{self.id}')
-
-    def get_body(self) -> Any:
-        return
-
-
-@dataclass
-class DatabaseCreateRequest(Request[DatabaseResponse]):
-    """https://developers.notion.com/reference/create-a-database"""
-    parent_id: UUID
-    title: list[RichText]
-    properties: dict[str, DatabaseProperty] = field(default_factory=dict)
-    """the dict keys are same as each property's name or id (depending on request)"""
-    icon: Optional[Icon] = field(default=None)
-    cover: Optional[File] = field(default=None)
-
-    def get_settings(self) -> RequestSettings:
-        return RequestSettings(Version.v20220628, Method.POST,
-                               'https://api.notion.com/v1/databases/')
-
-    def get_body(self) -> dict:
-        return filter_truthy({
-            "parent": {
-                "type": "page_id",
-                "page_id": self.parent_id
-            },
-            "icon": self.icon,
-            "cover": self.cover,
-            "title": self.title,
-            "properties": self.properties,
-        })
-
-
-@dataclass
-class DatabaseUpdateRequest(Request[DatabaseResponse]):
-    database_id: UUID
-    title: list[RichText]
-    properties: dict[str, DatabaseProperty] = field(default_factory=dict)
-
-    def get_settings(self) -> RequestSettings:
-        return RequestSettings(Version.v20220628, Method.PATCH,
-                               f'https://api.notion.com/v1/databases/{self.database_id}')
-
-    def get_url(self) -> str:
-        return f'https://api.notion.com/v1/databases/{self.database_id}'
-
-    def get_body(self) -> Any:
-        return filter_truthy({
-            'title': self.title,
-            'properties': self.properties,
         })

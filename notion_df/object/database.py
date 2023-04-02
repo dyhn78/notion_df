@@ -2,21 +2,55 @@ from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, field
+from datetime import datetime
 from typing import Any
 
 from typing_extensions import Self
 
 from notion_df.object.core import Deserializable
-from notion_df.object.misc import SelectOption, StatusGroups, RollupFunction, NumberFormat, UUID
+from notion_df.object.file import ExternalFile
+from notion_df.object.misc import UUID, Icon, NumberFormat, SelectOption, StatusGroups, RollupFunction
+from notion_df.object.parent import Parent
+from notion_df.object.rich_text import RichText
 from notion_df.util.collection import FinalClassDict
 from notion_df.util.misc import NotionDfValueError
 
 
-# TODO: configure Property -> DatabaseProperty 1:1 mapping, from Property's side.
-#  access this mapping from Property (NOT DatabaseResponse), the base class.
-#  Property.from_schema(schema: DatabaseProperty) -> Property
-#  then, make Page or Database utilize it,
-#  so that they could auto-configure itself and its children with the retrieved data.
+@dataclass
+class Database(Deserializable):
+    # TODO: configure Property -> DatabaseProperty 1:1 mapping, from Property's side.
+    #  access this mapping from Property (NOT DatabaseResponse), the base class.
+    #  Property.from_schema(schema: DatabaseProperty) -> Property
+    #  then, make Page or Database utilize it,
+    #  so that they could auto-configure itself and its children with the retrieved data.
+    id: UUID
+    created_time: datetime
+    last_edited_time: datetime
+    icon: Icon
+    cover: ExternalFile
+    url: str
+    title: list[RichText]
+    properties: dict[str, DatabaseProperty] = field()
+    """the dict keys are same as each property's name or id (depending on request)"""
+    parent: Parent
+    archived: bool
+    is_inline: bool
+
+    def _plain_serialize(self) -> dict[str, Any]:
+        return {
+            "object": 'database',
+            "id": self.id,
+            "created_time": self.created_time,
+            "last_edited_time": self.last_edited_time,
+            "icon": self.icon,
+            "cover": self.cover,
+            "url": self.url,
+            "title": self.title,
+            "properties": self.properties,
+            "parent": self.parent,
+            "archived": self.archived,
+            "is_inline": self.is_inline,
+        }
 
 
 @dataclass

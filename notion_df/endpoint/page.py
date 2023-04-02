@@ -1,55 +1,18 @@
 from abc import ABCMeta
 from dataclasses import dataclass, field
-from datetime import datetime
 from typing import Any, Optional
 
 from notion_df.endpoint.core import Request, RequestSettings, Version, Method
-from notion_df.object.block_item import BlockItem
+from notion_df.object.block import Block
 from notion_df.object.core import Deserializable, resolve_by_keychain
 from notion_df.object.file import ExternalFile
 from notion_df.object.misc import UUID, Icon
-from notion_df.object.page_property import PageProperty
+from notion_df.object.page import Page, PageProperty
 from notion_df.object.parent import Parent
-from notion_df.object.rich_text import RichText
-from notion_df.object.user import User
 
 
 @dataclass
-class PageResponse(Deserializable):
-    id: UUID
-    created_time: datetime
-    last_edited_time: datetime
-    created_by: User
-    last_edited_by: User
-    icon: Icon
-    cover: ExternalFile
-    url: str
-    title: list[RichText]
-    properties: dict[str, PageProperty] = field()
-    """the dict keys are same as each property's name or id (depending on request)"""
-    parent: Parent
-    archived: bool
-    is_inline: bool
-
-    def _plain_serialize(self) -> dict[str, Any]:
-        return {
-            "object": "page",
-            "id": self.id,
-            "created_time": self.created_by,
-            "last_edited_time": self.last_edited_by,
-            "created_by": self.created_by,
-            "last_edited_by": self.last_edited_by,
-            "cover": self.cover,
-            "icon": self.icon,
-            "parent": self.parent,
-            "archived": False,
-            "properties": self.properties,
-            "url": self.url,
-        }
-
-
-@dataclass
-class PageRetrieveRequest(Request[PageResponse]):
+class PageRetrieveRequest(Request[Page]):
     """https://developers.notion.com/reference/retrieve-a-database"""
     id: UUID
 
@@ -62,14 +25,14 @@ class PageRetrieveRequest(Request[PageResponse]):
 
 
 @dataclass
-class PageCreateRequest(Request[PageResponse]):
+class PageCreateRequest(Request[Page]):
     """https://developers.notion.com/reference/create-a-database"""
     parent: Parent
     icon: Icon
     cover: ExternalFile
     properties: dict[str, PageProperty] = field()
     """the dict keys are same as each property's name or id (depending on request)"""
-    children: list[BlockItem] = field()
+    children: list[Block] = field()
 
     def get_settings(self) -> RequestSettings:
         return RequestSettings(Version.v20220628, Method.POST,
@@ -86,7 +49,7 @@ class PageCreateRequest(Request[PageResponse]):
 
 
 @dataclass
-class PageUpdateRequest(Request[PageResponse]):
+class PageUpdateRequest(Request[Page]):
     """https://developers.notion.com/reference/update-a-database"""
     id: UUID
     icon: Icon
