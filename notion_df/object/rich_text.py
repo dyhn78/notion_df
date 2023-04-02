@@ -92,11 +92,11 @@ class Mention(RichText):
     def _plain_serialize_main(self) -> dict[str, Any]:
         return {
             'type': 'mention',
-            'mention': self._plain_serialize_target()
+            'mention': self._plain_serialize_mention()
         }
 
     @abstractmethod
-    def _plain_serialize_target(self) -> dict[str, Any]:
+    def _plain_serialize_mention(self) -> dict[str, Any]:
         pass
 
 
@@ -114,7 +114,7 @@ class UserMention(Mention):
     href: Final[Optional[str]] = None
     """read-only. will be ignored in requests."""
 
-    def _plain_serialize_target(self) -> dict[str, Any]:
+    def _plain_serialize_mention(self) -> dict[str, Any]:
         return {
             'type': 'user',
             'user': {
@@ -138,7 +138,7 @@ class PageMention(Mention):
     href: Final[Optional[str]] = None
     """read-only. will be ignored in requests."""
 
-    def _plain_serialize_target(self) -> dict[str, Any]:
+    def _plain_serialize_mention(self) -> dict[str, Any]:
         return {
             'type': 'page',
             'page': self.page_id
@@ -159,7 +159,7 @@ class DatabaseMention(Mention):
     href: Final[Optional[str]] = None
     """read-only. will be ignored in requests."""
 
-    def _plain_serialize_target(self) -> dict[str, Any]:
+    def _plain_serialize_mention(self) -> dict[str, Any]:
         return {
             'type': 'database',
             'database': self.database_id
@@ -180,7 +180,7 @@ class DateMention(Mention):
     href: Final[Optional[str]] = None
     """read-only. will be ignored in requests."""
 
-    def _plain_serialize_target(self) -> dict[str, Any]:
+    def _plain_serialize_mention(self) -> dict[str, Any]:
         return {
             'type': 'date',
             'date': self.date
@@ -201,7 +201,7 @@ class TemplateDateMention(Mention):
     href: Final[Optional[str]] = None
     """read-only. will be ignored in requests."""
 
-    def _plain_serialize_target(self) -> dict[str, Any]:
+    def _plain_serialize_mention(self) -> dict[str, Any]:
         return {
             "type": "template_mention",
             "template_mention": {
@@ -225,7 +225,7 @@ class TemplateUserMention(Mention):
     href: Final[Optional[str]] = None
     """read-only. will be ignored in requests."""
 
-    def _plain_serialize_target(self) -> dict[str, Any]:
+    def _plain_serialize_mention(self) -> dict[str, Any]:
         return {
             "type": "template_mention",
             "template_mention": {
@@ -250,7 +250,7 @@ class LinkPreviewMention(Mention):
     href: Final[Optional[str]] = None
     """read-only. will be ignored in requests."""
 
-    def _plain_serialize_target(self) -> dict[str, Any]:
+    def _plain_serialize_mention(self) -> dict[str, Any]:
         return {
             'type': 'link_preview',
             'link_preview': {

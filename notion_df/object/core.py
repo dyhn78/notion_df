@@ -120,6 +120,7 @@ class Serializable(metaclass=ABCMeta):
         return False
 
     def _plain_serialize(self) -> dict[str, Any]:
+        # TODO: remove default option to class decorator @serialize_asdict
         """serialize only the first depth structure, leaving each field value not serialized.
 
         by default, this performs {**fd.name: fd.value for fd in fields(self) if fd.init == True}
@@ -150,6 +151,7 @@ class Deserializable(Serializable, metaclass=ABCMeta):
 
     @classmethod
     def _plain_deserialize(cls, serialized: dict[str, Any], **field_vars: Any) -> Self:
+        # TODO: remove default process on init=False fields to class decorator @serialize_asdict
         """return cls(**{field_name: field_serialized}).
 
         by default, this parses get_mock_serialize() to determine each fields' location (i.e. keychain).

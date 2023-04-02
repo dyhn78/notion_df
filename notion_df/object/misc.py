@@ -14,20 +14,7 @@ UUID = NewType('UUID', str)
 Timestamp = Literal['created_time', 'last_edited_time']
 
 
-class Color(StrEnum):
-    DEFAULT = 'default'
-    GRAY = 'gray'
-    BROWN = 'brown'
-    ORANGE = 'orange'
-    YELLOW = 'yellow'
-    GREEN = 'green'
-    BLUE = 'blue'
-    PURPLE = 'purple'
-    PINK = 'pink'
-    RED = 'red'
-
-
-class TextColor(StrEnum):
+class BlockColor(StrEnum):
     DEFAULT = 'default'
     GRAY = 'gray'
     BROWN = 'brown'
@@ -47,6 +34,19 @@ class TextColor(StrEnum):
     PURPLE_BACKGROUND = 'purple_background'
     PINK_BACKGROUND = 'pink_background'
     RED_BACKGROUND = 'red_background'
+
+
+class OptionColor(StrEnum):
+    DEFAULT = 'default'
+    GRAY = 'gray'
+    BROWN = 'brown'
+    ORANGE = 'orange'
+    YELLOW = 'yellow'
+    GREEN = 'green'
+    BLUE = 'blue'
+    PURPLE = 'purple'
+    PINK = 'pink'
+    RED = 'red'
 
 
 class NumberFormat(StrEnum):
@@ -125,7 +125,7 @@ class Annotations(Deserializable):
     strikethrough: bool = False
     underline: bool = False
     code: bool = False
-    color: TextColor = TextColor.DEFAULT
+    color: BlockColor = BlockColor.DEFAULT
 
     def _plain_serialize(self) -> dict[str, Any]:
         return {
@@ -175,7 +175,7 @@ class SelectOption(Deserializable):
     id: str = field(init=False)
     """Identifier of the option, which does not change if the name is changed. 
     These are sometimes, but not always, UUIDs."""
-    color: Color = field(init=False)
+    color: OptionColor = field(init=False)
 
     def _plain_serialize(self) -> dict[str, Any]:
         return {
@@ -196,7 +196,7 @@ class StatusGroups(Deserializable):
     id: str = field(init=False)
     """Identifier of the option, which does not change if the name is changed. 
     These are sometimes, but not always, UUIDs."""
-    color: Color = field(init=False)
+    color: OptionColor = field(init=False)
     option_ids: list[str] = field()
     """Sorted list of ids of all options that belong to a group."""
 
@@ -212,3 +212,78 @@ class StatusGroups(Deserializable):
         plain_self.id = serialized['id']
         plain_self.color = serialized['color']
         return plain_self
+
+
+class CodeLanguage(StrEnum):
+    ABAP = "abap"
+    ARDUINO = "arduino"
+    BASH = "bash"
+    BASIC = "basic"
+    C = "c"
+    CLOJURE = "clojure"
+    COFFEESCRIPT = "coffeescript"
+    CPP = "c++"
+    C_SHARP = "c#"
+    CSS = "css"
+    DART = "dart"
+    DIFF = "diff"
+    DOCKER = "docker"
+    ELIXIR = "elixir"
+    ELM = "elm"
+    ERLANG = "erlang"
+    FLOW = "flow"
+    FORTRAN = "fortran"
+    F_SHARP = "f#"
+    GHERKIN = "gherkin"
+    GLSL = "glsl"
+    GO = "go"
+    GRAPHQL = "graphql"
+    GROOVY = "groovy"
+    HASKELL = "haskell"
+    HTML = "html"
+    JAVA = "java"
+    JAVASCRIPT = "javascript"
+    JSON = "json"
+    JULIA = "julia"
+    KOTLIN = "kotlin"
+    LATEX = "latex"
+    LESS = "less"
+    LISP = "lisp"
+    LIVESCRIPT = "livescript"
+    LUA = "lua"
+    MAKEFILE = "makefile"
+    MARKDOWN = "markdown"
+    MARKUP = "markup"
+    MATLAB = "matlab"
+    MERMAID = "mermaid"
+    NIX = "nix"
+    OBJECTIVE_C = "objective-c"
+    OCAML = "ocaml"
+    PASCAL = "pascal"
+    PERL = "perl"
+    PHP = "php"
+    PLAIN_TEXT = "plain text"
+    POWERSHELL = "powershell"
+    PROLOG = "prolog"
+    PROTOBUF = "protobuf"
+    PYTHON = "python"
+    R = "r"
+    REASON = "reason"
+    RUBY = "ruby"
+    RUST = "rust"
+    SASS = "sass"
+    SCALA = "scala"
+    SCHEME = "scheme"
+    SCSS = "scss"
+    SHELL = "shell"
+    SQL = "sql"
+    SWIFT = "swift"
+    TYPESCRIPT = "typescript"
+    VB_NET = "vb.net"
+    VERILOG = "verilog"
+    VHDL = "vhdl"
+    VISUAL_BASIC = "visual basic"
+    WEBASSEMBLY = "webassembly"
+    XML = "xml"
+    YAML = "yaml"
+    JAVA_C_CPP_C_SHARP = "java/c/c++/c#"
