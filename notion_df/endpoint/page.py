@@ -3,15 +3,15 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Optional
 
+from notion_df.endpoint.core import Request, RequestSettings, Version, Method
 from notion_df.object.block_item import BlockItem
 from notion_df.object.core import Deserializable, resolve_by_keychain
 from notion_df.object.file import ExternalFile
 from notion_df.object.misc import UUID, Icon
+from notion_df.object.page_property import PageProperty
 from notion_df.object.parent import Parent
-from notion_df.object.property_item import PageProperty
 from notion_df.object.rich_text import RichText
 from notion_df.object.user import User
-from notion_df.request.core import Request, RequestSettings, Version, Method
 
 
 @dataclass
@@ -114,7 +114,7 @@ class PagePropertyItemBaseResponse(Deserializable, metaclass=ABCMeta):
 
 
 @dataclass
-class PagePropertyItemResponse(Deserializable):
+class PagePropertyResponse(Deserializable):
     property_item: PageProperty
 
     def _plain_serialize(self) -> dict[str, Any]:
@@ -130,9 +130,9 @@ class PagePropertyItemResponse(Deserializable):
 
 
 @dataclass
-class PagePropertyItemListResponse(Deserializable):
+class PagePropertyListResponse(Deserializable):
     property_item: PageProperty
-    results: list[PagePropertyItemResponse]
+    results: list[PagePropertyResponse]
     next_cursor: Optional[str]
     has_more: bool
 
@@ -148,7 +148,7 @@ class PagePropertyItemListResponse(Deserializable):
 
 
 @dataclass
-class PagePropertyItemRetrieveRequest(Request[PagePropertyItemBaseResponse]):
+class PagePropertyRetrieveRequest(Request[PagePropertyItemBaseResponse]):
     """https://developers.notion.com/reference/retrieve-a-page-property"""
     page_id: UUID
     property_id: UUID

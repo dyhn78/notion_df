@@ -21,10 +21,10 @@ class PageProperty(Deserializable, metaclass=ABCMeta):
     """
     represents two types of data structure.
 
-    - partial property item - user side
-    - property item - server side
+    - partial page property - user side
+    - page property - server side
 
-    property item has additional fields, `name` and `id`. these are hidden from __init__() to prevent confusion.
+    page property has additional fields, `name` and `id`. these are hidden from __init__() to prevent confusion.
 
     https://developers.notion.com/reference/page-property-values
     """
@@ -64,8 +64,8 @@ class PageProperty(Deserializable, metaclass=ABCMeta):
         if cls != PageProperty:
             return super().deserialize(serialized)
         property_type = serialized['type']
-        item_type = page_property_by_property_type_dict[property_type]
-        return item_type.deserialize(serialized)
+        page_property_type = page_property_by_property_type_dict[property_type]
+        return page_property_type.deserialize(serialized)
 
 
 page_property_by_property_type_dict = FinalClassDict[str, type[PageProperty]]()
