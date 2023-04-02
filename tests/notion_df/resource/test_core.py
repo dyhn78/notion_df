@@ -5,7 +5,7 @@ from datetime import datetime
 import pytest
 import pytz
 
-from notion_df.resource.core import Deserializable, deserialize, resolve_by_keychain, DeserializableResolverByKeyChain
+from notion_df.object.core import Deserializable, deserialize, resolve_by_keychain, DeserializableResolverByKeyChain
 from notion_df.util.collection import StrEnum, KeyChain
 from notion_df.util.misc import NotionDfValueError
 from notion_df.variables import Variables

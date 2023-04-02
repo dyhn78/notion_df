@@ -3,15 +3,15 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Optional
 
+from notion_df.object.block_item import BlockItem
+from notion_df.object.core import Deserializable, resolve_by_keychain
+from notion_df.object.file import ExternalFile
+from notion_df.object.misc import UUID, Icon
+from notion_df.object.parent import Parent
+from notion_df.object.property_item import PropertyItem
+from notion_df.object.rich_text import RichText
+from notion_df.object.user import PartialUser
 from notion_df.request.core import Request, RequestSettings, Version, Method
-from notion_df.resource.block_item import BlockItem
-from notion_df.resource.core import Deserializable, resolve_by_keychain
-from notion_df.resource.file import ExternalFile
-from notion_df.resource.misc import UUID, Icon
-from notion_df.resource.parent import Parent
-from notion_df.resource.property_item import PropertyItem
-from notion_df.resource.rich_text import RichText
-from notion_df.resource.user import PartialUser
 
 
 @dataclass

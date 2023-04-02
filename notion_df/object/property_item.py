@@ -6,7 +6,7 @@ from typing import Any, cast
 
 from typing_extensions import Self
 
-from notion_df.resource.core import Deserializable
+from notion_df.object.core import Deserializable
 from notion_df.util.collection import FinalClassDict
 
 

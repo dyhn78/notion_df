@@ -4,16 +4,16 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Optional
 
+from notion_df.object.core import Deserializable
+from notion_df.object.file import File, ExternalFile
+from notion_df.object.filter import Filter
+from notion_df.object.misc import Icon, UUID
+from notion_df.object.parent import Parent
+from notion_df.object.property_schema import PropertySchema
+from notion_df.object.rich_text import RichText
+from notion_df.object.sort import Sort
 from notion_df.request.core import Request, RequestSettings, Version, Method
 from notion_df.request.page import PageResponse
-from notion_df.resource.core import Deserializable
-from notion_df.resource.file import File, ExternalFile
-from notion_df.resource.filter import Filter
-from notion_df.resource.misc import Icon, UUID
-from notion_df.resource.parent import Parent
-from notion_df.resource.property_schema import PropertySchema
-from notion_df.resource.rich_text import RichText
-from notion_df.resource.sort import Sort
 from notion_df.util.collection import filter_truthy
 
 

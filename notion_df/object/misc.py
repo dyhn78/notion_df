@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import ClassVar, Any, NewType, Literal
 
-from notion_df.resource.core import Deserializable, resolve_by_keychain
+from notion_df.object.core import Deserializable, resolve_by_keychain
 from notion_df.util.collection import StrEnum
 
 UUID = NewType('UUID', str)

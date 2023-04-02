@@ -4,8 +4,8 @@ from abc import ABCMeta
 from dataclasses import dataclass
 from typing import Any
 
-from notion_df.resource.core import Deserializable, resolve_by_keychain
-from notion_df.resource.misc import UUID
+from notion_df.object.core import Deserializable, resolve_by_keychain
+from notion_df.object.misc import UUID
 
 
 @resolve_by_keychain('type')

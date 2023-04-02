@@ -6,8 +6,8 @@ from typing import Any, cast
 
 from typing_extensions import Self
 
-from notion_df.resource.core import Deserializable
-from notion_df.resource.misc import SelectOption, StatusGroups, RollupFunction, NumberFormat, UUID
+from notion_df.object.core import Deserializable
+from notion_df.object.misc import SelectOption, StatusGroups, RollupFunction, NumberFormat, UUID
 from notion_df.util.collection import FinalClassDict
 from notion_df.util.misc import NotionDfValueError
 
