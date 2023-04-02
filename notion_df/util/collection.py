@@ -72,3 +72,25 @@ class FinalDict(dict[_KT, _VT]):
             raise NotionDfKeyError('cannot overwrite FinalDict',
                                    {'key': k, 'new_value': v, 'current_value': cv})
         super().__setitem__(k, v)
+
+
+class FinalClassDict(dict[_KT, _VT]):
+    """dictionary which raises KeyError if trying to overwrite existing value.
+    however if the new value is subclass of current value, error would not be raised.
+    this is useful when you try to register a static class attributes as a mapping."""
+
+    def __setitem__(self, k: _KT, v: _VT) -> None:
+        if cv := self.get(k):
+            if issubclass(v, cv):
+                return
+            raise NotionDfKeyError('cannot overwrite FinalDict',
+                                   {'key': k, 'new_value': v, 'current_value': cv})
+        super().__setitem__(k, v)
+
+
+def filter_truthy(d: dict[_KT, _VT]) -> dict[_KT, _VT]:
+    return {k: v for k, v in d.items() if v}
+
+
+def filter_out_none(d: dict[_KT, _VT]) -> dict[_KT, _VT]:
+    return {k: v for k, v in d.items() if v is not None}

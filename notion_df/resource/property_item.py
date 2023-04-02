@@ -1,62 +1,31 @@
 from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
-from dataclasses import dataclass
-from typing import Any
+from dataclasses import dataclass, field
+from typing import Any, cast
 
 from typing_extensions import Self
 
 from notion_df.resource.core import Deserializable
-from notion_df.util.collection import FinalDict
+from notion_df.util.collection import FinalClassDict
 
 
 @dataclass
-class PartialPropertyItem(Deserializable, metaclass=ABCMeta):
-    # https://developers.notion.com/reference/page-property-values
-    clause: PropertyItemClause
+class PropertyItem(Deserializable, metaclass=ABCMeta):
+    """
+    represents two types of data structure.
+
+    - partial property item - user side
+    - property item - server side
+
+    property item has additional fields, `name` and `id`. these are hidden from __init__() to prevent confusion.
+
+    https://developers.notion.com/reference/page-property-values
+    """
     type: str
+    name: str = field(init=False)
+    id: str = field(init=False)
 
-    def _plain_serialize(self) -> dict[str, Any]:
-        return {
-            "type": self.type,
-            self.type: self.clause,
-        }
-
-    @classmethod
-    def deserialize(cls, serialized: dict[str, Any]) -> Self:
-        if cls != PartialPropertyItem:
-            return super().deserialize(serialized)
-        property_type = serialized['type']
-        item_clause_type = item_clause_by_property_type_dict[property_type]
-        clause = item_clause_type.deserialize(serialized)
-        return cls(clause, property_type)
-
-
-@dataclass
-class PropertyItem(PartialPropertyItem, metaclass=ABCMeta):
-    # https://developers.notion.com/reference/page-property-values
-    name: str
-    id: str
-
-    def _plain_serialize(self) -> dict[str, Any]:
-        return super()._plain_serialize() | {
-            "name": self.name,
-            "id": self.id,
-        }
-
-    @classmethod
-    def deserialize(cls, serialized: dict[str, Any]) -> Self:
-        if cls != PropertyItem:
-            return super().deserialize(serialized)
-        partial = super().deserialize(serialized)
-        return cls(partial.clause, partial.type, serialized['name'], serialized['id'])
-
-
-item_clause_by_property_type_dict: FinalDict[str, type[PropertyItemClause]] = FinalDict()
-
-
-@dataclass
-class PropertyItemClause(Deserializable, metaclass=ABCMeta):
     @classmethod
     @abstractmethod
     def _eligible_property_types(cls) -> list[str]:
@@ -65,4 +34,30 @@ class PropertyItemClause(Deserializable, metaclass=ABCMeta):
     def __init_subclass__(cls, **kwargs) -> None:
         super().__init_subclass__(**kwargs)
         for property_type in cls._eligible_property_types():
-            item_clause_by_property_type_dict[property_type] = cls
+            item_by_property_type_dict[property_type] = cls
+
+    def _plain_serialize(self) -> dict[str, Any]:
+        return {
+            "type": self.type,
+            self.type: self._plain_serialize_contents(),
+        }
+
+    @abstractmethod
+    def _plain_serialize_contents(self) -> dict[str, Any]:
+        pass
+
+    @classmethod
+    def deserialize(cls, serialized: dict[str, Any]) -> Self:
+        if cls != PropertyItem:
+            self = super().deserialize(serialized)
+        else:
+            property_type = serialized['type']
+            item_type = item_by_property_type_dict[property_type]
+            self = item_type.deserialize(serialized)
+        self = cast(Self, self)
+        self.name = serialized['name']
+        self.id = serialized['id']
+        return self
+
+
+item_by_property_type_dict = FinalClassDict[str, type[PropertyItem]]()

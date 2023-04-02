@@ -73,7 +73,3 @@ def get_num_iterator() -> Iterator[int]:
     while True:
         yield num
         num += 1
-
-
-def dict_filter_truthy(d: dict) -> dict:
-    return {k: v for k, v in d.items() if v}

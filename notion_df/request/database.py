@@ -11,10 +11,10 @@ from notion_df.resource.file import File, ExternalFile
 from notion_df.resource.filter import Filter
 from notion_df.resource.misc import Icon, UUID
 from notion_df.resource.parent import Parent
-from notion_df.resource.property_schema import PartialPropertySchema, PropertySchema
+from notion_df.resource.property_schema import PropertySchema
 from notion_df.resource.rich_text import RichText
 from notion_df.resource.sort import Sort
-from notion_df.util.misc import dict_filter_truthy
+from notion_df.util.collection import filter_truthy
 
 
 @dataclass
@@ -51,7 +51,7 @@ class DatabaseQueryRequest(Request[DatabaseQueryResponse]):
                                f'https://api.notion.com/v1/databases/{self.database_id}/query')
 
     def get_body(self) -> Any:
-        return dict_filter_truthy({
+        return filter_truthy({
             'filter': self.filter,
             'sorts': self.sort,
             'start_cursor': self.start_cursor,
@@ -108,7 +108,7 @@ class DatabaseCreateRequest(Request[DatabaseResponse]):
     """https://developers.notion.com/reference/create-a-database"""
     parent_id: UUID
     title: list[RichText]
-    properties: dict[str, PartialPropertySchema] = field(default_factory=dict)
+    properties: dict[str, PropertySchema] = field(default_factory=dict)
     """the dict keys are same as each property's name or id (depending on request)"""
     icon: Optional[Icon] = field(default=None)
     cover: Optional[File] = field(default=None)
@@ -118,7 +118,7 @@ class DatabaseCreateRequest(Request[DatabaseResponse]):
                                'https://api.notion.com/v1/databases/')
 
     def get_body(self) -> dict:
-        return dict_filter_truthy({
+        return filter_truthy({
             "parent": {
                 "type": "page_id",
                 "page_id": self.parent_id
@@ -134,7 +134,7 @@ class DatabaseCreateRequest(Request[DatabaseResponse]):
 class DatabaseUpdateRequest(Request[DatabaseResponse]):
     database_id: UUID
     title: list[RichText]
-    properties: dict[str, PartialPropertySchema] = field(default_factory=dict)
+    properties: dict[str, PropertySchema] = field(default_factory=dict)
 
     def get_settings(self) -> RequestSettings:
         return RequestSettings(Version.v20220628, Method.PATCH,
@@ -144,7 +144,7 @@ class DatabaseUpdateRequest(Request[DatabaseResponse]):
         return f'https://api.notion.com/v1/databases/{self.database_id}'
 
     def get_body(self) -> Any:
-        return dict_filter_truthy({
+        return filter_truthy({
             'title': self.title,
             'properties': self.properties,
         })

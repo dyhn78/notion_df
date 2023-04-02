@@ -2,13 +2,13 @@ from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, cast
 
 from typing_extensions import Self
 
 from notion_df.resource.core import Deserializable
 from notion_df.resource.misc import SelectOption, StatusGroups, RollupFunction, NumberFormat, UUID
-from notion_df.util.collection import FinalDict
+from notion_df.util.collection import FinalClassDict
 from notion_df.util.misc import NotionDfValueError
 
 
@@ -20,53 +20,22 @@ from notion_df.util.misc import NotionDfValueError
 
 
 @dataclass
-class PartialPropertySchema(Deserializable, metaclass=ABCMeta):
-    # https://developers.notion.com/reference/property-schema-object
-    # https://developers.notion.com/reference/update-property-schema-object
-    clause: PropertySchemaClause
+class PropertySchema(Deserializable, metaclass=ABCMeta):
+    """
+    represents two types of data structure.
+
+    - partial property schema - user side
+    - property schema - server side
+
+    property schema has additional fields, `name` and `id`. these are hidden from __init__() to prevent confusion.
+
+    - https://developers.notion.com/reference/property-schema-object
+    - https://developers.notion.com/reference/update-property-schema-object
+    """
     type: str
+    name: str = field(init=False)
+    id: str = field(init=False)
 
-    def _plain_serialize(self) -> dict[str, Any]:
-        return {
-            "type": self.type,
-            self.type: self.clause,
-        }
-
-    @classmethod
-    def deserialize(cls, serialized: dict[str, Any]) -> Self:
-        if cls != PartialPropertySchema:
-            return super().deserialize(serialized)
-        property_type = serialized['type']
-        schema_clause_type = schema_clause_by_property_type_dict[property_type]
-        clause = schema_clause_type.deserialize(serialized)
-        return cls(clause, property_type)
-
-
-@dataclass
-class PropertySchema(PartialPropertySchema, metaclass=ABCMeta):
-    # https://developers.notion.com/reference/property-object
-    name: str
-    id: str
-
-    def _plain_serialize(self) -> dict[str, Any]:
-        return super()._plain_serialize() | {
-            "name": self.name,
-            "id": self.id,
-        }
-
-    @classmethod
-    def deserialize(cls, serialized: dict[str, Any]) -> Self:
-        if cls != PropertySchema:
-            return super().deserialize(serialized)
-        partial = super().deserialize(serialized)
-        return cls(partial.clause, partial.type, serialized['name'], serialized['id'])
-
-
-schema_clause_by_property_type_dict: FinalDict[str, type[PropertySchemaClause]] = FinalDict()
-
-
-@dataclass
-class PropertySchemaClause(Deserializable, metaclass=ABCMeta):
     @classmethod
     @abstractmethod
     def _eligible_property_types(cls) -> list[str]:
@@ -75,47 +44,73 @@ class PropertySchemaClause(Deserializable, metaclass=ABCMeta):
     def __init_subclass__(cls, **kwargs) -> None:
         super().__init_subclass__(**kwargs)
         for property_type in cls._eligible_property_types():
-            schema_clause_by_property_type_dict[property_type] = cls
+            schema_by_property_type_dict[property_type] = cls
+
+    def _plain_serialize(self) -> dict[str, Any]:
+        return {
+            "type": self.type,
+            self.type: self._plain_serialize_contents(),
+        }
+
+    @abstractmethod
+    def _plain_serialize_contents(self) -> dict[str, Any]:
+        pass
+
+    @classmethod
+    def deserialize(cls, serialized: dict[str, Any]) -> Self:
+        if cls != PropertySchema:
+            self = super().deserialize(serialized)
+        else:
+            property_type = serialized['type']
+            schema_type = schema_by_property_type_dict[property_type]
+            self = schema_type.deserialize(serialized)
+        self = cast(Self, self)
+        self.name = serialized['name']
+        self.id = serialized['id']
+        return self
+
+
+schema_by_property_type_dict = FinalClassDict[str, type[PropertySchema]]()
 
 
 @dataclass
-class PlainPropertySchemaClause(PropertySchemaClause):
+class PlainPropertySchema(PropertySchema):
     @classmethod
     def _eligible_property_types(cls) -> list[str]:
         return ["title", "rich_text", "date", "people", "files", "checkbox", "url",
                 "email", "phone_number", "created_time", "created_by", "last_edited_time", "last_edited_by"]
 
     # noinspection PyMethodMayBeStatic
-    def _plain_serialize(self) -> dict[str, Any]:
+    def _plain_serialize_contents(self) -> dict[str, Any]:
         return {}
 
 
 @dataclass
-class NumberPropertySchemaClause(PropertySchemaClause):
+class NumberPropertySchema(PropertySchema):
     @classmethod
     def _eligible_property_types(cls) -> list[str]:
         return ['number']
 
     format: NumberFormat
 
-    def _plain_serialize(self) -> dict[str, Any]:
+    def _plain_serialize_contents(self) -> dict[str, Any]:
         return {'format': self.format}
 
 
 @dataclass
-class SelectPropertySchemaClause(PropertySchemaClause):
+class SelectPropertySchema(PropertySchema):
     @classmethod
     def _eligible_property_types(cls) -> list[str]:
         return ['select', 'multi_select']
 
     options: list[SelectOption]
 
-    def _plain_serialize(self) -> dict[str, Any]:
+    def _plain_serialize_contents(self) -> dict[str, Any]:
         return {'options': self.options}
 
 
 @dataclass
-class StatusPropertySchemaClause(PropertySchemaClause):
+class StatusPropertySchema(PropertySchema):
     @classmethod
     def _eligible_property_types(cls) -> list[str]:
         return ['status']
@@ -123,7 +118,7 @@ class StatusPropertySchemaClause(PropertySchemaClause):
     options: list[SelectOption]
     groups: list[StatusGroups]
 
-    def _plain_serialize(self) -> dict[str, Any]:
+    def _plain_serialize_contents(self) -> dict[str, Any]:
         return {
             'options': self.options,
             'groups': self.groups
@@ -131,7 +126,7 @@ class StatusPropertySchemaClause(PropertySchemaClause):
 
 
 @dataclass
-class FormulaPropertySchemaClause(PropertySchemaClause):
+class FormulaPropertySchema(PropertySchema):
     @classmethod
     def _eligible_property_types(cls) -> list[str]:
         return ['formula']
@@ -139,7 +134,7 @@ class FormulaPropertySchemaClause(PropertySchemaClause):
     expression: str = field()
     r'''example value: "if(prop(\"In stock\"), 0, prop(\"Price\"))"'''
 
-    def _plain_serialize(self) -> dict[str, Any]:
+    def _plain_serialize_contents(self) -> dict[str, Any]:
         pass  # TODO
 
 
@@ -155,13 +150,14 @@ class RelationPropertySchema(PropertySchema, metaclass=ABCMeta):
     def deserialize(cls, serialized: dict[str, Any]) -> Self:
         if cls != RelationPropertySchema:
             return super().deserialize(serialized)
-        match serialized['type']['type']:
+        match (relation_type := serialized['type']['type']):
             case 'single_property':
                 subclass = SingleRelationPropertySchema
             case 'dual_property':
                 subclass = DualRelationPropertySchema
             case _:
-                raise NotionDfValueError
+                raise NotionDfValueError('invalid relation_type',
+                                         {'relation_type': relation_type, 'serialized': serialized})
         return subclass.deserialize(serialized)
 
 
@@ -169,7 +165,7 @@ class RelationPropertySchema(PropertySchema, metaclass=ABCMeta):
 class SingleRelationPropertySchema(RelationPropertySchema):
     database_id: UUID
 
-    def _plain_serialize(self) -> dict[str, Any]:
+    def _plain_serialize_contents(self) -> dict[str, Any]:
         return {
             'database_id': self.database_id,
             'type': 'single_property',
@@ -183,7 +179,7 @@ class DualRelationPropertySchema(RelationPropertySchema):
     synced_property_name: str
     synced_property_id: str
 
-    def _plain_serialize(self) -> dict[str, Any]:
+    def _plain_serialize_contents(self) -> dict[str, Any]:
         return {
             'database_id': self.database_id,
             'type': 'dual_property',
@@ -194,7 +190,7 @@ class DualRelationPropertySchema(RelationPropertySchema):
 
 
 @dataclass
-class RollupPropertySchemaClause(PropertySchemaClause):
+class RollupPropertySchema(PropertySchema):
     @classmethod
     def _eligible_property_types(cls) -> list[str]:
         return ['rollup']
@@ -205,7 +201,7 @@ class RollupPropertySchemaClause(PropertySchemaClause):
     rollup_property_id: str
     function: RollupFunction
 
-    def _plain_serialize(self) -> dict[str, Any]:
+    def _plain_serialize_contents(self) -> dict[str, Any]:
         return {
             'relation_property_name': self.relation_property_name,
             'relation_property_id': self.relation_property_id,
