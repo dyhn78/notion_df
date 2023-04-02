@@ -5,6 +5,8 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import ClassVar, Any, NewType, Literal
 
+from typing_extensions import Self
+
 from notion_df.object.core import Deserializable, resolve_by_keychain
 from notion_df.util.collection import StrEnum
 
@@ -90,30 +92,30 @@ class NumberFormat(StrEnum):
 
 
 class RollupFunction(StrEnum):
-    COUNT = 'count'
-    COUNT_VALUES = 'count_values'
-    EMPTY = 'empty'
-    NOT_EMPTY = 'not_empty'
-    UNIQUE = 'unique'
-    SHOW_UNIQUE = 'show_unique'
-    PERCENT_EMPTY = 'percent_empty'
-    PERCENT_NOT_EMPTY = 'percent_not_empty'
-    SUM = 'sum'
     AVERAGE = 'average'
+    CHECKED = 'checked'
+    COUNT = 'count'
+    COUNT_PER_GROUP = 'count_per_group'
+    COUNT_VALUES = 'count_values'
+    DATE_RANGE = 'date_range'
+    EARLIEST_DATE = 'earliest_date'
+    EMPTY = 'empty'
+    LATEST_DATE = 'latest_date'
+    MAX = 'max'
     MEDIAN = 'median'
     MIN = 'min'
-    MAX = 'max'
-    RANGE = 'range'
-    EARLIEST_DATE = 'earliest_date'
-    LATEST_DATE = 'latest_date'
-    DATE_RANGE = 'date_range'
-    CHECKED = 'checked'
-    UNCHECKED = 'unchecked'
+    NOT_EMPTY = 'not_empty'
     PERCENT_CHECKED = 'percent_checked'
-    PERCENT_UNCHECKED = 'percent_unchecked'
-    COUNT_PER_GROUP = 'count_per_group'
+    PERCENT_EMPTY = 'percent_empty'
+    PERCENT_NOT_EMPTY = 'percent_not_empty'
     PERCENT_PER_GROUP = 'percent_per_group'
+    PERCENT_UNCHECKED = 'percent_unchecked'
+    RANGE = 'range'
     SHOW_ORIGINAL = 'show_original'
+    SHOW_UNIQUE = 'show_unique'
+    SUM = 'sum'
+    UNCHECKED = 'unchecked'
+    UNIQUE = 'unique'
 
 
 @dataclass
@@ -170,32 +172,43 @@ class DateRange(Deserializable):
 @dataclass
 class SelectOption(Deserializable):
     name: str
-    id: str = field()
+    id: str = field(init=False)
     """Identifier of the option, which does not change if the name is changed. 
     These are sometimes, but not always, UUIDs."""
-    color: Color
+    color: Color = field(init=False)
 
     def _plain_serialize(self) -> dict[str, Any]:
         return {
             'name': self.name,
-            'id': self.id,
-            'color': self.color
         }
+
+    @classmethod
+    def _plain_deserialize(cls, serialized: dict[str, Any], **field_vars: Any) -> Self:
+        plain_self = super()._plain_deserialize(serialized)
+        plain_self.id = serialized['id']
+        plain_self.color = serialized['color']
+        return plain_self
 
 
 @dataclass
 class StatusGroups(Deserializable):
     name: str
-    id: str = field()
+    id: str = field(init=False)
     """Identifier of the option, which does not change if the name is changed. 
     These are sometimes, but not always, UUIDs."""
-    color: Color
+    color: Color = field(init=False)
     option_ids: list[str] = field()
     """Sorted list of ids of all options that belong to a group."""
 
     def _plain_serialize(self) -> dict[str, Any]:
         return {
             'name': self.name,
-            'id': self.id,
-            'color': self.color
+            'option_ids': self.option_ids,
         }
+
+    @classmethod
+    def _plain_deserialize(cls, serialized: dict[str, Any], **field_vars: Any) -> Self:
+        plain_self = super()._plain_deserialize(serialized)
+        plain_self.id = serialized['id']
+        plain_self.color = serialized['color']
+        return plain_self

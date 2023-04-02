@@ -162,7 +162,7 @@ def test_deserializable__collections():
     serialized = {'url1': 'url', 'bold1': True, 'link': {'value': 'link'}, 'color1': 'gray',
                   'hrefs': {'a': {'value': 'a'}, 'b': {'value': 'b'}}}
     assert deserializable.serialize() == serialized
-    assert deserialize(serialized, TestDeserializable) == deserializable
+    assert deserialize(TestDeserializable, serialized) == deserializable
 
 
 def test__deserializer__dynamic_type():

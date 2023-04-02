@@ -6,6 +6,7 @@ import typing
 from abc import abstractmethod, ABCMeta
 from dataclasses import dataclass, fields, InitVar
 from datetime import datetime
+from decimal import Decimal
 from enum import Enum
 from functools import cache
 from typing import Any, final, ClassVar, Optional
@@ -38,9 +39,11 @@ def serialize(obj: Any):
     raise NotionDfValueError('cannot serialize', {'obj': obj})
 
 
-def deserialize(serialized: Any, typ: type):
+def deserialize(typ: type, serialized: Any):
     """unified deserializer for both Deserializable and external classes."""
     err_vars = {'typ': typ, 'serialized': serialized}
+
+    # 1. Non-class types
     if isinstance(typ, types.GenericAlias):
         origin: type = typing.get_origin(typ)
         args = typing.get_args(typ)
@@ -48,23 +51,30 @@ def deserialize(serialized: Any, typ: type):
         try:
             if issubclass(origin, dict):
                 value_type = args[1]
-                return {k: deserialize(v, value_type) for k, v in serialized.items()}
+                return {k: deserialize(value_type, v) for k, v in serialized.items()}
             element_type = args[0]
             if issubclass(origin, list):
-                return [deserialize(e, element_type) for e in serialized]
+                return [deserialize(element_type, e) for e in serialized]
             if issubclass(origin, set):
-                return {deserialize(e, element_type) for e in serialized}
+                return {deserialize(element_type, e) for e in serialized}
             raise NotionDfValueError('cannot deserialize: GenericAlias type with invalid origin', err_vars)
         except IndexError:
             raise NotionDfValueError('cannot deserialize: GenericAlias type with invalid args', err_vars)
     # TODO: resolve (StrEnum | str) to str - or, is that really needed?
-    # if isinstance(typ, types.UnionType):
-    #    err_description = 'UnionType is (currently) not supported'
+    if isinstance(typ, types.UnionType):
+        for typ_arg in typ.__args__:
+            try:
+                return deserialize(typ_arg, serialized)
+            except NotionDfValueError:
+                pass
+        raise NotionDfValueError('cannot deserialize to any of the UnionType', err_vars)
     if not inspect.isclass(typ):
         raise NotionDfValueError('cannot deserialize: not supported type', err_vars)
+
+    # 2. class types
     if issubclass(typ, Deserializable):
         return typ.deserialize(serialized)
-    if typ in {bool, str, int, float}:
+    if typ in {bool, str, int, float, Decimal}:
         if type(serialized) != typ:
             raise NotionDfValueError('cannot deserialize: type(serialized) != typ', err_vars)
         return serialized
@@ -73,7 +83,7 @@ def deserialize(serialized: Any, typ: type):
     if issubclass(typ, datetime):
         return DateTimeSerializer.deserialize(serialized)
     if isinstance(typ, InitVar):  # TODO: is this really needed?
-        return deserialize(serialized, typ.type)
+        return deserialize(typ.type, serialized)
     raise NotionDfValueError('cannot deserialize: not supported class', err_vars)
 
 
@@ -153,7 +163,7 @@ class Deserializable(Serializable, metaclass=ABCMeta):
         plain_self = cls._plain_deserialize(serialized)
         print(plain_self)
         for field in fields(plain_self):
-            setattr(plain_self, field.name, deserialize(getattr(plain_self, field.name), field.type))
+            setattr(plain_self, field.name, deserialize(field.type, getattr(plain_self, field.name)))
         return plain_self
 
     @classmethod

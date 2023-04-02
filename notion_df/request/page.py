@@ -10,7 +10,7 @@ from notion_df.object.misc import UUID, Icon
 from notion_df.object.parent import Parent
 from notion_df.object.property_item import PageProperty
 from notion_df.object.rich_text import RichText
-from notion_df.object.user import PartialUser
+from notion_df.object.user import User
 from notion_df.request.core import Request, RequestSettings, Version, Method
 
 
@@ -19,8 +19,8 @@ class PageResponse(Deserializable):
     id: UUID
     created_time: datetime
     last_edited_time: datetime
-    created_by: PartialUser
-    last_edited_by: PartialUser
+    created_by: User
+    last_edited_by: User
     icon: Icon
     cover: ExternalFile
     url: str

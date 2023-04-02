@@ -1,15 +1,20 @@
 from abc import ABCMeta
-from dataclasses import dataclass
-from typing import Optional, Any
+from dataclasses import dataclass, field
+from typing import Any
+
+from typing_extensions import Self
 
 from notion_df.object.core import Deserializable, resolve_by_keychain
 from notion_df.object.misc import UUID
-from notion_df.util.collection import filter_truthy
 
 
+@resolve_by_keychain('type')
 @dataclass
-class PartialUser(Deserializable):
+class User(Deserializable, metaclass=ABCMeta):
+    """field with `init=False` are those not required from user-side but provided from server-side."""
     id: UUID
+    name: str = field(init=False)
+    avatar_url: str = field(init=False)
 
     def _plain_serialize(self) -> dict[str, Any]:
         return {
@@ -17,21 +22,12 @@ class PartialUser(Deserializable):
             'id': self.id,
         }
 
-
-@resolve_by_keychain('type')
-@dataclass
-class User(Deserializable, metaclass=ABCMeta):
-    id: UUID
-    name: Optional[str]
-    avatar_url: Optional[str]
-
-    def _plain_serialize(self) -> dict[str, Any]:
-        return filter_truthy({
-            'object': 'user',
-            'id': self.id,
-            'name': self.name,
-            'avatar_url': self.avatar_url,
-        })
+    @classmethod
+    def _plain_deserialize(cls, serialized: dict[str, Any], **field_vars: Any) -> Self:
+        plain_self = cls._plain_deserialize(serialized)
+        plain_self.name = serialized['name']
+        plain_self.avatar_url = serialized['avatar_url']
+        return plain_self
 
 
 @dataclass
