@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import Mapping, TypeVar, Iterator, Final, Any
+from typing import Mapping, TypeVar, Iterator, Final, NewType
 
 from notion_df.util.misc import repr_object, NotionDfKeyError
 from notion_df.util.mixin import Resolvable
@@ -43,21 +43,7 @@ class StrEnum(str, Enum):
         return self._value_
 
 
-class KeyChain(tuple[str, ...]):
-    def __add__(self, other: tuple[str, ...]) -> KeyChain:
-        return KeyChain(tuple(self) + other)
-
-    def get(self, d: dict) -> Any:
-        for key in self:
-            d = d[key]
-        return d
-
-    def set(self, d: dict, value: Any) -> None:
-        if not self:
-            return
-        for key in self[:-1]:
-            d = d[key]
-        d[self[-1]] = value
+Keychain = NewType('Keychain', tuple[str, ...])
 
 
 _KT = TypeVar('_KT')

@@ -13,7 +13,7 @@ from typing import Any, final, ClassVar, Optional
 import dateutil.parser
 from typing_extensions import Self
 
-from notion_df.util.collection import KeyChain, FinalDict
+from notion_df.util.collection import Keychain, FinalDict
 from notion_df.util.misc import NotionDfValueError
 from notion_df.variables import Variables
 
@@ -109,6 +109,11 @@ class Serializable(metaclass=ABCMeta):
     def _skip_init_subclass(cls) -> bool:
         return False
 
+    @abstractmethod
+    def _plain_serialize(self) -> dict[str, Any]:
+        """serialize only the first depth structure, leaving each field value not serialized."""
+        pass
+
     @final
     def serialize(self) -> dict[str, Any]:
         field_value_dict = {fd.name: getattr(self, fd.name) for fd in fields(self)}
@@ -116,39 +121,40 @@ class Serializable(metaclass=ABCMeta):
             **{fd_name: serialize(fd_value) for fd_name, fd_value in field_value_dict.items()})
         return data_obj_with_each_field_serialized._plain_serialize()
 
-    @abstractmethod
-    def _plain_serialize(self) -> dict[str, Any]:
-        """serialize only the first depth structure, leaving each field value not serialized."""
-        pass
-
 
 @dataclass
 class Deserializable(Serializable, metaclass=ABCMeta):
     """dataclass representation of the resources defined in Notion REST API.
     interchangeable to JSON object."""
-    _subclass_by_keychain_dict: ClassVar[Optional[FinalDict[KeyChain, type[Deserializable]]]]
+    _subclass_by_keychain_dict: ClassVar[Optional[FinalDict[Keychain, type[Deserializable]]]]
     """should not be set directly; set by DeserializableResolverByKeyChain decorator."""
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
     @classmethod
-    def deserialize(cls, serialized: dict[str, Any]) -> Self:
-        """Note: override this method if you need to implement a unified deserializer entrypoint."""
-        each_field_serialized_dict = cls._plain_deserialize(serialized)
-        field_value_dict = {}
-        for field_name, field_serialized in each_field_serialized_dict.items():
-            field_value_dict[field_name] = deserialize(field_serialized, cls._get_field_type_dict()[field_name])
-        return cls(**field_value_dict)  # nomypy
+    def _plain_deserialize(cls, serialized: dict[str, Any], **field_vars: Any) -> Self:
+        """return cls(**{field_name: field_serialized}).
 
-    @classmethod
-    def _plain_deserialize(cls, serialized: dict[str, Any]) -> dict[str, Any]:
-        """return **{field_name: serialized_field_value}.
         Note: override this method if plain_serialize() definition is not parsable."""
         each_field_serialized_dict = {}
         for keychain, field_name in cls._get_field_keychain_dict().items():
-            each_field_serialized_dict[field_name] = keychain.get(serialized)
-        return each_field_serialized_dict
+            field_serialized = serialized
+            for key in keychain:
+                if isinstance(key, MockAttribute):
+                    key = field_vars[key.name]
+                field_serialized = field_serialized[key]
+            each_field_serialized_dict[field_name] = field_serialized
+        return cls(**each_field_serialized_dict)
+
+    @classmethod
+    def deserialize(cls, serialized: dict[str, Any]) -> Self:
+        """Note: override this method if you need to implement a unified deserializer entrypoint."""
+        plain_self = cls._plain_deserialize(serialized)
+        print(plain_self)
+        for field in fields(plain_self):
+            setattr(plain_self, field.name, deserialize(getattr(plain_self, field.name), field.type))
+        return plain_self
 
     @classmethod
     @final
@@ -190,17 +196,17 @@ class Deserializable(Serializable, metaclass=ABCMeta):
 
     @classmethod
     @cache
-    def _get_field_keychain_dict(cls) -> dict[KeyChain, str]:
+    def _get_field_keychain_dict(cls) -> dict[Keychain, str]:
         # breadth-first search through mock_serialized
-        field_keychain_dict = FinalDict[KeyChain, str]()
-        items: list[tuple[KeyChain, Any]] = [(KeyChain((k,)), v) for k, v in cls.get_mock_serialized().items()]
+        field_keychain_dict = FinalDict[Keychain, str]()
+        items: list[tuple[Keychain, Any]] = [(Keychain((k,)), v) for k, v in cls.get_mock_serialized().items()]
         while items:
             keychain, value = items.pop()
             if isinstance(value, MockAttribute):
                 attr_name = value.name
                 field_keychain_dict[keychain] = attr_name
             elif isinstance(value, dict):
-                items.extend((keychain + (k,), v) for k, v in value.items())
+                items.extend((Keychain(keychain + (k,)), v) for k, v in value.items())
         return field_keychain_dict
 
 
@@ -221,7 +227,7 @@ class DeserializableResolverByKeyChain:
         if not inspect.isabstract(master):
             raise NotionDfValueError('master class must be abstract', {'master': master})
 
-        master._subclass_by_keychain_dict = subclass_dict = FinalDict[KeyChain, type[Deserializable]]()
+        master._subclass_by_keychain_dict = subclass_dict = FinalDict[Keychain, type[Deserializable]]()
 
         __init_subclass_prev__ = getattr(master, '__init_subclass__').__func__
         deserialize_prev = getattr(master, 'deserialize').__func__
@@ -244,8 +250,8 @@ class DeserializableResolverByKeyChain:
         setattr(master, 'deserialize', classmethod(_deserialize))
         return master
 
-    def resolve_keychain(self, serialized: dict[str, Any]) -> KeyChain:
-        current_keychain = KeyChain()
+    def resolve_keychain(self, serialized: dict[str, Any]) -> Keychain:
+        current_keychain = ()
         if self.unique_key not in serialized:
             raise NotionDfValueError(
                 f"cannot resolve keychain: unique key {self.unique_key} not found in serialized data",
@@ -262,7 +268,7 @@ class DeserializableResolverByKeyChain:
             if (value := serialized.get(key)) and isinstance(value, dict) and self.unique_key in value:
                 serialized = value
                 continue
-            return current_keychain
+            return Keychain(current_keychain)
 
 
 resolve_by_keychain = DeserializableResolverByKeyChain

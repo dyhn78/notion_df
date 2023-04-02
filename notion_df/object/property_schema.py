@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, field
-from typing import Any, cast
+from typing import Any
 
 from typing_extensions import Self
 
@@ -57,17 +57,20 @@ class DatabaseProperty(Deserializable, metaclass=ABCMeta):
         pass
 
     @classmethod
-    def deserialize(cls, serialized: dict[str, Any]) -> Self:
-        if cls != DatabaseProperty:
-            self = super().deserialize(serialized)
-        else:
-            property_type = serialized['type']
-            schema_type = database_property_by_property_type_dict[property_type]
-            self = schema_type.deserialize(serialized)
-        self = cast(Self, self)
+    def _plain_deserialize(cls, serialized: dict[str, Any], **field_vars) -> Self:
+        self = super()._plain_deserialize(serialized)
         self.name = serialized['name']
         self.id = serialized['id']
         return self
+
+    @classmethod
+    def deserialize(cls, serialized: dict[str, Any]) -> Self:
+        if cls != DatabaseProperty:
+            return super().deserialize(serialized)
+        else:
+            property_type = serialized['type']
+            schema_type = database_property_by_property_type_dict[property_type]
+            return schema_type.deserialize(serialized)
 
 
 database_property_by_property_type_dict = FinalClassDict[str, type[DatabaseProperty]]()

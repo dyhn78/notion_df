@@ -1,12 +1,14 @@
 from abc import ABCMeta
 from dataclasses import dataclass, field
 from datetime import datetime
+from typing import Any
 
 import pytest
 import pytz
+from typing_extensions import Self
 
 from notion_df.object.core import Deserializable, deserialize, resolve_by_keychain, DeserializableResolverByKeyChain
-from notion_df.util.collection import StrEnum, KeyChain
+from notion_df.util.collection import StrEnum, Keychain
 from notion_df.util.misc import NotionDfValueError
 from notion_df.variables import Variables
 
@@ -23,14 +25,14 @@ def master_deserializable() -> type[Deserializable]:
 
 def test__find_type_keychain():
     resolver = DeserializableResolverByKeyChain('type')
-    assert resolver.resolve_keychain({'type': 'checkbox', 'checkbox': True}) == KeyChain(('checkbox',))
+    assert resolver.resolve_keychain({'type': 'checkbox', 'checkbox': True}) == Keychain(('checkbox',))
     assert resolver.resolve_keychain({'type': 'mention', 'mention': {
         'type': 'user',
         'user': {
             'object': 'user',
             'id': 'some_user_id'
         }
-    }}) == KeyChain(('mention', 'user'))
+    }}) == Keychain(('mention', 'user'))
 
 
 def test__deserializer__simple(master_deserializable):
@@ -51,7 +53,7 @@ def test__deserializer__simple(master_deserializable):
                 }
             }
 
-    assert master_deserializable._subclass_by_keychain_dict[KeyChain(('text',))] == TestDeserializable
+    assert master_deserializable._subclass_by_keychain_dict[Keychain(('text',))] == TestDeserializable
     assert TestDeserializable._get_field_keychain_dict() == {
         ('text', 'content'): 'content',
         ('text', 'link', 'url'): 'link',
@@ -88,7 +90,7 @@ def test_deserializable__call_method(master_deserializable):
                 }
             }
 
-    assert master_deserializable._subclass_by_keychain_dict[KeyChain(('mention', 'user'))] \
+    assert master_deserializable._subclass_by_keychain_dict[Keychain(('mention', 'user'))] \
            == TestDeserializable
     assert TestDeserializable._get_field_keychain_dict() == {
         ('mention', 'user', 'id'): 'user_id'
@@ -161,3 +163,38 @@ def test_deserializable__collections():
                   'hrefs': {'a': {'value': 'a'}, 'b': {'value': 'b'}}}
     assert deserializable.serialize() == serialized
     assert deserialize(serialized, TestDeserializable) == deserializable
+
+
+def test__deserializer__dynamic_type():
+    @dataclass
+    class TestDeserializable(Deserializable):
+        type: str
+        content: str
+        link: str
+
+        def _plain_serialize(self):
+            return {
+                'type': self.type,
+                self.type: {
+                    'content': self.content,
+                    'link': {
+                        'type': 'url',
+                        'url': self.link
+                    } if self.link else None
+                }
+            }
+
+        @classmethod
+        def _plain_deserialize(cls, serialized: dict[str, Any], **field_vars: Any) -> Self:
+            return super()._plain_deserialize(serialized, type=serialized['type'])
+
+    assert TestDeserializable.deserialize({
+        'type': 'text',
+        'text': {
+            'content': 'self.content',
+            'link': {
+                'type': 'url',
+                'url': 'self.link'
+            }
+        }
+    }) == TestDeserializable('text', 'self.content', 'self.link')
