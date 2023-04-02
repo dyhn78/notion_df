@@ -3,7 +3,7 @@ from __future__ import annotations
 import inspect
 import types
 import typing
-from abc import abstractmethod, ABCMeta
+from abc import ABCMeta
 from dataclasses import dataclass, fields, InitVar
 from datetime import datetime
 from decimal import Decimal
@@ -119,17 +119,23 @@ class Serializable(metaclass=ABCMeta):
     def _skip_init_subclass(cls) -> bool:
         return False
 
-    @abstractmethod
     def _plain_serialize(self) -> dict[str, Any]:
-        """serialize only the first depth structure, leaving each field value not serialized."""
-        pass
+        """serialize only the first depth structure, leaving each field value not serialized.
+
+        by default, this performs {**fd.name: fd.value for fd in fields(self) if fd.init == True}
+        override the method if the serialized structure does not comply this assumption."""
+        serialized = {}
+        for fd in fields(self):
+            if fd.init:
+                serialized[fd.name] = getattr(self, fd.name)
+        return serialized
 
     @final
     def serialize(self) -> dict[str, Any]:
         field_value_dict = {fd.name: getattr(self, fd.name) for fd in fields(self)}
-        data_obj_with_each_field_serialized = type(self)(
+        self_each_field_serialized = type(self)(
             **{fd_name: serialize(fd_value) for fd_name, fd_value in field_value_dict.items()})
-        return data_obj_with_each_field_serialized._plain_serialize()
+        return self_each_field_serialized._plain_serialize()
 
 
 @dataclass
@@ -146,16 +152,33 @@ class Deserializable(Serializable, metaclass=ABCMeta):
     def _plain_deserialize(cls, serialized: dict[str, Any], **field_vars: Any) -> Self:
         """return cls(**{field_name: field_serialized}).
 
-        Note: override this method if plain_serialize() definition is not parsable."""
+        by default, this parses get_mock_serialize() to determine each fields' location (i.e. keychain).
+        override this method if plain_serialize() definition is not parsable."""
         each_field_serialized_dict = {}
+
+        # 1. collect field(init=True)
         for keychain, field_name in cls._get_field_keychain_dict().items():
             field_serialized = serialized
-            for key in keychain:
-                if isinstance(key, MockAttribute):
-                    key = field_vars[key.name]
-                field_serialized = field_serialized[key]
+            if field_name in field_vars:
+                field_serialized = field_vars[field_name]
+            else:
+                for key in keychain:
+                    if isinstance(key, MockAttribute):
+                        key = field_vars[key.name]
+                    field_serialized = field_serialized[key]
             each_field_serialized_dict[field_name] = field_serialized
-        return cls(**each_field_serialized_dict)
+        plain_self = cls(**each_field_serialized_dict)
+
+        # 2. collect field(init=False)
+        for fd in fields(cls):
+            if fd.init:
+                continue
+            if fd.name in field_vars:
+                field_serialized = field_vars[fd.name]
+            else:
+                field_serialized = serialized[fd.name]
+            setattr(plain_self, fd.name, field_serialized)
+        return plain_self
 
     @classmethod
     def deserialize(cls, serialized: dict[str, Any]) -> Self:
@@ -234,8 +257,9 @@ class DeserializableResolverByKeyChain:
         self.unique_key = unique_key
 
     def __call__(self, master: type[Deserializable_T]) -> type[Deserializable_T]:
-        if not inspect.isabstract(master):
-            raise NotionDfValueError('master class must be abstract', {'master': master})
+        # TODO: determine - is master class must be abstract or not?
+        # if not inspect.isabstract(master):
+        #     raise NotionDfValueError('master class must be abstract', {'master': master})
 
         master._subclass_by_keychain_dict = subclass_dict = FinalDict[Keychain, type[Deserializable]]()
 

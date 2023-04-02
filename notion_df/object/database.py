@@ -24,6 +24,7 @@ class Database(Deserializable):
     #  then, make Page or Database utilize it,
     #  so that they could auto-configure itself and its children with the retrieved data.
     id: UUID
+    parent: Parent
     created_time: datetime
     last_edited_time: datetime
     icon: Icon
@@ -32,7 +33,6 @@ class Database(Deserializable):
     title: list[RichText]
     properties: dict[str, DatabaseProperty] = field()
     """the dict keys are same as each property's name or id (depending on request)"""
-    parent: Parent
     archived: bool
     is_inline: bool
 
@@ -40,6 +40,7 @@ class Database(Deserializable):
         return {
             "object": 'database',
             "id": self.id,
+            "parent": self.parent,
             "created_time": self.created_time,
             "last_edited_time": self.last_edited_time,
             "icon": self.icon,
@@ -47,7 +48,6 @@ class Database(Deserializable):
             "url": self.url,
             "title": self.title,
             "properties": self.properties,
-            "parent": self.parent,
             "archived": self.archived,
             "is_inline": self.is_inline,
         }

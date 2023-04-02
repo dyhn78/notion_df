@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-from abc import ABCMeta, abstractmethod
-from dataclasses import dataclass, field
+from abc import ABCMeta
+from dataclasses import dataclass, field, fields, Field
 from datetime import datetime
-from typing import Any, Literal, Union
+from functools import cache
+from typing import Any, Literal, Union, cast
 
 from _decimal import Decimal
 from typing_extensions import Self
@@ -20,6 +21,7 @@ from notion_df.util.collection import FinalClassDict
 @dataclass
 class Page(Deserializable):
     id: UUID
+    parent: Parent
     created_time: datetime
     last_edited_time: datetime
     created_by: User
@@ -30,7 +32,6 @@ class Page(Deserializable):
     title: list[RichText]
     properties: dict[str, PageProperty] = field()
     """the dict keys are same as each property's name or id (depending on request)"""
-    parent: Parent
     archived: bool
     is_inline: bool
 
@@ -63,131 +64,88 @@ class PageProperty(Deserializable, metaclass=ABCMeta):
 
     https://developers.notion.com/reference/page-property-values
     """
-    type: str
     name: str = field(init=False)
     id: str = field(init=False)
 
     @classmethod
-    @abstractmethod
-    def _eligible_property_types(cls) -> list[str]:
-        pass
+    @cache
+    def get_type(cls) -> str:
+        """by default, return the first subclass-specific field's name.
+        you should override this if the class definition does not comply the assumption."""
+        return cast(Field, fields(cls)[len(fields(PageProperty))]).name
 
     def __init_subclass__(cls, **kwargs) -> None:
         super().__init_subclass__(**kwargs)
-        for property_type in cls._eligible_property_types():
-            page_property_by_property_type_dict[property_type] = cls
-
-    @abstractmethod
-    def _plain_serialize_type_object(self) -> Any:
-        """https://developers.notion.com/reference/page-property-values#type-objects"""
-        pass
-
-    def _plain_serialize(self) -> dict[str, Any]:
-        return {
-            self.type: self._plain_serialize_type_object(),
-        }
+        page_property_registry[cls.get_type()] = cls
 
     @classmethod
     def _plain_deserialize(cls, serialized: dict[str, Any], **field_vars) -> Self:
-        self = super()._plain_deserialize(serialized, type=serialized['type'])
-        self.name = serialized['name']
-        self.id = serialized['id']
-        return self
+        return super()._plain_deserialize(serialized, type=serialized['type'])
 
     @classmethod
     def deserialize(cls, serialized: dict[str, Any]) -> Self:
         if cls != PageProperty:
             return super().deserialize(serialized)
-        property_type = serialized['type']
-        page_property_type = page_property_by_property_type_dict[property_type]
-        return page_property_type.deserialize(serialized)
+        page_property_cls = page_property_registry[serialized['type']]
+        return page_property_cls.deserialize(serialized)
 
 
-page_property_by_property_type_dict = FinalClassDict[str, type[PageProperty]]()
+page_property_registry = FinalClassDict[str, type[PageProperty]]()
 
 
 @dataclass
 class CheckboxPageProperty(PageProperty):
     checkbox: bool
 
-    @classmethod
-    def _eligible_property_types(cls) -> list[str]:
-        return ['checkbox']
 
-    def _plain_serialize_type_object(self):
-        return self.checkbox
+@dataclass
+class CreatedByPageProperty(PageProperty):
+    created_by: User
 
 
 @dataclass
-class PersonPageProperty(PageProperty):
-    user: User
-
-    @classmethod
-    def _eligible_property_types(cls) -> list[str]:
-        return ['created_by', 'last_edited_by']
-
-    def _plain_serialize_type_object(self) -> Any:
-        return self.user
+class LastEditedByPageProperty(PageProperty):
+    last_edited_by: User
 
 
 @dataclass
 class PeoplePageProperty(PageProperty):
     people: list[User]
 
-    @classmethod
-    def _eligible_property_types(cls) -> list[str]:
-        return ['people']
 
-    def _plain_serialize_type_object(self) -> Any:
-        return self.people
+@dataclass
+class CreatedTimePageProperty(PageProperty):
+    created_time: datetime
 
 
 @dataclass
-class SingleDatePageProperty(PageProperty):
-    date: datetime
-
-    @classmethod
-    def _eligible_property_types(cls) -> list[str]:
-        return ['created_time', 'last_edited_time']
-
-    def _plain_serialize_type_object(self) -> Any:
-        return self.date
+class LastEditedTimePageProperty(PageProperty):
+    last_edited_time: datetime
 
 
 @dataclass
-class DoubleDatePageProperty(PageProperty):
-    date_range: DateRange
-
-    @classmethod
-    def _eligible_property_types(cls) -> list[str]:
-        return ['date']
-
-    def _plain_serialize_type_object(self) -> Any:
-        return self.date_range
+class DatePageProperty(PageProperty):
+    date: DateRange
 
 
 @dataclass
-class StringPageProperty(PageProperty):
-    string: str
+class EmailPageProperty(PageProperty):
+    email: str
 
-    @classmethod
-    def _eligible_property_types(cls) -> list[str]:
-        return ['email', 'phone_number', 'url']
 
-    def _plain_serialize_type_object(self) -> Any:
-        return self.string
+@dataclass
+class PhoneNumberPageProperty(PageProperty):
+    phone_number: str
+
+
+@dataclass
+class URLPageProperty(PageProperty):
+    url: str
 
 
 @dataclass
 class FilesPageProperty(PageProperty):
-    files = list[File]
-
-    @classmethod
-    def _eligible_property_types(cls) -> list[str]:
-        return ['files']
-
-    def _plain_serialize_type_object(self) -> Any:
-        return self.files
+    files: list[File]
 
 
 @dataclass
@@ -196,35 +154,22 @@ class FormulaPageProperty(PageProperty):
     value: Union[bool, datetime, int, Decimal, str]
 
     @classmethod
-    def _eligible_property_types(cls) -> list[str]:
-        return ['formula']
+    def get_type(cls) -> str:
+        return 'formula'
 
-    def _plain_serialize_type_object(self) -> Any:
-        return {'type': self.value_type, self.value_type: self.value}
+    def _plain_serialize(self) -> Any:
+        return {**super()._plain_serialize(),
+                'formula': {'type': self.value_type, self.value_type: self.value}}
 
 
 @dataclass
 class MultiSelectPageProperty(PageProperty):
     multi_select: list[SelectOption]
 
-    @classmethod
-    def _eligible_property_types(cls) -> list[str]:
-        return ['multi_select']
-
-    def _plain_serialize_type_object(self) -> Any:
-        return self.multi_select
-
 
 @dataclass
 class NumberPageProperty(PageProperty):
     number: Union[int, Decimal]
-
-    @classmethod
-    def _eligible_property_types(cls) -> list[str]:
-        return ['number']
-
-    def _plain_serialize_type_object(self) -> Any:
-        return self.number
 
 
 @dataclass
@@ -233,11 +178,12 @@ class RelationPageProperty(PageProperty):
     has_more: bool = field(init=False)
 
     @classmethod
-    def _eligible_property_types(cls) -> list[str]:
-        return ['relation']
+    def get_type(cls) -> str:
+        return 'relation'
 
-    def _plain_serialize_type_object(self) -> Any:
-        return [{'id': page_id} for page_id in self.page_ids]
+    def _plain_serialize(self) -> Any:
+        return {**super()._plain_serialize(),
+                'relation': [{'id': page_id} for page_id in self.page_ids]}
 
     @classmethod
     def _plain_deserialize(cls, serialized: dict[str, Any], **field_vars) -> Self:
@@ -254,32 +200,33 @@ class RollupPageProperty(PageProperty):
     value: Any
 
     @classmethod
-    def _eligible_property_types(cls) -> list[str]:
-        return ['rollup']
+    def get_type(cls) -> str:
+        return 'rollup'
 
-    def _plain_serialize_type_object(self) -> Any:
-        return {'function': self.function, 'type': self.value_type, self.value_type: self.value}
+    def _plain_serialize(self) -> Any:
+        return {**super()._plain_serialize(),
+                'rollup': {'function': self.function, 'type': self.value_type, self.value_type: self.value}}
+
+    @classmethod
+    def _plain_deserialize(cls, serialized: dict[str, Any], **field_vars) -> Self:
+        return super()._plain_deserialize(serialized, value_type=serialized['rollup']['type'])
 
 
 @dataclass
 class RichTextPageProperty(PageProperty):
     rich_text: list[RichText]
 
-    @classmethod
-    def _eligible_property_types(cls) -> list[str]:
-        return ['rich_text', 'title']
 
-    def _plain_serialize_type_object(self) -> Any:
-        return self.rich_text
+@dataclass
+class TitlePageProperty(PageProperty):
+    title: list[RichText]
 
 
 @dataclass
 class SelectPageProperty(PageProperty):
-    option: SelectOption
+    select: SelectOption
 
-    @classmethod
-    def _eligible_property_types(cls) -> list[str]:
-        return ['select', 'status']
 
-    def _plain_serialize_type_object(self) -> Any:
-        return self.option
+@dataclass
+class StatusPageProperty(PageProperty):
+    status: SelectOption
