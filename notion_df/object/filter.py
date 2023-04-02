@@ -16,7 +16,7 @@ _T = TypeVar('_T')
 
 @dataclass
 class Filter(Serializable, metaclass=ABCMeta):
-    contents: dict
+    type_object: dict
 
 
 @dataclass
@@ -37,7 +37,7 @@ class PropertyFilter(Filter):
     def _plain_serialize(self):
         return {
             "property": self.property_name,
-            self.property_type: self.contents
+            self.property_type: self.type_object
         }
 
 
@@ -50,7 +50,7 @@ class ArrayRollupFilter(PropertyFilter):
             "property": self.property_name,
             "rollup": {
                 self.aggregate_type: {
-                    self.property_type: self.contents
+                    self.property_type: self.type_object
                 }
             }
         }
@@ -60,7 +60,7 @@ class ArrayRollupFilter(PropertyFilter):
         return {
             "property": self.property_name,
             self.aggregate_type: {
-                self.property_type: self.contents
+                self.property_type: self.type_object
             }
         }
 
@@ -72,7 +72,7 @@ class TimestampFilter(Filter):
     def _plain_serialize(self):
         return {
             "timestamp": self.timestamp,
-            self.timestamp: self.contents
+            self.timestamp: self.type_object
         }
 
 

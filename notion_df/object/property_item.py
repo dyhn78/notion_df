@@ -11,7 +11,7 @@ from notion_df.util.collection import FinalClassDict
 
 
 @dataclass
-class PropertyItem(Deserializable, metaclass=ABCMeta):
+class PageProperty(Deserializable, metaclass=ABCMeta):
     """
     represents two types of data structure.
 
@@ -34,25 +34,26 @@ class PropertyItem(Deserializable, metaclass=ABCMeta):
     def __init_subclass__(cls, **kwargs) -> None:
         super().__init_subclass__(**kwargs)
         for property_type in cls._eligible_property_types():
-            item_by_property_type_dict[property_type] = cls
+            page_property_by_property_type_dict[property_type] = cls
 
     def _plain_serialize(self) -> dict[str, Any]:
         return {
             "type": self.type,
-            self.type: self._plain_serialize_contents(),
+            self.type: self._plain_serialize_type_object(),
         }
 
     @abstractmethod
-    def _plain_serialize_contents(self) -> dict[str, Any]:
+    def _plain_serialize_type_object(self) -> dict[str, Any]:
+        """https://developers.notion.com/reference/page-property-values#type-objects"""
         pass
 
     @classmethod
     def deserialize(cls, serialized: dict[str, Any]) -> Self:
-        if cls != PropertyItem:
+        if cls != PageProperty:
             self = super().deserialize(serialized)
         else:
             property_type = serialized['type']
-            item_type = item_by_property_type_dict[property_type]
+            item_type = page_property_by_property_type_dict[property_type]
             self = item_type.deserialize(serialized)
         self = cast(Self, self)
         self.name = serialized['name']
@@ -60,4 +61,4 @@ class PropertyItem(Deserializable, metaclass=ABCMeta):
         return self
 
 
-item_by_property_type_dict = FinalClassDict[str, type[PropertyItem]]()
+page_property_by_property_type_dict = FinalClassDict[str, type[PageProperty]]()

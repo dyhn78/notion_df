@@ -8,7 +8,7 @@ from notion_df.object.core import Deserializable, resolve_by_keychain
 from notion_df.object.file import ExternalFile
 from notion_df.object.misc import UUID, Icon
 from notion_df.object.parent import Parent
-from notion_df.object.property_item import PropertyItem
+from notion_df.object.property_item import PageProperty
 from notion_df.object.rich_text import RichText
 from notion_df.object.user import PartialUser
 from notion_df.request.core import Request, RequestSettings, Version, Method
@@ -25,7 +25,7 @@ class PageResponse(Deserializable):
     cover: ExternalFile
     url: str
     title: list[RichText]
-    properties: dict[str, PropertyItem] = field()
+    properties: dict[str, PageProperty] = field()
     """the dict keys are same as each property's name or id (depending on request)"""
     parent: Parent
     archived: bool
@@ -67,7 +67,7 @@ class PageCreateRequest(Request[PageResponse]):
     parent: Parent
     icon: Icon
     cover: ExternalFile
-    properties: dict[str, PropertyItem] = field()
+    properties: dict[str, PageProperty] = field()
     """the dict keys are same as each property's name or id (depending on request)"""
     children: list[BlockItem] = field()
 
@@ -91,7 +91,7 @@ class PageUpdateRequest(Request[PageResponse]):
     id: UUID
     icon: Icon
     cover: ExternalFile
-    properties: dict[str, PropertyItem] = field()
+    properties: dict[str, PageProperty] = field()
     """the dict keys are same as each property's name or id (depending on request)"""
     archived: bool
 
@@ -115,7 +115,7 @@ class PagePropertyItemBaseResponse(Deserializable, metaclass=ABCMeta):
 
 @dataclass
 class PagePropertyItemResponse(Deserializable):
-    property_item: PropertyItem
+    property_item: PageProperty
 
     def _plain_serialize(self) -> dict[str, Any]:
         return {
@@ -131,7 +131,7 @@ class PagePropertyItemResponse(Deserializable):
 
 @dataclass
 class PagePropertyItemListResponse(Deserializable):
-    property_item: PropertyItem
+    property_item: PageProperty
     results: list[PagePropertyItemResponse]
     next_cursor: Optional[str]
     has_more: bool

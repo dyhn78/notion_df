@@ -9,7 +9,7 @@ from notion_df.object.file import File, ExternalFile
 from notion_df.object.filter import Filter
 from notion_df.object.misc import Icon, UUID
 from notion_df.object.parent import Parent
-from notion_df.object.property_schema import PropertySchema
+from notion_df.object.property_schema import DatabaseProperty
 from notion_df.object.rich_text import RichText
 from notion_df.object.sort import Sort
 from notion_df.request.core import Request, RequestSettings, Version, Method
@@ -68,7 +68,7 @@ class DatabaseResponse(Deserializable):
     cover: ExternalFile
     url: str
     title: list[RichText]
-    properties: dict[str, PropertySchema] = field()
+    properties: dict[str, DatabaseProperty] = field()
     """the dict keys are same as each property's name or id (depending on request)"""
     parent: Parent
     archived: bool
@@ -108,7 +108,7 @@ class DatabaseCreateRequest(Request[DatabaseResponse]):
     """https://developers.notion.com/reference/create-a-database"""
     parent_id: UUID
     title: list[RichText]
-    properties: dict[str, PropertySchema] = field(default_factory=dict)
+    properties: dict[str, DatabaseProperty] = field(default_factory=dict)
     """the dict keys are same as each property's name or id (depending on request)"""
     icon: Optional[Icon] = field(default=None)
     cover: Optional[File] = field(default=None)
@@ -134,7 +134,7 @@ class DatabaseCreateRequest(Request[DatabaseResponse]):
 class DatabaseUpdateRequest(Request[DatabaseResponse]):
     database_id: UUID
     title: list[RichText]
-    properties: dict[str, PropertySchema] = field(default_factory=dict)
+    properties: dict[str, DatabaseProperty] = field(default_factory=dict)
 
     def get_settings(self) -> RequestSettings:
         return RequestSettings(Version.v20220628, Method.PATCH,
