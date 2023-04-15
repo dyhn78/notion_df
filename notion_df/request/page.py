@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from notion_df.request.core import Request, RequestSettings, Version, Method, MAX_PAGE_SIZE, \
-    PaginatedRequest
+    PaginatedRequest, BaseRequest
 from notion_df.response.block import ResponseBlock
 from notion_df.response.file import ExternalFile
 from notion_df.response.misc import UUID, Icon
@@ -71,11 +71,12 @@ class UpdatePage(Request[ResponsePage]):
 
 
 @dataclass
-class RetrievePagePropertyItem(PaginatedRequest[PageProperty]):
+class RetrievePagePropertyItem(BaseRequest[PageProperty]):
     """https://developers.notion.com/reference/retrieve-a-page-property"""
     page_id: UUID
     property_id: UUID
     page_size: int = -1
+    request_once = PaginatedRequest.request_once
 
     def get_settings(self) -> RequestSettings:
         return RequestSettings(Version.v20220628, Method.GET,
@@ -105,8 +106,4 @@ class RetrievePagePropertyItem(PaginatedRequest[PageProperty]):
             data = self.request_once(page_size, start_cursor)
             data_list.append(data)
 
-        return self.parse_response_data_list(data_list)
-
-    @classmethod
-    def parse_response_data_list(cls, data_list: list[dict[str, Any]]):
         return PageProperty.deserialize_property_item_list(data_list)
