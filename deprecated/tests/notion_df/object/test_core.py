@@ -7,7 +7,7 @@ import pytest
 import pytz
 from typing_extensions import Self
 
-from notion_df.response.core import DualSerializable, deserialize, resolve_by_keychain, DeserializableResolverByKeyChain
+from notion_df.object.core import DualSerializable, deserialize, resolve_by_keychain, DeserializableResolverByKeyChain
 from notion_df.util.collection import StrEnum, Keychain
 from notion_df.util.misc import NotionDfValueError
 from notion_df.variables import Variables

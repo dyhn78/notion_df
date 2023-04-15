@@ -12,7 +12,6 @@ not_a_class = TypeVar('not_a_class')
 
 def test_request_form():
     with pytest.raises(NotionDfValueError):
-        # noinspection PyPropertyDefinition
         class __TestRequestDefault(Request):
             def get_body(self) -> Any:
                 pass

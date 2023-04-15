@@ -4,78 +4,48 @@ from abc import ABCMeta
 from dataclasses import dataclass, field, fields, Field
 from datetime import datetime
 from functools import cache
-from typing import Any, Literal, Union, cast
+from typing import Any, Literal, Union, cast, final
 
 from _decimal import Decimal
 from typing_extensions import Self
 
-from notion_df.response.core import DualSerializable, AsDictDualSerializable
-from notion_df.response.file import ExternalFile, File
-from notion_df.response.misc import UUID, Icon, DateRange, SelectOption, RollupFunction
-from notion_df.response.parent import Parent
-from notion_df.response.rich_text import RichText
-from notion_df.response.user import User
+from notion_df.object.core import DualSerializable
+from notion_df.object.file import File
+from notion_df.object.misc import UUID, DateRange, SelectOption, RollupFunction
+from notion_df.object.rich_text import RichText
+from notion_df.object.user import User
 from notion_df.util.collection import FinalClassDict
 
 
 @dataclass
-class ResponsePage(DualSerializable):
-    id: UUID
-    parent: Parent
-    created_time: datetime
-    last_edited_time: datetime
-    created_by: User
-    last_edited_by: User
-    icon: Icon
-    cover: ExternalFile
-    url: str
-    title: list[RichText]
-    properties: dict[str, PageProperty] = field()
-    archived: bool
-    is_inline: bool
-
-    def _plain_serialize(self) -> dict[str, Any]:
-        return {
-            "object": "page",
-            "id": self.id,
-            "created_time": self.created_time,
-            "last_edited_time": self.last_edited_time,
-            "created_by": self.created_by,
-            "last_edited_by": self.last_edited_by,
-            "cover": self.cover,
-            "icon": self.icon,
-            "parent": self.parent,
-            "archived": self.archived,
-            "properties": self.properties,
-            "url": self.url,
-        }
-
-
-@dataclass
-class PageProperty(AsDictDualSerializable, metaclass=ABCMeta):
+class PageProperty(DualSerializable, metaclass=ABCMeta):
     """https://developers.notion.com/reference/page-property-values"""
     name: str = field(init=False)
     id: str = field(init=False)
 
     @classmethod
     @cache
-    def get_type(cls) -> str:
+    def get_typename(cls) -> str:
         """by default, return the first subclass-specific field's name.
         you should override this if the class definition does not comply the assumption."""
         return cast(Field, fields(cls)[len(fields(PageProperty))]).name
 
     def __init_subclass__(cls, **kwargs) -> None:
         super().__init_subclass__(**kwargs)
-        page_property_registry[cls.get_type()] = cls
+        page_property_registry[cls.get_typename()] = cls
+
+    def serialize(self) -> dict[str, Any]:
+        return self._serialize_asdict()
 
     @classmethod
-    def _plain_deserialize(cls, serialized: dict[str, Any], **field_value_presets) -> Self:
-        return super()._plain_deserialize(serialized, type=serialized['type'])
+    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
+        return cls._deserialize_asdict(serialized)
 
     @classmethod
+    @final
     def deserialize(cls, serialized: dict[str, Any]) -> Self:
         if cls != PageProperty:
-            return super().deserialize(serialized)
+            return cls._deserialize_this(serialized)
         subclass = page_property_registry[serialized['type']]
         return subclass.deserialize(serialized)
 
@@ -87,14 +57,6 @@ class PageProperty(AsDictDualSerializable, metaclass=ABCMeta):
             prop.name = prop_name
             properties[prop_name] = prop
         return properties
-
-    @classmethod
-    def deserialize_property_item_list(cls, response_list: list[dict[str, Any]]) -> Self:
-        typename = response_list[0]['property_item']['type']
-        subclass = page_property_registry[typename]
-        value_list = [response['result'][typename] for response in response_list]
-        merged_response = response_list[0]['result'] | {typename: value_list}
-        return subclass.deserialize(merged_response)
 
 
 page_property_registry = FinalClassDict[str, type[PageProperty]]()
@@ -161,12 +123,11 @@ class FormulaPageProperty(PageProperty):
     value: Union[bool, datetime, int, Decimal, str]
 
     @classmethod
-    def get_type(cls) -> str:
+    def get_typename(cls) -> str:
         return 'formula'
 
-    def _plain_serialize(self) -> Any:
-        return {**super()._plain_serialize(),
-                'formula': {'type': self.value_type, self.value_type: self.value}}
+    def serialize(self) -> Any:
+        return {'formula': {'type': self.value_type, self.value_type: self.value}}
 
 
 @dataclass
@@ -185,18 +146,17 @@ class RelationPageProperty(PageProperty):
     has_more: bool = field(init=False)
 
     @classmethod
-    def get_type(cls) -> str:
+    def get_typename(cls) -> str:
         return 'relation'
 
-    def _plain_serialize(self) -> Any:
-        return {**super()._plain_serialize(),
-                'relation': [{'id': page_id} for page_id in self.page_ids]}
+    def serialize(self) -> Any:
+        return {'relation': [{'id': page_id} for page_id in self.page_ids]}
 
     @classmethod
-    def _plain_deserialize(cls, serialized: dict[str, Any], **field_value_presets) -> Self:
-        return cls._plain_deserialize(serialized,
-                                      page_ids=[UUID(page['id']) for page in serialized['relation']],
-                                      has_more=serialized['has_more'])
+    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
+        self = cls(page_ids=[UUID(page['id']) for page in serialized['relation']])
+        self.has_more = serialized['has_more']
+        return self
 
 
 @dataclass
@@ -207,16 +167,17 @@ class RollupPageProperty(PageProperty):
     value: Any
 
     @classmethod
-    def get_type(cls) -> str:
+    def get_typename(cls) -> str:
         return 'rollup'
 
-    def _plain_serialize(self) -> Any:
-        return {**super()._plain_serialize(),
-                'rollup': {'function': self.function, 'type': self.value_type, self.value_type: self.value}}
+    def serialize(self) -> Any:
+        return {'rollup': {'function': self.function, 'type': self.value_type, self.value_type: self.value}}
 
     @classmethod
-    def _plain_deserialize(cls, serialized: dict[str, Any], **field_value_presets) -> Self:
-        return super()._plain_deserialize(serialized, value_type=serialized['rollup']['type'])
+    def _deserialize_this(cls, serialized: dict[str, Any], **field_value_presets) -> Self:
+        rollup = serialized['rollup']
+        value_type = rollup['type']
+        return cls(function=rollup['function'], value_type=value_type, value=rollup[value_type])
 
 
 @dataclass

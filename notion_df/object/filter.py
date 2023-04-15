@@ -8,8 +8,8 @@ from typing import Literal, TypeVar, Generic, Optional, Callable, overload
 
 from typing_extensions import Self
 
-from notion_df.response.core import Serializable
-from notion_df.response.misc import UUID, TimestampType
+from notion_df.object.core import Serializable, serialize
+from notion_df.object.misc import UUID, TimestampType
 
 _T = TypeVar('_T')
 
@@ -24,8 +24,8 @@ class CompoundFilter(Filter):
     operator: Literal['and', 'or']
     elements: list[Filter]
 
-    def _plain_serialize(self):
-        return {self.operator: self.elements}
+    def serialize(self):
+        return {self.operator: serialize(self.elements)}
 
 
 @dataclass
@@ -34,10 +34,10 @@ class PropertyFilter(Filter):
     property_name: str
     property_type: str
 
-    def _plain_serialize(self):
+    def serialize(self):
         return {
             "property": self.property_name,
-            self.property_type: self.type_object
+            self.property_type: serialize(self.type_object)
         }
 
 
@@ -45,22 +45,22 @@ class PropertyFilter(Filter):
 class ArrayRollupFilter(PropertyFilter):
     aggregate_type: Literal['any', 'every', 'none']
 
-    def _plain_serialize(self):
+    def serialize(self):
         return {
             "property": self.property_name,
             "rollup": {
                 self.aggregate_type: {
-                    self.property_type: self.type_object
+                    self.property_type: serialize(self.type_object)
                 }
             }
         }
 
-    def plain_serialize_2(self):
+    def serialize_2(self):
         # TODO: find which is correct by actual testing
         return {
             "property": self.property_name,
             self.aggregate_type: {
-                self.property_type: self.type_object
+                self.property_type: serialize(self.type_object)
             }
         }
 
@@ -69,10 +69,10 @@ class ArrayRollupFilter(PropertyFilter):
 class TimestampFilter(Filter):
     timestamp: TimestampType
 
-    def _plain_serialize(self):
+    def serialize(self):
         return {
             "timestamp_type": self.timestamp,
-            self.timestamp: self.type_object
+            self.timestamp: serialize(self.type_object)
         }
 
 

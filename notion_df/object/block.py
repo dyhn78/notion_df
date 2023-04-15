@@ -2,66 +2,36 @@ from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, field
-from datetime import datetime
 from typing import Any
 
 from typing_extensions import Self
 
-from notion_df.response.core import AsDictDualSerializable
-from notion_df.response.file import File
-from notion_df.response.misc import UUID, Icon, CodeLanguage, BlockColor
-from notion_df.response.parent import Parent
-from notion_df.response.rich_text import RichText
-from notion_df.response.user import User
+from notion_df.object.core import DualSerializable
+from notion_df.object.file import File
+from notion_df.object.misc import UUID, Icon, CodeLanguage, BlockColor
+from notion_df.object.rich_text import RichText
+from notion_df.request.block import ResponseBlock
 from notion_df.util.collection import FinalClassDict
 
-
-@dataclass
-class ResponseBlock(Deserializable, metaclass=ABCMeta):
-    id: UUID
-    parent: Parent
-    created_time: datetime
-    last_edited_time: datetime
-    created_by: User
-    last_edited_by: User
-    has_children: bool
-    archived: bool
-    type_object: BlockType
-
-    def _plain_serialize(self) -> dict[str, Any]:
-        return {
-            "object": "block",
-            "id": self.id,
-            "parent": self.parent,
-            "created_time": self.created_by,
-            "last_edited_time": self.last_edited_by,
-            "created_by": self.created_by,
-            "last_edited_by": self.last_edited_by,
-            "has_children": self.has_children,
-            "archived": self.archived,
-            "type": self.type_object.get_type(),
-            self.type_object.get_type(): self.type_object
-        }
-
-    @classmethod
-    def _plain_deserialize(cls, serialized: dict[str, Any], **field_value_presets: Any) -> Self:
-        type_object = type_object_registry[serialized['type']]
-        return cls._plain_deserialize(serialized, type=type_object.get_type(),
-                                      type_object=type_object)
+type_object_registry: FinalClassDict[str, type[BlockType]] = FinalClassDict()
 
 
 @dataclass
-class BlockType(AsDictDualSerializable, metaclass=ABCMeta):
+class BlockType(DualSerializable, metaclass=ABCMeta):
     @classmethod
     @abstractmethod
-    def get_type(cls) -> str:
+    def get_typename(cls) -> str:
         pass
 
     def __init_subclass__(cls, **kwargs):
-        type_object_registry[cls.get_type()] = cls
+        type_object_registry[cls.get_typename()] = cls
 
+    def serialize(self) -> dict[str, Any]:
+        return self._serialize_asdict()
 
-type_object_registry = FinalClassDict[str, type[BlockType]]()
+    @classmethod
+    def deserialize(cls, serialized: dict[str, Any]) -> Self:
+        return cls._deserialize_asdict(serialized)
 
 
 @dataclass
@@ -70,14 +40,14 @@ class BookmarkBlockType(BlockType):
     caption: list[RichText] = field(default_factory=list)
 
     @classmethod
-    def get_type(cls) -> str:
+    def get_typename(cls) -> str:
         return 'bookmark'
 
 
 @dataclass
 class BreadcrumbBlockType(BlockType):
     @classmethod
-    def get_type(cls) -> str:
+    def get_typename(cls) -> str:
         return 'breadcrumb'
 
 
@@ -88,7 +58,7 @@ class BulletedListItemBlockType(BlockType):
     children: list[ResponseBlock] = field(default_factory=list)
 
     @classmethod
-    def get_type(cls) -> str:
+    def get_typename(cls) -> str:
         return 'bulleted_list_item'
 
 
@@ -100,7 +70,7 @@ class CalloutBlockType(BlockType):
     children: list[ResponseBlock] = field(default_factory=list)  # TODO: double check
 
     @classmethod
-    def get_type(cls) -> str:
+    def get_typename(cls) -> str:
         return 'callout'
 
 
@@ -109,7 +79,7 @@ class ChildDatabaseBlockType(BlockType):
     title: str
 
     @classmethod
-    def get_type(cls) -> str:
+    def get_typename(cls) -> str:
         return 'child_database'
 
 
@@ -118,7 +88,7 @@ class ChildPageBlockType(BlockType):
     title: str
 
     @classmethod
-    def get_type(cls) -> str:
+    def get_typename(cls) -> str:
         return 'child_page'
 
 
@@ -129,28 +99,28 @@ class CodeBlockType(BlockType):
     caption: list[RichText] = field(default_factory=list)
 
     @classmethod
-    def get_type(cls) -> str:
+    def get_typename(cls) -> str:
         return 'code'
 
 
 @dataclass
 class ColumnListBlockType(BlockType):
     @classmethod
-    def get_type(cls) -> str:
+    def get_typename(cls) -> str:
         return 'column_list'
 
 
 @dataclass
 class ColumnBlockType(BlockType):
     @classmethod
-    def get_type(cls) -> str:
+    def get_typename(cls) -> str:
         return 'column'
 
 
 @dataclass
 class DividerBlockType(BlockType):
     @classmethod
-    def get_type(cls) -> str:
+    def get_typename(cls) -> str:
         return 'divider'
 
 
@@ -159,7 +129,7 @@ class EmbedBlockType(BlockType):
     url: str
 
     @classmethod
-    def get_type(cls) -> str:
+    def get_typename(cls) -> str:
         return 'embed'
 
 
@@ -169,7 +139,7 @@ class EquationBlockType(BlockType):
     """a KaTeX compatible string."""
 
     @classmethod
-    def get_type(cls) -> str:
+    def get_typename(cls) -> str:
         return 'equation'
 
 
@@ -178,16 +148,16 @@ class FileBlockType(BlockType):
     file: File
     caption: list[RichText] = field(default_factory=list)
 
-    def _plain_serialize(self) -> dict[str, Any]:
+    @classmethod
+    def get_typename(cls) -> str:
+        return 'file'
+
+    def serialize(self) -> dict[str, Any]:
         return {'caption': self.caption, **self.file.serialize()}
 
     @classmethod
-    def _plain_deserialize(cls, serialized: dict[str, Any], **field_value_presets: Any) -> Self:
+    def deserialize(cls, serialized: dict[str, Any]) -> Self:
         return cls(File.deserialize(serialized), serialized['caption'])
-
-    @classmethod
-    def get_type(cls) -> str:
-        return 'file'
 
 
 @dataclass
@@ -197,7 +167,7 @@ class Heading1BlockType(BlockType):
     color: BlockColor = BlockColor.DEFAULT
 
     @classmethod
-    def get_type(cls) -> str:
+    def get_typename(cls) -> str:
         return 'heading_1'
 
 
@@ -208,7 +178,7 @@ class Heading2BlockType(BlockType):
     color: BlockColor = BlockColor.DEFAULT
 
     @classmethod
-    def get_type(cls) -> str:
+    def get_typename(cls) -> str:
         return 'heading_2'
 
 
@@ -219,7 +189,7 @@ class Heading3BlockType(BlockType):
     color: BlockColor = BlockColor.DEFAULT
 
     @classmethod
-    def get_type(cls) -> str:
+    def get_typename(cls) -> str:
         return 'heading_3'
 
 
@@ -232,15 +202,15 @@ class ImageBlockType(BlockType):
     """
     file: File
 
-    def _plain_serialize(self) -> dict[str, Any]:
+    def serialize(self) -> dict[str, Any]:
         return self.file.serialize()
 
     @classmethod
-    def _plain_deserialize(cls, serialized: dict[str, Any], **field_value_presets: Any) -> Self:
+    def deserialize(cls, serialized: dict[str, Any]) -> Self:
         return cls(File.deserialize(serialized))
 
     @classmethod
-    def get_type(cls) -> str:
+    def get_typename(cls) -> str:
         return 'image'
 
 
@@ -251,7 +221,7 @@ class NumberedListItemBlockType(BlockType):
     children: list[ResponseBlock] = field(default_factory=list)
 
     @classmethod
-    def get_type(cls) -> str:
+    def get_typename(cls) -> str:
         return 'numbered_list_item'
 
 
@@ -262,7 +232,7 @@ class ParagraphBlockType(BlockType):
     children: list[ResponseBlock] = field(default_factory=list)
 
     @classmethod
-    def get_type(cls) -> str:
+    def get_typename(cls) -> str:
         return 'paragraph'
 
 
@@ -271,15 +241,15 @@ class PDFBlockType(BlockType):
     file: File
     caption: list[RichText] = field(default_factory=list)
 
-    def _plain_serialize(self) -> dict[str, Any]:
+    def serialize(self) -> dict[str, Any]:
         return {'caption': self.caption, **self.file.serialize()}
 
     @classmethod
-    def _plain_deserialize(cls, serialized: dict[str, Any], **field_value_presets: Any) -> Self:
+    def deserialize(cls, serialized: dict[str, Any]) -> Self:
         return cls(File.deserialize(serialized), serialized['caption'])
 
     @classmethod
-    def get_type(cls) -> str:
+    def get_typename(cls) -> str:
         return 'pdf'
 
 
@@ -290,7 +260,7 @@ class QuoteBlockType(BlockType):
     children: list[ResponseBlock] = field(default_factory=list)
 
     @classmethod
-    def get_type(cls) -> str:
+    def get_typename(cls) -> str:
         return 'quote'
 
 
@@ -299,16 +269,18 @@ class SyncedBlockType(BlockType, metaclass=ABCMeta):
     """cannot be changed (2023-04-02)"""
 
     @classmethod
-    def get_type(cls) -> str:
+    def get_typename(cls) -> str:
         return 'synced_block'
 
     @classmethod
     def deserialize(cls, serialized: dict[str, Any]) -> Self:
-        if serialized['synced_from']:
-            subclass = DuplicatedSyncedBlockType
-        else:
-            subclass = OriginalSyncedBlockType
-        return subclass.deserialize(serialized)
+        def get_subclass():
+            if serialized['synced_from']:
+                return DuplicatedSyncedBlockType
+            else:
+                return OriginalSyncedBlockType
+
+        return get_subclass().deserialize(serialized)
 
 
 @dataclass
@@ -316,7 +288,7 @@ class OriginalSyncedBlockType(SyncedBlockType):
     """cannot be changed (2023-04-02)"""
     children: list[ResponseBlock] = field(default_factory=list)
 
-    def _plain_serialize(self) -> dict[str, Any]:
+    def serialize(self) -> dict[str, Any]:
         return {
             "synced_from": None,
             "children": self.children
@@ -328,7 +300,7 @@ class DuplicatedSyncedBlockType(SyncedBlockType):
     """cannot be changed (2023-04-02)"""
     block_id: UUID
 
-    def _plain_serialize(self) -> dict[str, Any]:
+    def serialize(self) -> dict[str, Any]:
         return {'synced_from': {'block_id': self.block_id}}
 
 
@@ -340,7 +312,7 @@ class TableBlockType(BlockType):
     has_row_header: bool
 
     @classmethod
-    def get_type(cls) -> str:
+    def get_typename(cls) -> str:
         return 'table'
 
 
@@ -350,7 +322,7 @@ class TableRowBlockType(BlockType):
     """An array of cell contents in horizontal display order. Each cell is an array of rich text objects."""
 
     @classmethod
-    def get_type(cls) -> str:
+    def get_typename(cls) -> str:
         return 'table_row'
 
 
@@ -359,7 +331,7 @@ class TableOfContentsBlockType(BlockType):
     color: BlockColor = BlockColor.DEFAULT
 
     @classmethod
-    def get_type(cls) -> str:
+    def get_typename(cls) -> str:
         return 'table_of_contents'
 
 
@@ -371,7 +343,7 @@ class ToDoBlockType(BlockType):
     children: list[ResponseBlock] = field(default_factory=list)
 
     @classmethod
-    def get_type(cls) -> str:
+    def get_typename(cls) -> str:
         return 'to_do'
 
 
@@ -382,7 +354,7 @@ class ToggleBlockType(BlockType):
     children: list[ResponseBlock] = field(default_factory=list)
 
     @classmethod
-    def get_type(cls) -> str:
+    def get_typename(cls) -> str:
         return 'toggle'
 
 
@@ -394,23 +366,22 @@ class VideoBlockType(BlockType):
 
     https://developers.notion.com/reference/block#supported-video-types
     """
-
     file: File
 
-    def _plain_serialize(self) -> dict[str, Any]:
+    def serialize(self) -> dict[str, Any]:
         return self.file.serialize()
 
     @classmethod
-    def _plain_deserialize(cls, serialized: dict[str, Any], **field_value_presets: Any) -> Self:
+    def deserialize(cls, serialized: dict[str, Any]) -> Self:
         return cls(File.deserialize(serialized))
 
     @classmethod
-    def get_type(cls) -> str:
+    def get_typename(cls) -> str:
         return 'video'
 
 
 @dataclass
 class UnsupportedBlockType(BlockType):
     @classmethod
-    def get_type(cls) -> str:
+    def get_typename(cls) -> str:
         return 'unsupported'

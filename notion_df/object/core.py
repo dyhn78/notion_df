@@ -7,7 +7,7 @@ from dataclasses import dataclass, fields, InitVar
 from datetime import datetime
 from decimal import Decimal
 from enum import Enum
-from typing import Any, get_origin, get_args, TypeVar, final
+from typing import Any, get_origin, get_args, final
 
 import dateutil.parser
 from typing_extensions import Self
@@ -32,7 +32,7 @@ def serialize(obj: Any):
     if isinstance(obj, Enum):
         return obj.value
     if isinstance(obj, datetime):
-        return DateTimeSerializer.serialize(obj)
+        return obj.astimezone(Variables.timezone).isoformat()
     raise NotionDfValueError('cannot serialize', {'obj': obj})
 
 
@@ -78,25 +78,11 @@ def deserialize(typ: type, serialized: Any):
     if issubclass(typ, Enum):
         return typ(serialized)
     if issubclass(typ, datetime):
-        return DateTimeSerializer.deserialize(serialized)
+        datetime_obj = dateutil.parser.parse(serialized)
+        return datetime_obj.astimezone(Variables.timezone)
     if isinstance(typ, InitVar):  # TODO: is this really needed?
         return deserialize(typ.type, serialized)
     raise NotionDfValueError('cannot deserialize: not supported class', err_vars)
-
-
-class DateTimeSerializer:
-    @staticmethod
-    def get_timezone():
-        return Variables.timezone
-
-    @classmethod
-    def serialize(cls, dt: datetime):
-        return dt.astimezone(cls.get_timezone()).isoformat()  # TODO: check Notion time format
-
-    @classmethod
-    def deserialize(cls, dt_string: str):
-        datetime_obj = dateutil.parser.parse(dt_string)
-        return datetime_obj.astimezone(cls.get_timezone())
 
 
 @dataclass
@@ -109,19 +95,18 @@ class Serializable(metaclass=ABCMeta):
 
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
-        dataclass(cls)
 
     @abstractmethod
     def serialize(self) -> dict[str, Any]:
         pass
 
-
-def serialize_asdict(self: Serializable):
-    serialized = {}
-    for fd in fields(self):
-        if fd.init:
-            serialized[fd.name] = serialize(getattr(self, fd.name))
-    return serialized
+    @final
+    def _serialize_asdict(self) -> dict[str, Any]:
+        serialized = {}
+        for fd in fields(self):
+            if fd.init:
+                serialized[fd.name] = serialize(getattr(self, fd.name))
+        return serialized
 
 
 @dataclass
@@ -129,37 +114,27 @@ class Deserializable(metaclass=ABCMeta):
     """dataclass representation of the resources defined in Notion REST API.
     transformable from JSON object."""
 
-    @classmethod
-    @abstractmethod
-    def _deserialize_this(cls, serialized: dict[str, Any]):
+    def __init__(self, **kwargs):
         pass
 
     @classmethod
-    def _get_subclass(cls, serialized: dict[str, Any]) -> Self:
-        """Note: override this method if you need to implement a unified deserializer entrypoint."""
-        return cls
+    @abstractmethod
+    def deserialize(cls, serialized: dict[str, Any]) -> Self:
+        pass
 
     @classmethod
     @final
-    def deserialize(cls, serialized: dict[str, Any]) -> Self:
-        return cls._get_subclass(serialized)._deserialize_this(serialized)
+    def _deserialize_asdict(cls, serialized: dict[str, Any]) -> Self:
+        self = cls(**{fd.name: serialized[fd.name] for fd in fields(cls) if fd.init})  # type: ignore
+        for fd in fields(cls):
+            if not fd.init:
+                try:
+                    setattr(self, fd.name, serialized[fd.name])
+                except KeyError:
+                    continue
+        return self
 
 
-Deserializable_T = TypeVar('Deserializable_T', bound=Deserializable)
-
-
-def deserialize_this_asdict(cls: type[Deserializable_T], serialized: dict[str, Any]) -> Deserializable_T:
-    self = cls(**{fd.name: serialized[fd.name] for fd in fields(cls) if fd.init})
-    for fd in fields(cls):
-        if not fd.init:
-            try:
-                setattr(self, fd.name, serialized[fd.name])
-            except KeyError:
-                continue
-    return self
-
-
-@dataclass
 class DualSerializable(Serializable, Deserializable, metaclass=ABCMeta):
     """dataclass representation of the resources defined in Notion REST API.
     interchangeable with JSON object."""

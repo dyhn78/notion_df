@@ -1,15 +1,16 @@
 from abc import ABCMeta
 from dataclasses import dataclass
-from typing import Literal
+from typing import Literal, Any
 
-from notion_df.response.core import AsDictSerializable
-from notion_df.response.misc import TimestampType
+from notion_df.object.core import Serializable
+from notion_df.object.misc import TimestampType
 
 Direction = Literal['ascending', 'descending']
 
 
-class Sort(AsDictSerializable, metaclass=ABCMeta):
-    pass
+class Sort(Serializable, metaclass=ABCMeta):
+    def serialize(self) -> dict[str, Any]:
+        return self._serialize_asdict()
 
 
 @dataclass

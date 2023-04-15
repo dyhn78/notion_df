@@ -8,19 +8,19 @@ from typing import TypeVar, Generic, ClassVar, get_args, Any, final, Optional
 
 from requests import Response, request
 
-from notion_df.response.core import DualSerializable, serialize, deserialize
+from notion_df.object.core import DualSerializable, serialize, deserialize
 from notion_df.util.collection import StrEnum
 from notion_df.util.misc import NotionDfValueError
 
-ResponseData_T = TypeVar('ResponseData_T', bound=DualSerializable)
-ResponseDataElement_T = TypeVar('ResponseDataElement_T', bound=DualSerializable)
+Response_T = TypeVar('Response_T', bound=DualSerializable)
+ResponseElement_T = TypeVar('ResponseElement_T', bound=DualSerializable)
 MAX_PAGE_SIZE = 100
 
 
 @dataclass
-class BaseRequest(Generic[ResponseData_T], metaclass=ABCMeta):
+class BaseRequest(Generic[Response_T], metaclass=ABCMeta):
     """base request form made of various Resources.
-    type argument `ResponseData_T` is strongly recommended on subclassing.
+    type argument `Response_T` is strongly recommended on subclassing.
     get api_key from https://www.notion.so/my-integrations"""
     api_key: str
     return_type: ClassVar[type[DualSerializable]]
@@ -45,24 +45,24 @@ class BaseRequest(Generic[ResponseData_T], metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def request(self) -> ResponseData_T:
+    def request(self) -> Response_T:
         pass
 
 
 @dataclass
-class Request(BaseRequest[ResponseData_T], metaclass=ABCMeta):
+class Request(BaseRequest[Response_T], metaclass=ABCMeta):
     @final
-    def request(self) -> ResponseData_T:
+    def request(self) -> Response_T:
         response = self.get_settings().request(self.api_key, self.get_body())
         response.raise_for_status()
         return self.parse_response_data(response.json())  # nomypy
 
     @classmethod
-    def parse_response_data(cls, data: dict[str, Any]) -> ResponseData_T:
+    def parse_response_data(cls, data: dict[str, Any]) -> Response_T:
         return cls.return_type.deserialize(data)
 
 
-class PaginatedRequest(BaseRequest[list[ResponseDataElement_T]], metaclass=ABCMeta):
+class PaginatedRequest(BaseRequest[list[ResponseElement_T]], metaclass=ABCMeta):
     page_size: int
 
     @final
@@ -78,7 +78,7 @@ class PaginatedRequest(BaseRequest[list[ResponseDataElement_T]], metaclass=ABCMe
         response.raise_for_status()
         return response.json()
 
-    def request(self) -> list[ResponseDataElement_T]:
+    def request(self) -> list[ResponseElement_T]:
         page_size_total = self.page_size
         if page_size_total == -1:
             page_size_total = float('inf')
@@ -99,12 +99,12 @@ class PaginatedRequest(BaseRequest[list[ResponseDataElement_T]], metaclass=ABCMe
         return self.parse_response_data_list(data_list)
 
     @classmethod
-    def parse_response_data_list(cls, data_list: list[dict[str, Any]]) -> list[ResponseDataElement_T]:
-        ret = []
+    def parse_response_data_list(cls, data_list: list[dict[str, Any]]) -> list[ResponseElement_T]:
+        element_list = []
         for data in data_list:
-            for result in data['results']:
-                ret.append(deserialize(cls.return_type, result))
-        return ret
+            for data_element in data['results']:
+                element_list.append(deserialize(cls.return_type, data_element))
+        return element_list
 
 
 @dataclass
