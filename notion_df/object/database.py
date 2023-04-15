@@ -91,7 +91,7 @@ class DatabaseProperty(Deserializable, metaclass=ABCMeta):
         pass
 
     @classmethod
-    def _plain_deserialize(cls, serialized: dict[str, Any], **field_vars) -> Self:
+    def _plain_deserialize(cls, serialized: dict[str, Any], **field_value_presets) -> Self:
         self = super()._plain_deserialize(serialized)
         self.name = serialized['name']
         self.id = serialized['id']

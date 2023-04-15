@@ -3,7 +3,7 @@ from __future__ import annotations
 import inspect
 import types
 from abc import ABCMeta
-from dataclasses import dataclass, fields, InitVar
+from dataclasses import dataclass, fields, InitVar, Field
 from datetime import datetime
 from decimal import Decimal
 from enum import Enum
@@ -120,10 +120,7 @@ class Serializable(metaclass=ABCMeta):
 
     def _plain_serialize(self) -> dict[str, Any]:
         # TODO: remove default option to class decorator @serialize_asdict
-        """serialize only the first depth structure, leaving each field value not serialized.
-
-        by default, this performs {**fd.name: fd.value for fd in fields(self) if fd.init == True}
-        override the method if the serialized structure does not comply this assumption."""
+        """serialize only the first depth structure, leaving each field value not serialized."""
         serialized = {}
         for fd in fields(self):
             if fd.init:
@@ -132,10 +129,25 @@ class Serializable(metaclass=ABCMeta):
 
     @final
     def serialize(self) -> dict[str, Any]:
-        field_value_dict = {fd.name: getattr(self, fd.name) for fd in fields(self)}
-        self_each_field_serialized = type(self)(
-            **{fd_name: serialize(fd_value) for fd_name, fd_value in field_value_dict.items()})
-        return self_each_field_serialized._plain_serialize()
+        def serialize_field(_fd: Field):
+            return serialize(getattr(self, _fd.name))
+
+        each_field_serialized_self = type(self)(
+            **{fd.name: serialize_field(fd) for fd in fields(self) if fd.init})
+        for fd in fields(self):
+            if not fd.init:
+                setattr(each_field_serialized_self, fd.name, serialize_field(fd))
+        return each_field_serialized_self._plain_serialize()
+
+
+@dataclass
+class AsDictSerializable(Serializable, metaclass=ABCMeta):
+    def _plain_serialize(self) -> dict[str, Any]:
+        serialized = {}
+        for fd in fields(self):
+            if fd.init:
+                serialized[fd.name] = getattr(self, fd.name)
+        return serialized
 
 
 @dataclass
@@ -148,47 +160,50 @@ class Deserializable(Serializable, metaclass=ABCMeta):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
+    def _plain_reverse_deserialize(self):
+        return self._plain_serialize()
+
     @classmethod
-    def _plain_deserialize(cls, serialized: dict[str, Any], **field_vars: Any) -> Self:
+    def _plain_deserialize(cls, serialized: dict[str, Any], **field_value_presets: Any) -> Self:
         # TODO: remove default process on init=False fields to class decorator @serialize_asdict
         """return cls(**{field_name: field_serialized}).
 
         by default, this parses get_mock_serialize() to determine each fields' location (i.e. keychain).
         override this method if plain_serialize() definition is not parsable."""
-        each_field_serialized_dict = {}
+        init_fields_serialized_dict = {}
+        post_init_fields_serialized_dict = {}
+        field_init_dict: dict[str, bool] = {fd.name: fd.init for fd in fields(cls)}
 
-        # 1. collect field(init=True)
         for keychain, field_name in cls._get_field_keychain_dict().items():
-            field_serialized = serialized
-            if field_name in field_vars:
-                field_serialized = field_vars[field_name]
+            serialized_field = serialized
+            if field_name in field_value_presets:
+                serialized_field = field_value_presets[field_name]
             else:
                 for key in keychain:
                     if isinstance(key, MockAttribute):
-                        key = field_vars[key.name]
-                    field_serialized = field_serialized[key]
-            each_field_serialized_dict[field_name] = field_serialized
-        plain_self = cls(**each_field_serialized_dict)
+                        key = field_value_presets[key.name]
+                    serialized_field = serialized_field[key]
 
-        # 2. collect field(init=False)
-        for fd in fields(cls):
-            if fd.init:
-                continue
-            if fd.name in field_vars:
-                field_serialized = field_vars[fd.name]
+            if field_init_dict[field_name]:
+                init_fields_serialized_dict[field_name] = serialized_field
             else:
-                field_serialized = serialized[fd.name]
-            setattr(plain_self, fd.name, field_serialized)
-        return plain_self
+                post_init_fields_serialized_dict[field_name] = serialized_field
+
+        each_field_serialized_self = cls(**init_fields_serialized_dict)
+        for fd in fields(cls):
+            if not fd.init:
+                setattr(each_field_serialized_self, fd.name, post_init_fields_serialized_dict[fd.name])
+
+        return each_field_serialized_self
 
     @classmethod
     def deserialize(cls, serialized: dict[str, Any]) -> Self:
         """Note: override this method if you need to implement a unified deserializer entrypoint."""
-        plain_self = cls._plain_deserialize(serialized)
-        print(plain_self)
-        for field in fields(plain_self):
-            setattr(plain_self, field.name, deserialize(field.type, getattr(plain_self, field.name)))
-        return plain_self
+        each_field_serialized_self = cls._plain_deserialize(serialized)
+        for field in fields(each_field_serialized_self):
+            setattr(each_field_serialized_self, field.name,
+                    deserialize(field.type, getattr(each_field_serialized_self, field.name)))
+        return each_field_serialized_self
 
     @classmethod
     @final
@@ -219,7 +234,7 @@ class Deserializable(Serializable, metaclass=ABCMeta):
         for field in fields(MockDeserializable):
             setattr(_mock, field.name, MockAttribute(field.name))
         try:
-            return _mock._plain_serialize()
+            return _mock._plain_reverse_deserialize()
         except AttributeError:
             raise NotionDfValueError('_plain_serialize() not parsable', {'cls': cls})
 

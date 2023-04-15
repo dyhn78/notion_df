@@ -88,7 +88,7 @@ class ResponsePageProperty(BaseResponsePageProperty):
         }
 
     @classmethod
-    def _plain_deserialize(cls, serialized: dict[str, Any], **field_vars) -> dict[str, Any]:
+    def _plain_deserialize(cls, serialized: dict[str, Any], **field_value_presets) -> dict[str, Any]:
         return {'property_item': serialized}
 
 

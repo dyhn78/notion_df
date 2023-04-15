@@ -23,7 +23,7 @@ class User(Deserializable, metaclass=ABCMeta):
         }
 
     @classmethod
-    def _plain_deserialize(cls, serialized: dict[str, Any], **field_vars: Any) -> Self:
+    def _plain_deserialize(cls, serialized: dict[str, Any], **field_value_presets: Any) -> Self:
         plain_self = cls._plain_deserialize(serialized)
         plain_self.name = serialized['name']
         plain_self.avatar_url = serialized['avatar_url']

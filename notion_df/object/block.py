@@ -44,7 +44,7 @@ class BlockObject(Deserializable, metaclass=ABCMeta):
         }
 
     @classmethod
-    def _plain_deserialize(cls, serialized: dict[str, Any], **field_vars: Any) -> Self:
+    def _plain_deserialize(cls, serialized: dict[str, Any], **field_value_presets: Any) -> Self:
         type_object = type_object_registry[serialized['type']]
         return cls._plain_deserialize(serialized, type=type_object.get_type(),
                                       type_object=type_object)
@@ -182,7 +182,7 @@ class FileBlockType(BlockType):
         return {'caption': self.caption, **self.file.serialize()}
 
     @classmethod
-    def _plain_deserialize(cls, serialized: dict[str, Any], **field_vars: Any) -> Self:
+    def _plain_deserialize(cls, serialized: dict[str, Any], **field_value_presets: Any) -> Self:
         return cls(File.deserialize(serialized), serialized['caption'])
 
     @classmethod
@@ -236,7 +236,7 @@ class ImageBlockType(BlockType):
         return self.file.serialize()
 
     @classmethod
-    def _plain_deserialize(cls, serialized: dict[str, Any], **field_vars: Any) -> Self:
+    def _plain_deserialize(cls, serialized: dict[str, Any], **field_value_presets: Any) -> Self:
         return cls(File.deserialize(serialized))
 
     @classmethod
@@ -275,7 +275,7 @@ class PDFBlockType(BlockType):
         return {'caption': self.caption, **self.file.serialize()}
 
     @classmethod
-    def _plain_deserialize(cls, serialized: dict[str, Any], **field_vars: Any) -> Self:
+    def _plain_deserialize(cls, serialized: dict[str, Any], **field_value_presets: Any) -> Self:
         return cls(File.deserialize(serialized), serialized['caption'])
 
     @classmethod
@@ -401,7 +401,7 @@ class VideoBlockType(BlockType):
         return self.file.serialize()
 
     @classmethod
-    def _plain_deserialize(cls, serialized: dict[str, Any], **field_vars: Any) -> Self:
+    def _plain_deserialize(cls, serialized: dict[str, Any], **field_value_presets: Any) -> Self:
         return cls(File.deserialize(serialized))
 
     @classmethod

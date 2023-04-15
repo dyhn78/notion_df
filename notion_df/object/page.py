@@ -79,7 +79,7 @@ class PageProperty(Deserializable, metaclass=ABCMeta):
         page_property_registry[cls.get_type()] = cls
 
     @classmethod
-    def _plain_deserialize(cls, serialized: dict[str, Any], **field_vars) -> Self:
+    def _plain_deserialize(cls, serialized: dict[str, Any], **field_value_presets) -> Self:
         return super()._plain_deserialize(serialized, type=serialized['type'])
 
     @classmethod
@@ -186,7 +186,7 @@ class RelationPageProperty(PageProperty):
                 'relation': [{'id': page_id} for page_id in self.page_ids]}
 
     @classmethod
-    def _plain_deserialize(cls, serialized: dict[str, Any], **field_vars) -> Self:
+    def _plain_deserialize(cls, serialized: dict[str, Any], **field_value_presets) -> Self:
         return cls._plain_deserialize(serialized,
                                       page_ids=[UUID(page['id']) for page in serialized['relation']],
                                       has_more=serialized['has_more'])
@@ -208,7 +208,7 @@ class RollupPageProperty(PageProperty):
                 'rollup': {'function': self.function, 'type': self.value_type, self.value_type: self.value}}
 
     @classmethod
-    def _plain_deserialize(cls, serialized: dict[str, Any], **field_vars) -> Self:
+    def _plain_deserialize(cls, serialized: dict[str, Any], **field_value_presets) -> Self:
         return super()._plain_deserialize(serialized, value_type=serialized['rollup']['type'])
 
 

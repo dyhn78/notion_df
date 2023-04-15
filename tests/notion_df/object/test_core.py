@@ -128,7 +128,7 @@ def test_deserializable__datetime():
     # assert deserialize(serialized, TestDeserializable) == deserializable
 
 
-def test_deserializable__collections():
+def test__deserializable__collections():
     class TestColor(StrEnum):
         default = 'default'
         gray = 'gray'
@@ -185,7 +185,7 @@ def test__deserializer__dynamic_type():
             }
 
         @classmethod
-        def _plain_deserialize(cls, serialized: dict[str, Any], **field_vars: Any) -> Self:
+        def _plain_deserialize(cls, serialized: dict[str, Any], **field_value_presets: Any) -> Self:
             return super()._plain_deserialize(serialized, type=serialized['type'])
 
     assert TestDeserializable.deserialize({

@@ -183,7 +183,7 @@ class SelectOption(Deserializable):
         }
 
     @classmethod
-    def _plain_deserialize(cls, serialized: dict[str, Any], **field_vars: Any) -> Self:
+    def _plain_deserialize(cls, serialized: dict[str, Any], **field_value_presets: Any) -> Self:
         plain_self = super()._plain_deserialize(serialized)
         plain_self.id = serialized['id']
         plain_self.color = serialized['color']
@@ -207,7 +207,7 @@ class StatusGroups(Deserializable):
         }
 
     @classmethod
-    def _plain_deserialize(cls, serialized: dict[str, Any], **field_vars: Any) -> Self:
+    def _plain_deserialize(cls, serialized: dict[str, Any], **field_value_presets: Any) -> Self:
         plain_self = super()._plain_deserialize(serialized)
         plain_self.id = serialized['id']
         plain_self.color = serialized['color']
