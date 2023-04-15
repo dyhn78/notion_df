@@ -48,22 +48,27 @@ class RichText(DualSerializable, metaclass=ABCMeta):
 
     @classmethod
     @final
+    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
+        self = cls._deserialize_main(serialized)
+        self.annotations = serialized['annotations']
+        self.plain_text = serialized['plain_text']
+        self.href = serialized['href']
+        return self
+
+    @classmethod
+    @final
     def deserialize(cls, serialized: dict[str, Any]) -> Self:
+        if cls != RichText:
+            return cls._deserialize_this(serialized)
+
         def get_typename(ser: dict[str, Any]) -> tuple[str, ...]:
             if 'type' in ser:
                 typename = ser['type']
                 return (typename,) + get_typename(ser[typename])
             return ()
 
-        if cls != RichText:
-            self = cls._deserialize_main(serialized)
-        else:
-            subclass = rich_text_registry[get_typename(serialized)]
-            self = subclass._deserialize_main(serialized)
-        self.annotations = serialized['annotations']
-        self.plain_text = serialized['plain_text']
-        self.href = serialized['href']
-        return self
+        subclass = rich_text_registry[get_typename(serialized)]
+        return subclass._deserialize_this(serialized)
 
 
 rich_text_registry: FinalClassDict[tuple[str, ...], type[RichText]] = FinalClassDict()

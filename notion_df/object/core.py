@@ -12,7 +12,7 @@ from typing import Any, get_origin, get_args, final
 import dateutil.parser
 from typing_extensions import Self
 
-from notion_df.util.misc import NotionDfValueError
+from notion_df.util.misc import NotionDfValueError, NotionDfNotImplementedError
 from notion_df.variables import Variables
 
 
@@ -110,6 +110,7 @@ class Serializable(metaclass=ABCMeta):
 
     @final
     def _serialize_asdict(self) -> dict[str, Any]:
+        """helper method to implement serialize()."""
         serialized = {}
         for fd in fields(self):
             if fd.init:
@@ -126,13 +127,20 @@ class Deserializable(metaclass=ABCMeta):
         pass
 
     @classmethod
-    @abstractmethod
     def deserialize(cls, serialized: dict[str, Any]) -> Self:
-        pass
+        """override this to allow proxy-deserialize of subclasses."""
+        return cls._deserialize_this(serialized)
+
+    @classmethod
+    @abstractmethod
+    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
+        """override this to modify deserialization of itself."""
+        raise NotionDfNotImplementedError
 
     @classmethod
     @final
     def _deserialize_asdict(cls, serialized: dict[str, Any]) -> Self:
+        """helper method to implement _deserialize_this()."""
         self = cls(**{fd.name: serialized[fd.name] for fd in fields(cls) if fd.init})  # type: ignore
         for fd in fields(cls):
             if not fd.init:

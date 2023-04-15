@@ -224,11 +224,6 @@ class Icon(DualSerializable, metaclass=ABCMeta):
         pass
 
     @classmethod
-    @abstractmethod
-    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
-        pass
-
-    @classmethod
     @final
     def deserialize(cls, serialized: dict[str, Any]) -> Self:
         if cls != Icon:

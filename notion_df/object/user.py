@@ -21,6 +21,13 @@ class User(DualSerializable, metaclass=ABCMeta):
         pass
 
     @classmethod
+    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
+        self = cls._deserialize_main(serialized)
+        self.name = serialized['name']
+        self.avatar_url = serialized['avatar_url']
+        return self
+
+    @classmethod
     @final
     def deserialize(cls, serialized: dict[str, Any]) -> Self:
         def get_subclass() -> type[User]:
@@ -34,10 +41,7 @@ class User(DualSerializable, metaclass=ABCMeta):
                 else:
                     return UserBot
 
-        self = get_subclass()._deserialize_main(serialized)
-        self.name = serialized['name']
-        self.avatar_url = serialized['avatar_url']
-        return self
+        return get_subclass()._deserialize_this(serialized)
 
 
 @dataclass

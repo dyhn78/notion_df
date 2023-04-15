@@ -174,7 +174,7 @@ class RollupPageProperty(PageProperty):
         return {'rollup': {'function': self.function, 'type': self.value_type, self.value_type: self.value}}
 
     @classmethod
-    def _deserialize_this(cls, serialized: dict[str, Any], **field_value_presets) -> Self:
+    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
         rollup = serialized['rollup']
         value_type = rollup['type']
         return cls(function=rollup['function'], value_type=value_type, value=rollup[value_type])
