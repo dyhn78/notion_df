@@ -7,7 +7,7 @@ from typing import ClassVar, Any, NewType, Literal
 
 from typing_extensions import Self
 
-from notion_df.response.core import Deserializable, resolve_by_keychain
+from notion_df.response.core import DualSerializable, resolve_by_keychain
 from notion_df.util.collection import StrEnum
 
 UUID = NewType('UUID', str)
@@ -119,7 +119,7 @@ class RollupFunction(StrEnum):
 
 
 @dataclass
-class Annotations(Deserializable):
+class Annotations(DualSerializable):
     bold: bool = False
     italic: bool = False
     strikethrough: bool = False
@@ -139,7 +139,7 @@ class Annotations(Deserializable):
 
 
 @resolve_by_keychain('type')
-class Icon(Deserializable, metaclass=ABCMeta):
+class Icon(DualSerializable, metaclass=ABCMeta):
     pass
 
 
@@ -157,7 +157,7 @@ class Emoji(Icon):
 
 
 @dataclass
-class DateRange(Deserializable):
+class DateRange(DualSerializable):
     # timezone option is disabled. you should handle timezone inside 'start' and 'end'.
     start: datetime
     end: datetime
@@ -170,7 +170,7 @@ class DateRange(Deserializable):
 
 
 @dataclass
-class SelectOption(Deserializable):
+class SelectOption(DualSerializable):
     name: str
     id: str = field(init=False)
     """Identifier of the option, which does not change if the name is changed. 
@@ -191,7 +191,7 @@ class SelectOption(Deserializable):
 
 
 @dataclass
-class StatusGroups(Deserializable):
+class StatusGroups(DualSerializable):
     name: str
     id: str = field(init=False)
     """Identifier of the option, which does not change if the name is changed. 

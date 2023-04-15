@@ -4,12 +4,12 @@ from typing import Any
 
 from typing_extensions import Self
 
-from notion_df.response.core import Deserializable
+from notion_df.response.core import DualSerializable
 from notion_df.response.misc import UUID
 
 
 @dataclass
-class User(Deserializable, metaclass=ABCMeta):
+class User(DualSerializable, metaclass=ABCMeta):
     """field with `init=False` are those not required from user-side but provided from server-side."""
     id: UUID
     name: str = field(init=False)

@@ -7,7 +7,7 @@ from typing import Any
 
 from typing_extensions import Self
 
-from notion_df.response.core import Deserializable
+from notion_df.response.core import DualSerializable
 from notion_df.response.file import ExternalFile
 from notion_df.response.misc import UUID, Icon, NumberFormat, SelectOption, StatusGroups, RollupFunction
 from notion_df.response.parent import Parent
@@ -17,7 +17,7 @@ from notion_df.util.misc import NotionDfValueError
 
 
 @dataclass
-class ResponseDatabase(Deserializable):
+class ResponseDatabase(DualSerializable):
     # TODO: configure Property -> DatabaseProperty 1:1 mapping, from Property's side.
     #  access this mapping from Property (NOT ResponseDatabase), the base class.
     #  Property.from_schema(schema: DatabaseProperty) -> Property
@@ -54,7 +54,7 @@ class ResponseDatabase(Deserializable):
 
 
 @dataclass
-class DatabaseProperty(Deserializable, metaclass=ABCMeta):
+class DatabaseProperty(DualSerializable, metaclass=ABCMeta):
     """
     represents two types of data structure.
 

@@ -7,7 +7,7 @@ from typing import Any
 
 from typing_extensions import Self
 
-from notion_df.response.core import Deserializable, AsDictDeserializable
+from notion_df.response.core import AsDictDualSerializable
 from notion_df.response.file import File
 from notion_df.response.misc import UUID, Icon, CodeLanguage, BlockColor
 from notion_df.response.parent import Parent
@@ -51,7 +51,7 @@ class ResponseBlock(Deserializable, metaclass=ABCMeta):
 
 
 @dataclass
-class BlockType(AsDictDeserializable, metaclass=ABCMeta):
+class BlockType(AsDictDualSerializable, metaclass=ABCMeta):
     @classmethod
     @abstractmethod
     def get_type(cls) -> str:

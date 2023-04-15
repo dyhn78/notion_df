@@ -4,13 +4,13 @@ from abc import ABCMeta
 from dataclasses import dataclass
 from typing import Any
 
-from notion_df.response.core import Deserializable, resolve_by_keychain
+from notion_df.response.core import DualSerializable, resolve_by_keychain
 from notion_df.response.misc import UUID
 
 
 @resolve_by_keychain('type')
 @dataclass
-class Parent(Deserializable, metaclass=ABCMeta):
+class Parent(DualSerializable, metaclass=ABCMeta):
     # https://developers.notion.com/reference/parent-object
     id: UUID
 

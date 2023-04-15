@@ -13,7 +13,7 @@ from notion_df.util.collection import DictFilter
 class AppendBlockChildren(Request):
     """https://developers.notion.com/reference/patch-block-children"""
     id: UUID
-    type_objects: list[BlockType]
+    children: list[BlockType]
 
     def get_settings(self) -> RequestSettings:
         return RequestSettings(Version.v20220222, Method.PATCH,
@@ -24,7 +24,7 @@ class AppendBlockChildren(Request):
             "object": "block",
             "type": type_object,
             type_object.get_type(): type_object,
-        } for type_object in self.type_objects]}
+        } for type_object in self.children]}
 
 
 @dataclass

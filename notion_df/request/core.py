@@ -8,12 +8,12 @@ from typing import TypeVar, Generic, ClassVar, get_args, Any, final, Optional
 
 from requests import Response, request
 
-from notion_df.response.core import Deserializable, serialize, deserialize
+from notion_df.response.core import DualSerializable, serialize, deserialize
 from notion_df.util.collection import StrEnum
 from notion_df.util.misc import NotionDfValueError
 
-ResponseData_T = TypeVar('ResponseData_T', bound=Deserializable)
-ResponseDataElement_T = TypeVar('ResponseDataElement_T', bound=Deserializable)
+ResponseData_T = TypeVar('ResponseData_T', bound=DualSerializable)
+ResponseDataElement_T = TypeVar('ResponseDataElement_T', bound=DualSerializable)
 MAX_PAGE_SIZE = 100
 
 
@@ -23,7 +23,7 @@ class BaseRequest(Generic[ResponseData_T], metaclass=ABCMeta):
     type argument `ResponseData_T` is strongly recommended on subclassing.
     get api_key from https://www.notion.so/my-integrations"""
     api_key: str
-    return_type: ClassVar[type[Deserializable]]
+    return_type: ClassVar[type[DualSerializable]]
 
     def __init_subclass__(cls, **kwargs):
         try:

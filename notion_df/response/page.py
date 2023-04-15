@@ -9,7 +9,7 @@ from typing import Any, Literal, Union, cast
 from _decimal import Decimal
 from typing_extensions import Self
 
-from notion_df.response.core import Deserializable, AsDictDeserializable
+from notion_df.response.core import DualSerializable, AsDictDualSerializable
 from notion_df.response.file import ExternalFile, File
 from notion_df.response.misc import UUID, Icon, DateRange, SelectOption, RollupFunction
 from notion_df.response.parent import Parent
@@ -19,7 +19,7 @@ from notion_df.util.collection import FinalClassDict
 
 
 @dataclass
-class ResponsePage(Deserializable):
+class ResponsePage(DualSerializable):
     id: UUID
     parent: Parent
     created_time: datetime
@@ -31,7 +31,6 @@ class ResponsePage(Deserializable):
     url: str
     title: list[RichText]
     properties: dict[str, PageProperty] = field()
-    """the dict keys are same as each property's name or id (depending on request)"""
     archived: bool
     is_inline: bool
 
@@ -39,31 +38,22 @@ class ResponsePage(Deserializable):
         return {
             "object": "page",
             "id": self.id,
-            "created_time": self.created_by,
-            "last_edited_time": self.last_edited_by,
+            "created_time": self.created_time,
+            "last_edited_time": self.last_edited_time,
             "created_by": self.created_by,
             "last_edited_by": self.last_edited_by,
             "cover": self.cover,
             "icon": self.icon,
             "parent": self.parent,
-            "archived": False,
+            "archived": self.archived,
             "properties": self.properties,
             "url": self.url,
         }
 
 
 @dataclass
-class PageProperty(AsDictDeserializable, metaclass=ABCMeta):
-    """
-    represents two types of data structure.
-
-    - partial page property - user side
-    - page property - server side
-
-    page property has additional fields, `name` and `id`. these are hidden from __init__() to prevent confusion.
-
-    https://developers.notion.com/reference/page-property-values
-    """
+class PageProperty(AsDictDualSerializable, metaclass=ABCMeta):
+    """https://developers.notion.com/reference/page-property-values"""
     name: str = field(init=False)
     id: str = field(init=False)
 
@@ -88,6 +78,15 @@ class PageProperty(AsDictDeserializable, metaclass=ABCMeta):
             return super().deserialize(serialized)
         subclass = page_property_registry[serialized['type']]
         return subclass.deserialize(serialized)
+
+    @classmethod
+    def deserialize_properties(cls, response: dict[str, Union[Any, dict[str, Any]]]) -> dict[str, Self]:
+        properties = {}
+        for prop_name, prop_serialized in response['properties'].items():
+            prop = cls.deserialize(prop_serialized)
+            prop.name = prop_name
+            properties[prop_name] = prop
+        return properties
 
     @classmethod
     def deserialize_property_item_list(cls, response_list: list[dict[str, Any]]) -> Self:

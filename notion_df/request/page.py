@@ -3,7 +3,7 @@ from typing import Any
 
 from notion_df.request.core import Request, RequestSettings, Version, Method, MAX_PAGE_SIZE, \
     PaginatedRequest, BaseRequest
-from notion_df.response.block import ResponseBlock
+from notion_df.response.block import BlockType
 from notion_df.response.file import ExternalFile
 from notion_df.response.misc import UUID, Icon
 from notion_df.response.page import ResponsePage, PageProperty
@@ -25,13 +25,12 @@ class RetrievePage(Request[ResponsePage]):
 
 @dataclass
 class CreatePage(Request[ResponsePage]):
-    """https://developers.notion.com/reference/create-a-page"""
+    """https://developers.notion.com/reference/post-page"""
     parent: Parent
     icon: Icon
     cover: ExternalFile
-    properties: dict[str, PageProperty] = field()
-    """the dict keys are same as each property's name or id (depending on request)"""
-    children: list[ResponseBlock] = field()
+    properties: list[PageProperty] = field()
+    children: list[BlockType] = field()
 
     def get_settings(self) -> RequestSettings:
         return RequestSettings(Version.v20220628, Method.POST,
@@ -42,19 +41,22 @@ class CreatePage(Request[ResponsePage]):
             "parent": self.parent,
             "icon": self.icon,
             "cover": self.cover,
-            "properties": self.properties,
-            "children": self.children,
+            "properties": {prop.name: prop for prop in self.properties},
+            "children": [{
+                "object": "block",
+                "type": type_object,
+                type_object.get_type(): type_object,
+            } for type_object in self.children],
         }
 
 
 @dataclass
 class UpdatePage(Request[ResponsePage]):
-    """https://developers.notion.com/reference/update-a-page"""
+    """https://developers.notion.com/reference/patch-page"""
     id: UUID
     icon: Icon
     cover: ExternalFile
-    properties: dict[str, PageProperty] = field()
-    """the dict keys are same as each property's name or id (depending on request)"""
+    properties: list[PageProperty] = field()
     archived: bool
 
     def get_settings(self) -> RequestSettings:
@@ -65,7 +67,7 @@ class UpdatePage(Request[ResponsePage]):
         return {
             "icon": self.icon,
             "cover": self.cover,
-            "properties": self.properties,
+            "properties": {prop.name: prop for prop in self.properties},
             "archived": self.archived,
         }
 
@@ -76,7 +78,6 @@ class RetrievePagePropertyItem(BaseRequest[PageProperty]):
     page_id: UUID
     property_id: UUID
     page_size: int = -1
-    request_once = PaginatedRequest.request_once
 
     def get_settings(self) -> RequestSettings:
         return RequestSettings(Version.v20220628, Method.GET,
@@ -84,6 +85,8 @@ class RetrievePagePropertyItem(BaseRequest[PageProperty]):
 
     def get_body(self):
         pass
+
+    request_once = PaginatedRequest.request_once
 
     def request(self):
         # TODO: deduplicate with PaginatedRequest.request() if possible.

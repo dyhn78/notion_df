@@ -4,13 +4,13 @@ from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
 from typing import Optional, Any, Literal, final, Final
 
-from notion_df.response.core import Deserializable, resolve_by_keychain
+from notion_df.response.core import DualSerializable, resolve_by_keychain
 from notion_df.response.misc import Annotations, DateRange, UUID
 from notion_df.util.collection import DictFilter
 
 
 @resolve_by_keychain('type')
-class RichText(Deserializable, metaclass=ABCMeta):
+class RichText(DualSerializable, metaclass=ABCMeta):
     # https://developers.notion.com/reference/rich-text
     annotations: Optional[Annotations]
     """
