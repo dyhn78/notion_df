@@ -16,7 +16,7 @@ from notion_df.util.collection import filter_truthy
 
 
 @dataclass
-class DatabaseRetrieveRequest(Request[DatabaseObject]):
+class RetrieveDatabase(Request[DatabaseObject]):
     id: UUID
 
     def get_settings(self) -> RequestSettings:
@@ -28,7 +28,7 @@ class DatabaseRetrieveRequest(Request[DatabaseObject]):
 
 
 @dataclass
-class DatabaseCreateRequest(Request[DatabaseObject]):
+class CreateDatabase(Request[DatabaseObject]):
     """https://developers.notion.com/reference/create-a-database"""
     parent_id: UUID
     title: list[RichText]
@@ -55,7 +55,7 @@ class DatabaseCreateRequest(Request[DatabaseObject]):
 
 
 @dataclass
-class DatabaseUpdateRequest(Request[DatabaseObject]):
+class UpdateDatabase(Request[DatabaseObject]):
     database_id: UUID
     title: list[RichText]
     properties: dict[str, DatabaseProperty] = field(default_factory=dict)
@@ -75,7 +75,7 @@ class DatabaseUpdateRequest(Request[DatabaseObject]):
 
 
 @dataclass
-class DatabaseQueryResponse(Deserializable):
+class QueryDatabaseResponse(Deserializable):
     results: list[PageObject]
     next_cursor: Optional[str]
     has_more: bool
@@ -92,7 +92,7 @@ class DatabaseQueryResponse(Deserializable):
 
 
 @dataclass
-class DatabaseQueryRequest(Request[DatabaseQueryResponse]):
+class QueryDatabase(Request[QueryDatabaseResponse]):
     database_id: UUID
     filter: Filter
     sort: list[Sort]

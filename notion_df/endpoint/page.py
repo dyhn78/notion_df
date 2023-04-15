@@ -12,7 +12,7 @@ from notion_df.object.parent import Parent
 
 
 @dataclass
-class PageRetrieveRequest(Request[PageObject]):
+class RetrievePage(Request[PageObject]):
     """https://developers.notion.com/reference/retrieve-a-database"""
     id: UUID
 
@@ -25,7 +25,7 @@ class PageRetrieveRequest(Request[PageObject]):
 
 
 @dataclass
-class PageCreateRequest(Request[PageObject]):
+class CreatePage(Request[PageObject]):
     """https://developers.notion.com/reference/create-a-database"""
     parent: Parent
     icon: Icon
@@ -49,7 +49,7 @@ class PageCreateRequest(Request[PageObject]):
 
 
 @dataclass
-class PageUpdateRequest(Request[PageObject]):
+class UpdatePage(Request[PageObject]):
     """https://developers.notion.com/reference/update-a-database"""
     id: UUID
     icon: Icon
@@ -72,12 +72,12 @@ class PageUpdateRequest(Request[PageObject]):
 
 
 @resolve_by_keychain('object')
-class PagePropertyItemBaseResponse(Deserializable, metaclass=ABCMeta):
+class BaseResponsePageProperty(Deserializable, metaclass=ABCMeta):
     pass
 
 
 @dataclass
-class PagePropertyResponse(Deserializable):
+class ResponsePageProperty(BaseResponsePageProperty):
     property_item: PageProperty
 
     def _plain_serialize(self) -> dict[str, Any]:
@@ -93,9 +93,9 @@ class PagePropertyResponse(Deserializable):
 
 
 @dataclass
-class PagePropertyListResponse(Deserializable):
+class ResponsePagePropertyList(BaseResponsePageProperty):
     property_item: PageProperty
-    results: list[PagePropertyResponse]
+    results: list[ResponsePageProperty]
     next_cursor: Optional[str]
     has_more: bool
 
@@ -111,7 +111,7 @@ class PagePropertyListResponse(Deserializable):
 
 
 @dataclass
-class PagePropertyRetrieveRequest(Request[PagePropertyItemBaseResponse]):
+class RetrievePageProperty(Request[BaseResponsePageProperty]):
     """https://developers.notion.com/reference/retrieve-a-page-property"""
     page_id: UUID
     property_id: UUID
