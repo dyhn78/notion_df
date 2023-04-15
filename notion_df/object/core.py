@@ -2,14 +2,13 @@ from __future__ import annotations
 
 import inspect
 import types
-import typing
 from abc import ABCMeta
 from dataclasses import dataclass, fields, InitVar
 from datetime import datetime
 from decimal import Decimal
 from enum import Enum
 from functools import cache
-from typing import Any, final, ClassVar, Optional
+from typing import Any, final, ClassVar, Optional, get_origin, get_args, TypeVar
 
 import dateutil.parser
 from typing_extensions import Self
@@ -45,24 +44,24 @@ def deserialize(typ: type, serialized: Any):
 
     # 1. Non-class types
     if isinstance(typ, types.GenericAlias):
-        origin: type = typing.get_origin(typ)
-        args = typing.get_args(typ)
-        err_vars.update({'typ.origin': origin, 'typ.args': args})
+        typ_origin: type = get_origin(typ)
+        typ_args = get_args(typ)
+        err_vars.update({'typ.origin': typ_origin, 'typ.args': typ_args})
         try:
-            if issubclass(origin, dict):
-                value_type = args[1]
+            if issubclass(typ_origin, dict):
+                value_type = typ_args[1]
                 return {k: deserialize(value_type, v) for k, v in serialized.items()}
-            element_type = args[0]
-            if issubclass(origin, list):
+            element_type = typ_args[0]
+            if issubclass(typ_origin, list):
                 return [deserialize(element_type, e) for e in serialized]
-            if issubclass(origin, set):
+            if issubclass(typ_origin, set):
                 return {deserialize(element_type, e) for e in serialized}
             raise NotionDfValueError('cannot deserialize: GenericAlias type with invalid origin', err_vars)
         except IndexError:
             raise NotionDfValueError('cannot deserialize: GenericAlias type with invalid args', err_vars)
     # TODO: resolve (StrEnum | str) to str - or, is that really needed?
     if isinstance(typ, types.UnionType):
-        for typ_arg in typ.__args__:
+        for typ_arg in get_args(typ):
             try:
                 return deserialize(typ_arg, serialized)
             except NotionDfValueError:
@@ -250,7 +249,7 @@ class MockAttribute:
     name: str
 
 
-Deserializable_T = typing.TypeVar('Deserializable_T', bound=Deserializable)
+Deserializable_T = TypeVar('Deserializable_T', bound=Deserializable)
 
 
 class DeserializableResolverByKeyChain:
