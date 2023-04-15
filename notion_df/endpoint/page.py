@@ -3,16 +3,16 @@ from dataclasses import dataclass, field
 from typing import Any, Optional
 
 from notion_df.endpoint.core import Request, RequestSettings, Version, Method
-from notion_df.object.block import Block
+from notion_df.object.block import BlockObject
 from notion_df.object.core import Deserializable, resolve_by_keychain
 from notion_df.object.file import ExternalFile
 from notion_df.object.misc import UUID, Icon
-from notion_df.object.page import Page, PageProperty
+from notion_df.object.page import PageObject, PageProperty
 from notion_df.object.parent import Parent
 
 
 @dataclass
-class PageRetrieveRequest(Request[Page]):
+class PageRetrieveRequest(Request[PageObject]):
     """https://developers.notion.com/reference/retrieve-a-database"""
     id: UUID
 
@@ -25,14 +25,14 @@ class PageRetrieveRequest(Request[Page]):
 
 
 @dataclass
-class PageCreateRequest(Request[Page]):
+class PageCreateRequest(Request[PageObject]):
     """https://developers.notion.com/reference/create-a-database"""
     parent: Parent
     icon: Icon
     cover: ExternalFile
     properties: dict[str, PageProperty] = field()
     """the dict keys are same as each property's name or id (depending on request)"""
-    children: list[Block] = field()
+    children: list[BlockObject] = field()
 
     def get_settings(self) -> RequestSettings:
         return RequestSettings(Version.v20220628, Method.POST,
@@ -49,7 +49,7 @@ class PageCreateRequest(Request[Page]):
 
 
 @dataclass
-class PageUpdateRequest(Request[Page]):
+class PageUpdateRequest(Request[PageObject]):
     """https://developers.notion.com/reference/update-a-database"""
     id: UUID
     icon: Icon

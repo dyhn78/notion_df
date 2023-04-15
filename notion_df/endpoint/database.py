@@ -5,18 +5,18 @@ from typing import Any, Optional
 
 from notion_df.endpoint.core import Request, RequestSettings, Version, Method
 from notion_df.object.core import Deserializable
-from notion_df.object.database import Database, DatabaseProperty
+from notion_df.object.database import DatabaseObject, DatabaseProperty
 from notion_df.object.file import File
 from notion_df.object.filter import Filter
 from notion_df.object.misc import Icon, UUID
-from notion_df.object.page import Page
+from notion_df.object.page import PageObject
 from notion_df.object.rich_text import RichText
 from notion_df.object.sort import Sort
 from notion_df.util.collection import filter_truthy
 
 
 @dataclass
-class DatabaseRetrieveRequest(Request[Database]):
+class DatabaseRetrieveRequest(Request[DatabaseObject]):
     id: UUID
 
     def get_settings(self) -> RequestSettings:
@@ -28,7 +28,7 @@ class DatabaseRetrieveRequest(Request[Database]):
 
 
 @dataclass
-class DatabaseCreateRequest(Request[Database]):
+class DatabaseCreateRequest(Request[DatabaseObject]):
     """https://developers.notion.com/reference/create-a-database"""
     parent_id: UUID
     title: list[RichText]
@@ -55,7 +55,7 @@ class DatabaseCreateRequest(Request[Database]):
 
 
 @dataclass
-class DatabaseUpdateRequest(Request[Database]):
+class DatabaseUpdateRequest(Request[DatabaseObject]):
     database_id: UUID
     title: list[RichText]
     properties: dict[str, DatabaseProperty] = field(default_factory=dict)
@@ -76,7 +76,7 @@ class DatabaseUpdateRequest(Request[Database]):
 
 @dataclass
 class DatabaseQueryResponse(Deserializable):
-    results: list[Page]
+    results: list[PageObject]
     next_cursor: Optional[str]
     has_more: bool
 

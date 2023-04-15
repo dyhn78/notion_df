@@ -19,7 +19,7 @@ from notion_df.util.collection import FinalClassDict
 
 
 @dataclass
-class Page(Deserializable):
+class PageObject(Deserializable):
     id: UUID
     parent: Parent
     created_time: datetime

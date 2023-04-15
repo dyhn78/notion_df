@@ -17,9 +17,9 @@ from notion_df.util.misc import NotionDfValueError
 
 
 @dataclass
-class Database(Deserializable):
+class DatabaseObject(Deserializable):
     # TODO: configure Property -> DatabaseProperty 1:1 mapping, from Property's side.
-    #  access this mapping from Property (NOT DatabaseResponse), the base class.
+    #  access this mapping from Property (NOT DatabaseObject), the base class.
     #  Property.from_schema(schema: DatabaseProperty) -> Property
     #  then, make Page or Database utilize it,
     #  so that they could auto-configure itself and its children with the retrieved data.
