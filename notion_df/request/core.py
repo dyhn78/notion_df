@@ -7,7 +7,7 @@ from typing import TypeVar, Generic, ClassVar, get_args, Any, final
 
 import requests
 
-from notion_df.object.core import Deserializable, serialize
+from notion_df.response.core import Deserializable, serialize
 from notion_df.util.collection import StrEnum
 from notion_df.util.misc import NotionDfValueError
 

@@ -4,22 +4,22 @@ from abc import ABCMeta
 from dataclasses import dataclass, field, fields, Field
 from datetime import datetime
 from functools import cache
-from typing import Any, Literal, Union, cast
+from typing import Any, Literal, Union, cast, Optional
 
 from _decimal import Decimal
 from typing_extensions import Self
 
-from notion_df.object.core import Deserializable
-from notion_df.object.file import ExternalFile, File
-from notion_df.object.misc import UUID, Icon, DateRange, SelectOption, RollupFunction
-from notion_df.object.parent import Parent
-from notion_df.object.rich_text import RichText
-from notion_df.object.user import User
+from notion_df.response.core import Deserializable, resolve_by_keychain
+from notion_df.response.file import ExternalFile, File
+from notion_df.response.misc import UUID, Icon, DateRange, SelectOption, RollupFunction
+from notion_df.response.parent import Parent
+from notion_df.response.rich_text import RichText
+from notion_df.response.user import User
 from notion_df.util.collection import FinalClassDict
 
 
 @dataclass
-class PageObject(Deserializable):
+class ResponsePage(Deserializable):
     id: UUID
     parent: Parent
     created_time: datetime
@@ -49,6 +49,45 @@ class PageObject(Deserializable):
             "archived": False,
             "properties": self.properties,
             "url": self.url,
+        }
+
+
+@resolve_by_keychain('object')
+class BaseResponsePageProperty(Deserializable, metaclass=ABCMeta):
+    pass
+
+
+@dataclass
+class ResponsePageProperty(BaseResponsePageProperty):
+    property_item: PageProperty
+
+    def _plain_serialize(self) -> dict[str, Any]:
+        return {
+            "object": "property_item",
+            "id": "kjPO",
+            **self.property_item
+        }
+
+    @classmethod
+    def _plain_deserialize(cls, serialized: dict[str, Any], **field_value_presets) -> dict[str, Any]:
+        return {'property_item': serialized}
+
+
+@dataclass
+class ResponsePagePropertyList(BaseResponsePageProperty):
+    property_item: PageProperty
+    results: list[ResponsePageProperty]
+    next_cursor: Optional[str]
+    has_more: bool
+
+    def _plain_serialize(self) -> dict[str, Any]:
+        return {
+            "object": "list",
+            "results": self.results,
+            "next_cursor": self.next_cursor,
+            "has_more": self.has_more,
+            "property_item": self.property_item,
+            "type": "property_item"
         }
 
 

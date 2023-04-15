@@ -4,8 +4,8 @@ from typing import Any
 
 from typing_extensions import Self
 
-from notion_df.object.core import Deserializable, resolve_by_keychain
-from notion_df.object.misc import UUID
+from notion_df.response.core import Deserializable, resolve_by_keychain
+from notion_df.response.misc import UUID
 
 
 @resolve_by_keychain('type')

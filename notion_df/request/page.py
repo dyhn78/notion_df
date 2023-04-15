@@ -1,18 +1,16 @@
-from abc import ABCMeta
 from dataclasses import dataclass, field
-from typing import Any, Optional
+from typing import Any
 
-from notion_df.endpoint.core import Request, RequestSettings, Version, Method
-from notion_df.object.block import BlockObject
-from notion_df.object.core import Deserializable, resolve_by_keychain
-from notion_df.object.file import ExternalFile
-from notion_df.object.misc import UUID, Icon
-from notion_df.object.page import PageObject, PageProperty
-from notion_df.object.parent import Parent
+from notion_df.request.core import Request, RequestSettings, Version, Method
+from notion_df.response.block import BlockObject
+from notion_df.response.file import ExternalFile
+from notion_df.response.misc import UUID, Icon
+from notion_df.response.page import ResponsePage, PageProperty, BaseResponsePageProperty
+from notion_df.response.parent import Parent
 
 
 @dataclass
-class RetrievePage(Request[PageObject]):
+class RetrievePage(Request[ResponsePage]):
     """https://developers.notion.com/reference/retrieve-a-database"""
     id: UUID
 
@@ -25,7 +23,7 @@ class RetrievePage(Request[PageObject]):
 
 
 @dataclass
-class CreatePage(Request[PageObject]):
+class CreatePage(Request[ResponsePage]):
     """https://developers.notion.com/reference/create-a-database"""
     parent: Parent
     icon: Icon
@@ -49,7 +47,7 @@ class CreatePage(Request[PageObject]):
 
 
 @dataclass
-class UpdatePage(Request[PageObject]):
+class UpdatePage(Request[ResponsePage]):
     """https://developers.notion.com/reference/update-a-database"""
     id: UUID
     icon: Icon
@@ -68,45 +66,6 @@ class UpdatePage(Request[PageObject]):
             "cover": self.cover,
             "properties": self.properties,
             "archived": self.archived,
-        }
-
-
-@resolve_by_keychain('object')
-class BaseResponsePageProperty(Deserializable, metaclass=ABCMeta):
-    pass
-
-
-@dataclass
-class ResponsePageProperty(BaseResponsePageProperty):
-    property_item: PageProperty
-
-    def _plain_serialize(self) -> dict[str, Any]:
-        return {
-            "object": "property_item",
-            "id": "kjPO",
-            **self.property_item
-        }
-
-    @classmethod
-    def _plain_deserialize(cls, serialized: dict[str, Any], **field_value_presets) -> dict[str, Any]:
-        return {'property_item': serialized}
-
-
-@dataclass
-class ResponsePagePropertyList(BaseResponsePageProperty):
-    property_item: PageProperty
-    results: list[ResponsePageProperty]
-    next_cursor: Optional[str]
-    has_more: bool
-
-    def _plain_serialize(self) -> dict[str, Any]:
-        return {
-            "object": "list",
-            "results": self.results,
-            "next_cursor": self.next_cursor,
-            "has_more": self.has_more,
-            "property_item": self.property_item,
-            "type": "property_item"
         }
 
 

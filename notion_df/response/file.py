@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import ClassVar
 
-from notion_df.object.misc import Icon
+from notion_df.response.misc import Icon
 
 
 @dataclass

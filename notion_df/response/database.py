@@ -3,23 +3,24 @@ from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any
+from typing import Any, Optional
 
 from typing_extensions import Self
 
-from notion_df.object.core import Deserializable
-from notion_df.object.file import ExternalFile
-from notion_df.object.misc import UUID, Icon, NumberFormat, SelectOption, StatusGroups, RollupFunction
-from notion_df.object.parent import Parent
-from notion_df.object.rich_text import RichText
+from notion_df.response.core import Deserializable
+from notion_df.response.file import ExternalFile
+from notion_df.response.misc import UUID, Icon, NumberFormat, SelectOption, StatusGroups, RollupFunction
+from notion_df.response.page import ResponsePage
+from notion_df.response.parent import Parent
+from notion_df.response.rich_text import RichText
 from notion_df.util.collection import FinalClassDict
 from notion_df.util.misc import NotionDfValueError
 
 
 @dataclass
-class DatabaseObject(Deserializable):
+class ResponseDatabase(Deserializable):
     # TODO: configure Property -> DatabaseProperty 1:1 mapping, from Property's side.
-    #  access this mapping from Property (NOT DatabaseObject), the base class.
+    #  access this mapping from Property (NOT ResponseDatabase), the base class.
     #  Property.from_schema(schema: DatabaseProperty) -> Property
     #  then, make Page or Database utilize it,
     #  so that they could auto-configure itself and its children with the retrieved data.
@@ -50,6 +51,23 @@ class DatabaseObject(Deserializable):
             "properties": self.properties,
             "archived": self.archived,
             "is_inline": self.is_inline,
+        }
+
+
+@dataclass
+class ResponseQueryDatabase(Deserializable):
+    results: list[ResponsePage]
+    next_cursor: Optional[str]
+    has_more: bool
+
+    def _plain_serialize(self) -> dict[str, Any]:
+        return {
+            'object': 'list',
+            'results': self.results,
+            "next_cursor": self.next_cursor,
+            "has_more": self.has_more,
+            "type": "page",
+            "page": {}
         }
 
 

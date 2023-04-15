@@ -7,12 +7,12 @@ from typing import Any
 
 from typing_extensions import Self
 
-from notion_df.object.core import Deserializable
-from notion_df.object.file import File
-from notion_df.object.misc import UUID, Icon, CodeLanguage, BlockColor
-from notion_df.object.parent import Parent
-from notion_df.object.rich_text import RichText
-from notion_df.object.user import User
+from notion_df.response.core import Deserializable
+from notion_df.response.file import File
+from notion_df.response.misc import UUID, Icon, CodeLanguage, BlockColor
+from notion_df.response.parent import Parent
+from notion_df.response.rich_text import RichText
+from notion_df.response.user import User
 from notion_df.util.collection import FinalClassDict
 
 

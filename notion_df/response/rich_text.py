@@ -4,8 +4,8 @@ from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
 from typing import Optional, Any, Literal, final, Final
 
-from notion_df.object.core import Deserializable, resolve_by_keychain
-from notion_df.object.misc import Annotations, DateRange, UUID
+from notion_df.response.core import Deserializable, resolve_by_keychain
+from notion_df.response.misc import Annotations, DateRange, UUID
 from notion_df.util.collection import filter_truthy
 
 

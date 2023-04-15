@@ -3,20 +3,18 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Optional
 
-from notion_df.endpoint.core import Request, RequestSettings, Version, Method
-from notion_df.object.core import Deserializable
-from notion_df.object.database import DatabaseObject, DatabaseProperty
-from notion_df.object.file import File
-from notion_df.object.filter import Filter
-from notion_df.object.misc import Icon, UUID
-from notion_df.object.page import PageObject
-from notion_df.object.rich_text import RichText
-from notion_df.object.sort import Sort
+from notion_df.request.core import Request, RequestSettings, Version, Method
+from notion_df.response.database import ResponseDatabase, DatabaseProperty, ResponseQueryDatabase
+from notion_df.response.file import File
+from notion_df.response.filter import Filter
+from notion_df.response.misc import Icon, UUID
+from notion_df.response.rich_text import RichText
+from notion_df.response.sort import Sort
 from notion_df.util.collection import filter_truthy
 
 
 @dataclass
-class RetrieveDatabase(Request[DatabaseObject]):
+class RetrieveDatabase(Request[ResponseDatabase]):
     id: UUID
 
     def get_settings(self) -> RequestSettings:
@@ -28,7 +26,7 @@ class RetrieveDatabase(Request[DatabaseObject]):
 
 
 @dataclass
-class CreateDatabase(Request[DatabaseObject]):
+class CreateDatabase(Request[ResponseDatabase]):
     """https://developers.notion.com/reference/create-a-database"""
     parent_id: UUID
     title: list[RichText]
@@ -55,7 +53,7 @@ class CreateDatabase(Request[DatabaseObject]):
 
 
 @dataclass
-class UpdateDatabase(Request[DatabaseObject]):
+class UpdateDatabase(Request[ResponseDatabase]):
     database_id: UUID
     title: list[RichText]
     properties: dict[str, DatabaseProperty] = field(default_factory=dict)
@@ -75,24 +73,7 @@ class UpdateDatabase(Request[DatabaseObject]):
 
 
 @dataclass
-class QueryDatabaseResponse(Deserializable):
-    results: list[PageObject]
-    next_cursor: Optional[str]
-    has_more: bool
-
-    def _plain_serialize(self) -> dict[str, Any]:
-        return {
-            'object': 'list',
-            'results': self.results,
-            "next_cursor": self.next_cursor,
-            "has_more": self.has_more,
-            "type": "page",
-            "page": {}
-        }
-
-
-@dataclass
-class QueryDatabase(Request[QueryDatabaseResponse]):
+class QueryDatabase(Request[ResponseQueryDatabase]):
     database_id: UUID
     filter: Filter
     sort: list[Sort]

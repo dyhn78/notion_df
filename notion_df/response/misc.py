@@ -7,7 +7,7 @@ from typing import ClassVar, Any, NewType, Literal
 
 from typing_extensions import Self
 
-from notion_df.object.core import Deserializable, resolve_by_keychain
+from notion_df.response.core import Deserializable, resolve_by_keychain
 from notion_df.util.collection import StrEnum
 
 UUID = NewType('UUID', str)
