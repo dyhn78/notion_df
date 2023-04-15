@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import inspect
 import types
-from abc import ABCMeta
+from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, fields, InitVar, Field
 from datetime import datetime
 from decimal import Decimal
@@ -118,14 +118,9 @@ class Serializable(metaclass=ABCMeta):
     def _skip_init_subclass(cls) -> bool:
         return False
 
+    @abstractmethod
     def _plain_serialize(self) -> dict[str, Any]:
-        # TODO: remove default option to class decorator @serialize_asdict
         """serialize only the first depth structure, leaving each field value not serialized."""
-        serialized = {}
-        for fd in fields(self):
-            if fd.init:
-                serialized[fd.name] = getattr(self, fd.name)
-        return serialized
 
     @final
     def serialize(self) -> dict[str, Any]:
@@ -160,12 +155,61 @@ class Deserializable(Serializable, metaclass=ABCMeta):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    def _plain_reverse_deserialize(self):
-        return self._plain_serialize()
+    @classmethod
+    @final
+    @cache
+    def get_mock_serialized(cls) -> dict[str, Any]:
+        """example serialized value by _plain_serialize(), with every field is replaced as MockFieldValue.
+        used to generate _plain_deserialize()."""
+
+        # TODO: support {..., **attr} or {...} | {...} expressions
+        #  1. allow MockFieldValue supports '**' expression
+        #  2. allow _get_field_keychain_dict to recognize blank keychains
+
+        __init_subclass__ = getattr(cls, '__init_subclass__').__func__
+        setattr(cls, '__init_subclass__', lambda **kwargs: None)
+
+        @dataclass
+        class MockDeserializable(cls, metaclass=ABCMeta):
+            @classmethod
+            def _skip_init_subclass(cls):
+                return True
+
+        setattr(cls, '__init_subclass__', classmethod(__init_subclass__))
+
+        MockDeserializable.__name__ = cls.__name__
+        init_params = list(inspect.signature(MockDeserializable.__init__).parameters.keys())[1:]
+        mock_init_param = {param: MockFieldValue(param) for param in init_params}
+        _mock = MockDeserializable(**mock_init_param)  # type: ignore
+        for field in fields(MockDeserializable):
+            setattr(_mock, field.name, MockFieldValue(field.name))
+        try:
+            return _mock._plain_serialize()
+        except AttributeError:
+            raise NotionDfValueError('_plain_serialize() not parsable', {'cls': cls})
+
+    @classmethod
+    @cache
+    def _get_field_type_dict(cls) -> dict[str, type]:
+        return {field.name: field.type for field in fields(cls)}
+
+    @classmethod
+    @cache
+    def _get_field_keychain_dict(cls) -> dict[Keychain, str]:
+        # breadth-first search through mock_serialized
+        field_keychain_dict = FinalDict[Keychain, str]()
+        items: list[tuple[Keychain, Any]] = [(Keychain((k,)), v) for k, v in cls.get_mock_serialized().items()]
+        while items:
+            keychain, value = items.pop()
+            if isinstance(value, MockFieldValue):
+                attr_name = value.name
+                field_keychain_dict[keychain] = attr_name
+            elif isinstance(value, dict):
+                items.extend((Keychain(keychain + (k,)), v) for k, v in value.items())
+        return field_keychain_dict
 
     @classmethod
     def _plain_deserialize(cls, serialized: dict[str, Any], **field_value_presets: Any) -> Self:
-        # TODO: remove default process on init=False fields to class decorator @serialize_asdict
         """return cls(**{field_name: field_serialized}).
 
         by default, this parses get_mock_serialize() to determine each fields' location (i.e. keychain).
@@ -180,10 +224,9 @@ class Deserializable(Serializable, metaclass=ABCMeta):
                 serialized_field = field_value_presets[field_name]
             else:
                 for key in keychain:
-                    if isinstance(key, MockAttribute):
+                    if isinstance(key, MockFieldValue):
                         key = field_value_presets[key.name]
                     serialized_field = serialized_field[key]
-
             if field_init_dict[field_name]:
                 init_fields_serialized_dict[field_name] = serialized_field
             else:
@@ -205,62 +248,14 @@ class Deserializable(Serializable, metaclass=ABCMeta):
                     deserialize(field.type, getattr(each_field_serialized_self, field.name)))
         return each_field_serialized_self
 
-    @classmethod
-    @final
-    @cache
-    def get_mock_serialized(cls) -> dict[str, Any]:
-        """example serialized value by _plain_serialize(), with every field is replaced as MockAttribute.
-        used to generate _plain_deserialize()."""
 
-        # TODO: support {..., **attr} or {...} | {...} expressions
-        #  1. allow MockAttribute supports '**' expression
-        #  2. allow _get_field_keychain_dict to recognize blank keychains
-
-        __init_subclass__ = getattr(cls, '__init_subclass__').__func__
-        setattr(cls, '__init_subclass__', lambda **kwargs: None)
-
-        @dataclass
-        class MockDeserializable(cls, metaclass=ABCMeta):
-            @classmethod
-            def _skip_init_subclass(cls):
-                return True
-
-        setattr(cls, '__init_subclass__', classmethod(__init_subclass__))
-
-        MockDeserializable.__name__ = cls.__name__
-        init_params = list(inspect.signature(MockDeserializable.__init__).parameters.keys())[1:]
-        mock_init_param = {param: MockAttribute(param) for param in init_params}
-        _mock = MockDeserializable(**mock_init_param)  # type: ignore
-        for field in fields(MockDeserializable):
-            setattr(_mock, field.name, MockAttribute(field.name))
-        try:
-            return _mock._plain_reverse_deserialize()
-        except AttributeError:
-            raise NotionDfValueError('_plain_serialize() not parsable', {'cls': cls})
-
-    @classmethod
-    @cache
-    def _get_field_type_dict(cls) -> dict[str, type]:
-        return {field.name: field.type for field in fields(cls)}
-
-    @classmethod
-    @cache
-    def _get_field_keychain_dict(cls) -> dict[Keychain, str]:
-        # breadth-first search through mock_serialized
-        field_keychain_dict = FinalDict[Keychain, str]()
-        items: list[tuple[Keychain, Any]] = [(Keychain((k,)), v) for k, v in cls.get_mock_serialized().items()]
-        while items:
-            keychain, value = items.pop()
-            if isinstance(value, MockAttribute):
-                attr_name = value.name
-                field_keychain_dict[keychain] = attr_name
-            elif isinstance(value, dict):
-                items.extend((Keychain(keychain + (k,)), v) for k, v in value.items())
-        return field_keychain_dict
+@dataclass
+class AsDictDeserializable(AsDictSerializable, Deserializable, metaclass=ABCMeta):
+    pass
 
 
 @dataclass(frozen=True)
-class MockAttribute:
+class MockFieldValue:
     name: str
 
 
@@ -284,8 +279,13 @@ class DeserializableResolverByKeyChain:
 
         def __init_subclass__(cls: type[Deserializable_T], **kwargs) -> None:
             __init_subclass_prev__(cls, **kwargs)
-            keychain = self.resolve_keychain(cls.get_mock_serialized())
-            subclass_dict[keychain] = cls
+            try:
+                keychain = self.resolve_keychain(cls.get_mock_serialized())
+                subclass_dict[keychain] = cls
+            except NotionDfValueError as e:
+                if inspect.isabstract(cls):
+                    return
+                raise e
 
         def _deserialize(cls: type[Deserializable_T], serialized: dict[str, Any]) -> Deserializable_T:
             if master != cls:
@@ -302,14 +302,13 @@ class DeserializableResolverByKeyChain:
 
     def resolve_keychain(self, serialized: dict[str, Any]) -> Keychain:
         current_keychain = ()
-        if self.unique_key not in serialized:
+        if serialized is None or self.unique_key not in serialized:
             raise NotionDfValueError(
                 f"cannot resolve keychain: unique key {self.unique_key} not found in serialized data",
                 {
                     'unique_key': self.unique_key,
-                    'serialized.keys()': list(serialized.keys()),
                     'serialized': serialized
-                },
+                } | {'serialized.keys()': list(serialized.keys())} if serialized is not None else {},
                 linebreak=True
             )
         while True:

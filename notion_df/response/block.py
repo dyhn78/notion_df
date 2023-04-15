@@ -7,7 +7,7 @@ from typing import Any
 
 from typing_extensions import Self
 
-from notion_df.response.core import Deserializable
+from notion_df.response.core import Deserializable, AsDictDeserializable
 from notion_df.response.file import File
 from notion_df.response.misc import UUID, Icon, CodeLanguage, BlockColor
 from notion_df.response.parent import Parent
@@ -17,7 +17,7 @@ from notion_df.util.collection import FinalClassDict
 
 
 @dataclass
-class BlockObject(Deserializable, metaclass=ABCMeta):
+class ResponseBlock(Deserializable, metaclass=ABCMeta):
     id: UUID
     parent: Parent
     created_time: datetime
@@ -51,7 +51,7 @@ class BlockObject(Deserializable, metaclass=ABCMeta):
 
 
 @dataclass
-class BlockType(Deserializable, metaclass=ABCMeta):
+class BlockType(AsDictDeserializable, metaclass=ABCMeta):
     @classmethod
     @abstractmethod
     def get_type(cls) -> str:
@@ -85,7 +85,7 @@ class BreadcrumbBlockType(BlockType):
 class BulletedListItemBlockType(BlockType):
     rich_text: list[RichText]
     color: BlockColor = BlockColor.DEFAULT
-    children: list[BlockObject] = field(default_factory=list)
+    children: list[ResponseBlock] = field(default_factory=list)
 
     @classmethod
     def get_type(cls) -> str:
@@ -97,7 +97,7 @@ class CalloutBlockType(BlockType):
     rich_text: list[RichText]
     icon: Icon
     color: BlockColor = BlockColor.DEFAULT
-    children: list[BlockObject] = field(default_factory=list)  # TODO: double check
+    children: list[ResponseBlock] = field(default_factory=list)  # TODO: double check
 
     @classmethod
     def get_type(cls) -> str:
@@ -248,7 +248,7 @@ class ImageBlockType(BlockType):
 class NumberedListItemBlockType(BlockType):
     rich_text: list[RichText]
     color: BlockColor = BlockColor.DEFAULT
-    children: list[BlockObject] = field(default_factory=list)
+    children: list[ResponseBlock] = field(default_factory=list)
 
     @classmethod
     def get_type(cls) -> str:
@@ -259,7 +259,7 @@ class NumberedListItemBlockType(BlockType):
 class ParagraphBlockType(BlockType):
     rich_text: list[RichText]
     color: BlockColor = BlockColor.DEFAULT
-    children: list[BlockObject] = field(default_factory=list)
+    children: list[ResponseBlock] = field(default_factory=list)
 
     @classmethod
     def get_type(cls) -> str:
@@ -287,7 +287,7 @@ class PDFBlockType(BlockType):
 class QuoteBlockType(BlockType):
     rich_text: list[RichText]
     color: BlockColor = BlockColor.DEFAULT
-    children: list[BlockObject] = field(default_factory=list)
+    children: list[ResponseBlock] = field(default_factory=list)
 
     @classmethod
     def get_type(cls) -> str:
@@ -314,7 +314,7 @@ class SyncedBlockType(BlockType, metaclass=ABCMeta):
 @dataclass
 class OriginalSyncedBlockType(SyncedBlockType):
     """cannot be changed (2023-04-02)"""
-    children: list[BlockObject] = field(default_factory=list)
+    children: list[ResponseBlock] = field(default_factory=list)
 
     def _plain_serialize(self) -> dict[str, Any]:
         return {
@@ -368,7 +368,7 @@ class ToDoBlockType(BlockType):
     rich_text: list[RichText]
     checked: bool
     color: BlockColor = BlockColor.DEFAULT
-    children: list[BlockObject] = field(default_factory=list)
+    children: list[ResponseBlock] = field(default_factory=list)
 
     @classmethod
     def get_type(cls) -> str:
@@ -379,7 +379,7 @@ class ToDoBlockType(BlockType):
 class ToggleBlockType(BlockType):
     rich_text: list[RichText]
     color: BlockColor = BlockColor.DEFAULT
-    children: list[BlockObject] = field(default_factory=list)
+    children: list[ResponseBlock] = field(default_factory=list)
 
     @classmethod
     def get_type(cls) -> str:

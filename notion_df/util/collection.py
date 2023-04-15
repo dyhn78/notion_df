@@ -74,9 +74,11 @@ class FinalClassDict(dict[_KT, _VT]):
         super().__setitem__(k, v)
 
 
-def filter_truthy(d: dict[_KT, _VT]) -> dict[_KT, _VT]:
-    return {k: v for k, v in d.items() if v}
+class DictFilter:
+    @staticmethod
+    def truthy(d: dict[_KT, _VT]) -> dict[_KT, _VT]:
+        return {k: v for k, v in d.items() if v}
 
-
-def filter_out_none(d: dict[_KT, _VT]) -> dict[_KT, _VT]:
-    return {k: v for k, v in d.items() if v is not None}
+    @staticmethod
+    def not_none(d: dict[_KT, _VT]) -> dict[_KT, _VT]:
+        return {k: v for k, v in d.items() if v is not None}

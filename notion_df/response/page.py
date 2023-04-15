@@ -4,12 +4,12 @@ from abc import ABCMeta
 from dataclasses import dataclass, field, fields, Field
 from datetime import datetime
 from functools import cache
-from typing import Any, Literal, Union, cast, Optional
+from typing import Any, Literal, Union, cast
 
 from _decimal import Decimal
 from typing_extensions import Self
 
-from notion_df.response.core import Deserializable, resolve_by_keychain
+from notion_df.response.core import Deserializable, AsDictDeserializable
 from notion_df.response.file import ExternalFile, File
 from notion_df.response.misc import UUID, Icon, DateRange, SelectOption, RollupFunction
 from notion_df.response.parent import Parent
@@ -52,47 +52,8 @@ class ResponsePage(Deserializable):
         }
 
 
-@resolve_by_keychain('object')
-class BaseResponsePageProperty(Deserializable, metaclass=ABCMeta):
-    pass
-
-
 @dataclass
-class ResponsePageProperty(BaseResponsePageProperty):
-    property_item: PageProperty
-
-    def _plain_serialize(self) -> dict[str, Any]:
-        return {
-            "object": "property_item",
-            "id": "kjPO",
-            **self.property_item
-        }
-
-    @classmethod
-    def _plain_deserialize(cls, serialized: dict[str, Any], **field_value_presets) -> dict[str, Any]:
-        return {'property_item': serialized}
-
-
-@dataclass
-class ResponsePagePropertyList(BaseResponsePageProperty):
-    property_item: PageProperty
-    results: list[ResponsePageProperty]
-    next_cursor: Optional[str]
-    has_more: bool
-
-    def _plain_serialize(self) -> dict[str, Any]:
-        return {
-            "object": "list",
-            "results": self.results,
-            "next_cursor": self.next_cursor,
-            "has_more": self.has_more,
-            "property_item": self.property_item,
-            "type": "property_item"
-        }
-
-
-@dataclass
-class PageProperty(Deserializable, metaclass=ABCMeta):
+class PageProperty(AsDictDeserializable, metaclass=ABCMeta):
     """
     represents two types of data structure.
 
@@ -125,8 +86,16 @@ class PageProperty(Deserializable, metaclass=ABCMeta):
     def deserialize(cls, serialized: dict[str, Any]) -> Self:
         if cls != PageProperty:
             return super().deserialize(serialized)
-        page_property_cls = page_property_registry[serialized['type']]
-        return page_property_cls.deserialize(serialized)
+        subclass = page_property_registry[serialized['type']]
+        return subclass.deserialize(serialized)
+
+    @classmethod
+    def deserialize_property_item_list(cls, response_list: list[dict[str, Any]]) -> Self:
+        typename = response_list[0]['property_item']['type']
+        subclass = page_property_registry[typename]
+        value_list = [response['result'][typename] for response in response_list]
+        merged_response = response_list[0]['result'] | {typename: value_list}
+        return subclass.deserialize(merged_response)
 
 
 page_property_registry = FinalClassDict[str, type[PageProperty]]()

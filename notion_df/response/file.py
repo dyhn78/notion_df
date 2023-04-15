@@ -3,15 +3,14 @@ from __future__ import annotations
 from abc import ABCMeta
 from dataclasses import dataclass
 from datetime import datetime
-from typing import ClassVar
 
 from notion_df.response.misc import Icon
 
 
 @dataclass
 class File(Icon, metaclass=ABCMeta):
-    # https://developers.notion.com/reference/file-object
-    TYPE: ClassVar = 'file'
+    """https://developers.notion.com/reference/file-object"""
+    pass
 
 
 @dataclass

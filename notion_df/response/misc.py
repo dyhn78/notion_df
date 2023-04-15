@@ -11,7 +11,7 @@ from notion_df.response.core import Deserializable, resolve_by_keychain
 from notion_df.util.collection import StrEnum
 
 UUID = NewType('UUID', str)
-Timestamp = Literal['created_time', 'last_edited_time']
+TimestampType = Literal['created_time', 'last_edited_time']
 
 
 class BlockColor(StrEnum):
@@ -146,13 +146,13 @@ class Icon(Deserializable, metaclass=ABCMeta):
 @dataclass
 class Emoji(Icon):
     # https://developers.notion.com/reference/emoji-object
-    value: str
+    emoji: str
     TYPE: ClassVar = 'emoji'
 
     def _plain_serialize(self):
         return {
             "type": "emoji",
-            "emoji": self.value
+            "emoji": self.emoji
         }
 
 

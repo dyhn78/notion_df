@@ -9,7 +9,7 @@ from typing import Literal, TypeVar, Generic, Optional, Callable, overload
 from typing_extensions import Self
 
 from notion_df.response.core import Serializable
-from notion_df.response.misc import UUID, Timestamp
+from notion_df.response.misc import UUID, TimestampType
 
 _T = TypeVar('_T')
 
@@ -67,11 +67,11 @@ class ArrayRollupFilter(PropertyFilter):
 
 @dataclass
 class TimestampFilter(Filter):
-    timestamp: Timestamp
+    timestamp: TimestampType
 
     def _plain_serialize(self):
         return {
-            "timestamp": self.timestamp,
+            "timestamp_type": self.timestamp,
             self.timestamp: self.type_object
         }
 
@@ -138,7 +138,7 @@ class FilterBuilder(metaclass=ABCMeta):
         # TODO - implement from caller's side
         #  -  init_filter = lambda contents: PropertyFilter(contents, property_name, property_type)
         #  -  init_filter = lambda contents: ArrayRollupFilter(contents, property_name, property_type, aggregate_type)
-        #  -  init_filter = lambda contents: TimestampFilter(contents, timestamp)
+        #  -  init_filter = lambda contents: TimestampFilter(contents, timestamp_type)
 
 
 class TextFilterBuilder(FilterBuilder):

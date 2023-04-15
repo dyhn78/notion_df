@@ -6,7 +6,7 @@ from typing import Optional, Any, Literal, final, Final
 
 from notion_df.response.core import Deserializable, resolve_by_keychain
 from notion_df.response.misc import Annotations, DateRange, UUID
-from notion_df.util.collection import filter_truthy
+from notion_df.util.collection import DictFilter
 
 
 @resolve_by_keychain('type')
@@ -32,11 +32,12 @@ class RichText(Deserializable, metaclass=ABCMeta):
 
     @final
     def _plain_serialize_defaults(self) -> dict[str, Any]:
-        return filter_truthy({
+        d = {
             'annotations': self.annotations,
             'plain_text': self.plain_text,
             'href': self.href,
-        })
+        }
+        return DictFilter.truthy(d)
 
 
 @dataclass

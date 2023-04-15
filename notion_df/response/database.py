@@ -3,14 +3,13 @@ from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 
 from typing_extensions import Self
 
 from notion_df.response.core import Deserializable
 from notion_df.response.file import ExternalFile
 from notion_df.response.misc import UUID, Icon, NumberFormat, SelectOption, StatusGroups, RollupFunction
-from notion_df.response.page import ResponsePage
 from notion_df.response.parent import Parent
 from notion_df.response.rich_text import RichText
 from notion_df.util.collection import FinalClassDict
@@ -51,23 +50,6 @@ class ResponseDatabase(Deserializable):
             "properties": self.properties,
             "archived": self.archived,
             "is_inline": self.is_inline,
-        }
-
-
-@dataclass
-class ResponseQueryDatabase(Deserializable):
-    results: list[ResponsePage]
-    next_cursor: Optional[str]
-    has_more: bool
-
-    def _plain_serialize(self) -> dict[str, Any]:
-        return {
-            'object': 'list',
-            'results': self.results,
-            "next_cursor": self.next_cursor,
-            "has_more": self.has_more,
-            "type": "page",
-            "page": {}
         }
 
 

@@ -4,11 +4,10 @@ from typing import Any
 
 from typing_extensions import Self
 
-from notion_df.response.core import Deserializable, resolve_by_keychain
+from notion_df.response.core import Deserializable
 from notion_df.response.misc import UUID
 
 
-@resolve_by_keychain('type')
 @dataclass
 class User(Deserializable, metaclass=ABCMeta):
     """field with `init=False` are those not required from user-side but provided from server-side."""
@@ -28,6 +27,19 @@ class User(Deserializable, metaclass=ABCMeta):
         plain_self.name = serialized['name']
         plain_self.avatar_url = serialized['avatar_url']
         return plain_self
+
+    @classmethod
+    def deserialize(cls, serialized: dict[str, Any]) -> Self:
+        typename = serialized['type']
+        if typename == 'person':
+            subclass = Person
+        else:
+            bot_owner_typename = serialized['bot']['owner']['type']
+            if bot_owner_typename == 'workspace':
+                subclass = WorkspaceBot
+            else:
+                subclass = UserBot
+        return subclass.deserialize(serialized)
 
 
 @dataclass

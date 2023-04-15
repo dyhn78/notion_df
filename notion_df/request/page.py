@@ -1,22 +1,23 @@
 from dataclasses import dataclass, field
 from typing import Any
 
-from notion_df.request.core import Request, RequestSettings, Version, Method
-from notion_df.response.block import BlockObject
+from notion_df.request.core import Request, RequestSettings, Version, Method, MAX_PAGE_SIZE, \
+    PaginatedRequest
+from notion_df.response.block import ResponseBlock
 from notion_df.response.file import ExternalFile
 from notion_df.response.misc import UUID, Icon
-from notion_df.response.page import ResponsePage, PageProperty, BaseResponsePageProperty
+from notion_df.response.page import ResponsePage, PageProperty
 from notion_df.response.parent import Parent
 
 
 @dataclass
 class RetrievePage(Request[ResponsePage]):
-    """https://developers.notion.com/reference/retrieve-a-database"""
+    """https://developers.notion.com/reference/retrieve-a-page"""
     id: UUID
 
     def get_settings(self) -> RequestSettings:
         return RequestSettings(Version.v20220628, Method.GET,
-                               f'https://api.notion.com/v1/databases/{self.id}')
+                               f'https://api.notion.com/v1/pages/{self.id}')
 
     def get_body(self) -> Any:
         return
@@ -24,13 +25,13 @@ class RetrievePage(Request[ResponsePage]):
 
 @dataclass
 class CreatePage(Request[ResponsePage]):
-    """https://developers.notion.com/reference/create-a-database"""
+    """https://developers.notion.com/reference/create-a-page"""
     parent: Parent
     icon: Icon
     cover: ExternalFile
     properties: dict[str, PageProperty] = field()
     """the dict keys are same as each property's name or id (depending on request)"""
-    children: list[BlockObject] = field()
+    children: list[ResponseBlock] = field()
 
     def get_settings(self) -> RequestSettings:
         return RequestSettings(Version.v20220628, Method.POST,
@@ -48,7 +49,7 @@ class CreatePage(Request[ResponsePage]):
 
 @dataclass
 class UpdatePage(Request[ResponsePage]):
-    """https://developers.notion.com/reference/update-a-database"""
+    """https://developers.notion.com/reference/update-a-page"""
     id: UUID
     icon: Icon
     cover: ExternalFile
@@ -70,14 +71,42 @@ class UpdatePage(Request[ResponsePage]):
 
 
 @dataclass
-class RetrievePageProperty(Request[BaseResponsePageProperty]):
+class RetrievePagePropertyItem(PaginatedRequest[PageProperty]):
     """https://developers.notion.com/reference/retrieve-a-page-property"""
     page_id: UUID
     property_id: UUID
+    page_size: int = -1
 
     def get_settings(self) -> RequestSettings:
         return RequestSettings(Version.v20220628, Method.GET,
                                f'https://api.notion.com/v1/pages/{self.page_id}/properties/{self.property_id}')
 
-    def get_body(self) -> Any:
-        return
+    def get_body(self):
+        pass
+
+    def request(self):
+        # TODO: deduplicate with PaginatedRequest.request() if possible.
+        page_size_total = self.page_size
+        if page_size_total == -1:
+            page_size_total = float('inf')
+        page_size = min(MAX_PAGE_SIZE, page_size_total)
+        page_size_retrieved = page_size
+
+        data = self.request_once(page_size, None)
+        if data['object'] == 'property_item':
+            return PageProperty.deserialize(data)
+
+        data_list = []
+        while page_size_retrieved < page_size_total and data['has_more']:
+            start_cursor = data['next_cursor']
+            page_size = min(MAX_PAGE_SIZE, page_size_total - page_size_retrieved)
+            page_size_retrieved += page_size
+
+            data = self.request_once(page_size, start_cursor)
+            data_list.append(data)
+
+        return self.parse_response_data_list(data_list)
+
+    @classmethod
+    def parse_response_data_list(cls, data_list: list[dict[str, Any]]):
+        return PageProperty.deserialize_property_item_list(data_list)
