@@ -32,7 +32,7 @@ def serialize(obj: Any):
     if isinstance(obj, Enum):
         return obj.value
     if isinstance(obj, datetime):
-        return obj.astimezone(Variables.timezone).isoformat()
+        return serialize_datetime(obj)
     raise NotionDfValueError('cannot serialize', {'obj': obj})
 
 
@@ -69,7 +69,7 @@ def deserialize(typ: type, serialized: Any):
         raise NotionDfValueError('cannot deserialize: not supported type', err_vars)
 
     # 2. class types
-    if issubclass(typ, DualSerializable):
+    if issubclass(typ, Deserializable):
         return typ.deserialize(serialized)
     if typ in {bool, str, int, float, Decimal}:
         if type(serialized) != typ:
@@ -78,11 +78,19 @@ def deserialize(typ: type, serialized: Any):
     if issubclass(typ, Enum):
         return typ(serialized)
     if issubclass(typ, datetime):
-        datetime_obj = dateutil.parser.parse(serialized)
-        return datetime_obj.astimezone(Variables.timezone)
+        return deserialize_datetime(serialized)
     if isinstance(typ, InitVar):  # TODO: is this really needed?
         return deserialize(typ.type, serialized)
     raise NotionDfValueError('cannot deserialize: not supported class', err_vars)
+
+
+def serialize_datetime(dt: datetime):
+    return dt.astimezone(Variables.timezone).isoformat()
+
+
+def deserialize_datetime(serialized: str):
+    datetime_obj = dateutil.parser.parse(serialized)
+    return datetime_obj.astimezone(Variables.timezone)
 
 
 @dataclass
