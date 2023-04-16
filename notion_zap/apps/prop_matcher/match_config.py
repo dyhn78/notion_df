@@ -67,6 +67,10 @@ class SubFrames:
         Column(key=MyBlock.weeks.prefix + '시작', aliases=['weeks_begin', 'weeks']),
         Column(key=MyBlock.dates.prefix + '시작', aliases=['dates_begin', 'dates']),
     ])
+    dates_begin_readings = Frame([
+        Column(key=MyBlock.weeks.prefix + '시작', aliases=['weeks_begin']),
+        Column(key=MyBlock.dates.prefix + '시작', aliases=['dates_begin']),
+    ])
 
 
 Frames: dict[MyBlock, Frame] = {
@@ -144,7 +148,7 @@ Frames: dict[MyBlock, Frame] = {
     ),
 
     MyBlock.readings: Frame(
-        SubFrames.date_auto_created, SubFrames.dates_begin,
+        SubFrames.date_auto_created, SubFrames.dates_begin_readings,
         [
             Columns.title_metadata,
             Columns.media_type_from_below,
