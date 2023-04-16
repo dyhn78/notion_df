@@ -21,7 +21,7 @@ class MyBlock(Enum):
     journals = ('일지', 'c226cffe6cf84ab996bbc384bf26bf1d', EmojiCode.ORANGE_CIRCLE)
     notes = ('바탕', 'fa7d93f6fbd341f089b185745c834811', EmojiCode.ORANGE_HEART)
 
-    points = ('꼭지', '2c5411ba6a0f43a0a8aa06295751e37a', EmojiCode.YELLOW_HEART)
+    points = ('꼭지', '2c5411ba6a0f43a0a8aa06295751e37a', EmojiCode.PURPLE_CIRCLE)
     topics = ('줄기', 'eca1ba6d4831459ca8becc283f1f8c4e', EmojiCode.PURPLE_HEART)
 
     readings = ('읽기', 'c326f77425a0446a8aa309478767c85b', EmojiCode.YELLOW_CIRCLE)
