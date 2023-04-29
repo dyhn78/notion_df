@@ -67,7 +67,7 @@ class DateRange(DualSerializable):
         }
 
     @classmethod
-    def deserialize(cls, serialized: dict[str, Any]) -> Self:
+    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
         return cls(deserialize_datetime(serialized['start']), deserialize_datetime(serialized['end']))
 
 
@@ -83,7 +83,7 @@ class SelectOption(DualSerializable):
         return self._serialize_asdict()
 
     @classmethod
-    def deserialize(cls, serialized: dict[str, Any]) -> Self:
+    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
         return cls._deserialize_asdict(serialized)
 
 
@@ -101,5 +101,5 @@ class StatusGroups(DualSerializable):
         return self._serialize_asdict()
 
     @classmethod
-    def deserialize(cls, serialized: dict[str, Any]) -> Self:
+    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
         return cls._deserialize_asdict(serialized)

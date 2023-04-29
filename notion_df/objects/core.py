@@ -96,7 +96,7 @@ def deserialize_datetime(serialized: str):
 @dataclass
 class Serializable(metaclass=ABCMeta):
     """dataclass representation of the resources defined in Notion REST API.
-    transformable into JSON object."""
+    can be dumped into JSON object."""
 
     def __init__(self, **kwargs):
         pass
@@ -121,7 +121,7 @@ class Serializable(metaclass=ABCMeta):
 @dataclass
 class Deserializable(metaclass=ABCMeta):
     """dataclass representation of the resources defined in Notion REST API.
-    transformable from JSON object."""
+    can be loaded from JSON object."""
 
     def __init__(self, **kwargs):
         pass
