@@ -1,8 +1,7 @@
 from __future__ import annotations
 
 from abc import abstractmethod, ABCMeta
-from dataclasses import dataclass
-from typing import TypeVar, Generic, overload, Any, Final, Optional, Type, final, Mapping, Iterable, Iterator, TypedDict
+from typing import TypeVar, Generic, overload, Any, Final, Optional, Type, final, Mapping, Iterable, Iterator
 
 from typing_extensions import Self
 
@@ -192,7 +191,7 @@ class FieldEventListener(Generic[Entity_T, Value_T], metaclass=ABCMeta):
                 yield entity, self.field.__get__(entity, entity_type)
 
 
-@dataclass
-class FieldTypeError(NotionDfException):
-    """this field type is not supported for the entity type."""  # TODO: entity 가 field_type 을 검증
-    vars: TypedDict('vars', {'entity': Entity, 'field': Field, 'field_name': str})
+def raise_field_type_error(entity: Entity, field: Field, field_name: str):
+    # TODO: entity 가 field_type 을 검증
+    raise NotionDfException("this field type is not supported for the entity type.",
+                            {'entity': entity, 'field': field, 'field_name': field_name})

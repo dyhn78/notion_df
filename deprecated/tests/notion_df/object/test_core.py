@@ -7,20 +7,20 @@ import pytest
 import pytz
 from typing_extensions import Self
 
-from notion_df.response.core import Deserializable, deserialize, resolve_by_keychain, DeserializableResolverByKeyChain
+from notion_df.object.core import DualSerializable, deserialize, resolve_by_keychain, DeserializableResolverByKeyChain
 from notion_df.util.collection import StrEnum, Keychain
 from notion_df.util.misc import NotionDfValueError
 from notion_df.variables import Variables
 
 
 @pytest.fixture
-def master_deserializable() -> type[Deserializable]:
+def master_deserializable() -> type[DualSerializable]:
     @dataclass
     @resolve_by_keychain('type')
-    class MasterDeserializable(Deserializable, metaclass=ABCMeta):
+    class MasterDualSerializable(DualSerializable, metaclass=ABCMeta):
         pass
 
-    return MasterDeserializable
+    return MasterDualSerializable
 
 
 def test__find_type_keychain():
@@ -110,7 +110,7 @@ def test_deserializable__call_method(master_deserializable):
 
 def test_deserializable__datetime():
     @dataclass
-    class TestDeserializable(Deserializable):
+    class TestDualSerializable(DualSerializable):
         start: datetime
         end: datetime
 
@@ -121,7 +121,7 @@ def test_deserializable__datetime():
             }
 
     Variables.timezone = pytz.utc
-    deserializable = TestDeserializable(datetime(2022, 1, 1), datetime(2023, 1, 1))
+    deserializable = TestDualSerializable(datetime(2022, 1, 1), datetime(2023, 1, 1))
     serialized = {'start': '2022-01-01T00:00:00', 'end': '2023-01-01T00:00:00'}
     # TODO
     # assert deserializable.serialize() == serialized
@@ -134,14 +134,14 @@ def test__deserializable__collections():
         gray = 'gray'
 
     @dataclass
-    class TestLink(Deserializable):
+    class TestLink(DualSerializable):
         value: str
 
         def _plain_serialize(self):
             return {'value': self.value}
 
     @dataclass
-    class TestDeserializable(Deserializable):
+    class TestDualSerializable(DualSerializable):
         url: str
         hrefs: dict[str, TestLink] = field(default_factory=dict)
         bold: bool = False
@@ -157,17 +157,17 @@ def test__deserializable__collections():
                 'hrefs': self.hrefs
             }
 
-    deserializable = TestDeserializable(url='url', bold=True, link=TestLink('link'), color=TestColor.gray,
-                                        hrefs={'a': TestLink('a'), 'b': TestLink('b')})
+    deserializable = TestDualSerializable(url='url', bold=True, link=TestLink('link'), color=TestColor.gray,
+                                          hrefs={'a': TestLink('a'), 'b': TestLink('b')})
     serialized = {'url1': 'url', 'bold1': True, 'link': {'value': 'link'}, 'color1': 'gray',
                   'hrefs': {'a': {'value': 'a'}, 'b': {'value': 'b'}}}
     assert deserializable.serialize() == serialized
-    assert deserialize(TestDeserializable, serialized) == deserializable
+    assert deserialize(TestDualSerializable, serialized) == deserializable
 
 
 def test__deserializer__dynamic_type():
     @dataclass
-    class TestDeserializable(Deserializable):
+    class TestDualSerializable(DualSerializable):
         type: str
         content: str
         link: str
@@ -188,7 +188,7 @@ def test__deserializer__dynamic_type():
         def _plain_deserialize(cls, serialized: dict[str, Any], **field_value_presets: Any) -> Self:
             return super()._plain_deserialize(serialized, type=serialized['type'])
 
-    assert TestDeserializable.deserialize({
+    assert TestDualSerializable.deserialize({
         'type': 'text',
         'text': {
             'content': 'self.content',
@@ -197,4 +197,4 @@ def test__deserializer__dynamic_type():
                 'url': 'self.link'
             }
         }
-    }) == TestDeserializable('text', 'self.content', 'self.link')
+    }) == TestDualSerializable('text', 'self.content', 'self.link')

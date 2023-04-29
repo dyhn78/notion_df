@@ -1,13 +1,59 @@
-from dataclasses import dataclass, field
-from typing import Any
+from __future__ import annotations
 
+from dataclasses import dataclass, field
+from datetime import datetime
+from typing import Any, Union
+
+from typing_extensions import Self
+
+from notion_df.object.block import BlockType
+from notion_df.object.core import Deserializable
+from notion_df.object.file import ExternalFile
+from notion_df.object.misc import UUID, Icon
+from notion_df.object.page import PageProperty, page_property_registry
+from notion_df.object.parent import Parent
+from notion_df.object.rich_text import RichText
+from notion_df.object.user import User
 from notion_df.request.core import Request, RequestSettings, Version, Method, MAX_PAGE_SIZE, \
     PaginatedRequest, BaseRequest
-from notion_df.response.block import ResponseBlock
-from notion_df.response.file import ExternalFile
-from notion_df.response.misc import UUID, Icon
-from notion_df.response.page import ResponsePage, PageProperty
-from notion_df.response.parent import Parent
+
+
+def deserialize_properties(response_data: dict[str, Union[Any, dict[str, Any]]]) -> dict[str, PageProperty]:
+    properties = {}
+    for prop_name, prop_serialized in response_data['properties'].items():
+        prop = PageProperty.deserialize(prop_serialized)
+        prop.name = prop_name
+        properties[prop_name] = prop
+    return properties
+
+
+def serialize_partial_block_list(block_type_list: list[BlockType]) -> list[dict[str, Any]]:
+    return [{
+        "object": "block",
+        "type": type_object,
+        type_object.get_typename(): type_object,
+    } for type_object in block_type_list]
+
+
+@dataclass
+class ResponsePage(Deserializable):
+    id: UUID
+    parent: Parent
+    created_time: datetime
+    last_edited_time: datetime
+    created_by: User
+    last_edited_by: User
+    icon: Icon
+    cover: ExternalFile
+    url: str
+    title: list[RichText]
+    properties: dict[str, PageProperty] = field()
+    archived: bool
+    is_inline: bool
+
+    @classmethod
+    def _deserialize_this(cls, response_data: dict[str, Any]) -> Self:
+        return cls._deserialize_asdict(response_data | {'properties': deserialize_properties(response_data)})
 
 
 @dataclass
@@ -25,13 +71,12 @@ class RetrievePage(Request[ResponsePage]):
 
 @dataclass
 class CreatePage(Request[ResponsePage]):
-    """https://developers.notion.com/reference/create-a-page"""
+    """https://developers.notion.com/reference/post-page"""
     parent: Parent
     icon: Icon
     cover: ExternalFile
-    properties: dict[str, PageProperty] = field()
-    """the dict keys are same as each property's name or id (depending on request)"""
-    children: list[ResponseBlock] = field()
+    properties: list[PageProperty] = field()
+    children: list[BlockType] = field()
 
     def get_settings(self) -> RequestSettings:
         return RequestSettings(Version.v20220628, Method.POST,
@@ -42,19 +87,18 @@ class CreatePage(Request[ResponsePage]):
             "parent": self.parent,
             "icon": self.icon,
             "cover": self.cover,
-            "properties": self.properties,
-            "children": self.children,
+            "properties": {prop.name: prop for prop in self.properties},
+            "children": serialize_partial_block_list(self.children),
         }
 
 
 @dataclass
 class UpdatePage(Request[ResponsePage]):
-    """https://developers.notion.com/reference/update-a-page"""
+    """https://developers.notion.com/reference/patch-page"""
     id: UUID
     icon: Icon
     cover: ExternalFile
-    properties: dict[str, PageProperty] = field()
-    """the dict keys are same as each property's name or id (depending on request)"""
+    properties: list[PageProperty] = field()
     archived: bool
 
     def get_settings(self) -> RequestSettings:
@@ -65,7 +109,7 @@ class UpdatePage(Request[ResponsePage]):
         return {
             "icon": self.icon,
             "cover": self.cover,
-            "properties": self.properties,
+            "properties": {prop.name: prop for prop in self.properties},
             "archived": self.archived,
         }
 
@@ -76,7 +120,6 @@ class RetrievePagePropertyItem(BaseRequest[PageProperty]):
     page_id: UUID
     property_id: UUID
     page_size: int = -1
-    request_once = PaginatedRequest.request_once
 
     def get_settings(self) -> RequestSettings:
         return RequestSettings(Version.v20220628, Method.GET,
@@ -84,6 +127,8 @@ class RetrievePagePropertyItem(BaseRequest[PageProperty]):
 
     def get_body(self):
         pass
+
+    request_once = PaginatedRequest.request_once
 
     def request(self):
         # TODO: deduplicate with PaginatedRequest.request() if possible.
@@ -106,4 +151,8 @@ class RetrievePagePropertyItem(BaseRequest[PageProperty]):
             data = self.request_once(page_size, start_cursor)
             data_list.append(data)
 
-        return PageProperty.deserialize_property_item_list(data_list)
+        typename = data_list[0]['property_item']['type']
+        subclass = page_property_registry[typename]
+        value_list = [data['result'][typename] for data in data_list]
+        merged_response = data_list[0]['result'] | {typename: value_list}
+        return subclass.deserialize(merged_response)
