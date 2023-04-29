@@ -10,12 +10,38 @@ from _decimal import Decimal
 from typing_extensions import Self
 
 from notion_df.objects.constant import RollupFunction
-from notion_df.objects.core import DualSerializable
-from notion_df.objects.file import File
-from notion_df.objects.misc import UUID, DateRange, SelectOption
+from notion_df.objects.core import DualSerializable, Deserializable
+from notion_df.objects.file import File, ExternalFile
+from notion_df.objects.misc import UUID, DateRange, SelectOption, Icon
+from notion_df.objects.parent import Parent
 from notion_df.objects.rich_text import RichText
 from notion_df.objects.user import User
+from notion_df.requests.common import deserialize_properties
 from notion_df.utils.collection import FinalClassDict
+
+page_property_registry: FinalClassDict[str, type[PageProperty]] = FinalClassDict()
+
+
+@dataclass
+class ResponsePage(Deserializable):
+    id: UUID
+    parent: Parent
+    created_time: datetime
+    last_edited_time: datetime
+    created_by: User
+    last_edited_by: User
+    icon: Icon
+    cover: ExternalFile
+    url: str
+    title: list[RichText]
+    properties: dict[str, PageProperty] = field()
+    archived: bool
+    is_inline: bool
+
+    @classmethod
+    def _deserialize_this(cls, response_data: dict[str, Any]) -> Self:
+        return cls._deserialize_asdict({
+            **response_data, 'properties': deserialize_properties(response_data, PageProperty)})
 
 
 @dataclass
@@ -58,9 +84,6 @@ class PageProperty(DualSerializable, metaclass=ABCMeta):
             prop.name = prop_name
             properties[prop_name] = prop
         return properties
-
-
-page_property_registry = FinalClassDict[str, type[PageProperty]]()
 
 
 @dataclass

@@ -46,6 +46,23 @@ class OptionColor(StrEnum):
     RED = 'red'
 
 
+@dataclass
+class Annotations(DualSerializable):
+    bold: bool = False
+    italic: bool = False
+    strikethrough: bool = False
+    underline: bool = False
+    code: bool = False
+    color: BlockColor = BlockColor.DEFAULT
+
+    def serialize(self) -> dict[str, Any]:
+        return self._serialize_asdict()
+
+    @classmethod
+    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
+        return cls._deserialize_asdict(serialized)
+
+
 class NumberFormat(StrEnum):
     NUMBER = 'number'
     NUMBER_WITH_COMMAS = 'number_with_commas'
@@ -188,20 +205,3 @@ class CodeLanguage(StrEnum):
     XML = "xml"
     YAML = "yaml"
     JAVA_C_CPP_C_SHARP = "java/c/c++/c#"
-
-
-@dataclass
-class Annotations(DualSerializable):
-    bold: bool = False
-    italic: bool = False
-    strikethrough: bool = False
-    underline: bool = False
-    code: bool = False
-    color: BlockColor = BlockColor.DEFAULT
-
-    def serialize(self) -> dict[str, Any]:
-        return self._serialize_asdict()
-
-    @classmethod
-    def deserialize(cls, serialized: dict[str, Any]) -> Self:
-        return cls._deserialize_asdict(serialized)

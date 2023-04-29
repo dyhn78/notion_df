@@ -38,7 +38,7 @@ class DatabaseParent(Parent):
         }
 
     @classmethod
-    def deserialize(cls, serialized: dict[str, Any]) -> Self:
+    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
         return cls(serialized['database_id'])
 
 
@@ -51,7 +51,7 @@ class PageParent(Parent):
         }
 
     @classmethod
-    def deserialize(cls, serialized: dict[str, Any]) -> Self:
+    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
         return cls(serialized['page_id'])
 
 
@@ -64,5 +64,5 @@ class BlockParent(Parent):
         }
 
     @classmethod
-    def deserialize(cls, serialized: dict[str, Any]) -> Self:
+    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
         return cls(serialized['block_id'])

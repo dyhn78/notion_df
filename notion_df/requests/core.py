@@ -50,7 +50,7 @@ class BaseRequest(Generic[Response_T], metaclass=ABCMeta):
 
 
 @dataclass
-class Request(BaseRequest[Response_T], metaclass=ABCMeta):
+class SingleRequest(BaseRequest[Response_T], metaclass=ABCMeta):
     @final
     def request(self) -> Response_T:
         response = self.get_settings().request(self.api_key, self.get_body())

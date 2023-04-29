@@ -9,11 +9,10 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, get_origin, get_args, final
 
-import dateutil.parser
 from typing_extensions import Self
 
+from notion_df.objects.common import serialize_datetime, deserialize_datetime
 from notion_df.utils.misc import NotionDfValueError, NotionDfNotImplementedError
-from notion_df.variables import Variables
 
 
 def serialize(obj: Any):
@@ -84,15 +83,6 @@ def deserialize(typ: type, serialized: Any):
     raise NotionDfValueError('cannot deserialize: not supported class', err_vars)
 
 
-def serialize_datetime(dt: datetime):
-    return dt.astimezone(Variables.timezone).isoformat()
-
-
-def deserialize_datetime(serialized: str):
-    datetime_obj = dateutil.parser.parse(serialized)
-    return datetime_obj.astimezone(Variables.timezone)
-
-
 @dataclass
 class Serializable(metaclass=ABCMeta):
     """dataclass representation of the resources defined in Notion REST API.
@@ -139,8 +129,9 @@ class Deserializable(metaclass=ABCMeta):
 
     @classmethod
     @final
-    def _deserialize_asdict(cls, serialized: dict[str, Any]) -> Self:
+    def _deserialize_asdict(cls, serialized: dict[str, Any], **overrides: Any) -> Self:
         """helper method to implement _deserialize_this()."""
+        serialized.update(overrides)
         self = cls(**{fd.name: serialized[fd.name] for fd in fields(cls) if fd.init})  # type: ignore
         for fd in fields(cls):
             if not fd.init:

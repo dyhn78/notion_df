@@ -2,19 +2,41 @@ from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, field
+from datetime import datetime
 from typing import Any
 
 from typing_extensions import Self
 
 from notion_df.objects.constant import BlockColor, CodeLanguage
-from notion_df.objects.core import DualSerializable
+from notion_df.objects.core import DualSerializable, Deserializable
 from notion_df.objects.file import File
 from notion_df.objects.misc import UUID, Icon
+from notion_df.objects.parent import Parent
 from notion_df.objects.rich_text import RichText
-from notion_df.requests.block import ResponseBlock
+from notion_df.objects.user import User
 from notion_df.utils.collection import FinalClassDict
 
-type_object_registry: FinalClassDict[str, type[BlockType]] = FinalClassDict()
+block_type_registry: FinalClassDict[str, type[BlockType]] = FinalClassDict()
+
+
+@dataclass
+class ResponseBlock(Deserializable):
+    id: UUID
+    parent: Parent
+    created_time: datetime
+    last_edited_time: datetime
+    created_by: User
+    last_edited_by: User
+    has_children: bool
+    archived: bool
+    type_object: BlockType
+
+    @classmethod
+    def _deserialize_this(cls, response_data: dict[str, Any]):
+        typename = response_data['type']
+        block_type_cls = block_type_registry[typename]
+        block_type = block_type_cls.deserialize(response_data[typename])
+        return cls._deserialize_asdict(response_data, type_object=block_type)
 
 
 @dataclass
@@ -25,13 +47,13 @@ class BlockType(DualSerializable, metaclass=ABCMeta):
         pass
 
     def __init_subclass__(cls, **kwargs):
-        type_object_registry[cls.get_typename()] = cls
+        block_type_registry[cls.get_typename()] = cls
 
     def serialize(self) -> dict[str, Any]:
         return self._serialize_asdict()
 
     @classmethod
-    def deserialize(cls, serialized: dict[str, Any]) -> Self:
+    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
         return cls._deserialize_asdict(serialized)
 
 
@@ -157,7 +179,7 @@ class FileBlockType(BlockType):
         return {'caption': self.caption, **self.file.serialize()}
 
     @classmethod
-    def deserialize(cls, serialized: dict[str, Any]) -> Self:
+    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
         return cls(File.deserialize(serialized), serialized['caption'])
 
 
@@ -207,7 +229,7 @@ class ImageBlockType(BlockType):
         return self.file.serialize()
 
     @classmethod
-    def deserialize(cls, serialized: dict[str, Any]) -> Self:
+    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
         return cls(File.deserialize(serialized))
 
     @classmethod
@@ -246,7 +268,7 @@ class PDFBlockType(BlockType):
         return {'caption': self.caption, **self.file.serialize()}
 
     @classmethod
-    def deserialize(cls, serialized: dict[str, Any]) -> Self:
+    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
         return cls(File.deserialize(serialized), serialized['caption'])
 
     @classmethod
@@ -274,7 +296,7 @@ class SyncedBlockType(BlockType, metaclass=ABCMeta):
         return 'synced_block'
 
     @classmethod
-    def deserialize(cls, serialized: dict[str, Any]) -> Self:
+    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
         def get_subclass():
             if serialized['synced_from']:
                 return DuplicatedSyncedBlockType
@@ -373,7 +395,7 @@ class VideoBlockType(BlockType):
         return self.file.serialize()
 
     @classmethod
-    def deserialize(cls, serialized: dict[str, Any]) -> Self:
+    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
         return cls(File.deserialize(serialized))
 
     @classmethod

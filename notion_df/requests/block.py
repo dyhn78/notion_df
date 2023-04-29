@@ -1,41 +1,17 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime
 from typing import Any
 
-from notion_df.objects.block import BlockType, type_object_registry
-from notion_df.objects.core import Deserializable
+from notion_df.objects.block import BlockType, ResponseBlock
 from notion_df.objects.misc import UUID
-from notion_df.objects.parent import Parent
-from notion_df.objects.user import User
-from notion_df.requests.core import Request, RequestSettings, Version, Method, PaginatedRequest
-from notion_df.requests.page import serialize_partial_block_list
+from notion_df.requests.common import serialize_partial_block_list
+from notion_df.requests.core import SingleRequest, RequestSettings, Version, Method, PaginatedRequest
 from notion_df.utils.collection import DictFilter
 
 
 @dataclass
-class ResponseBlock(Deserializable):
-    id: UUID
-    parent: Parent
-    created_time: datetime
-    last_edited_time: datetime
-    created_by: User
-    last_edited_by: User
-    has_children: bool
-    archived: bool
-    type_object: BlockType
-
-    @classmethod
-    def deserialize(cls, response_data: dict[str, Any]):
-        typename = response_data['type']
-        type_object_cls = type_object_registry[typename]
-        type_object = type_object_cls.deserialize(response_data[typename])
-        return cls._deserialize_asdict(response_data | {'type_object': type_object})
-
-
-@dataclass
-class AppendBlockChildren(Request[list[ResponseBlock]]):
+class AppendBlockChildren(SingleRequest[list[ResponseBlock]]):
     """https://developers.notion.com/reference/patch-block-children"""
     id: UUID
     children: list[BlockType]
@@ -56,7 +32,7 @@ class AppendBlockChildren(Request[list[ResponseBlock]]):
 
 
 @dataclass
-class RetrieveBlock(Request[ResponseBlock]):
+class RetrieveBlock(SingleRequest[ResponseBlock]):
     """https://developers.notion.com/reference/retrieve-a-block"""
     id: UUID
 
@@ -82,7 +58,7 @@ class RetrieveBlockChildren(PaginatedRequest[ResponseBlock]):
 
 
 @dataclass
-class UpdateBlock(Request[ResponseBlock]):
+class UpdateBlock(SingleRequest[ResponseBlock]):
     """https://developers.notion.com/reference/update-a-block"""
     id: UUID
     type_object: BlockType = field(default=None)
@@ -101,7 +77,7 @@ class UpdateBlock(Request[ResponseBlock]):
 
 
 @dataclass
-class DeleteBlock(Request[ResponseBlock]):
+class DeleteBlock(SingleRequest[ResponseBlock]):
     """https://developers.notion.com/reference/delete-a-block"""
     id: UUID
 

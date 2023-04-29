@@ -1,63 +1,20 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime
-from typing import Any, Union
-
-from typing_extensions import Self
+from typing import Any
 
 from notion_df.objects.block import BlockType
-from notion_df.objects.core import Deserializable
 from notion_df.objects.file import ExternalFile
 from notion_df.objects.misc import UUID, Icon
-from notion_df.objects.page import PageProperty, page_property_registry
+from notion_df.objects.page import PageProperty, page_property_registry, ResponsePage
 from notion_df.objects.parent import Parent
-from notion_df.objects.rich_text import RichText
-from notion_df.objects.user import User
-from notion_df.requests.core import Request, RequestSettings, Version, Method, MAX_PAGE_SIZE, \
+from notion_df.requests.common import serialize_partial_block_list
+from notion_df.requests.core import SingleRequest, RequestSettings, Version, Method, MAX_PAGE_SIZE, \
     PaginatedRequest, BaseRequest
 
 
-def deserialize_properties(response_data: dict[str, Union[Any, dict[str, Any]]]) -> dict[str, PageProperty]:
-    properties = {}
-    for prop_name, prop_serialized in response_data['properties'].items():
-        prop = PageProperty.deserialize(prop_serialized)
-        prop.name = prop_name
-        properties[prop_name] = prop
-    return properties
-
-
-def serialize_partial_block_list(block_type_list: list[BlockType]) -> list[dict[str, Any]]:
-    return [{
-        "object": "block",
-        "type": type_object,
-        type_object.get_typename(): type_object,
-    } for type_object in block_type_list]
-
-
 @dataclass
-class ResponsePage(Deserializable):
-    id: UUID
-    parent: Parent
-    created_time: datetime
-    last_edited_time: datetime
-    created_by: User
-    last_edited_by: User
-    icon: Icon
-    cover: ExternalFile
-    url: str
-    title: list[RichText]
-    properties: dict[str, PageProperty] = field()
-    archived: bool
-    is_inline: bool
-
-    @classmethod
-    def _deserialize_this(cls, response_data: dict[str, Any]) -> Self:
-        return cls._deserialize_asdict(response_data | {'properties': deserialize_properties(response_data)})
-
-
-@dataclass
-class RetrievePage(Request[ResponsePage]):
+class RetrievePage(SingleRequest[ResponsePage]):
     """https://developers.notion.com/reference/retrieve-a-page"""
     id: UUID
 
@@ -70,7 +27,7 @@ class RetrievePage(Request[ResponsePage]):
 
 
 @dataclass
-class CreatePage(Request[ResponsePage]):
+class CreatePage(SingleRequest[ResponsePage]):
     """https://developers.notion.com/reference/post-page"""
     parent: Parent
     icon: Icon
@@ -93,7 +50,7 @@ class CreatePage(Request[ResponsePage]):
 
 
 @dataclass
-class UpdatePage(Request[ResponsePage]):
+class UpdatePage(SingleRequest[ResponsePage]):
     """https://developers.notion.com/reference/patch-page"""
     id: UUID
     icon: Icon

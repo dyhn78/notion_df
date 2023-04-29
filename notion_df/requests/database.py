@@ -1,51 +1,21 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime
 from typing import Any, Optional
 
-from typing_extensions import Self
-
-from notion_df.objects.core import Deserializable
-from notion_df.objects.database import DatabaseProperty
-from notion_df.objects.file import File, ExternalFile
+from notion_df.objects.database import DatabaseProperty, ResponseDatabase
+from notion_df.objects.file import File
 from notion_df.objects.filter import Filter
 from notion_df.objects.misc import Icon, UUID
-from notion_df.objects.parent import Parent
+from notion_df.objects.page import ResponsePage
 from notion_df.objects.rich_text import RichText
 from notion_df.objects.sort import Sort
-from notion_df.requests.core import Request, RequestSettings, Version, Method, PaginatedRequest
-from notion_df.requests.page import ResponsePage
+from notion_df.requests.core import SingleRequest, RequestSettings, Version, Method, PaginatedRequest
 from notion_df.utils.collection import DictFilter
 
 
 @dataclass
-class ResponseDatabase(Deserializable):
-    # TODO: configure Property -> DatabaseProperty 1:1 mapping, from Property's side.
-    #  access this mapping from Property (NOT ResponseDatabase), the base class.
-    #  Property.from_schema(schema: DatabaseProperty) -> Property
-    #  then, make Page or Database utilize it,
-    #  so that they could autoconfigure itself and its children with the retrieved data.
-    id: UUID
-    parent: Parent
-    created_time: datetime
-    last_edited_time: datetime
-    icon: Icon
-    cover: ExternalFile
-    url: str
-    title: list[RichText]
-    properties: dict[str, DatabaseProperty] = field()
-    """the dict keys are same as each property's name or id (depending on request)"""
-    archived: bool
-    is_inline: bool
-
-    @classmethod
-    def deserialize(cls, response_data: dict[str, Any]) -> Self:
-        return cls._deserialize_asdict(response_data)
-
-
-@dataclass
-class RetrieveDatabase(Request[ResponseDatabase]):
+class RetrieveDatabase(SingleRequest[ResponseDatabase]):
     id: UUID
 
     def get_settings(self) -> RequestSettings:
@@ -57,7 +27,7 @@ class RetrieveDatabase(Request[ResponseDatabase]):
 
 
 @dataclass
-class CreateDatabase(Request[ResponseDatabase]):
+class CreateDatabase(SingleRequest[ResponseDatabase]):
     """https://developers.notion.com/reference/create-a-database"""
     parent_id: UUID
     title: list[RichText]
@@ -85,7 +55,7 @@ class CreateDatabase(Request[ResponseDatabase]):
 
 
 @dataclass
-class UpdateDatabase(Request[ResponseDatabase]):
+class UpdateDatabase(SingleRequest[ResponseDatabase]):
     database_id: UUID
     title: list[RichText]
     properties: dict[str, DatabaseProperty] = field(default_factory=dict)
