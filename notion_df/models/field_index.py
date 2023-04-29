@@ -4,7 +4,7 @@ from abc import ABCMeta, abstractmethod
 from collections import defaultdict
 from typing import Final, Mapping, TypeVar, Any, Iterable, Callable
 
-from notion_df.entities.core import Entity_T, Value_T, Field, FieldEventListener
+from notion_df.models.core import Entity_T, Value_T, Field, FieldEventListener
 from notion_df.utils.collection import DictView
 from notion_df.utils.mixin import Resolvable
 
