@@ -52,7 +52,7 @@ class ResponsePage(Deserializable):
     is_inline: bool
 
     @classmethod
-    def deserialize(cls, response_data: dict[str, Any]) -> Self:
+    def _deserialize_this(cls, response_data: dict[str, Any]) -> Self:
         return cls._deserialize_asdict(response_data | {'properties': deserialize_properties(response_data)})
 
 
