@@ -8,8 +8,9 @@ from typing import Literal, TypeVar, Generic, Optional, Callable, overload
 
 from typing_extensions import Self
 
+from notion_df.objects.constant import TimestampType
 from notion_df.objects.core import Serializable, serialize
-from notion_df.objects.misc import UUID, TimestampType
+from notion_df.objects.misc import UUID
 
 _T = TypeVar('_T')
 

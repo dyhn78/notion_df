@@ -9,9 +9,10 @@ from typing import Any, Literal, Union, cast, final
 from _decimal import Decimal
 from typing_extensions import Self
 
+from notion_df.objects.constant import RollupFunction
 from notion_df.objects.core import DualSerializable
 from notion_df.objects.file import File
-from notion_df.objects.misc import UUID, DateRange, SelectOption, RollupFunction
+from notion_df.objects.misc import UUID, DateRange, SelectOption
 from notion_df.objects.rich_text import RichText
 from notion_df.objects.user import User
 from notion_df.utils.collection import FinalClassDict

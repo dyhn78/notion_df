@@ -2,8 +2,8 @@ from abc import ABCMeta
 from dataclasses import dataclass
 from typing import Literal, Any
 
+from notion_df.objects.constant import TimestampType
 from notion_df.objects.core import Serializable
-from notion_df.objects.misc import TimestampType
 
 Direction = Literal['ascending', 'descending']
 

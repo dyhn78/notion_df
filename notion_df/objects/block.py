@@ -6,9 +6,10 @@ from typing import Any
 
 from typing_extensions import Self
 
+from notion_df.objects.constant import BlockColor, CodeLanguage
 from notion_df.objects.core import DualSerializable
 from notion_df.objects.file import File
-from notion_df.objects.misc import UUID, Icon, CodeLanguage, BlockColor
+from notion_df.objects.misc import UUID, Icon
 from notion_df.objects.rich_text import RichText
 from notion_df.requests.block import ResponseBlock
 from notion_df.utils.collection import FinalClassDict
