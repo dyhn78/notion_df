@@ -6,12 +6,12 @@ from typing import Any
 
 from typing_extensions import Self
 
-from notion_df.object.core import DualSerializable
-from notion_df.object.file import File
-from notion_df.object.misc import UUID, Icon, CodeLanguage, BlockColor
-from notion_df.object.rich_text import RichText
-from notion_df.request.block import ResponseBlock
-from notion_df.util.collection import FinalClassDict
+from notion_df.objects.core import DualSerializable
+from notion_df.objects.file import File
+from notion_df.objects.misc import UUID, Icon, CodeLanguage, BlockColor
+from notion_df.objects.rich_text import RichText
+from notion_df.requests.block import ResponseBlock
+from notion_df.utils.collection import FinalClassDict
 
 type_object_registry: FinalClassDict[str, type[BlockType]] = FinalClassDict()
 

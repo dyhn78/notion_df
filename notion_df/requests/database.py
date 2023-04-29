@@ -6,17 +6,17 @@ from typing import Any, Optional
 
 from typing_extensions import Self
 
-from notion_df.object.core import Deserializable
-from notion_df.object.database import DatabaseProperty
-from notion_df.object.file import File, ExternalFile
-from notion_df.object.filter import Filter
-from notion_df.object.misc import Icon, UUID
-from notion_df.object.parent import Parent
-from notion_df.object.rich_text import RichText
-from notion_df.object.sort import Sort
-from notion_df.request.core import Request, RequestSettings, Version, Method, PaginatedRequest
-from notion_df.request.page import ResponsePage
-from notion_df.util.collection import DictFilter
+from notion_df.objects.core import Deserializable
+from notion_df.objects.database import DatabaseProperty
+from notion_df.objects.file import File, ExternalFile
+from notion_df.objects.filter import Filter
+from notion_df.objects.misc import Icon, UUID
+from notion_df.objects.parent import Parent
+from notion_df.objects.rich_text import RichText
+from notion_df.objects.sort import Sort
+from notion_df.requests.core import Request, RequestSettings, Version, Method, PaginatedRequest
+from notion_df.requests.page import ResponsePage
+from notion_df.utils.collection import DictFilter
 
 
 @dataclass

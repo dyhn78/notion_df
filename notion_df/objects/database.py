@@ -6,10 +6,10 @@ from typing import Any
 
 from typing_extensions import Self
 
-from notion_df.object.core import DualSerializable
-from notion_df.object.misc import UUID, NumberFormat, SelectOption, StatusGroups, RollupFunction
-from notion_df.util.collection import FinalClassDict
-from notion_df.util.misc import NotionDfValueError
+from notion_df.objects.core import DualSerializable
+from notion_df.objects.misc import UUID, NumberFormat, SelectOption, StatusGroups, RollupFunction
+from notion_df.utils.collection import FinalClassDict
+from notion_df.utils.misc import NotionDfValueError
 
 
 @dataclass

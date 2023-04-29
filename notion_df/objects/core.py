@@ -12,7 +12,7 @@ from typing import Any, get_origin, get_args, final
 import dateutil.parser
 from typing_extensions import Self
 
-from notion_df.util.misc import NotionDfValueError, NotionDfNotImplementedError
+from notion_df.utils.misc import NotionDfValueError, NotionDfNotImplementedError
 from notion_df.variables import Variables
 
 

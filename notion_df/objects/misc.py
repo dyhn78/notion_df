@@ -7,8 +7,8 @@ from typing import Any, NewType, Literal, final
 
 from typing_extensions import Self
 
-from notion_df.object.core import DualSerializable, deserialize_datetime, serialize_datetime
-from notion_df.util.collection import StrEnum
+from notion_df.objects.core import DualSerializable, deserialize_datetime, serialize_datetime
+from notion_df.utils.collection import StrEnum
 
 UUID = NewType('UUID', str)
 TimestampType = Literal['created_time', 'last_edited_time']

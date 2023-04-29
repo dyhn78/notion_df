@@ -4,14 +4,14 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any
 
-from notion_df.object.block import BlockType, type_object_registry
-from notion_df.object.core import Deserializable
-from notion_df.object.misc import UUID
-from notion_df.object.parent import Parent
-from notion_df.object.user import User
-from notion_df.request.core import Request, RequestSettings, Version, Method, PaginatedRequest
-from notion_df.request.page import serialize_partial_block_list
-from notion_df.util.collection import DictFilter
+from notion_df.objects.block import BlockType, type_object_registry
+from notion_df.objects.core import Deserializable
+from notion_df.objects.misc import UUID
+from notion_df.objects.parent import Parent
+from notion_df.objects.user import User
+from notion_df.requests.core import Request, RequestSettings, Version, Method, PaginatedRequest
+from notion_df.requests.page import serialize_partial_block_list
+from notion_df.utils.collection import DictFilter
 
 
 @dataclass

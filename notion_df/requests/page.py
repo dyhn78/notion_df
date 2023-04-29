@@ -6,15 +6,15 @@ from typing import Any, Union
 
 from typing_extensions import Self
 
-from notion_df.object.block import BlockType
-from notion_df.object.core import Deserializable
-from notion_df.object.file import ExternalFile
-from notion_df.object.misc import UUID, Icon
-from notion_df.object.page import PageProperty, page_property_registry
-from notion_df.object.parent import Parent
-from notion_df.object.rich_text import RichText
-from notion_df.object.user import User
-from notion_df.request.core import Request, RequestSettings, Version, Method, MAX_PAGE_SIZE, \
+from notion_df.objects.block import BlockType
+from notion_df.objects.core import Deserializable
+from notion_df.objects.file import ExternalFile
+from notion_df.objects.misc import UUID, Icon
+from notion_df.objects.page import PageProperty, page_property_registry
+from notion_df.objects.parent import Parent
+from notion_df.objects.rich_text import RichText
+from notion_df.objects.user import User
+from notion_df.requests.core import Request, RequestSettings, Version, Method, MAX_PAGE_SIZE, \
     PaginatedRequest, BaseRequest
 
 
