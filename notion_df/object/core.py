@@ -11,8 +11,8 @@ from typing import Any, get_origin, get_args, final
 
 from typing_extensions import Self
 
-from notion_df.objects.common import serialize_datetime, deserialize_datetime
-from notion_df.utils.misc import NotionDfValueError, NotionDfNotImplementedError
+from notion_df.object.common import serialize_datetime, deserialize_datetime
+from notion_df.util.misc import NotionDfValueError, NotionDfNotImplementedError
 
 
 def serialize(obj: Any):

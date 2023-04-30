@@ -1,4 +1,4 @@
-from notion_df.utils.mixin import cache_on_input
+from notion_df.util.mixin import cache_on_input
 
 
 def test_input_based_cache():

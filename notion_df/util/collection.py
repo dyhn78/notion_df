@@ -3,8 +3,8 @@ from __future__ import annotations
 from enum import Enum
 from typing import Mapping, TypeVar, Iterator, Final, NewType
 
-from notion_df.utils.misc import repr_object, NotionDfKeyError
-from notion_df.utils.mixin import Resolvable
+from notion_df.util.misc import repr_object, NotionDfKeyError
+from notion_df.util.mixin import Resolvable
 
 _T_co = TypeVar('_T_co', covariant=True)
 _VT_co = TypeVar('_VT_co', covariant=True)

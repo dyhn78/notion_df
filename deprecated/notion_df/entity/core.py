@@ -5,8 +5,8 @@ from typing import TypeVar, Generic, overload, Any, Final, Optional, Type, final
 
 from typing_extensions import Self
 
-from notion_df.utils.collection import DictView
-from notion_df.utils.misc import NotionDfException, NotionDfStateError
+from notion_df.util.collection import DictView
+from notion_df.util.misc import NotionDfException, NotionDfStateError
 
 Entity_T = TypeVar('Entity_T', bound='Entity')
 Field_T = TypeVar('Field_T', bound='Field')
@@ -87,7 +87,7 @@ class Field(Generic[Entity_T, Value_T, ValueInput_T]):
         self.entity_types: set[Type[Entity_T]] = set()
         self.listeners: list[FieldEventListener] = []
 
-        from notion_df.models.field_index import (
+        from notion_df.model.field_index import (
             FieldIndex, FieldInvertedIndexAll, FieldInvertedIndexFirst, FieldInvertedIndexLast)
         self.index: DictView[Entity_T, Value_T] = FieldIndex(self).view
         self.inverted_index_all: DictView[Value_T, list[Entity_T]] = FieldInvertedIndexAll(self).view

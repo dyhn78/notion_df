@@ -7,14 +7,14 @@ from typing import Any
 
 from typing_extensions import Self
 
-from notion_df.objects.constant import BlockColor, CodeLanguage
-from notion_df.objects.core import DualSerializable, Deserializable
-from notion_df.objects.file import File
-from notion_df.objects.misc import UUID, Icon
-from notion_df.objects.parent import Parent
-from notion_df.objects.rich_text import RichText
-from notion_df.objects.user import User
-from notion_df.utils.collection import FinalClassDict
+from notion_df.object.constant import BlockColor, CodeLanguage
+from notion_df.object.core import DualSerializable, Deserializable
+from notion_df.object.file import File
+from notion_df.object.misc import UUID, Icon
+from notion_df.object.parent import Parent
+from notion_df.object.rich_text import RichText
+from notion_df.object.user import User
+from notion_df.util.collection import FinalClassDict
 
 block_type_registry: FinalClassDict[str, type[BlockType]] = FinalClassDict()
 

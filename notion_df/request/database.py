@@ -3,15 +3,15 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Optional
 
-from notion_df.objects.database import DatabaseProperty, ResponseDatabase
-from notion_df.objects.file import File
-from notion_df.objects.filter import Filter
-from notion_df.objects.misc import Icon, UUID
-from notion_df.objects.page import ResponsePage
-from notion_df.objects.rich_text import RichText
-from notion_df.objects.sort import Sort
-from notion_df.requests.core import SingleRequest, RequestSettings, Version, Method, PaginatedRequest
-from notion_df.utils.collection import DictFilter
+from notion_df.object.database import DatabaseProperty, ResponseDatabase
+from notion_df.object.file import File
+from notion_df.object.filter import Filter
+from notion_df.object.misc import Icon, UUID
+from notion_df.object.page import ResponsePage
+from notion_df.object.rich_text import RichText
+from notion_df.object.sort import Sort
+from notion_df.request.core import SingleRequest, RequestSettings, Version, Method, PaginatedRequest
+from notion_df.util.collection import DictFilter
 
 
 @dataclass

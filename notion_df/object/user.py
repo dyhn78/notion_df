@@ -4,8 +4,8 @@ from typing import Any, final
 
 from typing_extensions import Self
 
-from notion_df.objects.core import DualSerializable
-from notion_df.objects.misc import UUID
+from notion_df.object.core import DualSerializable
+from notion_df.object.misc import UUID
 
 
 @dataclass

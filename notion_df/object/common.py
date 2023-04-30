@@ -4,7 +4,7 @@ from datetime import datetime
 
 import dateutil.parser
 
-from notion_df.variables import Variables
+from notion_df.variable import Variables
 
 
 def serialize_datetime(dt: datetime):

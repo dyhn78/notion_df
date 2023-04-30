@@ -7,9 +7,9 @@ from typing import Any, NewType, final
 
 from typing_extensions import Self
 
-from notion_df.objects.common import serialize_datetime, deserialize_datetime
-from notion_df.objects.constant import OptionColor
-from notion_df.objects.core import DualSerializable
+from notion_df.object.common import serialize_datetime, deserialize_datetime
+from notion_df.object.constant import OptionColor
+from notion_df.object.core import DualSerializable
 
 UUID = NewType('UUID', str)
 

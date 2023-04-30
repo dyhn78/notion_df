@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from typing import TypeVar, Any, Union
 
-from notion_df.objects.block import BlockType
-from notion_df.objects.database import DatabaseProperty
-from notion_df.objects.page import PageProperty
+from notion_df.object.block import BlockType
+from notion_df.object.database import DatabaseProperty
+from notion_df.object.page import PageProperty
 
 PropertyType_T = TypeVar('PropertyType_T', bound=type[PageProperty] | type[DatabaseProperty])
 

@@ -8,9 +8,9 @@ from typing import TypeVar, Generic, ClassVar, get_args, Any, final, Optional
 
 from requests import Response, request
 
-from notion_df.objects.core import DualSerializable, serialize, deserialize
-from notion_df.utils.collection import StrEnum
-from notion_df.utils.misc import NotionDfValueError
+from notion_df.object.core import DualSerializable, serialize, deserialize
+from notion_df.util.collection import StrEnum
+from notion_df.util.misc import NotionDfValueError
 
 Response_T = TypeVar('Response_T', bound=DualSerializable)
 ResponseElement_T = TypeVar('ResponseElement_T', bound=DualSerializable)

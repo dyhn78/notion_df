@@ -3,7 +3,7 @@
 # 용어 정리: "Block" 이라 하면 (Block, PageBlock, PageRow, ...) 를 모두 가리킨다
 from __future__ import annotations
 
-from notion_df.models.core import Value_T, ValueInput_T, Entity, Field, MutableField, Property
+from notion_df.model.core import Value_T, ValueInput_T, Entity, Field, MutableField, Property
 
 
 class BlockIdField(Field['Block', str, str]):

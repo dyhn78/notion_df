@@ -7,15 +7,15 @@ from typing import Any
 
 from typing_extensions import Self
 
-from notion_df.objects.constant import NumberFormat, RollupFunction
-from notion_df.objects.core import DualSerializable, Deserializable
-from notion_df.objects.file import ExternalFile
-from notion_df.objects.misc import UUID, SelectOption, StatusGroups, Icon
-from notion_df.objects.parent import Parent
-from notion_df.objects.rich_text import RichText
-from notion_df.requests.common import deserialize_properties
-from notion_df.utils.collection import FinalClassDict
-from notion_df.utils.misc import NotionDfValueError
+from notion_df.object.constant import NumberFormat, RollupFunction
+from notion_df.object.core import DualSerializable, Deserializable
+from notion_df.object.file import ExternalFile
+from notion_df.object.misc import UUID, SelectOption, StatusGroups, Icon
+from notion_df.object.parent import Parent
+from notion_df.object.rich_text import RichText
+from notion_df.request.common import deserialize_properties
+from notion_df.util.collection import FinalClassDict
+from notion_df.util.misc import NotionDfValueError
 
 
 @dataclass

@@ -4,9 +4,9 @@ from abc import ABCMeta, abstractmethod
 from collections import defaultdict
 from typing import Final, Mapping, TypeVar, Any, Iterable, Callable
 
-from notion_df.models.core import Entity_T, Value_T, Field, FieldEventListener
-from notion_df.utils.collection import DictView
-from notion_df.utils.mixin import Resolvable
+from notion_df.model.core import Entity_T, Value_T, Field, FieldEventListener
+from notion_df.util.collection import DictView
+from notion_df.util.mixin import Resolvable
 
 _KT = TypeVar('_KT')
 _VT = TypeVar('_VT')

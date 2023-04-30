@@ -5,8 +5,8 @@ from typing import Literal, Any
 
 from typing_extensions import Self
 
-from notion_df.objects.core import DualSerializable
-from notion_df.utils.collection import StrEnum
+from notion_df.object.core import DualSerializable
+from notion_df.util.collection import StrEnum
 
 TimestampType = Literal['created_time', 'last_edited_time']
 
