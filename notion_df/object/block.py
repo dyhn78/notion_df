@@ -7,10 +7,10 @@ from typing import Any
 
 from typing_extensions import Self
 
-from notion_df.object.common import BlockColor, CodeLanguage
+from notion_df.object.common import UUID, Icon
 from notion_df.object.core import DualSerializable, Deserializable
+from notion_df.object.enum import BlockColor, CodeLanguage
 from notion_df.object.file import File
-from notion_df.object.misc import UUID, Icon
 from notion_df.object.parent import Parent
 from notion_df.object.rich_text import RichText
 from notion_df.object.user import User
@@ -36,7 +36,15 @@ class ResponseBlock(Deserializable):
         typename = response_data['type']
         block_type_cls = block_type_registry[typename]
         block_type = block_type_cls.deserialize(response_data[typename])
-        return cls._deserialize_asdict(response_data, type_object=block_type)
+        return cls._deserialize_fromdict(response_data, type_object=block_type)
+
+
+def serialize_partial_block_list(block_type_list: list[BlockType]) -> list[dict[str, Any]]:
+    return [{
+        "object": "block",
+        "type": type_object,
+        type_object.get_typename(): type_object,
+    } for type_object in block_type_list]
 
 
 @dataclass
@@ -54,7 +62,7 @@ class BlockType(DualSerializable, metaclass=ABCMeta):
 
     @classmethod
     def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
-        return cls._deserialize_asdict(serialized)
+        return cls._deserialize_fromdict(serialized)
 
 
 @dataclass

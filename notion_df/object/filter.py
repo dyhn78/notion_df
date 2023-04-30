@@ -8,9 +8,9 @@ from typing import Literal, TypeVar, Generic, Optional, Callable, overload, NewT
 
 from typing_extensions import Self
 
-from notion_df.object.common import TimestampType
+from notion_df.object.common import UUID
 from notion_df.object.core import Serializable, serialize
-from notion_df.object.misc import UUID
+from notion_df.object.enum import TimestampType
 
 _T = TypeVar('_T')
 FilterType = NewType('FilterType', dict)

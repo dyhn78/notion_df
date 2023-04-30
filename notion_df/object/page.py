@@ -9,14 +9,13 @@ from typing import Any, Literal, Union, cast, final
 from _decimal import Decimal
 from typing_extensions import Self
 
-from notion_df.object.common import RollupFunction
+from notion_df.object.common import UUID, DateRange, SelectOption, Icon
 from notion_df.object.core import DualSerializable, Deserializable
+from notion_df.object.enum import RollupFunction
 from notion_df.object.file import File, ExternalFile
-from notion_df.object.misc import UUID, DateRange, SelectOption, Icon
 from notion_df.object.parent import Parent
 from notion_df.object.rich_text import RichText
 from notion_df.object.user import User
-from notion_df.request.common import deserialize_properties
 from notion_df.util.collection import FinalClassDict
 
 page_property_registry: FinalClassDict[str, type[PageProperty]] = FinalClassDict()
@@ -40,8 +39,21 @@ class ResponsePage(Deserializable):
 
     @classmethod
     def _deserialize_this(cls, response_data: dict[str, Any]) -> Self:
-        return cls._deserialize_asdict({
-            **response_data, 'properties': deserialize_properties(response_data, PageProperty)})
+        return cls._deserialize_fromdict({
+            **response_data, 'properties': deserialize_page_properties(response_data)})
+
+
+def deserialize_page_properties(response_data: dict[str, Union[Any, dict[str, Any]]]) -> dict[str, PageProperty]:
+    properties = {}
+    for prop_name, prop_serialized in response_data['properties'].items():
+        prop = PageProperty.deserialize(prop_serialized)
+        prop.name = prop_name
+        properties[prop_name] = prop
+    return properties
+
+
+def serialize_page_properties(property_list: list[PageProperty]) -> dict[str, Any]:
+    return {prop.name: prop for prop in property_list}
 
 
 @dataclass
@@ -66,24 +78,15 @@ class PageProperty(DualSerializable, metaclass=ABCMeta):
 
     @classmethod
     def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
-        return cls._deserialize_asdict(serialized)
+        return cls._deserialize_fromdict(serialized)
 
     @classmethod
     @final
     def deserialize(cls, serialized: dict[str, Any]) -> Self:
-        if cls != PageProperty:
-            return cls._deserialize_this(serialized)
-        subclass = page_property_registry[serialized['type']]
-        return subclass.deserialize(serialized)
-
-    @classmethod
-    def deserialize_properties(cls, response: dict[str, Union[Any, dict[str, Any]]]) -> dict[str, Self]:
-        properties = {}
-        for prop_name, prop_serialized in response['properties'].items():
-            prop = cls.deserialize(prop_serialized)
-            prop.name = prop_name
-            properties[prop_name] = prop
-        return properties
+        if cls == PageProperty:
+            subclass = page_property_registry[serialized['type']]
+            return subclass.deserialize(serialized)
+        return cls._deserialize_this(serialized)
 
 
 @dataclass

@@ -3,10 +3,10 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Optional
 
+from notion_df.object.common import Icon, UUID
 from notion_df.object.database import DatabaseProperty, ResponseDatabase
 from notion_df.object.file import File
 from notion_df.object.filter import Filter
-from notion_df.object.misc import Icon, UUID
 from notion_df.object.page import ResponsePage
 from notion_df.object.rich_text import RichText
 from notion_df.object.sort import Sort

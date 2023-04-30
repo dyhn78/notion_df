@@ -3,9 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
-from notion_df.object.block import BlockType, ResponseBlock
-from notion_df.object.misc import UUID
-from notion_df.request.common import serialize_partial_block_list
+from notion_df.object.block import BlockType, ResponseBlock, serialize_partial_block_list
+from notion_df.object.common import UUID
 from notion_df.request.core import SingleRequest, RequestSettings, Version, Method, PaginatedRequest
 from notion_df.util.collection import DictFilter
 

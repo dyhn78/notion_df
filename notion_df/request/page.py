@@ -3,12 +3,11 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
-from notion_df.object.block import BlockType
+from notion_df.object.block import BlockType, serialize_partial_block_list
+from notion_df.object.common import UUID, Icon
 from notion_df.object.file import ExternalFile
-from notion_df.object.misc import UUID, Icon
-from notion_df.object.page import PageProperty, page_property_registry, ResponsePage
+from notion_df.object.page import PageProperty, page_property_registry, serialize_page_properties, ResponsePage
 from notion_df.object.parent import Parent
-from notion_df.request.common import serialize_partial_block_list
 from notion_df.request.core import SingleRequest, RequestSettings, Version, Method, MAX_PAGE_SIZE, \
     PaginatedRequest, BaseRequest
 
@@ -66,7 +65,7 @@ class UpdatePage(SingleRequest[ResponsePage]):
         return {
             "icon": self.icon,
             "cover": self.cover,
-            "properties": {prop.name: prop for prop in self.properties},
+            "properties": serialize_page_properties(self.properties),
             "archived": self.archived,
         }
 

@@ -8,7 +8,7 @@ from typing import TypeVar, Generic, ClassVar, get_args, Any, final, Optional
 
 from requests import Response, request
 
-from notion_df.object.core import DualSerializable, serialize, deserialize
+from notion_df.object.core import DualSerializable, deserialize
 from notion_df.util.collection import StrEnum
 from notion_df.util.misc import NotionDfValueError
 
@@ -123,7 +123,7 @@ class RequestSettings:
             'Authorization': f"Bearer {api_key}",
             'Notion-Version': self.version.value,
         }
-        return request(self.method.value, self.url, headers=headers, data=serialize(body))
+        return request(self.method.value, self.url, headers=headers, data=body)
 
 
 class Method(StrEnum):

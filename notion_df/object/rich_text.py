@@ -6,9 +6,9 @@ from typing import Optional, Any, Literal, final
 
 from typing_extensions import Self
 
+from notion_df.object.common import DateRange, UUID, Annotations
 from notion_df.object.core import DualSerializable
-from notion_df.object.misc import DateRange, UUID, Annotations
-from notion_df.util.collection import DictFilter, FinalClassDict
+from notion_df.util.collection import FinalClassDict
 
 
 class RichText(DualSerializable, metaclass=ABCMeta):
@@ -26,11 +26,10 @@ class RichText(DualSerializable, metaclass=ABCMeta):
         rich_text_registry[cls.get_typename()] = cls
 
     def serialize(self) -> dict[str, Any]:
-        return self._serialize_main() | DictFilter.truthy({
-            'annotations': self.annotations.serialize(),
-            'plain_text': self.plain_text,
-            'href': self.href,
-        })
+        serialized = self._serialize_main()
+        if self.annotations:
+            serialized['annotations'] = self.annotations.serialize()
+        return serialized
 
     @abstractmethod
     def _serialize_main(self) -> dict[str, Any]:
@@ -50,7 +49,7 @@ class RichText(DualSerializable, metaclass=ABCMeta):
     @final
     def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
         self = cls._deserialize_main(serialized)
-        self.annotations = serialized['annotations']
+        self.annotations = Annotations.deserialize(serialized['annotations'])
         self.plain_text = serialized['plain_text']
         self.href = serialized['href']
         return self
@@ -245,7 +244,7 @@ class DateMention(RichText):
             'type': 'mention',
             'mention': {
                 'type': 'date',
-                'date': self.date
+                'date': self.date.serialize()
             }
         }
 

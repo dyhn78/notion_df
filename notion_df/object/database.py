@@ -3,17 +3,16 @@ from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any
+from typing import Any, Union
 
 from typing_extensions import Self
 
-from notion_df.object.common import NumberFormat, RollupFunction
+from notion_df.object.common import UUID, SelectOption, StatusGroups, Icon
 from notion_df.object.core import DualSerializable, Deserializable
+from notion_df.object.enum import NumberFormat, RollupFunction
 from notion_df.object.file import ExternalFile
-from notion_df.object.misc import UUID, SelectOption, StatusGroups, Icon
 from notion_df.object.parent import Parent
 from notion_df.object.rich_text import RichText
-from notion_df.request.common import deserialize_properties
 from notion_df.util.collection import FinalClassDict
 from notion_df.util.misc import NotionDfValueError
 
@@ -40,8 +39,22 @@ class ResponseDatabase(Deserializable):
 
     @classmethod
     def _deserialize_this(cls, response_data: dict[str, Any]) -> Self:
-        return cls._deserialize_asdict({
-            **response_data, 'properties': deserialize_properties(response_data, DatabaseProperty)})
+        return cls._deserialize_fromdict({
+            **response_data, 'properties': deserialize_database_properties(response_data)})
+
+
+def deserialize_database_properties(
+        response_data: dict[str, Union[Any, dict[str, Any]]]) -> dict[str, DatabaseProperty]:
+    properties = {}
+    for prop_name, prop_serialized in response_data['properties'].items():
+        prop = DatabaseProperty.deserialize(prop_serialized)
+        prop.name = prop_name
+        properties[prop_name] = prop
+    return properties
+
+
+def serialize_database_properties(property_list: list[DatabaseProperty]) -> dict[str, Any]:
+    return {prop.name: prop for prop in property_list}
 
 
 @dataclass
@@ -73,7 +86,7 @@ class DatabaseProperty(DualSerializable, metaclass=ABCMeta):
         typename = serialized['type']
         property_type_cls = database_property_type_registry[typename]
         property_type = property_type_cls.deserialize(serialized[typename])
-        return cls._deserialize_asdict(serialized, type_object=property_type)
+        return cls._deserialize_fromdict(serialized, type_object=property_type)
 
 
 database_property_type_registry: FinalClassDict[str, type[DatabasePropertyType]] = FinalClassDict()
@@ -95,7 +108,7 @@ class DatabasePropertyType(DualSerializable, metaclass=ABCMeta):
 
     @classmethod
     def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
-        return cls._deserialize_asdict(serialized)
+        return cls._deserialize_fromdict(serialized)
 
 
 @dataclass
@@ -155,7 +168,7 @@ class RelationDatabasePropertyType(DatabasePropertyType, metaclass=ABCMeta):
 
     @classmethod
     def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
-        return cls._deserialize_asdict(serialized)
+        return cls._deserialize_fromdict(serialized)
 
     @classmethod
     def deserialize(cls, serialized: dict[str, Any]) -> Self:

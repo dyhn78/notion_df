@@ -3,16 +3,17 @@ from __future__ import annotations
 import inspect
 import types
 from abc import ABCMeta, abstractmethod
-from dataclasses import dataclass, fields, InitVar
+from dataclasses import dataclass, fields, InitVar, Field
 from datetime import datetime
 from decimal import Decimal
 from enum import Enum
 from typing import Any, get_origin, get_args, final
 
+import dateutil.parser
 from typing_extensions import Self
 
-from notion_df.object.common import serialize_datetime, deserialize_datetime
 from notion_df.util.misc import NotionDfValueError, NotionDfNotImplementedError
+from notion_df.variable import Variables
 
 
 def serialize(obj: Any):
@@ -64,10 +65,10 @@ def deserialize(typ: type, serialized: Any):
             except NotionDfValueError:
                 pass
         raise NotionDfValueError('cannot deserialize to any of the UnionType', err_vars)
-    if not inspect.isclass(typ):
-        raise NotionDfValueError('cannot deserialize: not supported type', err_vars)
 
     # 2. class types
+    if not inspect.isclass(typ):
+        raise NotionDfValueError('cannot deserialize: not supported type', err_vars)
     if issubclass(typ, Deserializable):
         return typ.deserialize(serialized)
     if typ in {bool, str, int, float, Decimal}:
@@ -99,12 +100,15 @@ class Serializable(metaclass=ABCMeta):
         pass
 
     @final
-    def _serialize_asdict(self) -> dict[str, Any]:
-        """helper method to implement serialize()."""
+    def _serialize_asdict(self, **overrides: Any) -> dict[str, Any]:
+        """helper method to implement serialize().
+        Note: this drops post-init fields."""
         serialized = {}
         for fd in fields(self):
-            if fd.init:
-                serialized[fd.name] = serialize(getattr(self, fd.name))
+            if not fd.init:
+                continue
+            fd_value = overrides.get(fd.name, getattr(self, fd.name))
+            serialized[fd.name] = serialize(fd_value)
         return serialized
 
 
@@ -129,16 +133,18 @@ class Deserializable(metaclass=ABCMeta):
 
     @classmethod
     @final
-    def _deserialize_asdict(cls, serialized: dict[str, Any], **overrides: Any) -> Self:
-        """helper method to implement _deserialize_this()."""
+    def _deserialize_fromdict(cls, serialized: dict[str, Any], **overrides: Any) -> Self:
+        """helper method to implement _deserialize_this().
+        Note: this collects post-init fields as well."""
+
+        def deserialize_field(fd: Field):
+            return deserialize(fd.type, serialized[fd.name])
+
         serialized.update(overrides)
-        self = cls(**{fd.name: serialized[fd.name] for fd in fields(cls) if fd.init})  # type: ignore
+        self = cls(**{fd.name: deserialize_field(fd) for fd in fields(cls) if fd.init})  # type: ignore
         for fd in fields(cls):
             if not fd.init:
-                try:
-                    setattr(self, fd.name, serialized[fd.name])
-                except KeyError:
-                    continue
+                setattr(self, fd.name, deserialize_field(fd))
         return self
 
 
@@ -146,3 +152,12 @@ class DualSerializable(Serializable, Deserializable, metaclass=ABCMeta):
     """dataclass representation of the resources defined in Notion REST API.
     interchangeable with JSON object."""
     pass
+
+
+def serialize_datetime(dt: datetime):
+    return dt.astimezone(Variables.timezone).isoformat()
+
+
+def deserialize_datetime(serialized: str):
+    datetime_obj = dateutil.parser.parse(serialized)
+    return datetime_obj.astimezone(Variables.timezone)
