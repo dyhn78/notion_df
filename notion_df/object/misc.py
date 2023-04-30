@@ -7,8 +7,7 @@ from typing import Any, NewType, final
 
 from typing_extensions import Self
 
-from notion_df.object.common import serialize_datetime, deserialize_datetime
-from notion_df.object.constant import OptionColor
+from notion_df.object.common import serialize_datetime, deserialize_datetime, BlockColor, OptionColor
 from notion_df.object.core import DualSerializable
 
 UUID = NewType('UUID', str)
@@ -97,6 +96,23 @@ class StatusGroups(DualSerializable):
     color: OptionColor = field(init=False)
     option_ids: list[str] = field()
     """Sorted list of ids of all options that belong to a group."""
+
+    def serialize(self) -> dict[str, Any]:
+        return self._serialize_asdict()
+
+    @classmethod
+    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
+        return cls._deserialize_asdict(serialized)
+
+
+@dataclass
+class Annotations(DualSerializable):
+    bold: bool = False
+    italic: bool = False
+    strikethrough: bool = False
+    underline: bool = False
+    code: bool = False
+    color: BlockColor = BlockColor.DEFAULT
 
     def serialize(self) -> dict[str, Any]:
         return self._serialize_asdict()

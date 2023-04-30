@@ -6,9 +6,8 @@ from typing import Optional, Any, Literal, final
 
 from typing_extensions import Self
 
-from notion_df.object.constant import Annotations
 from notion_df.object.core import DualSerializable
-from notion_df.object.misc import DateRange, UUID
+from notion_df.object.misc import DateRange, UUID, Annotations
 from notion_df.util.collection import DictFilter, FinalClassDict
 
 

@@ -9,7 +9,7 @@ from typing import Any, Literal, Union, cast, final
 from _decimal import Decimal
 from typing_extensions import Self
 
-from notion_df.object.constant import RollupFunction
+from notion_df.object.common import RollupFunction
 from notion_df.object.core import DualSerializable, Deserializable
 from notion_df.object.file import File, ExternalFile
 from notion_df.object.misc import UUID, DateRange, SelectOption, Icon

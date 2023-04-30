@@ -7,7 +7,7 @@ from typing import Any
 
 from typing_extensions import Self
 
-from notion_df.object.constant import BlockColor, CodeLanguage
+from notion_df.object.common import BlockColor, CodeLanguage
 from notion_df.object.core import DualSerializable, Deserializable
 from notion_df.object.file import File
 from notion_df.object.misc import UUID, Icon
