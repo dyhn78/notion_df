@@ -60,10 +60,10 @@ class RichText(DualSerializable, metaclass=ABCMeta):
         if cls != RichText:
             return cls._deserialize_this(serialized)
 
-        def get_typename(ser: dict[str, Any]) -> tuple[str, ...]:
-            if 'type' in ser:
-                typename = ser['type']
-                return (typename,) + get_typename(ser[typename])
+        def get_typename(_serialized: dict[str, Any]) -> tuple[str, ...]:
+            if 'type' in _serialized:
+                typename = _serialized['type']
+                return (typename,) + get_typename(_serialized[typename])
             return ()
 
         subclass = rich_text_registry[get_typename(serialized)]

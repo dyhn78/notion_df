@@ -9,8 +9,8 @@ from typing import Literal, TypeVar, Generic, Optional, Callable, overload, NewT
 from typing_extensions import Self
 
 from notion_df.object.common import UUID
+from notion_df.object.constant import TimestampType
 from notion_df.object.core import Serializable, serialize
-from notion_df.object.enum import TimestampType
 
 _T = TypeVar('_T')
 FilterType = NewType('FilterType', dict)
@@ -18,7 +18,7 @@ FilterType = NewType('FilterType', dict)
 
 @dataclass
 class Filter(Serializable, metaclass=ABCMeta):
-    type_object: dict
+    filter_type: dict
 
 
 @dataclass
@@ -39,7 +39,7 @@ class PropertyFilter(Filter):
     def serialize(self):
         return {
             "property": self.property_name,
-            self.property_type: serialize(self.type_object)
+            self.property_type: serialize(self.filter_type)
         }
 
 
@@ -52,7 +52,7 @@ class ArrayRollupFilter(PropertyFilter):
             "property": self.property_name,
             "rollup": {
                 self.aggregate_type: {
-                    self.property_type: serialize(self.type_object)
+                    self.property_type: serialize(self.filter_type)
                 }
             }
         }
@@ -62,7 +62,7 @@ class ArrayRollupFilter(PropertyFilter):
         return {
             "property": self.property_name,
             self.aggregate_type: {
-                self.property_type: serialize(self.type_object)
+                self.property_type: serialize(self.filter_type)
             }
         }
 
@@ -74,7 +74,7 @@ class TimestampFilter(Filter):
     def serialize(self):
         return {
             "timestamp_type": self.timestamp,
-            self.timestamp: serialize(self.type_object)
+            self.timestamp: serialize(self.filter_type)
         }
 
 
@@ -138,9 +138,9 @@ class FilterBuilder(metaclass=ABCMeta):
     def __init__(self, init_filter: Callable[[FilterType], Filter]):
         self.init_filter = init_filter
         # TODO - implement from caller's side
-        #  - init_filter = lambda type_object: PropertyFilter(type_object, property_name, property_type)
-        #  - init_filter = lambda type_object: ArrayRollupFilter(type_object, property_name, property_type, aggregate_type)
-        #  - init_filter = lambda type_object: TimestampFilter(type_object, timestamp_type)
+        #  - init_filter = lambda filter_type: PropertyFilter(filter_type, property_name, property_type)
+        #  - init_filter = lambda filter_type: ArrayRollupFilter(filter_type, property_name, property_type, aggregate_type)
+        #  - init_filter = lambda filter_type: TimestampFilter(filter_type, timestamp_type)
 
 
 class TextFilterBuilder(FilterBuilder):

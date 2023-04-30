@@ -3,18 +3,18 @@ from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Union
+from typing import Any
 
 from typing_extensions import Self
 
 from notion_df.object.common import UUID, SelectOption, StatusGroups, Icon
+from notion_df.object.constant import NumberFormat, RollupFunction
 from notion_df.object.core import DualSerializable, Deserializable
-from notion_df.object.enum import NumberFormat, RollupFunction
 from notion_df.object.file import ExternalFile
-from notion_df.object.parent import Parent
+from notion_df.object.parent import ResponseParent
 from notion_df.object.rich_text import RichText
 from notion_df.util.collection import FinalClassDict
-from notion_df.util.misc import NotionDfValueError
+from notion_df.util.exception import NotionDfValueError
 
 
 @dataclass
@@ -25,7 +25,7 @@ class ResponseDatabase(Deserializable):
     #  then, make Page or Database utilize it,
     #  so that they could autoconfigure itself and its children with the retrieved data.
     id: UUID
-    parent: Parent
+    parent: ResponseParent
     created_time: datetime
     last_edited_time: datetime
     icon: Icon
@@ -39,22 +39,12 @@ class ResponseDatabase(Deserializable):
 
     @classmethod
     def _deserialize_this(cls, response_data: dict[str, Any]) -> Self:
-        return cls._deserialize_fromdict({
-            **response_data, 'properties': deserialize_database_properties(response_data)})
-
-
-def deserialize_database_properties(
-        response_data: dict[str, Union[Any, dict[str, Any]]]) -> dict[str, DatabaseProperty]:
-    properties = {}
-    for prop_name, prop_serialized in response_data['properties'].items():
-        prop = DatabaseProperty.deserialize(prop_serialized)
-        prop.name = prop_name
-        properties[prop_name] = prop
-    return properties
-
-
-def serialize_database_properties(property_list: list[DatabaseProperty]) -> dict[str, Any]:
-    return {prop.name: prop for prop in property_list}
+        properties = {}
+        for prop_name, prop_serialized in response_data['properties'].items():
+            prop = DatabaseProperty.deserialize(prop_serialized)
+            prop.name = prop_name
+            properties[prop_name] = prop
+        return cls._deserialize_fromdict(response_data, properties=properties)
 
 
 @dataclass
@@ -72,13 +62,13 @@ class DatabaseProperty(DualSerializable, metaclass=ABCMeta):
     """
     type: str
     name: str = field(init=False)
-    id: str = field(init=False)
-    type_object: DatabasePropertyType
+    id: UUID = field(init=False)
+    property_type: DatabasePropertyType
 
     def serialize(self) -> dict[str, Any]:
         return {
             "type": self.type,
-            self.type: self.type_object.serialize()
+            self.type: self.property_type.serialize()
         }
 
     @classmethod
@@ -86,7 +76,7 @@ class DatabaseProperty(DualSerializable, metaclass=ABCMeta):
         typename = serialized['type']
         property_type_cls = database_property_type_registry[typename]
         property_type = property_type_cls.deserialize(serialized[typename])
-        return cls._deserialize_fromdict(serialized, type_object=property_type)
+        return cls._deserialize_fromdict(serialized, property_type=property_type)
 
 
 database_property_type_registry: FinalClassDict[str, type[DatabasePropertyType]] = FinalClassDict()

@@ -1,16 +1,15 @@
 from __future__ import annotations
 
-import inspect
 from abc import abstractmethod, ABCMeta
 from dataclasses import dataclass
 from functools import cache
-from typing import TypeVar, Generic, ClassVar, get_args, Any, final, Optional
+from typing import TypeVar, Generic, ClassVar, Any, final, Optional
 
 from requests import Response, request
 
-from notion_df.object.core import DualSerializable, deserialize
+from notion_df.object.core import DualSerializable, deserialize, serialize
 from notion_df.util.collection import StrEnum
-from notion_df.util.misc import NotionDfValueError
+from notion_df.util.misc import get_generic_element_type
 
 Response_T = TypeVar('Response_T', bound=DualSerializable)
 ResponseElement_T = TypeVar('ResponseElement_T', bound=DualSerializable)
@@ -20,20 +19,13 @@ MAX_PAGE_SIZE = 100
 @dataclass
 class BaseRequest(Generic[Response_T], metaclass=ABCMeta):
     """base request form made of various Resources.
-    type argument `Response_T` is strongly recommended on subclassing.
-    get api_key from https://www.notion.so/my-integrations"""
-    api_key: str
+    all non-abstract subclasses must provide class type argument `Response_T`.
+    get token from https://www.notion.so/my-integrations"""
+    token: str
     return_type: ClassVar[type[DualSerializable]]
 
     def __init_subclass__(cls, **kwargs):
-        try:
-            generic_class = cls.__orig_bases__[0]  # type: ignore
-            return_type = get_args(generic_class)[0]
-            if not inspect.isabstract(cls) and isinstance(return_type, TypeVar):
-                raise ValueError
-        except (AttributeError, IndexError, ValueError):
-            raise NotionDfValueError('Request must have explicit response data type (not TypeVar)', {'cls': cls})
-        cls.return_type = return_type
+        cls.return_type = get_generic_element_type(cls, type[DualSerializable])
 
     @abstractmethod
     @cache
@@ -45,15 +37,35 @@ class BaseRequest(Generic[Response_T], metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def request(self) -> Response_T:
+    def execute(self) -> Response_T:
+        """the unified execution method."""
         pass
+
+
+@dataclass
+class RequestSettings:
+    """
+    - version: Version (enum)
+    - method: Method
+    - url: str
+    """
+    version: Version
+    method: Method
+    url: str
+
+    def request(self, api_key: str, body: Any) -> Response:
+        headers = {
+            'Authorization': f"Bearer {api_key}",
+            'Notion-Version': self.version.value,
+        }
+        return request(self.method.value, self.url, headers=headers, data=serialize(body))
 
 
 @dataclass
 class SingleRequest(BaseRequest[Response_T], metaclass=ABCMeta):
     @final
-    def request(self) -> Response_T:
-        response = self.get_settings().request(self.api_key, self.get_body())
+    def execute(self) -> Response_T:
+        response = self.get_settings().execute(self.token, self.get_body())
         response.raise_for_status()
         return self.parse_response_data(response.json())  # nomypy
 
@@ -74,11 +86,11 @@ class PaginatedRequest(BaseRequest[list[ResponseElement_T]], metaclass=ABCMeta):
                        'page_size': page_size,
                        'start_cursor': start_cursor
                    } | self.get_body()
-        response = self.get_settings().request(self.api_key, body)
+        response = self.get_settings().execute(self.token, body)
         response.raise_for_status()
         return response.json()
 
-    def request(self) -> list[ResponseElement_T]:
+    def execute(self) -> Response_T:
         page_size_total = self.page_size
         if page_size_total == -1:
             page_size_total = float('inf')
@@ -105,25 +117,6 @@ class PaginatedRequest(BaseRequest[list[ResponseElement_T]], metaclass=ABCMeta):
             for data_element in data['results']:
                 element_list.append(deserialize(cls.return_type, data_element))
         return element_list
-
-
-@dataclass
-class RequestSettings:
-    """
-    - version: Version (enum)
-    - method: Method
-    - url: str
-    """
-    version: Version
-    method: Method
-    url: str
-
-    def request(self, api_key: str, body: Any) -> Response:
-        headers = {
-            'Authorization': f"Bearer {api_key}",
-            'Notion-Version': self.version.value,
-        }
-        return request(self.method.value, self.url, headers=headers, data=body)
 
 
 class Method(StrEnum):

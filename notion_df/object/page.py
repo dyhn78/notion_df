@@ -10,10 +10,10 @@ from _decimal import Decimal
 from typing_extensions import Self
 
 from notion_df.object.common import UUID, DateRange, SelectOption, Icon
+from notion_df.object.constant import RollupFunction
 from notion_df.object.core import DualSerializable, Deserializable
-from notion_df.object.enum import RollupFunction
 from notion_df.object.file import File, ExternalFile
-from notion_df.object.parent import Parent
+from notion_df.object.parent import ResponseParent
 from notion_df.object.rich_text import RichText
 from notion_df.object.user import User
 from notion_df.util.collection import FinalClassDict
@@ -24,43 +24,32 @@ page_property_registry: FinalClassDict[str, type[PageProperty]] = FinalClassDict
 @dataclass
 class ResponsePage(Deserializable):
     id: UUID
-    parent: Parent
+    parent: ResponseParent
     created_time: datetime
     last_edited_time: datetime
     created_by: User
     last_edited_by: User
+    archived: bool
     icon: Icon
     cover: ExternalFile
     url: str
-    title: list[RichText]
     properties: dict[str, PageProperty] = field()
-    archived: bool
-    is_inline: bool
 
     @classmethod
     def _deserialize_this(cls, response_data: dict[str, Any]) -> Self:
-        return cls._deserialize_fromdict({
-            **response_data, 'properties': deserialize_page_properties(response_data)})
-
-
-def deserialize_page_properties(response_data: dict[str, Union[Any, dict[str, Any]]]) -> dict[str, PageProperty]:
-    properties = {}
-    for prop_name, prop_serialized in response_data['properties'].items():
-        prop = PageProperty.deserialize(prop_serialized)
-        prop.name = prop_name
-        properties[prop_name] = prop
-    return properties
-
-
-def serialize_page_properties(property_list: list[PageProperty]) -> dict[str, Any]:
-    return {prop.name: prop for prop in property_list}
+        properties = {}
+        for prop_name, prop_serialized in response_data['properties'].items():
+            prop = PageProperty.deserialize(prop_serialized)
+            prop.name = prop_name
+            properties[prop_name] = prop
+        return cls._deserialize_fromdict(response_data, properties=properties)
 
 
 @dataclass
 class PageProperty(DualSerializable, metaclass=ABCMeta):
     """https://developers.notion.com/reference/page-property-values"""
     name: str = field(init=False)
-    id: str = field(init=False)
+    id: UUID = field(init=False)
 
     @classmethod
     @cache
@@ -71,6 +60,7 @@ class PageProperty(DualSerializable, metaclass=ABCMeta):
 
     def __init_subclass__(cls, **kwargs) -> None:
         super().__init_subclass__(**kwargs)
+        dataclass(cls)
         page_property_registry[cls.get_typename()] = cls
 
     def serialize(self) -> dict[str, Any]:

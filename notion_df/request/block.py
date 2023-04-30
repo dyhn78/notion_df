@@ -60,7 +60,7 @@ class RetrieveBlockChildren(PaginatedRequest[ResponseBlock]):
 class UpdateBlock(SingleRequest[ResponseBlock]):
     """https://developers.notion.com/reference/update-a-block"""
     id: UUID
-    type_object: BlockType = field(default=None)
+    block_type: BlockType = field(default=None)
     archived: bool = field(default=None)
 
     def get_settings(self) -> RequestSettings:
@@ -70,7 +70,7 @@ class UpdateBlock(SingleRequest[ResponseBlock]):
     def get_body(self):
         return DictFilter.not_none({
             'block_id': self.id,
-            self.type_object.get_typename(): self.type_object,
+            self.block_type.get_typename(): self.block_type,
             'archived': self.archived
         })
 

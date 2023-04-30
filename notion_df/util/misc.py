@@ -1,60 +1,10 @@
 from __future__ import annotations
 
-from abc import ABC
-from dataclasses import dataclass, field
+import inspect
 from itertools import chain
-from typing import Hashable, Any, Optional, Iterable, Iterator
+from typing import Hashable, Any, Optional, Iterable, Iterator, TypeVar, get_args, cast
 
-_BR = '_BR'
-
-
-@dataclass
-class NotionDfException(Exception, ABC):
-    """the base exception class, defined with dataclass style.
-
-    - __doc__: class-level description
-    - description: instance-specific description
-    - vars: dumped variables to display in error log
-    """
-    description: str = field()
-    """instance-specific description"""
-    vars: dict[str, Any] = field()
-    """dumped variables in error log"""
-    linebreak: bool = field(default=False, kw_only=True)
-    """whether or not to print one variable at a line"""
-
-    def __init_subclass__(cls, **kwargs):
-        dataclass(cls)
-
-    def __post_init__(self):
-        self.args: tuple[str, ...] = ()
-        if self.description:
-            self.args += self.description,
-        var_items_list = [f'{k} = {v}' for k, v in self.vars.items()]
-        if self.linebreak:
-            var_items_str = '[[\n' + '\n'.join(var_items_list) + '\n]]'
-        else:
-            var_items_str = '[[ ' + ', '.join(var_items_list) + ' ]]'
-        self.args += var_items_str,
-
-
-@dataclass
-class NotionDfKeyError(NotionDfException, KeyError):
-    pass
-
-
-@dataclass
-class NotionDfValueError(NotionDfException, ValueError):
-    pass
-
-
-class NotionDfNotImplementedError(NotionDfException, NotImplementedError):
-    pass
-
-
-@dataclass
-class NotionDfStateError(NotionDfException):
-    """invalid state is detected."""
+from notion_df.util.exception import NotionDfValueError
 
 
 def repr_object(obj: Any, params: dict[Hashable, Any] = None, **kwargs: Any) -> str:
@@ -73,3 +23,21 @@ def get_num_iterator() -> Iterator[int]:
     while True:
         yield num
         num += 1
+
+
+Type_T = TypeVar('Type_T', bound=type)
+
+
+def get_generic_element_type(cls: type, cast_type: Optional[Type_T] = None,
+                             default_type: Optional[Type_T] = None) -> Type_T:
+    try:
+        generic_class = cls.__orig_bases__[0]  # type: ignore
+        element_type = get_args(generic_class)[0]
+        if not inspect.isabstract(cls) and isinstance(element_type, TypeVar):
+            raise ValueError
+        return cast(cast_type, element_type) if cast_type else element_type
+    except (AttributeError, IndexError, ValueError):
+        if default_type is None:
+            raise NotionDfValueError('The generic class be defined with explicit element type (not TypeVar)',
+                                     {'cls': cls})
+        return default_type

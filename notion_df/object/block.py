@@ -8,10 +8,10 @@ from typing import Any
 from typing_extensions import Self
 
 from notion_df.object.common import UUID, Icon
+from notion_df.object.constant import BlockColor, CodeLanguage
 from notion_df.object.core import DualSerializable, Deserializable
-from notion_df.object.enum import BlockColor, CodeLanguage
 from notion_df.object.file import File
-from notion_df.object.parent import Parent
+from notion_df.object.parent import ResponseParent
 from notion_df.object.rich_text import RichText
 from notion_df.object.user import User
 from notion_df.util.collection import FinalClassDict
@@ -22,29 +22,29 @@ block_type_registry: FinalClassDict[str, type[BlockType]] = FinalClassDict()
 @dataclass
 class ResponseBlock(Deserializable):
     id: UUID
-    parent: Parent
+    parent: ResponseParent
     created_time: datetime
     last_edited_time: datetime
     created_by: User
     last_edited_by: User
     has_children: bool
     archived: bool
-    type_object: BlockType
+    block_type: BlockType
 
     @classmethod
     def _deserialize_this(cls, response_data: dict[str, Any]):
         typename = response_data['type']
         block_type_cls = block_type_registry[typename]
         block_type = block_type_cls.deserialize(response_data[typename])
-        return cls._deserialize_fromdict(response_data, type_object=block_type)
+        return cls._deserialize_fromdict(response_data, block_type=block_type)
 
 
 def serialize_partial_block_list(block_type_list: list[BlockType]) -> list[dict[str, Any]]:
     return [{
         "object": "block",
-        "type": type_object,
-        type_object.get_typename(): type_object,
-    } for type_object in block_type_list]
+        "type": block_type.get_typename(),
+        block_type.get_typename(): block_type,
+    } for block_type in block_type_list]
 
 
 @dataclass
