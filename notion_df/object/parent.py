@@ -26,13 +26,3 @@ class ParentInfo(DualSerializable):
         typename = serialized['type']
         parent_id = UUID(serialized[typename])
         return cls(typename, parent_id)
-
-    def as_block(self, token: str):
-        from notion_df.entity import Block, Database, Page
-        match self.typename:
-            case 'block_id':
-                return Block(token, self.id)
-            case 'database_id':
-                return Database(token, self.id)
-            case 'page_id':
-                return Page(token, self.id)

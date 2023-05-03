@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from collections.abc import Sequence
-from typing import Optional, TypeVar, Union, Generic
+import os
+from collections.abc import Sequence, MutableMapping
+from typing import Optional, TypeVar, Union, Generic, Iterator, final, Final
 
 from typing_extensions import Self
 
@@ -18,31 +19,93 @@ from notion_df.object.sort import Sort
 from notion_df.request.block import AppendBlockChildren, RetrieveBlock, RetrieveBlockChildren, UpdateBlock, DeleteBlock
 from notion_df.request.database import CreateDatabase, UpdateDatabase, RetrieveDatabase, QueryDatabase
 from notion_df.request.page import CreatePage, UpdatePage, RetrievePage, RetrievePagePropertyItem
-
-_VT = TypeVar('_VT')
+from notion_df.util.exception import NotionDfKeyError
 
 
 class BaseBlock(Generic[Response_T]):
-    last_response: Optional[Response_T]
-
     # noinspection PyShadowingBuiltins
-    def __init__(self, token: str, id: UUID):
-        self.token = token
+    def __new__(cls, namespace: Namespace, id: UUID):
+        if id in namespace:
+            return namespace[id]
+        instance = super().__new__(cls)
+        namespace[id] = instance
+        return instance
+
+    def __init__(self, namespace: Namespace, id: UUID):
+        if hasattr(self, '_initialized'):
+            return
+        self._initialized = True
+        self.namespace = namespace
+        self.token = namespace.token
         self.id = id
-        self.last_response = None
+        self._last_response: Optional[Response_T] = None
+
+    @property
+    def last_response(self) -> Optional[Response_T]:
+        return self._last_response
+
+    @last_response.setter
+    def last_response(self, response: Response_T) -> None:
+        if self._last_response is not None and self._last_response.timestamp > response.timestamp:
+            return
+        self._last_response = response
+
+    @final
+    def _get_parent(self, parent: ParentInfo) -> Union[Block, Database, Page, None]:
+        if self.last_response is None:
+            return None
+        match parent.typename:
+            case 'block_id':
+                return Block(self.namespace, parent.id)
+            case 'database_id':
+                return Database(self.namespace, parent.id)
+            case 'page_id':
+                return Page(self.namespace, parent.id)
+
+
+BaseBlock_T = TypeVar('BaseBlock_T', bound=BaseBlock)
+Namespace_KT = UUID | BaseBlock
+
+
+class Namespace(MutableMapping[Namespace_KT, BaseBlock_T]):
+    # TODO: special type of blocks should be able to add their own keywords (for example, Block -> title)
+    def __init__(self, token: str = os.getenv('NOTION_TOKEN')):
+        self.token: Final = token
+        self.instances: dict[UUID, BaseBlock] = {}
+
+    @staticmethod
+    def _get_id(key: Namespace_KT) -> UUID:
+        if isinstance(key, BaseBlock):
+            return key.id
+        if isinstance(key, UUID):
+            return key
+        raise NotionDfKeyError(key)
+
+    def __getitem__(self, key: Namespace_KT) -> BaseBlock_T:
+        return self.instances[self._get_id(key)]
+
+    def __setitem__(self, key: Namespace_KT, value: BaseBlock_T) -> None:
+        self.instances[self._get_id(key)] = value
+
+    def __delitem__(self, key: Namespace_KT) -> None:
+        del self.instances[self._get_id(key)]
+
+    def __len__(self) -> int:
+        return len(self.instances)
+
+    def __iter__(self) -> Iterator[UUID]:
+        return iter(self.instances)
 
 
 class Block(BaseBlock[BlockResponse]):
     @property
     def parent(self) -> Union[Page, Block, None]:
-        if self.last_response is None:
-            return
-        return self.last_response.parent.as_block(self.token)
+        return self._get_parent(self.last_response.parent)
 
     def _send_child_block_response_list(self, block_response_list: list[BlockResponse]) -> BlockChildren:
         block_list = []
         for block_response in block_response_list:
-            block = Block(self.token, block_response.id)
+            block = Block(self.namespace, block_response.id)
             block.last_response = block_response
             block_list.append(block)
         return BlockChildren(block_list)
@@ -72,7 +135,7 @@ class Block(BaseBlock[BlockResponse]):
                           icon: Optional[Icon] = None, cover: Optional[File] = None) -> Page:
         response_page = CreatePage(self.token, ParentInfo('page_id', self.id),
                                    properties, children, icon, cover).execute()
-        page = Page(self.token, response_page.id)
+        page = Page(self.namespace, response_page.id)
         page.last_response = response_page
         return page
 
@@ -80,7 +143,7 @@ class Block(BaseBlock[BlockResponse]):
                               properties: Optional[DatabaseProperties] = None,
                               icon: Optional[Icon] = None, cover: Optional[File] = None) -> Database:
         response_database = CreateDatabase(self.token, self.id, title, properties, icon, cover).execute()
-        database = Database(self.token, response_database.id)
+        database = Database(self.namespace, response_database.id)
         database.last_response = response_database
         return database
 
@@ -88,14 +151,12 @@ class Block(BaseBlock[BlockResponse]):
 class Database(BaseBlock[DatabaseResponse]):
     @property
     def parent(self) -> Union[Page, Block, None]:
-        if self.last_response is None:
-            return
-        return self.last_response.parent.as_block(self.token)
+        return self._get_parent(self.last_response.parent)
 
     def _send_child_page_response_list(self, page_response_list: list[PageResponse]) -> PageChildren:
         page_list = []
         for page_response in page_response_list:
-            page = Page(self.token, page_response.id)
+            page = Page(self.namespace, page_response.id)
             page.last_response = page_response
         return PageChildren(page_list)
 
@@ -117,7 +178,7 @@ class Database(BaseBlock[DatabaseResponse]):
                           icon: Optional[Icon] = None, cover: Optional[File] = None) -> Page:
         response_page = CreatePage(self.token, ParentInfo('database_id', self.id),
                                    properties, children, icon, cover).execute()
-        page = Page(self.token, response_page.id)
+        page = Page(self.namespace, response_page.id)
         page.last_response = response_page
         return page
 
@@ -125,12 +186,10 @@ class Database(BaseBlock[DatabaseResponse]):
 class Page(BaseBlock[PageResponse]):
     @property
     def parent(self) -> Union[Page, Block, None]:
-        if self.last_response is None:
-            return
-        return self.last_response.parent.as_block(self.token)
+        return self._get_parent(self.last_response.parent)
 
     def as_block(self) -> Block:
-        block = Block(self.token, self.id)
+        block = Block(self.namespace, self.id)
         if self.last_response:
             block.last_response = BlockResponse(
                 id=self.id,
@@ -161,12 +220,15 @@ class Page(BaseBlock[PageResponse]):
         return page_property
 
 
-class Children(Sequence[_VT]):
-    def __init__(self, values: list[_VT]):
-        self._values: list[_VT] = values
-        self._by_id: dict[UUID, _VT] = {child.id: child for child in self._values}
+Child_T = TypeVar('Child_T')
 
-    def __getitem__(self, index_or_id: int | UUID) -> _VT:
+
+class Children(Sequence[Child_T]):
+    def __init__(self, values: list[Child_T]):
+        self._values: list[Child_T] = values
+        self._by_id: dict[UUID, Child_T] = {child.id: child for child in self._values}
+
+    def __getitem__(self, index_or_id: int | UUID) -> Child_T:
         if isinstance(index_or_id, int):
             return self._values[index_or_id]
         elif isinstance(index_or_id, UUID):
@@ -174,7 +236,7 @@ class Children(Sequence[_VT]):
         else:
             raise TypeError(f"Invalid argument type. Expected int or UUID - {index_or_id}")
 
-    def get(self, index_or_id: int | UUID) -> Optional[_VT]:
+    def get(self, index_or_id: int | UUID) -> Optional[Child_T]:
         try:
             return self[index_or_id]
         except (IndexError, KeyError):
