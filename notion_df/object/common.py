@@ -24,19 +24,18 @@ class Properties(DualSerializable, Generic[Property_T]):
     by_id: dict[UUID, Property_T]
     by_name: dict[str, Property_T]
 
-    def __init__(self):
+    def __init__(self, props: Iterable[Property_T] = ()):
         self.by_id = {}
         self.by_name = {}
+        for prop in props:
+            self.add(prop)
 
     def serialize(self) -> dict[str, Property_T]:
         return self.by_id
 
     @classmethod
     def _deserialize_this(cls, serialized: dict[UUID, Any]) -> Self:
-        self = cls()
-        for prop in serialized.values():
-            self.add(prop)
-        return self
+        return cls(serialized.values())
 
     def __iter__(self) -> Iterator[Property_T]:
         return iter(self.by_id.values())
