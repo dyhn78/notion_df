@@ -7,25 +7,25 @@ from typing import Any
 
 from typing_extensions import Self
 
-from notion_df.object.common import UUID, SelectOption, StatusGroups, Icon
+from notion_df.object.common import UUID, SelectOption, StatusGroups, Icon, Properties
 from notion_df.object.constant import NumberFormat, RollupFunction
 from notion_df.object.core import DualSerializable, Deserializable
 from notion_df.object.file import ExternalFile
-from notion_df.object.parent import ResponseParent
+from notion_df.object.parent import ParentResponse
 from notion_df.object.rich_text import RichText
 from notion_df.util.collection import FinalClassDict
 from notion_df.util.exception import NotionDfValueError
 
 
 @dataclass
-class ResponseDatabase(Deserializable):
+class DatabaseResponse(Deserializable):
     # TODO: configure Property -> DatabaseProperty 1:1 mapping, from Property's side.
-    #  access this mapping from Property (NOT ResponseDatabase), the base class.
+    #  access this mapping from Property (NOT DatabaseResponse), the base class.
     #  Property.from_schema(schema: DatabaseProperty) -> Property
     #  then, make Page or Database utilize it,
     #  so that they could autoconfigure itself and its children with the retrieved data.
     id: UUID
-    parent: ResponseParent
+    parent: ParentResponse
     created_time: datetime
     last_edited_time: datetime
     icon: Icon
@@ -44,7 +44,7 @@ class ResponseDatabase(Deserializable):
             prop = DatabaseProperty.deserialize(prop_serialized)
             prop.name = prop_name
             properties[prop_name] = prop
-        return cls._deserialize_fromdict(response_data, properties=properties)
+        return cls._deserialize_from_dict(response_data, properties=properties)
 
 
 @dataclass
@@ -76,9 +76,10 @@ class DatabaseProperty(DualSerializable, metaclass=ABCMeta):
         typename = serialized['type']
         property_type_cls = database_property_type_registry[typename]
         property_type = property_type_cls.deserialize(serialized[typename])
-        return cls._deserialize_fromdict(serialized, property_type=property_type)
+        return cls._deserialize_from_dict(serialized, property_type=property_type)
 
 
+DatabaseProperties = Properties[DatabaseProperty]
 database_property_type_registry: FinalClassDict[str, type[DatabasePropertyType]] = FinalClassDict()
 
 
@@ -94,11 +95,11 @@ class DatabasePropertyType(DualSerializable, metaclass=ABCMeta):
             database_property_type_registry[property_type] = cls
 
     def serialize(self) -> dict[str, Any]:
-        return self._serialize_asdict()
+        return self._serialize_as_dict()
 
     @classmethod
     def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
-        return cls._deserialize_fromdict(serialized)
+        return cls._deserialize_from_dict(serialized)
 
 
 @dataclass
@@ -158,7 +159,7 @@ class RelationDatabasePropertyType(DatabasePropertyType, metaclass=ABCMeta):
 
     @classmethod
     def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
-        return cls._deserialize_fromdict(serialized)
+        return cls._deserialize_from_dict(serialized)
 
     @classmethod
     def deserialize(cls, serialized: dict[str, Any]) -> Self:

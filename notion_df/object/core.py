@@ -39,11 +39,11 @@ def serialize(obj: Any):
 def deserialize(typ: type, serialized: Any):
     """unified deserializer for both Deserializable and external classes."""
     err_vars = {'typ': typ, 'serialized': serialized}
+    typ_origin: type = get_origin(typ)
+    typ_args = get_args(typ)
 
     # 1. Non-class types
     if isinstance(typ, types.GenericAlias):
-        typ_origin: type = get_origin(typ)
-        typ_args = get_args(typ)
         err_vars.update({'typ.origin': typ_origin, 'typ.args': typ_args})
         try:
             if issubclass(typ_origin, dict):
@@ -57,9 +57,8 @@ def deserialize(typ: type, serialized: Any):
             raise NotionDfValueError('cannot deserialize: GenericAlias type with invalid origin', err_vars)
         except IndexError:
             raise NotionDfValueError('cannot deserialize: GenericAlias type with invalid args', err_vars)
-    # TODO: resolve (StrEnum | str) to str - or, is that really needed?
-    if isinstance(typ, types.UnionType):
-        for typ_arg in get_args(typ):
+    if isinstance(typ, types.UnionType):  # also can handle Optional
+        for typ_arg in typ_args:
             try:
                 return deserialize(typ_arg, serialized)
             except NotionDfValueError:
@@ -88,19 +87,12 @@ def deserialize(typ: type, serialized: Any):
 class Serializable(metaclass=ABCMeta):
     """dataclass representation of the resources defined in Notion REST API.
     can be dumped into JSON object."""
-
-    def __init__(self, **kwargs):
-        pass
-
-    def __init_subclass__(cls, **kwargs):
-        super().__init_subclass__(**kwargs)
-
     @abstractmethod
     def serialize(self) -> dict[str, Any]:
         pass
 
     @final
-    def _serialize_asdict(self, **overrides: Any) -> dict[str, Any]:
+    def _serialize_as_dict(self, **overrides: Any) -> dict[str, Any]:
         """helper method to implement serialize().
         Note: this drops post-init fields."""
         serialized = {}
@@ -117,9 +109,6 @@ class Deserializable(metaclass=ABCMeta):
     """dataclass representation of the resources defined in Notion REST API.
     can be loaded from JSON object."""
 
-    def __init__(self, **kwargs):
-        pass
-
     @classmethod
     def deserialize(cls, serialized: dict[str, Any]) -> Self:
         """override this to allow proxy-deserialize of subclasses."""
@@ -133,7 +122,7 @@ class Deserializable(metaclass=ABCMeta):
 
     @classmethod
     @final
-    def _deserialize_fromdict(cls, serialized: dict[str, Any], **overrides: Any) -> Self:
+    def _deserialize_from_dict(cls, serialized: dict[str, Any], **overrides: Any) -> Self:
         """helper method to implement _deserialize_this().
         Note: this collects post-init fields as well."""
 

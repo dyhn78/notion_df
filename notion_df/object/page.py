@@ -1,19 +1,19 @@
 from __future__ import annotations
 
+from _decimal import Decimal
 from abc import ABCMeta
 from dataclasses import dataclass, field, fields, Field
 from datetime import datetime
 from functools import cache
 from typing import Any, Literal, Union, cast, final
 
-from _decimal import Decimal
 from typing_extensions import Self
 
-from notion_df.object.common import UUID, DateRange, SelectOption, Icon
+from notion_df.object.common import UUID, DateRange, SelectOption, Icon, Properties
 from notion_df.object.constant import RollupFunction
 from notion_df.object.core import DualSerializable, Deserializable
 from notion_df.object.file import File, ExternalFile
-from notion_df.object.parent import ResponseParent
+from notion_df.object.parent import ParentResponse
 from notion_df.object.rich_text import RichText
 from notion_df.object.user import User
 from notion_df.util.collection import FinalClassDict
@@ -22,9 +22,9 @@ page_property_registry: FinalClassDict[str, type[PageProperty]] = FinalClassDict
 
 
 @dataclass
-class ResponsePage(Deserializable):
+class PageResponse(Deserializable):
     id: UUID
-    parent: ResponseParent
+    parent: ParentResponse
     created_time: datetime
     last_edited_time: datetime
     created_by: User
@@ -42,7 +42,7 @@ class ResponsePage(Deserializable):
             prop = PageProperty.deserialize(prop_serialized)
             prop.name = prop_name
             properties[prop_name] = prop
-        return cls._deserialize_fromdict(response_data, properties=properties)
+        return cls._deserialize_from_dict(response_data, properties=properties)
 
 
 @dataclass
@@ -64,11 +64,11 @@ class PageProperty(DualSerializable, metaclass=ABCMeta):
         page_property_registry[cls.get_typename()] = cls
 
     def serialize(self) -> dict[str, Any]:
-        return self._serialize_asdict()
+        return self._serialize_as_dict()
 
     @classmethod
     def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
-        return cls._deserialize_fromdict(serialized)
+        return cls._deserialize_from_dict(serialized)
 
     @classmethod
     @final
@@ -77,6 +77,9 @@ class PageProperty(DualSerializable, metaclass=ABCMeta):
             subclass = page_property_registry[serialized['type']]
             return subclass.deserialize(serialized)
         return cls._deserialize_this(serialized)
+
+
+PageProperties = Properties[PageProperty]
 
 
 @dataclass
