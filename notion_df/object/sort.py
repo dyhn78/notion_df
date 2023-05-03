@@ -10,7 +10,7 @@ Direction = Literal['ascending', 'descending']
 
 class Sort(Serializable, metaclass=ABCMeta):
     def serialize(self) -> dict[str, Any]:
-        return self._serialize_asdict()
+        return self._serialize_as_dict()
 
 
 @dataclass

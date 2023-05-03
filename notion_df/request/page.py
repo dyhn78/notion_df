@@ -4,17 +4,17 @@ from dataclasses import dataclass, field
 from typing import Any, Optional
 
 from notion_df.object.block import BlockType, serialize_partial_block_list
-from notion_df.object.common import UUID, Icon
+from notion_df.object.common import UUID, Icon, Properties
 from notion_df.object.file import ExternalFile
-from notion_df.object.page import PageProperty, page_property_registry, ResponsePage
-from notion_df.object.parent import ResponseParent
+from notion_df.object.page import PageProperty, page_property_registry, PageResponse
+from notion_df.object.parent import ParentResponse
 from notion_df.request.core import SingleRequest, RequestSettings, Version, Method, MAX_PAGE_SIZE, \
     PaginatedRequest, BaseRequest
 from notion_df.util.collection import DictFilter
 
 
 @dataclass
-class RetrievePage(SingleRequest[ResponsePage]):
+class RetrievePage(SingleRequest[PageResponse]):
     """https://developers.notion.com/reference/retrieve-a-page"""
     id: UUID
 
@@ -22,16 +22,15 @@ class RetrievePage(SingleRequest[ResponsePage]):
         return RequestSettings(Version.v20220628, Method.GET,
                                f'https://api.notion.com/v1/pages/{self.id}')
 
-    def get_body(self) -> Any:
+    def get_body(self) -> None:
         return
 
 
 @dataclass
-class CreatePage(SingleRequest[ResponsePage]):
+class CreatePage(SingleRequest[PageResponse]):
     """https://developers.notion.com/reference/post-page"""
-    parent: ResponseParent
-    properties: dict[str, PageProperty] = field(default_factory=dict)
-    """the dict keys are same as each property's name or id (depending on request)"""
+    parent: ParentResponse
+    properties: Properties[PageProperty] = field(default_factory=Properties)
     children: list[BlockType] = None
     icon: Optional[Icon] = field(default=None)
     cover: Optional[ExternalFile] = field(default=None)
@@ -40,7 +39,7 @@ class CreatePage(SingleRequest[ResponsePage]):
         return RequestSettings(Version.v20220628, Method.POST,
                                f'https://api.notion.com/v1/pages')
 
-    def get_body(self) -> Any:
+    def get_body(self) -> dict[str, Any]:
         return DictFilter.not_none({
             "parent": self.parent,
             "icon": self.icon,
@@ -51,12 +50,11 @@ class CreatePage(SingleRequest[ResponsePage]):
 
 
 @dataclass
-class UpdatePage(SingleRequest[ResponsePage]):
+class UpdatePage(SingleRequest[PageResponse]):
     """https://developers.notion.com/reference/patch-page"""
     id: UUID
-    properties: dict[str, PageProperty] = None
-    """the dict keys are same as each property's name or id (depending on request).
-    put empty dictionary to delete all properties."""
+    properties: Optional[Properties[PageProperty]] = None
+    """send empty PageProperty to delete all properties."""
     icon: Optional[Icon] = field(default=None)
     cover: Optional[ExternalFile] = field(default=None)
     archived: Optional[bool] = None
@@ -65,7 +63,7 @@ class UpdatePage(SingleRequest[ResponsePage]):
         return RequestSettings(Version.v20220628, Method.PATCH,
                                f'https://api.notion.com/v1/pages/{self.id}')
 
-    def get_body(self) -> Any:
+    def get_body(self) -> dict[str, Any]:
         return DictFilter.not_none({
             "icon": self.icon,
             "cover": self.cover,
@@ -85,8 +83,8 @@ class RetrievePagePropertyItem(BaseRequest[PageProperty]):
         return RequestSettings(Version.v20220628, Method.GET,
                                f'https://api.notion.com/v1/pages/{self.page_id}/properties/{self.property_id}')
 
-    def get_body(self):
-        pass
+    def get_body(self) -> None:
+        return
 
     request_once = PaginatedRequest.request_once
 

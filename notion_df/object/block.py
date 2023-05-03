@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any
+from typing import Any, Optional
 
 from typing_extensions import Self
 
@@ -11,7 +11,7 @@ from notion_df.object.common import UUID, Icon
 from notion_df.object.constant import BlockColor, CodeLanguage
 from notion_df.object.core import DualSerializable, Deserializable
 from notion_df.object.file import File
-from notion_df.object.parent import ResponseParent
+from notion_df.object.parent import ParentResponse
 from notion_df.object.rich_text import RichText
 from notion_df.object.user import User
 from notion_df.util.collection import FinalClassDict
@@ -20,14 +20,15 @@ block_type_registry: FinalClassDict[str, type[BlockType]] = FinalClassDict()
 
 
 @dataclass
-class ResponseBlock(Deserializable):
+class BlockResponse(Deserializable):
     id: UUID
-    parent: ResponseParent
+    parent: ParentResponse
     created_time: datetime
     last_edited_time: datetime
     created_by: User
     last_edited_by: User
-    has_children: bool
+    has_children: Optional[bool]
+    """the None value never occurs from direct server response. It only happens from Page.as_block()"""
     archived: bool
     block_type: BlockType
 
@@ -36,7 +37,7 @@ class ResponseBlock(Deserializable):
         typename = response_data['type']
         block_type_cls = block_type_registry[typename]
         block_type = block_type_cls.deserialize(response_data[typename])
-        return cls._deserialize_fromdict(response_data, block_type=block_type)
+        return cls._deserialize_from_dict(response_data, block_type=block_type)
 
 
 def serialize_partial_block_list(block_type_list: list[BlockType]) -> list[dict[str, Any]]:
@@ -58,11 +59,11 @@ class BlockType(DualSerializable, metaclass=ABCMeta):
         block_type_registry[cls.get_typename()] = cls
 
     def serialize(self) -> dict[str, Any]:
-        return self._serialize_asdict()
+        return self._serialize_as_dict()
 
     @classmethod
     def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
-        return cls._deserialize_fromdict(serialized)
+        return cls._deserialize_from_dict(serialized)
 
 
 @dataclass
@@ -86,7 +87,7 @@ class BreadcrumbBlockType(BlockType):
 class BulletedListItemBlockType(BlockType):
     rich_text: list[RichText]
     color: BlockColor = BlockColor.DEFAULT
-    children: list[ResponseBlock] = field(default_factory=list)
+    children: list[BlockResponse] = field(default_factory=list)
 
     @classmethod
     def get_typename(cls) -> str:
@@ -98,7 +99,7 @@ class CalloutBlockType(BlockType):
     rich_text: list[RichText]
     icon: Icon
     color: BlockColor = BlockColor.DEFAULT
-    children: list[ResponseBlock] = field(default_factory=list)  # TODO: double check
+    children: list[BlockResponse] = field(default_factory=list)  # TODO: double check
 
     @classmethod
     def get_typename(cls) -> str:
@@ -249,7 +250,7 @@ class ImageBlockType(BlockType):
 class NumberedListItemBlockType(BlockType):
     rich_text: list[RichText]
     color: BlockColor = BlockColor.DEFAULT
-    children: list[ResponseBlock] = field(default_factory=list)
+    children: list[BlockResponse] = field(default_factory=list)
 
     @classmethod
     def get_typename(cls) -> str:
@@ -260,7 +261,7 @@ class NumberedListItemBlockType(BlockType):
 class ParagraphBlockType(BlockType):
     rich_text: list[RichText]
     color: BlockColor = BlockColor.DEFAULT
-    children: list[ResponseBlock] = field(default_factory=list)
+    children: list[BlockResponse] = field(default_factory=list)
 
     @classmethod
     def get_typename(cls) -> str:
@@ -288,7 +289,7 @@ class PDFBlockType(BlockType):
 class QuoteBlockType(BlockType):
     rich_text: list[RichText]
     color: BlockColor = BlockColor.DEFAULT
-    children: list[ResponseBlock] = field(default_factory=list)
+    children: list[BlockResponse] = field(default_factory=list)
 
     @classmethod
     def get_typename(cls) -> str:
@@ -317,7 +318,7 @@ class SyncedBlockType(BlockType, metaclass=ABCMeta):
 @dataclass
 class OriginalSyncedBlockType(SyncedBlockType):
     """cannot be changed (2023-04-02)"""
-    children: list[ResponseBlock] = field(default_factory=list)
+    children: list[BlockResponse] = field(default_factory=list)
 
     def serialize(self) -> dict[str, Any]:
         return {
@@ -371,7 +372,7 @@ class ToDoBlockType(BlockType):
     rich_text: list[RichText]
     checked: bool
     color: BlockColor = BlockColor.DEFAULT
-    children: list[ResponseBlock] = field(default_factory=list)
+    children: list[BlockResponse] = field(default_factory=list)
 
     @classmethod
     def get_typename(cls) -> str:
@@ -382,7 +383,7 @@ class ToDoBlockType(BlockType):
 class ToggleBlockType(BlockType):
     rich_text: list[RichText]
     color: BlockColor = BlockColor.DEFAULT
-    children: list[ResponseBlock] = field(default_factory=list)
+    children: list[BlockResponse] = field(default_factory=list)
 
     @classmethod
     def get_typename(cls) -> str:

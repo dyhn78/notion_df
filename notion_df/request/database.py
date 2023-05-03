@@ -4,10 +4,10 @@ from dataclasses import dataclass, field
 from typing import Any, Optional
 
 from notion_df.object.common import Icon, UUID
-from notion_df.object.database import DatabaseProperty, ResponseDatabase
+from notion_df.object.database import DatabaseResponse, DatabaseProperties
 from notion_df.object.file import ExternalFile
 from notion_df.object.filter import Filter
-from notion_df.object.page import ResponsePage
+from notion_df.object.page import PageResponse
 from notion_df.object.rich_text import RichText
 from notion_df.object.sort import Sort
 from notion_df.request.core import SingleRequest, RequestSettings, Version, Method, PaginatedRequest
@@ -15,7 +15,7 @@ from notion_df.util.collection import DictFilter
 
 
 @dataclass
-class RetrieveDatabase(SingleRequest[ResponseDatabase]):
+class RetrieveDatabase(SingleRequest[DatabaseResponse]):
     id: UUID
 
     def get_settings(self) -> RequestSettings:
@@ -27,12 +27,11 @@ class RetrieveDatabase(SingleRequest[ResponseDatabase]):
 
 
 @dataclass
-class CreateDatabase(SingleRequest[ResponseDatabase]):
+class CreateDatabase(SingleRequest[DatabaseResponse]):
     """https://developers.notion.com/reference/create-a-database"""
     parent_id: UUID
     title: list[RichText]
-    properties: dict[str, DatabaseProperty] = field(default_factory=dict)
-    """the dict keys are same as each property's name or id (depending on request)"""
+    properties: Optional[DatabaseProperties] = field(default_factory=DatabaseProperties)
     icon: Optional[Icon] = field(default=None)
     cover: Optional[ExternalFile] = field(default=None)
 
@@ -54,12 +53,11 @@ class CreateDatabase(SingleRequest[ResponseDatabase]):
 
 
 @dataclass
-class UpdateDatabase(SingleRequest[ResponseDatabase]):
+class UpdateDatabase(SingleRequest[DatabaseResponse]):
     id: UUID
     title: list[RichText]
-    properties: dict[str, DatabaseProperty] = None
-    """the dict keys are same as each property's name or id (depending on request).
-    put empty dictionary to delete all properties."""
+    properties: Optional[DatabaseProperties] = None
+    """send empty DatabaseProperties to delete all properties."""
 
     def get_settings(self) -> RequestSettings:
         return RequestSettings(Version.v20220628, Method.PATCH,
@@ -76,7 +74,7 @@ class UpdateDatabase(SingleRequest[ResponseDatabase]):
 
 
 @dataclass
-class QueryDatabase(PaginatedRequest[ResponsePage]):
+class QueryDatabase(PaginatedRequest[PageResponse]):
     id: UUID
     filter: Filter
     sort: list[Sort]
@@ -93,9 +91,9 @@ class QueryDatabase(PaginatedRequest[ResponsePage]):
         })
 
     @classmethod
-    def parse_response_data_list(cls, data_list: list[dict[str, Any]]) -> list[ResponsePage]:
+    def parse_response_data_list(cls, data_list: list[dict[str, Any]]) -> list[PageResponse]:
         ret = []
         for data in data_list:
             for result in data['results']:
-                ret.append(ResponsePage.deserialize(result))
+                ret.append(PageResponse.deserialize(result))
         return ret
