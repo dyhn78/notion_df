@@ -9,7 +9,7 @@ from notion_df.object.block import BlockType, serialize_partial_block_list
 from notion_df.object.common import UUID, Icon, Properties
 from notion_df.object.file import ExternalFile
 from notion_df.object.page import PageProperty, page_property_registry, PageResponse
-from notion_df.object.parent import ParentResponse
+from notion_df.object.parent import ParentInfo
 from notion_df.util.collection import DictFilter
 
 
@@ -29,7 +29,7 @@ class RetrievePage(SingleRequest[PageResponse]):
 @dataclass
 class CreatePage(SingleRequest[PageResponse]):
     """https://developers.notion.com/reference/post-page"""
-    parent: ParentResponse
+    parent: ParentInfo
     properties: Properties[PageProperty] = field(default_factory=Properties)
     children: list[BlockType] = None
     icon: Optional[Icon] = field(default=None)

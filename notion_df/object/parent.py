@@ -10,7 +10,7 @@ from notion_df.object.common import UUID
 
 
 @dataclass
-class ParentResponse(DualSerializable):
+class ParentInfo(DualSerializable):
     # https://developers.notion.com/reference/parent-object
     typename: Literal['database_id', 'page_id', 'block_id']
     id: UUID

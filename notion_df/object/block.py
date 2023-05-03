@@ -7,11 +7,12 @@ from typing import Any, Optional
 
 from typing_extensions import Self
 
-from notion_df.core.serialization import DualSerializable, Deserializable
+from notion_df.core.response import Response
+from notion_df.core.serialization import DualSerializable
 from notion_df.object.common import UUID, Icon
 from notion_df.object.constant import BlockColor, CodeLanguage
 from notion_df.object.file import File
-from notion_df.object.parent import ParentResponse
+from notion_df.object.parent import ParentInfo
 from notion_df.object.rich_text import RichText
 from notion_df.object.user import User
 from notion_df.util.collection import FinalClassDict
@@ -20,9 +21,9 @@ block_type_registry: FinalClassDict[str, type[BlockType]] = FinalClassDict()
 
 
 @dataclass
-class BlockResponse(Deserializable):
+class BlockResponse(Response):
     id: UUID
-    parent: ParentResponse
+    parent: ParentInfo
     created_time: datetime
     last_edited_time: datetime
     created_by: User

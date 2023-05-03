@@ -7,25 +7,26 @@ from typing import Any
 
 from typing_extensions import Self
 
-from notion_df.core.serialization import DualSerializable, Deserializable
+from notion_df.core.response import Response
+from notion_df.core.serialization import DualSerializable
 from notion_df.object.common import UUID, SelectOption, StatusGroups, Icon, Properties, Property
 from notion_df.object.constant import NumberFormat, RollupFunction
 from notion_df.object.file import ExternalFile
-from notion_df.object.parent import ParentResponse
+from notion_df.object.parent import ParentInfo
 from notion_df.object.rich_text import RichText
 from notion_df.util.collection import FinalClassDict
 from notion_df.util.exception import NotionDfValueError
 
 
 @dataclass
-class DatabaseResponse(Deserializable):
+class DatabaseResponse(Response):
     # TODO: configure Property -> DatabaseProperty 1:1 mapping, from Property's side.
     #  access this mapping from Property (NOT DatabaseResponse), the base class.
     #  Property.from_schema(schema: DatabaseProperty) -> Property
     #  then, make Page or Database utilize it,
     #  so that they could autoconfigure itself and its children with the retrieved data.
     id: UUID
-    parent: ParentResponse
+    parent: ParentInfo
     created_time: datetime
     last_edited_time: datetime
     icon: Icon

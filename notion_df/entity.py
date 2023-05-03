@@ -1,17 +1,18 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import Optional, TypeVar, Union
+from typing import Optional, TypeVar, Union, Generic
 
 from typing_extensions import Self
 
+from notion_df.core.response import Response_T
 from notion_df.object.block import BlockType, BlockResponse, ChildPageBlockType
 from notion_df.object.common import UUID, Icon, Properties
 from notion_df.object.database import DatabaseResponse, DatabaseProperties
 from notion_df.object.file import ExternalFile, File
 from notion_df.object.filter import Filter
 from notion_df.object.page import PageResponse, PageProperty, PageProperties
-from notion_df.object.parent import ParentResponse
+from notion_df.object.parent import ParentInfo
 from notion_df.object.rich_text import RichText
 from notion_df.object.sort import Sort
 from notion_df.request.block import AppendBlockChildren, RetrieveBlock, RetrieveBlockChildren, UpdateBlock, DeleteBlock
@@ -21,21 +22,17 @@ from notion_df.request.page import CreatePage, UpdatePage, RetrievePage, Retriev
 _VT = TypeVar('_VT')
 
 
-class BaseBlock:
+class BaseBlock(Generic[Response_T]):
+    last_response: Optional[Response_T]
+
     # noinspection PyShadowingBuiltins
     def __init__(self, token: str, id: UUID):
         self.token = token
         self.id = id
-
-
-class Block(BaseBlock):
-    last_response: Optional[BlockResponse]
-
-    # noinspection PyShadowingBuiltins
-    def __init__(self, token: str, id: UUID):
-        super().__init__(token, id)
         self.last_response = None
 
+
+class Block(BaseBlock[BlockResponse]):
     @property
     def parent(self) -> Union[Page, Block, None]:
         if self.last_response is None:
@@ -73,7 +70,7 @@ class Block(BaseBlock):
     def create_child_page(self, properties: Optional[Properties[PageProperty]] = None,
                           children: Optional[list[BlockType]] = None,
                           icon: Optional[Icon] = None, cover: Optional[File] = None) -> Page:
-        response_page = CreatePage(self.token, ParentResponse('page_id', self.id),
+        response_page = CreatePage(self.token, ParentInfo('page_id', self.id),
                                    properties, children, icon, cover).execute()
         page = Page(self.token, response_page.id)
         page.last_response = response_page
@@ -88,14 +85,7 @@ class Block(BaseBlock):
         return database
 
 
-class Database(BaseBlock):
-    last_response: Optional[DatabaseResponse]
-
-    # noinspection PyShadowingBuiltins
-    def __init__(self, token: str, id: UUID):
-        super().__init__(token, id)
-        self.last_response = None
-
+class Database(BaseBlock[DatabaseResponse]):
     @property
     def parent(self) -> Union[Page, Block, None]:
         if self.last_response is None:
@@ -125,21 +115,14 @@ class Database(BaseBlock):
     def create_child_page(self, properties: Optional[Properties[PageProperty]] = None,
                           children: Optional[list[BlockType]] = None,
                           icon: Optional[Icon] = None, cover: Optional[File] = None) -> Page:
-        response_page = CreatePage(self.token, ParentResponse('database_id', self.id),
+        response_page = CreatePage(self.token, ParentInfo('database_id', self.id),
                                    properties, children, icon, cover).execute()
         page = Page(self.token, response_page.id)
         page.last_response = response_page
         return page
 
 
-class Page(BaseBlock):
-    last_response: Optional[PageResponse]
-
-    # noinspection PyShadowingBuiltins
-    def __init__(self, token: str, id: UUID):
-        super().__init__(token, id)
-        self.last_response = None
-
+class Page(BaseBlock[PageResponse]):
     @property
     def parent(self) -> Union[Page, Block, None]:
         if self.last_response is None:

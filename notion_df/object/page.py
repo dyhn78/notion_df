@@ -9,11 +9,11 @@ from typing import Any, Literal, Union, cast, final
 
 from typing_extensions import Self
 
-from notion_df.core.serialization import Deserializable
+from notion_df.core.response import Response
 from notion_df.object.common import UUID, DateRange, SelectOption, Icon, Properties, Property
 from notion_df.object.constant import RollupFunction
 from notion_df.object.file import File, ExternalFile
-from notion_df.object.parent import ParentResponse
+from notion_df.object.parent import ParentInfo
 from notion_df.object.rich_text import RichText
 from notion_df.object.user import User
 from notion_df.util.collection import FinalClassDict
@@ -22,9 +22,9 @@ page_property_registry: FinalClassDict[str, type[PageProperty]] = FinalClassDict
 
 
 @dataclass
-class PageResponse(Deserializable):
+class PageResponse(Response):
     id: UUID
-    parent: ParentResponse
+    parent: ParentInfo
     created_time: datetime
     last_edited_time: datetime
     created_by: User
