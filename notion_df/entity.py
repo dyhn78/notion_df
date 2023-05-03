@@ -191,7 +191,7 @@ class Page(BaseBlock[PageResponse]):
     def as_block(self) -> Block:
         block = Block(self.namespace, self.id)
         if self.last_response:
-            block.last_response = BlockResponse(
+            block_response = BlockResponse(
                 id=self.id,
                 parent=self.last_response.parent,
                 created_time=self.last_response.created_time,
@@ -202,6 +202,8 @@ class Page(BaseBlock[PageResponse]):
                 archived=self.last_response.archived,
                 block_type=ChildPageBlockType(title=''),
             )
+            block_response.timestamp = self.last_response.timestamp
+            block.last_response = block_response
         return block
 
     def update(self, properties: Optional[PageProperties] = None, icon: Optional[Icon] = None,
