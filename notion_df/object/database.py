@@ -32,8 +32,7 @@ class DatabaseResponse(Deserializable):
     cover: ExternalFile
     url: str
     title: list[RichText]
-    properties: dict[str, DatabaseProperty] = field()
-    """the dict keys are same as each property's name or id (depending on request)"""
+    properties: DatabaseProperties
     archived: bool
     is_inline: bool
 
