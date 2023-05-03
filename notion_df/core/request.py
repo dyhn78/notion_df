@@ -1,19 +1,26 @@
 from __future__ import annotations
 
 from abc import abstractmethod, ABCMeta
-from dataclasses import dataclass
-from functools import cache
+from dataclasses import dataclass, field
+from datetime import datetime
 from typing import TypeVar, Generic, ClassVar, Any, final, Optional
 
-from requests import Response, request
+import requests
 
-from notion_df.core.serialization import DualSerializable, deserialize, serialize
+from notion_df.core.serialization import DualSerializable, deserialize, serialize, Deserializable
 from notion_df.util.collection import StrEnum
 from notion_df.util.misc import get_generic_element_type
 
-Response_T = TypeVar('Response_T', bound=DualSerializable)
-ResponseElement_T = TypeVar('ResponseElement_T', bound=DualSerializable)
 MAX_PAGE_SIZE = 100
+
+
+@dataclass
+class Response(Deserializable, metaclass=ABCMeta):
+    timestamp: datetime = field(init=False, default_factory=datetime.now)
+
+
+Response_T = TypeVar('Response_T', bound=Response)
+ResponseElement_T = TypeVar('ResponseElement_T', bound=DualSerializable)
 
 
 @dataclass
@@ -22,18 +29,18 @@ class BaseRequest(Generic[Response_T], metaclass=ABCMeta):
     all non-abstract subclasses must provide class type argument `Response_T`.
     get token from https://www.notion.so/my-integrations"""
     token: str
-    return_type: ClassVar[type[DualSerializable]]
+    return_type: ClassVar[type[Response]]
 
     def __init_subclass__(cls, **kwargs):
-        cls.return_type = get_generic_element_type(cls, type[DualSerializable])
+        cls.return_type = get_generic_element_type(cls, type[Response])
 
     @abstractmethod
-    @cache
     def get_settings(self) -> RequestSettings:
         pass
 
     @abstractmethod
     def get_body(self) -> Any:
+        """will be automatically serialized."""
         pass
 
     @abstractmethod
@@ -41,31 +48,29 @@ class BaseRequest(Generic[Response_T], metaclass=ABCMeta):
         """the unified execution method."""
         pass
 
+    @final
+    @property
+    def headers(self) -> dict[str, Any]:
+        return {
+            'Authorization': f"Bearer {self.token}",
+            'Notion-Version': self.get_settings().version.value,
+        }
+
 
 @dataclass
 class RequestSettings:
-    """
-    - version: Version (enum)
-    - method: Method
-    - url: str
-    """
     version: Version
     method: Method
     url: str
-
-    def request(self, api_key: str, body: Any) -> Response:
-        headers = {
-            'Authorization': f"Bearer {api_key}",
-            'Notion-Version': self.version.value,
-        }
-        return request(self.method.value, self.url, headers=headers, data=serialize(body))
 
 
 @dataclass
 class SingleRequest(BaseRequest[Response_T], metaclass=ABCMeta):
     @final
     def execute(self) -> Response_T:
-        response = self.get_settings().execute(self.token, self.get_body())
+        settings = self.get_settings()
+        response = requests.request(settings.method.value, settings.url,
+                                    headers=self.headers, data=serialize(self.get_body()))
         response.raise_for_status()
         return self.parse_response_data(response.json())  # nomypy
 
@@ -83,10 +88,13 @@ class PaginatedRequest(BaseRequest[list[ResponseElement_T]], metaclass=ABCMeta):
             body = self.get_body()
         else:
             body = {
-                       'page_size': page_size,
-                       'start_cursor': start_cursor
-                   } | self.get_body()
-        response = self.get_settings().execute(self.token, body)
+                'page_size': page_size,
+                'start_cursor': start_cursor,
+                **self.get_body()
+            }
+        settings = self.get_settings()
+        response = requests.request(settings.method.value, settings.url,
+                                    headers=self.headers, data=serialize(body))
         response.raise_for_status()
         return response.json()
 

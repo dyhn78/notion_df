@@ -88,7 +88,7 @@ class RetrievePagePropertyItem(BaseRequest[PageProperty]):
 
     request_once = PaginatedRequest.request_once
 
-    def execute(self):
+    def execute(self) -> PageProperty:
         # TODO: deduplicate with PaginatedRequest.execute() if possible.
         page_size_total = self.page_size
         if page_size_total == -1:

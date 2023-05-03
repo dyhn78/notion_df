@@ -9,7 +9,7 @@ from typing import Any, Literal, Union, cast, final
 
 from typing_extensions import Self
 
-from notion_df.core.response import Response
+from notion_df.core.request import Response
 from notion_df.object.common import UUID, DateRange, SelectOption, Icon, Properties, Property
 from notion_df.object.constant import RollupFunction
 from notion_df.object.file import File, ExternalFile

@@ -90,10 +90,6 @@ class QueryDatabase(PaginatedRequest[PageResponse]):
             'sorts': self.sort,
         })
 
-    @classmethod
-    def parse_response_data_list(cls, data_list: list[dict[str, Any]]) -> list[PageResponse]:
-        ret = []
-        for data in data_list:
-            for result in data['results']:
-                ret.append(PageResponse.deserialize(result))
-        return ret
+    # TODO: resolve why type hint (Response_T -> PageResponse) is not working.
+    def execute(self) -> list[PageResponse]:
+        return super().execute()

@@ -6,7 +6,7 @@ from typing import Optional, TypeVar, Union, Generic, Iterator, final, Final
 
 from typing_extensions import Self
 
-from notion_df.core.response import Response_T
+from notion_df.core.request import Response_T
 from notion_df.object.block import BlockType, BlockResponse, ChildPageBlockType
 from notion_df.object.common import UUID, Icon, Properties
 from notion_df.object.database import DatabaseResponse, DatabaseProperties

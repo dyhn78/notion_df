@@ -7,7 +7,7 @@ from typing import Any
 
 from typing_extensions import Self
 
-from notion_df.core.response import Response
+from notion_df.core.request import Response
 from notion_df.core.serialization import DualSerializable
 from notion_df.object.common import UUID, SelectOption, StatusGroups, Icon, Properties, Property
 from notion_df.object.constant import NumberFormat, RollupFunction
