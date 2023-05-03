@@ -33,7 +33,7 @@ class PageResponse(Deserializable):
     icon: Icon
     cover: ExternalFile
     url: str
-    properties: dict[str, PageProperty] = field()
+    properties: PageProperties
 
     @classmethod
     def _deserialize_this(cls, response_data: dict[str, Any]) -> Self:
