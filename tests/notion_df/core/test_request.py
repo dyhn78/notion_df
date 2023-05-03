@@ -4,7 +4,7 @@ from typing import TypeVar, Any
 
 import pytest
 
-from notion_df.request.core import SingleRequest, RequestSettings
+from notion_df.core.request import SingleRequest, RequestSettings
 from notion_df.util.exception import NotionDfValueError
 
 not_a_class = TypeVar('not_a_class')

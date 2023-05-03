@@ -3,13 +3,13 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Optional
 
+from notion_df.core.request import SingleRequest, RequestSettings, Version, Method, MAX_PAGE_SIZE, \
+    PaginatedRequest, BaseRequest
 from notion_df.object.block import BlockType, serialize_partial_block_list
 from notion_df.object.common import UUID, Icon, Properties
 from notion_df.object.file import ExternalFile
 from notion_df.object.page import PageProperty, page_property_registry, PageResponse
 from notion_df.object.parent import ParentResponse
-from notion_df.request.core import SingleRequest, RequestSettings, Version, Method, MAX_PAGE_SIZE, \
-    PaginatedRequest, BaseRequest
 from notion_df.util.collection import DictFilter
 
 

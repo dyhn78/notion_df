@@ -5,8 +5,8 @@ from typing import Any, Literal
 
 from typing_extensions import Self
 
+from notion_df.core.serialization import DualSerializable
 from notion_df.object.common import UUID
-from notion_df.object.core import DualSerializable
 
 
 @dataclass

@@ -7,8 +7,8 @@ from typing import Any
 
 from typing_extensions import Self
 
+from notion_df.core.serialization import serialize
 from notion_df.object.common import Icon
-from notion_df.object.core import serialize
 
 
 @dataclass

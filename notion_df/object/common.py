@@ -8,8 +8,8 @@ from typing import Generic, Iterator, Optional, TypeVar
 
 from typing_extensions import Self
 
+from notion_df.core.serialization import DualSerializable, serialize_datetime, deserialize_datetime
 from notion_df.object.constant import BlockColor, OptionColor
-from notion_df.object.core import DualSerializable, serialize_datetime, deserialize_datetime
 from notion_df.util.exception import NotionDfKeyError
 
 UUID = NewType('UUID', str)

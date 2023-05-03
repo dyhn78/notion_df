@@ -7,9 +7,9 @@ from typing import Any, Optional
 
 from typing_extensions import Self
 
+from notion_df.core.serialization import DualSerializable, Deserializable
 from notion_df.object.common import UUID, Icon
 from notion_df.object.constant import BlockColor, CodeLanguage
-from notion_df.object.core import DualSerializable, Deserializable
 from notion_df.object.file import File
 from notion_df.object.parent import ParentResponse
 from notion_df.object.rich_text import RichText
