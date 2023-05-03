@@ -7,7 +7,7 @@ from typing import Any
 
 from typing_extensions import Self
 
-from notion_df.object.common import UUID, SelectOption, StatusGroups, Icon, Properties
+from notion_df.object.common import UUID, SelectOption, StatusGroups, Icon, Properties, Property
 from notion_df.object.constant import NumberFormat, RollupFunction
 from notion_df.object.core import DualSerializable, Deserializable
 from notion_df.object.file import ExternalFile
@@ -47,7 +47,7 @@ class DatabaseResponse(Deserializable):
 
 
 @dataclass
-class DatabaseProperty(DualSerializable, metaclass=ABCMeta):
+class DatabaseProperty(Property, metaclass=ABCMeta):
     """
     represents two types of data structure.
 
@@ -60,8 +60,6 @@ class DatabaseProperty(DualSerializable, metaclass=ABCMeta):
     - https://developers.notion.com/reference/update-property-schema-object
     """
     type: str
-    name: str = field(init=False)
-    id: UUID = field(init=False)
     property_type: DatabasePropertyType
 
     def serialize(self) -> dict[str, Any]:

@@ -3,20 +3,26 @@ from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, NewType, final
+from typing import Any, NewType, final, Iterable
 from typing import Generic, Iterator, Optional, TypeVar
 
 from typing_extensions import Self
 
 from notion_df.object.constant import BlockColor, OptionColor
 from notion_df.object.core import DualSerializable, serialize_datetime, deserialize_datetime
-from notion_df.object.database import DatabaseProperty
-from notion_df.object.page import PageProperty
 from notion_df.util.exception import NotionDfKeyError
 
 UUID = NewType('UUID', str)
 _VT = TypeVar('_VT')
-Property_T = TypeVar('Property_T', bound=(PageProperty | DatabaseProperty))
+
+
+@dataclass
+class Property(DualSerializable, metaclass=ABCMeta):
+    name: str = field(init=False)
+    id: UUID = field(init=False)
+
+
+Property_T = TypeVar('Property_T', bound=Property)
 
 
 class Properties(DualSerializable, Generic[Property_T]):
@@ -45,7 +51,7 @@ class Properties(DualSerializable, Generic[Property_T]):
             return self.by_id[key]
         if isinstance(key, str):
             return self.by_name[key]
-        if isinstance(key, PageProperty) or isinstance(key, DatabaseProperty):
+        if isinstance(key, Property):
             return self.by_id[key.id]
         raise NotionDfKeyError(key)
 

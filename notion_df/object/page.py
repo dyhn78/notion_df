@@ -9,9 +9,9 @@ from typing import Any, Literal, Union, cast, final
 
 from typing_extensions import Self
 
-from notion_df.object.common import UUID, DateRange, SelectOption, Icon, Properties
+from notion_df.object.common import UUID, DateRange, SelectOption, Icon, Properties, Property
 from notion_df.object.constant import RollupFunction
-from notion_df.object.core import DualSerializable, Deserializable
+from notion_df.object.core import Deserializable
 from notion_df.object.file import File, ExternalFile
 from notion_df.object.parent import ParentResponse
 from notion_df.object.rich_text import RichText
@@ -46,10 +46,8 @@ class PageResponse(Deserializable):
 
 
 @dataclass
-class PageProperty(DualSerializable, metaclass=ABCMeta):
+class PageProperty(Property, metaclass=ABCMeta):
     """https://developers.notion.com/reference/page-property-values"""
-    name: str = field(init=False)
-    id: UUID = field(init=False)
 
     @classmethod
     @cache
