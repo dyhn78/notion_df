@@ -16,16 +16,16 @@ class User(DualSerializable, metaclass=ABCMeta):
     avatar_url: str = field(init=False)
 
     @classmethod
-    @abstractmethod
-    def _deserialize_main(cls, serialized: dict[str, Any]) -> Self:
-        pass
-
-    @classmethod
     def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
         self = cls._deserialize_main(serialized)
         self.name = serialized['name']
         self.avatar_url = serialized['avatar_url']
         return self
+
+    @classmethod
+    @abstractmethod
+    def _deserialize_main(cls, serialized: dict[str, Any]) -> Self:
+        pass
 
     @classmethod
     @final

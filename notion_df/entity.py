@@ -64,37 +64,6 @@ class BaseBlock(Generic[Response_T]):
 
 
 BaseBlock_T = TypeVar('BaseBlock_T', bound=BaseBlock)
-Namespace_KT = UUID | BaseBlock
-
-
-class Namespace(MutableMapping[Namespace_KT, BaseBlock_T]):
-    # TODO: special type of blocks should be able to add their own keywords (for example, Block -> title)
-    def __init__(self, token: str = os.getenv('NOTION_TOKEN')):
-        self.token: Final = token
-        self.instances: dict[UUID, BaseBlock] = {}
-
-    @staticmethod
-    def _get_id(key: Namespace_KT) -> UUID:
-        if isinstance(key, BaseBlock):
-            return key.id
-        if isinstance(key, UUID):
-            return key
-        raise NotionDfKeyError(key)
-
-    def __getitem__(self, key: Namespace_KT) -> BaseBlock_T:
-        return self.instances[self._get_id(key)]
-
-    def __setitem__(self, key: Namespace_KT, value: BaseBlock_T) -> None:
-        self.instances[self._get_id(key)] = value
-
-    def __delitem__(self, key: Namespace_KT) -> None:
-        del self.instances[self._get_id(key)]
-
-    def __len__(self) -> int:
-        return len(self.instances)
-
-    def __iter__(self) -> Iterator[UUID]:
-        return iter(self.instances)
 
 
 class Block(BaseBlock[BlockResponse]):
@@ -253,3 +222,53 @@ class Children(Sequence[Child_T]):
 
 BlockChildren = Children[Block]
 PageChildren = Children[Page]
+Namespace_KT = UUID | BaseBlock
+Block_T = TypeVar('Block_T', bound=Block)
+Database_T = TypeVar('Database_T', bound=Database)
+Page_T = TypeVar('Page_T', bound=Page)
+
+
+class Namespace(MutableMapping[Namespace_KT, BaseBlock_T]):
+    # TODO: special type of blocks should be able to add their own keywords (for example, Block -> title)
+    # TODO: add Settings
+    def __init__(self, token: str = os.getenv('NOTION_TOKEN')):
+        self.token: Final = token
+        self.instances: dict[UUID, BaseBlock] = {}
+
+    @staticmethod
+    def _get_id(key: Namespace_KT) -> UUID:
+        if isinstance(key, BaseBlock):
+            return key.id
+        if isinstance(key, str):
+            return key
+        raise NotionDfKeyError(key)
+
+    def __getitem__(self, key: Namespace_KT) -> BaseBlock_T:
+        return self.instances[self._get_id(key)]
+
+    def __setitem__(self, key: Namespace_KT, value: BaseBlock_T) -> None:
+        self.instances[self._get_id(key)] = value
+
+    def __delitem__(self, key: Namespace_KT) -> None:
+        del self.instances[self._get_id(key)]
+
+    def __len__(self) -> int:
+        return len(self.instances)
+
+    def __iter__(self) -> Iterator[UUID]:
+        return iter(self.instances)
+
+    def block(self, id: UUID, cls: type[Block_T] = Block) -> Block_T:
+        return cls(self, id)
+
+    def database(self, id: UUID, cls: type[Database_T] = Database) -> Database_T:
+        return cls(self, id)
+
+    def page(self, id: UUID, cls: type[Page_T] = Page) -> Page_T:
+        return cls(self, id)
+
+
+if __name__ == '__main__':
+    namespace = Namespace()
+    database = namespace.database(UUID('d020b399cf5947a59d11a0b9e0ea45d0'))
+    database.retrieve()
