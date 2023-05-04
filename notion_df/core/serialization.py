@@ -76,13 +76,15 @@ def deserialize(typ: type, serialized: Any):
     if not inspect.isclass(typ):
         raise NotionDfValueError('cannot deserialize: not supported type', err_vars, linebreak=True)
     if issubclass(typ, Deserializable):
+        if isinstance(serialized, Deserializable):
+            return serialized
         return typ.deserialize(serialized)
-    if typ in {bool, str, int, float, Decimal}:
-        if type(serialized) != typ:
-            raise NotionDfValueError('cannot deserialize: type(serialized) != typ', err_vars, linebreak=True)
-        return serialized
-    if issubclass(typ, Enum):
-        return typ(serialized)
+    if typ in {bool, str, int, float, Decimal} or issubclass(typ, Enum):
+        try:
+            return typ(serialized)
+        except ValueError as e:
+            err_vars.update(exception=e)
+            raise NotionDfValueError('cannot deserialize', err_vars, linebreak=True)
     if issubclass(typ, datetime):
         return deserialize_datetime(serialized)
     if isinstance(typ, InitVar):  # TODO: is this really needed?
@@ -133,10 +135,7 @@ class Deserializable(metaclass=ABCMeta):
         Note: this collects post-init fields as well."""
 
         def deserialize_field(fd_name: str):
-            serialized_field = serialized[fd_name]
-            if isinstance(serialized_field, Deserializable):
-                return serialized_field
-            return deserialize(cls._get_type_hints()[fd_name], serialized_field)
+            return deserialize(cls._get_type_hints()[fd_name], serialized[fd_name])
 
         serialized.update(overrides)
         init_params = {}
