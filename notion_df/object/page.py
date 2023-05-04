@@ -59,7 +59,8 @@ class PageProperty(Property, metaclass=ABCMeta):
     def __init_subclass__(cls, **kwargs) -> None:
         super().__init_subclass__(**kwargs)
         dataclass(cls)
-        page_property_registry[cls.get_typename()] = cls
+        if typename := cls.get_typename():
+            page_property_registry[typename] = cls
 
     def serialize(self) -> dict[str, Any]:
         return self._serialize_as_dict()

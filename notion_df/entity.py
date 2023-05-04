@@ -270,5 +270,5 @@ class Namespace(MutableMapping[Namespace_KT, BaseBlock_T]):
 
 if __name__ == '__main__':
     namespace = Namespace()
-    database = namespace.database(UUID('d020b399cf5947a59d11a0b9e0ea45d0'))
+    database = namespace.database(UUID(''))
     database.retrieve()

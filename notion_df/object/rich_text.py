@@ -67,7 +67,7 @@ class RichText(DualSerializable, metaclass=ABCMeta):
             return ()
 
         subclass = rich_text_registry[get_typename(serialized)]
-        return subclass._deserialize_this(serialized)
+        return subclass.deserialize(serialized)
 
 
 rich_text_registry: FinalClassDict[tuple[str, ...], type[RichText]] = FinalClassDict()
@@ -76,7 +76,7 @@ rich_text_registry: FinalClassDict[tuple[str, ...], type[RichText]] = FinalClass
 @dataclass
 class Text(RichText):
     content: str
-    link: str
+    link: Optional[str]
     # ---
     annotations: Optional[Annotations] = None
     """
@@ -104,7 +104,9 @@ class Text(RichText):
 
     @classmethod
     def _deserialize_main(cls, serialized: dict[str, Any]) -> Self:
-        return cls(serialized['text']['content'], serialized['text']['link']['url'])
+        link_item = serialized['text']['link']
+        link = link_item['url'] if link_item else None
+        return cls(serialized['text']['content'], link)
 
 
 @dataclass

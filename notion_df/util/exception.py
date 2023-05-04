@@ -13,7 +13,7 @@ class NotionDfException(Exception, ABC):
     - description: instance-specific description
     - vars: dumped variables to display in error log
     """
-    description: str = field()
+    description: str = field(default='')
     """instance-specific description"""
     vars: dict[str, Any] = field(default_factory=dict)
     """dumped variables in error log"""

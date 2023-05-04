@@ -57,7 +57,8 @@ class BlockType(DualSerializable, metaclass=ABCMeta):
         pass
 
     def __init_subclass__(cls, **kwargs):
-        block_type_registry[cls.get_typename()] = cls
+        if typename := cls.get_typename():
+            block_type_registry[typename] = cls
 
     def serialize(self) -> dict[str, Any]:
         return self._serialize_as_dict()

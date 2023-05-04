@@ -9,12 +9,26 @@ from typing_extensions import Self
 
 from notion_df.core.serialization import serialize
 from notion_df.object.common import Icon
+from notion_df.util.exception import NotionDfValueError
 
 
 @dataclass
 class File(Icon, metaclass=ABCMeta):
     """https://developers.notion.com/reference/file-object"""
-    pass
+
+    @classmethod
+    def deserialize(cls, serialized: dict[str, Any]) -> Self:
+        if cls != File:
+            return cls._deserialize_this(serialized)
+        match serialized['type']:
+            case 'file':
+                subclass = InternalFile
+            case 'external':
+                subclass = ExternalFile
+            case _:
+                raise NotionDfValueError('invalid relation_type',
+                                         {'typename': serialized['type'], 'serialized': serialized})
+        return subclass.deserialize(serialized)
 
 
 @dataclass
@@ -23,7 +37,7 @@ class InternalFile(File):
     expiry_time: datetime
 
     @classmethod
-    def get_type(cls) -> str:
+    def get_typename(cls) -> str:
         return 'file'
 
     def serialize(self):
@@ -45,7 +59,7 @@ class ExternalFile(File):
     url: str
 
     @classmethod
-    def get_type(cls) -> str:
+    def get_typename(cls) -> str:
         return 'external'
 
     def serialize(self):

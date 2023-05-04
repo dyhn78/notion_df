@@ -48,7 +48,7 @@ class DatabaseResponse(Response):
 
 
 @dataclass
-class DatabaseProperty(Property, metaclass=ABCMeta):
+class DatabaseProperty(Property):
     """
     represents two types of data structure.
 
@@ -70,11 +70,11 @@ class DatabaseProperty(Property, metaclass=ABCMeta):
         }
 
     @classmethod
-    def deserialize(cls, serialized: dict[str, Any]) -> Self:
+    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
         typename = serialized['type']
         property_type_cls = database_property_type_registry[typename]
         property_type = property_type_cls.deserialize(serialized[typename])
-        return cls._deserialize_from_dict(serialized, property_type=property_type)
+        return cls(typename, property_type)
 
 
 DatabaseProperties = Properties[DatabaseProperty]
@@ -155,9 +155,9 @@ class RelationDatabasePropertyType(DatabasePropertyType, metaclass=ABCMeta):
     def _eligible_property_types(cls) -> list[str]:
         return ['relation']
 
-    @classmethod
-    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
-        return cls._deserialize_from_dict(serialized)
+    # @classmethod
+    # def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
+    #     return cls._deserialize_from_dict(serialized)
 
     @classmethod
     def deserialize(cls, serialized: dict[str, Any]) -> Self:
@@ -171,7 +171,7 @@ class RelationDatabasePropertyType(DatabasePropertyType, metaclass=ABCMeta):
             case _:
                 raise NotionDfValueError('invalid relation_type',
                                          {'relation_type': relation_type, 'serialized': serialized})
-        return subclass._deserialize_this(serialized)
+        return subclass.deserialize(serialized)
 
 
 @dataclass
@@ -198,6 +198,12 @@ class DualRelationPropertyType(RelationDatabasePropertyType):
             'type': 'dual_property',
             'dual_property': {},
         }
+
+    @classmethod
+    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
+        return cls(serialized['database_id'],
+                   serialized['dual_property']['synced_property_name'],
+                   serialized['dual_property']['synced_property_id'])
 
 
 @dataclass

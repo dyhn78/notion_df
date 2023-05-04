@@ -7,7 +7,7 @@ from dataclasses import dataclass, fields, InitVar, Field
 from datetime import datetime
 from decimal import Decimal
 from enum import Enum
-from typing import Any, get_origin, get_args, final
+from typing import Any, get_origin, get_args, final, NewType, cast, get_type_hints, _GenericAlias
 
 import dateutil.parser
 from typing_extensions import Self
@@ -43,7 +43,7 @@ def deserialize(typ: type, serialized: Any):
     typ_args = get_args(typ)
 
     # 1. Non-class types
-    if isinstance(typ, types.GenericAlias):
+    if isinstance(typ, types.GenericAlias) or isinstance(typ, _GenericAlias):
         err_vars.update({'typ.origin': typ_origin, 'typ.args': typ_args})
         try:
             if issubclass(typ_origin, dict):
@@ -54,25 +54,32 @@ def deserialize(typ: type, serialized: Any):
                 return [deserialize(element_type, e) for e in serialized]
             if issubclass(typ_origin, set):
                 return {deserialize(element_type, e) for e in serialized}
-            raise NotionDfValueError('cannot deserialize: GenericAlias type with invalid origin', err_vars)
+            if issubclass(typ_origin, Deserializable):  # TODO: fix that `Properties` deserialize elements here
+                return deserialize(typ_origin, serialized)
+            raise NotionDfValueError('cannot deserialize: GenericAlias type with invalid origin',
+                                     err_vars, linebreak=True)
         except IndexError:
-            raise NotionDfValueError('cannot deserialize: GenericAlias type with invalid args', err_vars)
+            raise NotionDfValueError('cannot deserialize: GenericAlias type with invalid args',
+                                     err_vars, linebreak=True)
     if isinstance(typ, types.UnionType):  # also can handle Optional
         for typ_arg in typ_args:
             try:
                 return deserialize(typ_arg, serialized)
             except NotionDfValueError:
                 pass
-        raise NotionDfValueError('cannot deserialize to any of the UnionType', err_vars)
+        raise NotionDfValueError('cannot deserialize to any of the UnionType', err_vars, linebreak=True)
+    if type(typ) == NewType:
+        typ_origin = cast(NewType, typ).__supertype__
+        return typ(deserialize(typ_origin, serialized))
 
     # 2. class types
     if not inspect.isclass(typ):
-        raise NotionDfValueError('cannot deserialize: not supported type', err_vars)
+        raise NotionDfValueError('cannot deserialize: not supported type', err_vars, linebreak=True)
     if issubclass(typ, Deserializable):
         return typ.deserialize(serialized)
     if typ in {bool, str, int, float, Decimal}:
         if type(serialized) != typ:
-            raise NotionDfValueError('cannot deserialize: type(serialized) != typ', err_vars)
+            raise NotionDfValueError('cannot deserialize: type(serialized) != typ', err_vars, linebreak=True)
         return serialized
     if issubclass(typ, Enum):
         return typ(serialized)
@@ -80,7 +87,7 @@ def deserialize(typ: type, serialized: Any):
         return deserialize_datetime(serialized)
     if isinstance(typ, InitVar):  # TODO: is this really needed?
         return deserialize(typ.type, serialized)
-    raise NotionDfValueError('cannot deserialize: not supported class', err_vars)
+    raise NotionDfValueError('cannot deserialize: not supported class', err_vars, linebreak=True)
 
 
 @dataclass
@@ -127,12 +134,20 @@ class Deserializable(metaclass=ABCMeta):
         Note: this collects post-init fields as well."""
 
         def deserialize_field(fd: Field):
-            return deserialize(fd.type, serialized[fd.name])
+            typ = fd.type
+            if isinstance(typ, str):
+                typ = get_type_hints(cls)[fd.name]
+
+            return deserialize(typ, serialized[fd.name])
 
         serialized.update(overrides)
-        self = cls(**{fd.name: deserialize_field(fd) for fd in fields(cls) if fd.init})  # type: ignore
+        init_params = {}
         for fd in fields(cls):
-            if not fd.init:
+            if fd.init:
+                init_params[fd.name] = deserialize_field(fd)
+        self = cls(**init_params)  # type: ignore
+        for fd in fields(cls):
+            if not fd.init and not hasattr(self, fd.name):
                 setattr(self, fd.name, deserialize_field(fd))
         return self
 

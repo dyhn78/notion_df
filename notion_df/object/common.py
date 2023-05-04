@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, NewType, final, Iterable
+from typing import Any, NewType, Iterable
 from typing import Generic, Iterator, Optional, TypeVar
 
 from typing_extensions import Self
@@ -18,8 +18,8 @@ _VT = TypeVar('_VT')
 
 @dataclass
 class Property(DualSerializable, metaclass=ABCMeta):
-    name: str = field(init=False)
-    id: UUID = field(init=False)
+    name: str = field(init=False, default=None)
+    id: UUID = field(init=False, default=None)
 
 
 Property_T = TypeVar('Property_T', bound=Property)
@@ -96,20 +96,20 @@ icon_registry: dict[str, type[Icon]] = {}
 class Icon(DualSerializable, metaclass=ABCMeta):
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
-        icon_registry[cls.get_type()] = cls
+        if typename := cls.get_typename():
+            icon_registry[typename] = cls
 
     @classmethod
     @abstractmethod
-    def get_type(cls) -> str:
+    def get_typename(cls) -> str:
         pass
 
     @classmethod
-    @final
     def deserialize(cls, serialized: dict[str, Any]) -> Self:
         if cls != Icon:
             return cls._deserialize_this(serialized)
-        subclass = icon_registry[cls.get_type()]
-        return subclass._deserialize_this(serialized)
+        subclass = icon_registry[serialized['type']]
+        return subclass.deserialize(serialized)
 
 
 @dataclass
@@ -118,7 +118,7 @@ class Emoji(Icon):
     emoji: str
 
     @classmethod
-    def get_type(cls) -> str:
+    def get_typename(cls) -> str:
         return 'emoji'
 
     def serialize(self):
