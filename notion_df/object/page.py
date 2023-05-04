@@ -37,12 +37,7 @@ class PageResponse(Response):
 
     @classmethod
     def _deserialize_this(cls, response_data: dict[str, Any]) -> Self:
-        properties = {}
-        for prop_name, prop_serialized in response_data['properties'].items():
-            prop = PageProperty.deserialize(prop_serialized)
-            prop.name = prop_name
-            properties[prop_name] = prop
-        return cls._deserialize_from_dict(response_data, properties=properties)
+        return cls._deserialize_from_dict(response_data)
 
 
 @dataclass
@@ -78,7 +73,8 @@ class PageProperty(Property, metaclass=ABCMeta):
         return cls._deserialize_this(serialized)
 
 
-PageProperties = Properties[PageProperty]
+class PageProperties(Properties[PageProperty]):
+    pass
 
 
 @dataclass

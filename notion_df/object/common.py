@@ -11,6 +11,7 @@ from typing_extensions import Self
 from notion_df.core.serialization import DualSerializable, serialize_datetime, deserialize_datetime
 from notion_df.object.constant import BlockColor, OptionColor
 from notion_df.util.exception import NotionDfKeyError
+from notion_df.util.misc import get_generic_element_type
 
 UUID = NewType('UUID', str)
 _VT = TypeVar('_VT')
@@ -29,6 +30,7 @@ class Properties(DualSerializable, Generic[Property_T]):
     """the dict keys are same as each property's name or id (depending on request)"""
     by_id: dict[UUID, Property_T]
     by_name: dict[str, Property_T]
+    _property_type: type[Property_T]
 
     def __init__(self, props: Iterable[Property_T] = ()):
         self.by_id = {}
@@ -39,17 +41,33 @@ class Properties(DualSerializable, Generic[Property_T]):
     def serialize(self) -> dict[str, Property_T]:
         return self.by_id
 
+    def __init_subclass__(cls, **kwargs):
+        cls._property_type = get_generic_element_type(cls, cast_type=Property)
+
+    def __repr__(self):
+        return f'{type(self).__name__}({set(self.by_name.keys())})'
+
     @classmethod
-    def _deserialize_this(cls, serialized: dict[UUID, Any]) -> Self:
-        return cls(serialized.values())
+    def _deserialize_this(cls, serialized: dict[str, dict[str, Any]]) -> Self:
+        properties = cls()
+        for prop_name, prop_serialized in serialized.items():
+            prop = cls._property_type.deserialize(prop_serialized)
+            prop.name = prop_name
+            properties.add(prop)
+        return properties
 
     def __iter__(self) -> Iterator[Property_T]:
         return iter(self.by_id.values())
 
     def __getitem__(self, key: str | UUID | Property_T) -> Property_T:
-        if isinstance(key, UUID):
-            return self.by_id[key]
+        # TODO
+        # if isinstance(key, UUID):
+        #     return self.by_id[key]
+        # if isinstance(key, str):
+        #     return self.by_name[key]
         if isinstance(key, str):
+            if prop := self.by_id.get(UUID(key)):
+                return prop
             return self.by_name[key]
         if isinstance(key, Property):
             return self.by_id[key.id]

@@ -3,10 +3,12 @@ from __future__ import annotations
 import inspect
 import types
 from abc import ABCMeta, abstractmethod
-from dataclasses import dataclass, fields, InitVar, Field
+from dataclasses import dataclass, fields, InitVar
 from datetime import datetime
 from decimal import Decimal
 from enum import Enum
+from functools import cache
+# noinspection PyUnresolvedReferences
 from typing import Any, get_origin, get_args, final, NewType, cast, get_type_hints, _GenericAlias
 
 import dateutil.parser
@@ -50,17 +52,15 @@ def deserialize(typ: type, serialized: Any):
                 value_type = typ_args[1]
                 return {k: deserialize(value_type, v) for k, v in serialized.items()}
             element_type = typ_args[0]
-            if issubclass(typ_origin, list):
-                return [deserialize(element_type, e) for e in serialized]
-            if issubclass(typ_origin, set):
-                return {deserialize(element_type, e) for e in serialized}
-            if issubclass(typ_origin, Deserializable):  # TODO: fix that `Properties` deserialize elements here
-                return deserialize(typ_origin, serialized)
-            raise NotionDfValueError('cannot deserialize: GenericAlias type with invalid origin',
-                                     err_vars, linebreak=True)
         except IndexError:
             raise NotionDfValueError('cannot deserialize: GenericAlias type with invalid args',
                                      err_vars, linebreak=True)
+        if issubclass(typ_origin, list):
+            return [deserialize(element_type, e) for e in serialized]
+        if issubclass(typ_origin, set):
+            return {deserialize(element_type, e) for e in serialized}
+        raise NotionDfValueError('cannot deserialize: GenericAlias type with invalid origin',
+                                 err_vars, linebreak=True)
     if isinstance(typ, types.UnionType):  # also can handle Optional
         for typ_arg in typ_args:
             try:
@@ -115,7 +115,6 @@ class Serializable(metaclass=ABCMeta):
 class Deserializable(metaclass=ABCMeta):
     """dataclass representation of the resources defined in Notion REST API.
     can be loaded from JSON object."""
-
     @classmethod
     def deserialize(cls, serialized: dict[str, Any]) -> Self:
         """override this to allow proxy-deserialize of subclasses."""
@@ -133,23 +132,27 @@ class Deserializable(metaclass=ABCMeta):
         """helper method to implement _deserialize_this().
         Note: this collects post-init fields as well."""
 
-        def deserialize_field(fd: Field):
-            typ = fd.type
-            if isinstance(typ, str):
-                typ = get_type_hints(cls)[fd.name]
-
-            return deserialize(typ, serialized[fd.name])
+        def deserialize_field(fd_name: str):
+            serialized_field = serialized[fd_name]
+            if isinstance(serialized_field, Deserializable):
+                return serialized_field
+            return deserialize(cls._get_type_hints()[fd_name], serialized_field)
 
         serialized.update(overrides)
         init_params = {}
         for fd in fields(cls):
             if fd.init:
-                init_params[fd.name] = deserialize_field(fd)
+                init_params[fd.name] = deserialize_field(fd.name)
         self = cls(**init_params)  # type: ignore
         for fd in fields(cls):
-            if not fd.init and not hasattr(self, fd.name):
-                setattr(self, fd.name, deserialize_field(fd))
+            if not fd.init and (getattr(self, fd.name, None) is None):
+                setattr(self, fd.name, deserialize_field(fd.name))
         return self
+
+    @classmethod
+    @cache
+    def _get_type_hints(cls) -> dict[str, type]:
+        return get_type_hints(cls)
 
 
 class DualSerializable(Serializable, Deserializable, metaclass=ABCMeta):

@@ -17,6 +17,8 @@ from notion_df.object.rich_text import RichText
 from notion_df.util.collection import FinalClassDict
 from notion_df.util.exception import NotionDfValueError
 
+database_property_type_registry: FinalClassDict[str, type[DatabasePropertyType]] = FinalClassDict()
+
 
 @dataclass
 class DatabaseResponse(Response):
@@ -39,12 +41,7 @@ class DatabaseResponse(Response):
 
     @classmethod
     def _deserialize_this(cls, response_data: dict[str, Any]) -> Self:
-        properties = {}
-        for prop_name, prop_serialized in response_data['properties'].items():
-            prop = DatabaseProperty.deserialize(prop_serialized)
-            prop.name = prop_name
-            properties[prop_name] = prop
-        return cls._deserialize_from_dict(response_data, properties=properties)
+        return cls._deserialize_from_dict(response_data)
 
 
 @dataclass
@@ -74,11 +71,11 @@ class DatabaseProperty(Property):
         typename = serialized['type']
         property_type_cls = database_property_type_registry[typename]
         property_type = property_type_cls.deserialize(serialized[typename])
-        return cls(typename, property_type)
+        return cls._deserialize_from_dict(serialized, property_type=property_type)
 
 
-DatabaseProperties = Properties[DatabaseProperty]
-database_property_type_registry: FinalClassDict[str, type[DatabasePropertyType]] = FinalClassDict()
+class DatabaseProperties(Properties[DatabaseProperty]):
+    pass
 
 
 class DatabasePropertyType(DualSerializable, metaclass=ABCMeta):

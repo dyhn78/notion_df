@@ -8,7 +8,7 @@ from notion_df.core.request import SingleRequest, RequestSettings, Version, Meth
 from notion_df.object.block import BlockType, serialize_partial_block_list
 from notion_df.object.common import UUID, Icon, Properties
 from notion_df.object.file import ExternalFile
-from notion_df.object.page import PageProperty, page_property_registry, PageResponse
+from notion_df.object.page import PageProperty, page_property_registry, PageResponse, PageProperties
 from notion_df.object.parent import ParentInfo
 from notion_df.util.collection import DictFilter
 
@@ -30,7 +30,7 @@ class RetrievePage(SingleRequest[PageResponse]):
 class CreatePage(SingleRequest[PageResponse]):
     """https://developers.notion.com/reference/post-page"""
     parent: ParentInfo
-    properties: Properties[PageProperty] = field(default_factory=Properties)
+    properties: PageProperties = field(default_factory=Properties)
     children: list[BlockType] = None
     icon: Optional[Icon] = field(default=None)
     cover: Optional[ExternalFile] = field(default=None)
@@ -53,7 +53,7 @@ class CreatePage(SingleRequest[PageResponse]):
 class UpdatePage(SingleRequest[PageResponse]):
     """https://developers.notion.com/reference/patch-page"""
     id: UUID
-    properties: Optional[Properties[PageProperty]] = None
+    properties: Optional[PageProperties] = None
     """send empty PageProperty to delete all properties."""
     icon: Optional[Icon] = field(default=None)
     cover: Optional[ExternalFile] = field(default=None)

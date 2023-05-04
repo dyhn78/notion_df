@@ -8,7 +8,7 @@ from typing_extensions import Self
 
 from notion_df.core.request import Response_T
 from notion_df.object.block import BlockType, BlockResponse, ChildPageBlockType
-from notion_df.object.common import UUID, Icon, Properties
+from notion_df.object.common import UUID, Icon
 from notion_df.object.database import DatabaseResponse, DatabaseProperties
 from notion_df.object.file import ExternalFile, File
 from notion_df.object.filter import Filter
@@ -99,7 +99,7 @@ class Block(BaseBlock[BlockResponse]):
         block_response_list = AppendBlockChildren(self.token, self.id, block_type_list).execute()
         return self._send_child_block_response_list(block_response_list)
 
-    def create_child_page(self, properties: Optional[Properties[PageProperty]] = None,
+    def create_child_page(self, properties: Optional[PageProperties] = None,
                           children: Optional[list[BlockType]] = None,
                           icon: Optional[Icon] = None, cover: Optional[File] = None) -> Page:
         response_page = CreatePage(self.token, ParentInfo('page_id', self.id),
@@ -142,7 +142,7 @@ class Database(BaseBlock[DatabaseResponse]):
         self.last_response = UpdateDatabase(self.token, self.id, title, properties).execute()
         return self.last_response
 
-    def create_child_page(self, properties: Optional[Properties[PageProperty]] = None,
+    def create_child_page(self, properties: Optional[PageProperties] = None,
                           children: Optional[list[BlockType]] = None,
                           icon: Optional[Icon] = None, cover: Optional[File] = None) -> Page:
         response_page = CreatePage(self.token, ParentInfo('database_id', self.id),
@@ -271,4 +271,5 @@ class Namespace(MutableMapping[Namespace_KT, BaseBlock_T]):
 if __name__ == '__main__':
     namespace = Namespace()
     database = namespace.database(UUID(''))
-    database.retrieve()
+    response = database.retrieve()
+    input('Breakpoint')
