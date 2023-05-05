@@ -8,7 +8,7 @@ from typing_extensions import Self
 
 from notion_df.core.request import Response_T
 from notion_df.object.block import BlockType, BlockResponse, ChildPageBlockType
-from notion_df.object.common import UUID, Icon
+from notion_df.object.common import Icon
 from notion_df.object.database import DatabaseResponse, DatabaseProperties
 from notion_df.object.file import ExternalFile, File
 from notion_df.object.filter import Filter
@@ -20,24 +20,28 @@ from notion_df.request.block import AppendBlockChildren, RetrieveBlock, Retrieve
 from notion_df.request.database import CreateDatabase, UpdateDatabase, RetrieveDatabase, QueryDatabase
 from notion_df.request.page import CreatePage, UpdatePage, RetrievePage, RetrievePagePropertyItem
 from notion_df.util.exception import NotionDfKeyError
+from notion_df.util.misc import get_id, UUID
 
 
 class BaseBlock(Generic[Response_T]):
+    id: UUID
+
     # noinspection PyShadowingBuiltins
-    def __new__(cls, namespace: Namespace, id: UUID):
+    def __new__(cls, namespace: Namespace, id_or_url: Union[UUID, str]):
+        id = get_id(id_or_url) if isinstance(id_or_url, str) else id_or_url
         if id in namespace:
             return namespace[id]
         instance = super().__new__(cls)
         namespace[id] = instance
         return instance
 
-    def __init__(self, namespace: Namespace, id: UUID):
+    def __init__(self, namespace: Namespace, id_or_url: Union[UUID, str]):
         if hasattr(self, '_initialized'):
             return
         self._initialized = True
         self.namespace = namespace
         self.token = namespace.token
-        self.id = id
+        self.id = get_id(id_or_url)
         self._last_response: Optional[Response_T] = None
 
     @property
@@ -258,18 +262,14 @@ class Namespace(MutableMapping[Namespace_KT, BaseBlock_T]):
     def __iter__(self) -> Iterator[UUID]:
         return iter(self.instances)
 
+    # noinspection PyShadowingBuiltins
     def block(self, id: UUID, cls: type[Block_T] = Block) -> Block_T:
         return cls(self, id)
 
+    # noinspection PyShadowingBuiltins
     def database(self, id: UUID, cls: type[Database_T] = Database) -> Database_T:
         return cls(self, id)
 
+    # noinspection PyShadowingBuiltins
     def page(self, id: UUID, cls: type[Page_T] = Page) -> Page_T:
         return cls(self, id)
-
-
-if __name__ == '__main__':
-    namespace = Namespace()
-    database = namespace.database(UUID(''))
-    response = database.retrieve()
-    input('Breakpoint')

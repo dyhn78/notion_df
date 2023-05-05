@@ -9,7 +9,7 @@ from decimal import Decimal
 from enum import Enum
 from functools import cache
 # noinspection PyUnresolvedReferences
-from typing import Any, get_origin, get_args, final, NewType, cast, get_type_hints, _GenericAlias
+from typing import Any, get_origin, get_args, final, NewType, cast, get_type_hints, _GenericAlias, Union, Literal
 
 import dateutil.parser
 from typing_extensions import Self
@@ -44,7 +44,27 @@ def deserialize(typ: type, serialized: Any):
     typ_origin: type = get_origin(typ)
     typ_args = get_args(typ)
 
+    # 0. None
+    if serialized is None:
+        return None
+
     # 1. Non-class types
+    if typ == Any:
+        return serialized
+    if type(typ) == NewType:
+        typ_origin = cast(NewType, typ).__supertype__
+        return typ(deserialize(typ_origin, serialized))
+    if typ_origin == Literal:
+        if serialized in typ_args:
+            return serialized
+        raise NotionDfValueError('serialized value does not equal to any of Literal values', err_vars, linebreak=True)
+    if isinstance(typ, types.UnionType) or typ_origin == Union:  # also can handle Optional
+        for typ_arg in typ_args:
+            try:
+                return deserialize(typ_arg, serialized)
+            except NotionDfValueError:
+                pass
+        raise NotionDfValueError('cannot deserialize to any of the UnionType', err_vars, linebreak=True)
     if isinstance(typ, types.GenericAlias) or isinstance(typ, _GenericAlias):
         err_vars.update({'typ.origin': typ_origin, 'typ.args': typ_args})
         try:
@@ -61,16 +81,6 @@ def deserialize(typ: type, serialized: Any):
             return {deserialize(element_type, e) for e in serialized}
         raise NotionDfValueError('cannot deserialize: GenericAlias type with invalid origin',
                                  err_vars, linebreak=True)
-    if isinstance(typ, types.UnionType):  # also can handle Optional
-        for typ_arg in typ_args:
-            try:
-                return deserialize(typ_arg, serialized)
-            except NotionDfValueError:
-                pass
-        raise NotionDfValueError('cannot deserialize to any of the UnionType', err_vars, linebreak=True)
-    if type(typ) == NewType:
-        typ_origin = cast(NewType, typ).__supertype__
-        return typ(deserialize(typ_origin, serialized))
 
     # 2. class types
     if not inspect.isclass(typ):
@@ -133,19 +143,15 @@ class Deserializable(metaclass=ABCMeta):
     def _deserialize_from_dict(cls, serialized: dict[str, Any], **overrides: Any) -> Self:
         """helper method to implement _deserialize_this().
         Note: this collects post-init fields as well."""
-
-        def deserialize_field(fd_name: str):
-            return deserialize(cls._get_type_hints()[fd_name], serialized[fd_name])
-
         serialized.update(overrides)
         init_params = {}
         for fd in fields(cls):
             if fd.init:
-                init_params[fd.name] = deserialize_field(fd.name)
+                init_params[fd.name] = deserialize(cls._get_type_hints()[fd.name], serialized[fd.name])
         self = cls(**init_params)  # type: ignore
         for fd in fields(cls):
-            if not fd.init and (getattr(self, fd.name, None) is None):
-                setattr(self, fd.name, deserialize_field(fd.name))
+            if not fd.init and (getattr(self, fd.name, None) is None) and fd.name in serialized:
+                setattr(self, fd.name, deserialize(cls._get_type_hints()[fd.name], serialized[fd.name]))
         return self
 
     @classmethod
@@ -156,7 +162,8 @@ class Deserializable(metaclass=ABCMeta):
 
 class DualSerializable(Serializable, Deserializable, metaclass=ABCMeta):
     """dataclass representation of the resources defined in Notion REST API.
-    interchangeable with JSON object."""
+    interchangeable with JSON object.
+    field with `init=False` are usually the case which not required from user-side but provided from server-side."""
     pass
 
 

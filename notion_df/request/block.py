@@ -5,8 +5,8 @@ from typing import Any
 
 from notion_df.core.request import SingleRequest, RequestSettings, Version, Method, PaginatedRequest
 from notion_df.object.block import BlockType, BlockResponse, serialize_partial_block_list
-from notion_df.object.common import UUID
 from notion_df.util.collection import DictFilter
+from notion_df.util.misc import UUID
 
 
 @dataclass

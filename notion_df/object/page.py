@@ -1,22 +1,23 @@
 from __future__ import annotations
 
-from _decimal import Decimal
 from abc import ABCMeta
-from dataclasses import dataclass, field, fields, Field
+from dataclasses import dataclass, field
 from datetime import datetime
 from functools import cache
-from typing import Any, Literal, Union, cast, final
+from typing import Any, Literal, Union, final, Optional
 
+from _decimal import Decimal
 from typing_extensions import Self
 
 from notion_df.core.request import Response
-from notion_df.object.common import UUID, DateRange, SelectOption, Icon, Properties, Property
+from notion_df.object.common import DateRange, SelectOption, Icon, Properties, Property
 from notion_df.object.constant import RollupFunction
 from notion_df.object.file import File, ExternalFile
 from notion_df.object.parent import ParentInfo
 from notion_df.object.rich_text import RichText
-from notion_df.object.user import User
+from notion_df.object.user import User, PartialUser
 from notion_df.util.collection import FinalClassDict
+from notion_df.util.misc import UUID
 
 page_property_registry: FinalClassDict[str, type[PageProperty]] = FinalClassDict()
 
@@ -27,11 +28,11 @@ class PageResponse(Response):
     parent: ParentInfo
     created_time: datetime
     last_edited_time: datetime
-    created_by: User
-    last_edited_by: User
+    created_by: PartialUser
+    last_edited_by: PartialUser
     archived: bool
-    icon: Icon
-    cover: ExternalFile
+    icon: Optional[Icon]
+    cover: Optional[ExternalFile]
     url: str
     properties: PageProperties
 
@@ -46,14 +47,16 @@ class PageProperty(Property, metaclass=ABCMeta):
 
     @classmethod
     @cache
-    def get_typename(cls) -> str:
+    def get_typename(cls) -> Optional[str]:
         """by default, return the first subclass-specific field's name.
         you should override this if the class definition does not comply the assumption."""
-        return cast(Field, fields(cls)[len(fields(PageProperty))]).name
+        for field_name in cls._get_type_hints():
+            if field_name in PageProperty._get_type_hints():
+                continue
+            return field_name
 
     def __init_subclass__(cls, **kwargs) -> None:
         super().__init_subclass__(**kwargs)
-        dataclass(cls)
         if typename := cls.get_typename():
             page_property_registry[typename] = cls
 
@@ -84,12 +87,12 @@ class CheckboxPageProperty(PageProperty):
 
 @dataclass
 class CreatedByPageProperty(PageProperty):
-    created_by: User
+    created_by: PartialUser
 
 
 @dataclass
 class LastEditedByPageProperty(PageProperty):
-    last_edited_by: User
+    last_edited_by: PartialUser
 
 
 @dataclass
@@ -142,7 +145,14 @@ class FormulaPageProperty(PageProperty):
         return 'formula'
 
     def serialize(self) -> Any:
-        return {'formula': {'type': self.value_type, self.value_type: self.value}}
+        return {'type': 'formula',
+                'formula': {'type': self.value_type, self.value_type: self.value}}
+
+    @classmethod
+    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
+        property_type = serialized['formula']
+        value_type = property_type['type']
+        return cls._deserialize_from_dict(serialized, value_type=value_type, value=property_type[value_type])
 
 
 @dataclass
@@ -158,20 +168,19 @@ class NumberPageProperty(PageProperty):
 @dataclass
 class RelationPageProperty(PageProperty):
     page_ids: list[UUID]
-    has_more: bool = field(init=False)
+    has_more: bool = field(init=False, default=None)
 
     @classmethod
     def get_typename(cls) -> str:
         return 'relation'
 
     def serialize(self) -> Any:
-        return {'relation': [{'id': page_id} for page_id in self.page_ids]}
+        return {'type': 'relation',
+                'relation': [{'id': page_id} for page_id in self.page_ids]}
 
     @classmethod
     def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
-        self = cls(page_ids=[UUID(page['id']) for page in serialized['relation']])
-        self.has_more = serialized['has_more']
-        return self
+        return cls._deserialize_from_dict(serialized, page_ids=[UUID(page['id']) for page in serialized['relation']])
 
 
 @dataclass
@@ -190,9 +199,10 @@ class RollupPageProperty(PageProperty):
 
     @classmethod
     def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
-        rollup = serialized['rollup']
-        value_type = rollup['type']
-        return cls(function=rollup['function'], value_type=value_type, value=rollup[value_type])
+        property_type = serialized['rollup']
+        value_type = property_type['type']
+        return cls._deserialize_from_dict(serialized, function=property_type['function'],
+                                          value_type=value_type, value=property_type[value_type])
 
 
 @dataclass

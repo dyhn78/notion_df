@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from typing import Any, Optional
 
 from notion_df.core.request import SingleRequest, RequestSettings, Version, Method, PaginatedRequest
-from notion_df.object.common import Icon, UUID
+from notion_df.object.common import Icon
 from notion_df.object.database import DatabaseResponse, DatabaseProperties
 from notion_df.object.file import ExternalFile
 from notion_df.object.filter import Filter
@@ -12,6 +12,7 @@ from notion_df.object.page import PageResponse
 from notion_df.object.rich_text import RichText
 from notion_df.object.sort import Sort
 from notion_df.util.collection import DictFilter
+from notion_df.util.misc import UUID
 
 
 @dataclass

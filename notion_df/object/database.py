@@ -3,19 +3,20 @@ from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any
+from typing import Any, Optional
 
 from typing_extensions import Self
 
 from notion_df.core.request import Response
 from notion_df.core.serialization import DualSerializable
-from notion_df.object.common import UUID, SelectOption, StatusGroups, Icon, Properties, Property
+from notion_df.object.common import SelectOption, StatusGroups, Icon, Properties, Property
 from notion_df.object.constant import NumberFormat, RollupFunction
 from notion_df.object.file import ExternalFile
 from notion_df.object.parent import ParentInfo
 from notion_df.object.rich_text import RichText
 from notion_df.util.collection import FinalClassDict
 from notion_df.util.exception import NotionDfValueError
+from notion_df.util.misc import UUID
 
 database_property_type_registry: FinalClassDict[str, type[DatabasePropertyType]] = FinalClassDict()
 
@@ -31,8 +32,8 @@ class DatabaseResponse(Response):
     parent: ParentInfo
     created_time: datetime
     last_edited_time: datetime
-    icon: Icon
-    cover: ExternalFile
+    icon: Optional[Icon]
+    cover: Optional[ExternalFile]
     url: str
     title: list[RichText]
     properties: DatabaseProperties

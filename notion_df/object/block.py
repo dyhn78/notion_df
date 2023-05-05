@@ -9,13 +9,14 @@ from typing_extensions import Self
 
 from notion_df.core.request import Response
 from notion_df.core.serialization import DualSerializable
-from notion_df.object.common import UUID, Icon
+from notion_df.object.common import Icon
 from notion_df.object.constant import BlockColor, CodeLanguage
 from notion_df.object.file import File
 from notion_df.object.parent import ParentInfo
 from notion_df.object.rich_text import RichText
-from notion_df.object.user import User
+from notion_df.object.user import PartialUser
 from notion_df.util.collection import FinalClassDict
+from notion_df.util.misc import UUID
 
 block_type_registry: FinalClassDict[str, type[BlockType]] = FinalClassDict()
 
@@ -26,8 +27,8 @@ class BlockResponse(Response):
     parent: ParentInfo
     created_time: datetime
     last_edited_time: datetime
-    created_by: User
-    last_edited_by: User
+    created_by: PartialUser
+    last_edited_by: PartialUser
     has_children: Optional[bool]
     """the None value never occurs from direct server response. It only happens from Page.as_block()"""
     archived: bool

@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, NewType, Iterable
+from typing import Any, Iterable
 from typing import Generic, Iterator, Optional, TypeVar
 
 from typing_extensions import Self
@@ -11,9 +11,8 @@ from typing_extensions import Self
 from notion_df.core.serialization import DualSerializable, serialize_datetime, deserialize_datetime
 from notion_df.object.constant import BlockColor, OptionColor
 from notion_df.util.exception import NotionDfKeyError
-from notion_df.util.misc import get_generic_element_type
+from notion_df.util.misc import get_generic_element_type, UUID
 
-UUID = NewType('UUID', str)
 _VT = TypeVar('_VT')
 
 
@@ -170,10 +169,10 @@ class DateRange(DualSerializable):
 @dataclass
 class SelectOption(DualSerializable):
     name: str
-    id: str = field(init=False)
+    id: str = field(init=False, default=None)
     """Identifier of the option, which does not change if the name is changed. 
     These are sometimes, but not always, UUIDs."""
-    color: OptionColor = field(init=False)
+    color: OptionColor = field(init=False, default=None)
 
     def serialize(self) -> dict[str, Any]:
         return self._serialize_as_dict()
@@ -186,10 +185,10 @@ class SelectOption(DualSerializable):
 @dataclass
 class StatusGroups(DualSerializable):
     name: str
-    id: str = field(init=False)
+    id: str = field(init=False, default=None)
     """Identifier of the option, which does not change if the name is changed. 
     These are sometimes, but not always, UUIDs."""
-    color: OptionColor = field(init=False)
+    color: OptionColor = field(init=False, default=None)
     option_ids: list[str] = field()
     """Sorted list of ids of all options that belong to a group."""
 

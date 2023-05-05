@@ -5,15 +5,29 @@ from typing import Any, final
 from typing_extensions import Self
 
 from notion_df.core.serialization import DualSerializable
-from notion_df.object.common import UUID
+from notion_df.util.misc import UUID
+
+
+@dataclass
+class PartialUser(DualSerializable):
+    id: UUID
+
+    def serialize(self) -> dict[str, Any]:
+        return {
+            'object': 'user',
+            'id': self.id
+        }
+
+    @classmethod
+    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
+        return cls(UUID(serialized['id']))
 
 
 @dataclass
 class User(DualSerializable, metaclass=ABCMeta):
-    """field with `init=False` are those not required from user-side but provided from server-side."""
     id: UUID
-    name: str = field(init=False)
-    avatar_url: str = field(init=False)
+    name: str = field(init=False, default=None)
+    avatar_url: str = field(init=False, default=None)
 
     @classmethod
     def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:

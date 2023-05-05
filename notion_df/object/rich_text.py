@@ -7,8 +7,9 @@ from typing import Optional, Any, Literal, final
 from typing_extensions import Self
 
 from notion_df.core.serialization import DualSerializable
-from notion_df.object.common import DateRange, UUID, Annotations
+from notion_df.object.common import DateRange, Annotations
 from notion_df.util.collection import FinalClassDict
+from notion_df.util.misc import UUID
 
 
 class RichText(DualSerializable, metaclass=ABCMeta):
@@ -83,8 +84,8 @@ class Text(RichText):
     * set `None` (the default value) to leave it unchanged.
     * set `Annotations()` to remove the annotations and make a plain text.
     """
-    plain_text: Optional[str] = field(init=False)
-    href: Optional[str] = field(init=False)
+    plain_text: Optional[str] = field(init=False, default=None)
+    href: Optional[str] = field(init=False, default=None)
 
     def _serialize_main(self) -> dict[str, Any]:
         return {
@@ -118,8 +119,8 @@ class Equation(RichText):
     * set `None` (the default value) to leave it unchanged.
     * set `Annotations()` to remove the annotations and make a plain text.
     """
-    plain_text: Optional[str] = field(init=False)
-    href: Optional[str] = field(init=False)
+    plain_text: Optional[str] = field(init=False, default=None)
+    href: Optional[str] = field(init=False, default=None)
 
     def _serialize_main(self) -> dict[str, Any]:
         return {
@@ -145,8 +146,8 @@ class UserMention(RichText):
     * set `None` (the default value) to leave it unchanged.
     * set `Annotations()` to remove the annotations and make a plain text.
     """
-    plain_text: Optional[str] = field(init=False)
-    href: Optional[str] = field(init=False)
+    plain_text: Optional[str] = field(init=False, default=None)
+    href: Optional[str] = field(init=False, default=None)
 
     def _serialize_main(self) -> dict[str, Any]:
         return {
@@ -178,8 +179,8 @@ class PageMention(RichText):
     * set `None` (the default value) to leave it unchanged.
     * set `Annotations()` to remove the annotations and make a plain text.
     """
-    plain_text: Optional[str] = field(init=False)
-    href: Optional[str] = field(init=False)
+    plain_text: Optional[str] = field(init=False, default=None)
+    href: Optional[str] = field(init=False, default=None)
 
     def _serialize_main(self) -> dict[str, Any]:
         return {
@@ -208,8 +209,8 @@ class DatabaseMention(RichText):
     * set `None` (the default value) to leave it unchanged.
     * set `Annotations()` to remove the annotations and make a plain text.
     """
-    plain_text: Optional[str] = field(init=False)
-    href: Optional[str] = field(init=False)
+    plain_text: Optional[str] = field(init=False, default=None)
+    href: Optional[str] = field(init=False, default=None)
 
     def _serialize_main(self) -> dict[str, Any]:
         return {
@@ -238,8 +239,8 @@ class DateMention(RichText):
     * set `None` (the default value) to leave it unchanged.
     * set `Annotations()` to remove the annotations and make a plain text.
     """
-    plain_text: Optional[str] = field(init=False)
-    href: Optional[str] = field(init=False)
+    plain_text: Optional[str] = field(init=False, default=None)
+    href: Optional[str] = field(init=False, default=None)
 
     def _serialize_main(self) -> dict[str, Any]:
         return {
@@ -268,8 +269,8 @@ class TemplateDateMention(RichText):
     * set `None` (the default value) to leave it unchanged.
     * set `Annotations()` to remove the annotations and make a plain text.
     """
-    plain_text: Optional[str] = field(init=False)
-    href: Optional[str] = field(init=False)
+    plain_text: Optional[str] = field(init=False, default=None)
+    href: Optional[str] = field(init=False, default=None)
 
     def _serialize_main(self) -> dict[str, Any]:
         return {
@@ -301,8 +302,8 @@ class TemplateUserMention(RichText):
     * set `None` (the default value) to leave it unchanged.
     * set `Annotations()` to remove the annotations and make a plain text.
     """
-    plain_text: Optional[str] = field(init=False)
-    href: Optional[str] = field(init=False)
+    plain_text: Optional[str] = field(init=False, default=None)
+    href: Optional[str] = field(init=False, default=None)
 
     def _serialize_main(self) -> dict[str, Any]:
         return {
@@ -335,8 +336,8 @@ class LinkPreviewMention(RichText):
     * set `None` (the default value) to leave it unchanged.
     * set `Annotations()` to remove the annotations and make a plain text.
     """
-    plain_text: Optional[str] = field(init=False)
-    href: Optional[str] = field(init=False)
+    plain_text: Optional[str] = field(init=False, default=None)
+    href: Optional[str] = field(init=False, default=None)
 
     def _serialize_main(self) -> dict[str, Any]:
         return {
