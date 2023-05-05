@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from typing import Any, Optional
+from uuid import UUID
 
 from notion_df.core.request import SingleRequest, RequestSettings, Version, Method, MAX_PAGE_SIZE, \
     PaginatedRequest, BaseRequest
@@ -11,7 +12,6 @@ from notion_df.object.file import ExternalFile
 from notion_df.object.page import PageProperty, page_property_registry, PageResponse, PageProperties
 from notion_df.object.parent import ParentInfo
 from notion_df.util.collection import DictFilter
-from notion_df.util.misc import UUID
 
 
 @dataclass

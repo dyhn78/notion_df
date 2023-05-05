@@ -1,11 +1,11 @@
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, field
 from typing import Any, final
+from uuid import UUID
 
 from typing_extensions import Self
 
 from notion_df.core.serialization import DualSerializable
-from notion_df.util.misc import UUID
 
 
 @dataclass

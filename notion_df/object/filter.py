@@ -5,34 +5,55 @@ from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
 from typing import Literal, TypeVar, Generic, Optional, Callable, overload, NewType
+from uuid import UUID
 
 from typing_extensions import Self
 
 from notion_df.core.serialization import Serializable, serialize
 from notion_df.object.constant import TimestampType
-from notion_df.util.misc import UUID
 
 _T = TypeVar('_T')
 FilterType = NewType('FilterType', dict)
+CompoundOperatorType = Literal['and', 'or']
+AggregateType = Literal['any', 'every', 'none']
 
 
 @dataclass
 class Filter(Serializable, metaclass=ABCMeta):
-    filter_type: dict
+    def __and__(self, other: Filter) -> CompoundFilter:
+        return self.__compound(other, 'and')
+
+    def __or__(self, other: Filter) -> CompoundFilter:
+        return self.__compound(other, 'or')
+
+    def __compound(self, other: Filter, operator: CompoundOperatorType) -> CompoundFilter:
+        if isinstance(self, CompoundFilter) and self.operator == operator:
+            if isinstance(other, CompoundFilter) and other.operator == operator:
+                return CompoundFilter(operator, self.elements + other.elements)
+            return CompoundFilter(operator, self.elements + [other])
+        if isinstance(other, CompoundFilter) and other.operator == operator:
+            return CompoundFilter(operator, [self] + other.elements)
+        return CompoundFilter(operator, [self, other])
 
 
 @dataclass
 class CompoundFilter(Filter):
-    operator: Literal['and', 'or']
+    operator: CompoundOperatorType
     elements: list[Filter]
 
     def serialize(self):
         return {self.operator: serialize(self.elements)}
 
 
+class FilterBuilder(metaclass=ABCMeta):
+    def __init__(self, init_filter: Callable[[FilterType], Filter]):
+        self.init_filter = init_filter
+
+
 @dataclass
 class PropertyFilter(Filter):
     # https://developers.notion.com/reference/post-database-query-filter
+    filter_type: FilterType
     property_name: str
     property_type: str
 
@@ -43,9 +64,13 @@ class PropertyFilter(Filter):
         }
 
 
+def get_property_filter_builder(property_name: str, property_type: str):
+    return FilterBuilder(lambda filter_type: PropertyFilter(filter_type, property_name, property_type))
+
+
 @dataclass
 class ArrayRollupFilter(PropertyFilter):
-    aggregate_type: Literal['any', 'every', 'none']
+    aggregate_type: AggregateType
 
     def serialize(self):
         return {
@@ -67,15 +92,25 @@ class ArrayRollupFilter(PropertyFilter):
         }
 
 
+def get_array_rollup_filter_builder(property_name: str, property_type: str, aggregate_type: AggregateType):
+    return FilterBuilder(lambda filter_type: ArrayRollupFilter(
+        filter_type, property_name, property_type, aggregate_type))
+
+
 @dataclass
 class TimestampFilter(Filter):
-    timestamp: TimestampType
+    filter_type: FilterType
+    timestamp_type: TimestampType
 
     def serialize(self):
         return {
-            "timestamp_type": self.timestamp,
-            self.timestamp: serialize(self.filter_type)
+            "timestamp_type": self.timestamp_type,
+            self.timestamp_type: serialize(self.filter_type)
         }
+
+
+def get_timestamp_filter_builder(timestamp_type: TimestampType):
+    return FilterBuilder(lambda filter_type: TimestampFilter(filter_type, timestamp_type))
 
 
 class FilterPredicate(Generic[_T]):
@@ -132,15 +167,6 @@ class UnaryFilterPredicate(FilterPredicate[_T]):
             return self
         name = self._owner_name_dict[owner]
         return lambda value: instance.init_filter(FilterType({name: value}))
-
-
-class FilterBuilder(metaclass=ABCMeta):
-    def __init__(self, init_filter: Callable[[FilterType], Filter]):
-        self.init_filter = init_filter
-        # TODO - implement from caller's side
-        #  - init_filter = lambda filter_type: PropertyFilter(filter_type, property_name, property_type)
-        #  - init_filter = lambda filter_type: ArrayRollupFilter(filter_type, property_name, property_type, aggregate_type)
-        #  - init_filter = lambda filter_type: TimestampFilter(filter_type, timestamp_type)
 
 
 class TextFilterBuilder(FilterBuilder):

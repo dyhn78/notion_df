@@ -1,7 +1,7 @@
 from pprint import pprint
+from uuid import UUID
 
 from notion_df.entity import Namespace, Page
-from notion_df.util.misc import UUID
 
 if __name__ == '__main__':
     namespace = Namespace()

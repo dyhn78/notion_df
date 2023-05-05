@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Any, Literal
+from uuid import UUID
 
 from typing_extensions import Self
 
 from notion_df.core.serialization import DualSerializable
-from notion_df.util.misc import UUID
 
 
 @dataclass

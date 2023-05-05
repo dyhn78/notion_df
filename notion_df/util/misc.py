@@ -3,7 +3,8 @@ from __future__ import annotations
 import inspect
 import re
 from itertools import chain
-from typing import Hashable, Any, Optional, Iterable, Iterator, TypeVar, get_args, cast, NewType
+from typing import Hashable, Any, Optional, Iterable, Iterator, TypeVar, get_args, cast
+from uuid import UUID
 
 from notion_df.util.exception import NotionDfValueError
 
@@ -44,12 +45,13 @@ def get_generic_element_type(cls: type, cast_type: Optional[Type_T] = None,
         return default_type
 
 
-UUID = NewType('UUID', str)
 uuid_pattern = re.compile(r'[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}', re.I)
 
 
-def get_id(id_or_url: str) -> UUID:
+def get_id(id_or_url: str | UUID) -> UUID:
     # Regular expression to match both dashed and no-dash UUIDs
+    if isinstance(id_or_url, UUID):
+        return id_or_url
     match = uuid_pattern.search(id_or_url)
     if match:
         return UUID(match.group(0))

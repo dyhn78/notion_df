@@ -5,6 +5,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from functools import cache
 from typing import Any, Literal, Union, final, Optional
+from uuid import UUID
 
 from _decimal import Decimal
 from typing_extensions import Self
@@ -17,7 +18,6 @@ from notion_df.object.parent import ParentInfo
 from notion_df.object.rich_text import RichText
 from notion_df.object.user import User, PartialUser
 from notion_df.util.collection import FinalClassDict
-from notion_df.util.misc import UUID
 
 page_property_registry: FinalClassDict[str, type[PageProperty]] = FinalClassDict()
 

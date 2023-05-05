@@ -4,6 +4,7 @@ from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Optional
+from uuid import UUID
 
 from typing_extensions import Self
 
@@ -16,7 +17,6 @@ from notion_df.object.parent import ParentInfo
 from notion_df.object.rich_text import RichText
 from notion_df.object.user import PartialUser
 from notion_df.util.collection import FinalClassDict
-from notion_df.util.misc import UUID
 
 block_type_registry: FinalClassDict[str, type[BlockType]] = FinalClassDict()
 

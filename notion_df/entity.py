@@ -243,9 +243,9 @@ class Namespace(MutableMapping[Namespace_KT, BaseBlock_T]):
     def _get_id(key: Namespace_KT) -> UUID:
         if isinstance(key, BaseBlock):
             return key.id
-        if isinstance(key, str):
+        if isinstance(key, UUID):
             return key
-        raise NotionDfKeyError(key)
+        raise NotionDfKeyError('bad id', {'key': key})
 
     def __getitem__(self, key: Namespace_KT) -> BaseBlock_T:
         return self.instances[self._get_id(key)]

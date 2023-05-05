@@ -38,7 +38,7 @@ class Properties(DualSerializable, Generic[Property_T]):
             self.add(prop)
 
     def serialize(self) -> dict[str, Property_T]:
-        return self.by_id
+        return self.by_name
 
     def __init_subclass__(cls, **kwargs):
         cls._property_type = get_generic_element_type(cls, cast_type=Property)
@@ -60,17 +60,13 @@ class Properties(DualSerializable, Generic[Property_T]):
 
     def __getitem__(self, key: str | UUID | Property_T) -> Property_T:
         # TODO
-        # if isinstance(key, UUID):
-        #     return self.by_id[key]
-        # if isinstance(key, str):
-        #     return self.by_name[key]
+        if isinstance(key, UUID):
+            return self.by_id[key]
         if isinstance(key, str):
-            if prop := self.by_id.get(UUID(key)):
-                return prop
             return self.by_name[key]
         if isinstance(key, Property):
             return self.by_id[key.id]
-        raise NotionDfKeyError(key)
+        raise NotionDfKeyError('bad key', {'key': key})
 
     def __delitem__(self, key: str | UUID | Property_T) -> None:
         self.pop(self[key])
