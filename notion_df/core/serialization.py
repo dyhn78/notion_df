@@ -10,6 +10,7 @@ from enum import Enum
 from functools import cache
 # noinspection PyUnresolvedReferences
 from typing import Any, get_origin, get_args, final, NewType, cast, get_type_hints, _GenericAlias, Union, Literal
+from uuid import UUID
 
 import dateutil.parser
 from typing_extensions import Self
@@ -54,6 +55,8 @@ def deserialize(typ: type, serialized: Any):
     if type(typ) == NewType:
         typ_origin = cast(NewType, typ).__supertype__
         return typ(deserialize(typ_origin, serialized))
+    if isinstance(typ, InitVar):  # TODO: is this really needed?
+        return deserialize(typ.type, serialized)
     if typ_origin == Literal:
         if serialized in typ_args:
             return serialized
@@ -95,10 +98,12 @@ def deserialize(typ: type, serialized: Any):
         except ValueError as e:
             err_vars.update(exception=e)
             raise NotionDfValueError('cannot deserialize', err_vars, linebreak=True)
+    if typ == UUID:
+        if isinstance(serialized, UUID):
+            return serialized
+        return UUID(serialized)
     if issubclass(typ, datetime):
         return deserialize_datetime(serialized)
-    if isinstance(typ, InitVar):  # TODO: is this really needed?
-        return deserialize(typ.type, serialized)
     raise NotionDfValueError('cannot deserialize: not supported class', err_vars, linebreak=True)
 
 

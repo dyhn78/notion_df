@@ -11,7 +11,7 @@ from _decimal import Decimal
 from typing_extensions import Self
 
 from notion_df.core.request import Response
-from notion_df.object.common import DateRange, SelectOption, Icon, Properties, Property
+from notion_df.object.common import DateRange, SelectOption, Icon, Properties, BaseProperty
 from notion_df.object.constant import RollupFunction
 from notion_df.object.file import File, ExternalFile
 from notion_df.object.parent import ParentInfo
@@ -42,14 +42,16 @@ class PageResponse(Response):
 
 
 @dataclass
-class PageProperty(Property, metaclass=ABCMeta):
+class PageProperty(BaseProperty, metaclass=ABCMeta):
     """https://developers.notion.com/reference/page-property-values"""
+    name: str = field(init=False, default=None)
 
     @classmethod
     @cache
     def get_typename(cls) -> Optional[str]:
         """by default, return the first subclass-specific field's name.
-        you should override this if the class definition does not comply the assumption."""
+        override this if the class definition does not comply the assumption."""
+        # Note: this works only because python3.7+ dictates that dictionary is ordered as input order.
         for field_name in cls._get_type_hints():
             if field_name in PageProperty._get_type_hints():
                 continue
@@ -60,13 +62,6 @@ class PageProperty(Property, metaclass=ABCMeta):
         if typename := cls.get_typename():
             page_property_registry[typename] = cls
 
-    def serialize(self) -> dict[str, Any]:
-        return self._serialize_as_dict()
-
-    @classmethod
-    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
-        return cls._deserialize_from_dict(serialized)
-
     @classmethod
     @final
     def deserialize(cls, serialized: dict[str, Any]) -> Self:
@@ -75,9 +70,23 @@ class PageProperty(Property, metaclass=ABCMeta):
             return subclass.deserialize(serialized)
         return cls._deserialize_this(serialized)
 
+    @classmethod
+    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
+        return cls._deserialize_from_dict(serialized)
+
+    def serialize(self) -> dict[str, Any]:
+        return self._serialize_as_dict()
+
 
 class PageProperties(Properties[PageProperty]):
-    pass
+    @classmethod
+    def _deserialize_this(cls, serialized: dict[str, dict[str, Any]]) -> Self:
+        properties = cls()
+        for prop_name, prop_serialized in serialized.items():
+            prop = cls._property_type.deserialize(prop_serialized)
+            prop.name = prop_name
+            properties.add(prop)
+        return properties
 
 
 @dataclass

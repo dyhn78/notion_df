@@ -1,19 +1,16 @@
 from __future__ import annotations
 
-from abc import ABCMeta, abstractmethod
+from abc import ABCMeta
 from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
-from typing import Literal, TypeVar, Generic, Optional, Callable, overload, NewType
+from typing import Literal, TypeVar, Callable, Union, Generic
 from uuid import UUID
-
-from typing_extensions import Self
 
 from notion_df.core.serialization import Serializable, serialize
 from notion_df.object.constant import TimestampType
 
 _T = TypeVar('_T')
-FilterType = NewType('FilterType', dict)
 CompoundOperatorType = Literal['and', 'or']
 AggregateType = Literal['any', 'every', 'none']
 
@@ -45,15 +42,21 @@ class CompoundFilter(Filter):
         return {self.operator: serialize(self.elements)}
 
 
-class FilterBuilder(metaclass=ABCMeta):
-    def __init__(self, init_filter: Callable[[FilterType], Filter]):
-        self.init_filter = init_filter
+Filter_T = TypeVar('Filter_T', bound=Filter)
+
+
+class FilterPredicate(Generic[Filter_T], metaclass=ABCMeta):
+    def __init__(self, filter_builder: Callable[[dict], Filter_T]):
+        self._init_filter = filter_builder
+
+
+FilterPredicate_T = TypeVar('FilterPredicate_T', bound=FilterPredicate)
 
 
 @dataclass
 class PropertyFilter(Filter):
     # https://developers.notion.com/reference/post-database-query-filter
-    filter_type: FilterType
+    filter_type: dict
     property_name: str
     property_type: str
 
@@ -62,10 +65,6 @@ class PropertyFilter(Filter):
             "property": self.property_name,
             self.property_type: serialize(self.filter_type)
         }
-
-
-def get_property_filter_builder(property_name: str, property_type: str):
-    return FilterBuilder(lambda filter_type: PropertyFilter(filter_type, property_name, property_type))
 
 
 @dataclass
@@ -92,14 +91,14 @@ class ArrayRollupFilter(PropertyFilter):
         }
 
 
-def get_array_rollup_filter_builder(property_name: str, property_type: str, aggregate_type: AggregateType):
-    return FilterBuilder(lambda filter_type: ArrayRollupFilter(
+def get_array_rollup_filter_predicate(property_name: str, property_type: str, aggregate_type: AggregateType):
+    return FilterPredicate(lambda filter_type: ArrayRollupFilter(
         filter_type, property_name, property_type, aggregate_type))
 
 
 @dataclass
 class TimestampFilter(Filter):
-    filter_type: FilterType
+    filter_type: dict
     timestamp_type: TimestampType
 
     def serialize(self):
@@ -109,146 +108,188 @@ class TimestampFilter(Filter):
         }
 
 
-def get_timestamp_filter_builder(timestamp_type: TimestampType):
-    return FilterBuilder(lambda filter_type: TimestampFilter(filter_type, timestamp_type))
+def get_timestamp_filter_predicate(timestamp_type: TimestampType):
+    return FilterPredicate(lambda filter_type: TimestampFilter(filter_type, timestamp_type))
 
 
-class FilterPredicate(Generic[_T]):
-    def __init__(self):
-        self._owner_name_dict: dict[type[FilterBuilder], str] = {}
-
-    def __set_name__(self, owner: type[FilterBuilder], name: str):
-        self._owner_name_dict[owner] = name
-
-    @overload
-    def __get__(self, instance: None, owner: type[FilterBuilder]) -> Self:
-        pass
-
-    @overload
-    def __get__(self, instance: FilterBuilder, owner: type[FilterBuilder]) -> Callable[..., Filter]:
-        pass
-
-    @abstractmethod
-    def __get__(self, instance: Optional[FilterBuilder], owner: type[FilterBuilder]) -> Callable[..., Filter] | Self:
-        pass
-
-
-class NullaryFilterPredicate(FilterPredicate[_T]):
-    def __init__(self, value: _T):
-        super().__init__()
-        self.value = value
-
-    @overload
-    def __get__(self, instance: None, owner: type[FilterBuilder]) -> Self:
-        pass
-
-    @overload
-    def __get__(self, instance: FilterBuilder, owner: type[FilterBuilder]) -> Callable[[], Filter]:
-        pass
-
-    def __get__(self, instance: Optional[FilterBuilder], owner: type[FilterBuilder]) -> Callable[[], Filter] | Self:
-        if instance is None:
-            return self
-        name = self._owner_name_dict[owner]
-        return lambda: instance.init_filter(FilterType({name: self.value}))
-
-
-class UnaryFilterPredicate(FilterPredicate[_T]):
-    @overload
-    def __get__(self, instance: None, owner: type[FilterBuilder]) -> Self:
-        pass
-
-    @overload
-    def __get__(self, instance: FilterBuilder, owner: type[FilterBuilder]) -> Callable[[_T], Filter]:
-        pass
-
-    def __get__(self, instance: Optional[FilterBuilder], owner: type[FilterBuilder]) -> Callable[[_T], Filter] | Self:
-        if instance is None:
-            return self
-        name = self._owner_name_dict[owner]
-        return lambda value: instance.init_filter(FilterType({name: value}))
-
-
-class TextFilterBuilder(FilterBuilder):
+class TextFilterPredicate(FilterPredicate[Filter_T]):
     """eligible property types: ["title", "rich_text", "url", "email", and "phone_number"]"""
-    equals = UnaryFilterPredicate[str]()
-    does_not_equal = UnaryFilterPredicate[str]()
-    contains = UnaryFilterPredicate[str]()
-    does_not_contain = UnaryFilterPredicate[str]()
-    starts_with = UnaryFilterPredicate[str]()
-    ends_with = UnaryFilterPredicate[str]()
-    is_empty = NullaryFilterPredicate(True)
-    is_not_empty = NullaryFilterPredicate(True)
+
+    def equals(self, value: str) -> Filter_T:
+        return self._init_filter({'equals': value})
+
+    def does_not_equal(self, value: str) -> Filter_T:
+        return self._init_filter({'does_not_equal': value})
+
+    def contains(self, value: str) -> Filter_T:
+        return self._init_filter({'contains': value})
+
+    def does_not_contain(self, value: str) -> Filter_T:
+        return self._init_filter({'does_not_contain': value})
+
+    def starts_with(self, value: str) -> Filter_T:
+        return self._init_filter({'starts_with': value})
+
+    def ends_with(self, value: str) -> Filter_T:
+        return self._init_filter({'ends_with': value})
+
+    def is_empty(self) -> Filter_T:
+        return self._init_filter({'is_empty': True})
+
+    def is_not_empty(self) -> Filter_T:
+        return self._init_filter({'is_not_empty': True})
 
 
-class NumberFilterBuilder(FilterBuilder):
-    """eligible property types: ['number]"""
-    equals = UnaryFilterPredicate[int | Decimal]()
-    does_not_equal = UnaryFilterPredicate[int | Decimal]()
-    greater_than = UnaryFilterPredicate[int | Decimal]()
-    less_than = UnaryFilterPredicate[int | Decimal]()
-    greater_than_or_equal_to = UnaryFilterPredicate[int | Decimal]()
-    less_than_or_equal_to = UnaryFilterPredicate[int | Decimal]()
-    is_empty = NullaryFilterPredicate(True)
-    is_not_empty = NullaryFilterPredicate(True)
+class NumberFilterPredicate(FilterPredicate[Filter_T]):
+    """eligible property types: ['number']"""
+
+    def equals(self, value: Union[int, Decimal]) -> Filter_T:
+        return self._init_filter({'equals': value})
+
+    def does_not_equal(self, value: Union[int, Decimal]) -> Filter_T:
+        return self._init_filter({'does_not_equal': value})
+
+    def greater_than(self, value: Union[int, Decimal]) -> Filter_T:
+        return self._init_filter({'greater_than': value})
+
+    def less_than(self, value: Union[int, Decimal]) -> Filter_T:
+        return self._init_filter({'less_than': value})
+
+    def greater_than_or_equal_to(self, value: Union[int, Decimal]) -> Filter_T:
+        return self._init_filter({'greater_than_or_equal_to': value})
+
+    def less_than_or_equal_to(self, value: Union[int, Decimal]) -> Filter_T:
+        return self._init_filter({'less_than_or_equal_to': value})
+
+    def is_empty(self) -> Filter_T:
+        return self._init_filter({'is_empty': True})
+
+    def is_not_empty(self) -> Filter_T:
+        return self._init_filter({'is_not_empty': True})
 
 
-class CheckboxFilterBuilder(FilterBuilder):
+class CheckboxFilterPredicate(FilterPredicate[Filter_T]):
     """eligible property types: ['checkbox']"""
-    is_empty = NullaryFilterPredicate(True)
-    is_not_empty = NullaryFilterPredicate(True)
+
+    def is_empty(self) -> Filter_T:
+        return self._init_filter({'is_empty': True})
+
+    def is_not_empty(self) -> Filter_T:
+        return self._init_filter({'is_not_empty': True})
 
 
-class SelectFilterBuilder(FilterBuilder):
+class SelectFilterPredicate(FilterPredicate[Filter_T]):
     """eligible property types: ['select', 'status']"""
-    equals = UnaryFilterPredicate[str]()
-    does_not_equal = UnaryFilterPredicate[str]()
-    is_empty = NullaryFilterPredicate(True)
-    is_not_empty = NullaryFilterPredicate(True)
+
+    def equals(self, value: str) -> Filter_T:
+        return self._init_filter({'equals': value})
+
+    def does_not_equal(self, value: str) -> Filter_T:
+        return self._init_filter({'does_not_equal': value})
+
+    def is_empty(self) -> Filter_T:
+        return self._init_filter({'is_empty': True})
+
+    def is_not_empty(self) -> Filter_T:
+        return self._init_filter({'is_not_empty': True})
 
 
-class MultiSelectFilterBuilder(FilterBuilder):
+class MultiSelectFilterPredicate(FilterPredicate[Filter_T]):
     """eligible property types: ['multi_select']"""
-    contains = UnaryFilterPredicate[str]()
-    does_not_contain = UnaryFilterPredicate[str]()
-    is_empty = NullaryFilterPredicate(True)
-    is_not_empty = NullaryFilterPredicate(True)
+
+    def contains(self, value: str) -> Filter_T:
+        return self._init_filter({'contains': value})
+
+    def does_not_contain(self, value: str) -> Filter_T:
+        return self._init_filter({'does_not_contain': value})
+
+    def is_empty(self) -> Filter_T:
+        return self._init_filter({'is_empty': True})
+
+    def is_not_empty(self) -> Filter_T:
+        return self._init_filter({'is_not_empty': True})
 
 
-class DateFilterBuilder(FilterBuilder):
+class DateFilterPredicate(FilterPredicate[Filter_T]):
     """eligible property types: ["date", "created_time", "last_edited_time"]"""
-    equals = UnaryFilterPredicate[datetime]()
-    before = UnaryFilterPredicate[datetime]()
-    after = UnaryFilterPredicate[datetime]()
-    on_or_before = UnaryFilterPredicate[datetime]()
-    on_or_after = UnaryFilterPredicate[datetime]()
-    is_empty = NullaryFilterPredicate(True)
-    is_not_empty = NullaryFilterPredicate(True)
-    past_week = NullaryFilterPredicate({})
-    past_month = NullaryFilterPredicate({})
-    past_year = NullaryFilterPredicate({})
-    next_week = NullaryFilterPredicate({})
-    next_month = NullaryFilterPredicate({})
-    next_year = NullaryFilterPredicate({})
+
+    def equals(self, value: datetime) -> Filter_T:
+        return self._init_filter({'equals': value})
+
+    def before(self, value: datetime) -> Filter_T:
+        return self._init_filter({'before': value})
+
+    def after(self, value: datetime) -> Filter_T:
+        return self._init_filter({'after': value})
+
+    def on_or_before(self, value: datetime) -> Filter_T:
+        return self._init_filter({'on_or_before': value})
+
+    def on_or_after(self, value: datetime) -> Filter_T:
+        return self._init_filter({'on_or_after': value})
+
+    def is_empty(self) -> Filter_T:
+        return self._init_filter({'is_empty': True})
+
+    def is_not_empty(self) -> Filter_T:
+        return self._init_filter({'is_not_empty': True})
+
+    def past_week(self) -> Filter_T:
+        return self._init_filter({'past_week': {}})
+
+    def past_month(self) -> Filter_T:
+        return self._init_filter({'past_month': {}})
+
+    def past_year(self) -> Filter_T:
+        return self._init_filter({'past_year': {}})
+
+    def next_week(self) -> Filter_T:
+        return self._init_filter({'next_week': {}})
+
+    def next_month(self) -> Filter_T:
+        return self._init_filter({'next_month': {}})
+
+    def next_year(self) -> Filter_T:
+        return self._init_filter({'next_year': {}})
 
 
-class PeopleFilterBuilder(FilterBuilder):
+class PeopleFilterPredicate(FilterPredicate[Filter_T]):
     """eligible property types: ["people", "created_by", and "last_edited_by"]"""
-    contains = UnaryFilterPredicate[str]()
-    does_not_contain = UnaryFilterPredicate[str]()
-    is_empty = NullaryFilterPredicate(True)
-    is_not_empty = NullaryFilterPredicate(True)
+
+    def contains(self, value: str) -> Filter_T:
+        return self._init_filter({'contains': value})
+
+    def does_not_contain(self, value: str) -> Filter_T:
+        return self._init_filter({'does_not_contain': value})
+
+    def is_empty(self) -> Filter_T:
+        return self._init_filter({'is_empty': True})
+
+    def is_not_empty(self) -> Filter_T:
+        return self._init_filter({'is_not_empty': True})
 
 
-class FilesFilterBuilder(FilterBuilder):
+class FilesFilterPredicate(FilterPredicate[Filter_T]):
     """eligible property types: ['files']"""
-    is_empty = NullaryFilterPredicate(True)
-    is_not_empty = NullaryFilterPredicate(True)
+
+    def is_empty(self) -> Filter_T:
+        return self._init_filter({'is_empty': True})
+
+    def is_not_empty(self) -> Filter_T:
+        return self._init_filter({'is_not_empty': True})
 
 
-class RelationFilterBuilder(FilterBuilder):
+class RelationFilterPredicate(FilterPredicate[Filter_T]):
     """eligible property types: ['relation']"""
-    contains = UnaryFilterPredicate[UUID]()
-    does_not_contain = UnaryFilterPredicate[UUID]()
-    is_empty = NullaryFilterPredicate(True)
-    is_not_empty = NullaryFilterPredicate(True)
+
+    def contains(self, value: UUID) -> Filter_T:
+        return self._init_filter({'contains': value})
+
+    def does_not_contain(self, value: UUID) -> Filter_T:
+        return self._init_filter({'does_not_contain': value})
+
+    def is_empty(self) -> Filter_T:
+        return self._init_filter({'is_empty': True})
+
+    def is_not_empty(self) -> Filter_T:
+        return self._init_filter({'is_not_empty': True})

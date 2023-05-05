@@ -1,16 +1,16 @@
 from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, fields
 from datetime import datetime
-from typing import Any, Optional
+from functools import cache
+from typing import Any, Optional, final
 from uuid import UUID
 
 from typing_extensions import Self
 
 from notion_df.core.request import Response
-from notion_df.core.serialization import DualSerializable
-from notion_df.object.common import SelectOption, StatusGroups, Icon, Properties, Property
+from notion_df.object.common import SelectOption, StatusGroups, Icon, Properties, BaseProperty
 from notion_df.object.constant import NumberFormat, RollupFunction
 from notion_df.object.file import ExternalFile
 from notion_df.object.parent import ParentInfo
@@ -18,16 +18,11 @@ from notion_df.object.rich_text import RichText
 from notion_df.util.collection import FinalClassDict
 from notion_df.util.exception import NotionDfValueError
 
-database_property_type_registry: FinalClassDict[str, type[DatabasePropertyType]] = FinalClassDict()
+database_property_registry: FinalClassDict[str, type[DatabaseProperty]] = FinalClassDict()
 
 
 @dataclass
 class DatabaseResponse(Response):
-    # TODO: configure Property -> DatabaseProperty 1:1 mapping, from Property's side.
-    #  access this mapping from Property (NOT DatabaseResponse), the base class.
-    #  Property.from_schema(schema: DatabaseProperty) -> Property
-    #  then, make Page or Database utilize it,
-    #  so that they could autoconfigure itself and its children with the retrieved data.
     id: UUID
     parent: ParentInfo
     created_time: datetime
@@ -46,60 +41,59 @@ class DatabaseResponse(Response):
 
 
 @dataclass
-class DatabaseProperty(Property):
-    """
-    represents two types of data structure.
-
-    - partial property schema - user side
-    - property schema - server side
-
-    property schema has additional fields, `name` and `id`. these are hidden from __init__() to prevent confusion.
-
-    - https://developers.notion.com/reference/property-schema-object
-    - https://developers.notion.com/reference/update-property-schema-object
-    """
+class DatabaseProperty(BaseProperty, metaclass=ABCMeta):
+    """https://developers.notion.com/reference/property-object"""
     type: str
-    property_type: DatabasePropertyType
+    name: str = field(init=True)
 
+    @classmethod
+    @abstractmethod
+    def _eligible_property_types(cls) -> list[str]:
+        pass
+
+    @classmethod
+    @cache
+    def _get_type_specific_fields(cls) -> set[str]:
+        return {fd.name for fd in fields(cls) if fd.name not in DatabaseProperty._get_type_hints()}
+
+    def __init_subclass__(cls, **kwargs) -> None:
+        super().__init_subclass__(**kwargs)
+        if cls._eligible_property_types():
+            for property_type in cls._eligible_property_types():
+                database_property_registry[property_type] = cls
+
+    @classmethod
+    def deserialize(cls, serialized: dict[str, Any]) -> Self:
+        if cls == DatabaseProperty:
+            typename = serialized['type']
+            subclass = database_property_registry[typename]
+            return subclass.deserialize(serialized)
+        return cls._deserialize_this(serialized)
+
+    @final
     def serialize(self) -> dict[str, Any]:
         return {
             "type": self.type,
-            self.type: self.property_type.serialize()
+            self.type: self._serialize_type_object()
         }
+
+    def _serialize_type_object(self) -> dict[str, Any]:
+        return {fd_name: fd_value for fd_name, fd_value in self._serialize_as_dict().items()
+                if fd_name in self._get_type_specific_fields()}
 
     @classmethod
     def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
-        typename = serialized['type']
-        property_type_cls = database_property_type_registry[typename]
-        property_type = property_type_cls.deserialize(serialized[typename])
-        return cls._deserialize_from_dict(serialized, property_type=property_type)
+        type_object = serialized[serialized['type']]
+        return cls._deserialize_from_dict(serialized, **{
+            fd_name: type_object[fd_name] for fd_name in cls._get_type_specific_fields()})
 
 
 class DatabaseProperties(Properties[DatabaseProperty]):
     pass
 
 
-class DatabasePropertyType(DualSerializable, metaclass=ABCMeta):
-    @classmethod
-    @abstractmethod
-    def _eligible_property_types(cls) -> list[str]:
-        pass
-
-    def __init_subclass__(cls, **kwargs) -> None:
-        super().__init_subclass__(**kwargs)
-        for property_type in cls._eligible_property_types():
-            database_property_type_registry[property_type] = cls
-
-    def serialize(self) -> dict[str, Any]:
-        return self._serialize_as_dict()
-
-    @classmethod
-    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
-        return cls._deserialize_from_dict(serialized)
-
-
 @dataclass
-class PlainDatabaseProperty(DatabasePropertyType):
+class PlainDatabaseProperty(DatabaseProperty):
     @classmethod
     def _eligible_property_types(cls) -> list[str]:
         return ["title", "rich_text", "date", "people", "files", "checkbox", "url",
@@ -107,7 +101,7 @@ class PlainDatabaseProperty(DatabasePropertyType):
 
 
 @dataclass
-class NumberDatabasePropertyType(DatabasePropertyType):
+class NumberDatabaseProperty(DatabaseProperty):
     format: NumberFormat
 
     @classmethod
@@ -116,7 +110,7 @@ class NumberDatabasePropertyType(DatabasePropertyType):
 
 
 @dataclass
-class SelectDatabasePropertyType(DatabasePropertyType):
+class SelectDatabaseProperty(DatabaseProperty):
     options: list[SelectOption]
 
     @classmethod
@@ -125,7 +119,7 @@ class SelectDatabasePropertyType(DatabasePropertyType):
 
 
 @dataclass
-class StatusDatabasePropertyType(DatabasePropertyType):
+class StatusDatabaseProperty(DatabaseProperty):
     options: list[SelectOption]
     groups: list[StatusGroups]
 
@@ -135,7 +129,7 @@ class StatusDatabasePropertyType(DatabasePropertyType):
 
 
 @dataclass
-class FormulaDatabasePropertyType(DatabasePropertyType):
+class FormulaDatabaseProperty(DatabaseProperty):
     # TODO
     expression: str = field()
     r'''example value: "if(prop(\"In stock\"), 0, prop(\"Price\"))"'''
@@ -146,7 +140,7 @@ class FormulaDatabasePropertyType(DatabasePropertyType):
 
 
 @dataclass
-class RelationDatabasePropertyType(DatabasePropertyType, metaclass=ABCMeta):
+class RelationDatabaseProperty(DatabaseProperty, metaclass=ABCMeta):
     database_id: UUID
 
     @classmethod
@@ -159,13 +153,13 @@ class RelationDatabasePropertyType(DatabasePropertyType, metaclass=ABCMeta):
 
     @classmethod
     def deserialize(cls, serialized: dict[str, Any]) -> Self:
-        if cls != RelationDatabasePropertyType:
+        if cls != RelationDatabaseProperty:
             return cls._deserialize_this(serialized)
-        match (relation_type := serialized['type']):
+        match (relation_type := serialized['relation']['type']):
             case 'single_property':
-                subclass = SingleRelationPropertyType
+                subclass = SingleRelationProperty
             case 'dual_property':
-                subclass = DualRelationPropertyType
+                subclass = DualRelationProperty
             case _:
                 raise NotionDfValueError('invalid relation_type',
                                          {'relation_type': relation_type, 'serialized': serialized})
@@ -173,39 +167,43 @@ class RelationDatabasePropertyType(DatabasePropertyType, metaclass=ABCMeta):
 
 
 @dataclass
-class SingleRelationPropertyType(RelationDatabasePropertyType):
-    # TODO: double check
+class SingleRelationProperty(RelationDatabaseProperty):
     database_id: UUID
 
-    def serialize(self) -> dict[str, Any]:
+    def _serialize_type_object(self) -> dict[str, Any]:
         return super().serialize() | {
+            'database_id': self.database_id,
             'type': 'single_property',
             'single_property': {}
         }
 
 
 @dataclass
-class DualRelationPropertyType(RelationDatabasePropertyType):
-    # TODO: double check
+class DualRelationProperty(RelationDatabaseProperty):
     database_id: UUID
     synced_property_name: str
     synced_property_id: str
 
-    def serialize(self) -> dict[str, Any]:
-        return super().serialize() | {
+    def _serialize_type_object(self) -> dict[str, Any]:
+        return {
+            'database_id': self.database_id,
             'type': 'dual_property',
-            'dual_property': {},
+            'dual_property': {'synced_property_name': self.synced_property_name,
+                              'synced_property_id': self.synced_property_id}
         }
 
     @classmethod
     def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
-        return cls(serialized['database_id'],
-                   serialized['dual_property']['synced_property_name'],
-                   serialized['dual_property']['synced_property_id'])
+        return cls._deserialize_from_dict(
+            serialized,
+            database_id=serialized['relation']['database_id'],
+            synced_property_name=serialized['relation']['dual_property']['synced_property_name'],
+            synced_property_id=serialized['relation']['dual_property']['synced_property_id']
+        )
 
 
 @dataclass
-class RollupDatabasePropertyType(DatabasePropertyType):
+class RollupDatabaseProperty(DatabaseProperty):
     # TODO: double check
     function: RollupFunction
     relation_property_name: str

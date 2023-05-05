@@ -65,6 +65,8 @@ class BaseBlock(Generic[Response_T]):
                 return Database(self.namespace, parent.id)
             case 'page_id':
                 return Page(self.namespace, parent.id)
+            case 'workspace':
+                return None
 
 
 BaseBlock_T = TypeVar('BaseBlock_T', bound=BaseBlock)
@@ -263,13 +265,13 @@ class Namespace(MutableMapping[Namespace_KT, BaseBlock_T]):
         return iter(self.instances)
 
     # noinspection PyShadowingBuiltins
-    def block(self, id: UUID, cls: type[Block_T] = Block) -> Block_T:
-        return cls(self, id)
+    def block(self, id_or_url: UUID | str, cls: type[Block_T] = Block) -> Block_T:
+        return cls(self, id_or_url)
 
     # noinspection PyShadowingBuiltins
-    def database(self, id: UUID, cls: type[Database_T] = Database) -> Database_T:
-        return cls(self, id)
+    def database(self, id_or_url: UUID | str, cls: type[Database_T] = Database) -> Database_T:
+        return cls(self, id_or_url)
 
     # noinspection PyShadowingBuiltins
-    def page(self, id: UUID, cls: type[Page_T] = Page) -> Page_T:
-        return cls(self, id)
+    def page(self, id_or_url: UUID | str, cls: type[Page_T] = Page) -> Page_T:
+        return cls(self, id_or_url)
