@@ -15,7 +15,7 @@ from uuid import UUID
 import dateutil.parser
 from typing_extensions import Self
 
-from notion_df.util.exception import NotionDfValueError, NotionDfNotImplementedError
+from notion_df.util.exception import NotionDfValueError, NotionDfNotImplementedError, NotionDfTypeError
 from notion_df.variable import Variables
 
 
@@ -119,12 +119,11 @@ class Serializable(metaclass=ABCMeta):
     def _serialize_as_dict(self, **overrides: Any) -> dict[str, Any]:
         """helper method to implement serialize().
         Note: this drops post-init fields."""
-        serialized = {}
+        serialized = overrides
         for fd in fields(self):
             if not fd.init:
                 continue
-            fd_value = overrides.get(fd.name, getattr(self, fd.name))
-            serialized[fd.name] = serialize(fd_value)
+            serialized.setdefault(fd.name, getattr(self, fd.name))
         return serialized
 
 
@@ -148,6 +147,9 @@ class Deserializable(metaclass=ABCMeta):
     def _deserialize_from_dict(cls, serialized: dict[str, Any], **overrides: Any) -> Self:
         """helper method to implement _deserialize_this().
         Note: this collects post-init fields as well."""
+        if inspect.isabstract(cls):
+            raise NotionDfTypeError('cannot instantiate abstract class', {'cls': cls, 'serialized': serialized})
+
         serialized.update(overrides)
         init_params = {}
         for fd in fields(cls):

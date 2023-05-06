@@ -6,17 +6,18 @@ from typing import Optional, TypeVar, Union, Generic, Iterator, final, Final
 
 from typing_extensions import Self
 
-from notion_df.core.request import Response_T
 from notion_df.object.block import BlockType, BlockResponse, ChildPageBlockType
 from notion_df.object.common import Icon
-from notion_df.object.database import DatabaseResponse, DatabaseProperties
+from notion_df.object.database import DatabaseResponse
 from notion_df.object.file import ExternalFile, File
 from notion_df.object.filter import Filter
-from notion_df.object.page import PageResponse, PageProperty, PageProperties
+from notion_df.object.page import PageResponse
 from notion_df.object.parent import ParentInfo
+from notion_df.object.property import DatabaseProperties, PagePropertyType, PageProperties
 from notion_df.object.rich_text import RichText
 from notion_df.object.sort import Sort
 from notion_df.request.block import AppendBlockChildren, RetrieveBlock, RetrieveBlockChildren, UpdateBlock, DeleteBlock
+from notion_df.request.core import Response_T
 from notion_df.request.database import CreateDatabase, UpdateDatabase, RetrieveDatabase, QueryDatabase
 from notion_df.request.page import CreatePage, UpdatePage, RetrievePage, RetrievePagePropertyItem
 from notion_df.util.exception import NotionDfKeyError
@@ -31,9 +32,9 @@ class BaseBlock(Generic[Response_T]):
         id = get_id(id_or_url) if isinstance(id_or_url, str) else id_or_url
         if id in namespace:
             return namespace[id]
-        instance = super().__new__(cls)
-        namespace[id] = instance
-        return instance
+        self = super().__new__(cls)
+        namespace[id] = self
+        return self
 
     def __init__(self, namespace: Namespace, id_or_url: Union[UUID, str]):
         if hasattr(self, '_initialized'):
@@ -190,8 +191,8 @@ class Page(BaseBlock[PageResponse]):
         self.last_response = RetrievePage(self.token, self.id).execute()
         return self.last_response
 
-    def retrieve_property_item(self, prop_id: UUID | PageProperty, page_size: int = -1) -> PageProperty:
-        if isinstance(prop_id, PageProperty):
+    def retrieve_property_item(self, prop_id: UUID | PagePropertyType, page_size: int = -1) -> PagePropertyType:
+        if isinstance(prop_id, PagePropertyType):
             prop_id = prop_id.id
         page_property = RetrievePagePropertyItem(self.token, self.id, prop_id, page_size).execute()
         return page_property

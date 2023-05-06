@@ -7,9 +7,9 @@ from typing import TypeVar, Generic, ClassVar, Any, final, Optional
 
 import requests
 
-from notion_df.core.serialization import DualSerializable, deserialize, serialize, Deserializable
 from notion_df.util.collection import StrEnum
-from notion_df.util.misc import get_generic_element_type
+from notion_df.util.misc import get_generic_arg
+from notion_df.util.serialization import DualSerializable, deserialize, serialize, Deserializable
 
 MAX_PAGE_SIZE = 100
 
@@ -32,7 +32,9 @@ class BaseRequest(Generic[Response_T], metaclass=ABCMeta):
     return_type: ClassVar[type[Response]]
 
     def __init_subclass__(cls, **kwargs):
-        cls.return_type = get_generic_element_type(cls, type[Response])
+        if hasattr(cls, 'return_type'):
+            return
+        cls.return_type = get_generic_arg(cls, Response)
 
     @abstractmethod
     def get_settings(self) -> RequestSettings:

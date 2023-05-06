@@ -4,7 +4,7 @@ from typing import Literal
 
 from notion_df.util.collection import StrEnum
 
-TimestampType = Literal['created_time', 'last_edited_time']
+TimestampName = Literal['created_time', 'last_edited_time']
 
 
 class BlockColor(StrEnum):

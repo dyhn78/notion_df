@@ -4,13 +4,14 @@ from dataclasses import dataclass, field
 from typing import Any, Optional
 from uuid import UUID
 
-from notion_df.core.request import SingleRequest, RequestSettings, Version, Method, MAX_PAGE_SIZE, \
-    PaginatedRequest, BaseRequest
 from notion_df.object.block import BlockType, serialize_partial_block_list
-from notion_df.object.common import Icon, Properties
+from notion_df.object.common import Icon
 from notion_df.object.file import ExternalFile
-from notion_df.object.page import PageProperty, page_property_registry, PageResponse, PageProperties
+from notion_df.object.page import PageResponse
 from notion_df.object.parent import ParentInfo
+from notion_df.object.property import Properties, page_property_type_registry, PagePropertyType, PageProperties
+from notion_df.request.core import SingleRequest, RequestSettings, Version, Method, MAX_PAGE_SIZE, \
+    PaginatedRequest, BaseRequest
 from notion_df.util.collection import DictFilter
 
 
@@ -74,7 +75,7 @@ class UpdatePage(SingleRequest[PageResponse]):
 
 
 @dataclass
-class RetrievePagePropertyItem(BaseRequest[PageProperty]):
+class RetrievePagePropertyItem(BaseRequest[PagePropertyType]):
     """https://developers.notion.com/reference/retrieve-a-page-property"""
     page_id: UUID
     property_id: UUID
@@ -89,7 +90,7 @@ class RetrievePagePropertyItem(BaseRequest[PageProperty]):
 
     request_once = PaginatedRequest.request_once
 
-    def execute(self) -> PageProperty:
+    def execute(self) -> PagePropertyType:
         # TODO: deduplicate with PaginatedRequest.execute() if possible.
         page_size_total = self.page_size
         if page_size_total == -1:
@@ -99,7 +100,7 @@ class RetrievePagePropertyItem(BaseRequest[PageProperty]):
 
         data = self.request_once(page_size, None)
         if data['object'] == 'property_item':
-            return PageProperty.deserialize(data)
+            return PagePropertyType.deserialize(data)
 
         data_list = []
         while page_size_retrieved < page_size_total and data['has_more']:
@@ -111,7 +112,7 @@ class RetrievePagePropertyItem(BaseRequest[PageProperty]):
             data_list.append(data)
 
         typename = data_list[0]['property_item']['type']
-        subclass = page_property_registry[typename]
+        subclass = page_property_type_registry[typename]
         value_list = [data['result'][typename] for data in data_list]
         merged_response = data_list[0]['result'] | {typename: value_list}
         return subclass.deserialize(merged_response)

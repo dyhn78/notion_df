@@ -2,8 +2,8 @@ from abc import ABCMeta
 from dataclasses import dataclass
 from typing import Literal, Any
 
-from notion_df.core.serialization import Serializable
-from notion_df.object.constant import TimestampType
+from notion_df.object.constant import TimestampName
+from notion_df.util.serialization import Serializable
 
 Direction = Literal['ascending', 'descending']
 
@@ -21,5 +21,5 @@ class PropertySort(Sort):
 
 @dataclass
 class TimestampSort(Sort):
-    timestamp_type: TimestampType
+    timestamp_type: TimestampName
     direction: Direction

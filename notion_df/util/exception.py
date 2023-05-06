@@ -35,13 +35,15 @@ class NotionDfException(Exception, ABC):
         self.args += var_items_str,
 
 
-@dataclass
 class NotionDfKeyError(NotionDfException, KeyError):
     pass
 
 
-@dataclass
 class NotionDfValueError(NotionDfException, ValueError):
+    pass
+
+
+class NotionDfTypeError(NotionDfException, TypeError):
     pass
 
 
@@ -49,6 +51,5 @@ class NotionDfNotImplementedError(NotionDfException, NotImplementedError):
     pass
 
 
-@dataclass
 class NotionDfStateError(NotionDfException):
     """invalid state is detected."""

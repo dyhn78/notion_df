@@ -4,26 +4,29 @@ from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
-from typing import Literal, TypeVar, Callable, Union, Generic, Any
+from typing import Literal, TypeVar, Union, Any
 from uuid import UUID
 
-from notion_df.core.serialization import Serializable, serialize
-from notion_df.object.constant import TimestampType
+from typing_extensions import Self
 
-CompoundOperatorType = Literal['and', 'or']
-RollupAggregateType = Literal['any', 'every', 'none']
-FilterPredicate = dict[str, Any]
+from notion_df.object.constant import TimestampName
+from notion_df.util.serialization import Serializable, serialize
+
+CompoundOperator = Literal['and', 'or']
+RollupAggregate = Literal['any', 'every', 'none']
+FilterCondition = dict[str, Any]
 
 
 @dataclass
 class Filter(Serializable, metaclass=ABCMeta):
+    # https://developers.notion.com/reference/post-database-query-filter
     def __and__(self, other: Filter) -> CompoundFilter:
         return self.__compound(other, 'and')
 
     def __or__(self, other: Filter) -> CompoundFilter:
         return self.__compound(other, 'or')
 
-    def __compound(self, other: Filter, operator: CompoundOperatorType) -> CompoundFilter:
+    def __compound(self, other: Filter, operator: CompoundOperator) -> CompoundFilter:
         if isinstance(self, CompoundFilter) and self.operator == operator:
             if isinstance(other, CompoundFilter) and other.operator == operator:
                 return CompoundFilter(operator, self.elements + other.elements)
@@ -35,7 +38,7 @@ class Filter(Serializable, metaclass=ABCMeta):
 
 @dataclass
 class CompoundFilter(Filter):
-    operator: CompoundOperatorType
+    operator: CompoundOperator
     elements: list[Filter]
 
     def serialize(self):
@@ -43,248 +46,331 @@ class CompoundFilter(Filter):
 
 
 @dataclass
-class FilterType:
-    filter_predicate: dict[str, Any]
+class PropertyFilter(Filter):
+    name_or_id: str | UUID
+    type: FilterType
 
+    def serialize(self):
+        return {
+            "property": self.name_or_id,
+            self.type.get_typename(): serialize(self.type.condition)
+        }
+
+
+@dataclass
+class RollupPropertyAggregateFilter(Filter):
+    name_or_id: str | UUID
+    aggregate_type: RollupAggregate
+    type: FilterType
+
+    def serialize(self):
+        return {
+            "property": self.name_or_id,
+            "rollup": {
+                self.aggregate_type: {
+                    self.type.get_typename(): serialize(self.type.condition)
+                }
+            }
+        }
+
+    def serialize2(self):
+        # TODO: find which is correct by actual testing
+        return {
+            "property": self.name_or_id,
+            self.aggregate_type: {
+                self.type.get_typename(): serialize(self.type.condition)
+            }
+        }
+
+
+@dataclass
+class TimestampFilter(Filter):
+    name: TimestampName
+    type: FilterType
+
+    def serialize(self):
+        return {
+            "timestamp_type": self.name,
+            self.name: serialize(self.type.condition)
+        }
+
+
+@dataclass
+class FilterType(metaclass=ABCMeta):
+    condition: FilterCondition
+
+    @classmethod
     @abstractmethod
-    def serialize_filter(self, name_or_id: str | UUID) -> dict[str, Any]:
+    def get_typename(cls) -> str:
         pass
 
 
 FilterType_T = TypeVar('FilterType_T', bound=FilterType)
 
 
-class FilterTypeBuilder(Generic[FilterType_T], metaclass=ABCMeta):
-    def __init__(self, get_filter_type: Callable[[FilterPredicate], FilterType_T]):
-        self._get_filter_type = get_filter_type
-
-
-@dataclass
-class PropertyFilterType(FilterType):
-    # https://developers.notion.com/reference/post-database-query-filter
-    filter_predicate: FilterPredicate
-    property_type: str
-
-    def serialize_filter(self, name_or_id: str | UUID):
-        return {
-            "property": name_or_id,
-            self.property_type: serialize(self.filter_predicate)
-        }
-
-
-@dataclass
-class RollupAggregateFilterType(PropertyFilterType):
-    aggregate_type: RollupAggregateType
-
-    def serialize_filter(self, name_or_id: str | UUID):
-        return {
-            "property": name_or_id,
-            "rollup": {
-                self.aggregate_type: {
-                    self.property_type: serialize(self.filter_predicate)
-                }
-            }
-        }
-
-    def serialize_filter_2(self, name_or_id: str | UUID):
-        # TODO: find which is correct by actual testing
-        return {
-            "property": name_or_id,
-            self.aggregate_type: {
-                self.property_type: serialize(self.filter_predicate)
-            }
-        }
-
-
-@dataclass
-class TimestampFilterType(FilterType):
-    filter_predicate: FilterPredicate
-
-    def serialize_filter(self, timestamp_type: TimestampType):
-        return {
-            "timestamp_type": timestamp_type,
-            timestamp_type: serialize(self.filter_predicate)
-        }
-
-
-class TextFilterTypeBuilder(FilterTypeBuilder[FilterType_T]):
+class TextFilterType(FilterType):
     """eligible property types: ["title", "rich_text", "url", "email", and "phone_number"]"""
 
-    def equals(self, value: str) -> FilterType_T:
-        return self._get_filter_type({'equals': value})
+    @classmethod
+    def get_typename(cls) -> str:
+        return 'text'
 
-    def does_not_equal(self, value: str) -> FilterType_T:
-        return self._get_filter_type({'does_not_equal': value})
+    @classmethod
+    def equals(cls, value: str) -> Self:
+        return cls({'equals': value})
 
-    def contains(self, value: str) -> FilterType_T:
-        return self._get_filter_type({'contains': value})
+    @classmethod
+    def does_not_equal(cls, value: str) -> Self:
+        return cls({'does_not_equal': value})
 
-    def does_not_contain(self, value: str) -> FilterType_T:
-        return self._get_filter_type({'does_not_contain': value})
+    @classmethod
+    def contains(cls, value: str) -> Self:
+        return cls({'contains': value})
 
-    def starts_with(self, value: str) -> FilterType_T:
-        return self._get_filter_type({'starts_with': value})
+    @classmethod
+    def does_not_contain(cls, value: str) -> Self:
+        return cls({'does_not_contain': value})
 
-    def ends_with(self, value: str) -> FilterType_T:
-        return self._get_filter_type({'ends_with': value})
+    @classmethod
+    def starts_with(cls, value: str) -> Self:
+        return cls({'starts_with': value})
 
-    def is_empty(self) -> FilterType_T:
-        return self._get_filter_type({'is_empty': True})
+    @classmethod
+    def ends_with(cls, value: str) -> Self:
+        return cls({'ends_with': value})
 
-    def is_not_empty(self) -> FilterType_T:
-        return self._get_filter_type({'is_not_empty': True})
+    @classmethod
+    def is_empty(cls) -> Self:
+        return cls({'is_empty': True})
+
+    @classmethod
+    def is_not_empty(cls) -> Self:
+        return cls({'is_not_empty': True})
 
 
-class NumberFilterTypeBuilder(FilterTypeBuilder[FilterType_T]):
+class NumberFilterType(FilterType):
     """eligible property types: ['number']"""
 
-    def equals(self, value: Union[int, Decimal]) -> FilterType_T:
-        return self._get_filter_type({'equals': value})
+    @classmethod
+    def get_typename(cls) -> str:
+        return 'number'
 
-    def does_not_equal(self, value: Union[int, Decimal]) -> FilterType_T:
-        return self._get_filter_type({'does_not_equal': value})
+    @classmethod
+    def equals(cls, value: Union[int, Decimal]) -> Self:
+        return cls({'equals': value})
 
-    def greater_than(self, value: Union[int, Decimal]) -> FilterType_T:
-        return self._get_filter_type({'greater_than': value})
+    @classmethod
+    def does_not_equal(cls, value: Union[int, Decimal]) -> Self:
+        return cls({'does_not_equal': value})
 
-    def less_than(self, value: Union[int, Decimal]) -> FilterType_T:
-        return self._get_filter_type({'less_than': value})
+    @classmethod
+    def greater_than(cls, value: Union[int, Decimal]) -> Self:
+        return cls({'greater_than': value})
 
-    def greater_than_or_equal_to(self, value: Union[int, Decimal]) -> FilterType_T:
-        return self._get_filter_type({'greater_than_or_equal_to': value})
+    @classmethod
+    def less_than(cls, value: Union[int, Decimal]) -> Self:
+        return cls({'less_than': value})
 
-    def less_than_or_equal_to(self, value: Union[int, Decimal]) -> FilterType_T:
-        return self._get_filter_type({'less_than_or_equal_to': value})
+    @classmethod
+    def greater_than_or_equal_to(cls, value: Union[int, Decimal]) -> Self:
+        return cls({'greater_than_or_equal_to': value})
 
-    def is_empty(self) -> FilterType_T:
-        return self._get_filter_type({'is_empty': True})
+    @classmethod
+    def less_than_or_equal_to(cls, value: Union[int, Decimal]) -> Self:
+        return cls({'less_than_or_equal_to': value})
 
-    def is_not_empty(self) -> FilterType_T:
-        return self._get_filter_type({'is_not_empty': True})
+    @classmethod
+    def is_empty(cls) -> Self:
+        return cls({'is_empty': True})
+
+    @classmethod
+    def is_not_empty(cls) -> Self:
+        return cls({'is_not_empty': True})
 
 
-class CheckboxFilterTypeBuilder(FilterTypeBuilder[FilterType_T]):
+class CheckboxFilterType(FilterType):
     """eligible property types: ['checkbox']"""
 
-    def is_empty(self) -> FilterType_T:
-        return self._get_filter_type({'is_empty': True})
+    @classmethod
+    def get_typename(cls) -> str:
+        return 'checkbox'
 
-    def is_not_empty(self) -> FilterType_T:
-        return self._get_filter_type({'is_not_empty': True})
+    @classmethod
+    def is_empty(cls) -> Self:
+        return cls({'is_empty': True})
+
+    @classmethod
+    def is_not_empty(cls) -> Self:
+        return cls({'is_not_empty': True})
 
 
-class SelectFilterTypeBuilder(FilterTypeBuilder[FilterType_T]):
+class SelectFilterType(FilterType):
     """eligible property types: ['select', 'status']"""
 
-    def equals(self, value: str) -> FilterType_T:
-        return self._get_filter_type({'equals': value})
+    @classmethod
+    def get_typename(cls) -> str:
+        return 'select'
 
-    def does_not_equal(self, value: str) -> FilterType_T:
-        return self._get_filter_type({'does_not_equal': value})
+    @classmethod
+    def equals(cls, value: str) -> Self:
+        return cls({'equals': value})
 
-    def is_empty(self) -> FilterType_T:
-        return self._get_filter_type({'is_empty': True})
+    @classmethod
+    def does_not_equal(cls, value: str) -> Self:
+        return cls({'does_not_equal': value})
 
-    def is_not_empty(self) -> FilterType_T:
-        return self._get_filter_type({'is_not_empty': True})
+    @classmethod
+    def is_empty(cls) -> Self:
+        return cls({'is_empty': True})
+
+    @classmethod
+    def is_not_empty(cls) -> Self:
+        return cls({'is_not_empty': True})
 
 
-class MultiSelectFilterTypeBuilder(FilterTypeBuilder[FilterType_T]):
+class MultiSelectFilterType(FilterType):
     """eligible property types: ['multi_select']"""
 
-    def contains(self, value: str) -> FilterType_T:
-        return self._get_filter_type({'contains': value})
+    @classmethod
+    def get_typename(cls) -> str:
+        return 'multi_select'
 
-    def does_not_contain(self, value: str) -> FilterType_T:
-        return self._get_filter_type({'does_not_contain': value})
+    @classmethod
+    def contains(cls, value: str) -> Self:
+        return cls({'contains': value})
 
-    def is_empty(self) -> FilterType_T:
-        return self._get_filter_type({'is_empty': True})
+    @classmethod
+    def does_not_contain(cls, value: str) -> Self:
+        return cls({'does_not_contain': value})
 
-    def is_not_empty(self) -> FilterType_T:
-        return self._get_filter_type({'is_not_empty': True})
+    @classmethod
+    def is_empty(cls) -> Self:
+        return cls({'is_empty': True})
+
+    @classmethod
+    def is_not_empty(cls) -> Self:
+        return cls({'is_not_empty': True})
 
 
-class DateFilterTypeBuilder(FilterTypeBuilder[FilterType_T]):
+class DateFilterType(FilterType):
     """eligible property types: ["date", "created_time", "last_edited_time"]"""
 
-    def equals(self, value: datetime) -> FilterType_T:
-        return self._get_filter_type({'equals': value})
+    @classmethod
+    def get_typename(cls) -> str:
+        return 'date'
 
-    def before(self, value: datetime) -> FilterType_T:
-        return self._get_filter_type({'before': value})
+    @classmethod
+    def equals(cls, value: datetime) -> Self:
+        return cls({'equals': value})
 
-    def after(self, value: datetime) -> FilterType_T:
-        return self._get_filter_type({'after': value})
+    @classmethod
+    def before(cls, value: datetime) -> Self:
+        return cls({'before': value})
 
-    def on_or_before(self, value: datetime) -> FilterType_T:
-        return self._get_filter_type({'on_or_before': value})
+    @classmethod
+    def after(cls, value: datetime) -> Self:
+        return cls({'after': value})
 
-    def on_or_after(self, value: datetime) -> FilterType_T:
-        return self._get_filter_type({'on_or_after': value})
+    @classmethod
+    def on_or_before(cls, value: datetime) -> Self:
+        return cls({'on_or_before': value})
 
-    def is_empty(self) -> FilterType_T:
-        return self._get_filter_type({'is_empty': True})
+    @classmethod
+    def on_or_after(cls, value: datetime) -> Self:
+        return cls({'on_or_after': value})
 
-    def is_not_empty(self) -> FilterType_T:
-        return self._get_filter_type({'is_not_empty': True})
+    @classmethod
+    def is_empty(cls) -> Self:
+        return cls({'is_empty': True})
 
-    def past_week(self) -> FilterType_T:
-        return self._get_filter_type({'past_week': {}})
+    @classmethod
+    def is_not_empty(cls) -> Self:
+        return cls({'is_not_empty': True})
 
-    def past_month(self) -> FilterType_T:
-        return self._get_filter_type({'past_month': {}})
+    @classmethod
+    def past_week(cls) -> Self:
+        return cls({'past_week': {}})
 
-    def past_year(self) -> FilterType_T:
-        return self._get_filter_type({'past_year': {}})
+    @classmethod
+    def past_month(cls) -> Self:
+        return cls({'past_month': {}})
 
-    def next_week(self) -> FilterType_T:
-        return self._get_filter_type({'next_week': {}})
+    @classmethod
+    def past_year(cls) -> Self:
+        return cls({'past_year': {}})
 
-    def next_month(self) -> FilterType_T:
-        return self._get_filter_type({'next_month': {}})
+    @classmethod
+    def next_week(cls) -> Self:
+        return cls({'next_week': {}})
 
-    def next_year(self) -> FilterType_T:
-        return self._get_filter_type({'next_year': {}})
+    @classmethod
+    def next_month(cls) -> Self:
+        return cls({'next_month': {}})
+
+    @classmethod
+    def next_year(cls) -> Self:
+        return cls({'next_year': {}})
 
 
-class PeopleFilterTypeBuilder(FilterTypeBuilder[FilterType_T]):
+class PeopleFilterType(FilterType):
     """eligible property types: ["people", "created_by", and "last_edited_by"]"""
 
-    def contains(self, value: str) -> FilterType_T:
-        return self._get_filter_type({'contains': value})
+    @classmethod
+    def get_typename(cls) -> str:
+        return 'people'
 
-    def does_not_contain(self, value: str) -> FilterType_T:
-        return self._get_filter_type({'does_not_contain': value})
+    @classmethod
+    def contains(cls, value: str) -> Self:
+        return cls({'contains': value})
 
-    def is_empty(self) -> FilterType_T:
-        return self._get_filter_type({'is_empty': True})
+    @classmethod
+    def does_not_contain(cls, value: str) -> Self:
+        return cls({'does_not_contain': value})
 
-    def is_not_empty(self) -> FilterType_T:
-        return self._get_filter_type({'is_not_empty': True})
+    @classmethod
+    def is_empty(cls) -> Self:
+        return cls({'is_empty': True})
+
+    @classmethod
+    def is_not_empty(cls) -> Self:
+        return cls({'is_not_empty': True})
 
 
-class FilesFilterTypeBuilder(FilterTypeBuilder[FilterType_T]):
+class FilesFilterType(FilterType):
     """eligible property types: ['files']"""
 
-    def is_empty(self) -> FilterType_T:
-        return self._get_filter_type({'is_empty': True})
+    @classmethod
+    def get_typename(cls) -> str:
+        return 'files'
 
-    def is_not_empty(self) -> FilterType_T:
-        return self._get_filter_type({'is_not_empty': True})
+    @classmethod
+    def is_empty(cls) -> Self:
+        return cls({'is_empty': True})
+
+    @classmethod
+    def is_not_empty(cls) -> Self:
+        return cls({'is_not_empty': True})
 
 
-class RelationFilterTypeBuilder(FilterTypeBuilder[FilterType_T]):
+class RelationFilterType(FilterType):
     """eligible property types: ['relation']"""
 
-    def contains(self, value: UUID) -> FilterType_T:
-        return self._get_filter_type({'contains': value})
+    @classmethod
+    def get_typename(cls) -> str:
+        return 'relation'
 
-    def does_not_contain(self, value: UUID) -> FilterType_T:
-        return self._get_filter_type({'does_not_contain': value})
+    @classmethod
+    def contains(cls, value: UUID) -> Self:
+        return cls({'contains': value})
 
-    def is_empty(self) -> FilterType_T:
-        return self._get_filter_type({'is_empty': True})
+    @classmethod
+    def does_not_contain(cls, value: UUID) -> Self:
+        return cls({'does_not_contain': value})
 
-    def is_not_empty(self) -> FilterType_T:
-        return self._get_filter_type({'is_not_empty': True})
+    @classmethod
+    def is_empty(cls) -> Self:
+        return cls({'is_empty': True})
+
+    @classmethod
+    def is_not_empty(cls) -> Self:
+        return cls({'is_not_empty': True})

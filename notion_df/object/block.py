@@ -8,15 +8,15 @@ from uuid import UUID
 
 from typing_extensions import Self
 
-from notion_df.core.request import Response
-from notion_df.core.serialization import DualSerializable
 from notion_df.object.common import Icon
 from notion_df.object.constant import BlockColor, CodeLanguage
 from notion_df.object.file import File
 from notion_df.object.parent import ParentInfo
 from notion_df.object.rich_text import RichText
 from notion_df.object.user import PartialUser
+from notion_df.request.core import Response
 from notion_df.util.collection import FinalClassDict
+from notion_df.util.serialization import DualSerializable
 
 block_type_registry: FinalClassDict[str, type[BlockType]] = FinalClassDict()
 

@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 from typing import Any, Literal, Union
 
-from notion_df.core.request import RequestSettings, Version, Method, PaginatedRequest
 from notion_df.object.database import DatabaseResponse
 from notion_df.object.page import PageResponse
 from notion_df.object.sort import TimestampSort
+from notion_df.request.core import RequestSettings, Version, Method, PaginatedRequest
 from notion_df.util.collection import DictFilter
 
 
