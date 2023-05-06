@@ -10,7 +10,7 @@ from uuid import UUID
 from typing_extensions import Self
 
 from notion_df.core.request import Response
-from notion_df.object.common import SelectOption, StatusGroups, Icon, Properties, BaseProperty
+from notion_df.object.common import SelectOption, StatusGroups, Icon, Properties, Property
 from notion_df.object.constant import NumberFormat, RollupFunction
 from notion_df.object.file import ExternalFile
 from notion_df.object.parent import ParentInfo
@@ -41,7 +41,7 @@ class DatabaseResponse(Response):
 
 
 @dataclass
-class DatabaseProperty(BaseProperty, metaclass=ABCMeta):
+class DatabaseProperty(Property, metaclass=ABCMeta):
     """https://developers.notion.com/reference/property-object"""
     type: str
     name: str = field(init=True)

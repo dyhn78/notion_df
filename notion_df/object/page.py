@@ -11,7 +11,7 @@ from _decimal import Decimal
 from typing_extensions import Self
 
 from notion_df.core.request import Response
-from notion_df.object.common import DateRange, SelectOption, Icon, Properties, BaseProperty
+from notion_df.object.common import DateRange, SelectOption, Icon, Properties, Property
 from notion_df.object.constant import RollupFunction
 from notion_df.object.file import File, ExternalFile
 from notion_df.object.parent import ParentInfo
@@ -42,7 +42,7 @@ class PageResponse(Response):
 
 
 @dataclass
-class PageProperty(BaseProperty, metaclass=ABCMeta):
+class PageProperty(Property, metaclass=ABCMeta):
     """https://developers.notion.com/reference/page-property-values"""
     name: str = field(init=False, default=None)
 
