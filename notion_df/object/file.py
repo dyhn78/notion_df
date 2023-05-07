@@ -27,7 +27,7 @@ class File(Icon, metaclass=ABCMeta):
                 subclass = ExternalFile
             case _:
                 raise NotionDfValueError('invalid relation_type',
-                                         {'typename': serialized['type'], 'serialized': serialized})
+                                         {'type': serialized['type'], 'serialized': serialized})
         return subclass.deserialize(serialized)
 
 

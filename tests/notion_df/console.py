@@ -21,8 +21,12 @@ def test_retrieve(database):
     pprint(response)
 
 
+def test_property_type():
+    date_property_type.page('name', 'date')
+
+
 def test_filter(database):
-    equals_20230101 = date_property_type.filter.equals(datetime(2023, 1, 1))
+    equals_20230101 = date_property_type.filter_type.equals(datetime(2023, 1, 1))
     property_filter = PropertyFilter('property_name', equals_20230101)
     rollup_property_aggregate_filter = RollupPropertyAggregateFilter('property_name_2', 'any', equals_20230101)
     database.query(property_filter & rollup_property_aggregate_filter, [])

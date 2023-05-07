@@ -9,7 +9,7 @@ from notion_df.object.common import Icon
 from notion_df.object.file import ExternalFile
 from notion_df.object.page import PageResponse
 from notion_df.object.parent import ParentInfo
-from notion_df.object.property import Properties, page_property_type_registry, PagePropertyType, PageProperties
+from notion_df.object.property import Properties, PageProperty, PageProperties, property_type_registry
 from notion_df.request.core import SingleRequest, RequestSettings, Version, Method, MAX_PAGE_SIZE, \
     PaginatedRequest, BaseRequest
 from notion_df.util.collection import DictFilter
@@ -75,7 +75,7 @@ class UpdatePage(SingleRequest[PageResponse]):
 
 
 @dataclass
-class RetrievePagePropertyItem(BaseRequest[PagePropertyType]):
+class RetrievePagePropertyItem(BaseRequest[PageProperty]):
     """https://developers.notion.com/reference/retrieve-a-page-property"""
     page_id: UUID
     property_id: UUID
@@ -90,7 +90,7 @@ class RetrievePagePropertyItem(BaseRequest[PagePropertyType]):
 
     request_once = PaginatedRequest.request_once
 
-    def execute(self) -> PagePropertyType:
+    def execute(self) -> PageProperty:
         # TODO: deduplicate with PaginatedRequest.execute() if possible.
         page_size_total = self.page_size
         if page_size_total == -1:
@@ -100,7 +100,7 @@ class RetrievePagePropertyItem(BaseRequest[PagePropertyType]):
 
         data = self.request_once(page_size, None)
         if data['object'] == 'property_item':
-            return PagePropertyType.deserialize(data)
+            return PageProperty.deserialize(data)
 
         data_list = []
         while page_size_retrieved < page_size_total and data['has_more']:
@@ -112,7 +112,7 @@ class RetrievePagePropertyItem(BaseRequest[PagePropertyType]):
             data_list.append(data)
 
         typename = data_list[0]['property_item']['type']
-        subclass = page_property_type_registry[typename]
+        property_type = property_type_registry[typename]
         value_list = [data['result'][typename] for data in data_list]
-        merged_response = data_list[0]['result'] | {typename: value_list}
-        return subclass.deserialize(merged_response)
+        serialized = {'type': property_type, typename: value_list, **data_list[0]['result']}
+        return property_type.page.deserialize(serialized)

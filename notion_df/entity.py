@@ -13,7 +13,7 @@ from notion_df.object.file import ExternalFile, File
 from notion_df.object.filter import Filter
 from notion_df.object.page import PageResponse
 from notion_df.object.parent import ParentInfo
-from notion_df.object.property import DatabaseProperties, PagePropertyType, PageProperties
+from notion_df.object.property import DatabaseProperties, PageProperty, PageProperties
 from notion_df.object.rich_text import RichText
 from notion_df.object.sort import Sort
 from notion_df.request.block import AppendBlockChildren, RetrieveBlock, RetrieveBlockChildren, UpdateBlock, DeleteBlock
@@ -191,8 +191,8 @@ class Page(BaseBlock[PageResponse]):
         self.last_response = RetrievePage(self.token, self.id).execute()
         return self.last_response
 
-    def retrieve_property_item(self, prop_id: UUID | PagePropertyType, page_size: int = -1) -> PagePropertyType:
-        if isinstance(prop_id, PagePropertyType):
+    def retrieve_property_item(self, prop_id: UUID | PageProperty, page_size: int = -1) -> PageProperty:
+        if isinstance(prop_id, PageProperty):
             prop_id = prop_id.id
         page_property = RetrievePagePropertyItem(self.token, self.id, prop_id, page_size).execute()
         return page_property

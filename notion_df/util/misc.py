@@ -43,7 +43,7 @@ def get_generic_arg(cls: type[Generic], cast_type: Type_T) -> Type_T:
         arg = cast(type[cast_type], get_generic_args(cls)[0])
     except IndexError:
         raise NotionDfTypeError(f'{cls.__name__} should be explicitly subscribed')
-    if not inspect.isabstract(cls) and not inspect.isclass(cls.return_type):
+    if not inspect.isabstract(cls) and not inspect.isclass(arg):
         raise NotionDfTypeError(
             f'since {cls.__name__} is not abstract, it should be subscribed with class arguments (not TypeVar)')
     return arg
