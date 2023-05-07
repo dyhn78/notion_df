@@ -9,7 +9,7 @@ from notion_df.object.database import DatabaseResponse
 from notion_df.object.file import ExternalFile
 from notion_df.object.filter import Filter
 from notion_df.object.page import PageResponse
-from notion_df.object.property import DatabaseProperties
+from notion_df.object.property_depr import DatabaseProperties
 from notion_df.object.rich_text import RichText
 from notion_df.object.sort import Sort
 from notion_df.request.core import SingleRequest, RequestSettings, Version, Method, PaginatedRequest

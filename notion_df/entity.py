@@ -13,7 +13,7 @@ from notion_df.object.file import ExternalFile, File
 from notion_df.object.filter import Filter
 from notion_df.object.page import PageResponse
 from notion_df.object.parent import ParentInfo
-from notion_df.object.property import DatabaseProperties, PageProperty, PageProperties
+from notion_df.object.property_depr import DatabaseProperties, PageProperty, PageProperties
 from notion_df.object.rich_text import RichText
 from notion_df.object.sort import Sort
 from notion_df.request.block import AppendBlockChildren, RetrieveBlock, RetrieveBlockChildren, UpdateBlock, DeleteBlock

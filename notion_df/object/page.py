@@ -10,7 +10,7 @@ from typing_extensions import Self
 from notion_df.object.common import Icon
 from notion_df.object.file import ExternalFile
 from notion_df.object.parent import ParentInfo
-from notion_df.object.property import PageProperties
+from notion_df.object.property_depr import PageProperties
 from notion_df.object.user import PartialUser
 from notion_df.request.core import Response
 

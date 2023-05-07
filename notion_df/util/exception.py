@@ -51,5 +51,9 @@ class NotionDfNotImplementedError(NotionDfException, NotImplementedError):
     pass
 
 
+class NotionDfAttributeError(NotionDfException, AttributeError):
+    pass
+
+
 class NotionDfStateError(NotionDfException):
     """invalid state is detected."""

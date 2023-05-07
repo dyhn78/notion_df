@@ -9,7 +9,7 @@ from notion_df.object.common import Icon
 from notion_df.object.file import ExternalFile
 from notion_df.object.page import PageResponse
 from notion_df.object.parent import ParentInfo
-from notion_df.object.property import Properties, PageProperty, PageProperties, property_type_registry
+from notion_df.object.property_depr import Properties, PageProperty, PageProperties, property_type_registry
 from notion_df.request.core import SingleRequest, RequestSettings, Version, Method, MAX_PAGE_SIZE, \
     PaginatedRequest, BaseRequest
 from notion_df.util.collection import DictFilter

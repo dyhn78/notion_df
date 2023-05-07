@@ -10,7 +10,7 @@ from typing_extensions import Self
 from notion_df.object.common import Icon
 from notion_df.object.file import ExternalFile
 from notion_df.object.parent import ParentInfo
-from notion_df.object.property import DatabaseProperties
+from notion_df.object.property_depr import DatabaseProperties
 from notion_df.object.rich_text import RichText
 from notion_df.request.core import Response
 
