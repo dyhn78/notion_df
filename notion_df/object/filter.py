@@ -6,8 +6,6 @@ from datetime import datetime
 from typing import Literal, TypeVar, Any, Callable
 from uuid import UUID
 
-from typing_extensions import Self
-
 from notion_df.object.constant import TimestampName, Number
 from notion_df.util.serialization import Serializable, serialize
 
@@ -117,28 +115,28 @@ class TextFilterBuilder(FilterBuilder):
     def get_typename(cls) -> str:
         return 'text'
 
-    def equals(self, value: str) -> Self:
+    def equals(self, value: str) -> Filter:
         return self._build({'equals': value})
 
-    def does_not_equal(self, value: str) -> Self:
+    def does_not_equal(self, value: str) -> Filter:
         return self._build({'does_not_equal': value})
 
-    def contains(self, value: str) -> Self:
+    def contains(self, value: str) -> Filter:
         return self._build({'contains': value})
 
-    def does_not_contain(self, value: str) -> Self:
+    def does_not_contain(self, value: str) -> Filter:
         return self._build({'does_not_contain': value})
 
-    def starts_with(self, value: str) -> Self:
+    def starts_with(self, value: str) -> Filter:
         return self._build({'starts_with': value})
 
-    def ends_with(self, value: str) -> Self:
+    def ends_with(self, value: str) -> Filter:
         return self._build({'ends_with': value})
 
-    def is_empty(self) -> Self:
+    def is_empty(self) -> Filter:
         return self._build({'is_empty': True})
 
-    def is_not_empty(self) -> Self:
+    def is_not_empty(self) -> Filter:
         return self._build({'is_not_empty': True})
 
 
@@ -149,28 +147,28 @@ class NumberFilterBuilder(FilterBuilder):
     def get_typename(cls) -> str:
         return 'number'
 
-    def equals(self, value: Number) -> Self:
+    def equals(self, value: Number) -> Filter:
         return self._build({'equals': value})
 
-    def does_not_equal(self, value: Number) -> Self:
+    def does_not_equal(self, value: Number) -> Filter:
         return self._build({'does_not_equal': value})
 
-    def greater_than(self, value: Number) -> Self:
+    def greater_than(self, value: Number) -> Filter:
         return self._build({'greater_than': value})
 
-    def less_than(self, value: Number) -> Self:
+    def less_than(self, value: Number) -> Filter:
         return self._build({'less_than': value})
 
-    def greater_than_or_equal_to(self, value: Number) -> Self:
+    def greater_than_or_equal_to(self, value: Number) -> Filter:
         return self._build({'greater_than_or_equal_to': value})
 
-    def less_than_or_equal_to(self, value: Number) -> Self:
+    def less_than_or_equal_to(self, value: Number) -> Filter:
         return self._build({'less_than_or_equal_to': value})
 
-    def is_empty(self) -> Self:
+    def is_empty(self) -> Filter:
         return self._build({'is_empty': True})
 
-    def is_not_empty(self) -> Self:
+    def is_not_empty(self) -> Filter:
         return self._build({'is_not_empty': True})
 
 
@@ -181,10 +179,10 @@ class CheckboxFilterBuilder(FilterBuilder):
     def get_typename(cls) -> str:
         return 'checkbox'
 
-    def is_empty(self) -> Self:
+    def is_empty(self) -> Filter:
         return self._build({'is_empty': True})
 
-    def is_not_empty(self) -> Self:
+    def is_not_empty(self) -> Filter:
         return self._build({'is_not_empty': True})
 
 
@@ -195,16 +193,16 @@ class SelectFilterBuilder(FilterBuilder):
     def get_typename(cls) -> str:
         return 'select'
 
-    def equals(self, value: str) -> Self:
+    def equals(self, value: str) -> Filter:
         return self._build({'equals': value})
 
-    def does_not_equal(self, value: str) -> Self:
+    def does_not_equal(self, value: str) -> Filter:
         return self._build({'does_not_equal': value})
 
-    def is_empty(self) -> Self:
+    def is_empty(self) -> Filter:
         return self._build({'is_empty': True})
 
-    def is_not_empty(self) -> Self:
+    def is_not_empty(self) -> Filter:
         return self._build({'is_not_empty': True})
 
 
@@ -215,16 +213,16 @@ class MultiSelectFilterBuilder(FilterBuilder):
     def get_typename(cls) -> str:
         return 'multi_select'
 
-    def contains(self, value: str) -> Self:
+    def contains(self, value: str) -> Filter:
         return self._build({'contains': value})
 
-    def does_not_contain(self, value: str) -> Self:
+    def does_not_contain(self, value: str) -> Filter:
         return self._build({'does_not_contain': value})
 
-    def is_empty(self) -> Self:
+    def is_empty(self) -> Filter:
         return self._build({'is_empty': True})
 
-    def is_not_empty(self) -> Self:
+    def is_not_empty(self) -> Filter:
         return self._build({'is_not_empty': True})
 
 
@@ -235,43 +233,43 @@ class DateFilterBuilder(FilterBuilder):
     def get_typename(cls) -> str:
         return 'date'
 
-    def equals(self, value: datetime) -> Self:
+    def equals(self, value: datetime) -> Filter:
         return self._build({'equals': value})
 
-    def before(self, value: datetime) -> Self:
+    def before(self, value: datetime) -> Filter:
         return self._build({'before': value})
 
-    def after(self, value: datetime) -> Self:
+    def after(self, value: datetime) -> Filter:
         return self._build({'after': value})
 
-    def on_or_before(self, value: datetime) -> Self:
+    def on_or_before(self, value: datetime) -> Filter:
         return self._build({'on_or_before': value})
 
-    def on_or_after(self, value: datetime) -> Self:
+    def on_or_after(self, value: datetime) -> Filter:
         return self._build({'on_or_after': value})
 
-    def is_empty(self) -> Self:
+    def is_empty(self) -> Filter:
         return self._build({'is_empty': True})
 
-    def is_not_empty(self) -> Self:
+    def is_not_empty(self) -> Filter:
         return self._build({'is_not_empty': True})
 
-    def past_week(self) -> Self:
+    def past_week(self) -> Filter:
         return self._build({'past_week': {}})
 
-    def past_month(self) -> Self:
+    def past_month(self) -> Filter:
         return self._build({'past_month': {}})
 
-    def past_year(self) -> Self:
+    def past_year(self) -> Filter:
         return self._build({'past_year': {}})
 
-    def next_week(self) -> Self:
+    def next_week(self) -> Filter:
         return self._build({'next_week': {}})
 
-    def next_month(self) -> Self:
+    def next_month(self) -> Filter:
         return self._build({'next_month': {}})
 
-    def next_year(self) -> Self:
+    def next_year(self) -> Filter:
         return self._build({'next_year': {}})
 
 
@@ -282,16 +280,16 @@ class PeopleFilterBuilder(FilterBuilder):
     def get_typename(cls) -> str:
         return 'people'
 
-    def contains(self, value: str) -> Self:
+    def contains(self, value: str) -> Filter:
         return self._build({'contains': value})
 
-    def does_not_contain(self, value: str) -> Self:
+    def does_not_contain(self, value: str) -> Filter:
         return self._build({'does_not_contain': value})
 
-    def is_empty(self) -> Self:
+    def is_empty(self) -> Filter:
         return self._build({'is_empty': True})
 
-    def is_not_empty(self) -> Self:
+    def is_not_empty(self) -> Filter:
         return self._build({'is_not_empty': True})
 
 
@@ -302,10 +300,10 @@ class FilesFilterBuilder(FilterBuilder):
     def get_typename(cls) -> str:
         return 'files'
 
-    def is_empty(self) -> Self:
+    def is_empty(self) -> Filter:
         return self._build({'is_empty': True})
 
-    def is_not_empty(self) -> Self:
+    def is_not_empty(self) -> Filter:
         return self._build({'is_not_empty': True})
 
 
@@ -316,14 +314,14 @@ class RelationFilterBuilder(FilterBuilder):
     def get_typename(cls) -> str:
         return 'relation'
 
-    def contains(self, value: UUID) -> Self:
+    def contains(self, value: UUID) -> Filter:
         return self._build({'contains': value})
 
-    def does_not_contain(self, value: UUID) -> Self:
+    def does_not_contain(self, value: UUID) -> Filter:
         return self._build({'does_not_contain': value})
 
-    def is_empty(self) -> Self:
+    def is_empty(self) -> Filter:
         return self._build({'is_empty': True})
 
-    def is_not_empty(self) -> Self:
+    def is_not_empty(self) -> Filter:
         return self._build({'is_not_empty': True})

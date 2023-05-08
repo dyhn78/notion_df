@@ -2,10 +2,9 @@ from datetime import datetime
 from pprint import pprint
 
 import pytest
+from notion_df.property_key import DatePropertyKey, TitlePropertyKey
 
 from notion_df.entity import Database, Namespace
-from notion_df.object.filter import PropertyFilter, RollupPropertyAggregateFilter
-from notion_df.object.property import DatePropertyKey, TitlePropertyKey
 
 
 @pytest.fixture
@@ -27,7 +26,5 @@ def test_property_type():
 
 
 def test_filter(database):
-    equals_20230101 = date_property_type.filter_type.equals(datetime(2023, 1, 1))
-    property_filter = PropertyFilter('property_name', equals_20230101)
-    rollup_property_aggregate_filter = RollupPropertyAggregateFilter('property_name_2', 'any', equals_20230101)
-    database.query(property_filter & rollup_property_aggregate_filter, [])
+    my_date_equals_20230101 = DatePropertyKey('my-date').filter.equals(datetime(2023, 1, 1))
+    database.query(my_date_equals_20230101, [])

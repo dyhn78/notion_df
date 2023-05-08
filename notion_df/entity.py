@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 from collections.abc import Sequence, MutableMapping
-from typing import Optional, TypeVar, Union, Generic, Iterator, final, Final
+from typing import Optional, TypeVar, Union, Generic, Iterator, final, Final, Any
 
 from typing_extensions import Self
 
@@ -13,7 +13,7 @@ from notion_df.object.file import ExternalFile, File
 from notion_df.object.filter import Filter
 from notion_df.object.page import PageResponse
 from notion_df.object.parent import ParentInfo
-from notion_df.object.property_depr import DatabaseProperties, PageProperty, PageProperties
+from notion_df.object.property import DatabaseProperties, PageProperties, PropertyKey
 from notion_df.object.rich_text import RichText
 from notion_df.object.sort import Sort
 from notion_df.request.block import AppendBlockChildren, RetrieveBlock, RetrieveBlockChildren, UpdateBlock, DeleteBlock
@@ -141,7 +141,7 @@ class Database(BaseBlock[DatabaseResponse]):
         return self.last_response
 
     # noinspection PyShadowingBuiltins
-    def query(self, filter: Filter, sort: list[Sort], page_size: int = -1) -> Children[Page]:
+    def query(self, filter: Filter, sort: Optional[list[Sort]] = None, page_size: int = -1) -> Children[Page]:
         response_page_list = QueryDatabase(self.token, self.id, filter, sort, page_size).execute()
         return self._send_child_page_response_list(response_page_list)
 
@@ -191,10 +191,12 @@ class Page(BaseBlock[PageResponse]):
         self.last_response = RetrievePage(self.token, self.id).execute()
         return self.last_response
 
-    def retrieve_property_item(self, prop_id: UUID | PageProperty, page_size: int = -1) -> PageProperty:
-        if isinstance(prop_id, PageProperty):
-            prop_id = prop_id.id
-        page_property = RetrievePagePropertyItem(self.token, self.id, prop_id, page_size).execute()
+    def retrieve_property_item(self, prop_key: str | PropertyKey, page_size: int = -1) -> Any:
+        # TODO: add type hint
+        #  (concept) @overload (prop_id: PropertyKey[PagePropertyValue_T]) -> PagePropertyValue_T
+        if isinstance(prop_key, PropertyKey):
+            prop_key = prop_key.id
+        page_property = RetrievePagePropertyItem(self.token, self.id, prop_key, page_size).execute()
         return page_property
 
 

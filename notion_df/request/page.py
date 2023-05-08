@@ -9,7 +9,7 @@ from notion_df.object.common import Icon
 from notion_df.object.file import ExternalFile
 from notion_df.object.page import PageResponse
 from notion_df.object.parent import ParentInfo
-from notion_df.object.property_depr import Properties, PageProperty, PageProperties, property_type_registry
+from notion_df.object.property import Properties, PageProperties, property_key_registry
 from notion_df.request.core import SingleRequest, RequestSettings, Version, Method, MAX_PAGE_SIZE, \
     PaginatedRequest, BaseRequest
 from notion_df.util.collection import DictFilter
@@ -75,7 +75,7 @@ class UpdatePage(SingleRequest[PageResponse]):
 
 
 @dataclass
-class RetrievePagePropertyItem(BaseRequest[PageProperty]):
+class RetrievePagePropertyItem(BaseRequest[Any]):
     """https://developers.notion.com/reference/retrieve-a-page-property"""
     page_id: UUID
     property_id: UUID
@@ -90,7 +90,7 @@ class RetrievePagePropertyItem(BaseRequest[PageProperty]):
 
     request_once = PaginatedRequest.request_once
 
-    def execute(self) -> PageProperty:
+    def execute(self) -> Any:
         # TODO: deduplicate with PaginatedRequest.execute() if possible.
         page_size_total = self.page_size
         if page_size_total == -1:
@@ -112,7 +112,8 @@ class RetrievePagePropertyItem(BaseRequest[PageProperty]):
             data_list.append(data)
 
         typename = data_list[0]['property_item']['type']
-        property_type = property_type_registry[typename]
+        property_key = property_key_registry[typename]
         value_list = [data['result'][typename] for data in data_list]
-        serialized = {'type': property_type, typename: value_list, **data_list[0]['result']}
-        return property_type.page.deserialize(serialized)
+        serialized = {'type': property_key.typename, typename: value_list, **data_list[0]['result']}
+        # noinspection PyProtectedMember
+        return property_key._deserialize_page_value(serialized, typename)
