@@ -31,6 +31,11 @@ class File(Icon, metaclass=ABCMeta):
         return subclass.deserialize(serialized)
 
 
+class Files(list[File]):
+    def __init__(self, files: list[File]):
+        super().__init__(files)
+
+
 @dataclass
 class InternalFile(File):
     url: str

@@ -3,13 +3,12 @@ from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime
-from decimal import Decimal
-from typing import Literal, TypeVar, Union, Any, Callable
+from typing import Literal, TypeVar, Any, Callable
 from uuid import UUID
 
 from typing_extensions import Self
 
-from notion_df.object.constant import TimestampName
+from notion_df.object.constant import TimestampName, Number
 from notion_df.util.serialization import Serializable, serialize
 
 CompoundOperator = Literal['and', 'or']
@@ -108,7 +107,7 @@ class FilterBuilder(metaclass=ABCMeta):
         pass
 
 
-FilterType_T = TypeVar('FilterType_T', bound=FilterBuilder)
+FilterBuilder_T = TypeVar('FilterBuilder_T', bound=FilterBuilder)
 
 
 class TextFilterBuilder(FilterBuilder):
@@ -150,22 +149,22 @@ class NumberFilterBuilder(FilterBuilder):
     def get_typename(cls) -> str:
         return 'number'
 
-    def equals(self, value: str) -> Self:
+    def equals(self, value: Number) -> Self:
         return self._build({'equals': value})
 
-    def does_not_equal(self, value: str) -> Self:
+    def does_not_equal(self, value: Number) -> Self:
         return self._build({'does_not_equal': value})
 
-    def greater_than(self, value: Union[int, Decimal]) -> Self:
+    def greater_than(self, value: Number) -> Self:
         return self._build({'greater_than': value})
 
-    def less_than(self, value: Union[int, Decimal]) -> Self:
+    def less_than(self, value: Number) -> Self:
         return self._build({'less_than': value})
 
-    def greater_than_or_equal_to(self, value: Union[int, Decimal]) -> Self:
+    def greater_than_or_equal_to(self, value: Number) -> Self:
         return self._build({'greater_than_or_equal_to': value})
 
-    def less_than_or_equal_to(self, value: Union[int, Decimal]) -> Self:
+    def less_than_or_equal_to(self, value: Number) -> Self:
         return self._build({'less_than_or_equal_to': value})
 
     def is_empty(self) -> Self:

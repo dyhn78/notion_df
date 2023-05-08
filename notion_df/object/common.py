@@ -103,6 +103,11 @@ class SelectOption(DualSerializable):
         return cls._deserialize_from_dict(serialized)
 
 
+class SelectOptions(list[SelectOption]):
+    def __init__(self, select_options: list[SelectOption]):
+        super().__init__(select_options)
+
+
 @dataclass
 class StatusGroups(DualSerializable):
     name: str

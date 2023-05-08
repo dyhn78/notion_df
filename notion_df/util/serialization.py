@@ -9,7 +9,8 @@ from decimal import Decimal
 from enum import Enum
 from functools import cache
 # noinspection PyUnresolvedReferences
-from typing import Any, get_origin, get_args, final, NewType, cast, get_type_hints, _GenericAlias, Union, Literal
+from typing import Any, get_origin, get_args, final, NewType, cast, get_type_hints, _GenericAlias, Union, Literal, \
+    TypeVar, overload
 from uuid import UUID
 
 import dateutil.parser
@@ -37,6 +38,19 @@ def serialize(obj: Any):
     if isinstance(obj, datetime):
         return serialize_datetime(obj)
     raise NotionDfValueError('cannot serialize', {'obj': obj})
+
+
+T = TypeVar('T')
+
+
+@overload
+def deserialize(typ: type[T], serialized: Any) -> T:
+    ...
+
+
+@overload
+def deserialize(typ: type, serialized: Any):
+    ...
 
 
 def deserialize(typ: type, serialized: Any):
@@ -111,8 +125,9 @@ def deserialize(typ: type, serialized: Any):
 class Serializable(metaclass=ABCMeta):
     """dataclass representation of the resources defined in Notion REST API.
     can be dumped into JSON object."""
+
     @abstractmethod
-    def serialize(self) -> dict[str, Any]:
+    def serialize(self) -> Any:
         pass
 
     @final
@@ -131,14 +146,15 @@ class Serializable(metaclass=ABCMeta):
 class Deserializable(metaclass=ABCMeta):
     """dataclass representation of the resources defined in Notion REST API.
     can be loaded from JSON object."""
+
     @classmethod
-    def deserialize(cls, serialized: dict[str, Any]) -> Self:
+    def deserialize(cls, serialized: Any) -> Self:
         """override this to allow proxy-deserialize of subclasses."""
         return cls._deserialize_this(serialized)
 
     @classmethod
     @abstractmethod
-    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
+    def _deserialize_this(cls, serialized: Any) -> Self:
         """override this to modify deserialization of itself."""
         raise NotionDfNotImplementedError
 

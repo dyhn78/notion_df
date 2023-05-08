@@ -5,7 +5,7 @@ import pytest
 
 from notion_df.entity import Database, Namespace
 from notion_df.object.filter import PropertyFilter, RollupPropertyAggregateFilter
-from notion_df.object.property_depr import date_property_type
+from notion_df.object.property import DatePropertyKey, TitlePropertyKey
 
 
 @pytest.fixture
@@ -22,7 +22,8 @@ def test_retrieve(database):
 
 
 def test_property_type():
-    date_property_type.page('name', 'date')
+    DatePropertyKey('my-date').page()
+    TitlePropertyKey('my-title').page()
 
 
 def test_filter(database):

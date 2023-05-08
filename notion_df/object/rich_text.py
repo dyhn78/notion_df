@@ -16,7 +16,8 @@ class RichText(DualSerializable, metaclass=ABCMeta):
     # https://developers.notion.com/reference/rich-text
     annotations: Optional[Annotations]
     """
-    * set `None` (the default value) to leave it unchanged.
+    Note: when updating block texts,
+    * set `None` (the default value) to retain the current annotations.
     * set `Annotations()` to remove the annotations and make a plain text.
     """
     plain_text: Optional[str]
@@ -74,18 +75,24 @@ class RichText(DualSerializable, metaclass=ABCMeta):
 rich_text_registry: FinalClassDict[tuple[str, ...], type[RichText]] = FinalClassDict()
 
 
+class RichTexts(list[RichText]):
+    def __init__(self, rich_texts: list[RichText]):
+        super().__init__(rich_texts)
+
+
 @dataclass
 class Text(RichText):
     content: str
-    link: Optional[str]
+    link: Optional[str] = None
     # ---
     annotations: Optional[Annotations] = None
     """
-    * set `None` (the default value) to leave it unchanged.
+    Note: when updating block texts,
+    * set `None` (the default value) to retain the current annotations.
     * set `Annotations()` to remove the annotations and make a plain text.
     """
-    plain_text: Optional[str] = field(init=False, default=None)
-    href: Optional[str] = field(init=False, default=None)
+    plain_text: Optional[str] = field(init=False, default=None, repr=False)
+    href: Optional[str] = field(init=False, default=None, repr=False)
 
     def _serialize_main(self) -> dict[str, Any]:
         return {
@@ -116,11 +123,12 @@ class Equation(RichText):
     # ---
     annotations: Optional[Annotations] = None
     """
-    * set `None` (the default value) to leave it unchanged.
+    Note: when updating block texts,
+    * set `None` (the default value) to retain the current annotations.
     * set `Annotations()` to remove the annotations and make a plain text.
     """
-    plain_text: Optional[str] = field(init=False, default=None)
-    href: Optional[str] = field(init=False, default=None)
+    plain_text: Optional[str] = field(init=False, default=None, repr=False)
+    href: Optional[str] = field(init=False, default=None, repr=False)
 
     def _serialize_main(self) -> dict[str, Any]:
         return {
@@ -143,11 +151,12 @@ class UserMention(RichText):
     # ---
     annotations: Optional[Annotations] = None
     """
-    * set `None` (the default value) to leave it unchanged.
+    Note: when updating block texts,
+    * set `None` (the default value) to retain the current annotations.
     * set `Annotations()` to remove the annotations and make a plain text.
     """
-    plain_text: Optional[str] = field(init=False, default=None)
-    href: Optional[str] = field(init=False, default=None)
+    plain_text: Optional[str] = field(init=False, default=None, repr=False)
+    href: Optional[str] = field(init=False, default=None, repr=False)
 
     def _serialize_main(self) -> dict[str, Any]:
         return {
@@ -176,11 +185,12 @@ class PageMention(RichText):
     # ---
     annotations: Optional[Annotations] = None
     """
-    * set `None` (the default value) to leave it unchanged.
+    Note: when updating block texts,
+    * set `None` (the default value) to retain the current annotations.
     * set `Annotations()` to remove the annotations and make a plain text.
     """
-    plain_text: Optional[str] = field(init=False, default=None)
-    href: Optional[str] = field(init=False, default=None)
+    plain_text: Optional[str] = field(init=False, default=None, repr=False)
+    href: Optional[str] = field(init=False, default=None, repr=False)
 
     def _serialize_main(self) -> dict[str, Any]:
         return {
@@ -206,11 +216,12 @@ class DatabaseMention(RichText):
     # ---
     annotations: Optional[Annotations] = None
     """
-    * set `None` (the default value) to leave it unchanged.
+    Note: when updating block texts,
+    * set `None` (the default value) to retain the current annotations.
     * set `Annotations()` to remove the annotations and make a plain text.
     """
-    plain_text: Optional[str] = field(init=False, default=None)
-    href: Optional[str] = field(init=False, default=None)
+    plain_text: Optional[str] = field(init=False, default=None, repr=False)
+    href: Optional[str] = field(init=False, default=None, repr=False)
 
     def _serialize_main(self) -> dict[str, Any]:
         return {
@@ -236,11 +247,12 @@ class DateMention(RichText):
     # ---
     annotations: Optional[Annotations] = None
     """
-    * set `None` (the default value) to leave it unchanged.
+    Note: when updating block texts,
+    * set `None` (the default value) to retain the current annotations.
     * set `Annotations()` to remove the annotations and make a plain text.
     """
-    plain_text: Optional[str] = field(init=False, default=None)
-    href: Optional[str] = field(init=False, default=None)
+    plain_text: Optional[str] = field(init=False, default=None, repr=False)
+    href: Optional[str] = field(init=False, default=None, repr=False)
 
     def _serialize_main(self) -> dict[str, Any]:
         return {
@@ -266,11 +278,12 @@ class TemplateDateMention(RichText):
     # ---
     annotations: Optional[Annotations] = None
     """
-    * set `None` (the default value) to leave it unchanged.
+    Note: when updating block texts,
+    * set `None` (the default value) to retain the current annotations.
     * set `Annotations()` to remove the annotations and make a plain text.
     """
-    plain_text: Optional[str] = field(init=False, default=None)
-    href: Optional[str] = field(init=False, default=None)
+    plain_text: Optional[str] = field(init=False, default=None, repr=False)
+    href: Optional[str] = field(init=False, default=None, repr=False)
 
     def _serialize_main(self) -> dict[str, Any]:
         return {
@@ -299,11 +312,12 @@ class TemplateUserMention(RichText):
     # ---
     annotations: Optional[Annotations] = None
     """
-    * set `None` (the default value) to leave it unchanged.
+    Note: when updating block texts,
+    * set `None` (the default value) to retain the current annotations.
     * set `Annotations()` to remove the annotations and make a plain text.
     """
-    plain_text: Optional[str] = field(init=False, default=None)
-    href: Optional[str] = field(init=False, default=None)
+    plain_text: Optional[str] = field(init=False, default=None, repr=False)
+    href: Optional[str] = field(init=False, default=None, repr=False)
 
     def _serialize_main(self) -> dict[str, Any]:
         return {
@@ -333,11 +347,12 @@ class LinkPreviewMention(RichText):
     # ---
     annotations: Optional[Annotations] = None
     """
-    * set `None` (the default value) to leave it unchanged.
+    Note: when updating block texts,
+    * set `None` (the default value) to retain the current annotations.
     * set `Annotations()` to remove the annotations and make a plain text.
     """
-    plain_text: Optional[str] = field(init=False, default=None)
-    href: Optional[str] = field(init=False, default=None)
+    plain_text: Optional[str] = field(init=False, default=None, repr=False)
+    href: Optional[str] = field(init=False, default=None, repr=False)
 
     def _serialize_main(self) -> dict[str, Any]:
         return {
