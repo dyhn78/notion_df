@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import inspect
 from abc import abstractmethod, ABCMeta
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -32,7 +33,7 @@ class BaseRequest(Generic[Response_T], metaclass=ABCMeta):
     return_type: ClassVar[type[Response]]
 
     def __init_subclass__(cls, **kwargs):
-        if hasattr(cls, 'return_type'):
+        if inspect.isclass(getattr(cls, 'return_type', None)):
             return
         cls.return_type = get_generic_arg(cls, Response)
 
