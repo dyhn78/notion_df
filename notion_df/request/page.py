@@ -9,7 +9,7 @@ from notion_df.object.common import Icon
 from notion_df.object.file import ExternalFile
 from notion_df.object.parent import ParentInfo
 from notion_df.property import Properties, PageProperties, PropertyKey
-from notion_df.request.core import SingleRequest, RequestSettings, Version, Method, MAX_PAGE_SIZE, \
+from notion_df.request.request_core import SingleRequest, RequestSettings, Version, Method, MAX_PAGE_SIZE, \
     PaginatedRequest, BaseRequest
 from notion_df.util.collection import DictFilter
 
@@ -93,7 +93,7 @@ class RetrievePagePropertyItem(BaseRequest[Any]):
 
     request_once = PaginatedRequest.request_once
 
-    def execute(self) -> Any:
+    def execute(self, print_body: bool) -> Any:
         # TODO: deduplicate with PaginatedRequest.execute() if possible.
         page_size_total = self.page_size
         if page_size_total == -1:

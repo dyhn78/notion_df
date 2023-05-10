@@ -9,10 +9,10 @@ from typing_extensions import Self
 
 from notion_df.object.common import DateRange, Annotations
 from notion_df.util.collection import FinalClassDict
-from notion_df.util.serialization import DualSerializable
+from notion_df.util.serialization import DualSerializable, deserialize, serialize
 
 
-class RichText(DualSerializable, metaclass=ABCMeta):
+class RichTextSpan(DualSerializable, metaclass=ABCMeta):
     # https://developers.notion.com/reference/rich-text
     annotations: Optional[Annotations]
     """
@@ -25,7 +25,7 @@ class RichText(DualSerializable, metaclass=ABCMeta):
 
     def __init_subclass__(cls, **kwargs) -> None:
         super().__init_subclass__(**kwargs)
-        rich_text_registry[cls.get_typename()] = cls
+        rich_text_span_registry[cls.get_typename()] = cls
 
     def serialize(self) -> dict[str, Any]:
         serialized = self._serialize_main()
@@ -59,7 +59,7 @@ class RichText(DualSerializable, metaclass=ABCMeta):
     @classmethod
     @final
     def deserialize(cls, serialized: dict[str, Any]) -> Self:
-        if cls != RichText:
+        if cls != RichTextSpan:
             return cls._deserialize_this(serialized)
 
         def get_typename(_serialized: dict[str, Any]) -> tuple[str, ...]:
@@ -68,15 +68,28 @@ class RichText(DualSerializable, metaclass=ABCMeta):
                 return (typename,) + get_typename(_serialized[typename])
             return ()
 
-        subclass = rich_text_registry[get_typename(serialized)]
+        subclass = rich_text_span_registry[get_typename(serialized)]
         return subclass.deserialize(serialized)
 
 
-rich_text_registry: FinalClassDict[tuple[str, ...], type[RichText]] = FinalClassDict()
+rich_text_span_registry: FinalClassDict[tuple[str, ...], type[RichTextSpan]] = FinalClassDict()
+
+
+class RichText(list[RichTextSpan], DualSerializable):
+    @property
+    def plain_text(self) -> str:
+        return ''.join(span.plain_text for span in self)
+
+    def serialize(self) -> Any:
+        return serialize(self)
+
+    @classmethod
+    def _deserialize_this(cls, serialized: Any) -> Self:
+        return cls(deserialize(list[RichTextSpan], serialized))
 
 
 @dataclass
-class Text(RichText):
+class TextSpan(RichTextSpan):
     content: str
     link: Optional[str] = None
     # ---
@@ -113,7 +126,7 @@ class Text(RichText):
 
 
 @dataclass
-class Equation(RichText):
+class Equation(RichTextSpan):
     expression: str
     # ---
     annotations: Optional[Annotations] = None
@@ -141,7 +154,7 @@ class Equation(RichText):
 
 
 @dataclass
-class UserMention(RichText):
+class UserMention(RichTextSpan):
     user_id: UUID
     # ---
     annotations: Optional[Annotations] = None
@@ -175,7 +188,7 @@ class UserMention(RichText):
 
 
 @dataclass
-class PageMention(RichText):
+class PageMention(RichTextSpan):
     page_id: UUID
     # ---
     annotations: Optional[Annotations] = None
@@ -206,7 +219,7 @@ class PageMention(RichText):
 
 
 @dataclass
-class DatabaseMention(RichText):
+class DatabaseMention(RichTextSpan):
     database_id: UUID
     # ---
     annotations: Optional[Annotations] = None
@@ -237,7 +250,7 @@ class DatabaseMention(RichText):
 
 
 @dataclass
-class DateMention(RichText):
+class DateMention(RichTextSpan):
     date: DateRange
     # ---
     annotations: Optional[Annotations] = None
@@ -268,7 +281,7 @@ class DateMention(RichText):
 
 
 @dataclass
-class TemplateDateMention(RichText):
+class TemplateDateMention(RichTextSpan):
     template_mention_date: Literal["today", "now"]
     # ---
     annotations: Optional[Annotations] = None
@@ -302,7 +315,7 @@ class TemplateDateMention(RichText):
 
 
 @dataclass
-class TemplateUserMention(RichText):
+class TemplateUserMention(RichTextSpan):
     template_mention_user = 'me'
     # ---
     annotations: Optional[Annotations] = None
@@ -336,7 +349,7 @@ class TemplateUserMention(RichText):
 
 
 @dataclass
-class LinkPreviewMention(RichText):
+class LinkPreviewMention(RichTextSpan):
     """https://developers.notion.com/reference/rich-text#link-preview-mentions"""
     url: str
     # ---

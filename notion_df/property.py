@@ -449,14 +449,14 @@ class RollupPropertyKey(PropertyKey):
 class RichTextPropertyKey(PropertyKey[TextFilterBuilder]):
     typename = 'rich_text'
     database = PlainDatabasePropertyValue
-    page = list[RichText]
+    page = RichText
     _filter_cls = TextFilterBuilder
 
 
 class TitlePropertyKey(PropertyKey[TextFilterBuilder]):
     typename = 'title'
     database = PlainDatabasePropertyValue
-    page = list[RichText]
+    page = RichText
     _filter_cls = TextFilterBuilder
 
 

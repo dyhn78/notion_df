@@ -8,10 +8,9 @@ from notion_df.object.block import DatabaseResponse, PageResponse
 from notion_df.object.common import Icon
 from notion_df.object.file import ExternalFile
 from notion_df.object.filter import Filter
-from notion_df.object.rich_text import RichText
 from notion_df.object.sort import Sort
 from notion_df.property import DatabaseProperties
-from notion_df.request.core import SingleRequest, RequestSettings, Version, Method, PaginatedRequest
+from notion_df.request.request_core import SingleRequest, RequestSettings, Version, Method, PaginatedRequest
 from notion_df.util.collection import DictFilter
 
 
@@ -33,7 +32,7 @@ class CreateDatabase(SingleRequest[DatabaseResponse]):
     """https://developers.notion.com/reference/create-a-database"""
     return_type = DatabaseResponse
     parent_id: UUID
-    title: list[RichText]
+    title: RichText
     properties: Optional[DatabaseProperties] = field(default_factory=DatabaseProperties)
     icon: Optional[Icon] = field(default=None)
     cover: Optional[ExternalFile] = field(default=None)
@@ -59,7 +58,7 @@ class CreateDatabase(SingleRequest[DatabaseResponse]):
 class UpdateDatabase(SingleRequest[DatabaseResponse]):
     return_type = DatabaseResponse
     id: UUID
-    title: list[RichText]
+    title: RichText
     properties: Optional[DatabaseProperties] = None
     """send empty DatabaseProperties to delete all properties."""
 
@@ -96,5 +95,5 @@ class QueryDatabase(PaginatedRequest[PageResponse]):
         })
 
     # TODO: resolve why type hint (Response_T -> PageResponse) is not working.
-    def execute(self) -> list[PageResponse]:
-        return super().execute()
+    def execute(self, print_body: bool) -> list[PageResponse]:
+        return super().execute(print_body)

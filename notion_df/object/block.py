@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any, Optional, cast
 from uuid import UUID
 
 from typing_extensions import Self
@@ -12,10 +12,10 @@ from notion_df.object.common import Icon
 from notion_df.object.constant import BlockColor, CodeLanguage
 from notion_df.object.file import File, ExternalFile
 from notion_df.object.parent import ParentInfo
-from notion_df.object.rich_text import RichText
+from notion_df.object.rich_text import RichTextSpan, RichText
 from notion_df.object.user import PartialUser
-from notion_df.property import DatabaseProperties, PageProperties
-from notion_df.request.core import Response
+from notion_df.property import DatabaseProperties, PageProperties, TitlePropertyKey
+from notion_df.request.request_core import Response
 from notion_df.util.collection import FinalClassDict
 from notion_df.util.serialization import DualSerializable
 
@@ -29,7 +29,7 @@ class DatabaseResponse(Response):
     icon: Optional[Icon]
     cover: Optional[ExternalFile]
     url: str
-    title: list[RichText]
+    title: RichText
     properties: DatabaseProperties
     archived: bool
     is_inline: bool
@@ -56,6 +56,13 @@ class PageResponse(Response):
     @classmethod
     def _deserialize_this(cls, response_data: dict[str, Any]) -> Self:
         return cls._deserialize_from_dict(response_data)
+
+    @property
+    def title(self) -> str:
+        for prop_key, prop_value in self.properties.items():
+            if isinstance(prop_key, TitlePropertyKey):
+                # TODO: remove cast after general type hints are provided
+                return cast(TitlePropertyKey.page, prop_value).plain_text
 
 
 @dataclass
@@ -112,7 +119,7 @@ class BlockType(DualSerializable, metaclass=ABCMeta):
 @dataclass
 class BookmarkBlockType(BlockType):
     url: str
-    caption: list[RichText] = field(default_factory=list)
+    caption: RichText = field(default_factory=RichText)
 
     @classmethod
     def get_typename(cls) -> str:
@@ -128,7 +135,7 @@ class BreadcrumbBlockType(BlockType):
 
 @dataclass
 class BulletedListItemBlockType(BlockType):
-    rich_text: list[RichText]
+    rich_text: RichText
     color: BlockColor = BlockColor.DEFAULT
     children: list[BlockResponse] = field(default_factory=list)
 
@@ -139,7 +146,7 @@ class BulletedListItemBlockType(BlockType):
 
 @dataclass
 class CalloutBlockType(BlockType):
-    rich_text: list[RichText]
+    rich_text: RichText
     icon: Icon
     color: BlockColor = BlockColor.DEFAULT
     children: list[BlockResponse] = field(default_factory=list)  # TODO: double check
@@ -169,9 +176,9 @@ class ChildPageBlockType(BlockType):
 
 @dataclass
 class CodeBlockType(BlockType):
-    rich_text: list[RichText]
+    rich_text: RichText
     language: CodeLanguage
-    caption: list[RichText] = field(default_factory=list)
+    caption: RichText = field(default_factory=RichText)
 
     @classmethod
     def get_typename(cls) -> str:
@@ -221,7 +228,7 @@ class EquationBlockType(BlockType):
 @dataclass
 class FileBlockType(BlockType):
     file: File
-    caption: list[RichText] = field(default_factory=list)
+    caption: RichText = field(default_factory=RichText)
 
     @classmethod
     def get_typename(cls) -> str:
@@ -237,7 +244,7 @@ class FileBlockType(BlockType):
 
 @dataclass
 class Heading1BlockType(BlockType):
-    rich_text: list[RichText]
+    rich_text: RichText
     is_toggleable: bool
     color: BlockColor = BlockColor.DEFAULT
 
@@ -248,7 +255,7 @@ class Heading1BlockType(BlockType):
 
 @dataclass
 class Heading2BlockType(BlockType):
-    rich_text: list[RichText]
+    rich_text: RichText
     is_toggleable: bool
     color: BlockColor = BlockColor.DEFAULT
 
@@ -259,7 +266,7 @@ class Heading2BlockType(BlockType):
 
 @dataclass
 class Heading3BlockType(BlockType):
-    rich_text: list[RichText]
+    rich_text: RichText
     is_toggleable: bool
     color: BlockColor = BlockColor.DEFAULT
 
@@ -291,7 +298,7 @@ class ImageBlockType(BlockType):
 
 @dataclass
 class NumberedListItemBlockType(BlockType):
-    rich_text: list[RichText]
+    rich_text: RichText
     color: BlockColor = BlockColor.DEFAULT
     children: list[BlockResponse] = field(default_factory=list)
 
@@ -302,7 +309,7 @@ class NumberedListItemBlockType(BlockType):
 
 @dataclass
 class ParagraphBlockType(BlockType):
-    rich_text: list[RichText]
+    rich_text: RichText
     color: BlockColor = BlockColor.DEFAULT
     children: list[BlockResponse] = field(default_factory=list)
 
@@ -314,7 +321,7 @@ class ParagraphBlockType(BlockType):
 @dataclass
 class PDFBlockType(BlockType):
     file: File
-    caption: list[RichText] = field(default_factory=list)
+    caption: RichText = field(default_factory=RichText)
 
     def serialize(self) -> dict[str, Any]:
         return {'caption': self.caption, **self.file.serialize()}
@@ -330,7 +337,7 @@ class PDFBlockType(BlockType):
 
 @dataclass
 class QuoteBlockType(BlockType):
-    rich_text: list[RichText]
+    rich_text: RichText
     color: BlockColor = BlockColor.DEFAULT
     children: list[BlockResponse] = field(default_factory=list)
 
@@ -393,7 +400,7 @@ class TableBlockType(BlockType):
 
 @dataclass
 class TableRowBlockType(BlockType):
-    cells: list[list[RichText]]
+    cells: list[list[RichTextSpan]]
     """An array of cell contents in horizontal display order. Each cell is an array of rich text objects."""
 
     @classmethod
@@ -412,7 +419,7 @@ class TableOfContentsBlockType(BlockType):
 
 @dataclass
 class ToDoBlockType(BlockType):
-    rich_text: list[RichText]
+    rich_text: RichText
     checked: bool
     color: BlockColor = BlockColor.DEFAULT
     children: list[BlockResponse] = field(default_factory=list)
@@ -424,7 +431,7 @@ class ToDoBlockType(BlockType):
 
 @dataclass
 class ToggleBlockType(BlockType):
-    rich_text: list[RichText]
+    rich_text: RichText
     color: BlockColor = BlockColor.DEFAULT
     children: list[BlockResponse] = field(default_factory=list)
 

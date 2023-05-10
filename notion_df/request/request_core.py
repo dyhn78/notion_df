@@ -47,7 +47,7 @@ class BaseRequest(Generic[Response_T], metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def execute(self) -> Response_T:
+    def execute(self, print_body: bool) -> Response_T:
         """the unified execution method."""
         pass
 
@@ -70,7 +70,7 @@ class RequestSettings:
 @dataclass
 class SingleRequest(BaseRequest[Response_T], metaclass=ABCMeta):
     @final
-    def execute(self) -> Response_T:
+    def execute(self, print_body: bool) -> Response_T:
         settings = self.get_settings()
         response = requests.request(settings.method.value, settings.url,
                                     headers=self.headers, json=serialize(self.get_body()))
@@ -102,14 +102,20 @@ class PaginatedRequest(BaseRequest[list[ResponseElement_T]], metaclass=ABCMeta):
         settings = self.get_settings()
         from pprint import pprint
         print()
+        request_kwargs = dict(method=settings.method.value, url=settings.url,
+                              headers=self.headers, json=serialize(body))
+
         pprint(dict(method=settings.method.value, url=settings.url,
                     headers=self.headers, json=serialize(body)))
         response = requests.request(method=settings.method.value, url=settings.url,
                                     headers=self.headers, json=serialize(body))
-        response.raise_for_status()
+        try:
+            response.raise_for_status()
+        except requests.exceptions.HTTPError:
+            raise requests.exceptions.HTTPError(response.json())
         return response.json()
 
-    def execute(self) -> list[ResponseElement_T]:
+    def execute(self, print_body: bool) -> list[ResponseElement_T]:
         page_size_total = self.page_size
         if page_size_total == -1:
             page_size_total = float('inf')
