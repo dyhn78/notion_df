@@ -71,9 +71,9 @@ class Properties(DualSerializable, MutableMapping[PropertyKey[FilterBuilder_T], 
     _value_by_name: dict[str, PropertyValue_T]
 
     def __init__(self, items: Optional[dict[PropertyKey, PropertyValue_T]] = None):
-        self._value_by_name = {}
         self._key_by_id = {}
         self._key_by_name = {}
+        self._value_by_name = {}
         if not items:
             return
         for key, value in items.items():
@@ -125,8 +125,8 @@ class DatabaseProperties(Properties):
     def serialize(self) -> dict[str, Any]:
         return {key.name: {
             'type': key.typename,
-            key.typename: serialize(self[key]),
-        } for key in self.keys()}
+            key.typename: serialize(value),
+        } for key, value in self.items()}
 
     @classmethod
     def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
@@ -150,8 +150,8 @@ class PageProperties(Properties):
         # noinspection PyProtectedMember
         return {key.name: {
             'type': key.typename,
-            key.typename: key._serialize_page_value(self[key]),
-        } for key in self.keys()}
+            key.typename: key._serialize_page_value(value),
+        } for key, value in self.items()}
 
     @classmethod
     def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
