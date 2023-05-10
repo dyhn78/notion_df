@@ -27,6 +27,8 @@ class NotionDfException(Exception, ABC):
         self.args: tuple[str, ...] = ()
         if self.description:
             self.args += self.description,
+        if not self.vars:
+            return
         var_items_list = [f'{k} = {v}' for k, v in self.vars.items()]
         if self.linebreak:
             var_items_str = '[[\n' + '\n'.join(var_items_list) + '\n]]'

@@ -58,11 +58,6 @@ class User(DualSerializable, metaclass=ABCMeta):
         return get_subclass()._deserialize_this(serialized)
 
 
-class Users(list[User]):
-    def __init__(self, users: list[User]):
-        super().__init__(users)
-
-
 @dataclass
 class Person(User):
     email: str

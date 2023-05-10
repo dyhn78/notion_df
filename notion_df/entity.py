@@ -6,16 +6,14 @@ from typing import Optional, TypeVar, Union, Generic, Iterator, final, Final, An
 
 from typing_extensions import Self
 
-from notion_df.object.block import BlockType, BlockResponse, ChildPageBlockType
+from notion_df.object.block import BlockType, BlockResponse, ChildPageBlockType, DatabaseResponse, PageResponse
 from notion_df.object.common import Icon
-from notion_df.object.database import DatabaseResponse
 from notion_df.object.file import ExternalFile, File
 from notion_df.object.filter import Filter
-from notion_df.object.page import PageResponse
 from notion_df.object.parent import ParentInfo
-from notion_df.object.property import DatabaseProperties, PageProperties, PropertyKey
 from notion_df.object.rich_text import RichText
 from notion_df.object.sort import Sort
+from notion_df.property import PropertyKey, PageProperties, DatabaseProperties
 from notion_df.request.block import AppendBlockChildren, RetrieveBlock, RetrieveBlockChildren, UpdateBlock, DeleteBlock
 from notion_df.request.core import Response_T
 from notion_df.request.database import CreateDatabase, UpdateDatabase, RetrieveDatabase, QueryDatabase
@@ -136,16 +134,18 @@ class Database(BaseBlock[DatabaseResponse]):
             page.last_response = page_response
         return PageChildren(page_list)
 
-    def retrieve(self) -> Self:
+    def retrieve(self) -> DatabaseResponse:
         self.last_response = RetrieveDatabase(self.token, self.id).execute()
         return self.last_response
 
     # noinspection PyShadowingBuiltins
-    def query(self, filter: Filter, sort: Optional[list[Sort]] = None, page_size: int = -1) -> Children[Page]:
-        response_page_list = QueryDatabase(self.token, self.id, filter, sort, page_size).execute()
+    def query(self, filter: Optional[Filter] = None, sort: Optional[list[Sort]] = None,
+              page_size: int = -1, print_body=False) -> Children[Page]:
+        request = QueryDatabase(self.token, self.id, filter, sort, page_size)
+        response_page_list = request.execute()
         return self._send_child_page_response_list(response_page_list)
 
-    def update(self, title: list[RichText], properties: DatabaseProperties) -> Self:
+    def update(self, title: list[RichText], properties: DatabaseProperties) -> DatabaseResponse:
         self.last_response = UpdateDatabase(self.token, self.id, title, properties).execute()
         return self.last_response
 
@@ -267,14 +267,11 @@ class Namespace(MutableMapping[Namespace_KT, BaseBlock_T]):
     def __iter__(self) -> Iterator[UUID]:
         return iter(self.instances)
 
-    # noinspection PyShadowingBuiltins
-    def block(self, id_or_url: UUID | str, cls: type[Block_T] = Block) -> Block_T:
-        return cls(self, id_or_url)
+    def block(self, id_or_url: UUID | str) -> Block:
+        return Block(self, id_or_url)
 
-    # noinspection PyShadowingBuiltins
-    def database(self, id_or_url: UUID | str, cls: type[Database_T] = Database) -> Database_T:
-        return cls(self, id_or_url)
+    def database(self, id_or_url: UUID | str) -> Database:
+        return Database(self, id_or_url)
 
-    # noinspection PyShadowingBuiltins
-    def page(self, id_or_url: UUID | str, cls: type[Page_T] = Page) -> Page_T:
-        return cls(self, id_or_url)
+    def page(self, id_or_url: UUID | str) -> Page:
+        return Page(self, id_or_url)

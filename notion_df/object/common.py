@@ -1,14 +1,14 @@
 from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
-from dataclasses import dataclass, field
-from datetime import datetime
+from dataclasses import dataclass, field, fields
+from datetime import datetime, date
 from typing import Any
 
 from typing_extensions import Self
 
 from notion_df.object.constant import BlockColor, OptionColor
-from notion_df.util.serialization import DualSerializable, serialize_datetime, deserialize_datetime
+from notion_df.util.serialization import DualSerializable
 
 
 @dataclass
@@ -26,6 +26,13 @@ class Annotations(DualSerializable):
     @classmethod
     def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
         return cls._deserialize_from_dict(serialized)
+
+    def __repr__(self):
+        # repr() only non-default fields
+        return (f'{type(self).__name__}('
+                + ','.join(f'{fd.name}={getattr(self, fd.name)}' for fd in fields(self)
+                           if getattr(self, fd.name) != fd.default)
+                + ')')
 
 
 icon_registry: dict[str, type[Icon]] = {}
@@ -73,18 +80,15 @@ class Emoji(Icon):
 @dataclass
 class DateRange(DualSerializable):
     # timezone option is disabled. you should handle timezone inside 'start' and 'end'.
-    start: datetime
-    end: datetime
+    start: date | datetime
+    end: date | datetime
 
     def serialize(self):
-        return {
-            'start': serialize_datetime(self.start),
-            'end': serialize_datetime(self.end),
-        }
+        return self._serialize_as_dict()
 
     @classmethod
     def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
-        return cls(deserialize_datetime(serialized['start']), deserialize_datetime(serialized['end']))
+        return cls._deserialize_from_dict(serialized)
 
 
 @dataclass

@@ -3,7 +3,8 @@ from __future__ import annotations
 import inspect
 import re
 from itertools import chain
-from typing import Hashable, Any, Optional, Iterable, Iterator, TypeVar, get_args, cast, Generic
+from typing import Hashable, Any, Optional, Iterable, Iterator, TypeVar, get_args, cast, Generic, get_type_hints, \
+    get_origin, ClassVar
 from uuid import UUID
 
 from notion_df.util.exception import NotionDfTypeError
@@ -25,6 +26,20 @@ def get_num_iterator() -> Iterator[int]:
     while True:
         yield num
         num += 1
+
+
+uuid_pattern = re.compile(r'[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}', re.I)
+
+
+def get_id(id_or_url: str | UUID) -> UUID:
+    # Regular expression to match both dashed and no-dash UUIDs
+    if isinstance(id_or_url, UUID):
+        return id_or_url
+    match = uuid_pattern.search(id_or_url)
+    if match:
+        return UUID(match.group(0))
+    else:
+        return UUID(id_or_url)
 
 
 Type_T = TypeVar('Type_T', bound=type)
@@ -49,15 +64,13 @@ def get_generic_arg(cls: type[Generic], cast_type: Type_T) -> Type_T:
     return arg
 
 
-uuid_pattern = re.compile(r'[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}', re.I)
-
-
-def get_id(id_or_url: str | UUID) -> UUID:
-    # Regular expression to match both dashed and no-dash UUIDs
-    if isinstance(id_or_url, UUID):
-        return id_or_url
-    match = uuid_pattern.search(id_or_url)
-    if match:
-        return UUID(match.group(0))
-    else:
-        return UUID(id_or_url)
+def check_classvars_are_defined(cls):
+    if inspect.isabstract(cls):
+        return
+    attr_names = []
+    for attr_name, attr_type in get_type_hints(cls).items():
+        if get_origin(attr_type) == ClassVar and hasattr(super(cls), attr_name) and not hasattr(cls, attr_name):
+            attr_names.append(attr_name)
+    if attr_names:
+        raise NotionDfTypeError('all class attributes must be filled',
+                                {'cls': cls, 'undefined_attr_names': attr_names})

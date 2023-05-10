@@ -4,12 +4,11 @@ from dataclasses import dataclass, field
 from typing import Any, Optional
 from uuid import UUID
 
-from notion_df.object.block import BlockType, serialize_partial_block_list
+from notion_df.object.block import BlockType, serialize_partial_block_list, PageResponse
 from notion_df.object.common import Icon
 from notion_df.object.file import ExternalFile
-from notion_df.object.page import PageResponse
 from notion_df.object.parent import ParentInfo
-from notion_df.object.property import Properties, PageProperties, property_key_registry
+from notion_df.property import Properties, PageProperties, PropertyKey
 from notion_df.request.core import SingleRequest, RequestSettings, Version, Method, MAX_PAGE_SIZE, \
     PaginatedRequest, BaseRequest
 from notion_df.util.collection import DictFilter
@@ -19,6 +18,7 @@ from notion_df.util.collection import DictFilter
 class RetrievePage(SingleRequest[PageResponse]):
     """https://developers.notion.com/reference/retrieve-a-page"""
     id: UUID
+    return_type = PageResponse
 
     def get_settings(self) -> RequestSettings:
         return RequestSettings(Version.v20220628, Method.GET,
@@ -31,6 +31,7 @@ class RetrievePage(SingleRequest[PageResponse]):
 @dataclass
 class CreatePage(SingleRequest[PageResponse]):
     """https://developers.notion.com/reference/post-page"""
+    return_type = PageResponse
     parent: ParentInfo
     properties: PageProperties = field(default_factory=Properties)
     children: list[BlockType] = None
@@ -54,6 +55,7 @@ class CreatePage(SingleRequest[PageResponse]):
 @dataclass
 class UpdatePage(SingleRequest[PageResponse]):
     """https://developers.notion.com/reference/patch-page"""
+    return_type = PageResponse
     id: UUID
     properties: Optional[PageProperties] = None
     """send empty PageProperty to delete all properties."""
@@ -77,6 +79,7 @@ class UpdatePage(SingleRequest[PageResponse]):
 @dataclass
 class RetrievePagePropertyItem(BaseRequest[Any]):
     """https://developers.notion.com/reference/retrieve-a-page-property"""
+    return_type = Any
     page_id: UUID
     property_id: UUID
     page_size: int = -1
@@ -99,8 +102,9 @@ class RetrievePagePropertyItem(BaseRequest[Any]):
         page_size_retrieved = page_size
 
         data = self.request_once(page_size, None)
-        if data['object'] == 'property_item':
-            return PageProperty.deserialize(data)
+        if (prop_serialized := data)['object'] == 'property_item':
+            # noinspection PyProtectedMember
+            return PropertyKey._deserialize_page_value(prop_serialized)
 
         data_list = []
         while page_size_retrieved < page_size_total and data['has_more']:
@@ -112,8 +116,7 @@ class RetrievePagePropertyItem(BaseRequest[Any]):
             data_list.append(data)
 
         typename = data_list[0]['property_item']['type']
-        property_key = property_key_registry[typename]
         value_list = [data['result'][typename] for data in data_list]
-        serialized = {'type': property_key.typename, typename: value_list, **data_list[0]['result']}
+        merged_prop_serialized = {**data_list[0]['result'], 'type': typename, typename: value_list}
         # noinspection PyProtectedMember
-        return property_key._deserialize_page_value(serialized, typename)
+        return PropertyKey._deserialize_page_value(merged_prop_serialized)

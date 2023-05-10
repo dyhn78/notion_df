@@ -4,20 +4,20 @@ from dataclasses import dataclass, field
 from typing import Any, Optional
 from uuid import UUID
 
+from notion_df.object.block import DatabaseResponse, PageResponse
 from notion_df.object.common import Icon
-from notion_df.object.database import DatabaseResponse
 from notion_df.object.file import ExternalFile
 from notion_df.object.filter import Filter
-from notion_df.object.page import PageResponse
-from notion_df.object.property import DatabaseProperties
 from notion_df.object.rich_text import RichText
 from notion_df.object.sort import Sort
+from notion_df.property import DatabaseProperties
 from notion_df.request.core import SingleRequest, RequestSettings, Version, Method, PaginatedRequest
 from notion_df.util.collection import DictFilter
 
 
 @dataclass
 class RetrieveDatabase(SingleRequest[DatabaseResponse]):
+    return_type = DatabaseResponse
     id: UUID
 
     def get_settings(self) -> RequestSettings:
@@ -31,6 +31,7 @@ class RetrieveDatabase(SingleRequest[DatabaseResponse]):
 @dataclass
 class CreateDatabase(SingleRequest[DatabaseResponse]):
     """https://developers.notion.com/reference/create-a-database"""
+    return_type = DatabaseResponse
     parent_id: UUID
     title: list[RichText]
     properties: Optional[DatabaseProperties] = field(default_factory=DatabaseProperties)
@@ -56,6 +57,7 @@ class CreateDatabase(SingleRequest[DatabaseResponse]):
 
 @dataclass
 class UpdateDatabase(SingleRequest[DatabaseResponse]):
+    return_type = DatabaseResponse
     id: UUID
     title: list[RichText]
     properties: Optional[DatabaseProperties] = None
@@ -77,6 +79,7 @@ class UpdateDatabase(SingleRequest[DatabaseResponse]):
 
 @dataclass
 class QueryDatabase(PaginatedRequest[PageResponse]):
+    return_type = PageResponse
     id: UUID
     filter: Filter
     sort: list[Sort]

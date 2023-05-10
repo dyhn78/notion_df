@@ -1,5 +1,5 @@
-import pytz
+from __future__ import annotations
 
+from datetime import timezone, timedelta
 
-class Variables:
-    timezone = pytz.utc
+my_tz = timezone(timedelta(hours=9))

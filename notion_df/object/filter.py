@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, date
 from typing import Literal, TypeVar, Any, Callable
 from uuid import UUID
 
@@ -51,7 +51,7 @@ class PropertyFilter(Filter):
     def serialize(self):
         return {
             "property": self.name_or_id,
-            self.typename: self.condition
+            self.typename: serialize(self.condition)
         }
 
 
@@ -67,7 +67,7 @@ class RollupPropertyAggregateFilter(Filter):
             "property": self.name_or_id,
             "rollup": {
                 self.aggregate_type: {
-                    self.typename: self.condition
+                    self.typename: serialize(self.condition)
                 }
             }
         }
@@ -77,7 +77,7 @@ class RollupPropertyAggregateFilter(Filter):
         return {
             "property": self.name_or_id,
             self.aggregate_type: {
-                self.typename: self.condition
+                self.typename: serialize(self.condition)
             }
         }
 
@@ -90,7 +90,7 @@ class TimestampFilter(Filter):
     def serialize(self):
         return {
             "timestamp_type": self.name,
-            self.name: self.condition
+            self.name: serialize(self.condition)
         }
 
 
@@ -233,19 +233,19 @@ class DateFilterBuilder(FilterBuilder):
     def get_typename(cls) -> str:
         return 'date'
 
-    def equals(self, value: datetime) -> Filter:
+    def equals(self, value: date | datetime) -> Filter:
         return self._build({'equals': value})
 
-    def before(self, value: datetime) -> Filter:
+    def before(self, value: date | datetime) -> Filter:
         return self._build({'before': value})
 
-    def after(self, value: datetime) -> Filter:
+    def after(self, value: date | datetime) -> Filter:
         return self._build({'after': value})
 
-    def on_or_before(self, value: datetime) -> Filter:
+    def on_or_before(self, value: date | datetime) -> Filter:
         return self._build({'on_or_before': value})
 
-    def on_or_after(self, value: datetime) -> Filter:
+    def on_or_after(self, value: date | datetime) -> Filter:
         return self._build({'on_or_after': value})
 
     def is_empty(self) -> Filter:

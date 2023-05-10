@@ -12,6 +12,7 @@ from notion_df.util.collection import DictFilter
 @dataclass
 class AppendBlockChildren(SingleRequest[list[BlockResponse]]):
     """https://developers.notion.com/reference/patch-block-children"""
+    return_type = BlockResponse
     id: UUID
     children: list[BlockType]
 
@@ -33,6 +34,7 @@ class AppendBlockChildren(SingleRequest[list[BlockResponse]]):
 @dataclass
 class RetrieveBlock(SingleRequest[BlockResponse]):
     """https://developers.notion.com/reference/retrieve-a-block"""
+    return_type = BlockResponse
     id: UUID
 
     def get_settings(self) -> RequestSettings:
@@ -46,6 +48,7 @@ class RetrieveBlock(SingleRequest[BlockResponse]):
 @dataclass
 class RetrieveBlockChildren(PaginatedRequest[BlockResponse]):
     """https://developers.notion.com/reference/get-block-children"""
+    return_type = BlockResponse
     id: UUID
 
     def get_settings(self) -> RequestSettings:
@@ -59,6 +62,7 @@ class RetrieveBlockChildren(PaginatedRequest[BlockResponse]):
 @dataclass
 class UpdateBlock(SingleRequest[BlockResponse]):
     """https://developers.notion.com/reference/update-a-block"""
+    return_type = BlockResponse
     id: UUID
     block_type: BlockType = field(default=None)
     archived: bool = field(default=None)
@@ -78,6 +82,7 @@ class UpdateBlock(SingleRequest[BlockResponse]):
 @dataclass
 class DeleteBlock(SingleRequest[BlockResponse]):
     """https://developers.notion.com/reference/delete-a-block"""
+    return_type = BlockResponse
     id: UUID
 
     def get_settings(self) -> RequestSettings:

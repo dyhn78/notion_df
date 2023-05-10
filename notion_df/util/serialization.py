@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import inspect
+import re
 import types
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, fields, InitVar
-from datetime import datetime
+from datetime import datetime, date
 from decimal import Decimal
 from enum import Enum
 from functools import cache
@@ -17,7 +18,7 @@ import dateutil.parser
 from typing_extensions import Self
 
 from notion_df.util.exception import NotionDfValueError, NotionDfNotImplementedError, NotionDfTypeError
-from notion_df.variable import Variables
+from notion_df.variable import my_tz
 
 
 def serialize(obj: Any):
@@ -35,7 +36,7 @@ def serialize(obj: Any):
             return obj
     if isinstance(obj, Enum):
         return obj.value
-    if isinstance(obj, datetime):
+    if isinstance(obj, date):
         return serialize_datetime(obj)
     raise NotionDfValueError('cannot serialize', {'obj': obj})
 
@@ -59,9 +60,9 @@ def deserialize(typ: type, serialized: Any):
     typ_origin: type = get_origin(typ)
     typ_args = get_args(typ)
 
-    # 0. None
-    if serialized is None:
-        return None
+    # 0. explicitly unsupported values
+    if typ is None or serialized is None:
+        return serialized
 
     # 1. Non-class types
     if typ == Any:
@@ -134,11 +135,12 @@ class Serializable(metaclass=ABCMeta):
     def _serialize_as_dict(self, **overrides: Any) -> dict[str, Any]:
         """helper method to implement serialize().
         Note: this drops post-init fields."""
-        serialized = overrides
+        serialized = {}
         for fd in fields(self):
             if not fd.init:
                 continue
-            serialized.setdefault(fd.name, getattr(self, fd.name))
+            fd_value = overrides.get(fd.name, getattr(self, fd.name))
+            serialized[fd.name] = serialize(fd_value)
         return serialized
 
 
@@ -190,10 +192,14 @@ class DualSerializable(Serializable, Deserializable, metaclass=ABCMeta):
     pass
 
 
-def serialize_datetime(dt: datetime):
-    return dt.astimezone(Variables.timezone).isoformat()
+def serialize_datetime(dt: date | datetime):
+    if isinstance(dt, datetime):
+        dt = dt.replace(tzinfo=my_tz).astimezone(my_tz)
+    return dt.isoformat()
 
 
-def deserialize_datetime(serialized: str):
-    datetime_obj = dateutil.parser.parse(serialized)
-    return datetime_obj.astimezone(Variables.timezone)
+def deserialize_datetime(serialized: str) -> date | datetime:
+    dt = dateutil.parser.parse(serialized)
+    if re.match(r'^\d{4}-\d{2}-\d{2}$', serialized):
+        return dt.date()
+    return dt.astimezone(my_tz)

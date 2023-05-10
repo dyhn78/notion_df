@@ -75,11 +75,6 @@ class RichText(DualSerializable, metaclass=ABCMeta):
 rich_text_registry: FinalClassDict[tuple[str, ...], type[RichText]] = FinalClassDict()
 
 
-class RichTexts(list[RichText]):
-    def __init__(self, rich_texts: list[RichText]):
-        super().__init__(rich_texts)
-
-
 @dataclass
 class Text(RichText):
     content: str

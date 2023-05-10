@@ -8,8 +8,8 @@ from typing import TypeVar, Generic, ClassVar, Any, final, Optional
 
 import requests
 
-from notion_df.util.collection import StrEnum
-from notion_df.util.misc import get_generic_arg
+from notion_df.util.collection import StrEnum, DictFilter
+from notion_df.util.misc import check_classvars_are_defined
 from notion_df.util.serialization import DualSerializable, deserialize, serialize, Deserializable
 
 MAX_PAGE_SIZE = 100
@@ -35,7 +35,7 @@ class BaseRequest(Generic[Response_T], metaclass=ABCMeta):
     def __init_subclass__(cls, **kwargs):
         if inspect.isclass(getattr(cls, 'return_type', None)):
             return
-        cls.return_type = get_generic_arg(cls, Response)
+        check_classvars_are_defined(cls)
 
     @abstractmethod
     def get_settings(self) -> RequestSettings:
@@ -73,8 +73,11 @@ class SingleRequest(BaseRequest[Response_T], metaclass=ABCMeta):
     def execute(self) -> Response_T:
         settings = self.get_settings()
         response = requests.request(settings.method.value, settings.url,
-                                    headers=self.headers, data=serialize(self.get_body()))
-        response.raise_for_status()
+                                    headers=self.headers, json=serialize(self.get_body()))
+        try:
+            response.raise_for_status()
+        except requests.exceptions.HTTPError:
+            raise requests.exceptions.HTTPError(response.json())
         return self.parse_response_data(response.json())  # nomypy
 
     @classmethod
@@ -83,6 +86,7 @@ class SingleRequest(BaseRequest[Response_T], metaclass=ABCMeta):
 
 
 class PaginatedRequest(BaseRequest[list[ResponseElement_T]], metaclass=ABCMeta):
+    """return_type must be ResponseElement_T (not Response_T)"""
     page_size: int
 
     @final
@@ -90,18 +94,22 @@ class PaginatedRequest(BaseRequest[list[ResponseElement_T]], metaclass=ABCMeta):
         if page_size == MAX_PAGE_SIZE and start_cursor is None:
             body = self.get_body()
         else:
-            body = {
+            body = DictFilter.not_none({
                 'page_size': page_size,
                 'start_cursor': start_cursor,
                 **self.get_body()
-            }
+            })
         settings = self.get_settings()
-        response = requests.request(settings.method.value, settings.url,
-                                    headers=self.headers, data=serialize(body))
+        from pprint import pprint
+        print()
+        pprint(dict(method=settings.method.value, url=settings.url,
+                    headers=self.headers, json=serialize(body)))
+        response = requests.request(method=settings.method.value, url=settings.url,
+                                    headers=self.headers, json=serialize(body))
         response.raise_for_status()
         return response.json()
 
-    def execute(self) -> Response_T:
+    def execute(self) -> list[ResponseElement_T]:
         page_size_total = self.page_size
         if page_size_total == -1:
             page_size_total = float('inf')
