@@ -66,65 +66,67 @@ class PropertyKey(Generic[FilterBuilder_T], metaclass=ABCMeta):
 
 class Properties(DualSerializable, MutableMapping[PropertyKey[FilterBuilder_T], PropertyValue_T],
                  Generic[FilterBuilder_T, PropertyValue_T], metaclass=ABCMeta):
-    key_by_id: dict[str, PropertyValue_T]
-    key_by_name: dict[str, PropertyValue_T]
+    _key_by_id: dict[str, PropertyKey]
+    _key_by_name: dict[str, PropertyKey]
+    _value_by_name: dict[str, PropertyValue_T]
 
     def __init__(self, items: Optional[dict[PropertyKey, PropertyValue_T]] = None):
-        self._items = {}
-        self.key_by_id = {}
-        self.key_by_name = {}
+        self._value_by_name = {}
+        self._key_by_id = {}
+        self._key_by_name = {}
         if not items:
             return
         for key, value in items.items():
             self[key] = value
 
-    def __repr__(self):
-        return f'{type(self).__name__}({set(self.key_by_name.keys())})'
+    def __repr__(self) -> str:
+        return f'{type(self).__name__}({set(self._key_by_name.keys())})'
 
-    def __iter__(self) -> Iterator[PropertyValue_T]:
-        return iter(self._items)
+    def __iter__(self) -> Iterator[PropertyKey]:
+        return iter(self._key_by_name.values())
 
     def __len__(self) -> int:
-        return len(self._items)
+        return len(self._value_by_name)
 
     def _get_key(self, key: str | PropertyKey) -> PropertyKey:
         if isinstance(key, str):
-            if key in self.key_by_id:
-                return self.key_by_id[key]
-            return self.key_by_name[key]
+            if key in self._key_by_id:
+                return self._key_by_id[key]
+            return self._key_by_name[key]
         if isinstance(key, PropertyKey):
             return key
         raise NotionDfKeyError('bad key', {'key': key})
 
     def __getitem__(self, key: str | PropertyKey) -> PropertyValue_T:
-        return self._items[self._get_key(key)]
+        return self._value_by_name[self._get_key(key).name]
 
     def get(self, key: str | PropertyKey, default: Optional[PropertyValue_T] = None) -> Optional[PropertyValue_T]:
         key = self._get_key(key)
         try:
-            return self[key]
+            return self[key.name]
         except KeyError:
             return default
 
     # TODO provide type hinting for each subclasses
     def __setitem__(self, key: str | PropertyKey, value: PropertyValue_T) -> None:
-        self.key_by_id[key.id] = key
-        self.key_by_name[key.name] = key
-        self._items[key] = value
+        key = self._get_key(key)
+        self._key_by_id[key.id] = key
+        self._key_by_name[key.name] = key
+        self._value_by_name[key.name] = value
 
     def __delitem__(self, key: str | PropertyKey) -> None:
         key = self._get_key(key)
-        self.key_by_name.pop(key.name)
-        self.key_by_id.pop(key.id)
-        self._items.pop(key)
+        self._key_by_name.pop(key.name)
+        self._key_by_id.pop(key.id)
+        self._value_by_name.pop(key.name)
 
 
 class DatabaseProperties(Properties):
     def serialize(self) -> dict[str, Any]:
         return {key.name: {
             'type': key.typename,
-            key.typename: serialize(value),
-        } for key, value in self._items.items()}
+            key.typename: serialize(self[key]),
+        } for key in self.keys()}
 
     @classmethod
     def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
@@ -148,8 +150,8 @@ class PageProperties(Properties):
         # noinspection PyProtectedMember
         return {key.name: {
             'type': key.typename,
-            key.typename: key._serialize_page_value(value),
-        } for key, value in self._items.items()}
+            key.typename: key._serialize_page_value(self[key]),
+        } for key in self.keys()}
 
     @classmethod
     def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
