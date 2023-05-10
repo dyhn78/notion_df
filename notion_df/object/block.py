@@ -3,6 +3,7 @@ from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
+from functools import cached_property
 from typing import Any, Optional, cast
 from uuid import UUID
 
@@ -57,11 +58,11 @@ class PageResponse(Response):
     def _deserialize_this(cls, response_data: dict[str, Any]) -> Self:
         return cls._deserialize_from_dict(response_data)
 
-    @property
+    @cached_property
     def title(self) -> str:
         for prop_key, prop_value in self.properties.items():
             if isinstance(prop_key, TitlePropertyKey):
-                # TODO: remove cast after general type hints are provided
+                # TODO: remove cast() after general type hints are provided
                 return cast(TitlePropertyKey.page, prop_value).plain_text
 
 
