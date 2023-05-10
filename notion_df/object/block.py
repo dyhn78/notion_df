@@ -3,8 +3,7 @@ from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
-from functools import cached_property
-from typing import Any, Optional, cast
+from typing import Any, Optional
 from uuid import UUID
 
 from typing_extensions import Self
@@ -15,7 +14,7 @@ from notion_df.object.file import File, ExternalFile
 from notion_df.object.parent import ParentInfo
 from notion_df.object.rich_text import RichTextSpan, RichText
 from notion_df.object.user import PartialUser
-from notion_df.property import DatabaseProperties, PageProperties, TitlePropertyKey
+from notion_df.property import DatabaseProperties, PageProperties
 from notion_df.request.request_core import Response
 from notion_df.util.collection import FinalClassDict
 from notion_df.util.serialization import DualSerializable
@@ -57,13 +56,6 @@ class PageResponse(Response):
     @classmethod
     def _deserialize_this(cls, response_data: dict[str, Any]) -> Self:
         return cls._deserialize_from_dict(response_data)
-
-    @cached_property
-    def title(self) -> str:
-        for prop_key, prop_value in self.properties.items():
-            if isinstance(prop_key, TitlePropertyKey):
-                # TODO: remove cast() after general type hints are provided
-                return cast(TitlePropertyKey.page, prop_value).plain_text
 
 
 @dataclass

@@ -4,7 +4,7 @@ from abc import ABCMeta
 from collections.abc import MutableMapping
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import ClassVar, final, TypeVar, Generic, Any, Iterator, Optional, Literal
+from typing import ClassVar, final, TypeVar, Generic, Any, Iterator, Optional, Literal, cast
 from uuid import UUID
 
 from typing_extensions import Self
@@ -140,6 +140,10 @@ class DatabaseProperties(Properties):
 
 
 class PageProperties(Properties):
+    def __init__(self):
+        super().__init__()
+        self._title_key: Optional[TitlePropertyKey] = None
+
     def serialize(self) -> dict[str, Any]:
         # noinspection PyProtectedMember
         return {key.name: {
@@ -158,7 +162,19 @@ class PageProperties(Properties):
             # noinspection PyProtectedMember
             property_value = property_key_cls._deserialize_page_value(prop_serialized)
             self[property_key] = property_value
+
+            if isinstance(property_key, TitlePropertyKey):
+                self._title_key = property_key
         return self
+
+    @property
+    def title(self) -> RichText:
+        # TODO: remove cast() after general type hints are provided
+        return cast(TitlePropertyKey.page, self[self._title_key])
+
+    @title.setter
+    def title(self, value: RichText) -> None:
+        self[self._title_key] = value
 
 
 class DatabasePropertyValue(DualSerializable, metaclass=ABCMeta):
