@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime, date
-from typing import Literal, TypeVar, Any, Callable
+from typing import Literal, Any, Callable
 from uuid import UUID
 
 from notion_df.object.constant import TimestampName, Number
@@ -103,9 +103,6 @@ class FilterBuilder(metaclass=ABCMeta):
     @abstractmethod
     def get_typename(cls) -> str:
         pass
-
-
-FilterBuilder_T = TypeVar('FilterBuilder_T', bound=FilterBuilder)
 
 
 class TextFilterBuilder(FilterBuilder):

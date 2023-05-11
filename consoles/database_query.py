@@ -2,7 +2,8 @@ from datetime import date
 from pprint import pprint
 
 from notion_df.entity import Namespace
-from notion_df.property import DatePropertyKey
+from notion_df.object.common import DateRange
+from notion_df.property import DatePropertyKey, URLPropertyKey
 
 if __name__ == '__main__':
     namespace = Namespace()
@@ -11,3 +12,8 @@ if __name__ == '__main__':
     my_date_equals_20230101 = DatePropertyKey('📆날짜').filter.equals(date(2023, 1, 1))
     response = database.query(my_date_equals_20230101, page_size=10)
     pprint(response)
+    page_properties = response[0].last_response.properties
+    url = page_properties[URLPropertyKey('url')]
+    daterange = page_properties[DatePropertyKey('date')]
+    page_properties[DatePropertyKey('date')] = DateRange(date(2023, 1, 1), date(2023, 1, 2))
+    page_properties[DatePropertyKey('date')] = 2

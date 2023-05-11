@@ -3,8 +3,7 @@ from __future__ import annotations
 import inspect
 import re
 from itertools import chain
-from typing import Hashable, Any, Optional, Iterable, Iterator, TypeVar, get_args, cast, Generic, get_type_hints, \
-    get_origin, ClassVar
+from typing import Hashable, Any, Optional, Iterable, Iterator, TypeVar, get_args, cast, Generic, get_type_hints
 from uuid import UUID
 
 from notion_df.util.exception import NotionDfTypeError
@@ -69,7 +68,7 @@ def check_classvars_are_defined(cls):
         return
     attr_names = []
     for attr_name, attr_type in get_type_hints(cls).items():
-        if get_origin(attr_type) == ClassVar and hasattr(super(cls), attr_name) and not hasattr(cls, attr_name):
+        if hasattr(super(cls), attr_name) and not hasattr(cls, attr_name):
             attr_names.append(attr_name)
     if attr_names:
         raise NotionDfTypeError('all class attributes must be filled',

@@ -198,7 +198,7 @@ class Page(BaseBlock[PageResponse]):
 
     def retrieve_property_item(self, prop_key: str | PropertyKey, page_size: int = -1) -> Any:
         # TODO: add type hint
-        #  (concept) @overload (prop_id: PropertyKey[PagePropertyValue_T]) -> PagePropertyValue_T
+        #  (concept) @overload (prop_id: PropertyKey[PPV_T]) -> PPV_T
         if isinstance(prop_key, PropertyKey):
             prop_key = prop_key.id
         page_property = RetrievePagePropertyItem(self.namespace.token, self.id, prop_key, page_size).execute(
