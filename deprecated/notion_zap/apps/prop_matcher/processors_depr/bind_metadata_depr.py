@@ -26,12 +26,12 @@
 #             ),
 #             (
 #                 'domains_total',
-#                 ['summaries'],
+#                 ['topics'],
 #                 [
 #                     ('processes', ['domains_context']),
-#                     ('writings', ['summaries']),
-#                     ('events', ['summaries']),
-#                     ('tasks', ['summaries']),
+#                     ('writings', ['topics']),
+#                     ('events', ['topics']),
+#                     ('tasks', ['topics']),
 #                 ]
 #             ),
 #             (

@@ -20,11 +20,12 @@ REGULAR_MATCH_OPTIONS = MatchOptions({
     MyBlock.weeks: {'manual_date'},
     MyBlock.dates: {'manual_date', ('weeks', 'manual_date')},
 
-    MyBlock.processes: {'weeks', 'dates', 'dates_created'},
-    MyBlock.events: {'weeks', 'dates', 'dates_created'},
+    MyBlock.journals: {'weeks', 'dates', 'dates_created'},
+    MyBlock.notes: {'weeks', 'dates'},
 
-    MyBlock.journals: {'weeks', 'dates'},
+    MyBlock.processes: {'weeks', 'dates', 'dates_created'},
     MyBlock.issues: {'weeks', 'dates'},
+
     MyBlock.tasks: {'weeks', 'dates'},
 
     MyBlock.readings: {('weeks', "warning: but don't make filter"),

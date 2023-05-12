@@ -14,8 +14,8 @@ class MetadataScrapManager:
 
     def __call__(self, manager: ReadingPageManager):
         writer = SubpageEditor(manager)
-        writer.adjust_subpage()
         if manager.is_book:
+            writer.adjust_subpage()
             bkst = BookstoreWriter(manager, writer.subpage)
             if bkst.get_url():
                 if bkst.scrap_data():

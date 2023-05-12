@@ -39,7 +39,7 @@ class DateProcessorByCreatedTime(Processor):
         for table in self.root.get_blocks(self.option.filter_key('dates_created')):
             for row in table.rows:
                 yield row, 'dates_created'
-        for table in self.root.get_blocks(self.option.filter_key('dates')):
+        for table in self.root.get_blocks(self.option.filter_pair('dates')):
             for row in table.rows:
                 yield row, 'dates'
         for table in self.root.get_blocks(

@@ -23,6 +23,7 @@ class EmojiCode:
     GREEN_BOOK = '📗'
     ORANGE_BOOK = '📙'
     BLUE_BOOK = '📘'
+    RED_BOOK = '📕'
     BROWN_NOTEBOOK = '📔'
     YELLOW_NOTEBOOK = '📒'
     BLACK_NOTEBOOK = '📓'
