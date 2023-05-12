@@ -18,7 +18,7 @@ class ParentInfo(DualSerializable):
     def serialize(self) -> dict[str, Any]:
         return {
             "type": self.typename,
-            self.typename: self.id
+            self.typename: str(self.id) if self.id else None
         }
 
     @classmethod

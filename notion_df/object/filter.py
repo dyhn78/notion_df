@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime, date
-from typing import Literal, Any, Callable
+from typing import Literal, Any, Callable, Optional
 from uuid import UUID
 
 from notion_df.object.constant import TimestampName, Number
@@ -210,10 +210,14 @@ class SelectFilterBuilder(FilterBuilder):
     def get_typename(cls) -> str:
         return 'select'
 
-    def equals(self, value: str) -> Filter:
+    def equals(self, value: Optional[str]) -> Filter:
+        if value is None:
+            return self.is_empty()
         return self._build({'equals': value})
 
-    def does_not_equal(self, value: str) -> Filter:
+    def does_not_equal(self, value: Optional[str]) -> Filter:
+        if value is None:
+            return self.is_not_empty()
         return self._build({'does_not_equal': value})
 
     def is_empty(self) -> Filter:

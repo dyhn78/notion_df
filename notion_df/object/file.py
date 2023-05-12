@@ -9,7 +9,7 @@ from typing_extensions import Self
 
 from notion_df.object.common import Icon
 from notion_df.util.exception import NotionDfValueError
-from notion_df.util.serialization import serialize
+from notion_df.util.serialization import serialize, deserialize, DualSerializable
 
 
 @dataclass
@@ -31,9 +31,20 @@ class File(Icon, metaclass=ABCMeta):
         return subclass.deserialize(serialized)
 
 
-class Files(list[File]):
+class Files(list[File], DualSerializable):
     def __init__(self, files: list[File]):
         super().__init__(files)
+
+    @classmethod
+    def externals(cls, url_name_pairs: list[tuple[str, str]]):
+        return cls([ExternalFile(url, name) for url, name in url_name_pairs])
+
+    def serialize(self) -> Any:
+        return serialize(self)
+
+    @classmethod
+    def _deserialize_this(cls, serialized: Any) -> Self:
+        return cls(deserialize(list[File], serialized))
 
 
 @dataclass
@@ -62,6 +73,7 @@ class InternalFile(File):
 @dataclass
 class ExternalFile(File):
     url: str
+    name: str
 
     @classmethod
     def get_typename(cls) -> str:
@@ -70,6 +82,7 @@ class ExternalFile(File):
     def serialize(self):
         return {
             "type": "external",
+            "name": self.name,
             "external": {
                 "url": self.url
             }
@@ -77,4 +90,4 @@ class ExternalFile(File):
 
     @classmethod
     def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
-        return cls(serialized['external']['url'])
+        return cls(serialized['external']['url'], '')

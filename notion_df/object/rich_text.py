@@ -84,9 +84,8 @@ class RichText(list[RichTextSpan], DualSerializable):
         return ''.join(span.plain_text for span in self)
 
     @classmethod
-    def from_plain_text(cls, content: str, link: Optional[str] = None,
-                        annotations: Optional[Annotations] = None) -> Self:
-        return cls([TextSpan(content, link, annotations)])
+    def from_plain_text(cls, plain_text: Optional[str]) -> Self:
+        return cls([TextSpan(plain_text)]) if plain_text else cls([])
 
     def serialize(self) -> Any:
         return serialize(self)

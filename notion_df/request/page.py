@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from typing import Any, Optional
 from uuid import UUID
 
-from notion_df.object.block import BlockType, serialize_partial_block_list, PageResponse
+from notion_df.object.block import BlockValue, serialize_partial_block_list, PageResponse
 from notion_df.object.common import Icon
 from notion_df.object.file import ExternalFile
 from notion_df.object.parent import ParentInfo
@@ -34,7 +34,7 @@ class CreatePage(SingleRequest[PageResponse]):
     return_type = PageResponse
     parent: ParentInfo
     properties: PageProperties = field(default_factory=Properties)
-    children: list[BlockType] = None
+    children: list[BlockValue] = None
     icon: Optional[Icon] = field(default=None)
     cover: Optional[ExternalFile] = field(default=None)
 

@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from typing import Any
 from uuid import UUID
 
-from notion_df.object.block import BlockType, BlockResponse, serialize_partial_block_list
+from notion_df.object.block import BlockValue, BlockResponse, serialize_partial_block_list
 from notion_df.request.request_core import SingleRequest, RequestSettings, Version, Method, PaginatedRequest
 from notion_df.util.collection import DictFilter
 
@@ -14,7 +14,7 @@ class AppendBlockChildren(SingleRequest[list[BlockResponse]]):
     """https://developers.notion.com/reference/patch-block-children"""
     return_type = BlockResponse
     id: UUID
-    children: list[BlockType]
+    children: list[BlockValue]
 
     def get_settings(self) -> RequestSettings:
         return RequestSettings(Version.v20220222, Method.PATCH,
@@ -50,10 +50,11 @@ class RetrieveBlockChildren(PaginatedRequest[BlockResponse]):
     """https://developers.notion.com/reference/get-block-children"""
     return_type = BlockResponse
     id: UUID
+    page_size: int = -1
 
     def get_settings(self) -> RequestSettings:
         return RequestSettings(Version.v20220222, Method.GET,
-                               f'https://api.notion.com/v1/blocks/{self.id}')
+                               f'https://api.notion.com/v1/blocks/{self.id}/children')
 
     def get_body(self) -> Any:
         pass
@@ -64,7 +65,7 @@ class UpdateBlock(SingleRequest[BlockResponse]):
     """https://developers.notion.com/reference/update-a-block"""
     return_type = BlockResponse
     id: UUID
-    block_type: BlockType = field(default=None)
+    block_type: BlockValue = field(default=None)
     archived: bool = field(default=None)
 
     def get_settings(self) -> RequestSettings:

@@ -115,10 +115,11 @@ class Properties(DualSerializable, MutableMapping[PropertyKey, PropertyValue_T],
         self._value_by_name[key.name] = value
 
     def __delitem__(self, key: str | PropertyKey) -> None:
+        # TODO restore KeyError
         key = self._get_key(key)
-        self._key_by_name.pop(key.name)
-        self._key_by_id.pop(key.id)
-        self._value_by_name.pop(key.name)
+        self._key_by_name.pop(key.name, None)
+        self._key_by_id.pop(key.id, None)
+        self._value_by_name.pop(key.name, None)
 
 
 class DatabaseProperties(Properties[PropertyKey[DatabasePropertyValue_T, Any, Any], DatabasePropertyValue_T]):

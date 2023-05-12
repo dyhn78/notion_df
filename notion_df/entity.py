@@ -8,7 +8,7 @@ from typing import Optional, TypeVar, Union, Generic, Iterator, final, Final
 
 from typing_extensions import Self
 
-from notion_df.object.block import BlockType, BlockResponse, ChildPageBlockType, DatabaseResponse, PageResponse
+from notion_df.object.block import BlockValue, BlockResponse, ChildPageBlockValue, DatabaseResponse, PageResponse
 from notion_df.object.common import Icon
 from notion_df.object.file import ExternalFile, File
 from notion_df.object.filter import Filter
@@ -34,8 +34,8 @@ class BaseBlock(Generic[Response_T]):
     # noinspection PyShadowingBuiltins
     def __new__(cls, namespace: Namespace, id_or_url: Union[UUID, str]):
         id = get_id(id_or_url) if isinstance(id_or_url, str) else id_or_url
-        if id in namespace:
-            return namespace[id]
+        if (block := namespace.get(id)) and type(block) == cls:
+            return block
         __self = super().__new__(cls)
         namespace[id] = __self
         return __self
@@ -86,7 +86,7 @@ class Block(BaseBlock[BlockResponse]):
     has_children: Optional[bool]
     """the None value never occurs from direct server response. It only happens from Page.as_block()"""
     archived: bool
-    block_type: BlockType
+    value: BlockValue
 
     def _send_response(self, response: BlockResponse) -> None:
         # noinspection DuplicatedCode
@@ -97,7 +97,7 @@ class Block(BaseBlock[BlockResponse]):
         self.last_edited_by = response.last_edited_by
         self.has_children = response.has_children
         self.archived = response.archived
-        self.block_type = response.block_type
+        self.value = response.value
 
     def _send_child_block_response_list(self, block_response_list: list[BlockResponse]) -> BlockChildren:
         block_list = []
@@ -116,7 +116,7 @@ class Block(BaseBlock[BlockResponse]):
         block_response_list = RetrieveBlockChildren(self.namespace.token, self.id).execute(self.namespace.print_body)
         return self._send_child_block_response_list(block_response_list)
 
-    def update(self, block_type: Optional[BlockType], archived: Optional[bool]) -> Self:
+    def update(self, block_type: Optional[BlockValue], archived: Optional[bool]) -> Self:
         response = UpdateBlock(self.namespace.token, self.id, block_type, archived).execute(
             self.namespace.print_body)
         self.send_response(response)
@@ -127,19 +127,10 @@ class Block(BaseBlock[BlockResponse]):
         self.send_response(response)
         return self
 
-    def append_children(self, block_type_list: list[BlockType]) -> BlockChildren:
-        block_response_list = AppendBlockChildren(self.namespace.token, self.id, block_type_list).execute(
+    def append_children(self, child_values: list[BlockValue]) -> BlockChildren:
+        block_response_list = AppendBlockChildren(self.namespace.token, self.id, child_values).execute(
             self.namespace.print_body)
         return self._send_child_block_response_list(block_response_list)
-
-    def create_child_page(self, properties: Optional[PageProperties] = None,
-                          children: Optional[list[BlockType]] = None,
-                          icon: Optional[Icon] = None, cover: Optional[File] = None) -> Page:
-        page_response = CreatePage(self.namespace.token, ParentInfo('page_id', self.id),
-                                   properties, children, icon, cover).execute(self.namespace.print_body)
-        page = Page(self.namespace, page_response.id)
-        page.send_response(page_response)
-        return page
 
     def create_child_database(self, title: RichText, *,
                               properties: Optional[DatabaseProperties] = None,
@@ -202,7 +193,7 @@ class Database(BaseBlock[DatabaseResponse]):
         return self
 
     def create_child_page(self, properties: Optional[PageProperties] = None,
-                          children: Optional[list[BlockType]] = None,
+                          children: Optional[list[BlockValue]] = None,
                           icon: Optional[Icon] = None, cover: Optional[File] = None) -> Page:
         response_page = CreatePage(self.namespace.token, ParentInfo('database_id', self.id),
                                    properties, children, icon, cover).execute(self.namespace.print_body)
@@ -245,8 +236,8 @@ class Page(BaseBlock[PageResponse]):
             block.last_edited_by = self.last_edited_by
             block.has_children = None
             block.archived = self.archived
-            if not isinstance(getattr(block, 'block_type', None), ChildPageBlockType):
-                block.block_type = ChildPageBlockType(title='')
+            if not isinstance(getattr(block, 'value', None), ChildPageBlockValue):
+                block.value = ChildPageBlockValue(title='')
             block.timestamp = self.timestamp
         return block
 
@@ -270,6 +261,15 @@ class Page(BaseBlock[PageResponse]):
         page_property = RetrievePagePropertyItem(self.namespace.token, self.id, prop_key, page_size).execute(
             self.namespace.print_body)
         return page_property
+
+    def create_child_page(self, properties: Optional[PageProperties] = None,
+                          children: Optional[list[BlockValue]] = None,
+                          icon: Optional[Icon] = None, cover: Optional[File] = None) -> Page:
+        page_response = CreatePage(self.namespace.token, ParentInfo('page_id', self.id),
+                                   properties, children, icon, cover).execute(self.namespace.print_body)
+        page = Page(self.namespace, page_response.id)
+        page.send_response(page_response)
+        return page
 
 
 Child_T = TypeVar('Child_T')

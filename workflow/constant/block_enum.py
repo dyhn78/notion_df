@@ -1,7 +1,7 @@
 from enum import Enum
 
 from notion_df.util.misc import get_id, get_url
-from workflow.util.emoji_code import EmojiCode
+from workflow.constant.emoji_code import EmojiCode
 
 
 class DatabaseEnum(Enum):

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import datetime as dt
-from abc import ABCMeta, abstractmethod
+from abc import ABCMeta
 from typing import Optional, cast
 from uuid import UUID
 
@@ -9,8 +9,9 @@ from notion_df.entity import Namespace, Page
 from notion_df.property import RelationPropertyKey, TitlePropertyKey, PageProperties, DateFormulaPropertyKey, \
     DatePropertyKey, CheckboxFormulaPropertyKey
 from notion_df.util.misc import get_url
-from workflow.util.block_enum import DatabaseEnum
-from workflow.util.emoji_code import EmojiCode
+from workflow.constant.block_enum import DatabaseEnum
+from workflow.constant.emoji_code import EmojiCode
+from workflow.util.action import Action
 
 korean_weekday = '월화수목금토일'
 element_datetime_auto_key = DateFormulaPropertyKey(EmojiCode.TIMER + '일시')
@@ -34,19 +35,15 @@ class MatcherWorkspace:
         self.week_namespace = WeekIndex(namespace)
 
 
-class Action(metaclass=ABCMeta):
+class MatchAction(Action, metaclass=ABCMeta):
     def __init__(self, workspace: MatcherWorkspace):
         self.workspace = workspace
         self.namespace = workspace.namespace
         self.date_namespace = workspace.date_namespace
         self.week_namespace = workspace.week_namespace
 
-    @abstractmethod
-    def execute(self):
-        pass
 
-
-class MatchDateByCreatedTime(Action):
+class MatchDateByCreatedTime(MatchAction):
     def __init__(self, workspace: MatcherWorkspace, elements: DatabaseEnum, element_to_date_key: str):
         super().__init__(workspace)
         self.elements = self.namespace.database(elements.id)
@@ -72,7 +69,7 @@ class MatchDateByCreatedTime(Action):
         return date
 
 
-class MatchReadingsStartDate(Action):
+class MatchReadingsStartDate(MatchAction):
     def __init__(self, workspace: MatcherWorkspace):
         super().__init__(workspace)
         self.readings = self.namespace.database(DatabaseEnum.readings.id)
@@ -121,7 +118,7 @@ class MatchReadingsStartDate(Action):
         reading.update(PageProperties({reading_to_date_key: reading_to_date_key.page([date.id])}))
 
 
-class MatchWeekByDate(Action):
+class MatchWeekByDate(MatchAction):
     def __init__(self, workspace: MatcherWorkspace, elements: DatabaseEnum,
                  element_to_week_key: str, element_to_date_key: str):
         super().__init__(workspace)
@@ -151,7 +148,7 @@ class MatchWeekByDate(Action):
         return event_week_id
 
 
-class MatchWeekByDateValue(Action):
+class MatchWeekByDateValue(MatchAction):
     def __init__(self, workspace: MatcherWorkspace):
         super().__init__(workspace)
         self.dates = self.namespace.database(DatabaseEnum.dates.id)
