@@ -114,7 +114,7 @@ class BlockValue(DualSerializable, metaclass=ABCMeta):
 @dataclass
 class BookmarkBlockValue(BlockValue):
     url: str
-    caption: RichText = field(default_factory=lambda: RichText([]))
+    caption: RichText = field(default_factory=RichText)
 
     @classmethod
     def get_typename(cls) -> str:
@@ -144,7 +144,7 @@ class CalloutBlockValue(BlockValue):
     rich_text: RichText
     icon: Icon
     color: BlockColor = BlockColor.DEFAULT
-    children: list[BlockResponse] = field(init=False, default=None)  # TODO: double check
+    children: list[BlockResponse] = field(init=False, default=None)
 
     @classmethod
     def get_typename(cls) -> str:
@@ -173,7 +173,7 @@ class ChildPageBlockValue(BlockValue):
 class CodeBlockValue(BlockValue):
     rich_text: RichText
     language: CodeLanguage
-    caption: RichText = field(default_factory=lambda: RichText([]))
+    caption: RichText = field(default_factory=RichText)
 
     @classmethod
     def get_typename(cls) -> str:
@@ -223,7 +223,7 @@ class EquationBlockValue(BlockValue):
 @dataclass
 class FileBlockValue(BlockValue):
     file: File
-    caption: RichText = field(default_factory=lambda: RichText([]))
+    caption: RichText = field(default_factory=RichText)
 
     @classmethod
     def get_typename(cls) -> str:
@@ -316,7 +316,7 @@ class ParagraphBlockValue(BlockValue):
 @dataclass
 class PDFBlockValue(BlockValue):
     file: File
-    caption: RichText = field(default_factory=lambda: RichText([]))
+    caption: RichText = field(default_factory=RichText)
 
     def serialize(self) -> dict[str, Any]:
         return {'caption': self.caption, **self.file.serialize()}

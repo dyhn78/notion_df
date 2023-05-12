@@ -78,7 +78,7 @@ rich_text_span_registry: FinalClassDict[tuple[str, ...], type[RichTextSpan]] = F
 
 
 class RichText(list[RichTextSpan], DualSerializable):
-    def __init__(self, spans: Sequence[RichTextSpan]):
+    def __init__(self, spans: Optional[Sequence[RichTextSpan]] = None):
         super().__init__(spans)
 
     @property
@@ -87,7 +87,7 @@ class RichText(list[RichTextSpan], DualSerializable):
 
     @classmethod
     def from_plain_text(cls, plain_text: Optional[str]) -> Self:
-        return cls([TextSpan(plain_text)]) if plain_text else cls([])
+        return cls([TextSpan(plain_text)]) if plain_text else cls()
 
     def serialize(self) -> Any:
         return serialize(self)
