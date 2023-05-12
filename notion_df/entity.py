@@ -30,9 +30,9 @@ class BaseBlock(Generic[Response_T]):
         id = get_id(id_or_url) if isinstance(id_or_url, str) else id_or_url
         if id in namespace:
             return namespace[id]
-        self = super().__new__(cls)
-        namespace[id] = self
-        return self
+        __self = super().__new__(cls)
+        namespace[id] = __self
+        return __self
 
     def __init__(self, namespace: Namespace, id_or_url: Union[UUID, str]):
         if hasattr(self, '_initialized'):
@@ -198,7 +198,7 @@ class Page(BaseBlock[PageResponse]):
 
     def retrieve_property_item(self, prop_key: str | PropertyKey, page_size: int = -1) -> Any:
         # TODO: add type hint
-        #  (concept) @overload (prop_id: PropertyKey[PPV_T]) -> PPV_T
+        #  (concept) @overload (prop_id: PropertyKey[PagePropertyValue_T]) -> PagePropertyValue_T
         if isinstance(prop_key, PropertyKey):
             prop_key = prop_key.id
         page_property = RetrievePagePropertyItem(self.namespace.token, self.id, prop_key, page_size).execute(

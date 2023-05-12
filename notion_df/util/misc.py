@@ -41,6 +41,11 @@ def get_id(id_or_url: str | UUID) -> UUID:
         return UUID(id_or_url)
 
 
+def get_url(id_or_url: str | UUID, workspace_name: str) -> str:
+    uuid = get_id(id_or_url)
+    return f'https://www.notion.so/{workspace_name}/' + str(uuid).replace('-', '')
+
+
 Type_T = TypeVar('Type_T', bound=type)
 
 

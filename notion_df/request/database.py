@@ -8,6 +8,7 @@ from notion_df.object.block import DatabaseResponse, PageResponse
 from notion_df.object.common import Icon
 from notion_df.object.file import ExternalFile
 from notion_df.object.filter import Filter
+from notion_df.object.rich_text import RichText
 from notion_df.object.sort import Sort
 from notion_df.property import DatabaseProperties
 from notion_df.request.request_core import SingleRequest, RequestSettings, Version, Method, PaginatedRequest

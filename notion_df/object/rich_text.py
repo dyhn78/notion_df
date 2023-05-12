@@ -1,8 +1,8 @@
-from __future__ import annotations
+from __future__ import annotations as _
 
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, field
-from typing import Optional, Any, Literal, final
+from typing import Optional, Any, Literal, final, Sequence
 from uuid import UUID
 
 from typing_extensions import Self
@@ -76,9 +76,17 @@ rich_text_span_registry: FinalClassDict[tuple[str, ...], type[RichTextSpan]] = F
 
 
 class RichText(list[RichTextSpan], DualSerializable):
+    def __init__(self, spans: Sequence[RichTextSpan]):
+        super().__init__(spans)
+
     @property
     def plain_text(self) -> str:
         return ''.join(span.plain_text for span in self)
+
+    @classmethod
+    def from_plain_text(cls, content: str, link: Optional[str] = None,
+                        annotations: Optional[Annotations] = None) -> Self:
+        return cls([TextSpan(content, link, annotations)])
 
     def serialize(self) -> Any:
         return serialize(self)
