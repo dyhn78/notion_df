@@ -12,7 +12,7 @@ from notion_df.util.misc import get_url
 from workflow.util.block_enum import DatabaseEnum
 from workflow.util.emoji_code import EmojiCode
 
-korean_weekday = ["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"]
+korean_weekday = '월화수목금토일'
 element_datetime_auto_key = DateFormulaPropertyKey(EmojiCode.TIMER + '일시')
 date_to_week_key = RelationPropertyKey(DatabaseEnum.weeks.prefix_title)
 date_value_key = DatePropertyKey(EmojiCode.CALENDAR + '날짜')
@@ -27,9 +27,19 @@ def get_element_created_date(element: Page) -> dt.date:
     return (element.created_time + dt.timedelta(hours=5)).date()
 
 
-class Action(metaclass=ABCMeta):
+class MatcherWorkspace:
     def __init__(self, namespace: Namespace):
         self.namespace = namespace
+        self.date_namespace = DateIndex(namespace)
+        self.week_namespace = WeekIndex(namespace)
+
+
+class Action(metaclass=ABCMeta):
+    def __init__(self, workspace: MatcherWorkspace):
+        self.workspace = workspace
+        self.namespace = workspace.namespace
+        self.date_namespace = workspace.date_namespace
+        self.week_namespace = workspace.week_namespace
 
     @abstractmethod
     def execute(self):
@@ -37,14 +47,12 @@ class Action(metaclass=ABCMeta):
 
 
 class MatchDateByCreatedTime(Action):
-    def __init__(self, namespace: Namespace, elements: DatabaseEnum, element_to_date_key: str):
-        super().__init__(namespace)
-        self.date_namespace = DateNamespace(namespace)
+    def __init__(self, workspace: MatcherWorkspace, elements: DatabaseEnum, element_to_date_key: str):
+        super().__init__(workspace)
         self.elements = self.namespace.database(elements.id)
         self.element_to_date_key = RelationPropertyKey(f'{DatabaseEnum.dates.prefix}{element_to_date_key}')
 
     def execute(self):
-        self.date_namespace.update()
         element_list = self.elements.query(self.element_to_date_key.filter.is_empty())
         for element in element_list:
             date = self.process_page(element)
@@ -65,14 +73,12 @@ class MatchDateByCreatedTime(Action):
 
 
 class MatchReadingsStartDate(Action):
-    def __init__(self, namespace: Namespace):
-        super().__init__(namespace)
-        self.date_namespace = DateNamespace(namespace)
+    def __init__(self, workspace: MatcherWorkspace):
+        super().__init__(workspace)
         self.readings = self.namespace.database(DatabaseEnum.readings.id)
         self.events = self.namespace.database(DatabaseEnum.events.id)
 
     def execute(self):
-        self.date_namespace.update()
         event_list = self.readings.query(
             reading_to_date_key.filter.is_empty() & (
                     reading_to_event_key.filter.is_not_empty()
@@ -116,18 +122,14 @@ class MatchReadingsStartDate(Action):
 
 
 class MatchWeekByDate(Action):
-    def __init__(self, namespace: Namespace, elements: DatabaseEnum,
+    def __init__(self, workspace: MatcherWorkspace, elements: DatabaseEnum,
                  element_to_week_key: str, element_to_date_key: str):
-        super().__init__(namespace)
-        self.date_namespace = DateNamespace(namespace)
-        self.week_namespace = WeekNamespace(namespace)
+        super().__init__(workspace)
         self.elements = self.namespace.database(elements.id)
         self.element_to_week_key = RelationPropertyKey(f'{DatabaseEnum.weeks.prefix}{element_to_week_key}')
         self.element_to_date_key = RelationPropertyKey(f'{DatabaseEnum.dates.prefix}{element_to_date_key}')
 
     def execute(self):
-        self.date_namespace.update()
-        self.week_namespace.update()
         element_list = self.elements.query(
             self.element_to_week_key.filter.is_empty() & self.element_to_date_key.filter.is_not_empty())
         for element in element_list:
@@ -150,13 +152,11 @@ class MatchWeekByDate(Action):
 
 
 class MatchWeekByDateValue(Action):
-    def __init__(self, namespace: Namespace):
-        super().__init__(namespace)
+    def __init__(self, workspace: MatcherWorkspace):
+        super().__init__(workspace)
         self.dates = self.namespace.database(DatabaseEnum.dates.id)
-        self.week_namespace = WeekNamespace(namespace)
 
     def execute(self):
-        self.week_namespace.update()
         date_list = self.dates.query(date_to_week_key.filter.is_empty())
         for date in date_list:
             date_value = date.properties[date_value_key]
@@ -168,19 +168,12 @@ class MatchWeekByDateValue(Action):
                   f'"{week.properties.title.plain_text} ({week.url})"')
 
 
-class RichNamespace(metaclass=ABCMeta):
-    _instances: list[RichNamespace] = []
-
+class DatabaseIndex(metaclass=ABCMeta):
     def __init__(self, namespace: Namespace, database: DatabaseEnum, title_key: str):
         self.namespace = namespace
         self.database = namespace.database(database.id)
         self.title_key = TitlePropertyKey(title_key)
         self.pages_by_title_plain_text: dict[str, Page] = {}
-
-    def update(self) -> None:
-        for page in self.namespace.values():
-            if isinstance(page, Page) and page.timestamp and page.parent.id == self.database.id:
-                self.pages_by_title_plain_text[page.properties.title.plain_text] = page
 
     def get_by_title_plain_text(self, title_plain_text: str) -> Page:
         if not (page := self.pages_by_title_plain_text.get(title_plain_text)):
@@ -195,19 +188,19 @@ class RichNamespace(metaclass=ABCMeta):
         return page
 
 
-class DateNamespace(RichNamespace):
+class DateIndex(DatabaseIndex):
     def __init__(self, namespace: Namespace):
         super().__init__(namespace, DatabaseEnum.dates, f'{EmojiCode.GREEN_BOOK}제목')
 
     def get_by_date_value(self, date_value: dt.date) -> Page:
-        day_name = korean_weekday[date_value.isoweekday() % 7]
+        day_name = korean_weekday[date_value.weekday()] + '요일'
         title_plain_text = f'{date_value.strftime("%y%m%d")} {day_name}'
         return self.get_by_title_plain_text(title_plain_text)
 
 
-class WeekNamespace(RichNamespace):
+class WeekIndex(DatabaseIndex):
     def __init__(self, namespace: Namespace):
-        super().__init__(namespace, DatabaseEnum.weeks, f'{EmojiCode.GREEN_BOOK}제목')
+        super().__init__(namespace, DatabaseEnum.weeks, EmojiCode.GREEN_BOOK + '제목')
 
     def get_by_date_value(self, date_value: dt.date) -> Page:
         title_plain_text = self.first_day_of_week(date_value).strftime("%y/%U")
