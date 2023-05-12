@@ -25,7 +25,7 @@ reading_match_date_by_created_time_key = CheckboxFormulaPropertyKey(EmojiCode.BL
 
 def get_element_created_date(element: Page) -> dt.date:
     # TODO: '📆일시' parsing 지원
-    return (element.created_time + dt.timedelta(hours=5)).date()
+    return (element.created_time + dt.timedelta(hours=-5)).date()
 
 
 class MatcherWorkspace:
