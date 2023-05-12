@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, field, fields
 from datetime import datetime, date
-from typing import Any
+from typing import Any, Iterator
 
 from typing_extensions import Self
 
@@ -83,7 +83,10 @@ class DateRange(DualSerializable):
     start: date | datetime
     end: date | datetime
 
-    def serialize(self):
+    def __iter__(self) -> Iterator[date | datetime]:
+        return iter([self.start, self.end])
+
+    def serialize(self) -> dict[str, Any]:
         return self._serialize_as_dict()
 
     @classmethod

@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import os
+from abc import abstractmethod
 from collections.abc import Sequence, MutableMapping
-from typing import Optional, TypeVar, Union, Generic, Iterator, final, Final, Any
+from datetime import datetime
+from typing import Optional, TypeVar, Union, Generic, Iterator, final, Final
 
 from typing_extensions import Self
 
@@ -13,7 +15,9 @@ from notion_df.object.filter import Filter
 from notion_df.object.parent import ParentInfo
 from notion_df.object.rich_text import RichText
 from notion_df.object.sort import Sort
-from notion_df.property import PropertyKey, PageProperties, DatabaseProperties
+from notion_df.object.user import PartialUser
+from notion_df.property import PropertyKey, PageProperties, DatabaseProperties, DatabasePropertyValue_T, \
+    PagePropertyValue_T, FilterBuilder_T
 from notion_df.request.block import AppendBlockChildren, RetrieveBlock, RetrieveBlockChildren, UpdateBlock, DeleteBlock
 from notion_df.request.database import CreateDatabase, UpdateDatabase, RetrieveDatabase, QueryDatabase
 from notion_df.request.page import CreatePage, UpdatePage, RetrievePage, RetrievePagePropertyItem
@@ -24,6 +28,8 @@ from notion_df.util.misc import get_id, UUID
 
 class BaseBlock(Generic[Response_T]):
     id: UUID
+    timestamp: float
+    parent: Union[Block, Database, Page, None]
 
     # noinspection PyShadowingBuiltins
     def __new__(cls, namespace: Namespace, id_or_url: Union[UUID, str]):
@@ -40,21 +46,22 @@ class BaseBlock(Generic[Response_T]):
         self._initialized = True
         self.namespace = namespace
         self.id = get_id(id_or_url)
-        self._last_response: Optional[Response_T] = None
+        self.timestamp = 0
 
-    @property
-    def last_response(self) -> Optional[Response_T]:
-        return self._last_response
+    @final
+    def send_response(self, response: Response_T) -> bool:
+        if response.timestamp > self.timestamp:
+            self._send_response(response)
+            return True
+        return False
 
-    @last_response.setter
-    def last_response(self, response: Response_T) -> None:
-        if self._last_response is not None and self._last_response.timestamp > response.timestamp:
-            return
-        self._last_response = response
+    @abstractmethod
+    def _send_response(self, response: Response_T) -> None:
+        pass
 
     @final
     def _get_parent(self, parent: ParentInfo) -> Union[Block, Database, Page, None]:
-        if self.last_response is None:
+        if parent is None:
             return None
         match parent.typename:
             case 'block_id':
@@ -71,34 +78,54 @@ BaseBlock_T = TypeVar('BaseBlock_T', bound=BaseBlock)
 
 
 class Block(BaseBlock[BlockResponse]):
-    @property
-    def parent(self) -> Union[Page, Block, None]:
-        return self._get_parent(self.last_response.parent)
+    parent: Union[Page, Block, None]
+    created_time: datetime
+    last_edited_time: datetime
+    created_by: PartialUser
+    last_edited_by: PartialUser
+    has_children: Optional[bool]
+    """the None value never occurs from direct server response. It only happens from Page.as_block()"""
+    archived: bool
+    block_type: BlockType
+
+    def _send_response(self, response: BlockResponse) -> None:
+        # noinspection DuplicatedCode
+        self.parent = self._get_parent(response.parent)
+        self.created_time = response.created_time
+        self.last_edited_time = response.last_edited_time
+        self.created_by = response.created_by
+        self.last_edited_by = response.last_edited_by
+        self.has_children = response.has_children
+        self.archived = response.archived
+        self.block_type = response.block_type
 
     def _send_child_block_response_list(self, block_response_list: list[BlockResponse]) -> BlockChildren:
         block_list = []
         for block_response in block_response_list:
             block = Block(self.namespace, block_response.id)
-            block.last_response = block_response
+            block.send_response(block_response)
             block_list.append(block)
         return BlockChildren(block_list)
 
     def retrieve(self) -> Self:
-        self.last_response = RetrieveBlock(self.namespace.token, self.id).execute(self.namespace.print_body)
-        return self.last_response
+        response = RetrieveBlock(self.namespace.token, self.id).execute(self.namespace.print_body)
+        self.send_response(response)
+        return self
 
     def retrieve_children(self) -> BlockChildren:
         block_response_list = RetrieveBlockChildren(self.namespace.token, self.id).execute(self.namespace.print_body)
         return self._send_child_block_response_list(block_response_list)
 
     def update(self, block_type: Optional[BlockType], archived: Optional[bool]) -> Self:
-        self.last_response = UpdateBlock(self.namespace.token, self.id, block_type, archived).execute(
+        response = UpdateBlock(self.namespace.token, self.id, block_type, archived).execute(
             self.namespace.print_body)
-        return self.last_response
+        self.send_response(response)
+        return self
 
     def delete(self) -> Self:
-        self.last_response = DeleteBlock(self.namespace.token, self.id).execute(self.namespace.print_body)
-        return self.last_response
+        response = DeleteBlock(self.namespace.token, self.id).execute(self.namespace.print_body)
+        self.send_response(response)
+        return self
 
     def append_children(self, block_type_list: list[BlockType]) -> BlockChildren:
         block_response_list = AppendBlockChildren(self.namespace.token, self.id, block_type_list).execute(
@@ -108,50 +135,71 @@ class Block(BaseBlock[BlockResponse]):
     def create_child_page(self, properties: Optional[PageProperties] = None,
                           children: Optional[list[BlockType]] = None,
                           icon: Optional[Icon] = None, cover: Optional[File] = None) -> Page:
-        response_page = CreatePage(self.namespace.token, ParentInfo('page_id', self.id),
+        page_response = CreatePage(self.namespace.token, ParentInfo('page_id', self.id),
                                    properties, children, icon, cover).execute(self.namespace.print_body)
-        page = Page(self.namespace, response_page.id)
-        page.last_response = response_page
+        page = Page(self.namespace, page_response.id)
+        page.send_response(page_response)
         return page
 
     def create_child_database(self, title: RichText, *,
                               properties: Optional[DatabaseProperties] = None,
                               icon: Optional[Icon] = None, cover: Optional[File] = None) -> Database:
-        response_database = CreateDatabase(self.namespace.token, self.id, title, properties, icon, cover).execute(
+        database_response = CreateDatabase(self.namespace.token, self.id, title, properties, icon, cover).execute(
             self.namespace.print_body)
-        database = Database(self.namespace, response_database.id)
-        database.last_response = response_database
+        database = Database(self.namespace, database_response.id)
+        database.send_response(database_response)
         return database
 
 
 class Database(BaseBlock[DatabaseResponse]):
-    @property
-    def parent(self) -> Union[Page, Block, None]:
-        return self._get_parent(self.last_response.parent)
+    parent: Union[Page, Block, None]
+    created_time: datetime
+    last_edited_time: datetime
+    icon: Optional[Icon]
+    cover: Optional[ExternalFile]
+    url: str
+    title: RichText
+    properties: DatabaseProperties
+    archived: bool
+    is_inline: bool
+
+    def _send_response(self, response: DatabaseResponse) -> None:
+        # noinspection DuplicatedCode
+        self.parent = self._get_parent(response.parent)
+        self.created_time = response.created_time
+        self.last_edited_time = response.last_edited_time
+        self.icon = response.icon
+        self.cover = response.cover
+        self.url = response.url
+        self.title = response.title
+        self.properties = response.properties
+        self.archived = response.archived
+        self.is_inline = response.is_inline
 
     def _send_child_page_response_list(self, page_response_list: list[PageResponse]) -> PageChildren:
         page_list = []
         for page_response in page_response_list:
             page = Page(self.namespace, page_response.id)
-            page.last_response = page_response
+            page.send_response(page_response)
             page_list.append(page)
         return PageChildren(page_list)
 
-    def retrieve(self) -> DatabaseResponse:
-        self.last_response = RetrieveDatabase(self.namespace.token, self.id).execute(self.namespace.print_body)
-        return self.last_response
+    def retrieve(self) -> Self:
+        response = RetrieveDatabase(self.namespace.token, self.id).execute(self.namespace.print_body)
+        self.send_response(response)
+        return self
 
     # noinspection PyShadowingBuiltins
     def query(self, filter: Optional[Filter] = None, sort: Optional[list[Sort]] = None,
               page_size: int = -1) -> Children[Page]:
         request = QueryDatabase(self.namespace.token, self.id, filter, sort, page_size)
-        response_page_list = request.execute(self.namespace.print_body)
-        return self._send_child_page_response_list(response_page_list)
+        page_response_list = request.execute(self.namespace.print_body)
+        return self._send_child_page_response_list(page_response_list)
 
-    def update(self, title: RichText, properties: DatabaseProperties) -> DatabaseResponse:
-        self.last_response = UpdateDatabase(self.namespace.token, self.id, title, properties).execute(
-            self.namespace.print_body)
-        return self.last_response
+    def update(self, title: RichText, properties: DatabaseProperties) -> Self:
+        response = UpdateDatabase(self.namespace.token, self.id, title, properties).execute(self.namespace.print_body)
+        self.send_response(response)
+        return self
 
     def create_child_page(self, properties: Optional[PageProperties] = None,
                           children: Optional[list[BlockType]] = None,
@@ -159,46 +207,64 @@ class Database(BaseBlock[DatabaseResponse]):
         response_page = CreatePage(self.namespace.token, ParentInfo('database_id', self.id),
                                    properties, children, icon, cover).execute(self.namespace.print_body)
         page = Page(self.namespace, response_page.id)
-        page.last_response = response_page
+        page.send_response(response_page)
         return page
 
 
 class Page(BaseBlock[PageResponse]):
-    @property
-    def parent(self) -> Union[Page, Block, None]:
-        return self._get_parent(self.last_response.parent)
+    parent: Union[Page, Block, Database, None]
+    created_time: datetime
+    last_edited_time: datetime
+    created_by: PartialUser
+    last_edited_by: PartialUser
+    archived: bool
+    icon: Optional[Icon]
+    cover: Optional[ExternalFile]
+    url: str
+    properties: PageProperties
+
+    def _send_response(self, response: PageResponse) -> None:
+        # noinspection DuplicatedCode
+        self.created_time = response.created_time
+        self.last_edited_time = response.last_edited_time
+        self.created_by = response.created_by
+        self.last_edited_by = response.last_edited_by
+        self.archived = response.archived
+        self.icon = response.icon
+        self.cover = response.cover
+        self.url = response.url
+        self.properties = response.properties
 
     def as_block(self) -> Block:
         block = Block(self.namespace, self.id)
-        if self.last_response:
-            block_response = BlockResponse(
-                id=self.id,
-                parent=self.last_response.parent,
-                created_time=self.last_response.created_time,
-                last_edited_time=self.last_response.last_edited_time,
-                created_by=self.last_response.created_by,
-                last_edited_by=self.last_response.last_edited_by,
-                has_children=None,
-                archived=self.last_response.archived,
-                block_type=ChildPageBlockType(title=''),
-            )
-            block_response.timestamp = self.last_response.timestamp
-            block.last_response = block_response
+        if self.timestamp > block.timestamp:
+            block.parent = self.parent
+            block.created_time = self.created_time
+            block.last_edited_time = self.last_edited_time
+            block.created_by = self.created_by
+            block.last_edited_by = self.last_edited_by
+            block.has_children = None
+            block.archived = self.archived
+            if not isinstance(getattr(block, 'block_type', None), ChildPageBlockType):
+                block.block_type = ChildPageBlockType(title='')
+            block.timestamp = self.timestamp
         return block
 
     def update(self, properties: Optional[PageProperties] = None, icon: Optional[Icon] = None,
-               cover: Optional[ExternalFile] = None, archived: Optional[bool] = None) -> PageResponse:
-        self.last_response = UpdatePage(self.namespace.token, self.id, properties, icon, cover, archived).execute(
+               cover: Optional[ExternalFile] = None, archived: Optional[bool] = None) -> Self:
+        response = UpdatePage(self.namespace.token, self.id, properties, icon, cover, archived).execute(
             self.namespace.print_body)
-        return self.last_response
+        self.send_response(response)
+        return self
 
-    def retrieve(self) -> PageResponse:
-        self.last_response = RetrievePage(self.namespace.token, self.id).execute(self.namespace.print_body)
-        return self.last_response
+    def retrieve(self) -> Self:
+        response = RetrievePage(self.namespace.token, self.id).execute(self.namespace.print_body)
+        self.send_response(response)
+        return self
 
-    def retrieve_property_item(self, prop_key: str | PropertyKey, page_size: int = -1) -> Any:
-        # TODO: add type hint
-        #  (concept) @overload (prop_id: PropertyKey[PagePropertyValue_T]) -> PagePropertyValue_T
+    def retrieve_property_item(
+            self, prop_key: str | PropertyKey[DatabasePropertyValue_T, PagePropertyValue_T, FilterBuilder_T],
+            page_size: int = -1) -> PagePropertyValue_T:
         if isinstance(prop_key, PropertyKey):
             prop_key = prop_key.id
         page_property = RetrievePagePropertyItem(self.namespace.token, self.id, prop_key, page_size).execute(
@@ -249,7 +315,7 @@ class Namespace(MutableMapping[Namespace_KT, BaseBlock_T]):
     def __init__(self, token: str = os.getenv('NOTION_TOKEN'), print_body: bool = False):
         self.token: Final = token
         self.print_body = print_body
-        self.instances: dict[UUID, BaseBlock] = {}
+        self._values: dict[UUID, BaseBlock] = {}
 
     @staticmethod
     def _get_id(key: Namespace_KT) -> UUID:
@@ -260,19 +326,19 @@ class Namespace(MutableMapping[Namespace_KT, BaseBlock_T]):
         raise NotionDfKeyError('bad id', {'key': key})
 
     def __getitem__(self, key: Namespace_KT) -> BaseBlock_T:
-        return self.instances[self._get_id(key)]
+        return self._values[self._get_id(key)]
 
     def __setitem__(self, key: Namespace_KT, value: BaseBlock_T) -> None:
-        self.instances[self._get_id(key)] = value
+        self._values[self._get_id(key)] = value
 
     def __delitem__(self, key: Namespace_KT) -> None:
-        del self.instances[self._get_id(key)]
+        del self._values[self._get_id(key)]
 
     def __len__(self) -> int:
-        return len(self.instances)
+        return len(self._values)
 
     def __iter__(self) -> Iterator[UUID]:
-        return iter(self.instances)
+        return iter(self._values)
 
     def block(self, id_or_url: UUID | str) -> Block:
         return Block(self, id_or_url)

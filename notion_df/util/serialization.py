@@ -110,7 +110,7 @@ def deserialize(typ: type, serialized: Any):
     if typ in {bool, str, int, float, Decimal} or issubclass(typ, Enum):
         try:
             return typ(serialized)
-        except ValueError as e:
+        except (ValueError, TypeError) as e:
             err_vars.update(exception=e)
             raise NotionDfValueError('cannot deserialize', err_vars, linebreak=True)
     if typ == UUID:
@@ -118,7 +118,11 @@ def deserialize(typ: type, serialized: Any):
             return serialized
         return UUID(serialized)
     if issubclass(typ, datetime):
-        return deserialize_datetime(serialized)
+        try:
+            return deserialize_datetime(serialized)
+        except (ValueError, TypeError) as e:
+            err_vars.update(exception=e)
+            raise NotionDfValueError('cannot deserialize', err_vars, linebreak=True)
     raise NotionDfValueError('cannot deserialize: not supported class', err_vars, linebreak=True)
 
 

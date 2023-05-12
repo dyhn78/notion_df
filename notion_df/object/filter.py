@@ -56,6 +56,20 @@ class PropertyFilter(Filter):
 
 
 @dataclass
+class FormulaPropertyFilter(Filter):
+    name_or_id: str | UUID
+    typename: str
+    value_typename: str
+    condition: FilterCondition
+
+    def serialize(self):
+        return {
+            "property": self.name_or_id,
+            self.typename: {self.value_typename: serialize(self.condition)}
+        }
+
+
+@dataclass
 class RollupPropertyAggregateFilter(Filter):
     name_or_id: str | UUID
     aggregate_type: RollupAggregate
@@ -176,11 +190,17 @@ class CheckboxFilterBuilder(FilterBuilder):
     def get_typename(cls) -> str:
         return 'checkbox'
 
+    def equals(self, value: bool) -> Filter:
+        return self._build({'equals': value})
+
+    def does_not_equal(self, value: bool) -> Filter:
+        return self._build({'does_not_equal': value})
+
     def is_empty(self) -> Filter:
-        return self._build({'is_empty': True})
+        return self.equals(False)
 
     def is_not_empty(self) -> Filter:
-        return self._build({'is_not_empty': True})
+        return self.equals(True)
 
 
 class SelectFilterBuilder(FilterBuilder):

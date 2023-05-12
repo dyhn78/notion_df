@@ -21,6 +21,27 @@ from notion_df.util.serialization import DualSerializable
 
 
 @dataclass
+class BlockResponse(Response):
+    id: UUID
+    parent: ParentInfo
+    created_time: datetime
+    last_edited_time: datetime
+    created_by: PartialUser
+    last_edited_by: PartialUser
+    has_children: Optional[bool]
+    """the None value never occurs from direct server response. It only happens from Page.as_block()"""
+    archived: bool
+    block_type: BlockType
+
+    @classmethod
+    def _deserialize_this(cls, response_data: dict[str, Any]):
+        typename = response_data['type']
+        block_type_cls = block_type_registry[typename]
+        block_type = block_type_cls.deserialize(response_data[typename])
+        return cls._deserialize_from_dict(response_data, block_type=block_type)
+
+
+@dataclass
 class DatabaseResponse(Response):
     id: UUID
     parent: ParentInfo
@@ -56,27 +77,6 @@ class PageResponse(Response):
     @classmethod
     def _deserialize_this(cls, response_data: dict[str, Any]) -> Self:
         return cls._deserialize_from_dict(response_data)
-
-
-@dataclass
-class BlockResponse(Response):
-    id: UUID
-    parent: ParentInfo
-    created_time: datetime
-    last_edited_time: datetime
-    created_by: PartialUser
-    last_edited_by: PartialUser
-    has_children: Optional[bool]
-    """the None value never occurs from direct server response. It only happens from Page.as_block()"""
-    archived: bool
-    block_type: BlockType
-
-    @classmethod
-    def _deserialize_this(cls, response_data: dict[str, Any]):
-        typename = response_data['type']
-        block_type_cls = block_type_registry[typename]
-        block_type = block_type_cls.deserialize(response_data[typename])
-        return cls._deserialize_from_dict(response_data, block_type=block_type)
 
 
 block_type_registry: FinalClassDict[str, type[BlockType]] = FinalClassDict()

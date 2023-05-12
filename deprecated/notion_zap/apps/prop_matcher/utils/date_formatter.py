@@ -72,7 +72,7 @@ class DateFormatter:
         return self.date + dt.timedelta(days=-weekday)
 
     def last_day_of_week(self):
-        return self.first_day_of_week() + + dt.timedelta(days=6)
+        return self.first_day_of_week() + dt.timedelta(days=6)
 
     def _augmented_iso_calendar(self):
         year, week, weekday = self.date.isocalendar()

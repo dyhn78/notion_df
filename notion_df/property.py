@@ -4,7 +4,7 @@ from abc import ABCMeta
 from collections.abc import MutableMapping
 from dataclasses import dataclass, field
 from datetime import datetime, date
-from typing import ClassVar, final, TypeVar, Generic, Any, Iterator, Optional, Literal
+from typing import ClassVar, TypeVar, Generic, Any, Iterator, Optional, Literal
 from uuid import UUID
 
 from typing_extensions import Self
@@ -14,7 +14,7 @@ from notion_df.object.constant import RollupFunction, NumberFormat, Number
 from notion_df.object.file import Files
 from notion_df.object.filter import PropertyFilter, CheckboxFilterBuilder, PeopleFilterBuilder, \
     DateFilterBuilder, TextFilterBuilder, FilesFilterBuilder, NumberFilterBuilder, MultiSelectFilterBuilder, \
-    RelationFilterBuilder, SelectFilterBuilder, FilterBuilder
+    RelationFilterBuilder, SelectFilterBuilder, FilterBuilder, FormulaPropertyFilter
 from notion_df.object.rich_text import RichText
 from notion_df.object.user import PartialUser, User
 from notion_df.util.collection import FinalClassDict
@@ -45,7 +45,6 @@ class PropertyKey(Generic[DatabasePropertyValue_T, PagePropertyValue_T, FilterBu
         if typename := getattr(cls, 'typename', None):
             property_key_registry[typename] = cls
 
-    @final
     @property
     def filter(self) -> FilterBuilder_T:
         def build(filter_condition: dict[str, Any]):
@@ -318,6 +317,12 @@ class RelationPagePropertyValue(DualSerializable):
     page_ids: list[UUID]
     has_more: bool = field(init=False, default=None)
 
+    def __getitem__(self, index: int) -> UUID:
+        return self.page_ids[index]
+
+    def __iter__(self):
+        return iter(self.page_ids)
+
     def __bool__(self) -> bool:
         return self.page_ids or self.has_more
 
@@ -396,12 +401,40 @@ class FormulaPropertyKey(PropertyKey[FormulaDatabasePropertyValue, PagePropertyV
     database = FormulaDatabasePropertyValue
     page = Any
 
+    @property
+    def filter(self) -> FilterBuilder_T:
+        def build(filter_condition: dict[str, Any]):
+            return FormulaPropertyFilter(self.name, self.typename, self._filter_cls.get_typename(), filter_condition)
+
+        return self._filter_cls(build)
+
     def _serialize_page_value(self, prop_value: PropertyValue_T) -> dict[str, Any]:
         return {'type': self.value_typename,
                 self.value_typename: prop_value}
 
+    @classmethod
+    def _deserialize_page_value(cls, prop_serialized: dict[str, Any]) -> PropertyValue_T:
+        """allow proxy-deserialization of subclasses."""
+        typename = prop_serialized['type']
+        value_typename = prop_serialized[typename]['type']
+        if cls == FormulaPropertyKey:
+            match value_typename:
+                case 'boolean':
+                    subclass = CheckboxFormulaPropertyKey
+                case 'date':
+                    subclass = DateFormulaPropertyKey
+                case 'number':
+                    subclass = NumberFormulaPropertyKey
+                case 'string':
+                    subclass = StringFormulaPropertyKey
+                case _:
+                    raise NotionDfValueError('invalid value_typename.',
+                                             {'prop_serialized': prop_serialized, 'value_typename': value_typename})
+            return subclass._deserialize_page_value(prop_serialized)
+        return deserialize(cls.page, prop_serialized[typename][value_typename])
 
-class BoolFormulaPropertyKey(FormulaPropertyKey[bool, CheckboxFilterBuilder]):
+
+class CheckboxFormulaPropertyKey(FormulaPropertyKey[bool, CheckboxFilterBuilder]):
     value_typename = 'boolean'
     page = bool
     _filter_cls = CheckboxFilterBuilder
@@ -409,7 +442,7 @@ class BoolFormulaPropertyKey(FormulaPropertyKey[bool, CheckboxFilterBuilder]):
 
 class DateFormulaPropertyKey(FormulaPropertyKey[date | datetime, DateFilterBuilder]):
     value_typename = 'date'
-    page = date | datetime
+    page = date | datetime | DateRange
     _filter_cls = DateFilterBuilder
 
 

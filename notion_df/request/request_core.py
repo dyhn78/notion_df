@@ -17,7 +17,7 @@ MAX_PAGE_SIZE = 100
 
 @dataclass
 class Response(Deserializable, metaclass=ABCMeta):
-    timestamp: datetime = field(init=False, default_factory=datetime.now)
+    timestamp: float = field(init=False, default_factory=datetime.now().timestamp)
 
 
 Response_T = TypeVar('Response_T', bound=Response)

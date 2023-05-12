@@ -17,4 +17,4 @@ if __name__ == '__main__':
     url2 = page_properties['url']
     daterange = page_properties[DatePropertyKey('date')]
     page_properties[DatePropertyKey('date')] = DateRange(date(2023, 1, 1), date(2023, 1, 2))
-    page_properties[DatePropertyKey('date')] = 2
+    # page_properties[DatePropertyKey('date')] = 2
