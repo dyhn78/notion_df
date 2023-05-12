@@ -23,9 +23,9 @@ from notion_df.util.misc import check_classvars_are_defined
 from notion_df.util.serialization import DualSerializable, deserialize, serialize
 
 property_key_registry: FinalClassDict[str, type[PropertyKey]] = FinalClassDict()
-PropertyValue_T = TypeVar('PropertyValue_T')  # PropertyValue type
+PropertyValue_T = TypeVar('PropertyValue_T')
 DatabasePropertyValue_T = TypeVar('DatabasePropertyValue_T', bound='DatabasePropertyValue')
-PagePropertyValue_T = TypeVar('PagePropertyValue_T')  # PagePropertyValue type
+PagePropertyValue_T = TypeVar('PagePropertyValue_T')
 FilterBuilder_T = TypeVar('FilterBuilder_T', bound=FilterBuilder)
 
 
@@ -121,9 +121,10 @@ class Properties(DualSerializable, MutableMapping[PropertyKey, PropertyValue_T],
         self._value_by_name.pop(key.name)
 
 
-class DatabaseProperties(Properties, MutableMapping[
-    PropertyKey[DatabasePropertyValue_T, PagePropertyValue_T, FilterBuilder_T], DatabasePropertyValue_T]):
-    def __init__(self, properties: Optional[dict[PropertyKey, DatabasePropertyValue_T]] = None):
+class DatabaseProperties(Properties[PropertyKey[DatabasePropertyValue_T, Any, Any], DatabasePropertyValue_T]):
+    def __init__(
+            self, properties: Optional[dict[
+                PropertyKey[DatabasePropertyValue_T, Any, Any], DatabasePropertyValue_T]] = None):
         super().__init__(properties)
 
     def serialize(self) -> dict[str, Any]:
@@ -144,24 +145,34 @@ class DatabaseProperties(Properties, MutableMapping[
             self[property_key] = property_value
         return self
 
-    def __getitem__(self, key: str | PropertyKey[DatabasePropertyValue_T, PagePropertyValue_T, FilterBuilder_T]) \
-            -> DatabasePropertyValue_T:
+    def __getitem__(self, key: str | PropertyKey[DatabasePropertyValue_T, Any, Any]) -> DatabasePropertyValue_T:
         return super().__getitem__(key)
 
-    def __setitem__(self, key: str | PropertyKey[DatabasePropertyValue_T, PagePropertyValue_T, FilterBuilder_T],
+    def __setitem__(self, key: str | PropertyKey[DatabasePropertyValue_T, Any, Any],
                     value: DatabasePropertyValue_T) -> None:
         return super().__setitem__(key, value)
 
-    def __delitem__(self, key: str | PropertyKey[DatabasePropertyValue_T, PagePropertyValue_T, FilterBuilder_T]) \
-            -> None:
+    def __delitem__(self, key: str | PropertyKey[DatabasePropertyValue_T, Any, Any]) -> None:
         return super().__delitem__(key)
 
 
-class PageProperties(Properties, MutableMapping[
-    PropertyKey[DatabasePropertyValue_T, PagePropertyValue_T, FilterBuilder_T], PagePropertyValue_T]):
-    def __init__(self, properties: Optional[dict[PropertyKey, PagePropertyValue_T]] = None):
+class PageProperties(Properties[PropertyKey[Any, PagePropertyValue_T, Any], PagePropertyValue_T]):
+    def __init__(
+            self, properties: Optional[dict[PropertyKey[Any, PagePropertyValue_T, Any], PagePropertyValue_T]] = None):
         super().__init__(properties)
         self._title_key: Optional[TitlePropertyKey] = None
+
+    def __getitem__(self, key: str | PropertyKey[Any, PagePropertyValue_T, Any]) \
+            -> PagePropertyValue_T:
+        return super().__getitem__(key)
+
+    def __setitem__(self, key: str | PropertyKey[Any, PagePropertyValue_T, Any],
+                    value: PagePropertyValue_T) -> None:
+        return super().__setitem__(key, value)
+
+    def __delitem__(self, key: str | PropertyKey[Any, PagePropertyValue_T, Any]) \
+            -> None:
+        return super().__delitem__(key)
 
     def serialize(self) -> dict[str, Any]:
         # noinspection PyProtectedMember
@@ -193,18 +204,6 @@ class PageProperties(Properties, MutableMapping[
     @title.setter
     def title(self, value: TitlePropertyKey.page) -> None:
         self[self._title_key] = value
-
-    def __getitem__(self, key: str | PropertyKey[DatabasePropertyValue_T, PagePropertyValue_T, FilterBuilder_T]) \
-            -> PagePropertyValue_T:
-        return super().__getitem__(key)
-
-    def __setitem__(self, key: str | PropertyKey[DatabasePropertyValue_T, PagePropertyValue_T, FilterBuilder_T],
-                    value: PagePropertyValue_T) -> None:
-        return super().__setitem__(key, value)
-
-    def __delitem__(self, key: str | PropertyKey[DatabasePropertyValue_T, PagePropertyValue_T, FilterBuilder_T]) \
-            -> None:
-        return super().__delitem__(key)
 
 
 class DatabasePropertyValue(DualSerializable, metaclass=ABCMeta):
@@ -414,7 +413,6 @@ class FormulaPropertyKey(PropertyKey[FormulaDatabasePropertyValue, PagePropertyV
 
     @classmethod
     def _deserialize_page_value(cls, prop_serialized: dict[str, Any]) -> PropertyValue_T:
-        """allow proxy-deserialization of subclasses."""
         typename = prop_serialized['type']
         value_typename = prop_serialized[typename]['type']
         if cls == FormulaPropertyKey:
