@@ -68,7 +68,9 @@ class RichTextSpan(DualSerializable, metaclass=ABCMeta):
                 return (typename,) + get_typename(_serialized[typename])
             return ()
 
-        subclass = rich_text_span_registry[get_typename(serialized)]
+        # (ex) KeyError: ('mention', 'user', 'person') -> ('mention', 'user')
+        # TODO: fix this temporary hack!
+        subclass = rich_text_span_registry[get_typename(serialized)[:2]]
         return subclass.deserialize(serialized)
 
 
@@ -180,7 +182,7 @@ class UserMention(RichTextSpan):
                 'type': 'user',
                 'user': {
                     'object': 'user',
-                    'id': self.user_id
+                    'id': str(self.user_id)
                 }
             }
         }
@@ -212,7 +214,7 @@ class PageMention(RichTextSpan):
             'type': 'mention',
             'mention': {
                 'type': 'page',
-                'page': self.page_id
+                'page': str(self.page_id)
             }
         }
 
@@ -243,7 +245,7 @@ class DatabaseMention(RichTextSpan):
             'type': 'mention',
             'mention': {
                 'type': 'database',
-                'database': self.database_id
+                'database': str(self.database_id)
             }
         }
 

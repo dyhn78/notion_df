@@ -22,7 +22,7 @@ from notion_df.request.block import AppendBlockChildren, RetrieveBlock, Retrieve
 from notion_df.request.database import CreateDatabase, UpdateDatabase, RetrieveDatabase, QueryDatabase
 from notion_df.request.page import CreatePage, UpdatePage, RetrievePage, RetrievePagePropertyItem
 from notion_df.request.request_core import Response_T
-from notion_df.util.exception import NotionDfKeyError
+from notion_df.util.exception import NotionDfKeyError, NotionDfTypeError
 from notion_df.util.misc import get_id, UUID
 
 
@@ -280,15 +280,15 @@ class Children(Sequence[Child_T]):
         self._values: list[Child_T] = values
         self._by_id: dict[UUID, Child_T] = {child.id: child for child in self._values}
 
-    def __getitem__(self, index_or_id: int | UUID) -> Child_T:
-        if isinstance(index_or_id, int):
+    def __getitem__(self, index_or_id: int | UUID | slice) -> Child_T:
+        if isinstance(index_or_id, int) or isinstance(index_or_id, slice):
             return self._values[index_or_id]
         elif isinstance(index_or_id, UUID):
             return self._by_id[index_or_id]
         else:
-            raise TypeError(f"Invalid argument type. Expected int or UUID - {index_or_id}")
+            raise NotionDfTypeError("Invalid argument type. Expected int, UUID or slice", {'index_or_id': index_or_id})
 
-    def get(self, index_or_id: int | UUID) -> Optional[Child_T]:
+    def get(self, index_or_id: int | UUID | slice) -> Optional[Child_T]:
         try:
             return self[index_or_id]
         except (IndexError, KeyError):
