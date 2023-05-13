@@ -63,7 +63,7 @@ types-urllib3==1.26.25.5
 typing_extensions==4.4.0
 urllib3==1.26.14
 urllib3-secure-extra==0.1.0
-webdriver-manager==3.8.3
+webdriver-manager==3.8.6
 webencodings==0.5.1
 wrapt==1.14.1
 wsproto==1.2.0
