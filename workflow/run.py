@@ -29,15 +29,15 @@ class Workflow:
             MatchDateByCreatedTime(workspace, DatabaseEnum.events, '생성'),
             MatchWeekByDate(workspace, DatabaseEnum.events, '주간', '일간'),
 
-            MatchDateByCreatedTime(workspace, DatabaseEnum.issues, '시작'),
-            MatchWeekByDate(workspace, DatabaseEnum.issues, '시작', '시작'),
+            MatchDateByCreatedTime(workspace, DatabaseEnum.issues, '생성'),
+            MatchWeekByDate(workspace, DatabaseEnum.issues, '주간', '일간'),
 
             MatchDateByCreatedTime(workspace, DatabaseEnum.journals, '일간'),
             MatchDateByCreatedTime(workspace, DatabaseEnum.journals, '생성'),
             MatchWeekByDate(workspace, DatabaseEnum.journals, '주간', '일간'),
 
-            MatchDateByCreatedTime(workspace, DatabaseEnum.notes, '일간'),  # TODO 배포후: 시작
-            MatchWeekByDate(workspace, DatabaseEnum.notes, '주간', '일간'),  # TODO 배포후: 시작, 시작
+            MatchDateByCreatedTime(workspace, DatabaseEnum.notes, '시작'),
+            MatchWeekByDate(workspace, DatabaseEnum.notes, '시작', '시작'),
 
             MatchDateByCreatedTime(workspace, DatabaseEnum.topics, '시작'),
             MatchWeekByDate(workspace, DatabaseEnum.topics, '시작', '시작'),
