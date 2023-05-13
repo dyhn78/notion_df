@@ -1,4 +1,5 @@
-﻿anyio==3.6.2
+﻿# TODO clean requirements.txt
+anyio==3.6.2
 astroid==2.14.1
 async-generator==1.10
 attrs==22.2.0
