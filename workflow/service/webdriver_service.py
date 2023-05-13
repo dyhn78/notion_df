@@ -17,7 +17,7 @@ class WebDriverFactory:
         self.create_window = create_window
 
     def __call__(self) -> webdriver.Chrome:
-        service = Service(ChromeDriverManager(os_type='mac64').install())
+        service = Service(ChromeDriverManager().install())
         if not self.create_window and self.ON_WINDOWS:
             # https://www.zacoding.com/en/post/python-selenium-hide-console/
             from subprocess import CREATE_NO_WINDOW
