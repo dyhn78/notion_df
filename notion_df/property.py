@@ -4,7 +4,7 @@ from abc import ABCMeta
 from collections.abc import MutableMapping
 from dataclasses import dataclass, field
 from datetime import datetime, date
-from typing import ClassVar, TypeVar, Generic, Any, Iterator, Optional, Literal
+from typing import ClassVar, TypeVar, Generic, Any, Iterator, Optional, Literal, Union, Iterable, Final
 from uuid import UUID
 
 from typing_extensions import Self
@@ -19,7 +19,7 @@ from notion_df.object.rich_text import RichText
 from notion_df.object.user import PartialUser, User
 from notion_df.util.collection import FinalClassDict
 from notion_df.util.exception import NotionDfKeyError, NotionDfValueError
-from notion_df.util.misc import check_classvars_are_defined
+from notion_df.util.misc import check_classvars_are_defined, repr_attrs
 from notion_df.util.serialization import DualSerializable, deserialize, serialize
 
 property_key_registry: FinalClassDict[str, type[PropertyKey]] = FinalClassDict()
@@ -36,8 +36,23 @@ class PropertyKey(Generic[DatabasePropertyValue_T, PagePropertyValue_T, FilterBu
     _filter_cls: type[FilterBuilder_T]
 
     def __init__(self, name: str):
-        self.name = name
-        self.id = None
+        self.name: Final[str] = name
+        self.id: Optional[str] = None
+
+    def __repr__(self) -> str:
+        return repr_attrs(self, ['name', 'id'])
+
+    def __eq__(self, other: PropertyKey) -> bool:
+        if self.name != other.name:
+            return False
+        if self.id is not None and other.id is not None and self.id != other.id:
+            return False
+        if not (issubclass(type(self), type(other)) or issubclass(type(other), type(self))):
+            return False
+        return True
+
+    def __hash__(self):
+        return hash(self.name)
 
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
@@ -70,24 +85,29 @@ class Properties(DualSerializable, MutableMapping[PropertyKey, PropertyValue_T],
     _key_by_id: dict[str, PropertyKey]
     _key_by_name: dict[str, PropertyKey]
     _value_by_name: dict[str, PropertyValue_T]
+    _values: dict[PropertyKey, PropertyValue_T]
 
     def __init__(self, items: Optional[dict[PropertyKey, PropertyValue_T]] = None):
         self._key_by_id = {}
         self._key_by_name = {}
         self._value_by_name = {}
+        self._values = {}
         if not items:
             return
         for key, value in items.items():
             self[key] = value
 
+    def key_names(self) -> set[str]:
+        return set(self._key_by_name.keys())
+
     def __repr__(self) -> str:
-        return f'{type(self).__name__}({set(self._key_by_name.keys())})'
+        return f'{type(self).__name__}({repr(self._values)})'
 
     def __iter__(self) -> Iterator[PropertyKey]:
         return iter(self._key_by_name.values())
 
     def __len__(self) -> int:
-        return len(self._value_by_name)
+        return len(self._values)
 
     def _get_key(self, key: str | PropertyKey) -> PropertyKey:
         if isinstance(key, str):
@@ -95,11 +115,13 @@ class Properties(DualSerializable, MutableMapping[PropertyKey, PropertyValue_T],
                 return self._key_by_id[key]
             return self._key_by_name[key]
         if isinstance(key, PropertyKey):
+            # TODO: add frozen key options (if user copied only keys from another properties instance)
+            #  this will check `key in self._key_by_name()`
             return key
         raise NotionDfKeyError('bad key', {'key': key})
 
     def __getitem__(self, key: str | PropertyKey) -> PropertyValue_T:
-        return self._value_by_name[self._get_key(key).name]
+        return self._values[self._get_key(key)]
 
     def get(self, key: str | PropertyKey, default: Optional[PropertyValue_T] = None) -> Optional[PropertyValue_T]:
         key = self._get_key(key)
@@ -112,14 +134,14 @@ class Properties(DualSerializable, MutableMapping[PropertyKey, PropertyValue_T],
         key = self._get_key(key)
         self._key_by_id[key.id] = key
         self._key_by_name[key.name] = key
-        self._value_by_name[key.name] = value
+        self._values[key] = value
 
     def __delitem__(self, key: str | PropertyKey) -> None:
         # TODO restore KeyError
         key = self._get_key(key)
         self._key_by_name.pop(key.name, None)
         self._key_by_id.pop(key.id, None)
-        self._value_by_name.pop(key.name, None)
+        del self._values[key]
 
 
 class DatabaseProperties(Properties[PropertyKey[DatabasePropertyValue_T, Any, Any], DatabasePropertyValue_T]):
@@ -312,26 +334,23 @@ class RollupDatabasePropertyValue(DatabasePropertyValue):
     rollup_property_id: str
 
 
-@dataclass
-class RelationPagePropertyValue(DualSerializable):
-    page_ids: list[UUID]
-    has_more: bool = field(init=False, default=None)
+class RelationPagePropertyValue(list[UUID], DualSerializable):
+    has_more: Optional[bool]
 
-    def __getitem__(self, index: int) -> UUID:
-        return self.page_ids[index]
-
-    def __iter__(self):
-        return iter(self.page_ids)
+    def __init__(self, ids: Iterable[UUID] = ()):
+        super().__init__(ids)
 
     def __bool__(self) -> bool:
-        return self.page_ids or self.has_more
+        return len(self) or self.has_more
 
     def serialize(self) -> Any:
-        return [{'id': str(page_id)} for page_id in self.page_ids]
+        return [{'id': str(page_id)} for page_id in self]
 
     @classmethod
     def _deserialize_this(cls, serialized: list[dict[str, Any]]) -> Self:
-        return cls(page_ids=[UUID(page['id']) for page in serialized])
+        self = cls([UUID(page['id']) for page in serialized])
+        self.has_more = None
+        return self
 
 
 @dataclass
@@ -439,9 +458,9 @@ class CheckboxFormulaPropertyKey(FormulaPropertyKey[bool, CheckboxFilterBuilder]
     _filter_cls = CheckboxFilterBuilder
 
 
-class DateFormulaPropertyKey(FormulaPropertyKey[date | datetime, DateFilterBuilder]):
+class DateFormulaPropertyKey(FormulaPropertyKey[Union[date, datetime], DateFilterBuilder]):
     value_typename = 'date'
-    page = date | datetime | DateRange
+    page = Union[date, datetime, DateRange]
     _filter_cls = DateFilterBuilder
 
 
@@ -499,7 +518,11 @@ class PhoneNumberPropertyKey(PropertyKey[PlainDatabasePropertyValue, str, TextFi
     _filter_cls = TextFilterBuilder
 
 
-class RelationPropertyKey(PropertyKey[RelationDatabasePropertyValue, RelationPagePropertyValue, RelationFilterBuilder]):
+RelationDatabasePropertyValue_T = TypeVar('RelationDatabasePropertyValue_T', bound=RelationPagePropertyValue)
+
+
+class RelationPropertyKey(
+    PropertyKey[RelationDatabasePropertyValue_T, RelationPagePropertyValue, RelationFilterBuilder]):
     """cannot access database properties - use subclasses instead."""
     typename = 'relation'
     database = RelationDatabasePropertyValue
@@ -513,13 +536,11 @@ class RelationPropertyKey(PropertyKey[RelationDatabasePropertyValue, RelationPag
         return prop_value
 
 
-class SingleRelationPropertyKey(
-    PropertyKey[SingleRelationDatabasePropertyValue, RelationPagePropertyValue, RelationFilterBuilder]):
+class SingleRelationPropertyKey(RelationPropertyKey[SingleRelationDatabasePropertyValue]):
     database = SingleRelationDatabasePropertyValue
 
 
-class DualRelationPropertyKey(
-    PropertyKey[DualRelationDatabasePropertyValue, RelationPagePropertyValue, RelationFilterBuilder]):
+class DualRelationPropertyKey(RelationPropertyKey[DualRelationDatabasePropertyValue]):
     database = DualRelationDatabasePropertyValue
 
 

@@ -25,12 +25,12 @@ def serialize(obj: Any):
     """unified serializer for both Serializable and external classes."""
     if obj is None:
         return None
+    if isinstance(obj, Serializable):
+        return obj.serialize()
     if isinstance(obj, dict):
         return {k: serialize(v) for k, v in obj.items()}
     if isinstance(obj, list) or isinstance(obj, set):
         return [serialize(e) for e in obj]
-    if isinstance(obj, Serializable):
-        return obj.serialize()
     for typ in {bool, str, int, float}:
         if isinstance(obj, typ):
             return obj
@@ -38,6 +38,8 @@ def serialize(obj: Any):
         return obj.value
     if isinstance(obj, date):
         return serialize_datetime(obj)
+    if isinstance(obj, UUID):
+        return str(obj)
     raise NotionDfValueError('cannot serialize', {'obj': obj})
 
 
@@ -187,6 +189,13 @@ class Deserializable(metaclass=ABCMeta):
     @cache
     def _get_type_hints(cls) -> dict[str, type]:
         return get_type_hints(cls)
+
+    @final
+    def _repr_non_default_fields(self):
+        return (f'{type(self).__name__}('
+                + ','.join(f'{fd.name}={getattr(self, fd.name)}' for fd in fields(self)
+                           if getattr(self, fd.name) != fd.default)
+                + ')')
 
 
 class DualSerializable(Serializable, Deserializable, metaclass=ABCMeta):

@@ -29,10 +29,7 @@ class Annotations(DualSerializable):
 
     def __repr__(self):
         # repr() only non-default fields
-        return (f'{type(self).__name__}('
-                + ','.join(f'{fd.name}={getattr(self, fd.name)}' for fd in fields(self)
-                           if getattr(self, fd.name) != fd.default)
-                + ')')
+        return self._repr_non_default_fields()
 
 
 icon_registry: dict[str, type[Icon]] = {}

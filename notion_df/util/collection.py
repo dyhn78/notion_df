@@ -4,7 +4,7 @@ from enum import Enum
 from typing import Mapping, TypeVar, Iterator, Final, NewType
 
 from notion_df.util.exception import NotionDfKeyError
-from notion_df.util.misc import repr_object
+from notion_df.util.misc import repr_object_depr
 from notion_df.util.mixin import Resolvable
 
 _T_co = TypeVar('_T_co', covariant=True)
@@ -35,7 +35,7 @@ class DictView(Mapping[_T_co, _VT_co]):
         return self._model.__iter__()
 
     def __repr__(self) -> str:
-        return repr_object(self, **self.description, data=self._model)
+        return repr_object_depr(self, data=self._model, **self.description)
 
 
 class StrEnum(str, Enum):

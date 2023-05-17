@@ -9,7 +9,14 @@ from uuid import UUID
 from notion_df.util.exception import NotionDfTypeError
 
 
-def repr_object(obj: Any, params: dict[Hashable, Any] = None, **kwargs: Any) -> str:
+def repr_attrs(self, attr_names: list[str]) -> str:
+    return (f'{type(self).__name__}('
+            + ','.join(f'{attr_name}={getattr(self, attr_name)}' for attr_name in attr_names
+                       if getattr(self, attr_name) is not None)
+            + ')')
+
+
+def repr_object_depr(obj: Any, params: dict[Hashable, Any] = None, **kwargs: Any) -> str:
     # TODO: replace this with `dataclass.field(repr: bool)` feature
     """params and kwargs has same effect"""
     items = _concat_items(params, kwargs)

@@ -2,7 +2,7 @@ from __future__ import annotations as _
 
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, field
-from typing import Optional, Any, Literal, final, Sequence
+from typing import Optional, Any, Literal, final, Sequence, Iterable
 from uuid import UUID
 
 from typing_extensions import Self
@@ -73,12 +73,15 @@ class RichTextSpan(DualSerializable, metaclass=ABCMeta):
         subclass = rich_text_span_registry[get_typename(serialized)[:2]]
         return subclass.deserialize(serialized)
 
+    def __repr__(self):
+        return self._repr_non_default_fields()
+
 
 rich_text_span_registry: FinalClassDict[tuple[str, ...], type[RichTextSpan]] = FinalClassDict()
 
 
 class RichText(list[RichTextSpan], DualSerializable):
-    def __init__(self, spans: Optional[Sequence[RichTextSpan]] = None):
+    def __init__(self, spans: Iterable[RichTextSpan] = ()):
         super().__init__(spans)
 
     @property

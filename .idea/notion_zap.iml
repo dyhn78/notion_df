@@ -6,8 +6,11 @@
       <excludeFolder url="file://$MODULE_DIR$/tests/.pytest_cache/v" />
       <excludeFolder url="file://$MODULE_DIR$/notion_zap" />
       <excludeFolder url="file://$MODULE_DIR$/tests/notion_df/core/.pytest_cache/v" />
+      <excludeFolder url="file://$MODULE_DIR$/.mypy_cache" />
+      <excludeFolder url="file://$MODULE_DIR$/.pytest_cache" />
+      <excludeFolder url="file://$MODULE_DIR$/deprecated" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.10 (notion_zap)" jdkType="Python SDK" />
+    <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="PackageRequirementsSettings">
