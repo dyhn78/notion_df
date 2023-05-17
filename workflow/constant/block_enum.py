@@ -1,6 +1,5 @@
 from enum import Enum
 
-from notion_df.entity import Namespace
 from notion_df.util.misc import get_id, get_url
 from workflow.constant.emoji_code import EmojiCode
 

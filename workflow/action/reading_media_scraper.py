@@ -4,8 +4,8 @@ from notion_df.entity import Namespace, Page
 from notion_df.object.block import ChildPageBlockValue
 from notion_df.object.common import SelectOption
 from notion_df.object.filter import CompoundFilter
-from notion_df.property import SelectPropertyKey, CheckboxFormulaPropertyKey, TitlePropertyKey, RichTextPropertyKey, \
-    URLPropertyKey, NumberPropertyKey, FilesPropertyKey, CheckboxPropertyKey, PageProperties
+from notion_df.property import SelectProperty, CheckboxFormulaProperty, TitleProperty, RichTextProperty, \
+    URLProperty, NumberProperty, FilesProperty, CheckboxProperty, PageProperties
 from notion_df.util.collection import StrEnum
 from workflow.constant.block_enum import DatabaseEnum
 from workflow.service.lib_gy_service import GoyangLibraryScraper
@@ -13,20 +13,20 @@ from workflow.service.webdriver_service import WebDriverFactory
 from workflow.service.yes24_service import get_yes24_detail_page_url, Yes24ScrapResult, get_block_value_of_contents_line
 from workflow.util.action import Action
 
-edit_status_key = SelectPropertyKey('🔰준비')
-media_type_key = SelectPropertyKey('📘유형')
-is_book_key = CheckboxFormulaPropertyKey('📔도서류')
-title_key = TitlePropertyKey('📚제목')
-true_name_key = RichTextPropertyKey('📚원제(검색용)')
-sub_name_key = RichTextPropertyKey('📚부제')
-url_key = URLPropertyKey('📚링크')
-author_key = RichTextPropertyKey('📚만든이')
-publisher_key = RichTextPropertyKey('📚만든곳')
-volume_key = NumberPropertyKey('📚N(쪽)')
-cover_image_key = FilesPropertyKey('📚표지')
-location_key = RichTextPropertyKey('📚위치')
-not_available_key = CheckboxPropertyKey('📚대출중')
-link_to_contents_key = RichTextPropertyKey('📦결속')
+edit_status = SelectProperty('🔰준비')
+media_type = SelectProperty('📘유형')
+is_book = CheckboxFormulaProperty('📔도서류')
+title = TitleProperty('📚제목')
+true_name = RichTextProperty('📚원제(검색용)')
+sub_name = RichTextProperty('📚부제')
+url = URLProperty('📚링크')
+author = RichTextProperty('📚만든이')
+publisher = RichTextProperty('📚만든곳')
+volume = NumberProperty('📚N(쪽)')
+cover_image = FilesProperty('📚표지')
+location = RichTextProperty('📚위치')
+not_available = CheckboxProperty('📚대출중')
+link_to_contents = RichTextProperty('📦결속')
 
 
 class EditStatusValue(StrEnum):
@@ -46,8 +46,8 @@ class ReadingMediaScraper(Action):
         self.gy_scraper = GoyangLibraryScraper(self.factory())
 
     def execute(self):
-        reading_list = self.readings.query(is_book_key.filter.equals(True) & CompoundFilter('or', [
-            edit_status_key.filter.equals(option) for option in
+        reading_list = self.readings.query(is_book.filter.equals(True) & CompoundFilter('or', [
+            edit_status.filter.equals(option) for option in
             [EditStatusValue.default, EditStatusValue.metadata_overwrite, EditStatusValue.location_overwrite, None]
         ]))
         for reading in reading_list:
@@ -62,12 +62,12 @@ class ReadingMediaScraperUnit:
 
         self.reading = reading
         self.new_properties = PageProperties()
-        self.title = self.reading.properties[title_key].plain_text
-        self.true_name = self.reading.properties[true_name_key].plain_text
+        self.title = self.reading.properties[title].plain_text
+        self.true_name = self.reading.properties[true_name].plain_text
 
     def execute(self) -> None:
         new_status_value = EditStatusValue.fill_manually
-        match self.reading.properties[edit_status_key].name:
+        match self.reading.properties[edit_status].name:
             case EditStatusValue.default:
                 if self.process_yes24(False) and self.process_lib_gy(False):
                     new_status_value = EditStatusValue.confirm_manually
@@ -77,34 +77,34 @@ class ReadingMediaScraperUnit:
             case EditStatusValue.location_overwrite:
                 if self.process_lib_gy(True):
                     new_status_value = EditStatusValue.complete
-        self.new_properties[edit_status_key] = SelectOption(new_status_value)
+        self.new_properties[edit_status] = SelectOption(new_status_value)
         self.reading.update(self.new_properties)
 
     def process_yes24(self, overwrite: bool) -> bool:
-        if url := self.reading.properties[url_key]:
+        if url_value := self.reading.properties[url]:
             pass
-        elif url := get_yes24_detail_page_url(self.title):
+        elif url_value := get_yes24_detail_page_url(self.title):
             pass
-        elif url := get_yes24_detail_page_url(self.true_name):
+        elif url_value := get_yes24_detail_page_url(self.true_name):
             pass
         else:
             return False
-        result = Yes24ScrapResult.scrap(url)
+        result = Yes24ScrapResult.scrap(url_value)
         if overwrite:
-            for key in true_name_key, sub_name_key, author_key, publisher_key, volume_key, cover_image_key:
+            for key in true_name, sub_name, author, publisher, volume, cover_image:
                 self.reading.properties.pop(key, None)
-        if not self.reading.properties.get(true_name_key):
-            self.new_properties[true_name_key] = true_name_key.page.from_plain_text(result.get_true_name())
-        if not self.reading.properties.get(sub_name_key):
-            self.new_properties[sub_name_key] = sub_name_key.page.from_plain_text(result.get_sub_name())
-        if not self.reading.properties.get(author_key):
-            self.new_properties[author_key] = author_key.page.from_plain_text(result.get_author())
-        if not self.reading.properties.get(publisher_key):
-            self.new_properties[publisher_key] = publisher_key.page.from_plain_text(result.get_publisher())
-        if not self.reading.properties.get(volume_key):
-            self.new_properties[volume_key] = result.get_page_count()
-        if not self.reading.properties.get(cover_image_key):
-            self.new_properties[cover_image_key] = cover_image_key.page.externals([
+        if not self.reading.properties.get(true_name):
+            self.new_properties[true_name] = true_name.page_value.from_plain_text(result.get_true_name())
+        if not self.reading.properties.get(sub_name):
+            self.new_properties[sub_name] = sub_name.page_value.from_plain_text(result.get_sub_name())
+        if not self.reading.properties.get(author):
+            self.new_properties[author] = author.page_value.from_plain_text(result.get_author())
+        if not self.reading.properties.get(publisher):
+            self.new_properties[publisher] = publisher.page_value.from_plain_text(result.get_publisher())
+        if not self.reading.properties.get(volume):
+            self.new_properties[volume] = result.get_page_count()
+        if not self.reading.properties.get(cover_image):
+            self.new_properties[cover_image] = cover_image.page_value.externals([
                 (result.get_cover_image_url(), self.title)])
 
         child_values = [get_block_value_of_contents_line(content_line) for content_line in result.get_contents()]
@@ -125,18 +125,18 @@ class ReadingMediaScraperUnit:
                     return Page(self.namespace, block.id)
 
     def create_content_page(self) -> Page:
-        title = self.reading.properties[title_key].plain_text
+        title_value = self.reading.properties[title].plain_text
         return self.reading.create_child_page(PageProperties({
-            TitlePropertyKey('title'): TitlePropertyKey.page.from_plain_text(f'>{title}')}))
+            TitleProperty('title'): TitleProperty.page_value.from_plain_text(f'>{title_value}')}))
 
     def process_lib_gy(self, overwrite: bool) -> bool:
         result = self.gy_scraper.process_page(self.true_name)
         if not result:
             return False
         if overwrite:
-            self.reading.properties.pop(location_key, None)
-            self.reading.properties.pop(not_available_key, None)
-        if not self.reading.properties.get(location_key):
-            self.new_properties[location_key] = location_key.page.from_plain_text(str(result))
-            self.new_properties[not_available_key] = not result.availability
+            self.reading.properties.pop(location, None)
+            self.reading.properties.pop(not_available, None)
+        if not self.reading.properties.get(location):
+            self.new_properties[location] = location.page_value.from_plain_text(str(result))
+            self.new_properties[not_available] = not result.availability
         return True

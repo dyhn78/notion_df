@@ -16,12 +16,12 @@ from notion_df.entity import Database, Namespace
 #
 #
 # def test_property_type():
-#     DatePropertyKey('my-date').page()
-#     TitlePropertyKey('my-title').page()
+#     DateProperty('my-date').page()
+#     TitleProperty('my-title').page()
 #
 #
 # def test_filter(database):
-#     my_date_equals_20230101 = DatePropertyKey('my-date').filter.equals(datetime(2023, 1, 1))
+#     my_date_equals_20230101 = DateProperty('my-date').filter.equals(datetime(2023, 1, 1))
 #     database.query(my_date_equals_20230101, [])
 
 

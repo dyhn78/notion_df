@@ -16,7 +16,7 @@ from notion_df.object.parent import ParentInfo
 from notion_df.object.rich_text import RichText
 from notion_df.object.sort import Sort
 from notion_df.object.user import PartialUser
-from notion_df.property import PropertyKey, PageProperties, DatabaseProperties, DatabasePropertyValue_T, \
+from notion_df.property import Property, PageProperties, DatabaseProperties, DatabasePropertyValue_T, \
     PagePropertyValue_T, FilterBuilder_T
 from notion_df.request.block import AppendBlockChildren, RetrieveBlock, RetrieveBlockChildren, UpdateBlock, DeleteBlock
 from notion_df.request.database import CreateDatabase, UpdateDatabase, RetrieveDatabase, QueryDatabase
@@ -254,9 +254,9 @@ class Page(BaseBlock[PageResponse]):
         return self
 
     def retrieve_property_item(
-            self, prop_key: str | PropertyKey[DatabasePropertyValue_T, PagePropertyValue_T, FilterBuilder_T],
+            self, prop_key: str | Property[DatabasePropertyValue_T, PagePropertyValue_T, FilterBuilder_T],
             page_size: int = -1) -> PagePropertyValue_T:
-        if isinstance(prop_key, PropertyKey):
+        if isinstance(prop_key, Property):
             prop_key = prop_key.id
         page_property = RetrievePagePropertyItem(self.namespace.token, self.id, prop_key, page_size).execute(
             self.namespace.print_body)

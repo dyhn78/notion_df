@@ -2,7 +2,7 @@ from __future__ import annotations as _
 
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, field
-from typing import Optional, Any, Literal, final, Sequence, Iterable
+from typing import Optional, Any, Literal, final, Iterable
 from uuid import UUID
 
 from typing_extensions import Self

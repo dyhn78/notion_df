@@ -22,17 +22,17 @@ from notion_df.util.exception import NotionDfKeyError, NotionDfValueError
 from notion_df.util.misc import check_classvars_are_defined, repr_attrs
 from notion_df.util.serialization import DualSerializable, deserialize, serialize
 
-property_key_registry: FinalClassDict[str, type[PropertyKey]] = FinalClassDict()
+property_registry: FinalClassDict[str, type[Property]] = FinalClassDict()
 PropertyValue_T = TypeVar('PropertyValue_T')
 DatabasePropertyValue_T = TypeVar('DatabasePropertyValue_T', bound='DatabasePropertyValue')
 PagePropertyValue_T = TypeVar('PagePropertyValue_T')
 FilterBuilder_T = TypeVar('FilterBuilder_T', bound=FilterBuilder)
 
 
-class PropertyKey(Generic[DatabasePropertyValue_T, PagePropertyValue_T, FilterBuilder_T], metaclass=ABCMeta):
+class Property(Generic[DatabasePropertyValue_T, PagePropertyValue_T, FilterBuilder_T], metaclass=ABCMeta):
     typename: ClassVar[str]
-    database: type[DatabasePropertyValue_T]
-    page: type[PagePropertyValue_T]
+    database_value: type[DatabasePropertyValue_T]
+    page_value: type[PagePropertyValue_T]
     _filter_cls: type[FilterBuilder_T]
 
     def __init__(self, name: str):
@@ -42,7 +42,7 @@ class PropertyKey(Generic[DatabasePropertyValue_T, PagePropertyValue_T, FilterBu
     def __repr__(self) -> str:
         return repr_attrs(self, ['name', 'id'])
 
-    def __eq__(self, other: PropertyKey) -> bool:
+    def __eq__(self, other: Property) -> bool:
         if self.name != other.name:
             return False
         if self.id is not None and other.id is not None and self.id != other.id:
@@ -58,7 +58,7 @@ class PropertyKey(Generic[DatabasePropertyValue_T, PagePropertyValue_T, FilterBu
         super().__init_subclass__(**kwargs)
         check_classvars_are_defined(cls)
         if typename := getattr(cls, 'typename', None):
-            property_key_registry[typename] = cls
+            property_registry[typename] = cls
 
     @property
     def filter(self) -> FilterBuilder_T:
@@ -68,26 +68,35 @@ class PropertyKey(Generic[DatabasePropertyValue_T, PagePropertyValue_T, FilterBu
         return self._filter_cls(build)
 
     # noinspection PyMethodMayBeStatic
-    def _serialize_page_value(self, prop_value: PropertyValue_T) -> dict[str, Any]:
+    def _serialize_page(self, prop_value: PropertyValue_T) -> dict[str, Any]:
         return serialize(prop_value)
 
     @classmethod
-    def _deserialize_page_value(cls, prop_serialized: dict[str, Any]) -> PropertyValue_T:
+    def _deserialize_page(cls, prop_serialized: dict[str, Any]) -> PropertyValue_T:
         """allow proxy-deserialization of subclasses."""
         typename = prop_serialized['type']
-        if cls == PropertyKey:
-            subclass = property_key_registry[typename]
-            return subclass._deserialize_page_value(prop_serialized)
-        return deserialize(cls.page, prop_serialized[typename])
+        if cls == Property:
+            subclass = property_registry[typename]
+            return subclass._deserialize_page(prop_serialized)
+        return deserialize(cls.page_value, prop_serialized[typename])
+
+    @classmethod
+    def _deserialize_database(cls, prop_serialized: dict[str, Any]) -> PropertyValue_T:
+        """allow proxy-deserialization of subclasses."""
+        typename = prop_serialized['type']
+        if cls == Property:
+            subclass = property_registry[typename]
+            return subclass._deserialize_page(prop_serialized)
+        return deserialize(cls.database_value, prop_serialized[typename])
 
 
-class Properties(DualSerializable, MutableMapping[PropertyKey, PropertyValue_T], metaclass=ABCMeta):
-    _key_by_id: dict[str, PropertyKey]
-    _key_by_name: dict[str, PropertyKey]
+class Properties(DualSerializable, MutableMapping[Property, PropertyValue_T], metaclass=ABCMeta):
+    _key_by_id: dict[str, Property]
+    _key_by_name: dict[str, Property]
     _value_by_name: dict[str, PropertyValue_T]
-    _values: dict[PropertyKey, PropertyValue_T]
+    _values: dict[Property, PropertyValue_T]
 
-    def __init__(self, items: Optional[dict[PropertyKey, PropertyValue_T]] = None):
+    def __init__(self, items: Optional[dict[Property, PropertyValue_T]] = None):
         self._key_by_id = {}
         self._key_by_name = {}
         self._value_by_name = {}
@@ -103,40 +112,40 @@ class Properties(DualSerializable, MutableMapping[PropertyKey, PropertyValue_T],
     def __repr__(self) -> str:
         return f'{type(self).__name__}({repr(self._values)})'
 
-    def __iter__(self) -> Iterator[PropertyKey]:
+    def __iter__(self) -> Iterator[Property]:
         return iter(self._key_by_name.values())
 
     def __len__(self) -> int:
         return len(self._values)
 
-    def _get_key(self, key: str | PropertyKey) -> PropertyKey:
+    def _get_key(self, key: str | Property) -> Property:
         if isinstance(key, str):
             if key in self._key_by_id:
                 return self._key_by_id[key]
             return self._key_by_name[key]
-        if isinstance(key, PropertyKey):
+        if isinstance(key, Property):
             # TODO: add frozen key options (if user copied only keys from another properties instance)
             #  this will check `key in self._key_by_name()`
             return key
         raise NotionDfKeyError('bad key', {'key': key})
 
-    def __getitem__(self, key: str | PropertyKey) -> PropertyValue_T:
+    def __getitem__(self, key: str | Property) -> PropertyValue_T:
         return self._values[self._get_key(key)]
 
-    def get(self, key: str | PropertyKey, default: Optional[PropertyValue_T] = None) -> Optional[PropertyValue_T]:
+    def get(self, key: str | Property, default: Optional[PropertyValue_T] = None) -> Optional[PropertyValue_T]:
         key = self._get_key(key)
         try:
             return self[key.name]
         except KeyError:
             return default
 
-    def __setitem__(self, key: str | PropertyKey, value: PropertyValue_T) -> None:
+    def __setitem__(self, key: str | Property, value: PropertyValue_T) -> None:
         key = self._get_key(key)
         self._key_by_id[key.id] = key
         self._key_by_name[key.name] = key
         self._values[key] = value
 
-    def __delitem__(self, key: str | PropertyKey) -> None:
+    def __delitem__(self, key: str | Property) -> None:
         # TODO restore KeyError
         key = self._get_key(key)
         self._key_by_name.pop(key.name, None)
@@ -144,10 +153,10 @@ class Properties(DualSerializable, MutableMapping[PropertyKey, PropertyValue_T],
         del self._values[key]
 
 
-class DatabaseProperties(Properties[PropertyKey[DatabasePropertyValue_T, Any, Any], DatabasePropertyValue_T]):
+class DatabaseProperties(Properties[Property[DatabasePropertyValue_T, Any, Any], DatabasePropertyValue_T]):
     def __init__(
             self, properties: Optional[dict[
-                PropertyKey[DatabasePropertyValue_T, Any, Any], DatabasePropertyValue_T]] = None):
+                Property[DatabasePropertyValue_T, Any, Any], DatabasePropertyValue_T]] = None):
         super().__init__(properties)
 
     def serialize(self) -> dict[str, Any]:
@@ -161,39 +170,40 @@ class DatabaseProperties(Properties[PropertyKey[DatabasePropertyValue_T, Any, An
         self = cls()
         for prop_name, prop_serialized in serialized.items():
             typename = prop_serialized['type']
-            property_key_cls = property_key_registry[typename]
+            property_key_cls = property_registry[typename]
             property_key = property_key_cls(prop_name)
             property_key.id = prop_serialized['id']
-            property_value = deserialize(property_key.database, prop_serialized[typename])
+            # noinspection PyProtectedMember
+            property_value = property_key_cls._deserialize_database(prop_serialized)
             self[property_key] = property_value
         return self
 
-    def __getitem__(self, key: str | PropertyKey[DatabasePropertyValue_T, Any, Any]) -> DatabasePropertyValue_T:
+    def __getitem__(self, key: str | Property[DatabasePropertyValue_T, Any, Any]) -> DatabasePropertyValue_T:
         return super().__getitem__(key)
 
-    def __setitem__(self, key: str | PropertyKey[DatabasePropertyValue_T, Any, Any],
+    def __setitem__(self, key: str | Property[DatabasePropertyValue_T, Any, Any],
                     value: DatabasePropertyValue_T) -> None:
         return super().__setitem__(key, value)
 
-    def __delitem__(self, key: str | PropertyKey[DatabasePropertyValue_T, Any, Any]) -> None:
+    def __delitem__(self, key: str | Property[DatabasePropertyValue_T, Any, Any]) -> None:
         return super().__delitem__(key)
 
 
-class PageProperties(Properties[PropertyKey[Any, PagePropertyValue_T, Any], PagePropertyValue_T]):
+class PageProperties(Properties[Property[Any, PagePropertyValue_T, Any], PagePropertyValue_T]):
     def __init__(
-            self, properties: Optional[dict[PropertyKey[Any, PagePropertyValue_T, Any], PagePropertyValue_T]] = None):
+            self, properties: Optional[dict[Property[Any, PagePropertyValue_T, Any], PagePropertyValue_T]] = None):
         super().__init__(properties)
-        self._title_key: Optional[TitlePropertyKey] = None
+        self._title: Optional[TitleProperty] = None
 
-    def __getitem__(self, key: str | PropertyKey[Any, PagePropertyValue_T, Any]) \
+    def __getitem__(self, key: str | Property[Any, PagePropertyValue_T, Any]) \
             -> PagePropertyValue_T:
         return super().__getitem__(key)
 
-    def __setitem__(self, key: str | PropertyKey[Any, PagePropertyValue_T, Any],
+    def __setitem__(self, key: str | Property[Any, PagePropertyValue_T, Any],
                     value: PagePropertyValue_T) -> None:
         return super().__setitem__(key, value)
 
-    def __delitem__(self, key: str | PropertyKey[Any, PagePropertyValue_T, Any]) \
+    def __delitem__(self, key: str | Property[Any, PagePropertyValue_T, Any]) \
             -> None:
         return super().__delitem__(key)
 
@@ -201,7 +211,7 @@ class PageProperties(Properties[PropertyKey[Any, PagePropertyValue_T, Any], Page
         # noinspection PyProtectedMember
         return {key.name: {
             'type': key.typename,
-            key.typename: key._serialize_page_value(value),
+            key.typename: key._serialize_page(value),
         } for key, value in self.items()}
 
     @classmethod
@@ -209,24 +219,25 @@ class PageProperties(Properties[PropertyKey[Any, PagePropertyValue_T, Any], Page
         self = cls()
         for prop_name, prop_serialized in serialized.items():
             typename = prop_serialized['type']
-            property_key_cls = property_key_registry[typename]
+            property_key_cls = property_registry[typename]
             property_key = property_key_cls(prop_name)
             property_key.id = prop_serialized['id']
             # noinspection PyProtectedMember
-            property_value = property_key_cls._deserialize_page_value(prop_serialized)
+            property_value = property_key_cls._deserialize_page(prop_serialized)
             self[property_key] = property_value
 
-            if isinstance(property_key, TitlePropertyKey):
-                self._title_key = property_key
+            if isinstance(property_key, TitleProperty):
+                self._title = property_key
         return self
 
     @property
-    def title(self) -> TitlePropertyKey.page:
-        return self[self._title_key]
+    def title(self) -> TitleProperty.page_value:
+        # TODO:
+        return self[self._title]
 
     @title.setter
-    def title(self, value: TitlePropertyKey.page) -> None:
-        self[self._title_key] = value
+    def title(self, value: TitleProperty.page_value) -> None:
+        self[self._title] = value
 
 
 class DatabasePropertyValue(DualSerializable, metaclass=ABCMeta):
@@ -288,6 +299,9 @@ class RelationDatabasePropertyValue(DatabasePropertyValue, metaclass=ABCMeta):
                 raise NotionDfValueError('invalid relation_type',
                                          {'relation_type': relation_type, 'serialized': serialized})
         return subclass.deserialize(serialized)
+
+
+RelationDatabasePropertyValue_T = TypeVar('RelationDatabasePropertyValue_T', bound=RelationDatabasePropertyValue)
 
 
 @dataclass
@@ -371,54 +385,54 @@ class RollupPagePropertyValue(DualSerializable):
         return cls(function=serialized['function'], value_typename=value_typename, value=serialized[value_typename])
 
 
-class CheckboxPropertyKey(PropertyKey[PlainDatabasePropertyValue, bool, CheckboxFilterBuilder]):
+class CheckboxProperty(Property[PlainDatabasePropertyValue, bool, CheckboxFilterBuilder]):
     typename = 'checkbox'
-    database = PlainDatabasePropertyValue
-    page = bool
+    database_value = PlainDatabasePropertyValue
+    page_value = bool
     _filter_cls = CheckboxFilterBuilder
 
 
-class CreatedByPropertyKey(PropertyKey[PlainDatabasePropertyValue, PartialUser, PeopleFilterBuilder]):
+class CreatedByProperty(Property[PlainDatabasePropertyValue, PartialUser, PeopleFilterBuilder]):
     typename = 'created_by'
-    database = PlainDatabasePropertyValue
-    page = PartialUser
+    database_value = PlainDatabasePropertyValue
+    page_value = PartialUser
     _filter_cls = PeopleFilterBuilder
 
 
-class CreatedTimePropertyKey(PropertyKey[PlainDatabasePropertyValue, datetime, DateFilterBuilder]):
+class CreatedTimeProperty(Property[PlainDatabasePropertyValue, datetime, DateFilterBuilder]):
     typename = 'created_time'
-    database = PlainDatabasePropertyValue
-    page = datetime
+    database_value = PlainDatabasePropertyValue
+    page_value = datetime
     _filter_cls = DateFilterBuilder
 
 
-class DatePropertyKey(PropertyKey[PlainDatabasePropertyValue, DateRange, DateFilterBuilder]):
+class DateProperty(Property[PlainDatabasePropertyValue, DateRange, DateFilterBuilder]):
     typename = 'date'
-    database = PlainDatabasePropertyValue
-    page = DateRange
+    database_value = PlainDatabasePropertyValue
+    page_value = DateRange
     _filter_cls = DateFilterBuilder
 
 
-class EmailPropertyKey(PropertyKey[PlainDatabasePropertyValue, str, TextFilterBuilder]):
+class EmailProperty(Property[PlainDatabasePropertyValue, str, TextFilterBuilder]):
     typename = 'email'
-    database = PlainDatabasePropertyValue
-    page = str
+    database_value = PlainDatabasePropertyValue
+    page_value = str
     _filter_cls = TextFilterBuilder
 
 
-class FilesPropertyKey(PropertyKey[PlainDatabasePropertyValue, Files, FilesFilterBuilder]):
+class FilesProperty(Property[PlainDatabasePropertyValue, Files, FilesFilterBuilder]):
     typename = 'files'
-    database = PlainDatabasePropertyValue
-    page = Files
+    database_value = PlainDatabasePropertyValue
+    page_value = Files
     _filter_cls = FilesFilterBuilder
 
 
-class FormulaPropertyKey(PropertyKey[FormulaDatabasePropertyValue, PagePropertyValue_T, FilterBuilder_T]):
+class FormulaProperty(Property[FormulaDatabasePropertyValue, PagePropertyValue_T, FilterBuilder_T]):
     """cannot access page properties - use subclasses instead."""
     typename = 'formula'
     value_typename: ClassVar[str]
-    database = FormulaDatabasePropertyValue
-    page = Any
+    database_value = FormulaDatabasePropertyValue
+    page_value = Any
 
     @property
     def filter(self) -> FilterBuilder_T:
@@ -427,18 +441,18 @@ class FormulaPropertyKey(PropertyKey[FormulaDatabasePropertyValue, PagePropertyV
 
         return self._filter_cls(build)
 
-    def _serialize_page_value(self, prop_value: PropertyValue_T) -> dict[str, Any]:
+    def _serialize_page(self, prop_value: PropertyValue_T) -> dict[str, Any]:
         return {'type': self.value_typename,
                 self.value_typename: prop_value}
 
     @classmethod
-    def _deserialize_page_value(cls, prop_serialized: dict[str, Any]) -> PropertyValue_T:
+    def _deserialize_page(cls, prop_serialized: dict[str, Any]) -> PropertyValue_T:
         typename = prop_serialized['type']
         value_typename = prop_serialized[typename]['type']
-        if cls == FormulaPropertyKey:
+        if cls == FormulaProperty:
             match value_typename:
                 case 'boolean':
-                    subclass = CheckboxFormulaPropertyKey
+                    subclass = CheckboxFormulaProperty
                 case 'date':
                     subclass = DateFormulaPropertyKey
                 case 'number':
@@ -448,139 +462,135 @@ class FormulaPropertyKey(PropertyKey[FormulaDatabasePropertyValue, PagePropertyV
                 case _:
                     raise NotionDfValueError('invalid value_typename.',
                                              {'prop_serialized': prop_serialized, 'value_typename': value_typename})
-            return subclass._deserialize_page_value(prop_serialized)
-        return deserialize(cls.page, prop_serialized[typename][value_typename])
+            return subclass._deserialize_page(prop_serialized)
+        return deserialize(cls.page_value, prop_serialized[typename][value_typename])
 
 
-class CheckboxFormulaPropertyKey(FormulaPropertyKey[bool, CheckboxFilterBuilder]):
+class CheckboxFormulaProperty(FormulaProperty[bool, CheckboxFilterBuilder]):
     value_typename = 'boolean'
-    page = bool
+    page_value = bool
     _filter_cls = CheckboxFilterBuilder
 
 
-class DateFormulaPropertyKey(FormulaPropertyKey[Union[date, datetime], DateFilterBuilder]):
+class DateFormulaPropertyKey(FormulaProperty[Union[date, datetime], DateFilterBuilder]):
     value_typename = 'date'
-    page = Union[date, datetime, DateRange]
+    page_value = Union[date, datetime, DateRange]
     _filter_cls = DateFilterBuilder
 
 
-class NumberFormulaPropertyKey(FormulaPropertyKey[Number, NumberFilterBuilder]):
+class NumberFormulaPropertyKey(FormulaProperty[Number, NumberFilterBuilder]):
     value_typename = 'number'
-    page = Number
+    page_value = Number
     _filter_cls = NumberFilterBuilder
 
 
-class StringFormulaPropertyKey(FormulaPropertyKey[str, TextFilterBuilder]):
+class StringFormulaPropertyKey(FormulaProperty[str, TextFilterBuilder]):
     value_typename = 'string'
-    page = str
+    page_value = str
     _filter_cls = TextFilterBuilder
 
 
-class LastEditedByPropertyKey(PropertyKey[PlainDatabasePropertyValue, PartialUser, PeopleFilterBuilder]):
+class LastEditedByProperty(Property[PlainDatabasePropertyValue, PartialUser, PeopleFilterBuilder]):
     typename = 'last_edited_by'
-    database = PlainDatabasePropertyValue
-    page = PartialUser
+    database_value = PlainDatabasePropertyValue
+    page_value = PartialUser
     _filter_cls = PeopleFilterBuilder
 
 
-class LastEditedTimePropertyKey(PropertyKey[PlainDatabasePropertyValue, datetime, DateFilterBuilder]):
+class LastEditedTimeProperty(Property[PlainDatabasePropertyValue, datetime, DateFilterBuilder]):
     typename = 'last_edited_time'
-    database = PlainDatabasePropertyValue
-    page = datetime
+    database_value = PlainDatabasePropertyValue
+    page_value = datetime
     _filter_cls = DateFilterBuilder
 
 
-class MultiSelectPropertyKey(PropertyKey[SelectDatabasePropertyValue, list[SelectOption], MultiSelectFilterBuilder]):
+class MultiSelectProperty(Property[SelectDatabasePropertyValue, list[SelectOption], MultiSelectFilterBuilder]):
     typename = 'multi_select'
-    database = SelectDatabasePropertyValue
-    page = list[SelectOption]
+    database_value = SelectDatabasePropertyValue
+    page_value = list[SelectOption]
     _filter_cls = MultiSelectFilterBuilder
 
 
-class NumberPropertyKey(PropertyKey[NumberDatabasePropertyValue, Number, NumberFilterBuilder]):
+class NumberProperty(Property[NumberDatabasePropertyValue, Number, NumberFilterBuilder]):
     typename = 'number'
-    database = NumberDatabasePropertyValue
-    page = Number
+    database_value = NumberDatabasePropertyValue
+    page_value = Number
     _filter_cls = NumberFilterBuilder
 
 
-class PeoplePropertyKey(PropertyKey[PlainDatabasePropertyValue, list[User], PeopleFilterBuilder]):
+class PeopleProperty(Property[PlainDatabasePropertyValue, list[User], PeopleFilterBuilder]):
     typename = 'people'
-    database = PlainDatabasePropertyValue
-    page = list[User]
+    database_value = PlainDatabasePropertyValue
+    page_value = list[User]
     _filter_cls = PeopleFilterBuilder
 
 
-class PhoneNumberPropertyKey(PropertyKey[PlainDatabasePropertyValue, str, TextFilterBuilder]):
+class PhoneNumberProperty(Property[PlainDatabasePropertyValue, str, TextFilterBuilder]):
     typename = 'phone_number'
-    database = PlainDatabasePropertyValue
-    page = str
+    database_value = PlainDatabasePropertyValue
+    page_value = str
     _filter_cls = TextFilterBuilder
 
 
-RelationDatabasePropertyValue_T = TypeVar('RelationDatabasePropertyValue_T', bound=RelationPagePropertyValue)
-
-
-class RelationPropertyKey(
-    PropertyKey[RelationDatabasePropertyValue_T, RelationPagePropertyValue, RelationFilterBuilder]):
+class RelationProperty(Property[RelationDatabasePropertyValue_T, RelationPagePropertyValue, RelationFilterBuilder]):
     """cannot access database properties - use subclasses instead."""
     typename = 'relation'
-    database = RelationDatabasePropertyValue
-    page = RelationPagePropertyValue
+    database_value = RelationDatabasePropertyValue
+    page_value = RelationPagePropertyValue
     _filter_cls = RelationFilterBuilder
 
     @classmethod
-    def _deserialize_page_value(cls, prop_serialized: dict[str, Any]) -> PropertyValue_T:
-        prop_value = super()._deserialize_page_value(prop_serialized)
+    def _deserialize_page(cls, prop_serialized: dict[str, Any]) -> PropertyValue_T:
+        prop_value = super()._deserialize_page(prop_serialized)
         prop_value.has_more = prop_serialized['has_more']
         return prop_value
 
 
-class SingleRelationPropertyKey(RelationPropertyKey[SingleRelationDatabasePropertyValue]):
-    database = SingleRelationDatabasePropertyValue
+class SingleRelationPropertyKey(RelationProperty[SingleRelationDatabasePropertyValue]):
+    database_value = SingleRelationDatabasePropertyValue
 
 
-class DualRelationPropertyKey(RelationPropertyKey[DualRelationDatabasePropertyValue]):
-    database = DualRelationDatabasePropertyValue
+class DualRelationPropertyKey(RelationProperty[DualRelationDatabasePropertyValue]):
+    database_value = DualRelationDatabasePropertyValue
 
 
-class RollupPropertyKey(PropertyKey[RollupDatabasePropertyValue, RollupPagePropertyValue, Any]):
+class RollupProperty(Property[RollupDatabasePropertyValue, RollupPagePropertyValue, Any]):
     typename = 'rollup'
-    database = RollupDatabasePropertyValue
-    page = RollupPagePropertyValue  # TODO
+    database_value = RollupDatabasePropertyValue
+    page_value = RollupPagePropertyValue  # TODO
     _filter_cls = Any  # TODO
 
 
-class RichTextPropertyKey(PropertyKey[PlainDatabasePropertyValue, RichText, TextFilterBuilder]):
+class RichTextProperty(Property[PlainDatabasePropertyValue, RichText, TextFilterBuilder]):
     typename = 'rich_text'
-    database = PlainDatabasePropertyValue
-    page = RichText
+    database_value = PlainDatabasePropertyValue
+    page_value = RichText
     _filter_cls = TextFilterBuilder
 
 
-class TitlePropertyKey(PropertyKey[PlainDatabasePropertyValue, RichText, TextFilterBuilder]):
+class TitleProperty(Property[PlainDatabasePropertyValue, RichText, TextFilterBuilder]):
     typename = 'title'
-    database = PlainDatabasePropertyValue
-    page = RichText
+    database_value = PlainDatabasePropertyValue
+    page_value = RichText
     _filter_cls = TextFilterBuilder
 
 
-class SelectPropertyKey(PropertyKey[SelectDatabasePropertyValue, SelectOption, SelectFilterBuilder]):
+class SelectProperty(Property[SelectDatabasePropertyValue, SelectOption, SelectFilterBuilder]):
     typename = 'select'
-    database = SelectDatabasePropertyValue
-    page = SelectOption
+    database_value = SelectDatabasePropertyValue
+    page_value = SelectOption
     _filter_cls = SelectFilterBuilder
 
 
-class StatusPropertyKey(PropertyKey[StatusDatabasePropertyValue, SelectOption, SelectFilterBuilder]):
+class StatusProperty(Property[StatusDatabasePropertyValue, SelectOption, SelectFilterBuilder]):
     typename = 'status'
-    database = StatusDatabasePropertyValue
-    page = SelectOption
+    database_value = StatusDatabasePropertyValue
+    page_value = SelectOption
     _filter_cls = SelectFilterBuilder
 
 
-class URLPropertyKey(PropertyKey[PlainDatabasePropertyValue, str, TextFilterBuilder]):
+class URLProperty(Property[PlainDatabasePropertyValue, str, TextFilterBuilder]):
     typename = 'url'
-    database = PlainDatabasePropertyValue
-    page = str
+    database_value = PlainDatabasePropertyValue
+    page_value = str
     _filter_cls = TextFilterBuilder

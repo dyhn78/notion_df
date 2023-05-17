@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
-from dataclasses import dataclass, field, fields
+from dataclasses import dataclass, field
 from datetime import datetime, date
 from typing import Any, Iterator
 

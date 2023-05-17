@@ -8,7 +8,7 @@ from notion_df.object.block import BlockValue, serialize_partial_block_list, Pag
 from notion_df.object.common import Icon
 from notion_df.object.file import ExternalFile
 from notion_df.object.parent import ParentInfo
-from notion_df.property import Properties, PageProperties, PropertyKey
+from notion_df.property import Properties, PageProperties, Property
 from notion_df.request.request_core import SingleRequest, RequestSettings, Version, Method, MAX_PAGE_SIZE, \
     PaginatedRequest, BaseRequest
 from notion_df.util.collection import DictFilter
@@ -104,7 +104,7 @@ class RetrievePagePropertyItem(BaseRequest[Any]):
         data = self.request_once(page_size, None)
         if (prop_serialized := data)['object'] == 'property_item':
             # noinspection PyProtectedMember
-            return PropertyKey._deserialize_page_value(prop_serialized)
+            return Property._deserialize_page(prop_serialized)
 
         data_list = []
         while page_size_retrieved < page_size_total and data['has_more']:
@@ -119,4 +119,4 @@ class RetrievePagePropertyItem(BaseRequest[Any]):
         value_list = [data['result'][typename] for data in data_list]
         merged_prop_serialized = {**data_list[0]['result'], 'type': typename, typename: value_list}
         # noinspection PyProtectedMember
-        return PropertyKey._deserialize_page_value(merged_prop_serialized)
+        return Property._deserialize_page(merged_prop_serialized)

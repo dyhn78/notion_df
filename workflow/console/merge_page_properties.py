@@ -28,11 +28,11 @@ def main():
         new_prop_1_value: set[UUID] = set()
         for old_prop in old_props_1:
             new_prop_1_value |= set(page.properties[old_prop])
-            new_page_properties[old_prop] = new_prop_1.page()
-        new_page_properties[new_prop_1] = new_prop_1.page(new_prop_1_value)
+            new_page_properties[old_prop] = new_prop_1.page_value()
+        new_page_properties[new_prop_1] = new_prop_1.page_value(new_prop_1_value)
 
         new_page_properties[new_prop_2] = page.properties[old_prop_2]
-        new_page_properties[old_prop_2] = new_prop_1.page()
+        new_page_properties[old_prop_2] = new_prop_1.page_value()
 
         page.update(new_page_properties)
 
