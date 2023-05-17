@@ -26,7 +26,7 @@ class DatabaseEnum(Enum):
     sections = ('부문', '52d387ea0aaa470cb69332708c61b34d', EmojiCode.YELLOW_HEART)
 
     streams = ('전개', 'eb2f09a1de41412e8b2357bc04f26e74', EmojiCode.RED_CIRCLE)
-    agendas = ('마디', '9f21ad86079d4caaa7ed9461a7f37288', EmojiCode.RED_HEART)
+    sessions = ('마디', '9f21ad86079d4caaa7ed9461a7f37288', EmojiCode.RED_HEART)
 
     topics = ('주제', '2c5411ba6a0f43a0a8aa06295751e37a', EmojiCode.PURPLE_CIRCLE)
     subjects = ('담론', 'eca1ba6d4831459ca8becc283f1f8c4e', EmojiCode.PURPLE_HEART)
