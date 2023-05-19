@@ -93,7 +93,7 @@ class RichText(list[RichTextSpan], DualSerializable):
         return cls([TextSpan(plain_text)]) if plain_text else cls()
 
     def serialize(self) -> Any:
-        return serialize(self)
+        return serialize(list(self))
 
     @classmethod
     def _deserialize_this(cls, serialized: Any) -> Self:
