@@ -7,6 +7,8 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.wait import WebDriverWait
 
 from notion_df.util.collection import StrEnum
 from workflow.service.webdriver_service import WebDriverFactory
@@ -37,7 +39,7 @@ class LibraryScrapResult:
         return '가능' if self.availability else '불가능'
 
 
-class GoyangLibraryScraper:
+class GYLibraryScraper:
     def __init__(self, driver: WebDriver):
         self.driver = driver
         self._driver_active = False
@@ -48,38 +50,42 @@ class GoyangLibraryScraper:
             self.driver.start_client()
             self._driver_active = True
 
-        unit = GoyangLibraryScraperUnit(self.driver, title, 'gajwa')
-        if gajwa_option := unit.execute():
-            return gajwa_option
-        unit = GoyangLibraryScraperUnit(self.driver, title, 'all_libs')
-        if gy_all_libs_option := unit.execute():
-            return gy_all_libs_option
+        unit = GYLibraryScraperUnit(self.driver, title, 'gajwa')
+        if result := unit.execute():
+            return result
+        unit = GYLibraryScraperUnit(self.driver, title, 'all_libs')
+        if result := unit.execute():
+            return result
         return
 
 
-class CSSTag(StrEnum):
+class GYLibraryCSSTag(StrEnum):
     input_box = '#searchKeyword'
     search_button = '#searchBtn'
     all_libs = '#searchLibraryAll'
     gajwa = '#searchManageCodeArr2'
 
 
-class GoyangLibraryScraperUnit:
+class GYLibraryScraperUnit:
     def __init__(self, driver: WebDriver, title: str, select_lib: SelectLib_T):
         self.driver = driver
+        self.driver_wait = WebDriverWait(self.driver, 10)
         # self.driver.minimize_window()
         self.select_lib = select_lib
         self.title = title
         self.now_page_num = 1
         self.result: Optional[LibraryScrapResult] = None
 
-    def find_element(self, css_tag: CSSTag):
+    def find_element(self, css_tag: GYLibraryCSSTag):
         return self.driver.find_element(By.CSS_SELECTOR, css_tag)
 
-    def click_element(self, css_tag: CSSTag):
+    def send_keys(self, css_tag: GYLibraryCSSTag, value: str):
+        self.driver.execute_script(f'document.querySelector("{css_tag}").value = "{value}";')
+
+    def click_element(self, css_tag: GYLibraryCSSTag):
         self.driver.execute_script(f'document.querySelector("{css_tag}").click();')
 
-    def remove_element(self, css_tag: CSSTag):
+    def remove_element(self, css_tag: GYLibraryCSSTag):
         self.driver.execute_script(f"""
 var l = document.querySelector("{css_tag}");
 l.parentNode.removeChild(l);
@@ -89,20 +95,32 @@ l.parentNode.removeChild(l);
         # load main page
         url_main_page = 'https://www.goyanglib.or.kr/center/menu/10003/program/30001/searchSimple.do'
         self.driver.get(url_main_page)
+        self.driver.implicitly_wait(10)
 
         # insert title
-        input_box = self.find_element(CSSTag.input_box)
-        input_box.send_keys(self.title)
+        self.driver_wait.until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, GYLibraryCSSTag.input_box)))
+        # sleep(5)  # TODO
+        self.send_keys(GYLibraryCSSTag.input_box, self.title)
+        # self.find_element(GYLibraryCSSTag.input_box).send_keys(self.title)
+        # self.driver.find_element(
+        #     By.XPATH,
+        #     '/html/body/div[1]/div/div[2]/div[2]/div[2]/form/div/div[1]/div[2]/div[1]/input[1]').send_keys(self.title)
+        # self.find_element(GYLibraryCSSTag.input_box).send_keys(self.title)
+        # sleep(5)
+        # self.find_element(GYLibraryCSSTag.input_box).send_keys(self.title)
 
         match self.select_lib:
             case 'all_libs':
-                self.click_element(CSSTag.all_libs)
+                self.click_element(GYLibraryCSSTag.all_libs)
             case 'gajwa':
-                self.click_element(CSSTag.all_libs)
-                self.click_element(CSSTag.gajwa)
+                self.click_element(GYLibraryCSSTag.all_libs)
+                self.click_element(GYLibraryCSSTag.gajwa)
 
-        self.find_element(CSSTag.search_button).click()
-        self.driver.implicitly_wait(3)
+        self.driver_wait.until(
+            EC.element_to_be_clickable((By.CSS_SELECTOR, GYLibraryCSSTag.search_button)))
+        self.find_element(GYLibraryCSSTag.search_button).click()
+        self.driver.implicitly_wait(10)
 
         # if no result
         if self.driver.find_elements(By.CLASS_NAME, "noResultNote"):
@@ -206,5 +224,5 @@ class GoyangLibraryScrapBookAreaParser:
 if __name__ == '__main__':
     my_title = '하나부터 열까지 신경 쓸 게 너무 많은 브랜딩'
     driver_factory = WebDriverFactory(create_window=True)
-    gy = GoyangLibraryScraperUnit(driver_factory(), my_title, 'gajwa')
+    gy = GYLibraryScraperUnit(driver_factory(), my_title, 'gajwa')
     gy.execute()

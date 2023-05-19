@@ -8,7 +8,7 @@ from notion_df.property import SelectProperty, CheckboxFormulaProperty, TitlePro
     URLProperty, NumberProperty, FilesProperty, CheckboxProperty, PageProperties
 from notion_df.util.collection import StrEnum
 from workflow.constant.block_enum import DatabaseEnum
-from workflow.service.lib_gy_service import GoyangLibraryScraper
+from workflow.service.lib_gy_service import GYLibraryScraper
 from workflow.service.webdriver_service import WebDriverFactory
 from workflow.service.yes24_service import get_yes24_detail_page_url, Yes24ScrapResult, get_block_value_of_contents_line
 from workflow.util.action import Action
@@ -39,11 +39,11 @@ class EditStatusValue(StrEnum):
 
 
 class ReadingMediaScraper(Action):
-    def __init__(self, namespace: Namespace):
+    def __init__(self, namespace: Namespace, create_window: bool):
         self.namespace = namespace
         self.readings = self.namespace.database(DatabaseEnum.readings.id)
-        self.factory = WebDriverFactory(create_window=True)
-        self.gy_scraper = GoyangLibraryScraper(self.factory())
+        self.factory = WebDriverFactory(create_window=create_window)
+        self.gy_scraper = GYLibraryScraper(self.factory())
 
     def execute(self):
         reading_list = self.readings.query(is_book.filter.equals(True) & CompoundFilter('or', [
@@ -69,7 +69,7 @@ class ReadingMediaScraperUnit:
         new_status_value = EditStatusValue.fill_manually
         match getattr(self.reading.properties[edit_status], 'name', EditStatusValue.default):
             case EditStatusValue.default:
-                if self.process_yes24(False) and self.process_lib_gy(False):
+                if self.process_lib_gy(False) and self.process_yes24(False):
                     new_status_value = EditStatusValue.confirm_manually
             case EditStatusValue.metadata_overwrite:
                 if self.process_yes24(True):

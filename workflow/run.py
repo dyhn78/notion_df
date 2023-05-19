@@ -9,7 +9,6 @@ from notion_df.object.rich_text import RichText, TextSpan, UserMention
 from notion_df.variable import my_tz
 from workflow.action.prop_matcher import MatcherWorkspace, MatchWeekByDateValue, MatchDateByCreatedTime, \
     MatchWeekByDate, MatchReadingsStartDate
-from workflow.action.reading_media_scraper import ReadingMediaScraper
 from workflow.constant.block_enum import DatabaseEnum
 from workflow.util.action import Action
 
@@ -18,11 +17,12 @@ my_user_id = UUID('a007d150-bc67-422c-87db-030a71867dd9')
 
 
 class Workflow:
-    def __init__(self, print_body: bool):
+    def __init__(self, print_body: bool, create_window: bool):
         self.namespace = Namespace(print_body=print_body)
         workspace = MatcherWorkspace(self.namespace)
         self.actions: list[Action] = [
-            ReadingMediaScraper(self.namespace),
+            # TODO
+            # ReadingMediaScraper(self.namespace, create_window),
 
             MatchWeekByDateValue(workspace),
 
@@ -84,4 +84,4 @@ class Workflow:
 
 
 if __name__ == '__main__':
-    Workflow(print_body=True).execute()
+    Workflow(print_body=True, create_window=True).execute()
