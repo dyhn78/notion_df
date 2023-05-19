@@ -355,7 +355,7 @@ class RelationPagePropertyValue(list[UUID], DualSerializable):
         super().__init__(ids)
 
     def __bool__(self) -> bool:
-        return len(self) or self.has_more
+        return bool(len(self) or self.has_more)
 
     def serialize(self) -> Any:
         return [{'id': str(page_id)} for page_id in self]
