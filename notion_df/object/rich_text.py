@@ -12,7 +12,7 @@ from notion_df.util.collection import FinalClassDict
 from notion_df.util.serialization import DualSerializable, deserialize, serialize
 
 
-class RichTextSpan(DualSerializable, metaclass=ABCMeta):
+class Span(DualSerializable, metaclass=ABCMeta):
     # https://developers.notion.com/reference/rich-text
     annotations: Optional[Annotations]
     """
@@ -59,7 +59,7 @@ class RichTextSpan(DualSerializable, metaclass=ABCMeta):
     @classmethod
     @final
     def deserialize(cls, serialized: dict[str, Any]) -> Self:
-        if cls != RichTextSpan:
+        if cls != Span:
             return cls._deserialize_this(serialized)
 
         def get_typename(_serialized: dict[str, Any]) -> tuple[str, ...]:
@@ -77,11 +77,11 @@ class RichTextSpan(DualSerializable, metaclass=ABCMeta):
         return self._repr_non_default_fields()
 
 
-rich_text_span_registry: FinalClassDict[tuple[str, ...], type[RichTextSpan]] = FinalClassDict()
+rich_text_span_registry: FinalClassDict[tuple[str, ...], type[Span]] = FinalClassDict()
 
 
-class RichText(list[RichTextSpan], DualSerializable):
-    def __init__(self, spans: Iterable[RichTextSpan] = ()):
+class RichText(list[Span], DualSerializable):
+    def __init__(self, spans: Iterable[Span] = ()):
         super().__init__(spans)
 
     @property
@@ -97,12 +97,13 @@ class RichText(list[RichTextSpan], DualSerializable):
 
     @classmethod
     def _deserialize_this(cls, serialized: Any) -> Self:
-        return cls(deserialize(list[RichTextSpan], serialized))
+        return cls(deserialize(list[Span], serialized))
 
 
 @dataclass
-class TextSpan(RichTextSpan):
+class TextSpan(Span):
     content: str
+    """max_length: 2000"""
     link: Optional[str] = None
     # ---
     annotations: Optional[Annotations] = None
@@ -138,7 +139,7 @@ class TextSpan(RichTextSpan):
 
 
 @dataclass
-class Equation(RichTextSpan):
+class Equation(Span):
     expression: str
     # ---
     annotations: Optional[Annotations] = None
@@ -166,7 +167,7 @@ class Equation(RichTextSpan):
 
 
 @dataclass
-class UserMention(RichTextSpan):
+class UserMention(Span):
     user_id: UUID
     # ---
     annotations: Optional[Annotations] = None
@@ -200,7 +201,7 @@ class UserMention(RichTextSpan):
 
 
 @dataclass
-class PageMention(RichTextSpan):
+class PageMention(Span):
     page_id: UUID
     # ---
     annotations: Optional[Annotations] = None
@@ -231,7 +232,7 @@ class PageMention(RichTextSpan):
 
 
 @dataclass
-class DatabaseMention(RichTextSpan):
+class DatabaseMention(Span):
     database_id: UUID
     # ---
     annotations: Optional[Annotations] = None
@@ -262,7 +263,7 @@ class DatabaseMention(RichTextSpan):
 
 
 @dataclass
-class DateMention(RichTextSpan):
+class DateMention(Span):
     date: DateRange
     # ---
     annotations: Optional[Annotations] = None
@@ -293,7 +294,7 @@ class DateMention(RichTextSpan):
 
 
 @dataclass
-class TemplateDateMention(RichTextSpan):
+class TemplateDateMention(Span):
     template_mention_date: Literal["today", "now"]
     # ---
     annotations: Optional[Annotations] = None
@@ -327,7 +328,7 @@ class TemplateDateMention(RichTextSpan):
 
 
 @dataclass
-class TemplateUserMention(RichTextSpan):
+class TemplateUserMention(Span):
     template_mention_user = 'me'
     # ---
     annotations: Optional[Annotations] = None
@@ -361,7 +362,7 @@ class TemplateUserMention(RichTextSpan):
 
 
 @dataclass
-class LinkPreviewMention(RichTextSpan):
+class LinkPreviewMention(Span):
     """https://developers.notion.com/reference/rich-text#link-preview-mentions"""
     url: str
     # ---

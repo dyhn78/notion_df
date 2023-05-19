@@ -67,7 +67,7 @@ class ReadingMediaScraperUnit:
 
     def execute(self) -> None:
         new_status_value = EditStatusValue.fill_manually
-        match self.reading.properties[edit_status].name:
+        match getattr(self.reading.properties[edit_status], 'name', EditStatusValue.default):
             case EditStatusValue.default:
                 if self.process_yes24(False) and self.process_lib_gy(False):
                     new_status_value = EditStatusValue.confirm_manually

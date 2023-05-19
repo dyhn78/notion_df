@@ -5,7 +5,6 @@ from uuid import UUID
 
 from notion_df.entity import Namespace
 from notion_df.object.block import CodeBlockValue, ParagraphBlockValue
-from notion_df.object.constant import CodeLanguage
 from notion_df.object.rich_text import RichText, TextSpan, UserMention
 from notion_df.variable import my_tz
 from workflow.action.prop_matcher import MatcherWorkspace, MatchWeekByDateValue, MatchDateByCreatedTime, \
@@ -23,6 +22,8 @@ class Workflow:
         self.namespace = Namespace(print_body=print_body)
         workspace = MatcherWorkspace(self.namespace)
         self.actions: list[Action] = [
+            ReadingMediaScraper(self.namespace),
+
             MatchWeekByDateValue(workspace),
 
             MatchDateByCreatedTime(workspace, DatabaseEnum.events, '일간'),
@@ -51,8 +52,6 @@ class Workflow:
 
             # TODO 배포후: <마디 - 🟢시작, 💚시작> 제거
             # TODO 배포후: <읽기 -  📕유형 <- 전개/꼭지> 추가 (스펙 논의 필요)
-
-            ReadingMediaScraper(self.namespace),
         ]
 
     # noinspection PyBroadException
@@ -67,12 +66,15 @@ class Workflow:
         except json.JSONDecodeError as err:
             message = f"{execution_time} - failure: {err}"
             child_block_values = [ParagraphBlockValue(RichText([TextSpan(message)]))]
-        except Exception:
+        except Exception as e:
             message = f"{execution_time} - error: "
+            tr = traceback.format_exc()
             child_block_values = [
                 ParagraphBlockValue(RichText([TextSpan(message), UserMention(my_user_id)])),
-                CodeBlockValue(RichText.from_plain_text(traceback.format_exc(1500)), language=CodeLanguage.PLAIN_TEXT),
             ]
+            for i in range(0, len(tr), 1000):
+                child_block_values.append(CodeBlockValue(RichText.from_plain_text(tr[i:i + 1000])))
+            raise e
         finally:
             log_page_block = self.namespace.page(log_page_id).as_block()
             log_page_block.append_children(child_block_values)

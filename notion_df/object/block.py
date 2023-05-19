@@ -12,7 +12,7 @@ from notion_df.object.common import Icon
 from notion_df.object.constant import BlockColor, CodeLanguage
 from notion_df.object.file import File, ExternalFile
 from notion_df.object.parent import ParentInfo
-from notion_df.object.rich_text import RichTextSpan, RichText
+from notion_df.object.rich_text import Span, RichText
 from notion_df.object.user import PartialUser
 from notion_df.property import DatabaseProperties, PageProperties
 from notion_df.request.request_core import Response
@@ -172,7 +172,7 @@ class ChildPageBlockValue(BlockValue):
 @dataclass
 class CodeBlockValue(BlockValue):
     rich_text: RichText
-    language: CodeLanguage
+    language: CodeLanguage = CodeLanguage.PLAIN_TEXT
     caption: RichText = field(default_factory=RichText)
 
     @classmethod
@@ -395,7 +395,7 @@ class TableBlockValue(BlockValue):
 
 @dataclass
 class TableRowBlockValue(BlockValue):
-    cells: list[list[RichTextSpan]]
+    cells: list[list[Span]]
     """An array of cell contents in horizontal display order. Each cell is an array of rich text objects."""
 
     @classmethod

@@ -3,10 +3,14 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Optional, Literal
 
-from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import NoSuchElementException, UnexpectedAlertPresentException
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
+from selenium.webdriver.support import expected_conditions
+from selenium.webdriver.support.wait import WebDriverWait
+
+from notion_df.util.collection import StrEnum
 
 SelectLib_T = Literal['all_libs', 'gajwa']
 
@@ -45,11 +49,13 @@ class GoyangLibraryScraper:
             self.driver.start_client()
             self._driver_active = True
 
-        GoyangLibraryScrapQuerier(self.driver, title, 'gajwa').execute()
-        if gajwa_option := GoyangLibraryScrapExaminer(self.driver, 'gajwa').execute():
+        query = GoyangLibraryQueryMaker(self.driver, title, 'gajwa')
+        query.execute()
+        if gajwa_option := query.result:
             return gajwa_option
-        GoyangLibraryScrapQuerier(self.driver, title, 'all_libs').execute()
-        if gy_all_libs_option := GoyangLibraryScrapExaminer(self.driver, 'all_libs').execute():
+        query = GoyangLibraryQueryMaker(self.driver, title, 'all_libs')
+        query.execute()
+        if gy_all_libs_option := query.result:
             gy_all_libs_option.lib_name = '고양시 상호대차'
             gy_all_libs_option.book_code = ''
             gy_all_libs_option.priority = -1
@@ -57,90 +63,67 @@ class GoyangLibraryScraper:
         return
 
 
-class GoyangLibraryScrapQuerier:
-    css_tags = {
-        'input_box': '#searchKeyword',
-        'search_button': '#searchBtn',
-        'all_libs': '#searchLibraryAll',
-        'gajwa': '#searchManageCodeArr2',
-    }
+class CSSTag(StrEnum):
+    input_box = '#searchKeyword'
+    search_button = '#searchBtn'
+    all_libs = '#searchLibraryAll'
+    gajwa = '#searchManageCodeArr2'
 
+
+class GoyangLibraryQueryMaker:
     def __init__(self, driver: WebDriver, title: str, select_lib: SelectLib_T):
         self.driver = driver
         # self.driver.minimize_window()
         self.select_lib = select_lib
         self.title = title
-        self._title_is_ready = False
+        self.now_page_num = 1
+        self.result: Optional[LibraryScrapResult] = None
+
+    def find_element(self, css_tag: CSSTag):
+        return self.driver.find_element(By.CSS_SELECTOR, css_tag)
+
+    def click_element(self, css_tag: CSSTag):
+        self.driver.execute_script(f'document.querySelector("{css_tag}").click();')
+
+    def remove_element(self, css_tag: CSSTag):
+        self.driver.execute_script(f"""
+var l = document.querySelector("{css_tag}");
+l.parentNode.removeChild(l);
+        """)
 
     def execute(self):
-        self.set_title()
-        match self.select_lib:
-            case 'all_libs':
-                self.set_options_as_all_libs()
-            case 'gajwa':
-                self.set_options_as_gajwa_only()
-        self.get_element('search_button').click()
-        self.driver.implicitly_wait(3)
-
-    def set_title(self):
-        if self._title_is_ready:
-            return
         # load main page
         url_main_page = 'https://www.goyanglib.or.kr/center/menu/10003/program/30001/searchSimple.do'
         self.driver.get(url_main_page)
 
         # insert title
-        input_box = self.get_element('input_box')
+        input_box = self.find_element(CSSTag.input_box)
         input_box.send_keys(self.title)
 
-    def set_options_as_all_libs(self):
-        if not self.get_element('all_libs').is_selected():
-            self.click_element('all_libs')
+        match self.select_lib:
+            case 'all_libs':
+                self.click_element(CSSTag.all_libs)
+            case 'gajwa':
+                self.click_element(CSSTag.all_libs)
+                self.click_element(CSSTag.gajwa)
 
-    def set_options_as_gajwa_only(self):
-        if not self.get_element('all_libs').is_selected():
-            self.click_element('all_libs')
-        self.click_element('all_libs')
-        self.click_element('gajwa')
+        self.find_element(CSSTag.search_button).click()
+        self.driver.implicitly_wait(3)
 
-    def get_element(self, custom_key: str):
-        tag = self.css_tags[custom_key]
-        return self.driver.find_element(By.CSS_SELECTOR, tag)
+        # if no result
+        try:
+            if self.driver.find_elements(By.CLASS_NAME, "noResultNote"):
+                return
+        except UnexpectedAlertPresentException:
+            wait = WebDriverWait(self.driver, 10)
+            alert = wait.until(expected_conditions.alert_is_present())
+            alert.accept()
 
-    def click_element(self, custom_key: str):
-        tag = self.css_tags[custom_key]
-        self.driver.execute_script(f'document.querySelector("{tag}").click();')
-
-    def remove_element(self, custom_key: str):
-        tag = self.css_tags[custom_key]
-        self.driver.execute_script(f"""
-var l = document.querySelector("{tag}");
-l.parentNode.removeChild(l);
-        """)
-
-
-class GoyangLibraryScrapExaminer:
-    def __init__(self, driver: WebDriver, select_lib: SelectLib_T):
-        self.driver = driver
-        self.select_lib = select_lib
-        self.now_page_num = 1
-        self.result: Optional[LibraryScrapResult] = None
-
-    def execute(self):
-        self._execute()
-        return self.result
-
-    def _execute(self):
-        if self.has_no_result():
-            return
         proceed = True
         while proceed:
             if self.evaluate_page_section():
                 return
             proceed = self.move_to_next_page_section()
-
-    def has_no_result(self):
-        return bool(self.driver.find_elements(By.CLASS_NAME, "noResultNote"))
 
     def evaluate_page_section(self):
         for num in range(1, 10 + 1):
@@ -184,7 +167,7 @@ class GoyangLibraryScrapExaminer:
         return False
 
     def evaluate_book_area(self, book_area: WebElement):
-        parser = BookAreaParser(book_area)
+        parser = GoyangLibraryScrapBookAreaParser(book_area)
         # if parser.check_title():
         book_code = parser.get_book_code()
         availability = parser.get_availability()
@@ -199,7 +182,7 @@ class GoyangLibraryScrapExaminer:
         return False
 
 
-class BookAreaParser:
+class GoyangLibraryScrapBookAreaParser:
     def __init__(self, book_area: WebElement):
         self.book_area = book_area
 
