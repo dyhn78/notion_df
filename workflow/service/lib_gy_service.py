@@ -3,14 +3,13 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Optional, Literal
 
-from selenium.common.exceptions import NoSuchElementException, UnexpectedAlertPresentException
+from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
-from selenium.webdriver.support import expected_conditions
-from selenium.webdriver.support.wait import WebDriverWait
 
 from notion_df.util.collection import StrEnum
+from workflow.service.webdriver_service import WebDriverFactory
 
 SelectLib_T = Literal['all_libs', 'gajwa']
 
@@ -49,16 +48,11 @@ class GoyangLibraryScraper:
             self.driver.start_client()
             self._driver_active = True
 
-        query = GoyangLibraryQueryMaker(self.driver, title, 'gajwa')
-        query.execute()
-        if gajwa_option := query.result:
+        unit = GoyangLibraryScraperUnit(self.driver, title, 'gajwa')
+        if gajwa_option := unit.execute():
             return gajwa_option
-        query = GoyangLibraryQueryMaker(self.driver, title, 'all_libs')
-        query.execute()
-        if gy_all_libs_option := query.result:
-            gy_all_libs_option.lib_name = '고양시 상호대차'
-            gy_all_libs_option.book_code = ''
-            gy_all_libs_option.priority = -1
+        unit = GoyangLibraryScraperUnit(self.driver, title, 'all_libs')
+        if gy_all_libs_option := unit.execute():
             return gy_all_libs_option
         return
 
@@ -70,7 +64,7 @@ class CSSTag(StrEnum):
     gajwa = '#searchManageCodeArr2'
 
 
-class GoyangLibraryQueryMaker:
+class GoyangLibraryScraperUnit:
     def __init__(self, driver: WebDriver, title: str, select_lib: SelectLib_T):
         self.driver = driver
         # self.driver.minimize_window()
@@ -111,14 +105,20 @@ l.parentNode.removeChild(l);
         self.driver.implicitly_wait(3)
 
         # if no result
-        try:
-            if self.driver.find_elements(By.CLASS_NAME, "noResultNote"):
-                return
-        except UnexpectedAlertPresentException:
-            wait = WebDriverWait(self.driver, 10)
-            alert = wait.until(expected_conditions.alert_is_present())
-            alert.accept()
+        if self.driver.find_elements(By.CLASS_NAME, "noResultNote"):
+            return
+        # try:
+        #     if self.driver.find_elements(By.CLASS_NAME, "noResultNote"):
+        #         return
+        # except UnexpectedAlertPresentException:
+        #     wait = WebDriverWait(self.driver, 10)
+        #     alert = wait.until(expected_conditions.alert_is_present())
+        #     alert.accept()
 
+        self.examine_result()
+        return self.result
+
+    def examine_result(self):
         proceed = True
         while proceed:
             if self.evaluate_page_section():
@@ -162,29 +162,21 @@ l.parentNode.removeChild(l);
         tag = '#bookList > div.bookList.listViewStyle > ul > li > div.bookArea'
         book_areas = self.driver.find_elements(By.CSS_SELECTOR, tag)
         for book_area in book_areas:
-            if self.evaluate_book_area(book_area):
-                return True
-        return False
-
-    def evaluate_book_area(self, book_area: WebElement):
-        parser = GoyangLibraryScrapBookAreaParser(book_area)
-        # if parser.check_title():
-        book_code = parser.get_book_code()
-        availability = parser.get_availability()
-        del parser
-        if self.select_lib == 'gajwa':
-            self.result = LibraryScrapResult.gajwa(book_code, availability)
-            return True
-        elif self.select_lib == 'all_libs':
-            # if all_libs, should proceed until element with availability=True arises.
-            self.result = LibraryScrapResult.gy_all_libs(book_code, availability)
+            parser = GoyangLibraryScrapBookAreaParser(book_area, self.select_lib)
+            self.result = parser.result
             return True
         return False
 
 
 class GoyangLibraryScrapBookAreaParser:
-    def __init__(self, book_area: WebElement):
+    def __init__(self, book_area: WebElement, select_lib: SelectLib_T):
         self.book_area = book_area
+        self.select_lib = select_lib
+        if self.select_lib == 'gajwa':
+            self.result = LibraryScrapResult.gajwa(self.get_book_code(), self.get_availability())
+        elif self.select_lib == 'all_libs':
+            # if all_libs, should proceed until element with availability=True arises.
+            self.result = LibraryScrapResult.gy_all_libs(self.get_book_code(), self.get_availability())
 
     def get_book_code(self):
         tag = 'div.bookData > div > div > p.kor.on > span:nth-child(3)'
@@ -209,3 +201,10 @@ class GoyangLibraryScrapBookAreaParser:
     #     element = self.book_area.find_element(By.CSS_SELECTOR, tag)
     #     book_title = element.get_attribute('title')
     #     return True
+
+
+if __name__ == '__main__':
+    my_title = '하나부터 열까지 신경 쓸 게 너무 많은 브랜딩'
+    driver_factory = WebDriverFactory(create_window=True)
+    gy = GoyangLibraryScraperUnit(driver_factory(), my_title, 'gajwa')
+    gy.execute()

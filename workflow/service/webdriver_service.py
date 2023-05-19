@@ -27,21 +27,14 @@ class WebDriverFactory:
             options.add_argument('--headless')
             options.add_argument('--disable-dev-shm-usage')
             options.add_argument('--no-sandbox')
-        driver = webdriver.Chrome(service=service, options=self.get_options())
+        driver = webdriver.Chrome(service=service, options=options)
         self.drivers.append(driver)
         return driver
 
     def __del__(self):
-        for driver in self.drivers:
-            driver.quit()
-
-    @staticmethod
-    def get_options():
-        options = Options()
-        options.add_argument('--headless')
-        options.add_argument('--disable-dev-shm-usage')
-        options.add_argument('--no-sandbox')
-        return options
+        if not self.create_window:
+            for driver in self.drivers:
+                driver.quit()
 
 
 def retry_webdriver(function: Callable, recursion_limit=1) -> Callable:
