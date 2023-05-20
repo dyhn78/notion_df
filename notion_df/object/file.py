@@ -40,7 +40,7 @@ class Files(list[File], DualSerializable):
         return cls([ExternalFile(url, name) for url, name in url_name_pairs])
 
     def serialize(self) -> Any:
-        return serialize(self)
+        return serialize(list(self))
 
     @classmethod
     def _deserialize_this(cls, serialized: Any) -> Self:

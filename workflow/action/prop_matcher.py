@@ -5,7 +5,7 @@ from abc import ABCMeta
 from typing import Optional, cast
 from uuid import UUID
 
-from notion_df.entity import Namespace, Page
+from notion_df.entity import Page, Namespace, Database, default_namespace
 from notion_df.property import RelationProperty, TitleProperty, PageProperties, DateFormulaPropertyKey, \
     DateProperty, CheckboxFormulaProperty
 from notion_df.util.misc import get_url
@@ -29,10 +29,10 @@ def get_record_created_date(record: Page) -> dt.date:
 
 
 class MatcherWorkspace:
-    def __init__(self, namespace: Namespace):
-        self.namespace = namespace
-        self.date_namespace = DateIndex(namespace)
-        self.week_namespace = WeekIndex(namespace)
+    def __init__(self):
+        self.namespace = default_namespace
+        self.date_namespace = DateIndex(default_namespace)
+        self.week_namespace = WeekIndex(default_namespace)
 
 
 class MatchAction(Action, metaclass=ABCMeta):
@@ -46,7 +46,7 @@ class MatchAction(Action, metaclass=ABCMeta):
 class MatchDateByCreatedTime(MatchAction):
     def __init__(self, workspace: MatcherWorkspace, records: DatabaseEnum, record_to_date: str):
         super().__init__(workspace)
-        self.records = self.namespace.database(records.id)
+        self.records = Database(records.id)
         self.record_to_date = RelationProperty(f'{DatabaseEnum.dates.prefix}{record_to_date}')
 
     def execute(self):
@@ -72,8 +72,8 @@ class MatchDateByCreatedTime(MatchAction):
 class MatchReadingsStartDate(MatchAction):
     def __init__(self, workspace: MatcherWorkspace):
         super().__init__(workspace)
-        self.readings = self.namespace.database(DatabaseEnum.readings.id)
-        self.events = self.namespace.database(DatabaseEnum.events.id)
+        self.readings = Database(DatabaseEnum.readings.id)
+        self.events = Database(DatabaseEnum.events.id)
 
     def execute(self):
         event_list = self.readings.query(
@@ -92,13 +92,13 @@ class MatchReadingsStartDate(MatchAction):
         dates = []
         # TODO: RollupPagePropertyValue 구현 후 이곳을 간소화
         for event_id in reading_event_ids:
-            event = self.namespace.page(event_id)
+            event = Page(event_id)
             if not event.timestamp:
                 event.retrieve()
             event_date_ids = event.properties[event_to_date]
             if not event_date_ids:
                 continue
-            date = self.namespace.page(event_date_ids[0])
+            date = Page(event_date_ids[0])
             if not date.timestamp:
                 date.retrieve()
             if date.properties[date_manual_value] is None:
@@ -122,7 +122,7 @@ class MatchWeekByDate(MatchAction):
     def __init__(self, workspace: MatcherWorkspace, records: DatabaseEnum,
                  record_to_week: str, record_to_date: str):
         super().__init__(workspace)
-        self.records = self.namespace.database(records.id)
+        self.records = Database(records.id)
         self.record_to_week = RelationProperty(f'{DatabaseEnum.weeks.prefix}{record_to_week}')
         self.record_to_date = RelationProperty(f'{DatabaseEnum.dates.prefix}{record_to_date}')
 
@@ -136,7 +136,7 @@ class MatchWeekByDate(MatchAction):
 
     def process_page(self, event: Page) -> Optional[UUID]:
         event_date_id = event.properties[self.record_to_date][0]
-        event_date = self.namespace.page(event_date_id)
+        event_date = Page(event_date_id)
         if not event_date.timestamp:
             event_date.retrieve()
         event_week_id = event_date.properties[date_to_week][0]
@@ -151,7 +151,7 @@ class MatchWeekByDate(MatchAction):
 class MatchWeekByDateValue(MatchAction):
     def __init__(self, workspace: MatcherWorkspace):
         super().__init__(workspace)
-        self.dates = self.namespace.database(DatabaseEnum.dates.id)
+        self.dates = Database(DatabaseEnum.dates.id)
 
     def execute(self):
         date_list = self.dates.query(date_to_week.filter.is_empty())
@@ -168,7 +168,7 @@ class MatchWeekByDateValue(MatchAction):
 class DatabaseIndex(metaclass=ABCMeta):
     def __init__(self, namespace: Namespace, database: DatabaseEnum, title: str):
         self.namespace = namespace
-        self.database = namespace.database(database.id)
+        self.database = Database(database.id)
         self.title = TitleProperty(title)
         self.pages_by_title_plain_text: dict[str, Page] = {}
 

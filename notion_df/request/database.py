@@ -96,5 +96,5 @@ class QueryDatabase(PaginatedRequest[PageResponse]):
         })
 
     # TODO: resolve why type hint (Response_T -> PageResponse) is not working.
-    def execute(self, print_body: bool) -> list[PageResponse]:
-        return super().execute(print_body)
+    def execute(self) -> list[PageResponse]:
+        return super().execute()

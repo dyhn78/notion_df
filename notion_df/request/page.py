@@ -81,7 +81,7 @@ class RetrievePagePropertyItem(BaseRequest[Any]):
     """https://developers.notion.com/reference/retrieve-a-page-property"""
     return_type = Any
     page_id: UUID
-    property_id: UUID
+    property_id: str
     page_size: int = -1
 
     def get_settings(self) -> RequestSettings:
@@ -93,7 +93,7 @@ class RetrievePagePropertyItem(BaseRequest[Any]):
 
     request_once = PaginatedRequest.request_once
 
-    def execute(self, print_body: bool) -> Any:
+    def execute(self) -> Any:
         # TODO: deduplicate with PaginatedRequest.execute() if possible.
         page_size_total = self.page_size
         if page_size_total == -1:

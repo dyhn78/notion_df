@@ -13,6 +13,8 @@ from notion_df.object.rich_text import RichText
 
 
 def get_yes24_detail_page_url(book_name: str) -> Optional[str]:
+    if not book_name:
+        return
     book_name = ''.join(filter(lambda x: str.isalnum(x) or x == ' ', book_name))
     book_name_encoded = parse.quote_plus(book_name, encoding='euc-kr')
     url_main_page = 'http://www.yes24.com'

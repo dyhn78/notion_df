@@ -12,7 +12,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 class WebDriverFactory:
     ON_WINDOWS = (os.name == 'nt')
 
-    def __init__(self, create_window: bool = False):
+    def __init__(self, create_window: bool):
         self.drivers: list[webdriver.Chrome] = []
         self.create_window = create_window
 

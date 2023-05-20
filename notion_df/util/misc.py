@@ -3,17 +3,37 @@ from __future__ import annotations
 import inspect
 import re
 from itertools import chain
-from typing import Hashable, Any, Optional, Iterable, Iterator, TypeVar, get_args, cast, Generic, get_type_hints
+from typing import Hashable, Any, Optional, Iterable, Iterator, TypeVar, get_args, cast, Generic, get_type_hints, \
+    overload
 from uuid import UUID
 
-from notion_df.util.exception import NotionDfTypeError
+from notion_df.util.exception import NotionDfTypeError, NotionDfValueError
 
 
-def repr_attrs(self, attr_names: list[str]) -> str:
-    return (f'{type(self).__name__}('
-            + ','.join(f'{attr_name}={getattr(self, attr_name)}' for attr_name in attr_names
-                       if getattr(self, attr_name) is not None)
-            + ')')
+@overload
+def repr_object(cls_or_instance, attr_names: list[str]) -> str:
+    ...
+
+
+@overload
+def repr_object(cls_or_instance, attr_dict: dict[str, Any]) -> str:
+    ...
+
+
+def repr_object(cls_or_instance, attrs: list[str] | dict[str, Any]) -> str:
+    attr_items = []
+    if isinstance(attr_names := attrs, list):
+        for attr_name in attr_names:
+            if (attr_value := getattr(cls_or_instance, attr_name)) is not None:
+                attr_items.append(f'{attr_name}={attr_value}')
+    elif isinstance(attr_dict := attrs, dict):
+        for attr_name, attr_value in attr_dict.items():
+            if attr_value is not None:
+                attr_items.append(f'{attr_name}={attr_value}')
+    else:
+        raise NotionDfValueError(vars={'self': cls_or_instance, 'attrs': attrs})
+
+    return f"{type(cls_or_instance).__name__}({','.join(attr_items)})"
 
 
 def repr_object_depr(obj: Any, params: dict[Hashable, Any] = None, **kwargs: Any) -> str:

@@ -11,7 +11,7 @@ new_prop_1 = DualRelationPropertyKey('🟣관계')
 old_prop_2 = DualRelationPropertyKey('⚫️측면')
 new_prop_2 = DualRelationPropertyKey('🟣공통')
 namespace = Namespace(print_body=False)
-topics = namespace.database(DatabaseEnum.topics.id)
+topics = database(DatabaseEnum.topics.id)
 
 
 def main():

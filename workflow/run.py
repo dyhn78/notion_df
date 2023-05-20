@@ -1,14 +1,15 @@
-import datetime as dt
 import json
 import traceback
+from datetime import datetime, timedelta
 from uuid import UUID
 
-from notion_df.entity import Namespace
+from notion_df.entity import Page
 from notion_df.object.block import CodeBlockValue, ParagraphBlockValue
 from notion_df.object.rich_text import RichText, TextSpan, UserMention
-from notion_df.variable import my_tz
+from notion_df.variable import my_tz, settings_print_body
 from workflow.action.prop_matcher import MatcherWorkspace, MatchWeekByDateValue, MatchDateByCreatedTime, \
     MatchWeekByDate, MatchReadingsStartDate
+from workflow.action.reading_media_scraper import MediaScraper
 from workflow.constant.block_enum import DatabaseEnum
 from workflow.util.action import Action
 
@@ -18,12 +19,9 @@ my_user_id = UUID('a007d150-bc67-422c-87db-030a71867dd9')
 
 class Workflow:
     def __init__(self, print_body: bool, create_window: bool):
-        self.namespace = Namespace(print_body=print_body)
-        workspace = MatcherWorkspace(self.namespace)
+        self.print_body = print_body
+        workspace = MatcherWorkspace()
         self.actions: list[Action] = [
-            # TODO
-            # ReadingMediaScraper(self.namespace, create_window),
-
             MatchWeekByDateValue(workspace),
 
             MatchDateByCreatedTime(workspace, DatabaseEnum.events, '일간'),
@@ -52,21 +50,28 @@ class Workflow:
 
             # TODO 배포후: <마디 - 🟢시작, 💚시작> 제거
             # TODO 배포후: <읽기 -  📕유형 <- 전개/꼭지> 추가 (스펙 논의 필요)
+
+            MediaScraper(create_window),
         ]
 
-    # noinspection PyBroadException
     def execute(self):
-        execution_time = f"{dt.datetime.now().astimezone(my_tz).strftime('%Y-%m-%d %H:%M:%S')}"
+        if self.print_body:
+            settings_print_body.enabled = True
+        for action in self.actions:
+            action.execute()
+
+    # noinspection PyBroadException
+    def run(self):
+        execution_time = f"{datetime.now().astimezone(my_tz).strftime('%Y-%m-%d %H:%M:%S')}"
         child_block_values = []
         try:
-            for action in self.actions:
-                action.execute()
+            self.execute()
             message = f"{execution_time} - success"
             child_block_values = [ParagraphBlockValue(RichText([TextSpan(message)]))]
         except json.JSONDecodeError as err:
             message = f"{execution_time} - failure: {err}"
             child_block_values = [ParagraphBlockValue(RichText([TextSpan(message)]))]
-        except Exception as e:
+        except (Exception, RecursionError) as e:
             message = f"{execution_time} - error: "
             tr = traceback.format_exc()
             child_block_values = [
@@ -76,12 +81,13 @@ class Workflow:
                 child_block_values.append(CodeBlockValue(RichText.from_plain_text(tr[i:i + 1000])))
             raise e
         finally:
-            log_page_block = self.namespace.page(log_page_id).as_block()
-            log_page_block.append_children(child_block_values)
+            log_page_block = Page(log_page_id).as_block()
             children = log_page_block.retrieve_children()
-            for child in children[:-30]:
-                child.delete()
+            for child in children:
+                if datetime.now() - child.created_time > timedelta(days=1):
+                    child.delete()
+            log_page_block.append_children(child_block_values)
 
 
 if __name__ == '__main__':
-    Workflow(print_body=True, create_window=True).execute()
+    Workflow(print_body=True, create_window=False).execute()
