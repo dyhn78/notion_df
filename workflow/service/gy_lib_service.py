@@ -21,7 +21,7 @@ class LibraryScrapResult:
     lib_name: str
     priority: int
     book_code: str
-    availability: bool
+    available: bool
 
     @classmethod
     def gajwa(cls, book_code: str, availability: bool) -> LibraryScrapResult:
@@ -36,27 +36,7 @@ class LibraryScrapResult:
 
     @property
     def availability_str(self) -> str:
-        return '가능' if self.availability else '불가능'
-
-
-class GYLibraryScraper:
-    def __init__(self, driver: WebDriver):
-        self.driver = driver
-        self._driver_active = False
-        self.driver.start_client()
-
-    def process_page(self, title: str) -> Optional[LibraryScrapResult]:
-        if not self._driver_active:
-            self.driver.start_client()
-            self._driver_active = True
-
-        unit = GYLibraryScraperUnit(self.driver, title, 'gajwa')
-        if result := unit.execute():
-            return result
-        unit = GYLibraryScraperUnit(self.driver, title, 'all_libs')
-        if result := unit.execute():
-            return result
-        return
+        return '가능' if self.available else '불가능'
 
 
 class GYLibraryCSSTag(StrEnum):
@@ -66,16 +46,7 @@ class GYLibraryCSSTag(StrEnum):
     gajwa = '#searchManageCodeArr2'
 
 
-class GYLibraryScraperUnit:
-    def __init__(self, driver: WebDriver, title: str, select_lib: SelectLib_T):
-        self.driver = driver
-        self.driver_wait = WebDriverWait(self.driver, 10)
-        # self.driver.minimize_window()
-        self.select_lib = select_lib
-        self.title = title
-        self.now_page_num = 1
-        self.result: Optional[LibraryScrapResult] = None
-
+class GYLibraryScraper:
     def find_element(self, css_tag: GYLibraryCSSTag):
         return self.driver.find_element(By.CSS_SELECTOR, css_tag)
 
@@ -91,7 +62,18 @@ var l = document.querySelector("{css_tag}");
 l.parentNode.removeChild(l);
         """)
 
-    def execute(self):
+    def __init__(self, driver: WebDriver, title: str, select_lib: SelectLib_T):
+        self.driver = driver
+        self.driver_wait = WebDriverWait(self.driver, 10)
+        # self.driver.minimize_window()
+        self.select_lib = select_lib
+        self.title = title
+        self.now_page_num = 1
+        self.result: Optional[LibraryScrapResult] = None
+
+    def execute(self) -> Optional[LibraryScrapResult]:
+        if not self.title:
+            return
         # load main page
         url_main_page = 'https://www.goyanglib.or.kr/center/menu/10003/program/30001/searchSimple.do'
         self.driver.get(url_main_page)
@@ -112,7 +94,7 @@ l.parentNode.removeChild(l);
 
         match self.select_lib:
             case 'all_libs':
-                self.click_element(GYLibraryCSSTag.all_libs)
+                pass
             case 'gajwa':
                 self.click_element(GYLibraryCSSTag.all_libs)
                 self.click_element(GYLibraryCSSTag.gajwa)
@@ -180,9 +162,9 @@ l.parentNode.removeChild(l);
         tag = '#bookList > div.bookList.listViewStyle > ul > li > div.bookArea'
         book_areas = self.driver.find_elements(By.CSS_SELECTOR, tag)
         for book_area in book_areas:
-            parser = GoyangLibraryScrapBookAreaParser(book_area, self.select_lib)
-            self.result = parser.result
-            return True
+            self.result = GoyangLibraryScrapBookAreaParser(book_area, self.select_lib).result
+            if self.select_lib == 'gajwa' or (self.select_lib == 'all_libs' and self.result.available):
+                return True
         return False
 
 
@@ -224,5 +206,8 @@ class GoyangLibraryScrapBookAreaParser:
 if __name__ == '__main__':
     my_title = '하나부터 열까지 신경 쓸 게 너무 많은 브랜딩'
     driver_factory = WebDriverFactory(create_window=True)
-    gy = GYLibraryScraperUnit(driver_factory(), my_title, 'gajwa')
-    gy.execute()
+    driver = driver_factory()
+    gy = GYLibraryScraper(driver, my_title, 'gajwa')
+    print(gy.execute())
+    gy = GYLibraryScraper(driver, my_title, 'all_libs')
+    print(gy.execute())
