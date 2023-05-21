@@ -8,11 +8,11 @@ from notion_df.entity import Block
 from notion_df.object.block import CodeBlockValue, ParagraphBlockValue
 from notion_df.object.rich_text import RichText, TextSpan, UserMention
 from notion_df.variable import my_tz, Settings
+from workflow.action.action_core import Action, upper_bound_timedelta
 from workflow.action.prop_matcher import MatchActionBase, MatchWeekByDateValue, MatchDateByCreatedTime, \
     MatchWeekByRefDate, MatchReadingsStartDate
 from workflow.action.reading_media_scraper import MediaScraper
 from workflow.constant.block_enum import DatabaseEnum
-from workflow.util.action import Action, get_last_edited_time_lower_bound
 
 # Note: the log_page is implemented as page with log blocks, not database with log pages,
 #  since Notion API does not directly support permanently deleting pages,
@@ -65,10 +65,9 @@ class Workflow:
             for action in self.actions:
                 action.execute_all()
 
-    def execute_recent(self, custom_window: timedelta):
+    def execute_by_last_edited_time(self, window: timedelta):
         with Settings.print.enable(self.print_body):
-            last_edited_time_lower_bound = get_last_edited_time_lower_bound(custom_window)
-            Action.execute_recent(self.actions, last_edited_time_lower_bound)
+            Action.execute_by_last_edited_time(self.actions, datetime.now().astimezone(my_tz) - window)
 
     @staticmethod
     def _run(execute: Callable[[], Any]):
@@ -107,10 +106,10 @@ class Workflow:
     def run_all(self):
         self._run(self.execute_all)
 
-    def run_recent(self, custom_window: timedelta):
-        self._run(lambda: self.execute_recent(custom_window))
+    def run_by_last_edited_time(self, window: timedelta):
+        self._run(lambda: self.execute_by_last_edited_time(window))
 
-    def run_window(self):
+    def run_from_last_execution(self):
         with Settings.print.enable(self.print_body):
             for block in reversed(log_page_block.retrieve_children()):
                 if not isinstance(block.value, ParagraphBlockValue):
@@ -118,16 +117,12 @@ class Workflow:
                 block_created_time_str = block.value.rich_text.plain_text
                 if block_created_time_str.find('success') == -1:
                     continue
-                # last_edited_time_lower_bound = min(
-                #     datetime.strptime(block_created_time_str.split(' - ')[1], log_date_format).astimezone(my_tz),
-                #     get_last_edited_time_lower_bound(timedelta(minutes=10)))
-                last_edited_time_lower_bound = (
-                    datetime.strptime(block_created_time_str.split(' - ')[1], log_date_format).astimezone(my_tz))
-                                                   
-                self._run(lambda: Action.execute_recent(self.actions, last_edited_time_lower_bound))
+                lower_bound = (datetime.strptime(block_created_time_str.split(' - ')[1],
+                                                 log_date_format).astimezone(my_tz)) - upper_bound_timedelta
+                self._run(lambda: Action.execute_by_last_edited_time(self.actions, lower_bound))
                 return
             self.run_all()
 
 
 if __name__ == '__main__':
-    Workflow(print_body=True, create_window=False).run_window()
+    Workflow(print_body=True, create_window=False).run_from_last_execution()

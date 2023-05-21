@@ -1,3 +1,4 @@
+from functools import cached_property
 from typing import Optional, Callable, Any, Iterable
 
 from notion_df.entity import Page, Database, Children
@@ -7,11 +8,11 @@ from notion_df.object.filter import CompoundFilter
 from notion_df.object.property import SelectProperty, CheckboxFormulaProperty, TitleProperty, RichTextProperty, \
     URLProperty, NumberProperty, FilesProperty, CheckboxProperty, PageProperties
 from notion_df.util.collection import StrEnum
+from workflow.action.action_core import Action
 from workflow.constant.block_enum import DatabaseEnum
 from workflow.service.gy_lib_service import GYLibraryScraper, LibraryScrapResult
 from workflow.service.webdriver_service import WebDriverFactory
 from workflow.service.yes24_service import get_yes24_detail_page_url, Yes24ScrapResult, get_block_value_of_contents_line
-from workflow.util.action import Action
 
 edit_status = SelectProperty('🔰준비')
 media_type = SelectProperty('📘유형')
@@ -40,25 +41,24 @@ class EditStatusValue(StrEnum):
 
 class MediaScraper(Action):
     def __init__(self, create_window: bool):
-        self.readings = Database(DatabaseEnum.reading_db.id) # TODO: reading_db
+        self.reading_db = Database(DatabaseEnum.reading_db.id)
         self.driver_factory = WebDriverFactory(create_window=create_window)
-        self.driver = self.driver_factory()
+
+    @cached_property
+    def driver(self):
+        return self.driver_factory()
 
     def query_all(self) -> Children[Page]:
-        return self.readings.query(is_book.filter.equals(True) & CompoundFilter('or', [
+        return self.reading_db.query(is_book.filter.equals(True) & CompoundFilter('or', [
             edit_status.filter.equals(option) for option in
             [EditStatusValue.default, EditStatusValue.metadata_overwrite, EditStatusValue.location_overwrite, None]
         ]))
 
-    def pick(self, pages: list[Page]):
-        for page in pages:
-            if page.parent != self.readings:
-                continue
-            if not (page.properties[edit_status] in
-                    [EditStatusValue.default, EditStatusValue.metadata_overwrite, EditStatusValue.location_overwrite]
-                    or page.properties[edit_status] is None):
-                continue
-            yield page
+    def filter(self, page: Page) -> bool:
+        return (page.parent == self.reading_db and
+                (page.properties[edit_status] in
+                 [EditStatusValue.default, EditStatusValue.metadata_overwrite, EditStatusValue.location_overwrite]
+                 or page.properties[edit_status] is None))
 
     def process(self, pages: Iterable[Page]):
         for reading in pages:

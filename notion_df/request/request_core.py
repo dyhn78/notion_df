@@ -75,7 +75,7 @@ class SingleRequest(BaseRequest[Response_T], metaclass=ABCMeta):
     @final
     def execute(self) -> Response_T:
         settings = self.get_settings()
-        response = request(method=settings.method.value, url=settings.url, headers=self.headers,
+        response = request(method=settings.method.value, url=settings.url, headers=self.headers, params=None,
                            json=serialize(self.get_body()))
         return self.parse_response_data(response.json())  # nomypy
 
@@ -90,16 +90,18 @@ class PaginatedRequest(BaseRequest[list[ResponseElement_T]], metaclass=ABCMeta):
 
     @final
     def execute_once(self, page_size: int = MAX_PAGE_SIZE, start_cursor: Optional[str] = None) -> dict[str, Any]:
+        body = self.get_body()
+        settings = self.get_settings()
         if page_size == MAX_PAGE_SIZE and start_cursor is None:
-            body = self.get_body()
+            params = None
         else:
-            body = DictFilter.not_none({
+            params = DictFilter.not_none({
                 'page_size': page_size,
                 'start_cursor': start_cursor,
-                **self.get_body()
             })
-        settings = self.get_settings()
-        response = request(method=settings.method.value, url=settings.url, headers=self.headers, json=serialize(body))
+
+        response = request(method=settings.method.value, url=settings.url, headers=self.headers, params=params,
+                           json=serialize(body))
         return response.json()
 
     def execute_iter(self) -> Iterator[ResponseElement_T]:
@@ -138,10 +140,10 @@ class PaginatedRequest(BaseRequest[list[ResponseElement_T]], metaclass=ABCMeta):
         return element_list
 
 
-def request(*, method: str, url: str, headers: dict[str, Any], json: Any) -> requests.Response:
+def request(*, method: str, url: str, headers: dict[str, Any], params: Any, json: Any) -> requests.Response:
     if Settings.print:
-        pprint(dict(method=method, url=url, headers=headers, json=json), width=print_width)
-    response = requests.request(method, url, headers=headers, json=json)
+        pprint(dict(method=method, url=url, headers=headers, params=params, json=json), width=print_width)
+    response = requests.request(method, url, headers=headers, params=params, json=json)
     try:
         response.raise_for_status()
     except requests.exceptions.HTTPError:
