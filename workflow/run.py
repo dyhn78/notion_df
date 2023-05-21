@@ -100,8 +100,7 @@ class Workflow:
         finally:
             children = log_page_block.retrieve_children()
             for child in children[3:]:
-                if isinstance(child.value, ParagraphBlockValue) and \
-                        start_time - child.created_time > timedelta(days=1):
+                if start_time - child.created_time > timedelta(days=1):
                     child.delete()
             log_page_block.append_children(child_block_values)
 
