@@ -11,10 +11,10 @@ from typing_extensions import Self
 from notion_df.object.common import Icon
 from notion_df.object.constant import BlockColor, CodeLanguage
 from notion_df.object.file import File, ExternalFile
-from notion_df.object.parent import ParentInfo
+from notion_df.object.parent import PartialParent
+from notion_df.object.property import DatabaseProperties, PageProperties
 from notion_df.object.rich_text import Span, RichText
 from notion_df.object.user import PartialUser
-from notion_df.property import DatabaseProperties, PageProperties
 from notion_df.request.request_core import Response
 from notion_df.util.collection import FinalClassDict
 from notion_df.util.serialization import DualSerializable
@@ -23,7 +23,7 @@ from notion_df.util.serialization import DualSerializable
 @dataclass
 class DatabaseResponse(Response):
     id: UUID
-    parent: ParentInfo
+    parent: PartialParent
     created_time: datetime
     last_edited_time: datetime
     icon: Optional[Icon]
@@ -42,7 +42,7 @@ class DatabaseResponse(Response):
 @dataclass
 class PageResponse(Response):
     id: UUID
-    parent: ParentInfo
+    parent: PartialParent
     created_time: datetime
     last_edited_time: datetime
     created_by: PartialUser
@@ -61,13 +61,13 @@ class PageResponse(Response):
 @dataclass
 class BlockResponse(Response):
     id: UUID
-    parent: ParentInfo
+    parent: PartialParent
     created_time: datetime
     last_edited_time: datetime
     created_by: PartialUser
     last_edited_by: PartialUser
     has_children: Optional[bool]
-    """the None value never occurs from direct server response. It only happens from Page.as_block()"""
+    """Note: the None value never occurs from direct server response. It only happens from Page.as_block()"""
     archived: bool
     value: BlockValue
 

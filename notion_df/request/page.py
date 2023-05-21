@@ -7,8 +7,8 @@ from uuid import UUID
 from notion_df.object.block import BlockValue, serialize_partial_block_list, PageResponse
 from notion_df.object.common import Icon
 from notion_df.object.file import ExternalFile
-from notion_df.object.parent import ParentInfo
-from notion_df.property import Properties, PageProperties, Property
+from notion_df.object.parent import PartialParent
+from notion_df.object.property import Properties, PageProperties, Property
 from notion_df.request.request_core import SingleRequest, RequestSettings, Version, Method, MAX_PAGE_SIZE, \
     PaginatedRequest, BaseRequest
 from notion_df.util.collection import DictFilter
@@ -32,7 +32,7 @@ class RetrievePage(SingleRequest[PageResponse]):
 class CreatePage(SingleRequest[PageResponse]):
     """https://developers.notion.com/reference/post-page"""
     return_type = PageResponse
-    parent: ParentInfo
+    parent: PartialParent
     properties: PageProperties = field(default_factory=Properties)
     children: list[BlockValue] = None
     icon: Optional[Icon] = field(default=None)
@@ -82,7 +82,7 @@ class RetrievePagePropertyItem(BaseRequest[Any]):
     return_type = Any
     page_id: UUID
     property_id: str
-    page_size: int = -1
+    page_size: int = None
 
     def get_settings(self) -> RequestSettings:
         return RequestSettings(Version.v20220628, Method.GET,
@@ -95,9 +95,7 @@ class RetrievePagePropertyItem(BaseRequest[Any]):
 
     def execute(self) -> Any:
         # TODO: deduplicate with PaginatedRequest.execute() if possible.
-        page_size_total = self.page_size
-        if page_size_total == -1:
-            page_size_total = float('inf')
+        page_size_total = self.page_size if self.page_size is not None else float('inf')
         page_size = min(MAX_PAGE_SIZE, page_size_total)
         page_size_retrieved = page_size
 

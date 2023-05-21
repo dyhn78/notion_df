@@ -3,12 +3,10 @@ from __future__ import annotations
 import datetime as dt
 from abc import ABCMeta
 from typing import Optional, cast
-from uuid import UUID
 
-from notion_df.entity import Page, Namespace, Database, default_namespace
-from notion_df.property import RelationProperty, TitleProperty, PageProperties, DateFormulaPropertyKey, \
+from notion_df.entity import Page, Database
+from notion_df.object.property import RelationProperty, TitleProperty, PageProperties, DateFormulaPropertyKey, \
     DateProperty, CheckboxFormulaProperty
-from notion_df.util.misc import get_url
 from workflow.constant.block_enum import DatabaseEnum
 from workflow.constant.emoji_code import EmojiCode
 from workflow.util.action import Action
@@ -30,15 +28,13 @@ def get_record_created_date(record: Page) -> dt.date:
 
 class MatcherWorkspace:
     def __init__(self):
-        self.namespace = default_namespace
-        self.date_namespace = DateIndex(default_namespace)
-        self.week_namespace = WeekIndex(default_namespace)
+        self.date_namespace = DateIndex()
+        self.week_namespace = WeekIndex()
 
 
 class MatchAction(Action, metaclass=ABCMeta):
     def __init__(self, workspace: MatcherWorkspace):
         self.workspace = workspace
-        self.namespace = workspace.namespace
         self.date_namespace = workspace.date_namespace
         self.week_namespace = workspace.week_namespace
 
@@ -88,17 +84,15 @@ class MatchReadingsStartDate(MatchAction):
                   + (f'-> "{date.properties.title.plain_text}"' if date else ': Skipped'))
 
     def process_page(self, reading: Page) -> Optional[Page]:
-        reading_event_ids = reading.properties[reading_to_event]
+        reading_events = reading.properties[reading_to_event]
         dates = []
         # TODO: RollupPagePropertyValue 구현 후 이곳을 간소화
-        for event_id in reading_event_ids:
-            event = Page(event_id)
+        for event in reading_events:
             if not event.timestamp:
                 event.retrieve()
-            event_date_ids = event.properties[event_to_date]
-            if not event_date_ids:
+            if not event.properties[event_to_date]:
                 continue
-            date = Page(event_date_ids[0])
+            date = event.properties[event_to_date][0]
             if not date.timestamp:
                 date.retrieve()
             if date.properties[date_manual_value] is None:
@@ -130,22 +124,21 @@ class MatchWeekByDate(MatchAction):
         record_list = self.records.query(
             self.record_to_week.filter.is_empty() & self.record_to_date.filter.is_not_empty())
         for record in record_list:
-            week_id = self.process_page(record)
+            week = self.process_page(record)
             print(f'"{record.properties.title.plain_text} ({record.url})"'
-                  + (f'-> "{get_url(week_id, "dyhn")}"' if week_id else ': Skipped'))
+                  + (f'-> "{week.properties.title.plain_text}" ({week.url})' if week else ': Skipped'))
 
-    def process_page(self, event: Page) -> Optional[UUID]:
-        event_date_id = event.properties[self.record_to_date][0]
-        event_date = Page(event_date_id)
+    def process_page(self, event: Page) -> Optional[Page]:
+        event_date = event.properties[self.record_to_date][0]
         if not event_date.timestamp:
             event_date.retrieve()
-        event_week_id = event_date.properties[date_to_week][0]
+        event_week = event_date.properties[date_to_week][0]
 
         # final check if the property value is filled in the meantime
         if event.retrieve().properties[self.record_to_week]:
             return
-        event.update(PageProperties({self.record_to_week: self.record_to_week.page_value([event_week_id])}))
-        return event_week_id
+        event.update(PageProperties({self.record_to_week: self.record_to_week.page_value([event_week])}))
+        return event_week
 
 
 class MatchWeekByDateValue(MatchAction):
@@ -166,8 +159,7 @@ class MatchWeekByDateValue(MatchAction):
 
 
 class DatabaseIndex(metaclass=ABCMeta):
-    def __init__(self, namespace: Namespace, database: DatabaseEnum, title: str):
-        self.namespace = namespace
+    def __init__(self, database: DatabaseEnum, title: str):
         self.database = Database(database.id)
         self.title = TitleProperty(title)
         self.pages_by_title_plain_text: dict[str, Page] = {}
@@ -186,8 +178,8 @@ class DatabaseIndex(metaclass=ABCMeta):
 
 
 class DateIndex(DatabaseIndex):
-    def __init__(self, namespace: Namespace):
-        super().__init__(namespace, DatabaseEnum.date_db, f'{EmojiCode.GREEN_BOOK}제목')
+    def __init__(self):
+        super().__init__(DatabaseEnum.date_db, f'{EmojiCode.GREEN_BOOK}제목')
 
     def get_by_date_value(self, date_value: dt.date) -> Page:
         day_name = korean_weekday[date_value.weekday()] + '요일'
@@ -196,8 +188,8 @@ class DateIndex(DatabaseIndex):
 
 
 class WeekIndex(DatabaseIndex):
-    def __init__(self, namespace: Namespace):
-        super().__init__(namespace, DatabaseEnum.week_db, EmojiCode.GREEN_BOOK + '제목')
+    def __init__(self):
+        super().__init__(DatabaseEnum.week_db, EmojiCode.GREEN_BOOK + '제목')
 
     def get_by_date_value(self, date_value: dt.date) -> Page:
         title_plain_text = self.first_day_of_week(date_value).strftime("%y/%U")

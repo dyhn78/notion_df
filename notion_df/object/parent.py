@@ -1,16 +1,19 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Literal, Optional
+from typing import Any, Literal, Optional, TYPE_CHECKING
 from uuid import UUID
 
 from typing_extensions import Self
 
 from notion_df.util.serialization import DualSerializable
 
+if TYPE_CHECKING:
+    from notion_df.entity import Block, Database, Page
+
 
 @dataclass
-class ParentInfo(DualSerializable):
+class PartialParent(DualSerializable):
     # https://developers.notion.com/reference/parent-object
     typename: Literal['database_id', 'page_id', 'block_id', 'workspace']
     id: Optional[UUID]
@@ -28,3 +31,17 @@ class ParentInfo(DualSerializable):
             return cls('workspace', None)
         parent_id = UUID(serialized[typename])
         return cls(typename, parent_id)
+
+    @property
+    def block(self) -> Block | Database | Page | None:
+        from notion_df.entity import Block, Database, Page
+
+        match self.typename:
+            case 'block_id':
+                return Block(self.id)
+            case 'database_id':
+                return Database(self.id)
+            case 'page_id':
+                return Page(self.id)
+            case 'workspace':
+                return None

@@ -50,7 +50,7 @@ class RetrieveBlockChildren(PaginatedRequest[BlockResponse]):
     """https://developers.notion.com/reference/get-block-children"""
     return_type = BlockResponse
     id: UUID
-    page_size: int = -1
+    page_size: int = None
 
     def get_settings(self) -> RequestSettings:
         return RequestSettings(Version.v20220222, Method.GET,

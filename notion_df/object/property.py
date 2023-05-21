@@ -4,7 +4,7 @@ from abc import ABCMeta
 from collections.abc import MutableMapping
 from dataclasses import dataclass, field
 from datetime import datetime, date
-from typing import ClassVar, TypeVar, Generic, Any, Iterator, Optional, Literal, Union, Iterable, Final
+from typing import ClassVar, TypeVar, Generic, Any, Iterator, Optional, Literal, Union, Iterable, Final, TYPE_CHECKING
 from uuid import UUID
 
 from typing_extensions import Self
@@ -21,6 +21,9 @@ from notion_df.util.collection import FinalClassDict
 from notion_df.util.exception import NotionDfKeyError, NotionDfValueError
 from notion_df.util.misc import check_classvars_are_defined, repr_object
 from notion_df.util.serialization import DualSerializable, deserialize, serialize
+
+if TYPE_CHECKING:
+    from notion_df.entity import Page
 
 property_registry: FinalClassDict[str, type[Property]] = FinalClassDict()
 PropertyValue_T = TypeVar('PropertyValue_T')
@@ -348,21 +351,23 @@ class RollupDatabasePropertyValue(DatabasePropertyValue):
     rollup_property_id: str
 
 
-class RelationPagePropertyValue(list[UUID], DualSerializable):
+class RelationPagePropertyValue(list['Page'], DualSerializable):
     has_more: Optional[bool]
 
-    def __init__(self, ids: Iterable[UUID] = ()):
-        super().__init__(ids)
+    def __init__(self, pages: Iterable[Page] = ()):
+        super().__init__(pages)
 
     def __bool__(self) -> bool:
         return bool(len(self) or self.has_more)
 
     def serialize(self) -> Any:
-        return [{'id': str(page_id)} for page_id in self]
+        return [{'id': str(page.id)} for page in self]
 
     @classmethod
     def _deserialize_this(cls, serialized: list[dict[str, Any]]) -> Self:
-        self = cls([UUID(page['id']) for page in serialized])
+        from notion_df.entity import Page
+
+        self = cls([Page(partial_page['id']) for partial_page in serialized])
         self.has_more = None
         return self
 

@@ -8,9 +8,9 @@ from notion_df.object.block import DatabaseResponse, PageResponse
 from notion_df.object.common import Icon
 from notion_df.object.file import ExternalFile
 from notion_df.object.filter import Filter
+from notion_df.object.property import DatabaseProperties
 from notion_df.object.rich_text import RichText
 from notion_df.object.sort import Sort
-from notion_df.property import DatabaseProperties
 from notion_df.request.request_core import SingleRequest, RequestSettings, Version, Method, PaginatedRequest
 from notion_df.util.collection import DictFilter
 
@@ -83,7 +83,7 @@ class QueryDatabase(PaginatedRequest[PageResponse]):
     id: UUID
     filter: Filter
     sort: list[Sort]
-    page_size: int = -1
+    page_size: int = None
 
     def get_settings(self) -> RequestSettings:
         return RequestSettings(Version.v20220628, Method.POST,

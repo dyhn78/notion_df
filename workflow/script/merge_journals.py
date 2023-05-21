@@ -1,6 +1,6 @@
 from pprint import pprint
 
-from notion_df.property import DualRelationPropertyKey, PageProperties
+from notion_df.object.property import DualRelationPropertyKey, PageProperties
 from notion_df.variable import Settings
 from workflow.constant.block_enum import DatabaseEnum
 
@@ -10,7 +10,7 @@ journal_db = DatabaseEnum.journal_db.database
 
 
 def main():
-    journals = journal_db.query(journal_to_stream_old.filter.is_not_empty(), page_size=-1)
+    journals = journal_db.query(journal_to_stream_old.filter.is_not_empty())
     print(len(journals))
     print(sum(len(journal.properties[journal_to_stream]) for journal in journals))
     print(sum(len(journal.properties[journal_to_stream_old]) for journal in journals))

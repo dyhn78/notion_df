@@ -5,7 +5,7 @@ from abc import abstractmethod
 from collections.abc import Sequence
 from datetime import datetime
 from functools import cache
-from typing import Optional, TypeVar, Union, Generic, final, Final
+from typing import Optional, TypeVar, Union, Generic, final, Final, Any
 
 from typing_extensions import Self
 
@@ -13,12 +13,11 @@ from notion_df.object.block import BlockValue, BlockResponse, ChildPageBlockValu
 from notion_df.object.common import Icon
 from notion_df.object.file import ExternalFile, File
 from notion_df.object.filter import Filter
-from notion_df.object.parent import ParentInfo
+from notion_df.object.parent import PartialParent
+from notion_df.object.property import Property, PageProperties, DatabaseProperties, PagePropertyValue_T
 from notion_df.object.rich_text import RichText
 from notion_df.object.sort import Sort
 from notion_df.object.user import PartialUser
-from notion_df.property import Property, PageProperties, DatabaseProperties, DatabasePropertyValue_T, \
-    PagePropertyValue_T, FilterBuilder_T
 from notion_df.request.block import AppendBlockChildren, RetrieveBlock, RetrieveBlockChildren, UpdateBlock, DeleteBlock
 from notion_df.request.database import CreateDatabase, UpdateDatabase, RetrieveDatabase, QueryDatabase
 from notion_df.request.page import CreatePage, UpdatePage, RetrievePage, RetrievePagePropertyItem
@@ -28,6 +27,7 @@ from notion_df.util.misc import get_id, UUID, repr_object
 from notion_df.variable import Settings
 
 token: Final[str] = os.getenv('NOTION_TOKEN')  # TODO: support multiple token
+namespace: Final[dict[tuple[type[BaseBlock], UUID], BaseBlock]] = {}
 
 
 class BaseBlock(Generic[Response_T]):
@@ -35,24 +35,19 @@ class BaseBlock(Generic[Response_T]):
     timestamp: float
     parent: Union[Block, Database, Page, None]
 
-    def __new__(cls, id_or_url: Union[UUID, str], namespace: Namespace = None):
-        if namespace is None:
-            namespace = default_namespace
+    def __new__(cls, id_or_url: Union[UUID, str]):
         _id = get_id(id_or_url)
         if (cls, _id) in namespace:
             return namespace[(cls, _id)]
         return super().__new__(cls)
 
-    def __init__(self, id_or_url: Union[UUID, str], namespace: Namespace = None):
+    def __init__(self, id_or_url: Union[UUID, str]):
         if hasattr(self, '_initialized'):
             return
         self._initialized = True
 
         self.id: Final[UUID] = get_id(id_or_url)
-        if namespace is None:
-            namespace = default_namespace
-        self.namespace = namespace
-        self.namespace[(type(self), self.id)] = self
+        namespace[(type(self), self.id)] = self
         self.timestamp = 0
 
     def __hash__(self) -> int:
@@ -76,24 +71,6 @@ class BaseBlock(Generic[Response_T]):
     def _send_response(self, response: Response_T) -> None:
         pass
 
-    @final
-    def _get_parent(self, parent: ParentInfo) -> Union[Block, Database, Page, None]:
-        if parent is None:
-            return None
-        match parent.typename:
-            case 'block_id':
-                return Block(parent.id, self.namespace)
-            case 'database_id':
-                return Database(parent.id, self.namespace)
-            case 'page_id':
-                return Page(parent.id, self.namespace)
-            case 'workspace':
-                return None
-
-
-Namespace = dict[tuple[type[BaseBlock], UUID], BaseBlock]
-default_namespace: Final[Namespace] = {}
-
 
 class Block(BaseBlock[BlockResponse]):
     parent: Union[Page, Block, None]
@@ -108,7 +85,7 @@ class Block(BaseBlock[BlockResponse]):
 
     def _send_response(self, response: BlockResponse) -> None:
         # noinspection DuplicatedCode
-        self.parent = self._get_parent(response.parent)
+        self.parent = response.parent.block
         self.created_time = response.created_time
         self.last_edited_time = response.last_edited_time
         self.created_by = response.created_by
@@ -117,10 +94,11 @@ class Block(BaseBlock[BlockResponse]):
         self.archived = response.archived
         self.value = response.value
 
-    def _send_child_block_response_list(self, block_response_list: list[BlockResponse]) -> BlockChildren:
+    @staticmethod
+    def _send_child_block_response_list(block_response_list: list[BlockResponse]) -> BlockChildren:
         block_list = []
         for block_response in block_response_list:
-            block = Block(block_response.id, self.namespace)
+            block = Block(block_response.id)
             block.send_response(block_response)
             block_list.append(block)
         return BlockChildren(block_list)
@@ -171,7 +149,7 @@ class Database(BaseBlock[DatabaseResponse]):
 
     def _send_response(self, response: DatabaseResponse) -> None:
         # noinspection DuplicatedCode
-        self.parent = self._get_parent(response.parent)
+        self.parent = response.parent.block
         self.created_time = response.created_time
         self.last_edited_time = response.last_edited_time
         self.icon = response.icon
@@ -182,30 +160,33 @@ class Database(BaseBlock[DatabaseResponse]):
         self.archived = response.archived
         self.is_inline = response.is_inline
 
-    def _send_child_page_response_list(self, page_response_list: list[PageResponse]) -> PageChildren:
+    @staticmethod
+    def _send_child_page_response_list(page_response_list: list[PageResponse]) -> PageChildren:
         page_list = []
         for page_response in page_response_list:
-            page = Page(page_response.id, self.namespace)
+            page = Page(page_response.id)
             page.send_response(page_response)
             page_list.append(page)
         return PageChildren(page_list)
 
     def retrieve(self) -> Self:
+        if Settings.print_body and hasattr(self, 'title') and hasattr(self, 'url'):
+            print('retrieve', self.title.plain_text, self.url)
         response = RetrieveDatabase(token, self.id).execute()
         self.send_response(response)
         return self
 
     # noinspection PyShadowingBuiltins
     def query(self, filter: Optional[Filter] = None, sort: Optional[list[Sort]] = None,
-              page_size: int = -1) -> Children[Page]:
-        if Settings.print_body:
+              page_size: Optional[int] = None) -> Children[Page]:
+        if Settings.print_body and hasattr(self, 'title') and hasattr(self, 'url'):
             print('query', self.title.plain_text, self.url)
         request = QueryDatabase(token, self.id, filter, sort, page_size)
         page_response_list = request.execute()
         return self._send_child_page_response_list(page_response_list)
 
     def update(self, title: RichText, properties: DatabaseProperties) -> Self:
-        if Settings.print_body:
+        if Settings.print_body and hasattr(self, 'title') and hasattr(self, 'url'):
             print('update', self.title.plain_text, self.url)
         response = UpdateDatabase(token, self.id, title, properties).execute()
         self.send_response(response)
@@ -214,9 +195,9 @@ class Database(BaseBlock[DatabaseResponse]):
     def create_child_page(self, properties: Optional[PageProperties] = None,
                           children: Optional[list[BlockValue]] = None,
                           icon: Optional[Icon] = None, cover: Optional[File] = None) -> Page:
-        if Settings.print_body:
+        if Settings.print_body and hasattr(self, 'title') and hasattr(self, 'url'):
             print('create_child_page', self.title.plain_text, self.url)
-        response_page = CreatePage(token, ParentInfo('database_id', self.id),
+        response_page = CreatePage(token, PartialParent('database_id', self.id),
                                    properties, children, icon, cover).execute()
         page = Page(response_page.id)
         page.send_response(response_page)
@@ -237,6 +218,7 @@ class Page(BaseBlock[PageResponse]):
 
     def _send_response(self, response: PageResponse) -> None:
         # noinspection DuplicatedCode
+        self.parent = response.parent.block
         self.created_time = response.created_time
         self.last_edited_time = response.last_edited_time
         self.created_by = response.created_by
@@ -248,7 +230,7 @@ class Page(BaseBlock[PageResponse]):
         self.properties = response.properties
 
     def as_block(self) -> Block:
-        block = Block(self.id, self.namespace)
+        block = Block(self.id)
         if self.timestamp > block.timestamp:
             block.parent = self.parent
             block.created_time = self.created_time
@@ -262,22 +244,15 @@ class Page(BaseBlock[PageResponse]):
             block.timestamp = self.timestamp
         return block
 
-    def update(self, properties: Optional[PageProperties] = None, icon: Optional[Icon] = None,
-               cover: Optional[ExternalFile] = None, archived: Optional[bool] = None) -> Self:
-        if Settings.print_body:
-            print('update', self.properties.title.plain_text, self.url)
-        response = UpdatePage(token, self.id, properties, icon, cover, archived).execute()
-        self.send_response(response)
-        return self
-
     def retrieve(self) -> Self:
+        if Settings.print_body and hasattr(self, 'properties') and hasattr(self, 'url'):
+            print('retrieve', self.properties.title.plain_text, self.url)
         response = RetrievePage(token, self.id).execute()
         self.send_response(response)
         return self
 
-    def retrieve_property_item(
-            self, property_id: str | Property[DatabasePropertyValue_T, PagePropertyValue_T, FilterBuilder_T],
-            page_size: int = -1) -> PagePropertyValue_T:
+    def retrieve_property_item(self, property_id: str | Property[Any, PagePropertyValue_T, Any],
+                               page_size: Optional[int] = None) -> PagePropertyValue_T:
         if isinstance(property_id, Property):
             property_id = property_id.id
         if property_id is None:
@@ -285,12 +260,20 @@ class Page(BaseBlock[PageResponse]):
         page_property = RetrievePagePropertyItem(token, self.id, property_id, page_size).execute()
         return page_property
 
+    def update(self, properties: Optional[PageProperties] = None, icon: Optional[Icon] = None,
+               cover: Optional[ExternalFile] = None, archived: Optional[bool] = None) -> Self:
+        if Settings.print_body and hasattr(self, 'properties') and hasattr(self, 'url'):
+            print('update', self.properties.title.plain_text, self.url)
+        response = UpdatePage(token, self.id, properties, icon, cover, archived).execute()
+        self.send_response(response)
+        return self
+
     def create_child_page(self, properties: Optional[PageProperties] = None,
                           children: Optional[list[BlockValue]] = None,
                           icon: Optional[Icon] = None, cover: Optional[File] = None) -> Page:
         if Settings.print_body:
             print('create_child_page', self.properties.title.plain_text, self.url)
-        page_response = CreatePage(token, ParentInfo('page_id', self.id),
+        page_response = CreatePage(token, PartialParent('page_id', self.id),
                                    properties, children, icon, cover).execute()
         page = Page(page_response.id)
         page.send_response(page_response)

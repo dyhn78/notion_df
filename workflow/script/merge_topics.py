@@ -1,8 +1,8 @@
 from uuid import UUID
 
-from notion_df.entity import Namespace, Database
+from notion_df.entity import Database
 from notion_df.object.filter import and_filter
-from notion_df.property import DualRelationPropertyKey, PageProperties
+from notion_df.object.property import DualRelationPropertyKey, PageProperties
 from notion_df.variable import Settings
 from workflow.constant.block_enum import DatabaseEnum
 
@@ -11,7 +11,6 @@ old_props_1 = [DualRelationPropertyKey(name) for name in ['⚫️주목', '⚫�
 new_prop_1 = DualRelationPropertyKey('🟣관계')
 old_prop_2 = DualRelationPropertyKey('⚫️측면')
 new_prop_2 = DualRelationPropertyKey('🟣공통')
-namespace = Namespace(print_body=False)
 topic_db = Database(DatabaseEnum.topic_db.id)
 
 

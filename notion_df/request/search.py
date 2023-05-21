@@ -13,7 +13,7 @@ class SearchByTitle(PaginatedRequest[Union[PageResponse, DatabaseResponse]]):
     query: str
     filter: Literal['page', 'database', None] = None
     sort: TimestampSort = TimestampSort('last_edited_time', 'descending')
-    page_size: int = -1
+    page_size: int = None
 
     def get_settings(self) -> RequestSettings:
         return RequestSettings(Version.v20220628, Method.POST,

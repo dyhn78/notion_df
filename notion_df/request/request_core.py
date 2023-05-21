@@ -86,7 +86,7 @@ class SingleRequest(BaseRequest[Response_T], metaclass=ABCMeta):
 
 class PaginatedRequest(BaseRequest[list[ResponseElement_T]], metaclass=ABCMeta):
     """return_type must be ResponseElement_T (not Response_T)"""
-    page_size: int
+    page_size: int = None
 
     @final
     def request_once(self, page_size: int = MAX_PAGE_SIZE, start_cursor: Optional[str] = None) -> dict[str, Any]:
@@ -103,9 +103,7 @@ class PaginatedRequest(BaseRequest[list[ResponseElement_T]], metaclass=ABCMeta):
         return response.json()
 
     def execute(self) -> list[ResponseElement_T]:
-        page_size_total = self.page_size
-        if page_size_total == -1:
-            page_size_total = float('inf')
+        page_size_total = self.page_size if self.page_size is not None else float('inf')
         page_size_retrieved = 0
 
         start_cursor = None

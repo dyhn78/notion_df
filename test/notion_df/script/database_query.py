@@ -3,7 +3,7 @@ from pprint import pprint
 
 from notion_df.entity import Namespace, Database
 from notion_df.object.common import DateRange
-from notion_df.property import DateProperty, URLProperty
+from notion_df.object.property import DateProperty, URLProperty
 
 if __name__ == '__main__':
     namespace = Namespace()
