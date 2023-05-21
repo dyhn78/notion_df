@@ -15,11 +15,11 @@ from workflow.util.action import Action
 
 korean_weekday = '월화수목금토일'
 record_datetime_auto = DateFormulaPropertyKey(EmojiCode.TIMER + '일시')
-date_to_week = RelationProperty(DatabaseEnum.weeks.prefix_title)
+date_to_week = RelationProperty(DatabaseEnum.week_db.prefix_title)
 date_manual_value = DateProperty(EmojiCode.CALENDAR + '날짜')
-event_to_date = RelationProperty(DatabaseEnum.dates.prefix_title)
-reading_to_date = RelationProperty(DatabaseEnum.dates.prefix + '시작')
-reading_to_event = RelationProperty(DatabaseEnum.events.prefix_title)
+event_to_date = RelationProperty(DatabaseEnum.date_db.prefix_title)
+reading_to_date = RelationProperty(DatabaseEnum.date_db.prefix + '시작')
+reading_to_event = RelationProperty(DatabaseEnum.event_db.prefix_title)
 reading_match_date_by_created_time = CheckboxFormulaProperty(EmojiCode.BLACK_NOTEBOOK + '시작일<-생성시간')
 
 
@@ -47,7 +47,7 @@ class MatchDateByCreatedTime(MatchAction):
     def __init__(self, workspace: MatcherWorkspace, records: DatabaseEnum, record_to_date: str):
         super().__init__(workspace)
         self.records = Database(records.id)
-        self.record_to_date = RelationProperty(f'{DatabaseEnum.dates.prefix}{record_to_date}')
+        self.record_to_date = RelationProperty(f'{DatabaseEnum.date_db.prefix}{record_to_date}')
 
     def execute(self):
         record_list = self.records.query(self.record_to_date.filter.is_empty())
@@ -72,8 +72,8 @@ class MatchDateByCreatedTime(MatchAction):
 class MatchReadingsStartDate(MatchAction):
     def __init__(self, workspace: MatcherWorkspace):
         super().__init__(workspace)
-        self.readings = Database(DatabaseEnum.readings.id)
-        self.events = Database(DatabaseEnum.events.id)
+        self.readings = Database(DatabaseEnum.reading_db.id)
+        self.events = Database(DatabaseEnum.event_db.id)
 
     def execute(self):
         event_list = self.readings.query(
@@ -123,8 +123,8 @@ class MatchWeekByDate(MatchAction):
                  record_to_week: str, record_to_date: str):
         super().__init__(workspace)
         self.records = Database(records.id)
-        self.record_to_week = RelationProperty(f'{DatabaseEnum.weeks.prefix}{record_to_week}')
-        self.record_to_date = RelationProperty(f'{DatabaseEnum.dates.prefix}{record_to_date}')
+        self.record_to_week = RelationProperty(f'{DatabaseEnum.week_db.prefix}{record_to_week}')
+        self.record_to_date = RelationProperty(f'{DatabaseEnum.date_db.prefix}{record_to_date}')
 
     def execute(self):
         record_list = self.records.query(
@@ -151,7 +151,7 @@ class MatchWeekByDate(MatchAction):
 class MatchWeekByDateValue(MatchAction):
     def __init__(self, workspace: MatcherWorkspace):
         super().__init__(workspace)
-        self.dates = Database(DatabaseEnum.dates.id)
+        self.dates = Database(DatabaseEnum.date_db.id)
 
     def execute(self):
         date_list = self.dates.query(date_to_week.filter.is_empty())
@@ -187,7 +187,7 @@ class DatabaseIndex(metaclass=ABCMeta):
 
 class DateIndex(DatabaseIndex):
     def __init__(self, namespace: Namespace):
-        super().__init__(namespace, DatabaseEnum.dates, f'{EmojiCode.GREEN_BOOK}제목')
+        super().__init__(namespace, DatabaseEnum.date_db, f'{EmojiCode.GREEN_BOOK}제목')
 
     def get_by_date_value(self, date_value: dt.date) -> Page:
         day_name = korean_weekday[date_value.weekday()] + '요일'
@@ -197,7 +197,7 @@ class DateIndex(DatabaseIndex):
 
 class WeekIndex(DatabaseIndex):
     def __init__(self, namespace: Namespace):
-        super().__init__(namespace, DatabaseEnum.weeks, EmojiCode.GREEN_BOOK + '제목')
+        super().__init__(namespace, DatabaseEnum.week_db, EmojiCode.GREEN_BOOK + '제목')
 
     def get_by_date_value(self, date_value: dt.date) -> Page:
         title_plain_text = self.first_day_of_week(date_value).strftime("%y/%U")

@@ -25,6 +25,7 @@ from notion_df.request.page import CreatePage, UpdatePage, RetrievePage, Retriev
 from notion_df.request.request_core import Response_T
 from notion_df.util.exception import NotionDfTypeError, NotionDfValueError
 from notion_df.util.misc import get_id, UUID, repr_object
+from notion_df.variable import Settings
 
 token: Final[str] = os.getenv('NOTION_TOKEN')  # TODO: support multiple token
 
@@ -197,11 +198,15 @@ class Database(BaseBlock[DatabaseResponse]):
     # noinspection PyShadowingBuiltins
     def query(self, filter: Optional[Filter] = None, sort: Optional[list[Sort]] = None,
               page_size: int = -1) -> Children[Page]:
+        if Settings.print_body:
+            print('query', self.title.plain_text, self.url)
         request = QueryDatabase(token, self.id, filter, sort, page_size)
         page_response_list = request.execute()
         return self._send_child_page_response_list(page_response_list)
 
     def update(self, title: RichText, properties: DatabaseProperties) -> Self:
+        if Settings.print_body:
+            print('update', self.title.plain_text, self.url)
         response = UpdateDatabase(token, self.id, title, properties).execute()
         self.send_response(response)
         return self
@@ -209,6 +214,8 @@ class Database(BaseBlock[DatabaseResponse]):
     def create_child_page(self, properties: Optional[PageProperties] = None,
                           children: Optional[list[BlockValue]] = None,
                           icon: Optional[Icon] = None, cover: Optional[File] = None) -> Page:
+        if Settings.print_body:
+            print('create_child_page', self.title.plain_text, self.url)
         response_page = CreatePage(token, ParentInfo('database_id', self.id),
                                    properties, children, icon, cover).execute()
         page = Page(response_page.id)
@@ -257,6 +264,8 @@ class Page(BaseBlock[PageResponse]):
 
     def update(self, properties: Optional[PageProperties] = None, icon: Optional[Icon] = None,
                cover: Optional[ExternalFile] = None, archived: Optional[bool] = None) -> Self:
+        if Settings.print_body:
+            print('update', self.properties.title.plain_text, self.url)
         response = UpdatePage(token, self.id, properties, icon, cover, archived).execute()
         self.send_response(response)
         return self
@@ -279,11 +288,20 @@ class Page(BaseBlock[PageResponse]):
     def create_child_page(self, properties: Optional[PageProperties] = None,
                           children: Optional[list[BlockValue]] = None,
                           icon: Optional[Icon] = None, cover: Optional[File] = None) -> Page:
+        if Settings.print_body:
+            print('create_child_page', self.properties.title.plain_text, self.url)
         page_response = CreatePage(token, ParentInfo('page_id', self.id),
                                    properties, children, icon, cover).execute()
         page = Page(page_response.id)
         page.send_response(page_response)
         return page
+
+    def create_child_database(self, title: RichText, *,
+                              properties: Optional[DatabaseProperties] = None,
+                              icon: Optional[Icon] = None, cover: Optional[File] = None) -> Database:
+        if Settings.print_body:
+            print('create_child_database', self.properties.title.plain_text, self.url)
+        return self.as_block().create_child_database(title, properties=properties, icon=icon, cover=cover)
 
 
 Child_T = TypeVar('Child_T')

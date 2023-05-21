@@ -10,10 +10,10 @@ from typing import TypeVar, Generic, ClassVar, Any, final, Optional
 import requests
 from requests import JSONDecodeError
 
-import notion_df.variable
 from notion_df.util.collection import StrEnum, DictFilter
 from notion_df.util.misc import check_classvars_are_defined
 from notion_df.util.serialization import DualSerializable, deserialize, serialize, Deserializable
+from notion_df.variable import Settings
 
 MAX_PAGE_SIZE = 100
 
@@ -100,13 +100,6 @@ class PaginatedRequest(BaseRequest[list[ResponseElement_T]], metaclass=ABCMeta):
             })
         settings = self.get_settings()
         response = request(method=settings.method.value, url=settings.url, headers=self.headers, json=serialize(body))
-        try:
-            response.raise_for_status()
-        except requests.exceptions.HTTPError:
-            try:
-                raise requests.exceptions.HTTPError(response.json())
-            except JSONDecodeError:
-                raise requests.exceptions.HTTPError(response.text)
         return response.json()
 
     def execute(self) -> list[ResponseElement_T]:
@@ -138,14 +131,17 @@ class PaginatedRequest(BaseRequest[list[ResponseElement_T]], metaclass=ABCMeta):
         return element_list
 
 
-def request(*, method: str, url: str, headers: dict[str, Any], json: Any):
-    if notion_df.variable.settings_print_body:
+def request(*, method: str, url: str, headers: dict[str, Any], json: Any) -> requests.Response:
+    if Settings.print_body:
         pprint(dict(method=method, url=url, headers=headers, json=json), width=160)
     response = requests.request(method, url, headers=headers, json=json)
     try:
         response.raise_for_status()
     except requests.exceptions.HTTPError:
-        raise requests.exceptions.HTTPError(response.json())
+        try:
+            raise requests.exceptions.HTTPError(response.json())
+        except JSONDecodeError:
+            raise requests.exceptions.HTTPError(response.text)
     return response
 
 

@@ -6,7 +6,7 @@ from uuid import UUID
 from notion_df.entity import Page
 from notion_df.object.block import CodeBlockValue, ParagraphBlockValue
 from notion_df.object.rich_text import RichText, TextSpan, UserMention
-from notion_df.variable import my_tz, settings_print_body
+from notion_df.variable import my_tz, Settings
 from workflow.action.prop_matcher import MatcherWorkspace, MatchWeekByDateValue, MatchDateByCreatedTime, \
     MatchWeekByDate, MatchReadingsStartDate
 from workflow.action.reading_media_scraper import MediaScraper
@@ -24,29 +24,29 @@ class Workflow:
         self.actions: list[Action] = [
             MatchWeekByDateValue(workspace),
 
-            MatchDateByCreatedTime(workspace, DatabaseEnum.events, '일간'),
-            MatchDateByCreatedTime(workspace, DatabaseEnum.events, '생성'),
-            MatchWeekByDate(workspace, DatabaseEnum.events, '주간', '일간'),
+            MatchDateByCreatedTime(workspace, DatabaseEnum.event_db, '일간'),
+            MatchDateByCreatedTime(workspace, DatabaseEnum.event_db, '생성'),
+            MatchWeekByDate(workspace, DatabaseEnum.event_db, '주간', '일간'),
 
-            MatchDateByCreatedTime(workspace, DatabaseEnum.issues, '생성'),
-            MatchWeekByDate(workspace, DatabaseEnum.issues, '주간', '일간'),
+            MatchDateByCreatedTime(workspace, DatabaseEnum.issue_db, '생성'),
+            MatchWeekByDate(workspace, DatabaseEnum.issue_db, '주간', '일간'),
 
-            MatchDateByCreatedTime(workspace, DatabaseEnum.journals, '일간'),
-            MatchDateByCreatedTime(workspace, DatabaseEnum.journals, '생성'),
-            MatchWeekByDate(workspace, DatabaseEnum.journals, '주간', '일간'),
+            MatchDateByCreatedTime(workspace, DatabaseEnum.journal_db, '일간'),
+            MatchDateByCreatedTime(workspace, DatabaseEnum.journal_db, '생성'),
+            MatchWeekByDate(workspace, DatabaseEnum.journal_db, '주간', '일간'),
 
-            MatchDateByCreatedTime(workspace, DatabaseEnum.notes, '시작'),
-            MatchWeekByDate(workspace, DatabaseEnum.notes, '시작', '시작'),
+            MatchDateByCreatedTime(workspace, DatabaseEnum.note_db, '시작'),
+            MatchWeekByDate(workspace, DatabaseEnum.note_db, '시작', '시작'),
 
-            MatchDateByCreatedTime(workspace, DatabaseEnum.topics, '시작'),
-            MatchWeekByDate(workspace, DatabaseEnum.topics, '시작', '시작'),
+            MatchDateByCreatedTime(workspace, DatabaseEnum.topic_db, '시작'),
+            MatchWeekByDate(workspace, DatabaseEnum.topic_db, '시작', '시작'),
 
             MatchReadingsStartDate(workspace),
-            MatchDateByCreatedTime(workspace, DatabaseEnum.readings, '생성'),
-            MatchWeekByDate(workspace, DatabaseEnum.readings, '시작', '시작'),
+            MatchDateByCreatedTime(workspace, DatabaseEnum.reading_db, '생성'),
+            MatchWeekByDate(workspace, DatabaseEnum.reading_db, '시작', '시작'),
 
-            MatchDateByCreatedTime(workspace, DatabaseEnum.sections, '시작'),
-            MatchWeekByDate(workspace, DatabaseEnum.sections, '시작', '시작'),
+            MatchDateByCreatedTime(workspace, DatabaseEnum.section_db, '시작'),
+            MatchWeekByDate(workspace, DatabaseEnum.section_db, '시작', '시작'),
 
             # TODO 배포후: <마디 - 🟢시작, 💚시작> 제거
             # TODO 배포후: <읽기 -  📕유형 <- 전개/꼭지> 추가 (스펙 논의 필요)
@@ -56,9 +56,10 @@ class Workflow:
 
     def execute(self):
         if self.print_body:
-            settings_print_body.enabled = True
+            Settings.print_body.enabled = True
         for action in self.actions:
             action.execute()
+        Settings.print_body.enabled = False
 
     # noinspection PyBroadException
     def run(self):
