@@ -121,7 +121,7 @@ class Workflow:
                     continue
                 last_edited_time_lower_bound = min(
                     datetime.strptime(block_created_time_str.split(' - ')[1], log_date_format).astimezone(my_tz),
-                    get_last_edited_time_lower_bound(timedelta(minutes=60)))
+                    get_last_edited_time_lower_bound(timedelta(minutes=10)))
                                                    
                 self._run(lambda: Action.execute_recent(self.actions, last_edited_time_lower_bound))
                 return
