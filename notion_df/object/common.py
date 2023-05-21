@@ -106,6 +106,16 @@ class SelectOption(DualSerializable):
     def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
         return cls._deserialize_from_dict(serialized)
 
+    def __eq__(self, other: SelectOption | str) -> bool:
+        if isinstance(other, SelectOption):
+            if self.id != other.id and self.id is not None and other.id is not None:
+                return False
+            if self.color != other.color and self.color is not None and other.color is not None:
+                return False
+            return self.name == other.name
+        if isinstance(other, str):
+            return self.name == other or self.id == other
+
 
 class SelectOptions(list[SelectOption]):
     def __init__(self, select_options: list[SelectOption]):
@@ -128,3 +138,8 @@ class StatusGroups(DualSerializable):
     @classmethod
     def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
         return cls._deserialize_from_dict(serialized)
+
+    def __eq__(self, other: StatusGroups) -> bool:
+        if self.id != other.id and self.id is not None and other.id is not None:
+            return False
+        return self.name == other.name and self.option_ids == other.option_ids

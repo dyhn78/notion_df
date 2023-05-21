@@ -1,4 +1,5 @@
 from enum import Enum
+from functools import cached_property
 
 from notion_df.entity import Database
 from notion_df.util.misc import get_id, get_url
@@ -17,7 +18,7 @@ class DatabaseEnum(Enum):
     def prefix_title(self):
         return self.prefix + self.title
 
-    @property
+    @cached_property
     def database(self):
         return Database(self.id)
 

@@ -1,6 +1,6 @@
-from typing import Optional, Callable, Any
+from typing import Optional, Callable, Any, Iterable
 
-from notion_df.entity import Page, Database
+from notion_df.entity import Page, Database, Children
 from notion_df.object.block import ChildPageBlockValue
 from notion_df.object.common import SelectOption
 from notion_df.object.filter import CompoundFilter
@@ -44,12 +44,24 @@ class MediaScraper(Action):
         self.driver_factory = WebDriverFactory(create_window=create_window)
         self.driver = self.driver_factory()
 
-    def execute(self):
-        reading_list = self.readings.query(is_book.filter.equals(True) & CompoundFilter('or', [
+    def query_all(self) -> Children[Page]:
+        return self.readings.query(is_book.filter.equals(True) & CompoundFilter('or', [
             edit_status.filter.equals(option) for option in
             [EditStatusValue.default, EditStatusValue.metadata_overwrite, EditStatusValue.location_overwrite, None]
         ]))
-        for reading in reading_list:
+
+    def pick(self, pages: list[Page]):
+        for page in pages:
+            if page.parent != self.readings:
+                continue
+            if not (page.properties[edit_status] in
+                    [EditStatusValue.default, EditStatusValue.metadata_overwrite, EditStatusValue.location_overwrite]
+                    or page.properties[edit_status] is None):
+                continue
+            yield page
+
+    def process(self, pages: Iterable[Page]):
+        for reading in pages:
             ReadingMediaScraperUnit(self, reading).execute()
 
 

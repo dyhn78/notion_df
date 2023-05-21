@@ -5,7 +5,7 @@ from abc import abstractmethod, ABCMeta
 from dataclasses import dataclass, field
 from datetime import datetime
 from pprint import pprint
-from typing import TypeVar, Generic, ClassVar, Any, final, Optional
+from typing import TypeVar, Generic, ClassVar, Any, final, Optional, Iterator
 
 import requests
 from requests import JSONDecodeError
@@ -13,7 +13,7 @@ from requests import JSONDecodeError
 from notion_df.util.collection import StrEnum, DictFilter
 from notion_df.util.misc import check_classvars_are_defined
 from notion_df.util.serialization import DualSerializable, deserialize, serialize, Deserializable
-from notion_df.variable import Settings
+from notion_df.variable import Settings, print_width
 
 MAX_PAGE_SIZE = 100
 
@@ -89,7 +89,7 @@ class PaginatedRequest(BaseRequest[list[ResponseElement_T]], metaclass=ABCMeta):
     page_size: int = None
 
     @final
-    def request_once(self, page_size: int = MAX_PAGE_SIZE, start_cursor: Optional[str] = None) -> dict[str, Any]:
+    def execute_once(self, page_size: int = MAX_PAGE_SIZE, start_cursor: Optional[str] = None) -> dict[str, Any]:
         if page_size == MAX_PAGE_SIZE and start_cursor is None:
             body = self.get_body()
         else:
@@ -102,23 +102,32 @@ class PaginatedRequest(BaseRequest[list[ResponseElement_T]], metaclass=ABCMeta):
         response = request(method=settings.method.value, url=settings.url, headers=self.headers, json=serialize(body))
         return response.json()
 
-    def execute(self) -> list[ResponseElement_T]:
+    def execute_iter(self) -> Iterator[ResponseElement_T]:
+        # TODO: allow entity to use execute_iter() instead of execute()
         page_size_total = self.page_size if self.page_size is not None else float('inf')
         page_size_retrieved = 0
 
         start_cursor = None
-        data_list = []
         while page_size_retrieved < page_size_total:
             page_size = min(MAX_PAGE_SIZE, page_size_total - page_size_retrieved)
             page_size_retrieved += page_size
 
-            data = self.request_once(page_size, start_cursor)
-            data_list.append(data)
+            data = self.execute_once(page_size, start_cursor)
+            yield from self.parse_response_data(data)
             if not data['has_more']:
-                break
+                return
             start_cursor = data['next_cursor']
+        return
 
-        return self.parse_response_data_list(data_list)
+    def execute(self) -> list[ResponseElement_T]:
+        return list(self.execute_iter())
+
+    @classmethod
+    def parse_response_data(cls, data: dict[str, Any]) -> list[ResponseElement_T]:
+        element_list = []
+        for data_element in data['results']:
+            element_list.append(deserialize(cls.return_type, data_element))
+        return element_list
 
     @classmethod
     def parse_response_data_list(cls, data_list: list[dict[str, Any]]) -> list[ResponseElement_T]:
@@ -130,8 +139,8 @@ class PaginatedRequest(BaseRequest[list[ResponseElement_T]], metaclass=ABCMeta):
 
 
 def request(*, method: str, url: str, headers: dict[str, Any], json: Any) -> requests.Response:
-    if Settings.print_body:
-        pprint(dict(method=method, url=url, headers=headers, json=json), width=160)
+    if Settings.print:
+        pprint(dict(method=method, url=url, headers=headers, json=json), width=print_width)
     response = requests.request(method, url, headers=headers, json=json)
     try:
         response.raise_for_status()

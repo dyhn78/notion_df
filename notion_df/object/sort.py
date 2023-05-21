@@ -23,3 +23,9 @@ class PropertySort(Sort):
 class TimestampSort(Sort):
     timestamp_type: TimestampName
     direction: Direction
+
+    def serialize(self) -> dict[str, Any]:
+        return {
+            'timestamp': self.timestamp_type,
+            'direction': self.direction,
+        }

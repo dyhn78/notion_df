@@ -235,11 +235,15 @@ class PageProperties(Properties[Property[Any, PagePropertyValue_T, Any], PagePro
 
     @property
     def title(self) -> TitleProperty.page_value:
-        # TODO:
+        # TODO
+        if self._title is None:
+            raise NotionDfKeyError('title key is missing')
         return self[self._title]
 
     @title.setter
     def title(self, value: TitleProperty.page_value) -> None:
+        if self._title is None:
+            raise NotionDfKeyError('title key is missing')
         self[self._title] = value
 
 

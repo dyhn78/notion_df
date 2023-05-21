@@ -21,7 +21,7 @@ def main():
         journal_new_properties[journal_to_stream] = journal_to_stream.page_value(
             set(journal.properties[journal_to_stream]) | set(journal.properties[journal_to_stream_old])
         )
-        with Settings.print_body:
+        with Settings.print:
             journal.update(journal_new_properties)
 
 

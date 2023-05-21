@@ -11,7 +11,7 @@ from notion_df.util.collection import DictFilter
 class SearchByTitle(PaginatedRequest[Union[PageResponse, DatabaseResponse]]):
     return_type = Union[PageResponse, DatabaseResponse]
     query: str
-    filter: Literal['page', 'database', None] = None
+    entity: Literal['page', 'database', None] = None
     sort: TimestampSort = TimestampSort('last_edited_time', 'descending')
     page_size: int = None
 
@@ -22,6 +22,9 @@ class SearchByTitle(PaginatedRequest[Union[PageResponse, DatabaseResponse]]):
     def get_body(self) -> Any:
         return DictFilter.not_none({
             "query": self.query,
-            "filter": self.filter,
+            "filter": ({
+                           "value": self.entity,
+                           "property": "object"
+                       } if self.entity else None),
             "sort": self.sort
         })

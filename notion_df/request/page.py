@@ -91,7 +91,7 @@ class RetrievePagePropertyItem(BaseRequest[Any]):
     def get_body(self) -> None:
         return
 
-    request_once = PaginatedRequest.request_once
+    execute_once = PaginatedRequest.execute_once
 
     def execute(self) -> Any:
         # TODO: deduplicate with PaginatedRequest.execute() if possible.
@@ -99,7 +99,7 @@ class RetrievePagePropertyItem(BaseRequest[Any]):
         page_size = min(MAX_PAGE_SIZE, page_size_total)
         page_size_retrieved = page_size
 
-        data = self.request_once(page_size, None)
+        data = self.execute_once(page_size, None)
         if (prop_serialized := data)['object'] == 'property_item':
             # noinspection PyProtectedMember
             return Property._deserialize_page(prop_serialized)
@@ -110,7 +110,7 @@ class RetrievePagePropertyItem(BaseRequest[Any]):
             page_size = min(MAX_PAGE_SIZE, page_size_total - page_size_retrieved)
             page_size_retrieved += page_size
 
-            data = self.request_once(page_size, start_cursor)
+            data = self.execute_once(page_size, start_cursor)
             data_list.append(data)
 
         typename = data_list[0]['property_item']['type']

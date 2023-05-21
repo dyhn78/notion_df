@@ -33,7 +33,7 @@ class PartialParent(DualSerializable):
         return cls(typename, parent_id)
 
     @property
-    def block(self) -> Block | Database | Page | None:
+    def entity(self) -> Block | Database | Page | None:
         from notion_df.entity import Block, Database, Page
 
         match self.typename:

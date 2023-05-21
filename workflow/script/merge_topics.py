@@ -33,7 +33,7 @@ def main():
         topic_new_properties[new_prop_2] = topic.properties[old_prop_2]
         topic_new_properties[old_prop_2] = new_prop_1.page_value()
 
-        with Settings.print_body:
+        with Settings.print:
             topic.update(topic_new_properties)
 
 

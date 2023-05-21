@@ -33,7 +33,7 @@ def repr_object(cls_or_instance, attrs: list[str] | dict[str, Any]) -> str:
     else:
         raise NotionDfValueError(vars={'self': cls_or_instance, 'attrs': attrs})
 
-    return f"{type(cls_or_instance).__name__}({','.join(attr_items)})"
+    return f"{type(cls_or_instance).__name__}({', '.join(attr_items)})"
 
 
 def repr_object_depr(obj: Any, params: dict[Hashable, Any] = None, **kwargs: Any) -> str:

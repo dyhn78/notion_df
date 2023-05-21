@@ -5,7 +5,7 @@ from abc import abstractmethod
 from collections.abc import Sequence
 from datetime import datetime
 from functools import cache
-from typing import Optional, TypeVar, Union, Generic, final, Final, Any
+from typing import Optional, TypeVar, Union, Generic, final, Final, Any, Literal, overload, Hashable, Iterator
 
 from typing_extensions import Self
 
@@ -16,13 +16,14 @@ from notion_df.object.filter import Filter
 from notion_df.object.parent import PartialParent
 from notion_df.object.property import Property, PageProperties, DatabaseProperties, PagePropertyValue_T
 from notion_df.object.rich_text import RichText
-from notion_df.object.sort import Sort
+from notion_df.object.sort import Sort, TimestampSort
 from notion_df.object.user import PartialUser
 from notion_df.request.block import AppendBlockChildren, RetrieveBlock, RetrieveBlockChildren, UpdateBlock, DeleteBlock
 from notion_df.request.database import CreateDatabase, UpdateDatabase, RetrieveDatabase, QueryDatabase
 from notion_df.request.page import CreatePage, UpdatePage, RetrievePage, RetrievePagePropertyItem
 from notion_df.request.request_core import Response_T
-from notion_df.util.exception import NotionDfTypeError, NotionDfValueError
+from notion_df.request.search import SearchByTitle
+from notion_df.util.exception import NotionDfTypeError, NotionDfValueError, NotionDfKeyError
 from notion_df.util.misc import get_id, UUID, repr_object
 from notion_df.variable import Settings
 
@@ -30,7 +31,17 @@ token: Final[str] = os.getenv('NOTION_TOKEN')  # TODO: support multiple token
 namespace: Final[dict[tuple[type[BaseBlock], UUID], BaseBlock]] = {}
 
 
-class BaseBlock(Generic[Response_T]):
+class Workspace:
+    pass
+
+
+workspace: Final = Workspace()
+
+
+class BaseBlock(Generic[Response_T], Hashable):
+    """The base block class.
+    There is only one block instance with given subclass and id.
+    You can compare two blocks directly `block_1 == block_2`, not having to compare id `block_1.id == block_2.id`"""
     id: UUID
     timestamp: float
     parent: Union[Block, Database, Page, None]
@@ -56,16 +67,24 @@ class BaseBlock(Generic[Response_T]):
     def __eq__(self, other: BaseBlock) -> bool:
         return type(self) == type(other) and self.id == other.id
 
+    @final
     @cache
     def __repr__(self) -> str:
-        return repr_object(self, {'id': str(self.id), 'parent': repr_object(self.parent, {'id': str(self.id)})})
+        return repr_object(self, {
+            **self._attrs_to_repr_parent(),
+            'parent': repr_object(self.parent, self._attrs_to_repr_parent()) if self.parent is not None else None
+        })
+
+    def _attrs_to_repr_parent(self) -> dict[str, Any]:
+        return {
+            'id_or_url': getattr(self, 'url', str(self.id)),
+        }
 
     @final
-    def send_response(self, response: Response_T) -> bool:
+    def send_response(self, response: Response_T) -> Self:
         if response.timestamp > self.timestamp:
             self._send_response(response)
-            return True
-        return False
+        return self
 
     @abstractmethod
     def _send_response(self, response: Response_T) -> None:
@@ -85,7 +104,7 @@ class Block(BaseBlock[BlockResponse]):
 
     def _send_response(self, response: BlockResponse) -> None:
         # noinspection DuplicatedCode
-        self.parent = response.parent.block
+        self.parent = response.parent.entity
         self.created_time = response.created_time
         self.last_edited_time = response.last_edited_time
         self.created_by = response.created_by
@@ -105,8 +124,7 @@ class Block(BaseBlock[BlockResponse]):
 
     def retrieve(self) -> Self:
         response = RetrieveBlock(token, self.id).execute()
-        self.send_response(response)
-        return self
+        return self.send_response(response)
 
     def retrieve_children(self) -> BlockChildren:
         block_response_list = RetrieveBlockChildren(token, self.id).execute()
@@ -114,13 +132,11 @@ class Block(BaseBlock[BlockResponse]):
 
     def update(self, block_type: Optional[BlockValue], archived: Optional[bool]) -> Self:
         response = UpdateBlock(token, self.id, block_type, archived).execute()
-        self.send_response(response)
-        return self
+        return self.send_response(response)
 
     def delete(self) -> Self:
         response = DeleteBlock(token, self.id).execute()
-        self.send_response(response)
-        return self
+        return self.send_response(response)
 
     def append_children(self, child_values: list[BlockValue]) -> BlockChildren:
         block_response_list = AppendBlockChildren(token, self.id, child_values).execute()
@@ -147,9 +163,20 @@ class Database(BaseBlock[DatabaseResponse]):
     archived: bool
     is_inline: bool
 
+    def _attrs_to_repr_parent(self) -> dict[str, Any]:
+        try:
+            title_value = self.title.plain_text
+        except AttributeError:
+            title_value = None
+
+        return {
+            'title': title_value,
+            'id_or_url': getattr(self, 'url', str(self.id)),
+        }
+
     def _send_response(self, response: DatabaseResponse) -> None:
         # noinspection DuplicatedCode
-        self.parent = response.parent.block
+        self.parent = response.parent.entity
         self.created_time = response.created_time
         self.last_edited_time = response.last_edited_time
         self.icon = response.icon
@@ -170,32 +197,30 @@ class Database(BaseBlock[DatabaseResponse]):
         return PageChildren(page_list)
 
     def retrieve(self) -> Self:
-        if Settings.print_body and hasattr(self, 'title') and hasattr(self, 'url'):
+        if Settings.print and hasattr(self, 'title') and hasattr(self, 'url'):
             print('retrieve', self.title.plain_text, self.url)
         response = RetrieveDatabase(token, self.id).execute()
-        self.send_response(response)
-        return self
+        return self.send_response(response)
 
     # noinspection PyShadowingBuiltins
     def query(self, filter: Optional[Filter] = None, sort: Optional[list[Sort]] = None,
               page_size: Optional[int] = None) -> Children[Page]:
-        if Settings.print_body and hasattr(self, 'title') and hasattr(self, 'url'):
+        if Settings.print and hasattr(self, 'title') and hasattr(self, 'url'):
             print('query', self.title.plain_text, self.url)
         request = QueryDatabase(token, self.id, filter, sort, page_size)
         page_response_list = request.execute()
         return self._send_child_page_response_list(page_response_list)
 
     def update(self, title: RichText, properties: DatabaseProperties) -> Self:
-        if Settings.print_body and hasattr(self, 'title') and hasattr(self, 'url'):
+        if Settings.print and hasattr(self, 'title') and hasattr(self, 'url'):
             print('update', self.title.plain_text, self.url)
         response = UpdateDatabase(token, self.id, title, properties).execute()
-        self.send_response(response)
-        return self
+        return self.send_response(response)
 
     def create_child_page(self, properties: Optional[PageProperties] = None,
                           children: Optional[list[BlockValue]] = None,
                           icon: Optional[Icon] = None, cover: Optional[File] = None) -> Page:
-        if Settings.print_body and hasattr(self, 'title') and hasattr(self, 'url'):
+        if Settings.print and hasattr(self, 'title') and hasattr(self, 'url'):
             print('create_child_page', self.title.plain_text, self.url)
         response_page = CreatePage(token, PartialParent('database_id', self.id),
                                    properties, children, icon, cover).execute()
@@ -216,9 +241,19 @@ class Page(BaseBlock[PageResponse]):
     url: str
     properties: PageProperties
 
+    def _attrs_to_repr_parent(self) -> dict[str, Any]:
+        try:
+            title_value = self.properties.title.plain_text
+        except (NotionDfKeyError, AttributeError):
+            title_value = None
+        return {
+            'title': title_value,
+            'id_or_url': getattr(self, 'url', str(self.id)),
+        }
+
     def _send_response(self, response: PageResponse) -> None:
         # noinspection DuplicatedCode
-        self.parent = response.parent.block
+        self.parent = response.parent.entity
         self.created_time = response.created_time
         self.last_edited_time = response.last_edited_time
         self.created_by = response.created_by
@@ -245,11 +280,10 @@ class Page(BaseBlock[PageResponse]):
         return block
 
     def retrieve(self) -> Self:
-        if Settings.print_body and hasattr(self, 'properties') and hasattr(self, 'url'):
+        if Settings.print and hasattr(self, 'properties') and hasattr(self, 'url'):
             print('retrieve', self.properties.title.plain_text, self.url)
         response = RetrievePage(token, self.id).execute()
-        self.send_response(response)
-        return self
+        return self.send_response(response)
 
     def retrieve_property_item(self, property_id: str | Property[Any, PagePropertyValue_T, Any],
                                page_size: Optional[int] = None) -> PagePropertyValue_T:
@@ -262,16 +296,15 @@ class Page(BaseBlock[PageResponse]):
 
     def update(self, properties: Optional[PageProperties] = None, icon: Optional[Icon] = None,
                cover: Optional[ExternalFile] = None, archived: Optional[bool] = None) -> Self:
-        if Settings.print_body and hasattr(self, 'properties') and hasattr(self, 'url'):
+        if Settings.print and hasattr(self, 'properties') and hasattr(self, 'url'):
             print('update', self.properties.title.plain_text, self.url)
         response = UpdatePage(token, self.id, properties, icon, cover, archived).execute()
-        self.send_response(response)
-        return self
+        return self.send_response(response)
 
     def create_child_page(self, properties: Optional[PageProperties] = None,
                           children: Optional[list[BlockValue]] = None,
                           icon: Optional[Icon] = None, cover: Optional[File] = None) -> Page:
-        if Settings.print_body:
+        if Settings.print:
             print('create_child_page', self.properties.title.plain_text, self.url)
         page_response = CreatePage(token, PartialParent('page_id', self.id),
                                    properties, children, icon, cover).execute()
@@ -282,7 +315,7 @@ class Page(BaseBlock[PageResponse]):
     def create_child_database(self, title: RichText, *,
                               properties: Optional[DatabaseProperties] = None,
                               icon: Optional[Icon] = None, cover: Optional[File] = None) -> Database:
-        if Settings.print_body:
+        if Settings.print:
             print('create_child_database', self.properties.title.plain_text, self.url)
         return self.as_block().create_child_database(title, properties=properties, icon=icon, cover=cover)
 
@@ -322,3 +355,38 @@ Namespace_KT = UUID | BaseBlock
 Block_T = TypeVar('Block_T', bound=Block)
 Database_T = TypeVar('Database_T', bound=Database)
 Page_T = TypeVar('Page_T', bound=Page)
+
+
+@overload
+def search_by_title(query: str, entity: Literal['page'],
+                    sort: TimestampSort = TimestampSort('last_edited_time', 'descending'),
+                    page_size: int = None) -> list[Page]:
+    ...
+
+
+@overload
+def search_by_title(query: str, entity: Literal['database'],
+                    sort: TimestampSort = TimestampSort('last_edited_time', 'descending'),
+                    page_size: int = None) -> list[Database]:
+    ...
+
+
+@overload
+def search_by_title(query: str, entity: Literal[None],
+                    sort: TimestampSort = TimestampSort('last_edited_time', 'descending'),
+                    page_size: int = None) -> list[Union[Page, Database]]:
+    ...
+
+
+def search_by_title(query: str, entity: Literal['page', 'database', None] = None,
+                    sort: TimestampSort = TimestampSort('last_edited_time', 'descending'),
+                    page_size: int = None) -> Iterator[Union[Page, Database]]:
+    response_element_iter = SearchByTitle(token, query, entity, sort, page_size).execute_iter()
+    for response_element in response_element_iter:
+        if isinstance(response_element, DatabaseResponse):
+            yield Database(response_element.id).send_response(response_element)
+        elif isinstance(response_element, PageResponse):
+            yield Page(response_element.id).send_response(response_element)
+        else:
+            raise NotionDfValueError('bad response', {'response_element': response_element})
+    return
