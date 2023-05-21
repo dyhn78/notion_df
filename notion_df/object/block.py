@@ -27,7 +27,7 @@ class DatabaseResponse(Response):
     created_time: datetime
     last_edited_time: datetime
     icon: Optional[Icon]
-    cover: Optional[ExternalFile]
+    cover: Optional[File]
     url: str
     title: RichText
     properties: DatabaseProperties
@@ -49,7 +49,7 @@ class PageResponse(Response):
     last_edited_by: PartialUser
     archived: bool
     icon: Optional[Icon]
-    cover: Optional[ExternalFile]
+    cover: Optional[File]
     url: str
     properties: PageProperties
 
