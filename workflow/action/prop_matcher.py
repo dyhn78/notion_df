@@ -50,7 +50,7 @@ class MatchDateByCreatedTime(MatchAction):
 
     def pick(self, records: list[Page]) -> Iterable[Page]:
         for record in records:
-            if record.parent != DatabaseEnum.date_db.database:
+            if record.parent != self.records:
                 continue
             if not record.properties[self.record_to_date]:
                 yield record
@@ -137,7 +137,7 @@ class MatchWeekByRefDate(MatchAction):
     def __init__(self, workspace: MatchActionBase, records: DatabaseEnum,
                  record_to_week: str, record_to_date: str):
         super().__init__(workspace)
-        self.records = Database(records.id)
+        self.records = Database(records.id)  # TODO: records_db
         self.record_to_week = RelationProperty(f'{DatabaseEnum.week_db.prefix}{record_to_week}')
         self.record_to_date = RelationProperty(f'{DatabaseEnum.date_db.prefix}{record_to_date}')
 
@@ -147,7 +147,7 @@ class MatchWeekByRefDate(MatchAction):
 
     def pick(self, records: list[Page]) -> Iterable[Page]:
         for record in records:
-            if record.parent != DatabaseEnum.week_db.database:
+            if record.parent != self.records:
                 continue
             if not record.properties[self.record_to_week] and record.properties[self.record_to_date]:
                 yield record
@@ -175,14 +175,14 @@ class MatchWeekByRefDate(MatchAction):
 class MatchWeekByDateValue(MatchAction):
     def __init__(self, workspace: MatchActionBase):
         super().__init__(workspace)
-        self.dates = Database(DatabaseEnum.date_db.id)
+        self.dates = Database(DatabaseEnum.date_db.id) # TODO: date_db
 
     def query_all(self) -> Children[Page]:
         return self.dates.query(date_to_week.filter.is_empty())
 
     def pick(self, dates: list[Page]) -> Iterable[Page]:
         for date in dates:
-            if date.parent != DatabaseEnum.week_db.database:
+            if date.parent != self.dates:
                 continue
             if not date.properties[date_to_week]:
                 yield date
