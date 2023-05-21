@@ -155,6 +155,7 @@ class MatchWeekByRefDate(MatchAction):
     def process(self, records: Iterable[Page]):
         for record in records:
             week = self.process_page(record)
+            week.retrieve()  # TODO delete, use repr() instead
             print(f'"{record.properties.title.plain_text} ({record.url})"'
                   + (f'-> "{week.properties.title.plain_text}" ({week.url})' if week else ': Skipped'))
 
