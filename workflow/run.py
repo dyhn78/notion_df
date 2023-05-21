@@ -119,9 +119,11 @@ class Workflow:
                 block_created_time_str = block.value.rich_text.plain_text
                 if block_created_time_str.find('success') == -1:
                     continue
-                last_edited_time_lower_bound = min(
-                    datetime.strptime(block_created_time_str.split(' - ')[1], log_date_format).astimezone(my_tz),
-                    get_last_edited_time_lower_bound(timedelta(minutes=10)))
+                # last_edited_time_lower_bound = min(
+                #     datetime.strptime(block_created_time_str.split(' - ')[1], log_date_format).astimezone(my_tz),
+                #     get_last_edited_time_lower_bound(timedelta(minutes=10)))
+                last_edited_time_lower_bound = (
+                    datetime.strptime(block_created_time_str.split(' - ')[1], log_date_format).astimezone(my_tz))
                                                    
                 self._run(lambda: Action.execute_recent(self.actions, last_edited_time_lower_bound))
                 return
