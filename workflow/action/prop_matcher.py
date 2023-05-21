@@ -70,7 +70,7 @@ class MatchDateByCreatedTime(MatchAction):
         #  - need to support user endpoint (we need to retrieve user from PartialUser.id)
         if record.retrieve().properties[self.record_to_date]:
             return
-        record.update(PageProperties({self.record_to_date: self.record_to_date.page_value([date.id])}))
+        record.update(PageProperties({self.record_to_date: self.record_to_date.page_value([date])}))
         return date
 
 
@@ -130,7 +130,7 @@ class MatchReadingsStartDate(MatchAction):
         # final check if the property value is filled in the meantime
         if reading.retrieve().properties[reading_to_date]:
             return
-        reading.update(PageProperties({reading_to_date: reading_to_date.page_value([date.id])}))
+        reading.update(PageProperties({reading_to_date: reading_to_date.page_value([date])}))
 
 
 class MatchWeekByRefDate(MatchAction):
@@ -159,6 +159,7 @@ class MatchWeekByRefDate(MatchAction):
                   + (f'-> "{week.properties.title.plain_text}" ({week.url})' if week else ': Skipped'))
 
     def process_page(self, event: Page) -> Optional[Page]:
+        # TODO: event -> record
         event_date = event.properties[self.record_to_date][0]
         if not event_date.timestamp:
             event_date.retrieve()
@@ -192,7 +193,7 @@ class MatchWeekByDateValue(MatchAction):
             week = self.week_namespace.get_by_date_value(date_value.start)
             if date.retrieve().properties[date_to_week]:
                 continue
-            date.update(PageProperties({date_to_week: date_to_week.page_value([week.id])}))
+            date.update(PageProperties({date_to_week: date_to_week.page_value([week])}))
             print(f'"{date.properties.title.plain_text} ({date.url})" -> '
                   f'"{week.properties.title.plain_text} ({week.url})"')
 
