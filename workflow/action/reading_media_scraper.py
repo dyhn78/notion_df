@@ -40,7 +40,7 @@ class EditStatusValue(StrEnum):
 
 class MediaScraper(Action):
     def __init__(self, create_window: bool):
-        self.readings = Database(DatabaseEnum.reading_db.id)
+        self.readings = Database(DatabaseEnum.reading_db.id) # TODO: reading_db
         self.driver_factory = WebDriverFactory(create_window=create_window)
         self.driver = self.driver_factory()
 
