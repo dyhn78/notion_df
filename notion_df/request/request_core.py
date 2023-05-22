@@ -87,6 +87,9 @@ class SingleRequest(BaseRequest[Response_T], metaclass=ABCMeta):
 class PaginatedRequest(BaseRequest[list[ResponseElement_T]], metaclass=ABCMeta):
     """return_type must be ResponseElement_T (not Response_T)"""
     page_size: int = None
+    # TODO: remove page_size
+    #  - execute_iter() returns PaginatedResponse instead of builtin iterator (which supports getitem by slice)
+    #  - remove execute()
 
     @overload
     def execute_once(self, *, page_size: int = MAX_PAGE_SIZE) -> dict[str, Any]:
