@@ -10,7 +10,7 @@ from typing_extensions import Self
 
 from notion_df.object.common import Icon
 from notion_df.object.constant import BlockColor, CodeLanguage
-from notion_df.object.file import File, ExternalFile
+from notion_df.object.file import File
 from notion_df.object.parent import PartialParent
 from notion_df.object.property import DatabaseProperties, PageProperties
 from notion_df.object.rich_text import Span, RichText

@@ -10,7 +10,7 @@ from typing import TypeVar, Generic, ClassVar, Any, final, Optional, Iterator, o
 import requests
 from requests import JSONDecodeError
 
-from notion_df.util.collection import StrEnum, DictFilter
+from notion_df.util.collection import StrEnum
 from notion_df.util.misc import check_classvars_are_defined
 from notion_df.util.serialization import DualSerializable, deserialize, serialize, Deserializable
 from notion_df.variable import Settings, print_width
@@ -91,24 +91,22 @@ class PaginatedRequest(BaseRequest[list[ResponseElement_T]], metaclass=ABCMeta):
     #  - execute_iter() returns PaginatedResponse instead of builtin iterator (which supports getitem by slice)
     #  - remove execute()
 
-    @overload
-    def execute_once(self, *, page_size: int = MAX_PAGE_SIZE) -> dict[str, Any]:
-        ...
-
-    @overload
-    def execute_once(self, *, start_cursor: Optional[str] = None) -> dict[str, Any]:
-        ...
+    # @overload
+    # def execute_once(self, *, page_size: int = MAX_PAGE_SIZE) -> dict[str, Any]:
+    #     ...
+    #
+    # @overload
+    # def execute_once(self, *, start_cursor: Optional[str] = None) -> dict[str, Any]:
+    #     ...
 
     @final
-    def execute_once(self, *, page_size: int = MAX_PAGE_SIZE, start_cursor: Optional[str] = None) -> dict[str, Any]:
+    def execute_once(self, page_size: int = MAX_PAGE_SIZE, start_cursor: Optional[str] = None) -> dict[str, Any]:
         settings = self.get_settings()
         body = self.get_body()
         if page_size != MAX_PAGE_SIZE:
             body.update({'page_size': page_size})
-        elif start_cursor:
+        if start_cursor:
             body.update({'start_cursor': start_cursor})
-        else:
-            pass
         response = request(method=settings.method.value, url=settings.url, headers=self.headers, params=None,
                            json=serialize(body))
         return response.json()
@@ -122,10 +120,7 @@ class PaginatedRequest(BaseRequest[list[ResponseElement_T]], metaclass=ABCMeta):
         while page_size_retrieved < page_size_total:
             page_size = min(MAX_PAGE_SIZE, page_size_total - page_size_retrieved)
             page_size_retrieved += page_size
-            if start_cursor:
-                data = self.execute_once(start_cursor=start_cursor)
-            else:
-                data = self.execute_once(page_size=page_size)
+            data = self.execute_once(page_size, start_cursor)
             yield from self.parse_response_data(data)
             if not data['has_more']:
                 return
