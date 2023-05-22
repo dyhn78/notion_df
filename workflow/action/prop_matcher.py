@@ -7,7 +7,7 @@ from typing import Optional, cast, Iterable
 from notion_df.entity import Page, Database, Children
 from notion_df.object.property import RelationProperty, TitleProperty, PageProperties, DateFormulaPropertyKey, \
     DateProperty, CheckboxFormulaProperty
-from notion_df.variable import my_tz
+from notion_df.variable import my_tz, Settings
 from workflow.action.action_core import Action
 from workflow.constant.block_enum import DatabaseEnum
 from workflow.constant.emoji_code import EmojiCode
@@ -83,16 +83,20 @@ class MatchReadingsStartDate(MatchAction):
         )
 
     def filter(self, reading: Page) -> bool:
-        return (reading.parent == self.reading_db
+        return (reading.parent == self.reading_db and not reading.properties[reading_to_date]
                 and (reading.properties[reading_to_event]
                      or reading.properties[reading_match_date_by_created_time]))
 
     def process(self, readings: Iterable[Page]):
         for reading in readings:
-            date = self.process_page(reading)
+            date = self.find_date(reading)
+            # final check if the property value is filled in the meantime
+            if reading.retrieve().properties[reading_to_date]:
+                return
+            reading.update(PageProperties({reading_to_date: reading_to_date.page_value([date])}))
             print(f'{reading} -> {date if date else ": Skipped"}')
 
-    def process_page(self, reading: Page) -> Optional[Page]:
+    def find_date(self, reading: Page) -> Optional[Page]:
         reading_events = reading.properties[reading_to_event]
         dates = []
         # TODO: RollupPagePropertyValue 구현 후 이곳을 간소화
@@ -109,16 +113,10 @@ class MatchReadingsStartDate(MatchAction):
             dates.append(date)
         if dates:
             # noinspection PyShadowingNames
-            date = min(dates, key=lambda date: cast(Page, date).properties[date_manual_value].start)
-        elif not reading.properties[reading_match_date_by_created_time]:
-            return
-        else:
+            return min(dates, key=lambda date: cast(Page, date).properties[date_manual_value].start)
+        if reading.properties[reading_match_date_by_created_time]:
             reading_created_date = get_record_created_date(reading)
-            date = self.date_namespace.get_by_date_value(reading_created_date)
-        # final check if the property value is filled in the meantime
-        if reading.retrieve().properties[reading_to_date]:
-            return
-        reading.update(PageProperties({reading_to_date: reading_to_date.page_value([date])}))
+            return self.date_namespace.get_by_date_value(reading_created_date)
 
 
 class MatchWeekByRefDate(MatchAction):
@@ -134,8 +132,8 @@ class MatchWeekByRefDate(MatchAction):
             self.record_to_week.filter.is_empty() & self.record_to_date.filter.is_not_empty())
 
     def filter(self, record: Page) -> bool:
-        return (record.parent == self.record_db and
-                not record.properties[self.record_to_week] and record.properties[self.record_to_date])
+        return (record.parent == self.record_db and not record.properties[self.record_to_week]
+                and record.properties[self.record_to_date])
 
     def process(self, records: Iterable[Page]):
         for record in records:
@@ -164,8 +162,7 @@ class MatchWeekByDateValue(MatchAction):
         return self.date_db.query(date_to_week.filter.is_empty())
 
     def filter(self, date: Page) -> bool:
-        return (date.parent == self.date_db
-                and not date.properties[date_to_week])
+        return date.parent == self.date_db and not date.properties[date_to_week]
 
     def process(self, dates: Iterable[Page]):
         for date in dates:
@@ -228,5 +225,8 @@ class WeekIndex(DatabaseIndex):
 if __name__ == '__main__':
     _base = MatchActionBase()
     now = dt.datetime.now().astimezone(my_tz)
-    Action.execute_by_last_edited_time([MatchDateByCreatedTime(_base, DatabaseEnum.event_db, '일간')],
-                                       now - dt.timedelta(hours=2), now)
+    with Settings.print:
+        _action = MatchReadingsStartDate(_base)
+        Action.execute_by_last_edited_time([_action], now - dt.timedelta(hours=1))
+    # Action.execute_by_last_edited_time([MatchDateByCreatedTime(_base, DatabaseEnum.event_db, '일간')],
+    #                                    now - dt.timedelta(hours=2), now)

@@ -50,7 +50,6 @@ def search_pages_by_last_edited_time(lower_bound: datetime, upper_bound: Optiona
     # TODO: integrate with base function
     # Note: Notion APIs' last_edited_time info is only with minutes resolution
     lower_bound = lower_bound.replace(second=0, microsecond=0)
-    print(lower_bound.isoformat(), upper_bound.isoformat())
     pages = []
     for page in search_by_title('', 'page'):
         if upper_bound is not None and page.last_edited_time > upper_bound:

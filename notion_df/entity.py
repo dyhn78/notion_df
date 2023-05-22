@@ -68,7 +68,7 @@ class BaseBlock(Generic[Response_T], Hashable):
         elif self.parent is None:
             parent_repr = 'workspace'
         else:
-            parent_repr = repr_object(self.parent, self._attrs_to_repr_parent())
+            parent_repr = repr_object(self.parent, self.parent._attrs_to_repr_parent())
 
         return repr_object(self, {
             **self._attrs_to_repr_parent(),
