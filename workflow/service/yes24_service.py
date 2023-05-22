@@ -50,7 +50,7 @@ class Yes24ScrapResult:
         response = requests.get(detail_page_url)
         return cls(BeautifulSoup(response.text, 'html5lib'))
 
-    def get_true_name(self) -> str:
+    def get_true_name(self) -> Optional[str]:
         tag_name = '#yDetailTopWrap > div.topColRgt > div.gd_infoTop > div > h2'
         try:
             name = self.soup.select_one(tag_name).text.strip()
@@ -60,14 +60,14 @@ class Yes24ScrapResult:
         except AttributeError:
             pass
 
-    def get_sub_name(self) -> str:
+    def get_sub_name(self) -> Optional[str]:
         tag_sub_name = '#yDetailTopWrap > div.topColRgt > div.gd_infoTop > div > h3'
         try:
             return self.soup.select_one(tag_sub_name).text.strip()
         except AttributeError:
             pass
 
-    def get_author(self) -> str:
+    def get_author(self) -> Optional[str]:
         tag_author = '#yDetailTopWrap > div.topColRgt > div.gd_infoTop > ' \
                      'span.gd_pubArea > span.gd_auth > a'
         try:
@@ -83,7 +83,7 @@ class Yes24ScrapResult:
         except AttributeError:
             pass
 
-    def get_publisher(self) -> str:
+    def get_publisher(self) -> Optional[str]:
         tag_publisher = '#yDetailTopWrap > div.topColRgt > div.gd_infoTop > ' \
                         'span.gd_pubArea > span.gd_pub > a'
         try:
@@ -91,7 +91,7 @@ class Yes24ScrapResult:
         except AttributeError:
             pass
 
-    def get_page_count(self):
+    def get_page_count(self) -> Optional[int]:
         tag_page = '#infoset_specific > div.infoSetCont_wrap > div > table > ' \
                    'tbody > tr:nth-child(2) > td'
         try:
@@ -102,7 +102,7 @@ class Yes24ScrapResult:
         except AttributeError:
             pass
 
-    def get_cover_image_url(self) -> str:
+    def get_cover_image_url(self) -> Optional[str]:
         tag_cover_image = '#yDetailTopWrap > div.topColLft > div.gd_imgArea > ' \
                           'span > em > img'
         try:
@@ -118,7 +118,7 @@ class Yes24ScrapResult:
             contents_html = self.soup.select_one(tag_contents).text
             return parse_contents(contents_html)
         except AttributeError:
-            pass
+            return []
 
 
 def generate_tags(origin: set[str]) -> set[str]:

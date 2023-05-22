@@ -123,23 +123,20 @@ class ReadingMediaScraperUnit:
         if result.get_true_name():
             self.true_name_value = result.get_true_name()
 
-        if overwrite:
-            for key in true_name, sub_name, author, publisher, volume, cover_image:
-                self.reading.properties.pop(key, None)
-        if not self.reading.properties.get(true_name):
-            self.new_properties[true_name] = true_name.page_value.from_plain_text(result.get_true_name())
-        if not self.reading.properties.get(sub_name):
-            self.new_properties[sub_name] = sub_name.page_value.from_plain_text(result.get_sub_name())
-        if not self.reading.properties.get(author):
-            self.new_properties[author] = author.page_value.from_plain_text(result.get_author())
-        if not self.reading.properties.get(publisher):
-            self.new_properties[publisher] = publisher.page_value.from_plain_text(result.get_publisher())
-        if not self.reading.properties.get(volume):
-            self.new_properties[volume] = result.get_page_count()
-        if not self.reading.properties.get(cover_image):
-            if result.get_cover_image_url():
-                self.new_properties[cover_image] = cover_image.page_value.externals([
-                    (result.get_cover_image_url(), self.title_value)])
+        new_properties: PageProperties = PageProperties({
+            true_name: true_name.page_value.from_plain_text(result.get_true_name()),
+            sub_name: sub_name.page_value.from_plain_text(result.get_sub_name()),
+            author: author.page_value.from_plain_text(result.get_author()),
+            publisher: publisher.page_value.from_plain_text(result.get_publisher()),
+            volume: result.get_page_count(),
+        })
+        if result.get_cover_image_url():
+            new_properties[cover_image] = cover_image.page_value.externals([
+                (result.get_cover_image_url(), self.title_value)])
+        if not overwrite:
+            new_properties = PageProperties({prop: prop_value for prop, prop_value in new_properties.items()
+                                             if self.reading.properties.get(prop)})
+        self.new_properties.update(new_properties)
 
         # postpone the edit of content page blocks AFTER the main page's properties
         def set_content_page():

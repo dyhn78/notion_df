@@ -114,19 +114,19 @@ class Block(BaseBlock[BlockResponse]):
         self.value = response.value
 
     @staticmethod
-    def _send_child_block_response_list(block_response_list: list[BlockResponse]) -> BlockChildren:
+    def _send_child_block_response_list(block_response_list: list[BlockResponse]) -> Children[Block]:
         block_list = []
         for block_response in block_response_list:
             block = Block(block_response.id)
             block.send_response(block_response)
             block_list.append(block)
-        return BlockChildren(block_list)
+        return Children(block_list)
 
     def retrieve(self) -> Self:
         response = RetrieveBlock(token, self.id).execute()
         return self.send_response(response)
 
-    def retrieve_children(self) -> BlockChildren:
+    def retrieve_children(self) -> Children[Block]:
         block_response_list = RetrieveBlockChildren(token, self.id).execute()
         return self._send_child_block_response_list(block_response_list)
 
@@ -138,7 +138,9 @@ class Block(BaseBlock[BlockResponse]):
         response = DeleteBlock(token, self.id).execute()
         return self.send_response(response)
 
-    def append_children(self, child_values: list[BlockValue]) -> BlockChildren:
+    def append_children(self, child_values: list[BlockValue]) -> Children[Block]:
+        if not child_values:
+            return Children([])
         block_response_list = AppendBlockChildren(token, self.id, child_values).execute()
         return self._send_child_block_response_list(block_response_list)
 
@@ -188,13 +190,13 @@ class Database(BaseBlock[DatabaseResponse]):
         self.is_inline = response.is_inline
 
     @staticmethod
-    def _send_child_page_response_list(page_response_list: list[PageResponse]) -> PageChildren:
+    def _send_child_page_response_list(page_response_list: list[PageResponse]) -> Children[Page]:
         page_list = []
         for page_response in page_response_list:
             page = Page(page_response.id)
             page.send_response(page_response)
             page_list.append(page)
-        return PageChildren(page_list)
+        return Children(page_list)
 
     def retrieve(self) -> Self:
         if Settings.print and hasattr(self, 'title') and hasattr(self, 'url'):
@@ -349,8 +351,6 @@ class Children(Sequence[Child_T]):
         return repr_object(self, ['values'])
 
 
-BlockChildren = Children[Block]
-PageChildren = Children[Page]
 Namespace_KT = UUID | BaseBlock
 Block_T = TypeVar('Block_T', bound=Block)
 Database_T = TypeVar('Database_T', bound=Database)

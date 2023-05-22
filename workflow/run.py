@@ -12,7 +12,7 @@ from notion_df.variable import my_tz, Settings
 from workflow.action.action_core import Action, upper_bound_timedelta
 from workflow.action.prop_matcher import MatchActionBase, MatchWeekByDateValue, MatchDateByCreatedTime, \
     MatchWeekByRefDate, MatchReadingsStartDate
-from workflow.action.reading_media_scraper import MediaScraper
+from workflow.action.media_scraper import MediaScraper
 from workflow.constant.block_enum import DatabaseEnum
 
 # Note: the log_page is implemented as page with log blocks, not database with log pages,
