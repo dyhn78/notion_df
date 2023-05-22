@@ -134,8 +134,7 @@ class ReadingMediaScraperUnit:
             new_properties[cover_image] = cover_image.page_value.externals([
                 (result.get_cover_image_url(), self.title_value)])
         if not overwrite:
-            new_properties = PageProperties({prop: prop_value for prop, prop_value in new_properties.items()
-                                             if self.reading.properties.get(prop)})
+            new_properties = self.filter_not_overwrite(new_properties)
         self.new_properties.update(new_properties)
 
         # postpone the edit of content page blocks AFTER the main page's properties
@@ -182,10 +181,15 @@ class ReadingMediaScraperUnit:
         scrap_result = get_result()
         if scrap_result is None:
             return False
-        if overwrite:
-            self.reading.properties.pop(location, None)
-            self.reading.properties.pop(not_available, None)
-        if not self.reading.properties.get(location):
-            self.new_properties[location] = location.page_value.from_plain_text(str(scrap_result))
-            self.new_properties[not_available] = not scrap_result.available
+        new_properties = PageProperties({
+            location: location.page_value.from_plain_text(str(scrap_result)),
+            not_available: not scrap_result.available,
+        })
+        if not overwrite:
+            new_properties = self.filter_not_overwrite(new_properties)
+        self.new_properties.update(new_properties)
         return True
+
+    def filter_not_overwrite(self, new_properties: PageProperties):
+        return PageProperties({prop: prop_value for prop, prop_value in new_properties.items()
+                                             if self.reading.properties.get(prop)})
