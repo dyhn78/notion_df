@@ -24,8 +24,10 @@ if __name__ == '__main__':
 
     log_enabled = run_from_last_success(print_body=False, create_window=False)
     print(f'{"#" * 5 } {"Done." if log_enabled else "No new record."}')
-    sleep(20)
+    sleep(5)
     try:
-        os.execv(sys.executable, ['python', Path(__file__).resolve()])
+        path = Path(__file__).resolve()
+        print(path)
+        os.execv(sys.executable, ['python', path])
     except OSError as e:
         print("Execution failed:", e)
