@@ -24,7 +24,7 @@ if __name__ == '__main__':
 
     log_enabled = run_from_last_success(print_body=False, create_window=False)
     print(f'{"#" * 5 } {"Done." if log_enabled else "No new record."}')
-    sleep(5)
+    sleep(20)
     try:
         os.execv(sys.executable, ['python', Path(__file__).resolve()])
     except OSError as e:
