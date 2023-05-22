@@ -26,8 +26,6 @@ if __name__ == '__main__':
     print(f'{"#" * 5 } {"Done." if log_enabled else "No new record."}')
     sleep(5)
     try:
-        path = Path(__file__).resolve()
-        print(sys.executable, path)
-        os.execv(sys.executable, [sys.executable, path])
+        os.execv(sys.executable, [sys.executable, (Path(__file__).resolve())])
     except OSError as e:
         print("Execution failed:", e)
