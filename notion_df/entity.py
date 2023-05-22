@@ -16,7 +16,7 @@ from notion_df.object.filter import Filter
 from notion_df.object.parent import PartialParent
 from notion_df.object.property import Property, PageProperties, DatabaseProperties, PagePropertyValue_T
 from notion_df.object.rich_text import RichText
-from notion_df.object.sort import Sort, TimestampSort
+from notion_df.object.sort import Sort, TimestampSort, Direction
 from notion_df.object.user import PartialUser
 from notion_df.request.block import AppendBlockChildren, RetrieveBlock, RetrieveBlockChildren, UpdateBlock, DeleteBlock
 from notion_df.request.database import CreateDatabase, UpdateDatabase, RetrieveDatabase, QueryDatabase
@@ -379,9 +379,11 @@ def search_by_title(query: str, entity: Literal[None],
 
 
 def search_by_title(query: str, entity: Literal['page', 'database', None] = None,
-                    sort: TimestampSort = TimestampSort('last_edited_time', 'descending'),
+                    sort_by_last_edited_time: Direction = 'descending',
                     page_size: int = None) -> Iterator[Union[Page, Database]]:
-    response_element_iter = SearchByTitle(token, query, entity, sort, page_size).execute_iter()
+    response_element_iter = SearchByTitle(token, query, entity,
+                                          TimestampSort('last_edited_time', sort_by_last_edited_time),
+                                          page_size).execute_iter()
     for response_element in response_element_iter:
         if isinstance(response_element, DatabaseResponse):
             yield Database(response_element.id).send_response(response_element)

@@ -99,14 +99,15 @@ class PaginatedRequest(BaseRequest[list[ResponseElement_T]], metaclass=ABCMeta):
     @final
     def execute_once(self, *, page_size: int = MAX_PAGE_SIZE, start_cursor: Optional[str] = None) -> dict[str, Any]:
         settings = self.get_settings()
+        body = self.get_body()
         if page_size != MAX_PAGE_SIZE:
-            params = {'page_size': page_size}
+            body.update({'page_size': page_size})
         elif start_cursor:
-            params = {'start_cursor': start_cursor}
+            body.update({'start_cursor': start_cursor})
         else:
-            params = None
-        response = request(method=settings.method.value, url=settings.url, headers=self.headers, params=params,
-                           json=serialize(self.get_body()))
+            pass
+        response = request(method=settings.method.value, url=settings.url, headers=self.headers, params=None,
+                           json=serialize(body))
         return response.json()
 
     def execute_iter(self) -> Iterator[ResponseElement_T]:
