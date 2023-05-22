@@ -5,7 +5,7 @@ from abc import abstractmethod, ABCMeta
 from dataclasses import dataclass, field
 from datetime import datetime
 from pprint import pprint
-from typing import TypeVar, Generic, ClassVar, Any, final, Optional, Iterator
+from typing import TypeVar, Generic, ClassVar, Any, final, Optional, Iterator, overload
 
 import requests
 from requests import JSONDecodeError
@@ -88,20 +88,25 @@ class PaginatedRequest(BaseRequest[list[ResponseElement_T]], metaclass=ABCMeta):
     """return_type must be ResponseElement_T (not Response_T)"""
     page_size: int = None
 
-    @final
-    def execute_once(self, page_size: int = MAX_PAGE_SIZE, start_cursor: Optional[str] = None) -> dict[str, Any]:
-        body = self.get_body()
-        settings = self.get_settings()
-        if page_size == MAX_PAGE_SIZE and start_cursor is None:
-            params = None
-        else:
-            params = DictFilter.not_none({
-                'page_size': page_size,
-                'start_cursor': start_cursor,
-            })
+    @overload
+    def execute_once(self, *, page_size: int = MAX_PAGE_SIZE) -> dict[str, Any]:
+        ...
 
+    @overload
+    def execute_once(self, *, start_cursor: Optional[str] = None) -> dict[str, Any]:
+        ...
+
+    @final
+    def execute_once(self, *, page_size: int = MAX_PAGE_SIZE, start_cursor: Optional[str] = None) -> dict[str, Any]:
+        settings = self.get_settings()
+        if page_size != MAX_PAGE_SIZE:
+            params = {'page_size': page_size}
+        elif start_cursor:
+            params = {'start_cursor': start_cursor}
+        else:
+            params = None
         response = request(method=settings.method.value, url=settings.url, headers=self.headers, params=params,
-                           json=serialize(body))
+                           json=serialize(self.get_body()))
         return response.json()
 
     def execute_iter(self) -> Iterator[ResponseElement_T]:
@@ -113,8 +118,10 @@ class PaginatedRequest(BaseRequest[list[ResponseElement_T]], metaclass=ABCMeta):
         while page_size_retrieved < page_size_total:
             page_size = min(MAX_PAGE_SIZE, page_size_total - page_size_retrieved)
             page_size_retrieved += page_size
-
-            data = self.execute_once(page_size, start_cursor)
+            if start_cursor:
+                data = self.execute_once(start_cursor=start_cursor)
+            else:
+                data = self.execute_once(page_size=page_size)
             yield from self.parse_response_data(data)
             if not data['has_more']:
                 return
