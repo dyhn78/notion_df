@@ -1,32 +1,16 @@
-import json
-import traceback
-from datetime import datetime, timedelta
-from typing import Callable, Any
-from uuid import UUID
+from __future__ import annotations
 
-from notion_df.entity import Block
-from notion_df.object.block import CodeBlockValue, ParagraphBlockValue
-from notion_df.object.rich_text import RichText, TextSpan, UserMention
-from notion_df.util.serialization import deserialize_datetime
-from notion_df.variable import my_tz, Settings
-from workflow.action.action_core import Action, upper_bound_timedelta
+from datetime import timedelta
+
+from workflow.action.action_core import Action, upper_bound_timedelta, Logger
+from workflow.action.media_scraper import MediaScraper
 from workflow.action.prop_matcher import MatchActionBase, MatchWeekByDateValue, MatchDateByCreatedTime, \
     MatchWeekByRefDate, MatchReadingsStartDate
-from workflow.action.media_scraper import MediaScraper
 from workflow.constant.block_enum import DatabaseEnum
-
-# Note: the log_page is implemented as page with log blocks, not database with log pages,
-#  since Notion API does not directly support permanently deleting pages,
-#  and third party solutions like https://github.com/pocc/bulk_delete_notion_pages needs additional works to integrate.
-my_user_id = UUID('a007d150-bc67-422c-87db-030a71867dd9')
-log_page_id = '6d16dc6747394fca95dc169c8c736e2d'
-log_page_block = Block(log_page_id)
-log_date_format = '%Y-%m-%d %H:%M:%S+09:00'
 
 
 class Workflow:
-    def __init__(self, print_body: bool, create_window: bool):
-        self.print_body = print_body
+    def __init__(self, create_window: bool):
         workspace = MatchActionBase()
         self.actions: list[Action] = [
             MatchWeekByDateValue(workspace),
@@ -61,71 +45,33 @@ class Workflow:
             MediaScraper(create_window),
         ]
 
-    def execute_all(self):
-        with Settings.print.enable(self.print_body):
-            for action in self.actions:
+
+def run_all(print_body: bool, create_window: bool) -> None:
+    with Logger(print_body=print_body):
+        workflow = Workflow(create_window)
+        for action in workflow.actions:
+            action.execute_all()
+
+
+def run_from_last_edited_time_bound(print_body: bool, create_window: bool, window: timedelta) -> None:
+    with Logger(print_body=print_body) as logger:
+        workflow = Workflow(create_window)
+        Action.execute_by_last_edited_time(workflow.actions, logger.start_time - window, logger.start_time)
+
+
+def run_from_last_success(print_body: bool, create_window: bool) -> None:
+    with Logger(print_body=print_body) as logger:
+        workflow = Workflow(create_window)
+        last_success_time = logger.get_last_success_time()
+        if last_success_time is not None:
+            lower_bound = (last_success_time - upper_bound_timedelta
+                           - timedelta(minutes=1))  # just in case
+            upper_bound = logger.start_time - upper_bound_timedelta
+            Action.execute_by_last_edited_time(workflow.actions, lower_bound, upper_bound)
+        else:
+            for action in workflow.actions:
                 action.execute_all()
-
-    def execute_by_last_edited_time(self, window: timedelta):
-        with Settings.print.enable(self.print_body):
-            Action.execute_by_last_edited_time(self.actions, datetime.now().astimezone(my_tz) - window)
-
-    @staticmethod
-    def _run(execute: Callable[[], Any]):
-        start_time = datetime.now().astimezone(my_tz)
-        start_time_str = f"{start_time.strftime(log_date_format)}"
-
-        def format_time() -> str:
-            execution_time = datetime.now().astimezone(my_tz) - start_time
-            execution_datetime = datetime(1, 1, 1) + execution_time
-            execution_time_str = execution_datetime.strftime('%S.%f')
-            return f'{start_time_str} - {execution_time_str} seconds'
-
-        child_block_values = []
-        try:
-            execute()
-            message = f"success - {format_time()}"
-            child_block_values = [ParagraphBlockValue(RichText([TextSpan(message)]))]
-        except json.JSONDecodeError as err:
-            message = f"failure - {format_time()}: {err}"
-            child_block_values = [ParagraphBlockValue(RichText([TextSpan(message)]))]
-        except (Exception, RecursionError) as e:
-            message = f"error - {format_time()}: "
-            tr = traceback.format_exc()
-            child_block_values = [
-                ParagraphBlockValue(RichText([TextSpan(message), UserMention(my_user_id)])),
-            ]
-            for i in range(0, len(tr), 1000):
-                child_block_values.append(CodeBlockValue(RichText.from_plain_text(tr[i:i + 1000])))
-            raise e
-        finally:
-            children = log_page_block.retrieve_children()
-            for child in children[3:]:
-                if start_time - child.created_time > timedelta(days=1):
-                    child.delete()
-            log_page_block.append_children(child_block_values)
-
-    def run_all(self):
-        self._run(self.execute_all)
-
-    def run_by_last_edited_time(self, window: timedelta):
-        self._run(lambda: self.execute_by_last_edited_time(window))
-
-    def run_from_last_execution(self):
-        with Settings.print.enable(self.print_body):
-            for block in reversed(log_page_block.retrieve_children()):
-                if not isinstance(block.value, ParagraphBlockValue):
-                    continue
-                last_execution_time_str = block.value.rich_text.plain_text
-                if last_execution_time_str.find('success') == -1:
-                    continue
-                last_execution_time = deserialize_datetime(last_execution_time_str.split(' - ')[1])
-                lower_bound = (last_execution_time - upper_bound_timedelta
-                               - timedelta(minutes=1))  # just in case
-                self._run(lambda: Action.execute_by_last_edited_time(self.actions, lower_bound))
-                return
-            self.run_all()
 
 
 if __name__ == '__main__':
-    Workflow(print_body=True, create_window=False).run_from_last_execution()
+    run_from_last_success(print_body=True, create_window=False)

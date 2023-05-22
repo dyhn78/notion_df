@@ -41,7 +41,7 @@ class _BooleanSettings(_Settings):
     def __bool__(self):
         return self.enabled
 
-    def enable(self, value: bool):
+    def filter(self, value: bool):
         if value == self.default:
             return _DummySettings()
         else:

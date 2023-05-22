@@ -11,6 +11,7 @@ import requests
 from requests import JSONDecodeError
 
 from notion_df.util.collection import StrEnum
+from notion_df.util.exception import NotionDfValueError
 from notion_df.util.misc import check_classvars_are_defined
 from notion_df.util.serialization import DualSerializable, deserialize, serialize, Deserializable
 from notion_df.variable import Settings, print_width
@@ -103,11 +104,24 @@ class PaginatedRequest(BaseRequest[list[ResponseElement_T]], metaclass=ABCMeta):
     def execute_once(self, page_size: int = MAX_PAGE_SIZE, start_cursor: Optional[str] = None) -> dict[str, Any]:
         settings = self.get_settings()
         body = self.get_body()
+
+        pagination_params = {}
         if page_size != MAX_PAGE_SIZE:
-            body.update({'page_size': page_size})
+            pagination_params.update({'page_size': page_size})
         if start_cursor:
-            body.update({'start_cursor': start_cursor})
-        response = request(method=settings.method.value, url=settings.url, headers=self.headers, params=None,
+            pagination_params.update({'start_cursor': start_cursor})
+
+        if settings.method.value == Method.GET:
+            params = pagination_params
+        elif settings.method.value == Method.POST:
+            params = None
+            if body is None:
+                body = {}
+            body.update(pagination_params)
+        else:
+            raise NotionDfValueError('bad method', {'method': settings.method})
+
+        response = request(method=settings.method.value, url=settings.url, headers=self.headers, params=params,
                            json=serialize(body))
         return response.json()
 
