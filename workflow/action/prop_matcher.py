@@ -7,6 +7,7 @@ from typing import Optional, cast, Iterable
 from notion_df.entity import Page, Database, Children
 from notion_df.object.property import RelationProperty, TitleProperty, PageProperties, DateFormulaPropertyKey, \
     DateProperty, CheckboxFormulaProperty
+from notion_df.variable import my_tz
 from workflow.action.action_core import Action
 from workflow.constant.block_enum import DatabaseEnum
 from workflow.constant.emoji_code import EmojiCode
@@ -40,26 +41,19 @@ class MatchAction(Action, metaclass=ABCMeta):
 
 
 class MatchDateByCreatedTime(MatchAction):
-    def __init__(self, workspace: MatchActionBase, records: DatabaseEnum, record_to_date: str):
-        super().__init__(workspace)
+    def __init__(self, base: MatchActionBase, records: DatabaseEnum, record_to_date: str):
+        super().__init__(base)
         self.record_db = Database(records.id)
         self.record_to_date = RelationProperty(f'{DatabaseEnum.date_db.prefix}{record_to_date}')
 
     def query_all(self) -> Children[Page]:
         return self.record_db.query(self.record_to_date.filter.is_empty())
 
-    def pick(self, records: list[Page]) -> Iterable[Page]:
-        for record in records:
-            if record.parent != self.record_db:
-                continue
-            if not record.properties[self.record_to_date]:
-                yield record
-
     def filter(self, record: Page) -> bool:
         return record.parent == self.record_db and not record.properties[self.record_to_date]
 
-    def process(self, pages: Iterable[Page]):
-        for record in pages:
+    def process(self, records: Iterable[Page]):
+        for record in records:
             date = self.process_page(record)
             print(f'{record} -> {date if date else ":Skipped"}')
 
@@ -68,8 +62,6 @@ class MatchDateByCreatedTime(MatchAction):
         date = self.date_namespace.get_by_date_value(record_created_date)
 
         # final check if the property value is filled in the meantime
-        # TODO: add the logic that 'if user edited the page recently(<30s), do not edit'
-        #  - need to support user endpoint (we need to retrieve user from PartialUser.id)
         if record.retrieve().properties[self.record_to_date]:
             return
         record.update(PageProperties({self.record_to_date: self.record_to_date.page_value([date])}))
@@ -77,8 +69,8 @@ class MatchDateByCreatedTime(MatchAction):
 
 
 class MatchReadingsStartDate(MatchAction):
-    def __init__(self, workspace: MatchActionBase):
-        super().__init__(workspace)
+    def __init__(self, base: MatchActionBase):
+        super().__init__(base)
         self.reading_db = Database(DatabaseEnum.reading_db.id)
         self.event_db = Database(DatabaseEnum.event_db.id)
 
@@ -130,9 +122,9 @@ class MatchReadingsStartDate(MatchAction):
 
 
 class MatchWeekByRefDate(MatchAction):
-    def __init__(self, workspace: MatchActionBase, records: DatabaseEnum,
+    def __init__(self, base: MatchActionBase, records: DatabaseEnum,
                  record_to_week: str, record_to_date: str):
-        super().__init__(workspace)
+        super().__init__(base)
         self.record_db = Database(records.id)
         self.record_to_week = RelationProperty(f'{DatabaseEnum.week_db.prefix}{record_to_week}')
         self.record_to_date = RelationProperty(f'{DatabaseEnum.date_db.prefix}{record_to_date}')
@@ -164,8 +156,8 @@ class MatchWeekByRefDate(MatchAction):
 
 
 class MatchWeekByDateValue(MatchAction):
-    def __init__(self, workspace: MatchActionBase):
-        super().__init__(workspace)
+    def __init__(self, base: MatchActionBase):
+        super().__init__(base)
         self.date_db = Database(DatabaseEnum.date_db.id)
 
     def query_all(self) -> Children[Page]:
@@ -231,3 +223,10 @@ class WeekIndex(DatabaseIndex):
     @classmethod
     def last_day_of_week(cls, date_value: dt.date) -> dt.date:
         return cls.first_day_of_week(date_value) + dt.timedelta(days=6)
+
+
+if __name__ == '__main__':
+    _base = MatchActionBase()
+    now = dt.datetime.now().astimezone(my_tz)
+    Action.execute_by_last_edited_time([MatchDateByCreatedTime(_base, DatabaseEnum.event_db, '일간')],
+                                       now - dt.timedelta(hours=2), now)

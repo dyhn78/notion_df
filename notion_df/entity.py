@@ -31,13 +31,6 @@ token: Final[str] = os.getenv('NOTION_TOKEN')  # TODO: support multiple token
 namespace: Final[dict[tuple[type[BaseBlock], UUID], BaseBlock]] = {}
 
 
-class Workspace:
-    pass
-
-
-workspace: Final = Workspace()
-
-
 class BaseBlock(Generic[Response_T], Hashable):
     """The base block class.
     There is only one block instance with given subclass and id.
@@ -70,9 +63,16 @@ class BaseBlock(Generic[Response_T], Hashable):
     @final
     @cache
     def __repr__(self) -> str:
+        if not hasattr(self, 'parent'):
+            parent_repr = None
+        elif self.parent is None:
+            parent_repr = 'workspace'
+        else:
+            parent_repr = repr_object(self.parent, self._attrs_to_repr_parent())
+
         return repr_object(self, {
             **self._attrs_to_repr_parent(),
-            'parent': repr_object(self.parent, self._attrs_to_repr_parent()) if self.parent is not None else None
+            'parent': parent_repr
         })
 
     def _attrs_to_repr_parent(self) -> dict[str, Any]:
@@ -251,8 +251,8 @@ class Page(BaseBlock[PageResponse]):
             'id_or_url': getattr(self, 'url', str(self.id)),
         }
 
+    # noinspection DuplicatedCode
     def _send_response(self, response: PageResponse) -> None:
-        # noinspection DuplicatedCode
         self.parent = response.parent.entity
         self.created_time = response.created_time
         self.last_edited_time = response.last_edited_time
