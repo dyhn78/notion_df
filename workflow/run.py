@@ -7,6 +7,7 @@ from uuid import UUID
 from notion_df.entity import Block
 from notion_df.object.block import CodeBlockValue, ParagraphBlockValue
 from notion_df.object.rich_text import RichText, TextSpan, UserMention
+from notion_df.util.serialization import deserialize_datetime
 from notion_df.variable import my_tz, Settings
 from workflow.action.action_core import Action, upper_bound_timedelta
 from workflow.action.prop_matcher import MatchActionBase, MatchWeekByDateValue, MatchDateByCreatedTime, \
@@ -20,7 +21,7 @@ from workflow.constant.block_enum import DatabaseEnum
 my_user_id = UUID('a007d150-bc67-422c-87db-030a71867dd9')
 log_page_id = '6d16dc6747394fca95dc169c8c736e2d'
 log_page_block = Block(log_page_id)
-log_date_format = r'%Y-%m-%d %H:%M:%S'
+log_date_format = '%Y-%m-%d %H:%M:%S+09:00'
 
 
 class Workflow:
@@ -71,14 +72,15 @@ class Workflow:
 
     @staticmethod
     def _run(execute: Callable[[], Any]):
+        start_time = datetime.now().astimezone(my_tz)
+        start_time_str = f"{start_time.strftime(log_date_format)}"
+
         def format_time() -> str:
             execution_time = datetime.now().astimezone(my_tz) - start_time
             execution_datetime = datetime(1, 1, 1) + execution_time
             execution_time_str = execution_datetime.strftime('%S.%f')
             return f'{start_time_str} - {execution_time_str} seconds'
 
-        start_time = datetime.now().astimezone(my_tz)
-        start_time_str = f"{start_time.strftime(log_date_format)}"
         child_block_values = []
         try:
             execute()
@@ -114,11 +116,12 @@ class Workflow:
             for block in reversed(log_page_block.retrieve_children()):
                 if not isinstance(block.value, ParagraphBlockValue):
                     continue
-                block_created_time_str = block.value.rich_text.plain_text
-                if block_created_time_str.find('success') == -1:
+                last_execution_time_str = block.value.rich_text.plain_text
+                if last_execution_time_str.find('success') == -1:
                     continue
-                lower_bound = (datetime.strptime(block_created_time_str.split(' - ')[1],
-                                                 log_date_format).astimezone(my_tz)) - upper_bound_timedelta
+                last_execution_time = deserialize_datetime(last_execution_time_str.split(' - ')[1])
+                lower_bound = (last_execution_time - upper_bound_timedelta
+                               - timedelta(minutes=1))  # just in case
                 self._run(lambda: Action.execute_by_last_edited_time(self.actions, lower_bound))
                 return
             self.run_all()
