@@ -14,7 +14,7 @@ from notion_df.object.rich_text import RichText, TextSpan, UserMention
 from notion_df.util.serialization import deserialize_datetime
 from notion_df.variable import Settings, print_width, my_tz
 
-upper_bound_timedelta = timedelta(seconds=30)
+min_timedelta: timedelta = timedelta(seconds=60)
 my_user_id = UUID('a007d150-bc67-422c-87db-030a71867dd9')
 log_page_id = '6d16dc6747394fca95dc169c8c736e2d'
 log_page_block = Block(log_page_id)
@@ -40,10 +40,14 @@ class Action(metaclass=ABCMeta):
 
     @classmethod
     def execute_by_last_edited_time(cls, actions: list[Action], lower_bound: datetime,
-                                    upper_bound: Optional[datetime] = None):
-        recent_pages = search_pages_by_last_edited_time(lower_bound, upper_bound)
+                                    upper_bound: Optional[datetime] = None) -> bool:
+        recent_pages = set(search_pages_by_last_edited_time(lower_bound, upper_bound))
+        recent_pages.discard(Page(log_page_id))
+        if not recent_pages:
+            return False
         for self in actions:
             self.process(page for page in recent_pages if self.filter(page))
+        return True
 
 
 def search_pages_by_last_edited_time(lower_bound: datetime, upper_bound: Optional[datetime] = None) -> list[Page]:
@@ -71,6 +75,7 @@ class Logger:
         self.print_body = print_body
         self.start_time = datetime.now().astimezone(my_tz)
         self.start_time_str = f"{self.start_time.strftime(log_date_format)}"
+        self.enabled = True
 
     def __enter__(self) -> Logger:
         Settings.print.enabled = self.print_body
@@ -81,6 +86,8 @@ class Logger:
         return f'{self.start_time_str} - {round(execution_time.total_seconds(), 3)} seconds'
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+        if not self.enabled:
+            return
         child_block_values = []
         if exc_type is None:
             summary_text = f"success - {self.format_time()}"
