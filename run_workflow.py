@@ -28,6 +28,6 @@ if __name__ == '__main__':
     try:
         path = Path(__file__).resolve()
         print(sys.executable, path)
-        os.execv(sys.executable, ['python', path])
+        os.execv(sys.executable, [sys.executable, path])
     except OSError as e:
         print("Execution failed:", e)
