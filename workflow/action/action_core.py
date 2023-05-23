@@ -121,7 +121,7 @@ class Logger:
                 child_block_values.append(CodeBlockValue(RichText.from_plain_text(traceback_str[i:i + 1000])))
 
         for group_block in self.log_group_blocks:
-            if cast(ToggleBlockValue, group_block.value).rich_text == self.start_time_group_str:
+            if cast(ToggleBlockValue, group_block.value).rich_text.plain_text == self.start_time_group_str:
                 break
         else:
             group_block = log_page_block.append_children([
