@@ -9,7 +9,7 @@ import psutil
 def is_already_running(script_path: Path):
     count = 0
     for process in psutil.process_iter(['name', 'cmdline']):
-        if sys.executable == process.cmdline()[0] and str(script_path) in process.cmdline():
+        if process.cmdline()[:2] == [sys.executable, str(script_path)]:
             count += 1
     return count > 1
 
