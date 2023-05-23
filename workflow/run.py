@@ -11,33 +11,33 @@ from workflow.constant.block_enum import DatabaseEnum
 
 class Workflow:
     def __init__(self, create_window: bool):
-        workspace = MatchActionBase()
+        base = MatchActionBase()
         self.actions: list[Action] = [
-            MatchWeekByDateValue(workspace),
+            MatchWeekByDateValue(base),
 
-            MatchDateByCreatedTime(workspace, DatabaseEnum.event_db, '일간'),
-            MatchDateByCreatedTime(workspace, DatabaseEnum.event_db, '생성'),
-            MatchWeekByRefDate(workspace, DatabaseEnum.event_db, '주간', '일간'),
+            MatchDateByCreatedTime(base, DatabaseEnum.event_db, '일간'),
+            MatchDateByCreatedTime(base, DatabaseEnum.event_db, '생성'),
+            MatchWeekByRefDate(base, DatabaseEnum.event_db, '주간', '일간'),
 
-            MatchDateByCreatedTime(workspace, DatabaseEnum.issue_db, '생성'),
-            MatchWeekByRefDate(workspace, DatabaseEnum.issue_db, '주간', '일간'),
+            MatchDateByCreatedTime(base, DatabaseEnum.issue_db, '생성'),
+            MatchWeekByRefDate(base, DatabaseEnum.issue_db, '주간', '일간'),
 
-            MatchDateByCreatedTime(workspace, DatabaseEnum.journal_db, '일간'),
-            MatchDateByCreatedTime(workspace, DatabaseEnum.journal_db, '생성'),
-            MatchWeekByRefDate(workspace, DatabaseEnum.journal_db, '주간', '일간'),
+            MatchDateByCreatedTime(base, DatabaseEnum.journal_db, '일간'),
+            MatchDateByCreatedTime(base, DatabaseEnum.journal_db, '생성'),
+            MatchWeekByRefDate(base, DatabaseEnum.journal_db, '주간', '일간'),
 
-            MatchDateByCreatedTime(workspace, DatabaseEnum.note_db, '시작'),
-            MatchWeekByRefDate(workspace, DatabaseEnum.note_db, '시작', '시작'),
+            MatchDateByCreatedTime(base, DatabaseEnum.note_db, '시작'),
+            MatchWeekByRefDate(base, DatabaseEnum.note_db, '시작', '시작'),
 
-            MatchDateByCreatedTime(workspace, DatabaseEnum.topic_db, '시작'),
-            MatchWeekByRefDate(workspace, DatabaseEnum.topic_db, '시작', '시작'),
+            MatchDateByCreatedTime(base, DatabaseEnum.topic_db, '시작'),
+            MatchWeekByRefDate(base, DatabaseEnum.topic_db, '시작', '시작'),
 
-            MatchReadingsStartDate(workspace),
-            MatchDateByCreatedTime(workspace, DatabaseEnum.reading_db, '생성'),
-            MatchWeekByRefDate(workspace, DatabaseEnum.reading_db, '시작', '시작'),
+            MatchReadingsStartDate(base),
+            MatchDateByCreatedTime(base, DatabaseEnum.reading_db, '생성'),
+            MatchWeekByRefDate(base, DatabaseEnum.reading_db, '시작', '시작'),
 
-            MatchDateByCreatedTime(workspace, DatabaseEnum.section_db, '시작'),
-            MatchWeekByRefDate(workspace, DatabaseEnum.section_db, '시작', '시작'),
+            MatchDateByCreatedTime(base, DatabaseEnum.section_db, '시작'),
+            MatchWeekByRefDate(base, DatabaseEnum.section_db, '시작', '시작'),
 
             # TODO 배포후: <마디 - 🟢시작, 💚시작> 제거
             # TODO 배포후: <읽기 -  📕유형 <- 전개/꼭지> 추가 (스펙 논의 필요)
