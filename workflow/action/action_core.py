@@ -3,9 +3,10 @@ from __future__ import annotations
 import json
 import traceback
 from abc import ABCMeta, abstractmethod
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
+from functools import cached_property
 from pprint import pprint
-from typing import Iterable, Optional, Iterator
+from typing import Iterable, Optional, Iterator, cast
 from uuid import UUID
 
 from notion_df.entity import Page, search_by_title, Block
@@ -20,6 +21,7 @@ my_user_id = UUID('a007d150-bc67-422c-87db-030a71867dd9')
 log_page_id = '6d16dc6747394fca95dc169c8c736e2d'
 log_page_block = Block(log_page_id)
 log_date_format = '%Y-%m-%d %H:%M:%S+09:00'
+log_date_group_format = '%Y-%m-%d %H:00:00+09:00'
 
 
 class Action(metaclass=ABCMeta):
@@ -72,19 +74,25 @@ class Logger:
     #  since Notion API does not directly support permanently deleting pages,
     #  and third party solutions like `https://github.com/pocc/bulk_delete_notion_pages`
     #  needs additional works to integrate.
+    # TODO: add toggleable heading block for each day; extend the log storage to 7 days
     def __init__(self, *, print_body: bool):
         self.print_body = print_body
         self.start_time = datetime.now().astimezone(my_tz)
-        self.start_time_str = f"{self.start_time.strftime(log_date_format)}"
+        self.start_time_str = self.start_time.strftime(log_date_format)
+        self.start_time_group_str = self.start_time.strftime(log_date_group_format)
         self.enabled = True
         self._log_page_blocks = log_page_block.retrieve_children()
 
-    @property
-    def prev_summary_blocks(self) -> Iterator[Block]:
-        for block in reversed(self._log_page_blocks):
+    @cached_property
+    def log_group_blocks(self):
+        blocks = []
+        for block in reversed(log_page_block.retrieve_children()):
             if isinstance(block.value, DividerBlockValue):
                 break
-            yield block
+            if self.start_time - block.created_time > timedelta(days=7):
+                block.delete()
+            blocks.append(block)
+        return blocks
 
     def __enter__(self) -> Logger:
         Settings.print.enabled = self.print_body
@@ -101,9 +109,9 @@ class Logger:
         if exc_type is None:
             summary_text = f"success - {self.format_time()}"
             summary_block_value = ParagraphBlockValue(RichText([TextSpan(summary_text)]))
-        elif exc_type == json.JSONDecodeError:
-            summary_text = f"failure - {self.format_time()}: {exc_val}"
-            summary_block_value = ParagraphBlockValue(RichText([TextSpan(summary_text)]))
+        # elif exc_type == json.JSONDecodeError:
+        #     summary_text = f"failure - {self.format_time()}: {exc_val}"
+        #     summary_block_value = ParagraphBlockValue(RichText([TextSpan(summary_text)]))
         else:
             summary_text = f"error - {self.format_time()}: "
             summary_block_value = ToggleBlockValue(RichText([TextSpan(summary_text), UserMention(my_user_id)]))
@@ -112,22 +120,27 @@ class Logger:
             for i in range(0, len(traceback_str), 1000):
                 child_block_values.append(CodeBlockValue(RichText.from_plain_text(traceback_str[i:i + 1000])))
 
-        summary_block = log_page_block.append_children([summary_block_value])[0]
+        for group_block in self.log_group_blocks:
+            if cast(ToggleBlockValue, group_block.value).rich_text == self.start_time_group_str:
+                break
+        else:
+            group_block = log_page_block.append_children([
+                ToggleBlockValue(RichText([TextSpan(self.start_time_group_str)]))])[0]
+
+        summary_block = group_block.append_children([summary_block_value])[0]
         if child_block_values:
             summary_block.append_children(child_block_values)
 
-        for block in self.prev_summary_blocks:
-            if self.start_time - block.created_time > timedelta(days=1):
-                block.delete()
-
     def get_last_success_time(self) -> Optional[datetime]:
-        for block in self.prev_summary_blocks:
+        if not self.log_group_blocks:
+            return
+        for block in reversed(self.log_group_blocks[0].retrieve_children()):
             try:
-                # noinspection PyUnresolvedReferences
-                last_execution_time_str = block.value.rich_text.plain_text
+                last_execution_time_str = cast(ParagraphBlockValue, block.value).rich_text.plain_text
             except AttributeError:
                 continue
             if last_execution_time_str.find('success') == -1:
                 continue
             last_execution_time = deserialize_datetime(last_execution_time_str.split(' - ')[1])
             return last_execution_time
+        return

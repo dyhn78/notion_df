@@ -77,4 +77,5 @@ def run_from_last_success(print_body: bool, create_window: bool) -> bool:
 
 
 if __name__ == '__main__':
-    run_from_last_edited_time_bound(print_body=True, create_window=False, timedelta_size=timedelta(minutes=3))
+    run_from_last_success(False, False)
+    # run_from_last_edited_time_bound(print_body=True, create_window=False, timedelta_size=timedelta(minutes=3))
