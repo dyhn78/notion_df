@@ -15,7 +15,7 @@ def is_already_running(script_path: Path):
 
 
 if __name__ == '__main__':
-    path = Path(__file__)
+    path = Path(__file__).resolve()
     if is_already_running(path):
         sys.stderr.write("Script is already running.")
         sys.exit(1)
