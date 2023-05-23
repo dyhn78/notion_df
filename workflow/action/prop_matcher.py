@@ -4,7 +4,8 @@ import datetime as dt
 from abc import ABCMeta
 from typing import Optional, cast, Iterable
 
-from notion_df.entity import Page, Database, Paginator
+from notion_df.entity import Page, Database
+from notion_df.util.collection import Paginator
 from notion_df.object.property import RelationProperty, TitleProperty, PageProperties, DateFormulaPropertyKey, \
     DateProperty, CheckboxFormulaProperty
 from notion_df.util.misc import repr_object

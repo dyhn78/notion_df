@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import os
 from abc import abstractmethod
-from collections.abc import Sequence
 from datetime import datetime
 from functools import cache
 from typing import Optional, TypeVar, Union, Generic, final, Final, Any, Literal, overload, Hashable, Iterator, Iterable
@@ -23,7 +22,8 @@ from notion_df.request.database import CreateDatabase, UpdateDatabase, RetrieveD
 from notion_df.request.page import CreatePage, UpdatePage, RetrievePage, RetrievePagePropertyItem
 from notion_df.request.request_core import Response_T
 from notion_df.request.search import SearchByTitle
-from notion_df.util.exception import NotionDfTypeError, NotionDfValueError, NotionDfKeyError, NotionDfIndexError
+from notion_df.util.collection import Paginator
+from notion_df.util.exception import NotionDfValueError, NotionDfKeyError
 from notion_df.util.misc import get_id, UUID, repr_object
 from notion_df.variable import Settings
 
@@ -319,71 +319,6 @@ class Page(BaseBlock[PageResponse]):
         return self.as_block().create_child_database(title, properties=properties, icon=icon, cover=cover)
 
 
-Element_T = TypeVar('Element_T')
-
-
-class Paginator(Sequence[Element_T]):
-    def __init__(self, element_type: type[Element_T], it: Iterator[Element_T]):
-        self.element_type: type[Element_T] = element_type
-        self._it: Iterator[Element_T] = it
-        self._values: list[Element_T] = []
-
-    def __repr__(self):
-        return repr_object(self, ['element_type'])
-
-    def _fetch_until(self, index: int) -> None:
-        """fetch until self._values[index] is possible"""
-        while len(self._values) <= index:
-            try:
-                self._values.append(next(self._it))
-            except StopIteration:
-                raise NotionDfIndexError("Index out of range", {'self': self, 'index': index})
-
-    def _fetch_all(self) -> None:
-        for element in self._it:
-            self._values.append(element)
-
-    @overload
-    def __getitem__(self, index_or_id: int) -> Element_T:
-        ...
-
-    @overload
-    def __getitem__(self, index_or_id: slice) -> list[Element_T]:
-        ...
-
-    def __getitem__(self, index: int | slice) -> Element_T | list[Element_T]:
-        if isinstance(index, int):
-            if index >= 0:
-                self._fetch_until(index)
-            else:
-                self._fetch_all()
-            return self._values[index]
-        if isinstance(index, slice):
-            step = index.step if index.step is not None else 1
-
-            if ((index.start is not None and index.start < 0)
-                    or (index.stop is not None and index.stop < 0)
-                    or (index.stop is None and step > 0)
-                    or (index.start is None and step < 0)):
-                self._fetch_all()
-                return self._values[index]
-
-            start = index.start if index.start is not None else 0
-            stop = index.stop if index.stop is not None else 0
-            self._fetch_until(max(start, stop))
-            return [self._values[i] for i in range(start, stop, step)]
-        else:
-            raise NotionDfTypeError("bad argument - expected int or slice", {'self': self, 'index': index})
-
-    def __len__(self):
-        self._fetch_all()
-        return len(self._values)
-
-    def __iter__(self):
-        self._fetch_all()
-        return iter(self._values)
-
-
 Block_T = TypeVar('Block_T', bound=Block)
 Database_T = TypeVar('Database_T', bound=Database)
 Page_T = TypeVar('Page_T', bound=Page)
@@ -391,21 +326,21 @@ Page_T = TypeVar('Page_T', bound=Page)
 
 @overload
 def search_by_title(query: str, entity: Literal['page'],
-                    sort: TimestampSort = TimestampSort('last_edited_time', 'descending'),
+                    sort_by_last_edited_time: Direction = 'descending',
                     page_size: int = None) -> list[Page]:
     ...
 
 
 @overload
 def search_by_title(query: str, entity: Literal['database'],
-                    sort: TimestampSort = TimestampSort('last_edited_time', 'descending'),
+                    sort_by_last_edited_time: Direction = 'descending',
                     page_size: int = None) -> list[Database]:
     ...
 
 
 @overload
 def search_by_title(query: str, entity: Literal[None],
-                    sort: TimestampSort = TimestampSort('last_edited_time', 'descending'),
+                    sort_by_last_edited_time: Direction = 'descending',
                     page_size: int = None) -> list[Union[Page, Database]]:
     ...
 

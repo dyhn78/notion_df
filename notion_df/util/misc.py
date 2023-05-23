@@ -36,17 +36,6 @@ def repr_object(cls_or_instance, attrs: list[str] | dict[str, Any]) -> str:
     return f"{type(cls_or_instance).__name__}({', '.join(attr_items)})"
 
 
-def repr_object_depr(obj: Any, params: dict[Hashable, Any] = None, **kwargs: Any) -> str:
-    # TODO: replace this with `dataclass.field(repr: bool)` feature
-    """params and kwargs has same effect"""
-    items = _concat_items(params, kwargs)
-    return f"{type(obj).__name__}({', '.join(f'{k}={v}' for k, v in items if v is not None)})"
-
-
-def _concat_items(params: Optional[dict[Hashable, Any]], kwargs: dict[str, Any]) -> Iterable[tuple[Hashable, str]]:
-    return chain(params.items() if params is not None else (), kwargs.items())  # type: ignore
-
-
 def get_num_iterator() -> Iterator[int]:
     num = 0
     while True:

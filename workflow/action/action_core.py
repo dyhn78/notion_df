@@ -8,7 +8,8 @@ from pprint import pprint
 from typing import Iterable, Optional, Iterator
 from uuid import UUID
 
-from notion_df.entity import Page, Paginator, search_by_title, Block
+from notion_df.entity import Page, search_by_title, Block
+from notion_df.util.collection import Paginator
 from notion_df.object.block import DividerBlockValue, ParagraphBlockValue, ToggleBlockValue, CodeBlockValue
 from notion_df.object.rich_text import RichText, TextSpan, UserMention
 from notion_df.util.serialization import deserialize_datetime

@@ -1,18 +1,12 @@
 from __future__ import annotations
 
-from abc import abstractmethod, ABCMeta
-from typing import Generic, TypeVar, Callable, ParamSpec, ClassVar
+from abc import ABCMeta
+from typing import TypeVar, Callable, ParamSpec, ClassVar
 
 from typing_extensions import Self
 
 _T = TypeVar('_T')
 _P = ParamSpec('_P')
-
-
-class Resolvable(Generic[_T]):
-    @abstractmethod
-    def resolve(self) -> _T:
-        pass
 
 
 def cache_on_input(func: Callable[_P, _T]) -> Callable[_P, _T]:

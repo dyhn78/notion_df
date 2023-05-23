@@ -1,13 +1,13 @@
 from functools import cached_property
 from typing import Optional, Callable, Any, Iterable
 
-from notion_df.entity import Page, Database, Paginator
+from notion_df.entity import Page, Database
 from notion_df.object.block import ChildPageBlockValue
 from notion_df.object.common import SelectOption
 from notion_df.object.filter import CompoundFilter
 from notion_df.object.property import SelectProperty, CheckboxFormulaProperty, TitleProperty, RichTextProperty, \
     URLProperty, NumberProperty, FilesProperty, CheckboxProperty, PageProperties
-from notion_df.util.collection import StrEnum
+from notion_df.util.collection import StrEnum, Paginator
 from workflow.action.action_core import Action
 from workflow.constant.block_enum import DatabaseEnum
 from workflow.service.gy_lib_service import GYLibraryScraper, LibraryScrapResult
