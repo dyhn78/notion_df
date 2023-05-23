@@ -133,12 +133,12 @@ class MatchWeekByRefDate(MatchAction):
                  record_to_week: str, record_to_date: str):
         super().__init__(base)
         self.record_db = Database(record_db_enum.id)
-        self.record_db.title = record_db_enum.title
+        self.record_db_title = self.record_db.title = record_db_enum.title
         self.record_to_week = RelationProperty(f'{DatabaseEnum.week_db.prefix}{record_to_week}')
         self.record_to_date = RelationProperty(f'{DatabaseEnum.date_db.prefix}{record_to_date}')
 
     def __repr__(self):
-        return repr_object(self, ['title', 'record_to_week', 'record_to_date'])
+        return repr_object(self, ['record_db_title', 'record_to_week', 'record_to_date'])
 
     def query_all(self) -> Paginator[Page]:
         return self.record_db.query(
