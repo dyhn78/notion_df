@@ -35,11 +35,6 @@ class BaseRequest(metaclass=ABCMeta):
     get token from https://www.notion.so/my-integrations"""
     token: str
 
-    def __init_subclass__(cls, **kwargs):
-        if inspect.isclass(getattr(cls, 'return_type', None)):
-            return
-        check_classvars_are_defined(cls)
-
     @abstractmethod
     def get_settings(self) -> RequestSettings:
         pass
@@ -71,7 +66,7 @@ class RequestSettings:
 
 
 class SingleRequest(Generic[Response_T], BaseRequest, metaclass=ABCMeta):
-    response_type: type[Response_T]
+    response_type: type[Response_T]  # TODO define assert
 
     @final
     def execute(self) -> Response_T:
@@ -86,7 +81,7 @@ class SingleRequest(Generic[Response_T], BaseRequest, metaclass=ABCMeta):
 
 
 class PaginatedRequest(Generic[ResponseElement_T], BaseRequest, metaclass=ABCMeta):
-    response_element_type: type[ResponseElement_T]
+    response_element_type: type[ResponseElement_T]  # TODO define assert
     page_size: int = None
     # TODO: remove page_size
     #  - execute() returns PaginatedResponse instead of builtin iterator (which supports getitem by slice)
