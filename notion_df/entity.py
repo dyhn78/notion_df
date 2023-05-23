@@ -28,12 +28,12 @@ from notion_df.util.misc import get_id, UUID, repr_object
 from notion_df.variable import Settings
 
 token: Final[str] = os.getenv('NOTION_TOKEN')  # TODO: support multiple token
-namespace: Final[dict[tuple[type[BaseBlock], UUID], BaseBlock]] = {}
+namespace: Final[dict[tuple[type[Entity], UUID], Entity]] = {}  # TODO: support multiple entities
 
 
-class BaseBlock(Generic[Response_T], Hashable):
-    """The base block class.
-    There is only one block instance with given subclass and id.
+class Entity(Generic[Response_T], Hashable):
+    """The base class for blocks, users, and comments.
+    There is only one instance with given subclass and id.
     You can compare two blocks directly `block_1 == block_2`, not having to compare id `block_1.id == block_2.id`"""
     id: UUID
     timestamp: float
@@ -57,7 +57,7 @@ class BaseBlock(Generic[Response_T], Hashable):
     def __hash__(self) -> int:
         return hash((type(self), self.id))
 
-    def __eq__(self, other: BaseBlock) -> bool:
+    def __eq__(self, other: Entity) -> bool:
         return type(self) == type(other) and self.id == other.id
 
     @final
@@ -90,7 +90,7 @@ class BaseBlock(Generic[Response_T], Hashable):
         pass
 
 
-class Block(BaseBlock[BlockResponse]):
+class Block(Entity[BlockResponse]):
     parent: Union[Page, Block, None]
     created_time: datetime
     last_edited_time: datetime
@@ -153,7 +153,7 @@ class Block(BaseBlock[BlockResponse]):
         return database
 
 
-class Database(BaseBlock[DatabaseResponse]):
+class Database(Entity[DatabaseResponse]):
     parent: Union[Page, Block, None]
     created_time: datetime
     last_edited_time: datetime
@@ -229,7 +229,7 @@ class Database(BaseBlock[DatabaseResponse]):
         return page
 
 
-class Page(BaseBlock[PageResponse]):
+class Page(Entity[PageResponse]):
     parent: Union[Page, Block, Database, None]
     created_time: datetime
     last_edited_time: datetime
