@@ -9,7 +9,7 @@ import psutil
 def is_already_running(script_name):
     count = 0
     for process in psutil.process_iter(['name', 'cmdline']):
-        if process.name() == 'python' and script_name in process.cmdline():
+        if script_name in process.cmdline():
             count += 1
     return count > 1
 
