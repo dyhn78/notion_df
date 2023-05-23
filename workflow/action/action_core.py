@@ -5,10 +5,10 @@ import traceback
 from abc import ABCMeta, abstractmethod
 from datetime import datetime, timedelta
 from pprint import pprint
-from typing import Iterable, Optional
+from typing import Iterable, Optional, Iterator
 from uuid import UUID
 
-from notion_df.entity import Page, Children, search_by_title, Block
+from notion_df.entity import Page, Paginator, search_by_title, Block
 from notion_df.object.block import DividerBlockValue, ParagraphBlockValue, ToggleBlockValue, CodeBlockValue
 from notion_df.object.rich_text import RichText, TextSpan, UserMention
 from notion_df.util.serialization import deserialize_datetime
@@ -23,7 +23,7 @@ log_date_format = '%Y-%m-%d %H:%M:%S+09:00'
 
 class Action(metaclass=ABCMeta):
     @abstractmethod
-    def query_all(self) -> Children[Page]:
+    def query_all(self) -> Paginator[Page]:
         pass
 
     @abstractmethod
@@ -76,6 +76,14 @@ class Logger:
         self.start_time = datetime.now().astimezone(my_tz)
         self.start_time_str = f"{self.start_time.strftime(log_date_format)}"
         self.enabled = True
+        self._log_page_blocks = log_page_block.retrieve_children()
+
+    @property
+    def prev_summary_blocks(self) -> Iterator[Block]:
+        for block in reversed(self._log_page_blocks):
+            if isinstance(block.value, DividerBlockValue):
+                break
+            yield block
 
     def __enter__(self) -> Logger:
         Settings.print.enabled = self.print_body
@@ -107,16 +115,12 @@ class Logger:
         if child_block_values:
             summary_block.append_children(child_block_values)
 
-        prev_summary_blocks = log_page_block.retrieve_children()
-        for block in prev_summary_blocks[3:]:
+        for block in self.prev_summary_blocks:
             if self.start_time - block.created_time > timedelta(days=1):
                 block.delete()
 
-    @staticmethod
-    def get_last_success_time() -> Optional[datetime]:
-        for block in reversed(log_page_block.retrieve_children()):
-            if isinstance(block.value, DividerBlockValue):
-                break
+    def get_last_success_time(self) -> Optional[datetime]:
+        for block in self.prev_summary_blocks:
             try:
                 # noinspection PyUnresolvedReferences
                 last_execution_time_str = block.value.rich_text.plain_text

@@ -4,9 +4,10 @@ import datetime as dt
 from abc import ABCMeta
 from typing import Optional, cast, Iterable
 
-from notion_df.entity import Page, Database, Children
+from notion_df.entity import Page, Database, Paginator
 from notion_df.object.property import RelationProperty, TitleProperty, PageProperties, DateFormulaPropertyKey, \
     DateProperty, CheckboxFormulaProperty
+from notion_df.util.misc import repr_object
 from notion_df.variable import my_tz, Settings
 from workflow.action.action_core import Action
 from workflow.constant.block_enum import DatabaseEnum
@@ -46,16 +47,20 @@ class MatchDateByCreatedTime(MatchAction):
         self.record_db = Database(records.id)
         self.record_to_date = RelationProperty(f'{DatabaseEnum.date_db.prefix}{record_to_date}')
 
-    def query_all(self) -> Children[Page]:
+    def query_all(self) -> Paginator[Page]:
         return self.record_db.query(self.record_to_date.filter.is_empty())
 
     def filter(self, record: Page) -> bool:
         return record.parent == self.record_db and not record.properties[self.record_to_date]
 
     def process(self, records: Iterable[Page]):
+        records = list(records)
+        if not records:
+            return
+        print(self)
         for record in records:
             date = self.process_page(record)
-            print(f'{record} -> {date if date else ":Skipped"}')
+            print(f'\t{record}\n\t\t-> {date if date else ":Skipped"}')
 
     def process_page(self, record: Page) -> Optional[Page]:
         record_created_date = get_record_created_date(record)
@@ -74,7 +79,7 @@ class MatchReadingsStartDate(MatchAction):
         self.reading_db = Database(DatabaseEnum.reading_db.id)
         self.event_db = Database(DatabaseEnum.event_db.id)
 
-    def query_all(self) -> Children[Page]:
+    def query_all(self) -> Paginator[Page]:
         return self.reading_db.query(
             reading_to_date.filter.is_empty() & (
                     reading_to_event.filter.is_not_empty()
@@ -88,13 +93,17 @@ class MatchReadingsStartDate(MatchAction):
                      or reading.properties[reading_match_date_by_created_time]))
 
     def process(self, readings: Iterable[Page]):
+        readings = list(readings)
+        if not readings:
+            return
+        print(self)
         for reading in readings:
             date = self.find_date(reading)
             # final check if the property value is filled in the meantime
             if reading.retrieve().properties[reading_to_date]:
                 return
             reading.update(PageProperties({reading_to_date: reading_to_date.page_value([date])}))
-            print(f'{reading} -> {date if date else ": Skipped"}')
+            print(f'\t{reading}\n\t\t-> {date if date else ": Skipped"}')
 
     def find_date(self, reading: Page) -> Optional[Page]:
         reading_events = reading.properties[reading_to_event]
@@ -120,14 +129,18 @@ class MatchReadingsStartDate(MatchAction):
 
 
 class MatchWeekByRefDate(MatchAction):
-    def __init__(self, base: MatchActionBase, records: DatabaseEnum,
+    def __init__(self, base: MatchActionBase, record_db_enum: DatabaseEnum,
                  record_to_week: str, record_to_date: str):
         super().__init__(base)
-        self.record_db = Database(records.id)
+        self.record_db = Database(record_db_enum.id)
+        self.record_db.title = record_db_enum.title
         self.record_to_week = RelationProperty(f'{DatabaseEnum.week_db.prefix}{record_to_week}')
         self.record_to_date = RelationProperty(f'{DatabaseEnum.date_db.prefix}{record_to_date}')
 
-    def query_all(self) -> Children[Page]:
+    def __repr__(self):
+        return repr_object(self, ['title', 'record_to_week', 'record_to_date'])
+
+    def query_all(self) -> Paginator[Page]:
         return self.record_db.query(
             self.record_to_week.filter.is_empty() & self.record_to_date.filter.is_not_empty())
 
@@ -136,9 +149,13 @@ class MatchWeekByRefDate(MatchAction):
                 and record.properties[self.record_to_date])
 
     def process(self, records: Iterable[Page]):
+        records = list(records)
+        if not records:
+            return
+        print(self)
         for record in records:
             week = self.process_page(record)
-            print(f'{record} -> {week if week else ": Skipped"}')
+            print(f'\t{record}\n\t\t-> {week if week else ": Skipped"}')
 
     def process_page(self, record: Page) -> Optional[Page]:
         record_date = record.properties[self.record_to_date][0]
@@ -158,20 +175,27 @@ class MatchWeekByDateValue(MatchAction):
         super().__init__(base)
         self.date_db = Database(DatabaseEnum.date_db.id)
 
-    def query_all(self) -> Children[Page]:
+    def __repr__(self):
+        return repr_object(self, [])
+
+    def query_all(self) -> Paginator[Page]:
         return self.date_db.query(date_to_week.filter.is_empty())
 
     def filter(self, date: Page) -> bool:
         return date.parent == self.date_db and not date.properties[date_to_week]
 
     def process(self, dates: Iterable[Page]):
+        dates = list(dates)
+        if not dates:
+            return
+        print(self)
         for date in dates:
             date_value = date.properties[date_manual_value]
             week = self.week_namespace.get_by_date_value(date_value.start)
             if date.retrieve().properties[date_to_week]:
                 continue
             date.update(PageProperties({date_to_week: date_to_week.page_value([week])}))
-            print(f'{date} -> {week}')
+            print(f'\t{date}\n\t\t-> {week}')
 
 
 class DatabaseIndex(metaclass=ABCMeta):

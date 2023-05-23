@@ -12,8 +12,7 @@ from requests import JSONDecodeError
 
 from notion_df.util.collection import StrEnum
 from notion_df.util.exception import NotionDfValueError
-from notion_df.util.misc import check_classvars_are_defined
-from notion_df.util.serialization import DualSerializable, deserialize, serialize, Deserializable
+from notion_df.util.serialization import deserialize, serialize, Deserializable
 from notion_df.variable import Settings, print_width
 
 MAX_PAGE_SIZE = 100
@@ -24,8 +23,8 @@ class Response(Deserializable, metaclass=ABCMeta):
     timestamp: float = field(init=False, default_factory=datetime.now().timestamp)
 
 
-Response_T = TypeVar('Response_T', bound=Response)
-ResponseElement_T = TypeVar('ResponseElement_T', bound=Response | DualSerializable)
+Response_T = TypeVar('Response_T')
+ResponseElement_T = TypeVar('ResponseElement_T')
 
 
 @dataclass
@@ -66,7 +65,11 @@ class RequestSettings:
 
 
 class SingleRequest(Generic[Response_T], BaseRequest, metaclass=ABCMeta):
-    response_type: type[Response_T]  # TODO define assert
+    response_type: type[Response_T]
+
+    def __init_subclass__(cls, **kwargs):
+        if not inspect.isabstract(cls):
+            assert cls.response_type
 
     @final
     def execute(self) -> Response_T:
@@ -81,10 +84,12 @@ class SingleRequest(Generic[Response_T], BaseRequest, metaclass=ABCMeta):
 
 
 class PaginatedRequest(Generic[ResponseElement_T], BaseRequest, metaclass=ABCMeta):
-    response_element_type: type[ResponseElement_T]  # TODO define assert
+    response_element_type: type[ResponseElement_T]
     page_size: int = None
-    # TODO: remove page_size
-    #  - execute() returns PaginatedResponse instead of builtin iterator (which supports getitem by slice)
+
+    def __init_subclass__(cls, **kwargs):
+        if not inspect.isabstract(cls):
+            assert cls.response_element_type
 
     @final
     def execute_once(self, page_size: int = MAX_PAGE_SIZE, start_cursor: Optional[str] = None) -> dict[str, Any]:

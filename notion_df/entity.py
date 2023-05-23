@@ -23,7 +23,7 @@ from notion_df.request.database import CreateDatabase, UpdateDatabase, RetrieveD
 from notion_df.request.page import CreatePage, UpdatePage, RetrievePage, RetrievePagePropertyItem
 from notion_df.request.request_core import Response_T
 from notion_df.request.search import SearchByTitle
-from notion_df.util.exception import NotionDfTypeError, NotionDfValueError, NotionDfKeyError
+from notion_df.util.exception import NotionDfTypeError, NotionDfValueError, NotionDfKeyError, NotionDfIndexError
 from notion_df.util.misc import get_id, UUID, repr_object
 from notion_df.variable import Settings
 
@@ -113,19 +113,20 @@ class Block(BaseBlock[BlockResponse]):
         self.value = response.value
 
     @staticmethod
-    def _send_child_block_responses(block_responses: Iterable[BlockResponse]) -> Children[Block]:
-        block_list = []
-        for block_response in block_responses:
-            block = Block(block_response.id)
-            block.send_response(block_response)
-            block_list.append(block)
-        return Children(block_list)
+    def _send_child_block_responses(block_responses: Iterable[BlockResponse]) -> Paginator[Block]:
+        def it():
+            for block_response in block_responses:
+                block = Block(block_response.id)
+                block.send_response(block_response)
+                yield block
+
+        return Paginator(Block, it())
 
     def retrieve(self) -> Self:
         response = RetrieveBlock(token, self.id).execute()
         return self.send_response(response)
 
-    def retrieve_children(self) -> Children[Block]:
+    def retrieve_children(self) -> Paginator[Block]:
         block_responses = RetrieveBlockChildren(token, self.id).execute()
         return self._send_child_block_responses(block_responses)
 
@@ -137,11 +138,11 @@ class Block(BaseBlock[BlockResponse]):
         response = DeleteBlock(token, self.id).execute()
         return self.send_response(response)
 
-    def append_children(self, child_values: list[BlockValue]) -> Children[Block]:
+    def append_children(self, child_values: list[BlockValue]) -> list[Block]:
         if not child_values:
-            return Children([])
+            return []
         block_responses = AppendBlockChildren(token, self.id, child_values).execute()
-        return self._send_child_block_responses(block_responses)
+        return list(self._send_child_block_responses(block_responses))
 
     def create_child_database(self, title: RichText, *,
                               properties: Optional[DatabaseProperties] = None,
@@ -187,13 +188,14 @@ class Database(BaseBlock[DatabaseResponse]):
         self.is_inline = response.is_inline
 
     @staticmethod
-    def _send_child_page_responses(page_responses: Iterable[PageResponse]) -> Children[Page]:
-        page_list = []
-        for page_response in page_responses:
-            page = Page(page_response.id)
-            page.send_response(page_response)
-            page_list.append(page)
-        return Children(page_list)
+    def _send_child_page_responses(page_responses: Iterable[PageResponse]) -> Paginator[Page]:
+        def it():
+            for page_response in page_responses:
+                page = Page(page_response.id)
+                page.send_response(page_response)
+                yield page
+
+        return Paginator(Page, it())
 
     def retrieve(self) -> Self:
         if Settings.print and hasattr(self, 'title') and hasattr(self, 'url'):
@@ -203,7 +205,7 @@ class Database(BaseBlock[DatabaseResponse]):
 
     # noinspection PyShadowingBuiltins
     def query(self, filter: Optional[Filter] = None, sort: Optional[list[Sort]] = None,
-              page_size: Optional[int] = None) -> Children[Page]:
+              page_size: Optional[int] = None) -> Paginator[Page]:
         if Settings.print and hasattr(self, 'title') and hasattr(self, 'url'):
             print('query', self.title.plain_text, self.url)
         page_responses = QueryDatabase(token, self.id, filter, sort, page_size).execute()
@@ -317,36 +319,71 @@ class Page(BaseBlock[PageResponse]):
         return self.as_block().create_child_database(title, properties=properties, icon=icon, cover=cover)
 
 
-Child_T = TypeVar('Child_T')
+Element_T = TypeVar('Element_T')
 
 
-class Children(Sequence[Child_T]):
-    def __init__(self, values: list[Child_T]):
-        self._values: list[Child_T] = values
-        self._by_id: dict[UUID, Child_T] = {child.id: child for child in self._values}
-
-    def __getitem__(self, index_or_id: int | UUID | slice) -> Child_T:
-        if isinstance(index_or_id, int) or isinstance(index_or_id, slice):
-            return self._values[index_or_id]
-        elif isinstance(index_or_id, UUID):
-            return self._by_id[index_or_id]
-        else:
-            raise NotionDfTypeError("Invalid argument type. Expected int, UUID or slice", {'index_or_id': index_or_id})
-
-    def get(self, index_or_id: int | UUID | slice) -> Optional[Child_T]:
-        try:
-            return self[index_or_id]
-        except (IndexError, KeyError):
-            return None
-
-    def __len__(self):
-        return len(self._values)
+class Paginator(Sequence[Element_T]):
+    def __init__(self, element_type: type[Element_T], it: Iterator[Element_T]):
+        self.element_type: type[Element_T] = element_type
+        self._it: Iterator[Element_T] = it
+        self._values: list[Element_T] = []
 
     def __repr__(self):
-        return repr_object(self, ['values'])
+        return repr_object(self, ['element_type'])
+
+    def _fetch_until(self, index: int) -> None:
+        """fetch until self._values[index] is possible"""
+        while len(self._values) <= index:
+            try:
+                self._values.append(next(self._it))
+            except StopIteration:
+                raise NotionDfIndexError("Index out of range", {'self': self, 'index': index})
+
+    def _fetch_all(self) -> None:
+        for element in self._it:
+            self._values.append(element)
+
+    @overload
+    def __getitem__(self, index_or_id: int) -> Element_T:
+        ...
+
+    @overload
+    def __getitem__(self, index_or_id: slice) -> list[Element_T]:
+        ...
+
+    def __getitem__(self, index: int | slice) -> Element_T | list[Element_T]:
+        if isinstance(index, int):
+            if index >= 0:
+                self._fetch_until(index)
+            else:
+                self._fetch_all()
+            return self._values[index]
+        if isinstance(index, slice):
+            step = index.step if index.step is not None else 1
+
+            if ((index.start is not None and index.start < 0)
+                    or (index.stop is not None and index.stop < 0)
+                    or (index.stop is None and step > 0)
+                    or (index.start is None and step < 0)):
+                self._fetch_all()
+                return self._values[index]
+
+            start = index.start if index.start is not None else 0
+            stop = index.stop if index.stop is not None else 0
+            self._fetch_until(max(start, stop))
+            return [self._values[i] for i in range(start, stop, step)]
+        else:
+            raise NotionDfTypeError("bad argument - expected int or slice", {'self': self, 'index': index})
+
+    def __len__(self):
+        self._fetch_all()
+        return len(self._values)
+
+    def __iter__(self):
+        self._fetch_all()
+        return iter(self._values)
 
 
-Namespace_KT = UUID | BaseBlock
 Block_T = TypeVar('Block_T', bound=Block)
 Database_T = TypeVar('Database_T', bound=Database)
 Page_T = TypeVar('Page_T', bound=Page)

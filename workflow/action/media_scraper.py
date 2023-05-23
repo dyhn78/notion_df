@@ -1,7 +1,7 @@
 from functools import cached_property
 from typing import Optional, Callable, Any, Iterable
 
-from notion_df.entity import Page, Database, Children
+from notion_df.entity import Page, Database, Paginator
 from notion_df.object.block import ChildPageBlockValue
 from notion_df.object.common import SelectOption
 from notion_df.object.filter import CompoundFilter
@@ -48,7 +48,7 @@ class MediaScraper(Action):
     def driver(self):
         return self.driver_factory()
 
-    def query_all(self) -> Children[Page]:
+    def query_all(self) -> Paginator[Page]:
         return self.reading_db.query(is_book.filter.equals(True) & CompoundFilter('or', [
             edit_status.filter.equals(option) for option in
             [EditStatusValue.default, EditStatusValue.metadata_overwrite, EditStatusValue.location_overwrite, None]
@@ -60,9 +60,14 @@ class MediaScraper(Action):
                  [EditStatusValue.default, EditStatusValue.metadata_overwrite, EditStatusValue.location_overwrite]
                  or page.properties[edit_status] is None))
 
-    def process(self, pages: Iterable[Page]):
-        for reading in pages:
+    def process(self, readings: Iterable[Page]):
+        readings = list(readings)
+        if not readings:
+            return
+        print(self)
+        for reading in readings:
             ReadingMediaScraperUnit(self, reading).execute()
+            print(f'\t{reading}')
 
 
 class ReadingMediaScraperUnit:

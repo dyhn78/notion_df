@@ -49,6 +49,10 @@ class NotionDfTypeError(NotionDfException, TypeError):
     pass
 
 
+class NotionDfIndexError(NotionDfException, IndexError):
+    pass
+
+
 class NotionDfNotImplementedError(NotionDfException, NotImplementedError):
     pass
 
