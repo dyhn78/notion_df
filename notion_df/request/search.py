@@ -9,7 +9,7 @@ from notion_df.util.collection import DictFilter
 
 @dataclass
 class SearchByTitle(PaginatedRequest[Union[PageResponse, DatabaseResponse]]):
-    return_type = Union[PageResponse, DatabaseResponse]
+    response_element_type = Union[PageResponse, DatabaseResponse]
     query: str
     entity: Literal['page', 'database', None] = None
     sort: TimestampSort = TimestampSort('last_edited_time', 'descending')

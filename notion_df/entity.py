@@ -5,7 +5,7 @@ from abc import abstractmethod
 from collections.abc import Sequence
 from datetime import datetime
 from functools import cache
-from typing import Optional, TypeVar, Union, Generic, final, Final, Any, Literal, overload, Hashable, Iterator
+from typing import Optional, TypeVar, Union, Generic, final, Final, Any, Literal, overload, Hashable, Iterator, Iterable
 
 from typing_extensions import Self
 
@@ -64,21 +64,20 @@ class BaseBlock(Generic[Response_T], Hashable):
     @cache
     def __repr__(self) -> str:
         if not hasattr(self, 'parent'):
-            parent_repr = None
+            repr_parent = None
         elif self.parent is None:
-            parent_repr = 'workspace'
+            repr_parent = 'workspace'
         else:
-            parent_repr = repr_object(self.parent, self.parent._attrs_to_repr_parent())
+            repr_parent = repr_object(self.parent, self.parent._attrs_to_repr_parent())
 
         return repr_object(self, {
             **self._attrs_to_repr_parent(),
-            'parent': parent_repr
+            'id_or_url': getattr(self, 'url', str(self.id)),
+            'parent': repr_parent
         })
 
     def _attrs_to_repr_parent(self) -> dict[str, Any]:
-        return {
-            'id_or_url': getattr(self, 'url', str(self.id)),
-        }
+        return {}
 
     @final
     def send_response(self, response: Response_T) -> Self:
@@ -102,8 +101,8 @@ class Block(BaseBlock[BlockResponse]):
     archived: bool
     value: BlockValue
 
+    # noinspection DuplicatedCode
     def _send_response(self, response: BlockResponse) -> None:
-        # noinspection DuplicatedCode
         self.parent = response.parent.entity
         self.created_time = response.created_time
         self.last_edited_time = response.last_edited_time
@@ -114,9 +113,9 @@ class Block(BaseBlock[BlockResponse]):
         self.value = response.value
 
     @staticmethod
-    def _send_child_block_response_list(block_response_list: list[BlockResponse]) -> Children[Block]:
+    def _send_child_block_responses(block_responses: Iterable[BlockResponse]) -> Children[Block]:
         block_list = []
-        for block_response in block_response_list:
+        for block_response in block_responses:
             block = Block(block_response.id)
             block.send_response(block_response)
             block_list.append(block)
@@ -127,8 +126,8 @@ class Block(BaseBlock[BlockResponse]):
         return self.send_response(response)
 
     def retrieve_children(self) -> Children[Block]:
-        block_response_list = RetrieveBlockChildren(token, self.id).execute()
-        return self._send_child_block_response_list(block_response_list)
+        block_responses = RetrieveBlockChildren(token, self.id).execute()
+        return self._send_child_block_responses(block_responses)
 
     def update(self, block_type: Optional[BlockValue], archived: Optional[bool]) -> Self:
         response = UpdateBlock(token, self.id, block_type, archived).execute()
@@ -141,8 +140,8 @@ class Block(BaseBlock[BlockResponse]):
     def append_children(self, child_values: list[BlockValue]) -> Children[Block]:
         if not child_values:
             return Children([])
-        block_response_list = AppendBlockChildren(token, self.id, child_values).execute()
-        return self._send_child_block_response_list(block_response_list)
+        block_responses = AppendBlockChildren(token, self.id, child_values).execute()
+        return self._send_child_block_responses(block_responses)
 
     def create_child_database(self, title: RichText, *,
                               properties: Optional[DatabaseProperties] = None,
@@ -170,14 +169,12 @@ class Database(BaseBlock[DatabaseResponse]):
             title_value = self.title.plain_text
         except AttributeError:
             title_value = None
-
         return {
             'title': title_value,
-            'id_or_url': getattr(self, 'url', str(self.id)),
         }
 
+    # noinspection DuplicatedCode
     def _send_response(self, response: DatabaseResponse) -> None:
-        # noinspection DuplicatedCode
         self.parent = response.parent.entity
         self.created_time = response.created_time
         self.last_edited_time = response.last_edited_time
@@ -190,9 +187,9 @@ class Database(BaseBlock[DatabaseResponse]):
         self.is_inline = response.is_inline
 
     @staticmethod
-    def _send_child_page_response_list(page_response_list: list[PageResponse]) -> Children[Page]:
+    def _send_child_page_responses(page_responses: Iterable[PageResponse]) -> Children[Page]:
         page_list = []
-        for page_response in page_response_list:
+        for page_response in page_responses:
             page = Page(page_response.id)
             page.send_response(page_response)
             page_list.append(page)
@@ -209,9 +206,8 @@ class Database(BaseBlock[DatabaseResponse]):
               page_size: Optional[int] = None) -> Children[Page]:
         if Settings.print and hasattr(self, 'title') and hasattr(self, 'url'):
             print('query', self.title.plain_text, self.url)
-        request = QueryDatabase(token, self.id, filter, sort, page_size)
-        page_response_list = request.execute()
-        return self._send_child_page_response_list(page_response_list)
+        page_responses = QueryDatabase(token, self.id, filter, sort, page_size).execute()
+        return self._send_child_page_responses(page_responses)
 
     def update(self, title: RichText, properties: DatabaseProperties) -> Self:
         if Settings.print and hasattr(self, 'title') and hasattr(self, 'url'):
@@ -250,7 +246,6 @@ class Page(BaseBlock[PageResponse]):
             title_value = None
         return {
             'title': title_value,
-            'id_or_url': getattr(self, 'url', str(self.id)),
         }
 
     # noinspection DuplicatedCode
@@ -381,10 +376,10 @@ def search_by_title(query: str, entity: Literal[None],
 def search_by_title(query: str, entity: Literal['page', 'database', None] = None,
                     sort_by_last_edited_time: Direction = 'descending',
                     page_size: int = None) -> Iterator[Union[Page, Database]]:
-    response_element_iter = SearchByTitle(token, query, entity,
-                                          TimestampSort('last_edited_time', sort_by_last_edited_time),
-                                          page_size).execute_iter()
-    for response_element in response_element_iter:
+    response_elements = SearchByTitle(token, query, entity,
+                                      TimestampSort('last_edited_time', sort_by_last_edited_time),
+                                      page_size).execute()
+    for response_element in response_elements:
         if isinstance(response_element, DatabaseResponse):
             yield Database(response_element.id).send_response(response_element)
         elif isinstance(response_element, PageResponse):

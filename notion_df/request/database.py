@@ -17,7 +17,7 @@ from notion_df.util.collection import DictFilter
 
 @dataclass
 class RetrieveDatabase(SingleRequest[DatabaseResponse]):
-    return_type = DatabaseResponse
+    response_type = DatabaseResponse
     id: UUID
 
     def get_settings(self) -> RequestSettings:
@@ -31,7 +31,7 @@ class RetrieveDatabase(SingleRequest[DatabaseResponse]):
 @dataclass
 class CreateDatabase(SingleRequest[DatabaseResponse]):
     """https://developers.notion.com/reference/create-a-database"""
-    return_type = DatabaseResponse
+    response_type = DatabaseResponse
     parent_id: UUID
     title: RichText
     properties: Optional[DatabaseProperties] = field(default_factory=DatabaseProperties)
@@ -57,7 +57,7 @@ class CreateDatabase(SingleRequest[DatabaseResponse]):
 
 @dataclass
 class UpdateDatabase(SingleRequest[DatabaseResponse]):
-    return_type = DatabaseResponse
+    response_type = DatabaseResponse
     id: UUID
     title: RichText
     properties: Optional[DatabaseProperties] = None
@@ -79,7 +79,7 @@ class UpdateDatabase(SingleRequest[DatabaseResponse]):
 
 @dataclass
 class QueryDatabase(PaginatedRequest[PageResponse]):
-    return_type = PageResponse
+    response_element_type = PageResponse
     id: UUID
     filter: Filter
     sort: list[Sort]
@@ -94,7 +94,3 @@ class QueryDatabase(PaginatedRequest[PageResponse]):
             'filter': self.filter,
             'sorts': self.sort,
         })
-
-    # TODO: resolve why type hint (Response_T -> PageResponse) is not working.
-    def execute(self) -> list[PageResponse]:
-        return super().execute()

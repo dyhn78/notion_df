@@ -8,7 +8,7 @@ from notion_df.object.block import BlockValue, serialize_partial_block_list, Pag
 from notion_df.object.common import Icon
 from notion_df.object.file import ExternalFile
 from notion_df.object.parent import PartialParent
-from notion_df.object.property import Properties, PageProperties, Property
+from notion_df.object.property import PageProperties, Property, PropertyValue_T
 from notion_df.request.request_core import SingleRequest, RequestSettings, Version, Method, MAX_PAGE_SIZE, \
     PaginatedRequest, BaseRequest
 from notion_df.util.collection import DictFilter
@@ -18,7 +18,7 @@ from notion_df.util.collection import DictFilter
 class RetrievePage(SingleRequest[PageResponse]):
     """https://developers.notion.com/reference/retrieve-a-page"""
     id: UUID
-    return_type = PageResponse
+    response_type = PageResponse
 
     def get_settings(self) -> RequestSettings:
         return RequestSettings(Version.v20220628, Method.GET,
@@ -31,9 +31,9 @@ class RetrievePage(SingleRequest[PageResponse]):
 @dataclass
 class CreatePage(SingleRequest[PageResponse]):
     """https://developers.notion.com/reference/post-page"""
-    return_type = PageResponse
+    response_type = PageResponse
     parent: PartialParent
-    properties: PageProperties = field(default_factory=Properties)
+    properties: PageProperties = field(default_factory=PageProperties)
     children: list[BlockValue] = None
     icon: Optional[Icon] = field(default=None)
     cover: Optional[ExternalFile] = field(default=None)
@@ -55,7 +55,7 @@ class CreatePage(SingleRequest[PageResponse]):
 @dataclass
 class UpdatePage(SingleRequest[PageResponse]):
     """https://developers.notion.com/reference/patch-page"""
-    return_type = PageResponse
+    response_type = PageResponse
     id: UUID
     properties: Optional[PageProperties] = None
     """send empty PageProperty to delete all properties."""
@@ -77,9 +77,8 @@ class UpdatePage(SingleRequest[PageResponse]):
 
 
 @dataclass
-class RetrievePagePropertyItem(BaseRequest[Any]):
+class RetrievePagePropertyItem(BaseRequest):
     """https://developers.notion.com/reference/retrieve-a-page-property"""
-    return_type = Any
     page_id: UUID
     property_id: str
     page_size: int = None
@@ -93,7 +92,7 @@ class RetrievePagePropertyItem(BaseRequest[Any]):
 
     execute_once = PaginatedRequest.execute_once
 
-    def execute(self) -> Any:
+    def execute(self) -> PropertyValue_T:
         # TODO: deduplicate with PaginatedRequest.execute() if possible.
         page_size_total = self.page_size if self.page_size is not None else float('inf')
         page_size = min(MAX_PAGE_SIZE, page_size_total)

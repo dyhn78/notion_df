@@ -5,7 +5,7 @@ from abc import abstractmethod, ABCMeta
 from dataclasses import dataclass, field
 from datetime import datetime
 from pprint import pprint
-from typing import TypeVar, Generic, ClassVar, Any, final, Optional, Iterator, overload
+from typing import TypeVar, Generic, Any, final, Optional, Iterator
 
 import requests
 from requests import JSONDecodeError
@@ -25,16 +25,15 @@ class Response(Deserializable, metaclass=ABCMeta):
 
 
 Response_T = TypeVar('Response_T', bound=Response)
-ResponseElement_T = TypeVar('ResponseElement_T', bound=DualSerializable)
+ResponseElement_T = TypeVar('ResponseElement_T', bound=Response | DualSerializable)
 
 
 @dataclass
-class BaseRequest(Generic[Response_T], metaclass=ABCMeta):
+class BaseRequest(metaclass=ABCMeta):
     """base request form made of various Resources.
     all non-abstract subclasses must provide class type argument `Response_T`.
     get token from https://www.notion.so/my-integrations"""
     token: str
-    return_type: ClassVar[type[Response]]
 
     def __init_subclass__(cls, **kwargs):
         if inspect.isclass(getattr(cls, 'return_type', None)):
@@ -51,7 +50,7 @@ class BaseRequest(Generic[Response_T], metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def execute(self) -> Response_T:
+    def execute(self) -> Response:
         """the unified execution method."""
         pass
 
@@ -71,8 +70,9 @@ class RequestSettings:
     url: str
 
 
-@dataclass
-class SingleRequest(BaseRequest[Response_T], metaclass=ABCMeta):
+class SingleRequest(Generic[Response_T], BaseRequest, metaclass=ABCMeta):
+    response_type: type[Response_T]
+
     @final
     def execute(self) -> Response_T:
         settings = self.get_settings()
@@ -82,23 +82,14 @@ class SingleRequest(BaseRequest[Response_T], metaclass=ABCMeta):
 
     @classmethod
     def parse_response_data(cls, data: dict[str, Any]) -> Response_T:
-        return cls.return_type.deserialize(data)
+        return cls.response_type.deserialize(data)
 
 
-class PaginatedRequest(BaseRequest[list[ResponseElement_T]], metaclass=ABCMeta):
-    """return_type must be ResponseElement_T (not Response_T)"""
+class PaginatedRequest(Generic[ResponseElement_T], BaseRequest, metaclass=ABCMeta):
+    response_element_type: type[ResponseElement_T]
     page_size: int = None
     # TODO: remove page_size
-    #  - execute_iter() returns PaginatedResponse instead of builtin iterator (which supports getitem by slice)
-    #  - remove execute()
-
-    # @overload
-    # def execute_once(self, *, page_size: int = MAX_PAGE_SIZE) -> dict[str, Any]:
-    #     ...
-    #
-    # @overload
-    # def execute_once(self, *, start_cursor: Optional[str] = None) -> dict[str, Any]:
-    #     ...
+    #  - execute() returns PaginatedResponse instead of builtin iterator (which supports getitem by slice)
 
     @final
     def execute_once(self, page_size: int = MAX_PAGE_SIZE, start_cursor: Optional[str] = None) -> dict[str, Any]:
@@ -125,8 +116,7 @@ class PaginatedRequest(BaseRequest[list[ResponseElement_T]], metaclass=ABCMeta):
                            json=serialize(body))
         return response.json()
 
-    def execute_iter(self) -> Iterator[ResponseElement_T]:
-        # TODO: allow entity to use execute_iter() instead of execute()
+    def execute(self) -> Iterator[ResponseElement_T]:
         page_size_total = self.page_size if self.page_size is not None else float('inf')
         page_size_retrieved = 0
 
@@ -141,23 +131,10 @@ class PaginatedRequest(BaseRequest[list[ResponseElement_T]], metaclass=ABCMeta):
             start_cursor = data['next_cursor']
         return
 
-    def execute(self) -> list[ResponseElement_T]:
-        return list(self.execute_iter())
-
     @classmethod
-    def parse_response_data(cls, data: dict[str, Any]) -> list[ResponseElement_T]:
-        element_list = []
+    def parse_response_data(cls, data: dict[str, Any]) -> Iterator[ResponseElement_T]:
         for data_element in data['results']:
-            element_list.append(deserialize(cls.return_type, data_element))
-        return element_list
-
-    @classmethod
-    def parse_response_data_list(cls, data_list: list[dict[str, Any]]) -> list[ResponseElement_T]:
-        element_list = []
-        for data in data_list:
-            for data_element in data['results']:
-                element_list.append(deserialize(cls.return_type, data_element))
-        return element_list
+            yield deserialize(cls.response_element_type, data_element)
 
 
 def request(*, method: str, url: str, headers: dict[str, Any], params: Any, json: Any) -> requests.Response:

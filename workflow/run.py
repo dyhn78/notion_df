@@ -53,10 +53,10 @@ def run_all(print_body: bool, create_window: bool) -> None:
             action.execute_all()
 
 
-def run_from_last_edited_time_bound(print_body: bool, create_window: bool, window: timedelta) -> None:
+def run_from_last_edited_time_bound(print_body: bool, create_window: bool, timedelta_size: timedelta) -> None:
     with Logger(print_body=print_body) as logger:
         workflow = Workflow(create_window)
-        Action.execute_by_last_edited_time(workflow.actions, logger.start_time - window, logger.start_time)
+        Action.execute_by_last_edited_time(workflow.actions, logger.start_time - timedelta_size, logger.start_time)
 
 
 def run_from_last_success(print_body: bool, create_window: bool) -> bool:
@@ -77,4 +77,4 @@ def run_from_last_success(print_body: bool, create_window: bool) -> bool:
 
 
 if __name__ == '__main__':
-    run_from_last_success(print_body=True, create_window=False)
+    run_from_last_edited_time_bound(print_body=True, create_window=False, timedelta_size=timedelta(minutes=3))
