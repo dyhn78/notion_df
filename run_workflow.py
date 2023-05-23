@@ -30,6 +30,6 @@ if __name__ == '__main__':
         sys.exit(1)
     sleep(5)
     try:
-        os.execv(sys.executable, [sys.executable, (path.resolve())])
+        os.execv(sys.executable, [sys.executable, path])
     except OSError as e:
         print("Execution failed:", e)
