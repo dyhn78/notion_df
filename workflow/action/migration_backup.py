@@ -31,9 +31,9 @@ class ResponseBackupService:
         path = self._get_path(entity)
         path.parent.mkdir(parents=True, exist_ok=True)
         if path.is_file():
-            print(f'\t{entity} -> overwrite ({self.read(entity).timestamp})')
+            print(f'\t{entity}\t\t-> overwrite ({self.read(entity).timestamp})')
         else:
-            print(f'\t{entity} -> create')
+            print(f'\t{entity}\t\t-> create')
         with path.open('w') as file:
             json.dump(entity.last_response.raw_data, file, indent=2)
 

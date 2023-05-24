@@ -26,7 +26,10 @@ class DatabaseEnum(Enum):
 
     @property
     def entity(self) -> Database:
-        return Database(self.id)
+        db = Database(self.id)
+        if not hasattr(db, 'title'):
+            db.title = self.title
+        return db
 
     @classmethod
     def from_entity(cls, entity: Entity) -> Optional[DatabaseEnum]:
