@@ -17,7 +17,7 @@ from notion_df.util.misc import repr_object
 from notion_df.util.serialization import deserialize_datetime
 from notion_df.variable import Settings, print_width, my_tz
 
-min_timedelta: timedelta = timedelta(seconds=60)
+min_timedelta: timedelta = timedelta(seconds=10)
 my_user_id = UUID('a007d150-bc67-422c-87db-030a71867dd9')
 log_page_id = '6d16dc6747394fca95dc169c8c736e2d'
 log_page_block = Block(log_page_id)
