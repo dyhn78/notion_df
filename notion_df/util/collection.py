@@ -82,7 +82,10 @@ class Paginator(Sequence[T]):
 
     def __iter__(self) -> Iterator[T]:
         while True:
-            element = next(self._it)
+            try:
+                element = next(self._it)
+            except StopIteration:
+                return
             self._values.append(element)
             yield element
 
