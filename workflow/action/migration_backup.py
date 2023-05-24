@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 from typing import Optional, cast
 
-from notion_df.entity import Entity, Page
+from notion_df.entity import Entity, Page, Database
 from notion_df.object.property import RelationProperty, PageProperties
 from notion_df.request.request_core import Response_T
 from notion_df.util.collection import Paginator
@@ -50,7 +50,7 @@ class MigrationBackupSaveAction(IterableAction):
         # return Paginator.chain(Page, results)
 
     def filter(self, page: Page) -> bool:
-        return True
+        return isinstance(page.parent, Database)
 
     def process_page(self, page: Page):
         self.backup.write(page)
