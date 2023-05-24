@@ -43,11 +43,11 @@ class MigrationBackupSaveAction(IterableAction):
         self.backup = ResponseBackupService(backup_path)
 
     def query_all(self) -> Paginator[Page]:
-        return DatabaseEnum.event_db.entity.query(page_size=1)
-        # results = []
-        # for db_enum in DatabaseEnum:
-        #     results.append(db_enum.entity.query())
-        # return Paginator.chain(Page, results)
+        # return DatabaseEnum.event_db.entity.query(page_size=1)
+        results = []
+        for db_enum in DatabaseEnum:
+            results.append(db_enum.entity.query())
+        return Paginator.chain(Page, results)
 
     def filter(self, page: Page) -> bool:
         return isinstance(page.parent, Database)
