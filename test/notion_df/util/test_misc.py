@@ -2,7 +2,7 @@ import uuid
 
 import pytest
 
-from notion_df.util.misc import get_id
+from notion_df.util.misc import get_page_id
 
 block_uuid = uuid.uuid4()
 block_uuid_dash = str(block_uuid)
@@ -23,4 +23,4 @@ view_uuid_no_dash = str(uuid.uuid4()).replace('-', '')
     block_uuid_no_dash,
 ])
 def test_get_id(test_input):
-    assert get_id(test_input) == block_uuid
+    assert get_page_id(test_input) == block_uuid

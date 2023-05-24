@@ -46,7 +46,7 @@ def get_num_iterator() -> Iterator[int]:
 uuid_pattern = re.compile(r'[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}', re.I)
 
 
-def get_id(id_or_url: str | UUID) -> UUID:
+def get_page_id(id_or_url: str | UUID) -> UUID:
     # Regular expression to match both dashed and no-dash UUIDs
     if isinstance(id_or_url, UUID):
         return id_or_url
@@ -57,8 +57,18 @@ def get_id(id_or_url: str | UUID) -> UUID:
         return UUID(id_or_url)
 
 
-def get_url(id_or_url: str | UUID, workspace_name: str) -> str:
-    uuid = get_id(id_or_url)
+def get_block_id(id_or_url: str | UUID) -> UUID:
+    if isinstance(id_or_url, UUID):
+        return id_or_url
+    match = uuid_pattern.search(id_or_url.split('#')[-1])
+    if match:
+        return UUID(match.group(0))
+    else:
+        return UUID(id_or_url)
+
+
+def get_page_url(id_or_url: str | UUID, workspace_name: str) -> str:
+    uuid = get_page_id(id_or_url)
     return f'https://www.notion.so/{workspace_name}/' + str(uuid).replace('-', '')
 
 

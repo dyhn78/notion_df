@@ -133,7 +133,7 @@ class Logger:
         execution_time = datetime.now().astimezone(my_tz) - self.start_time
         return f'{self.start_time_str} - {round(execution_time.total_seconds(), 3)} seconds'
 
-    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+    def __exit__(self, exc_type: type, exc_val, exc_tb) -> None:
         if not self.enabled:
             return
         child_block_values = []
@@ -148,7 +148,7 @@ class Logger:
         #     summary_text = f"failure - {self.format_time()}: {exc_val}"
         #     summary_block_value = ParagraphBlockValue(RichText([TextSpan(summary_text)]))
         else:
-            summary_text = f"error - {self.format_time()} - {exc_type} - {exc_val}"
+            summary_text = f"error - {self.format_time()} - {exc_type.__name__} - {exc_val}"
             summary_block_value = ToggleBlockValue(RichText([TextSpan(summary_text), UserMention(my_user_id)]))
             traceback_str = traceback.format_exc()
             child_block_values = []

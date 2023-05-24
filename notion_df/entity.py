@@ -24,7 +24,7 @@ from notion_df.request.request_core import Response_T
 from notion_df.request.search import SearchByTitle
 from notion_df.util.collection import Paginator
 from notion_df.util.exception import NotionDfValueError, NotionDfKeyError
-from notion_df.util.misc import get_id, UUID, repr_object
+from notion_df.util.misc import get_page_id, UUID, repr_object, get_block_id
 from notion_df.variable import Settings
 
 token: Final[str] = os.getenv('NOTION_TOKEN')  # TODO: support multiple token
@@ -43,8 +43,13 @@ class Entity(Generic[Response_T], Hashable):
     last_timestamp: float
     """timestamp of last response. initialized as 0."""
 
+    @classmethod
+    @abstractmethod
+    def _get_id(cls, id_or_url: Union[UUID, str]) -> UUID:
+        pass
+
     def __new__(cls, id_or_url: Union[UUID, str]):
-        _id = get_id(id_or_url)
+        _id = cls._get_id(id_or_url)
         if (cls, _id) in namespace:
             return namespace[(cls, _id)]
         return super().__new__(cls)
@@ -54,7 +59,7 @@ class Entity(Generic[Response_T], Hashable):
             return
         self._initialized = True
 
-        self.id: Final[UUID] = get_id(id_or_url)
+        self.id: Final[UUID] = self._get_id(id_or_url)
         namespace[(type(self), self.id)] = self
         self.last_response = None
         self.last_timestamp = 0
@@ -108,6 +113,10 @@ class Block(Entity[BlockResponse]):
     """the None value never occurs from direct server response. It only happens from Page.as_block()"""
     archived: bool
     value: BlockValue
+
+    @classmethod
+    def _get_id(cls, id_or_url: Union[UUID, str]) -> UUID:
+        return get_block_id(id_or_url)
 
     # noinspection DuplicatedCode
     def _send_response(self, response: BlockResponse) -> None:
@@ -172,6 +181,10 @@ class Database(Entity[DatabaseResponse]):
     properties: DatabaseProperties
     archived: bool
     is_inline: bool
+
+    @classmethod
+    def _get_id(cls, id_or_url: Union[UUID, str]) -> UUID:
+        return get_page_id(id_or_url)
 
     def _attrs_to_repr_parent(self) -> dict[str, Any]:
         try:
@@ -248,6 +261,10 @@ class Page(Entity[PageResponse]):
     cover: Optional[ExternalFile]
     url: str
     properties: PageProperties
+
+    @classmethod
+    def _get_id(cls, id_or_url: Union[UUID, str]) -> UUID:
+        return get_page_id(id_or_url)
 
     def _attrs_to_repr_parent(self) -> dict[str, Any]:
         try:

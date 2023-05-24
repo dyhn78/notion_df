@@ -4,7 +4,7 @@ from functools import cached_property
 from typing import ClassVar, Optional
 
 from notion_df.entity import Database, Entity
-from notion_df.util.misc import get_id, get_url
+from notion_df.util.misc import get_page_id, get_page_url
 from workflow.constant.emoji_code import EmojiCode
 
 
@@ -15,8 +15,8 @@ class DatabaseEnum(Enum):
     def __init__(self, title: str, id_or_url: str, prefix: str):
         self._value_ = self._name_
         self.title = title
-        self.id = get_id(id_or_url)
-        self.url = get_url(id_or_url, 'dyhn')
+        self.id = get_page_id(id_or_url)
+        self.url = get_page_url(id_or_url, 'dyhn')
         self.prefix = prefix
         _id_to_member[Database(self.id)] = self
 
