@@ -1,12 +1,12 @@
 from pprint import pprint
 
-from notion_df.object.property import DualRelationPropertyKey, PageProperties
+from notion_df.object.property import DualRelationProperty, PageProperties
 from notion_df.variable import Settings
 from workflow.constant.block_enum import DatabaseEnum
 
-journal_to_stream = DualRelationPropertyKey('🔴전개')
-journal_to_stream_old = DualRelationPropertyKey('🔴depr')
-journal_db = DatabaseEnum.journal_db.database
+journal_to_stream = DualRelationProperty('🔴전개')
+journal_to_stream_old = DualRelationProperty('🔴depr')
+journal_db = DatabaseEnum.journal_db.entity
 
 
 def main():

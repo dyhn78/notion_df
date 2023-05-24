@@ -36,8 +36,12 @@ class Entity(Generic[Response_T], Hashable):
     There is only one instance with given subclass and id.
     You can compare two blocks directly `block_1 == block_2`, not having to compare id `block_1.id == block_2.id`"""
     id: UUID
-    timestamp: float
     parent: Union[Block, Database, Page, None]
+    last_response: Optional[Response_T]
+    """the latest response received by `send_response()`. 
+    this is initialized as None unlike the "proper attributes" (parent, title, properties)"""
+    last_timestamp: float
+    """timestamp of last response. initialized as 0."""
 
     def __new__(cls, id_or_url: Union[UUID, str]):
         _id = get_id(id_or_url)
@@ -52,7 +56,8 @@ class Entity(Generic[Response_T], Hashable):
 
         self.id: Final[UUID] = get_id(id_or_url)
         namespace[(type(self), self.id)] = self
-        self.timestamp = 0
+        self.last_response = None
+        self.last_timestamp = 0
 
     def __hash__(self) -> int:
         return hash((type(self), self.id))
@@ -81,12 +86,15 @@ class Entity(Generic[Response_T], Hashable):
 
     @final
     def send_response(self, response: Response_T) -> Self:
-        if response.timestamp > self.timestamp:
+        if response.timestamp > self.last_timestamp:
             self._send_response(response)
+            self.last_response = response
+            self.last_timestamp = response.timestamp
         return self
 
     @abstractmethod
     def _send_response(self, response: Response_T) -> None:
+        """copy the "proper attributes" to entity (without `last_response` and `last_timestamp`)"""
         pass
 
 
@@ -265,7 +273,7 @@ class Page(Entity[PageResponse]):
 
     def as_block(self) -> Block:
         block = Block(self.id)
-        if self.timestamp > block.timestamp:
+        if self.last_timestamp > block.last_timestamp:
             block.parent = self.parent
             block.created_time = self.created_time
             block.last_edited_time = self.last_edited_time
@@ -275,7 +283,7 @@ class Page(Entity[PageResponse]):
             block.archived = self.archived
             if not isinstance(getattr(block, 'value', None), ChildPageBlockValue):
                 block.value = ChildPageBlockValue(title='')
-            block.timestamp = self.timestamp
+            block.last_timestamp = self.last_timestamp
         return block
 
     def retrieve(self) -> Self:

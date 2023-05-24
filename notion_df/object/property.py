@@ -5,7 +5,6 @@ from collections.abc import MutableMapping
 from dataclasses import dataclass, field
 from datetime import datetime, date
 from typing import ClassVar, TypeVar, Generic, Any, Iterator, Optional, Literal, Union, Iterable, Final, TYPE_CHECKING
-from uuid import UUID
 
 from typing_extensions import Self
 
@@ -23,11 +22,12 @@ from notion_df.util.misc import check_classvars_are_defined, repr_object
 from notion_df.util.serialization import DualSerializable, deserialize, serialize
 
 if TYPE_CHECKING:
-    from notion_df.entity import Page
+    from notion_df.entity import Page, Database
 
 property_registry: FinalClassDict[str, type[Property]] = FinalClassDict()
 PropertyValue_T = TypeVar('PropertyValue_T')
-DatabasePropertyValue_T = TypeVar('DatabasePropertyValue_T', bound='DatabasePropertyValue')
+# TODO (low priority): fix that `DatabasePropertyValue_T.bound == DatabasePropertyValue` does not ruin the type hinting
+DatabasePropertyValue_T = TypeVar('DatabasePropertyValue_T')
 PagePropertyValue_T = TypeVar('PagePropertyValue_T')
 FilterBuilder_T = TypeVar('FilterBuilder_T', bound=FilterBuilder)
 
@@ -156,7 +156,8 @@ class Properties(DualSerializable, MutableMapping[Property, PropertyValue_T], me
         del self._values[key]
 
 
-class DatabaseProperties(Properties[Property[DatabasePropertyValue_T, Any, Any], DatabasePropertyValue_T]):
+class DatabaseProperties(Properties,
+                         MutableMapping[Property[DatabasePropertyValue_T, Any, Any], DatabasePropertyValue_T]):
     def __init__(
             self, properties: Optional[dict[
                 Property[DatabasePropertyValue_T, Any, Any], DatabasePropertyValue_T]] = None):
@@ -192,7 +193,7 @@ class DatabaseProperties(Properties[Property[DatabasePropertyValue_T, Any, Any],
         return super().__delitem__(key)
 
 
-class PageProperties(Properties[Property[Any, PagePropertyValue_T, Any], PagePropertyValue_T]):
+class PageProperties(Properties, MutableMapping[Property[Any, PagePropertyValue_T, Any], PagePropertyValue_T]):
     def __init__(
             self, properties: Optional[dict[Property[Any, PagePropertyValue_T, Any], PagePropertyValue_T]] = None):
         super().__init__(properties)
@@ -291,7 +292,7 @@ class FormulaDatabasePropertyValue(DatabasePropertyValue):
 @dataclass
 class RelationDatabasePropertyValue(DatabasePropertyValue, metaclass=ABCMeta):
     """eligible property types: ['relation']"""
-    database_id: UUID
+    database: Database
 
     @classmethod
     def deserialize(cls, serialized: dict[str, Any]) -> Self:
@@ -308,14 +309,11 @@ class RelationDatabasePropertyValue(DatabasePropertyValue, metaclass=ABCMeta):
         return subclass.deserialize(serialized)
 
 
-RelationDatabasePropertyValue_T = TypeVar('RelationDatabasePropertyValue_T', bound=RelationDatabasePropertyValue)
-
-
 @dataclass
 class SingleRelationDatabasePropertyValue(RelationDatabasePropertyValue):
     def serialize(self) -> dict[str, Any]:
         return {
-            'database_id': self.database_id,
+            'database_id': self.database.id,
             'type': 'single_property',
             'single_property': {}
         }
@@ -323,25 +321,28 @@ class SingleRelationDatabasePropertyValue(RelationDatabasePropertyValue):
 
 @dataclass
 class DualRelationDatabasePropertyValue(RelationDatabasePropertyValue):
-    synced_property_name: str
-    synced_property_id: str
+    synced_property: DualRelationProperty
 
     def serialize(self) -> dict[str, Any]:
         return {
-            'database_id': self.database_id,
+            'database_id': self.database.id,
             'type': 'dual_property',
-            'dual_property': {'synced_property_name': self.synced_property_name,
-                              'synced_property_id': self.synced_property_id}
+            'dual_property': {'synced_property_name': self.synced_property.name,
+                              'synced_property_id': self.synced_property.id}
         }
 
     @classmethod
     def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
+        from notion_df.entity import Database
+
+        synced_property = DualRelationProperty(serialized['dual_property']['synced_property_name'])
+        synced_property.id = serialized['dual_property']['synced_property_id']
+
         return cls._deserialize_from_dict(
-            serialized,
-            database_id=serialized['database_id'],
-            synced_property_name=serialized['dual_property']['synced_property_name'],
-            synced_property_id=serialized['dual_property']['synced_property_id']
-        )
+            serialized, database=Database(serialized['database_id']), synced_property=synced_property)
+
+
+RelationDatabasePropertyValue_T = TypeVar('RelationDatabasePropertyValue_T', bound=RelationDatabasePropertyValue)
 
 
 @dataclass
@@ -555,11 +556,11 @@ class RelationProperty(Property[RelationDatabasePropertyValue_T, RelationPagePro
         return prop_value
 
 
-class SingleRelationPropertyKey(RelationProperty[SingleRelationDatabasePropertyValue]):
+class SingleRelationProperty(RelationProperty[SingleRelationDatabasePropertyValue]):
     database_value = SingleRelationDatabasePropertyValue
 
 
-class DualRelationPropertyKey(RelationProperty[DualRelationDatabasePropertyValue]):
+class DualRelationProperty(RelationProperty[DualRelationDatabasePropertyValue]):
     database_value = DualRelationDatabasePropertyValue
 
 

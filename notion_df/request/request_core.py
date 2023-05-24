@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import inspect
 from abc import abstractmethod, ABCMeta
+from copy import copy, deepcopy
 from dataclasses import dataclass, field
 from datetime import datetime
 from pprint import pprint
@@ -9,6 +10,7 @@ from typing import TypeVar, Generic, Any, final, Optional, Iterator
 
 import requests
 from requests import JSONDecodeError
+from typing_extensions import Self
 
 from notion_df.util.collection import StrEnum
 from notion_df.util.exception import NotionDfValueError
@@ -21,9 +23,14 @@ MAX_PAGE_SIZE = 100
 @dataclass
 class Response(Deserializable, metaclass=ABCMeta):
     timestamp: float = field(init=False, default_factory=datetime.now().timestamp)
+    raw_data: dict[str, Any] = field(init=False, default=None)
+
+    @classmethod
+    def _deserialize_this(cls, raw_data: dict[str, Any]) -> Self:
+        return cls._deserialize_from_dict(raw_data, raw_data=deepcopy(raw_data))
 
 
-Response_T = TypeVar('Response_T')
+Response_T = TypeVar('Response_T', bound=Response)
 ResponseElement_T = TypeVar('ResponseElement_T')
 
 

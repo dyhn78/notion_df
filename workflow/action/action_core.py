@@ -1,18 +1,18 @@
 from __future__ import annotations
 
-import json
 import traceback
 from abc import ABCMeta, abstractmethod
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta
 from functools import cached_property
 from pprint import pprint
-from typing import Iterable, Optional, Iterator, cast
+from typing import Iterable, Optional, cast
 from uuid import UUID
 
 from notion_df.entity import Page, search_by_title, Block
-from notion_df.util.collection import Paginator
 from notion_df.object.block import DividerBlockValue, ParagraphBlockValue, ToggleBlockValue, CodeBlockValue
 from notion_df.object.rich_text import RichText, TextSpan, UserMention
+from notion_df.util.collection import Paginator
+from notion_df.util.misc import repr_object
 from notion_df.util.serialization import deserialize_datetime
 from notion_df.variable import Settings, print_width, my_tz
 
@@ -25,12 +25,15 @@ log_date_group_format = '%Y-%m-%d %H:00:00+09:00'
 
 
 class Action(metaclass=ABCMeta):
+    def __repr__(self):
+        return repr_object(self, [])
+
     @abstractmethod
     def query_all(self) -> Paginator[Page]:
         pass
 
     @abstractmethod
-    def filter(self, record: Page) -> bool:
+    def filter(self, page: Page) -> bool:
         """from given retrieved pages, pick the ones which need to process."""
         pass
 
@@ -51,6 +54,20 @@ class Action(metaclass=ABCMeta):
         for self in actions:
             self.process(page for page in recent_pages if self.filter(page))
         return True
+
+
+class IterableAction(Action, metaclass=ABCMeta):
+    def process(self, pages: Iterable[Page]):
+        readings = list(pages)
+        if not readings:
+            return
+        print(self)
+        for page in pages:
+            self.process_page(page)
+
+    @abstractmethod
+    def process_page(self, page: Page):
+        pass
 
 
 def search_pages_by_last_edited_time(lower_bound: datetime, upper_bound: Optional[datetime] = None) -> list[Page]:

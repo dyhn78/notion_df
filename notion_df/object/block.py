@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
+from copy import deepcopy
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Optional
@@ -34,10 +35,6 @@ class DatabaseResponse(Response):
     archived: bool
     is_inline: bool
 
-    @classmethod
-    def _deserialize_this(cls, response_data: dict[str, Any]) -> Self:
-        return cls._deserialize_from_dict(response_data)
-
 
 @dataclass
 class PageResponse(Response):
@@ -52,10 +49,6 @@ class PageResponse(Response):
     cover: Optional[File]
     url: str
     properties: PageProperties
-
-    @classmethod
-    def _deserialize_this(cls, response_data: dict[str, Any]) -> Self:
-        return cls._deserialize_from_dict(response_data)
 
 
 @dataclass
@@ -72,11 +65,12 @@ class BlockResponse(Response):
     value: BlockValue
 
     @classmethod
-    def _deserialize_this(cls, response_data: dict[str, Any]):
-        typename = response_data['type']
+    def _deserialize_this(cls, raw_data: dict[str, Any]):
+        raw_data_copy = deepcopy(raw_data)
+        typename = raw_data['type']
         block_value_cls = block_value_registry[typename]
-        block_value = block_value_cls.deserialize(response_data[typename])
-        return cls._deserialize_from_dict(response_data, value=block_value)
+        block_value = block_value_cls.deserialize(raw_data[typename])
+        return cls._deserialize_from_dict(raw_data, raw_data=raw_data_copy, value=block_value)
 
 
 block_value_registry: FinalClassDict[str, type[BlockValue]] = FinalClassDict()

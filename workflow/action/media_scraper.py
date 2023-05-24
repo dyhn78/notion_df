@@ -8,7 +8,7 @@ from notion_df.object.filter import CompoundFilter
 from notion_df.object.property import SelectProperty, CheckboxFormulaProperty, TitleProperty, RichTextProperty, \
     URLProperty, NumberProperty, FilesProperty, CheckboxProperty, PageProperties
 from notion_df.util.collection import StrEnum, Paginator
-from workflow.action.action_core import Action
+from workflow.action.action_core import Action, IterableAction
 from workflow.constant.block_enum import DatabaseEnum
 from workflow.service.gy_lib_service import GYLibraryScraper, LibraryScrapResult
 from workflow.service.webdriver_service import WebDriverFactory
@@ -39,7 +39,7 @@ class EditStatusValue(StrEnum):
     confirm_manually = '👤결과 검정'
 
 
-class MediaScraper(Action):
+class MediaScraper(IterableAction):
     def __init__(self, create_window: bool):
         self.reading_db = Database(DatabaseEnum.reading_db.id)
         self.driver_factory = WebDriverFactory(create_window=create_window)
@@ -60,14 +60,9 @@ class MediaScraper(Action):
                  [EditStatusValue.default, EditStatusValue.metadata_overwrite, EditStatusValue.location_overwrite]
                  or page.properties[edit_status] is None))
 
-    def process(self, readings: Iterable[Page]):
-        readings = list(readings)
-        if not readings:
-            return
-        print(self)
-        for reading in readings:
-            ReadingMediaScraperUnit(self, reading).execute()
-            print(f'\t{reading}')
+    def process_page(self, reading: Page):
+        ReadingMediaScraperUnit(self, reading).execute()
+        print(f'\t{reading}')
 
 
 class ReadingMediaScraperUnit:

@@ -2,8 +2,10 @@ from __future__ import annotations
 
 from datetime import timedelta
 
+from workflow import workflow_path
 from workflow.action.action_core import Action, min_timedelta, Logger
 from workflow.action.media_scraper import MediaScraper
+from workflow.action.migration_backup import MigrationBackupSaveAction
 from workflow.action.prop_matcher import MatchActionBase, MatchWeekByDateValue, MatchDateByCreatedTime, \
     MatchWeekByRefDate, MatchReadingsStartDate
 from workflow.constant.block_enum import DatabaseEnum
@@ -43,6 +45,8 @@ class Workflow:
             # TODO 배포후: <읽기 -  📕유형 <- 전개/꼭지> 추가 (스펙 논의 필요)
 
             MediaScraper(create_window),
+
+            MigrationBackupSaveAction(workflow_path / 'backup'),
         ]
 
 

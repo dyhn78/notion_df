@@ -9,7 +9,7 @@ from typing_extensions import Self
 from notion_df.util.serialization import DualSerializable
 
 if TYPE_CHECKING:
-    from notion_df.entity import Block, Database, Page
+    from notion_df.entity import Entity
 
 
 @dataclass
@@ -33,7 +33,7 @@ class PartialParent(DualSerializable):
         return cls(typename, parent_id)
 
     @property
-    def entity(self) -> Block | Database | Page | None:
+    def entity(self) -> Optional[Entity]:
         from notion_df.entity import Block, Database, Page
 
         match self.typename:

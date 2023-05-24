@@ -3,7 +3,7 @@ from __future__ import annotations
 import inspect
 from enum import Enum
 from itertools import chain
-from typing import TypeVar, Iterator, NewType, Sequence, overload
+from typing import TypeVar, Iterator, NewType, Sequence, overload, Iterable
 
 from notion_df.util.exception import NotionDfKeyError, NotionDfIndexError, NotionDfTypeError
 from notion_df.util.misc import repr_object
@@ -122,6 +122,14 @@ class Paginator(Sequence[T]):
 
     def __add__(self, other: Paginator[T]) -> Paginator[T]:
         return Paginator(get_closest_common_superclass(self.element_type, other.element_type), chain(self, other))
+
+    @classmethod
+    def chain(cls, element_type: type[T], paginator_it: Iterable[Paginator[T]]) -> Paginator[T]:
+        return Paginator(element_type, chain.from_iterable(paginator_it))
+
+    @classmethod
+    def empty(cls, element_type: type[T]) -> Paginator[T]:
+        return Paginator(element_type, iter([]))
 
 
 @overload

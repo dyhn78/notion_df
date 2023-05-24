@@ -1,9 +1,14 @@
+from __future__ import annotations
 from enum import Enum
 from functools import cached_property
+from typing import ClassVar, Optional
 
-from notion_df.entity import Database
+from notion_df.entity import Database, Entity
 from notion_df.util.misc import get_id, get_url
 from workflow.constant.emoji_code import EmojiCode
+
+
+_id_to_member = {}
 
 
 class DatabaseEnum(Enum):
@@ -13,14 +18,19 @@ class DatabaseEnum(Enum):
         self.id = get_id(id_or_url)
         self.url = get_url(id_or_url, 'dyhn')
         self.prefix = prefix
+        _id_to_member[self.id] = self
 
     @property
     def prefix_title(self):
         return self.prefix + self.title
 
-    @cached_property
-    def database(self):
+    @property
+    def entity(self) -> Database:
         return Database(self.id)
+
+    @classmethod
+    def from_entity(cls, entity: Entity) -> Optional[DatabaseEnum]:
+        return _id_to_member.get(entity)
 
     journal_db = ('일지', 'c226cffe6cf84ab996bbc384bf26bf1d', EmojiCode.ORANGE_CIRCLE)
     note_db = ('바탕', 'fa7d93f6fbd341f089b185745c834811', EmojiCode.ORANGE_HEART)

@@ -2,15 +2,15 @@ from uuid import UUID
 
 from notion_df.entity import Database
 from notion_df.object.filter import and_filter
-from notion_df.object.property import DualRelationPropertyKey, PageProperties
+from notion_df.object.property import DualRelationProperty, PageProperties
 from notion_df.variable import Settings
 from workflow.constant.block_enum import DatabaseEnum
 
 # ['⚫️측면', '⚫️양상']
-old_props_1 = [DualRelationPropertyKey(name) for name in ['⚫️주목', '⚫️지평']]
-new_prop_1 = DualRelationPropertyKey('🟣관계')
-old_prop_2 = DualRelationPropertyKey('⚫️측면')
-new_prop_2 = DualRelationPropertyKey('🟣공통')
+old_props_1 = [DualRelationProperty(name) for name in ['⚫️주목', '⚫️지평']]
+new_prop_1 = DualRelationProperty('🟣관계')
+old_prop_2 = DualRelationProperty('⚫️측면')
+new_prop_2 = DualRelationProperty('🟣공통')
 topic_db = Database(DatabaseEnum.topic_db.id)
 
 
