@@ -22,8 +22,7 @@ log_page_id = '6d16dc6747394fca95dc169c8c736e2d'
 log_page_block = Block(log_page_id)
 log_date_format = '%Y-%m-%d %H:%M:%S+09:00'
 log_date_group_format = '%Y-%m-%d'
-log_last_success_time_block = Block('6d16dc6747394fca95dc169c8c736e2d')
-
+log_last_success_time_block = Block('c66d852e27e84d92b6203dfdadfefad8')
 
 class Action(metaclass=ABCMeta):
     def __repr__(self):

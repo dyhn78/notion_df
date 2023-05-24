@@ -212,7 +212,11 @@ def serialize_datetime(dt: date | datetime):
 
 
 def deserialize_datetime(serialized: str) -> date | datetime:
-    dt = dateutil.parser.parse(serialized)
+    try:
+        dt = dateutil.parser.parse(serialized)
+    except dateutil.parser.ParserError as e:
+        print(serialized)
+        raise e
     if re.match(r'^\d{4}-\d{2}-\d{2}$', serialized):
         return dt.date()
     return dt.astimezone(my_tz)
