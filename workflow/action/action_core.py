@@ -59,8 +59,8 @@ class Action(metaclass=ABCMeta):
 
 class IterableAction(Action, metaclass=ABCMeta):
     def process(self, pages: Iterable[Page]):
-        readings = list(pages)
-        if not readings:
+        pages = list(pages)
+        if not pages:
             return
         print(self)
         for page in pages:
