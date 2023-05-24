@@ -1,9 +1,7 @@
 from __future__ import annotations
 
-import inspect
 from enum import Enum
-from itertools import chain
-from typing import TypeVar, Iterator, NewType, Sequence, overload, Iterable
+from typing import TypeVar, Iterator, NewType, Sequence, overload
 
 from notion_df.util.exception import NotionDfKeyError, NotionDfIndexError, NotionDfTypeError
 from notion_df.util.misc import repr_object
