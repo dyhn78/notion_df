@@ -70,8 +70,7 @@ def run_from_last_success(print_body: bool, create_window: bool, backup_path: Pa
         workflow = Workflow(create_window, backup_path)
         last_success_time = logger.get_last_success_time()
         if last_success_time is not None:
-            lower_bound = (last_success_time - min_timedelta
-                           - timedelta(minutes=1))  # just in case
+            lower_bound = last_success_time - min_timedelta
             upper_bound = logger.start_time - min_timedelta
             logger.enabled = Action.execute_by_last_edited_time(workflow.actions, lower_bound, upper_bound)
             return logger.enabled
