@@ -372,15 +372,25 @@ def search_by_title(query: str, entity: Literal[None],
 
 def search_by_title(query: str, entity: Literal['page', 'database', None] = None,
                     sort_by_last_edited_time: Direction = 'descending',
-                    page_size: int = None) -> Iterator[Union[Page, Database]]:
+                    page_size: int = None) -> Paginator[Union[Page, Database]]:
     response_elements = SearchByTitle(token, query, entity,
                                       TimestampSort('last_edited_time', sort_by_last_edited_time),
                                       page_size).execute()
-    for response_element in response_elements:
-        if isinstance(response_element, DatabaseResponse):
-            yield Database(response_element.id).send_response(response_element)
-        elif isinstance(response_element, PageResponse):
-            yield Page(response_element.id).send_response(response_element)
-        else:
-            raise NotionDfValueError('bad response', {'response_element': response_element})
-    return
+
+    def it():
+        for response_element in response_elements:
+            if isinstance(response_element, DatabaseResponse):
+                yield Database(response_element.id).send_response(response_element)
+            elif isinstance(response_element, PageResponse):
+                yield Page(response_element.id).send_response(response_element)
+            else:
+                raise NotionDfValueError('bad response', {'response_element': response_element})
+        return
+
+    if entity == 'page':
+        element_type = Page
+    elif entity == 'database':
+        element_type = Database
+    else:
+        element_type = Page | Database
+    return Paginator(element_type, it())
