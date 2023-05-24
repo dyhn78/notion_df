@@ -55,7 +55,7 @@ class MediaScraper(IterableAction):
         ]))
 
     def filter(self, page: Page) -> bool:
-        return (page.parent == self.reading_db and
+        return (page.parent == self.reading_db and page.properties[is_book] and
                 (page.properties[edit_status] in
                  [EditStatusValue.default, EditStatusValue.metadata_overwrite, EditStatusValue.location_overwrite]
                  or page.properties[edit_status] is None))
