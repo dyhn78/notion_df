@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import timedelta
 from pathlib import Path
 
-from workflow import workflow_path
+from workflow import project_root
 from workflow.action.action_core import Action, min_timedelta, Logger
 from workflow.action.media_scraper import MediaScraper
 from workflow.action.migration_backup import MigrationBackupSaveAction
@@ -83,5 +83,5 @@ def run_from_last_success(print_body: bool, create_window: bool, backup_path: Pa
 
 
 if __name__ == '__main__':
-    run_from_last_success(False, False, workflow_path.parent / 'backup')
+    run_from_last_success(False, False, project_root / 'backup')
     # run_from_last_edited_time_bound(print_body=True, create_window=False, timedelta_size=timedelta(minutes=3))

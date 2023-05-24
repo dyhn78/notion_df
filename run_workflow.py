@@ -15,22 +15,21 @@ def is_already_running(script_path: Path):
 
 
 if __name__ == '__main__':
-    path = Path(__file__).resolve()
-    if is_already_running(path):
+    this_path = Path(__file__).resolve()
+    if is_already_running(this_path):
         sys.stderr.write("Script is already running.")
         sys.exit(1)
     print(f'{"#" * 5 } Start.')
 
-    from workflow import workflow_path
     from workflow.main import run_from_last_success
 
-    log_enabled = run_from_last_success(False, False, workflow_path.parent / 'backup')
+    log_enabled = run_from_last_success(False, False, this_path.parent / 'backup')
     print(f'{"#" * 5 } {"Done." if log_enabled else "No new record."}')
-    if is_already_running(path):
+    if is_already_running(this_path):
         sys.stderr.write("Other script is running.")
         sys.exit(1)
     sleep(5)
     try:
-        os.execv(sys.executable, [sys.executable, path])
+        os.execv(sys.executable, [sys.executable, this_path])
     except OSError as e:
         print("Execution failed:", e)

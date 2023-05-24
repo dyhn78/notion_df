@@ -1,3 +1,3 @@
 from pathlib import Path
 
-workflow_path = Path(__file__).resolve().parent
+project_root = Path(__file__).resolve().parents[1]

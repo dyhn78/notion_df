@@ -7,7 +7,7 @@ from notion_df.object.property import RelationProperty, PageProperties
 from notion_df.request.request_core import Response_T
 from notion_df.util.collection import Paginator
 from notion_df.util.misc import get_generic_arg
-from workflow import workflow_path
+from workflow import project_root
 from workflow.action.action_core import IterableAction
 from workflow.constant.block_enum import DatabaseEnum
 
@@ -120,4 +120,4 @@ class MigrationBackupLoadAction(IterableAction):
 
 
 if __name__ == '__main__':
-    MigrationBackupSaveAction(workflow_path.parent / 'backup').execute_all()
+    MigrationBackupSaveAction(project_root / 'backup').execute_all()
