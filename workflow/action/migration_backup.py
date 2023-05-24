@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import Optional, cast
+from typing import Optional, cast, Iterator
 
 from notion_df.entity import Entity, Page, Database
 from notion_df.object.property import RelationProperty, PageProperties
@@ -42,12 +42,10 @@ class MigrationBackupSaveAction(IterableAction):
     def __init__(self, backup_path: Path):
         self.backup = ResponseBackupService(backup_path)
 
-    def query_all(self) -> Paginator[Page]:
+    def query_all(self) -> Iterator[Page]:
         # return DatabaseEnum.event_db.entity.query(page_size=1)
-        results = []
         for db_enum in DatabaseEnum:
-            results.append(db_enum.entity.query())
-        return Paginator.chain(Page, results)
+            yield from db_enum.entity.query()
 
     def filter(self, page: Page) -> bool:
         return isinstance(page.parent, Database)
@@ -60,8 +58,8 @@ class MigrationBackupLoadAction(IterableAction):
     def __init__(self, backup_path: Path):
         self.response_backup = ResponseBackupService(backup_path)
 
-    def query_all(self) -> Paginator[Page]:
-        return Paginator.empty(Page)
+    def query_all(self) -> Iterator[Page]:
+        return iter([])
 
     def filter(self, page: Page) -> bool:
         return DatabaseEnum.from_entity(page.parent) is not None

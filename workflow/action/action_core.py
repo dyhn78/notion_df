@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from functools import cached_property
 from itertools import chain
 from pprint import pprint
-from typing import Iterable, Optional, cast
+from typing import Iterable, Optional, cast, Iterator
 from uuid import UUID
 
 from notion_df.entity import Page, search_by_title, Block
@@ -31,7 +31,7 @@ class Action(metaclass=ABCMeta):
         return repr_object(self, [])
 
     @abstractmethod
-    def query_all(self) -> Paginator[Page]:
+    def query_all(self) -> Iterator[Page]:
         pass
 
     @abstractmethod

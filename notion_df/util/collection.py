@@ -80,6 +80,12 @@ class Paginator(Sequence[T]):
         for element in self._it:
             self._values.append(element)
 
+    def __iter__(self) -> Iterator[T]:
+        while True:
+            element = next(self._it)
+            self._values.append(element)
+            yield element
+
     @overload
     def __getitem__(self, index_or_id: int) -> T:
         ...
@@ -116,9 +122,6 @@ class Paginator(Sequence[T]):
         self._fetch_all()
         return len(self._values)
 
-    def __add__(self, other: Paginator[T]) -> Paginator[T]:
-        return Paginator(get_closest_common_superclass(self.element_type, other.element_type), chain(self, other))
-
     @classmethod
     def chain(cls, element_type: type[T], paginator_it: Iterable[Paginator[T]]) -> Paginator[T]:
         return Paginator(element_type, chain.from_iterable(paginator_it))
@@ -126,25 +129,3 @@ class Paginator(Sequence[T]):
     @classmethod
     def empty(cls, element_type: type[T]) -> Paginator[T]:
         return Paginator(element_type, iter([]))
-
-
-@overload
-def get_closest_common_superclass(type1: type[T], type2: type[T]) -> type[T]:
-    ...
-
-
-@overload
-def get_closest_common_superclass(type1: type, type2: type) -> type:
-    ...
-
-
-def get_closest_common_superclass(type1: type, type2: type) -> type:
-    mro1 = inspect.getmro(type1)
-    mro2 = inspect.getmro(type2)
-
-    for cls1 in mro1:
-        if cls1 in mro2:
-            return cls1
-
-
-Paginator(object, iter([])) + Paginator(object, iter([]))
