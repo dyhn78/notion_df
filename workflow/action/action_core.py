@@ -21,7 +21,8 @@ my_user_id = UUID('a007d150-bc67-422c-87db-030a71867dd9')
 log_page_id = '6d16dc6747394fca95dc169c8c736e2d'
 log_page_block = Block(log_page_id)
 log_date_format = '%Y-%m-%d %H:%M:%S+09:00'
-log_date_group_format = '%Y-%m-%d %H:00:00+09:00'
+log_date_group_format = '%Y-%m-%d'
+log_last_success_time_block = Block('6d16dc6747394fca95dc169c8c736e2d')
 
 
 class Action(metaclass=ABCMeta):
@@ -127,6 +128,7 @@ class Logger:
         if exc_type is None:
             summary_text = f"success - {self.format_time()}"
             summary_block_value = ParagraphBlockValue(RichText([TextSpan(summary_text)]))
+            log_last_success_time_block.append_children([ParagraphBlockValue(RichText([TextSpan(self.start_time_str)]))])
         # elif exc_type == json.JSONDecodeError:
         #     summary_text = f"failure - {self.format_time()}: {exc_val}"
         #     summary_block_value = ParagraphBlockValue(RichText([TextSpan(summary_text)]))
@@ -149,16 +151,11 @@ class Logger:
         if child_block_values:
             summary_block.append_children(child_block_values)
 
-    def get_last_success_time(self) -> Optional[datetime]:
-        if not self.log_group_blocks:
+    @staticmethod
+    def get_last_success_time() -> Optional[datetime]:
+        try:
+            last_execution_time_str = cast(ParagraphBlockValue,
+                                           log_last_success_time_block.retrieve_children()[0].value).rich_text.plain_text
+            return deserialize_datetime(last_execution_time_str)
+        except (IndexError, AttributeError):
             return
-        for block in reversed(self.log_group_blocks[0].retrieve_children()):
-            try:
-                last_execution_time_str = cast(ParagraphBlockValue, block.value).rich_text.plain_text
-            except AttributeError:
-                continue
-            if last_execution_time_str.find('success') == -1:
-                continue
-            last_execution_time = deserialize_datetime(last_execution_time_str.split(' - ')[1])
-            return last_execution_time
-        return
