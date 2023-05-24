@@ -17,7 +17,7 @@ def is_already_running(script_path: Path):
 if __name__ == '__main__':
     this_path = Path(__file__).resolve()
     if is_already_running(this_path):
-        sys.stderr.write("Script is already running.")
+        sys.stderr.write("Script is already running.\n")
         sys.exit(1)
     print(f'{"#" * 5 } Start.')
 
@@ -26,7 +26,7 @@ if __name__ == '__main__':
     log_enabled = run_from_last_success(False, False, this_path.parent / 'backup')
     print(f'{"#" * 5 } {"Done." if log_enabled else "No new record."}')
     if is_already_running(this_path):
-        sys.stderr.write("Other script is running.")
+        sys.stderr.write("Other script is running.\n")
         sys.exit(1)
     sleep(5)
     try:
