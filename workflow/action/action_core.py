@@ -47,6 +47,7 @@ class Action(metaclass=ABCMeta):
     @classmethod
     def execute_by_last_edited_time(cls, actions: list[Action], lower_bound: datetime,
                                     upper_bound: Optional[datetime] = None) -> bool:
+        # TODO: if no recent_pages, raise SkipException instead of returning False
         recent_pages = set(search_pages_by_last_edited_time(lower_bound, upper_bound))
         recent_pages.discard(Page(log_page_id))
         if not recent_pages:
@@ -130,7 +131,7 @@ class Logger:
         #     summary_text = f"failure - {self.format_time()}: {exc_val}"
         #     summary_block_value = ParagraphBlockValue(RichText([TextSpan(summary_text)]))
         else:
-            summary_text = f"error - {self.format_time()}: "
+            summary_text = f"error - {self.format_time()} - {exc_type} - {exc_val}"
             summary_block_value = ToggleBlockValue(RichText([TextSpan(summary_text), UserMention(my_user_id)]))
             traceback_str = traceback.format_exc()
             child_block_values = []
