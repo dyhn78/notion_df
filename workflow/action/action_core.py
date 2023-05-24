@@ -24,6 +24,7 @@ log_date_format = '%Y-%m-%d %H:%M:%S+09:00'
 log_date_group_format = '%Y-%m-%d'
 log_last_success_time_block = Block('c66d852e27e84d92b6203dfdadfefad8')
 
+
 class Action(metaclass=ABCMeta):
     def __repr__(self):
         return repr_object(self, [])
@@ -99,7 +100,15 @@ class Logger:
         self.start_time_str = self.start_time.strftime(log_date_format)
         self.start_time_group_str = self.start_time.strftime(log_date_group_format)
         self.enabled = True
-        self._log_page_blocks = log_page_block.retrieve_children()
+
+        self.last_execution_time_blocks = log_last_success_time_block.retrieve_children()
+        try:
+            last_execution_time_block = self.last_execution_time_blocks[0]
+            last_execution_time_str = cast(ParagraphBlockValue,
+                                           last_execution_time_block.value).rich_text.plain_text
+            self.last_success_time = deserialize_datetime(last_execution_time_str)
+        except (IndexError, AttributeError):
+            self.last_success_time = None
 
     @cached_property
     def log_group_blocks(self):
@@ -127,7 +136,10 @@ class Logger:
         if exc_type is None:
             summary_text = f"success - {self.format_time()}"
             summary_block_value = ParagraphBlockValue(RichText([TextSpan(summary_text)]))
-            log_last_success_time_block.append_children([ParagraphBlockValue(RichText([TextSpan(self.start_time_str)]))])
+            for block in self.last_execution_time_blocks:
+                block.delete()
+            log_last_success_time_block.append_children([
+                ParagraphBlockValue(RichText([TextSpan(self.start_time_str)]))])
         # elif exc_type == json.JSONDecodeError:
         #     summary_text = f"failure - {self.format_time()}: {exc_val}"
         #     summary_block_value = ParagraphBlockValue(RichText([TextSpan(summary_text)]))
@@ -149,12 +161,3 @@ class Logger:
         summary_block = group_block.append_children([summary_block_value])[0]
         if child_block_values:
             summary_block.append_children(child_block_values)
-
-    @staticmethod
-    def get_last_success_time() -> Optional[datetime]:
-        try:
-            last_execution_time_str = cast(ParagraphBlockValue,
-                                           log_last_success_time_block.retrieve_children()[0].value).rich_text.plain_text
-            return deserialize_datetime(last_execution_time_str)
-        except (IndexError, AttributeError):
-            return
