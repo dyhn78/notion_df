@@ -80,6 +80,10 @@ class Paginator(Sequence[T]):
         for element in self._it:
             self._values.append(element)
 
+    def __len__(self):
+        self._fetch_all()
+        return len(self._values)
+
     @overload
     def __getitem__(self, index_or_id: int) -> T:
         ...
@@ -111,15 +115,3 @@ class Paginator(Sequence[T]):
             return [self._values[i] for i in range(start, stop, step)]
         else:
             raise NotionDfTypeError("bad argument - expected int or slice", {'self': self, 'index': index})
-
-    def __len__(self):
-        self._fetch_all()
-        return len(self._values)
-
-    @classmethod
-    def chain(cls, element_type: type[T], paginator_it: Iterable[Paginator[T]]) -> Paginator[T]:
-        return Paginator(element_type, chain.from_iterable(paginator_it))
-
-    @classmethod
-    def empty(cls, element_type: type[T]) -> Paginator[T]:
-        return Paginator(element_type, iter([]))
