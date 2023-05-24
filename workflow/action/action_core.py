@@ -12,7 +12,6 @@ from uuid import UUID
 from notion_df.entity import Page, search_by_title, Block
 from notion_df.object.block import DividerBlockValue, ParagraphBlockValue, ToggleBlockValue, CodeBlockValue
 from notion_df.object.rich_text import RichText, TextSpan, UserMention
-from notion_df.util.collection import Paginator
 from notion_df.util.misc import repr_object
 from notion_df.util.serialization import deserialize_datetime
 from notion_df.variable import Settings, print_width, my_tz
@@ -23,7 +22,7 @@ log_page_id = '6d16dc6747394fca95dc169c8c736e2d'
 log_page_block = Block(log_page_id)
 log_date_format = '%Y-%m-%d %H:%M:%S+09:00'
 log_date_group_format = '%Y-%m-%d'
-log_last_success_time_block = Block('c66d852e27e84d92b6203dfdadfefad8')
+log_last_success_time_parent_block = Block('c66d852e27e84d92b6203dfdadfefad8')
 
 
 class Action(metaclass=ABCMeta):
@@ -105,8 +104,8 @@ class Logger:
         self.enabled = True
         self.processed_pages: Optional[int] = None
 
-        self.last_execution_time_blocks = log_last_success_time_block.retrieve_children()
-        last_execution_time_block = self.last_execution_time_blocks[0]
+        self.last_success_time_blocks = log_last_success_time_parent_block.retrieve_children()
+        last_execution_time_block = self.last_success_time_blocks[0]
         last_execution_time_str = cast(ParagraphBlockValue,
                                        last_execution_time_block.value).rich_text.plain_text
         if last_execution_time_str == 'ALL':
@@ -140,9 +139,9 @@ class Logger:
         if exc_type is None:
             summary_text = f"success - {self.format_time()}"
             summary_block_value = ParagraphBlockValue(RichText([TextSpan(summary_text)]))
-            for block in self.last_execution_time_blocks:
+            for block in self.last_success_time_blocks:
                 block.delete()
-            log_last_success_time_block.append_children([
+            log_last_success_time_parent_block.append_children([
                 ParagraphBlockValue(RichText([TextSpan(self.start_time_str)]))])
         # elif exc_type == json.JSONDecodeError:
         #     summary_text = f"failure - {self.format_time()}: {exc_val}"
@@ -155,13 +154,19 @@ class Logger:
             for i in range(0, len(traceback_str), 1000):
                 child_block_values.append(CodeBlockValue(RichText.from_plain_text(traceback_str[i:i + 1000])))
 
-        for group_block in self.log_group_blocks:
-            if cast(ToggleBlockValue, group_block.value).rich_text.plain_text == self.start_time_group_str:
+        log_group_block = None
+        for block in reversed(log_page_block.retrieve_children()):
+            if isinstance(block.value, DividerBlockValue):
+                log_group_block = log_page_block.append_children([
+                    ToggleBlockValue(RichText([TextSpan(self.start_time_group_str)]))])[0]
                 break
-        else:
-            group_block = log_page_block.append_children([
-                ToggleBlockValue(RichText([TextSpan(self.start_time_group_str)]))])[0]
+            if cast(ToggleBlockValue, block.value).rich_text.plain_text == self.start_time_group_str:
+                log_group_block = block
+                break
+            if self.start_time - block.created_time > timedelta(days=7):
+                block.delete()
+        assert isinstance(log_group_block, Block)
 
-        summary_block = group_block.append_children([summary_block_value])[0]
+        summary_block = log_group_block.append_children([summary_block_value])[0]
         if child_block_values:
             summary_block.append_children(child_block_values)
