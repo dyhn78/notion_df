@@ -169,7 +169,7 @@ class Deserializable(metaclass=ABCMeta):
     @classmethod
     @final
     def _deserialize_from_dict(cls, serialized: dict[str, Any], **overrides: Any) -> Self:
-        """helper method to implement _deserialize_this().
+        """helper method to implement _deserialize_this(). must be called from a dataclass.
         Note: this collects post-init fields as well."""
         if inspect.isabstract(cls):
             raise NotionDfTypeError('cannot instantiate abstract class', {'cls': cls, 'serialized': serialized})

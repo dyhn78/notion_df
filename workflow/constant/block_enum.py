@@ -18,7 +18,7 @@ class DatabaseEnum(Enum):
         self.id = get_id(id_or_url)
         self.url = get_url(id_or_url, 'dyhn')
         self.prefix = prefix
-        _id_to_member[self.id] = self
+        _id_to_member[Database(self.id)] = self
 
     @property
     def prefix_title(self):

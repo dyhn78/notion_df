@@ -25,11 +25,11 @@ def repr_object(cls_or_instance, attrs: list[str] | dict[str, Any]) -> str:
     if isinstance(attr_names := attrs, list):
         for attr_name in attr_names:
             if (attr_value := getattr(cls_or_instance, attr_name)) is not None:
-                attr_items.append(f'{attr_name}={attr_value}')
+                attr_items.append(f'{attr_name}={attr_value!r}')
     elif isinstance(attr_dict := attrs, dict):
         for attr_name, attr_value in attr_dict.items():
             if attr_value is not None:
-                attr_items.append(f'{attr_name}={attr_value}')
+                attr_items.append(f'{attr_name}={attr_value!r}')
     else:
         raise NotionDfValueError(vars={'self': cls_or_instance, 'attrs': attrs})
 

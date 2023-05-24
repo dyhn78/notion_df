@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import inspect
 from abc import ABCMeta
 from collections.abc import MutableMapping
 from dataclasses import dataclass, field
@@ -59,7 +60,8 @@ class Property(Generic[DatabasePropertyValue_T, PagePropertyValue_T, FilterBuild
 
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
-        check_classvars_are_defined(cls)
+        if not inspect.isabstract(cls):
+            assert cls.typename
         if typename := getattr(cls, 'typename', None):
             property_registry[typename] = cls
 
@@ -289,10 +291,14 @@ class FormulaDatabasePropertyValue(DatabasePropertyValue):
     r"""example value: 'if(prop(\"In stock\"), 0, prop(\"Price\"))'"""
 
 
-@dataclass
 class RelationDatabasePropertyValue(DatabasePropertyValue, metaclass=ABCMeta):
     """eligible property types: ['relation']"""
+    # Note: this class cannot be defined dataclass,
+    #  because dataclass does not immediately resolve type hints, which later leads get_type_hints() to fail
     database: Database
+
+    def __init__(self, database: Database):
+        self.database = database
 
     @classmethod
     def deserialize(cls, serialized: dict[str, Any]) -> Self:
@@ -309,7 +315,6 @@ class RelationDatabasePropertyValue(DatabasePropertyValue, metaclass=ABCMeta):
         return subclass.deserialize(serialized)
 
 
-@dataclass
 class SingleRelationDatabasePropertyValue(RelationDatabasePropertyValue):
     def serialize(self) -> dict[str, Any]:
         return {
@@ -318,10 +323,19 @@ class SingleRelationDatabasePropertyValue(RelationDatabasePropertyValue):
             'single_property': {}
         }
 
+    @classmethod
+    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
+        from notion_df.entity import Database
 
-@dataclass
+        return cls(Database(serialized['database_id']))
+
+
 class DualRelationDatabasePropertyValue(RelationDatabasePropertyValue):
     synced_property: DualRelationProperty
+
+    def __init__(self, database: Database, synced_property: DualRelationProperty):
+        super().__init__(database)
+        self.synced_property = synced_property
 
     def serialize(self) -> dict[str, Any]:
         return {
@@ -338,8 +352,7 @@ class DualRelationDatabasePropertyValue(RelationDatabasePropertyValue):
         synced_property = DualRelationProperty(serialized['dual_property']['synced_property_name'])
         synced_property.id = serialized['dual_property']['synced_property_id']
 
-        return cls._deserialize_from_dict(
-            serialized, database=Database(serialized['database_id']), synced_property=synced_property)
+        return cls(database=Database(serialized['database_id']), synced_property=synced_property)
 
 
 RelationDatabasePropertyValue_T = TypeVar('RelationDatabasePropertyValue_T', bound=RelationDatabasePropertyValue)
