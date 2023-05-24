@@ -3,7 +3,6 @@ from __future__ import annotations
 import traceback
 from abc import ABCMeta, abstractmethod
 from datetime import datetime, timedelta
-from functools import cached_property
 from itertools import chain
 from pprint import pprint
 from typing import Iterable, Optional, cast, Iterator
@@ -112,17 +111,6 @@ class Logger:
             self.last_success_time = None
         else:
             self.last_success_time = deserialize_datetime(last_execution_time_str)
-
-    @cached_property
-    def log_group_blocks(self):
-        blocks = []
-        for block in reversed(log_page_block.retrieve_children()):
-            if isinstance(block.value, DividerBlockValue):
-                break
-            if self.start_time - block.created_time > timedelta(days=7):
-                block.delete()
-            blocks.append(block)
-        return blocks
 
     def __enter__(self) -> Logger:
         Settings.print.enabled = self.print_body

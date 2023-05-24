@@ -80,15 +80,6 @@ class Paginator(Sequence[T]):
         for element in self._it:
             self._values.append(element)
 
-    def __iter__(self) -> Iterator[T]:
-        while True:
-            try:
-                element = next(self._it)
-            except StopIteration:
-                return
-            self._values.append(element)
-            yield element
-
     @overload
     def __getitem__(self, index_or_id: int) -> T:
         ...
