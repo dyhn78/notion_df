@@ -16,6 +16,8 @@ class Workflow:
     def __init__(self, create_window: bool, backup_path: Path):
         base = MatchActionBase()
         self.actions: list[Action] = [
+            MigrationBackupSaveAction(backup_path),
+
             MatchWeekByDateValue(base),
 
             MatchDateByCreatedTime(base, DatabaseEnum.event_db, '일간'),
@@ -46,8 +48,6 @@ class Workflow:
             # TODO 배포후: <읽기 -  📕유형 <- 전개/꼭지> 추가 (스펙 논의 필요)
 
             MediaScraper(create_window),
-
-            MigrationBackupSaveAction(backup_path),
         ]
 
 

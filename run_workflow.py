@@ -21,7 +21,7 @@ if __name__ == '__main__':
         sys.exit(1)
     print(f'{"#" * 5 } Start.')
 
-    from workflow.main import run_from_last_success
+    from workflow.run import run_from_last_success
 
     log_enabled = run_from_last_success(False, False, this_path.parent / 'backup')
     print(f'{"#" * 5 } {"Done." if log_enabled else "No new record."}')
