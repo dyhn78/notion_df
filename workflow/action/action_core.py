@@ -4,6 +4,7 @@ import traceback
 from abc import ABCMeta, abstractmethod
 from datetime import datetime, timedelta
 from functools import cached_property
+from itertools import chain
 from pprint import pprint
 from typing import Iterable, Optional, cast
 from uuid import UUID
@@ -60,11 +61,13 @@ class Action(metaclass=ABCMeta):
 
 class IterableAction(Action, metaclass=ABCMeta):
     def process(self, pages: Iterable[Page]):
-        pages = list(pages)
-        if not pages:
+        pages = iter(pages)
+        try:
+            _page = next(pages)
+        except StopIteration:
             return
         print(self)
-        for page in pages:
+        for page in chain([_page], pages):
             self.process_page(page)
 
     @abstractmethod
