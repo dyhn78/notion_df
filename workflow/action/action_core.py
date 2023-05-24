@@ -100,15 +100,16 @@ class Logger:
         self.start_time_str = self.start_time.strftime(log_date_format)
         self.start_time_group_str = self.start_time.strftime(log_date_group_format)
         self.enabled = True
+        self.processed_pages: Optional[int] = None
 
         self.last_execution_time_blocks = log_last_success_time_block.retrieve_children()
-        try:
-            last_execution_time_block = self.last_execution_time_blocks[0]
-            last_execution_time_str = cast(ParagraphBlockValue,
-                                           last_execution_time_block.value).rich_text.plain_text
-            self.last_success_time = deserialize_datetime(last_execution_time_str)
-        except (IndexError, AttributeError):
+        last_execution_time_block = self.last_execution_time_blocks[0]
+        last_execution_time_str = cast(ParagraphBlockValue,
+                                       last_execution_time_block.value).rich_text.plain_text
+        if last_execution_time_str == 'ALL':
             self.last_success_time = None
+        else:
+            self.last_success_time = deserialize_datetime(last_execution_time_str)
 
     @cached_property
     def log_group_blocks(self):
