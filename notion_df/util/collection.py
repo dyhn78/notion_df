@@ -116,10 +116,6 @@ class Paginator(Sequence[T]):
         self._fetch_all()
         return len(self._values)
 
-    def __iter__(self):
-        self._fetch_all()
-        return iter(self._values)
-
     def __add__(self, other: Paginator[T]) -> Paginator[T]:
         return Paginator(get_closest_common_superclass(self.element_type, other.element_type), chain(self, other))
 

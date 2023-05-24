@@ -120,4 +120,5 @@ class MigrationBackupLoadAction(IterableAction):
 
 
 if __name__ == '__main__':
-    MigrationBackupSaveAction(project_root / 'backup').execute_all()
+    query = MigrationBackupSaveAction(project_root / 'backup').execute_all()
+    input()

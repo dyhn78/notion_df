@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import inspect
 from abc import abstractmethod, ABCMeta
-from copy import copy, deepcopy
+from copy import deepcopy
 from dataclasses import dataclass, field
 from datetime import datetime
 from pprint import pprint
