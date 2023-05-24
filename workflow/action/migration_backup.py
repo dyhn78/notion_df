@@ -17,7 +17,7 @@ class ResponseBackupService:
         self.root = root
 
     def _get_path(self, entity: Entity) -> Path:
-        return self.root / type(entity).__name__ / f'{entity.id}.json'
+        return self.root / f'{entity.id}.json'
 
     def read(self, entity: Entity[Response_T]) -> Optional[Response_T]:
         path = self._get_path(entity)
@@ -39,8 +39,8 @@ class ResponseBackupService:
 
 
 class MigrationBackupSaveAction(IterableAction):
-    def __init__(self, backup_root: Path):
-        self.backup = ResponseBackupService(backup_root)
+    def __init__(self, backup_path: Path):
+        self.backup = ResponseBackupService(backup_path)
 
     def query_all(self) -> Paginator[Page]:
         return DatabaseEnum.event_db.entity.query(page_size=1)
@@ -57,8 +57,8 @@ class MigrationBackupSaveAction(IterableAction):
 
 
 class MigrationBackupLoadAction(IterableAction):
-    def __init__(self, backup_root: Path):
-        self.response_backup = ResponseBackupService(backup_root)
+    def __init__(self, backup_path: Path):
+        self.response_backup = ResponseBackupService(backup_path)
 
     def query_all(self) -> Paginator[Page]:
         return Paginator.empty(Page)

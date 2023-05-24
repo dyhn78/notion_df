@@ -21,9 +21,10 @@ if __name__ == '__main__':
         sys.exit(1)
     print(f'{"#" * 5 } Start.')
 
-    from workflow.run import run_from_last_success
+    from workflow import workflow_path
+    from workflow.run_workflow import run_from_last_success
 
-    log_enabled = run_from_last_success(print_body=False, create_window=False)
+    log_enabled = run_from_last_success(False, False, workflow_path.parent / 'backup')
     print(f'{"#" * 5 } {"Done." if log_enabled else "No new record."}')
     if is_already_running(path):
         sys.stderr.write("Other script is running.")

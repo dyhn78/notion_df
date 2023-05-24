@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import timedelta
+from pathlib import Path
 
 from workflow import workflow_path
 from workflow.action.action_core import Action, min_timedelta, Logger
@@ -12,7 +13,7 @@ from workflow.constant.block_enum import DatabaseEnum
 
 
 class Workflow:
-    def __init__(self, create_window: bool):
+    def __init__(self, create_window: bool, backup_path: Path):
         base = MatchActionBase()
         self.actions: list[Action] = [
             MatchWeekByDateValue(base),
@@ -46,26 +47,27 @@ class Workflow:
 
             MediaScraper(create_window),
 
-            MigrationBackupSaveAction(workflow_path / 'backup'),
+            MigrationBackupSaveAction(backup_path),
         ]
 
 
-def run_all(print_body: bool, create_window: bool) -> None:
+def run_all(print_body: bool, create_window: bool, backup_path: Path) -> None:
     with Logger(print_body=print_body):
-        workflow = Workflow(create_window)
+        workflow = Workflow(create_window, backup_path)
         for action in workflow.actions:
             action.execute_all()
 
 
-def run_from_last_edited_time_bound(print_body: bool, create_window: bool, timedelta_size: timedelta) -> None:
+def run_from_last_edited_time_bound(print_body: bool, create_window: bool, backup_path: Path,
+                                    timedelta_size: timedelta) -> None:
     with Logger(print_body=print_body) as logger:
-        workflow = Workflow(create_window)
+        workflow = Workflow(create_window, backup_path)
         Action.execute_by_last_edited_time(workflow.actions, logger.start_time - timedelta_size, logger.start_time)
 
 
-def run_from_last_success(print_body: bool, create_window: bool) -> bool:
+def run_from_last_success(print_body: bool, create_window: bool, backup_path: Path) -> bool:
     with Logger(print_body=print_body) as logger:
-        workflow = Workflow(create_window)
+        workflow = Workflow(create_window, backup_path)
         last_success_time = logger.get_last_success_time()
         if last_success_time is not None:
             lower_bound = (last_success_time - min_timedelta
@@ -81,5 +83,5 @@ def run_from_last_success(print_body: bool, create_window: bool) -> bool:
 
 
 if __name__ == '__main__':
-    run_from_last_success(False, False)
+    run_from_last_success(False, False, workflow_path.parent / 'backup')
     # run_from_last_edited_time_bound(print_body=True, create_window=False, timedelta_size=timedelta(minutes=3))
