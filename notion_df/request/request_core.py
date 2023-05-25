@@ -18,6 +18,7 @@ from notion_df.util.serialization import deserialize, serialize, Deserializable
 from notion_df.variable import Settings, print_width
 
 MAX_PAGE_SIZE = 100
+TIMEOUT_SEC = 60
 
 
 @dataclass
@@ -147,7 +148,7 @@ class PaginatedRequest(Generic[ResponseElement_T], BaseRequest, metaclass=ABCMet
 def request(*, method: str, url: str, headers: dict[str, Any], params: Any, json: Any) -> requests.Response:
     if Settings.print:
         pprint(dict(method=method, url=url, headers=headers, params=params, json=json), width=print_width)
-    response = requests.request(method, url, headers=headers, params=params, json=json)
+    response = requests.request(method, url, headers=headers, params=params, json=json, timeout=TIMEOUT_SEC)
     try:
         response.raise_for_status()
     except requests.exceptions.HTTPError:
