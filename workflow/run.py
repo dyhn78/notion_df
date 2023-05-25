@@ -32,18 +32,18 @@ class Workflow:
             MatchDateByCreatedTime(base, DatabaseEnum.journal_db, '생성'),
             MatchWeekByRefDate(base, DatabaseEnum.journal_db, '주간', '일간'),
 
-            MatchDateByCreatedTime(base, DatabaseEnum.note_db, '시작'),
-            MatchWeekByRefDate(base, DatabaseEnum.note_db, '시작', '시작'),
+            MatchDateByCreatedTime(base, DatabaseEnum.note_db, '생성'),
+            MatchWeekByRefDate(base, DatabaseEnum.note_db, '생성', '생성'),
 
-            MatchDateByCreatedTime(base, DatabaseEnum.topic_db, '시작'),
-            MatchWeekByRefDate(base, DatabaseEnum.topic_db, '시작', '시작'),
+            MatchDateByCreatedTime(base, DatabaseEnum.topic_db, '생성'),
+            MatchWeekByRefDate(base, DatabaseEnum.topic_db, '생성', '생성'),
 
             MatchReadingsStartDate(base),
             MatchDateByCreatedTime(base, DatabaseEnum.reading_db, '생성'),
             MatchWeekByRefDate(base, DatabaseEnum.reading_db, '시작', '시작'),
 
-            MatchDateByCreatedTime(base, DatabaseEnum.section_db, '시작'),
-            MatchWeekByRefDate(base, DatabaseEnum.section_db, '시작', '시작'),
+            MatchDateByCreatedTime(base, DatabaseEnum.section_db, '생성'),
+            MatchWeekByRefDate(base, DatabaseEnum.section_db, '생성', '생성'),
 
             # TODO 배포후: <읽기 -  📕유형 <- 전개/꼭지> 추가 (스펙 논의 필요)
 
