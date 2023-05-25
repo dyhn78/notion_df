@@ -31,8 +31,8 @@ class Workflow:
             MatchDateByCreatedTime(base, DatabaseEnum.journal_db, '생성'),
             MatchWeekByRefDate(base, DatabaseEnum.journal_db, '주간', '일간'),
 
-            MatchDateByCreatedTime(base, DatabaseEnum.note_db, '시작'),
-            MatchWeekByRefDate(base, DatabaseEnum.note_db, '시작', '시작'),
+            MatchDateByCreatedTime(base, DatabaseEnum.note_db, '생성'),
+            MatchWeekByRefDate(base, DatabaseEnum.note_db, '생성', '생성'),
 
             MatchDateByCreatedTime(base, DatabaseEnum.topic_db, '시작'),
             MatchWeekByRefDate(base, DatabaseEnum.topic_db, '시작', '시작'),
