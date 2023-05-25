@@ -1,12 +1,11 @@
 from __future__ import annotations
+
 from enum import Enum
-from functools import cached_property
-from typing import ClassVar, Optional
+from typing import Optional
 
 from notion_df.entity import Database, Entity
 from notion_df.util.misc import get_page_id, get_page_url
 from workflow.constant.emoji_code import EmojiCode
-
 
 _id_to_member = {}
 
