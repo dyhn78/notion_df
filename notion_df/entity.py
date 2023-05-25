@@ -81,7 +81,7 @@ class Entity(Generic[Response_T], Hashable):
         elif self.parent is None:
             repr_parent = 'workspace'
         else:
-            repr_parent = repr_object(self.parent, self.parent._attrs_to_repr_parent())
+            repr_parent = repr_object(self.parent, self.parent._attrs_to_repr_parent())[1:-1]
 
         return repr_object(self, {
             **self._attrs_to_repr_parent(),
