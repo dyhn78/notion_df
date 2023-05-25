@@ -81,6 +81,7 @@ class Entity(Generic[Response_T], Hashable):
         elif self.parent is None:
             repr_parent = 'workspace'
         else:
+            # TODO: fix `Entity(parent='Database()') <- remove this '' around parent value
             repr_parent = repr_object(self.parent, self.parent._attrs_to_repr_parent())
 
         return repr_object(self, {
