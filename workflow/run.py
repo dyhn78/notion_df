@@ -4,7 +4,7 @@ from datetime import timedelta
 from pathlib import Path
 
 from workflow import project_root
-from workflow.action.action_core import Action, min_timedelta, Logger
+from workflow.action.action_core import Action, Logger
 from workflow.action.media_scraper import MediaScraper
 from workflow.action.migration_backup import MigrationBackupSaveAction, MigrationBackupLoadAction
 from workflow.action.prop_matcher import MatchActionBase, MatchWeekByDateValue, MatchDateByCreatedTime, \
@@ -69,9 +69,8 @@ def run_from_last_success(print_body: bool, create_window: bool, backup_path: Pa
     with Logger(print_body=print_body) as logger:
         workflow = Workflow(create_window, backup_path)
         if logger.last_success_time is not None:
-            lower_bound = logger.last_success_time - min_timedelta
-            upper_bound = logger.start_time - min_timedelta
-            logger.enabled = Action.execute_by_last_edited_time(workflow.actions, lower_bound, upper_bound)
+            logger.enabled = Action.execute_by_last_edited_time(
+                workflow.actions, logger.last_success_time, logger.start_time)
             return logger.enabled
         else:
             for action in workflow.actions:
