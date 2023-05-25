@@ -16,7 +16,7 @@ class ResponseBackupService:
         self.root = root
 
     def _get_path(self, entity: Entity) -> Path:
-        return self.root / f'{entity.id}.json'
+        return self.root / f"{str(entity.id).replace('-', '')}.json"
 
     def read(self, entity: Entity[Response_T]) -> Optional[Response_T]:
         path = self._get_path(entity)
