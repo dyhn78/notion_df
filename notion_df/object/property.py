@@ -138,8 +138,8 @@ class Properties(DualSerializable, MutableMapping[Property, PropertyValue_T], me
         return self._values[self._get_key(key)]
 
     def get(self, key: str | Property, default: Optional[PropertyValue_T] = None) -> Optional[PropertyValue_T]:
-        key = self._get_key(key)
         try:
+            key = self._get_key(key)
             return self[key.name]
         except KeyError:
             return default
