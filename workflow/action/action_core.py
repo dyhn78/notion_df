@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import traceback
 from abc import ABCMeta, abstractmethod
 from datetime import datetime, timedelta
@@ -131,9 +132,9 @@ class Logger:
                 block.delete()
             log_last_success_time_parent_block.append_children([
                 ParagraphBlockValue(RichText([TextSpan(self.start_time_str)]))])
-        # elif exc_type == json.JSONDecodeError:
-        #     summary_text = f"failure - {self.format_time()}: {exc_val}"
-        #     summary_block_value = ParagraphBlockValue(RichText([TextSpan(summary_text)]))
+        elif exc_type in [json.JSONDecodeError, KeyboardInterrupt]:
+            summary_text = f"failure - {self.format_time()}: {exc_val}"
+            summary_block_value = ParagraphBlockValue(RichText([TextSpan(summary_text)]))
         else:
             summary_text = f"error - {self.format_time()} - {exc_type.__name__} - {exc_val}"
             summary_block_value = ToggleBlockValue(RichText([TextSpan(summary_text), UserMention(my_user_id)]))
