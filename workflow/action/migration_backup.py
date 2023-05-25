@@ -93,6 +93,7 @@ class MigrationBackupLoadAction(IterableAction):
                     continue
                 this_new_properties.setdefault(new_prop, new_prop.page_value()).append(linked_page)
         this_page.update(this_new_properties)
+        print(f'\t{this_page}: {this_new_properties}')
 
     @classmethod
     def find_new_relation_property(
