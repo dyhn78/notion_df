@@ -4,7 +4,7 @@ import os
 from abc import abstractmethod
 from datetime import datetime
 from functools import cache
-from typing import Optional, TypeVar, Union, Generic, final, Final, Any, Literal, overload, Hashable, Iterator, Iterable
+from typing import Optional, TypeVar, Union, Generic, final, Final, Any, Literal, overload, Hashable, Iterable
 
 from typing_extensions import Self
 
@@ -47,6 +47,9 @@ class Entity(Generic[Response_T], Hashable):
     @abstractmethod
     def _get_id(cls, id_or_url: Union[UUID, str]) -> UUID:
         pass
+
+    def __getnewargs__(self):
+        return self.id,
 
     def __new__(cls, id_or_url: Union[UUID, str]):
         _id = cls._get_id(id_or_url)

@@ -19,7 +19,7 @@ from notion_df.object.rich_text import RichText
 from notion_df.object.user import PartialUser, User
 from notion_df.util.collection import FinalClassDict
 from notion_df.util.exception import NotionDfKeyError, NotionDfValueError
-from notion_df.util.misc import check_classvars_are_defined, repr_object
+from notion_df.util.misc import repr_object
 from notion_df.util.serialization import DualSerializable, deserialize, serialize
 
 if TYPE_CHECKING:
@@ -298,7 +298,7 @@ class RelationDatabasePropertyValue(DatabasePropertyValue, metaclass=ABCMeta):
     database: Database
 
     def __init__(self, database: Database):
-        self.database = database
+        self.database: Database = database
 
     @classmethod
     def deserialize(cls, serialized: dict[str, Any]) -> Self:
@@ -558,7 +558,7 @@ class PhoneNumberProperty(Property[PlainDatabasePropertyValue, str, TextFilterBu
 class RelationProperty(Property[RelationDatabasePropertyValue_T, RelationPagePropertyValue, RelationFilterBuilder]):
     """cannot access database properties - use subclasses instead."""
     typename = 'relation'
-    database_value = RelationDatabasePropertyValue
+    database_value: type[RelationDatabasePropertyValue] = RelationDatabasePropertyValue
     page_value = RelationPagePropertyValue
     _filter_cls = RelationFilterBuilder
 

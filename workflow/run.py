@@ -6,7 +6,7 @@ from pathlib import Path
 from workflow import project_root
 from workflow.action.action_core import Action, min_timedelta, Logger
 from workflow.action.media_scraper import MediaScraper
-from workflow.action.migration_backup import MigrationBackupSaveAction
+from workflow.action.migration_backup import MigrationBackupSaveAction, MigrationBackupLoadAction
 from workflow.action.prop_matcher import MatchActionBase, MatchWeekByDateValue, MatchDateByCreatedTime, \
     MatchWeekByRefDate, MatchReadingsStartDate
 from workflow.constant.block_enum import DatabaseEnum
@@ -16,6 +16,7 @@ class Workflow:
     def __init__(self, create_window: bool, backup_path: Path):
         base = MatchActionBase()
         self.actions: list[Action] = [
+            MigrationBackupLoadAction(backup_path),
             MigrationBackupSaveAction(backup_path),
 
             MatchWeekByDateValue(base),
@@ -44,7 +45,6 @@ class Workflow:
             MatchDateByCreatedTime(base, DatabaseEnum.section_db, '시작'),
             MatchWeekByRefDate(base, DatabaseEnum.section_db, '시작', '시작'),
 
-            # TODO 배포후: <마디 - 🟢시작, 💚시작> 제거
             # TODO 배포후: <읽기 -  📕유형 <- 전개/꼭지> 추가 (스펙 논의 필요)
 
             MediaScraper(create_window),
@@ -80,5 +80,5 @@ def run_from_last_success(print_body: bool, create_window: bool, backup_path: Pa
 
 
 if __name__ == '__main__':
-    run_from_last_success(print_body=True, create_window=False, backup_path=project_root / 'backup')
-    # run_from_last_edited_time_bound(print_body=True, create_window=False, timedelta_size=timedelta(minutes=3))
+    # run_from_last_success(print_body=True, create_window=False, backup_path=project_root / 'backup')
+    run_from_last_edited_time_bound(print_body=True, create_window=False, timedelta_size=timedelta(hours=3), backup_path=project_root / 'backup')

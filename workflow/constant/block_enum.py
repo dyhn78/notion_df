@@ -45,7 +45,7 @@ class DatabaseEnum(Enum):
     section_db = ('부문', '52d387ea0aaa470cb69332708c61b34d', EmojiCode.YELLOW_HEART)
 
     stream_db = ('전개', 'eb2f09a1de41412e8b2357bc04f26e74', EmojiCode.RED_CIRCLE)
-    session_db = ('마디', '9f21ad86079d4caaa7ed9461a7f37288', EmojiCode.RED_HEART)
+    agenda_db = ('마디', '9f21ad86079d4caaa7ed9461a7f37288', EmojiCode.RED_HEART)
 
     topic_db = ('주제', '2c5411ba6a0f43a0a8aa06295751e37a', EmojiCode.PURPLE_CIRCLE)
     subject_db = ('담론', 'eca1ba6d4831459ca8becc283f1f8c4e', EmojiCode.PURPLE_HEART)
@@ -58,7 +58,5 @@ class DatabaseEnum(Enum):
     depr_channel_db = ('채널', '2d3f4ea770854b8e9e30abecd4d31a86', EmojiCode.BLACK_HEART)
     depr_location_db = ('장소', '920e2e10225d450d8bb084697f6d0fc6', EmojiCode.BLACK_HEART)
     depr_writing_db = ('표현', '069bbebd632f4a6ea3044575a064cf0f', EmojiCode.BLACK_HEART)
-    depr_status_db = ('생활', '52df5fae504b4d35918b03bb82080500', EmojiCode.BLACK_HEART)
-    depr_issue_db = ('주관', '8baa30054f00483a8f0538fd3cd9543a', EmojiCode.BLACK_HEART)
     depr_group_db = ('갈래', '679c2515870d46e3a107b42cd2a5ffc3', EmojiCode.BLACK_HEART)
-    depr_theme_db = ('주제', '5464267393e940a58e3f10db306bf3e4', EmojiCode.BLACK_HEART)
+    depr_theme_db = ('주제 -220222', '5464267393e940a58e3f10db306bf3e4', EmojiCode.BLACK_HEART)
