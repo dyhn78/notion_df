@@ -109,7 +109,10 @@ class Paginator(Sequence[T]):
 
             start = index.start if index.start is not None else 0
             stop = index.stop if index.stop is not None else 0
-            self._fetch_until(max(start, stop))
-            return [self._values[i] for i in range(start, stop, step)]
+            try:
+                self._fetch_until(max(start, stop))
+            except NotionDfIndexError:
+                pass
+            return [self._values[start:stop:step]]
         else:
             raise NotionDfTypeError("bad argument - expected int or slice", {'self': self, 'index': index})
