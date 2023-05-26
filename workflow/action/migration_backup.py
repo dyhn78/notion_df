@@ -1,4 +1,5 @@
 import json
+from json import JSONDecodeError
 from pathlib import Path
 from typing import Optional, cast, Iterator
 
@@ -30,7 +31,7 @@ class ResponseBackupService:
         path = self._get_path(entity)
         path.parent.mkdir(parents=True, exist_ok=True)
         if path.is_file():
-            print(f'\t{entity}\n\t\t-> overwrite ({self.read(entity).timestamp})')
+            print(f'\t{entity}\n\t\t-> overwrite')
         else:
             print(f'\t{entity}\n\t\t-> create')
         with path.open('w') as file:
