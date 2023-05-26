@@ -79,14 +79,16 @@ class MigrationBackupLoadAction(IterableAction):
             if not isinstance(this_prev_prop, RelationProperty):
                 continue
             for linked_page in cast(this_prev_prop.page_value, this_prev_prop_value):
-                if not linked_page.last_response:
-                    linked_page.retrieve()
-                linked_db = linked_page.parent
+                
                 linked_prev_response = self.response_backup.read(linked_page)
                 if linked_prev_response:
                     linked_prev_db = linked_prev_response.parent.entity
+                    linked_page.send_response(linked_prev_response)
+                    linked_db = linked_page.parent
                 else:
-                    linked_prev_db = linked_db
+                    if not linked_page.last_response:
+                        linked_page.retrieve()
+                    linked_db = linked_prev_db = linked_page.parent
                 new_prop: RelationProperty = self.find_new_relation_property(this_db, this_prev_parent, linked_db,
                                                                              linked_prev_db, this_prev_prop)
                 if not new_prop:
@@ -145,7 +147,7 @@ class MigrationBackupLoadAction(IterableAction):
             if this_prev_db_enum in [DatabaseEnum.subject_db, DatabaseEnum.topic_db]:
                 return pick('🔴요소')
             else:
-                return pick('🔴관계')
+                return pick('🔴구성')
 
         # default cases
         if linked_db_enum:

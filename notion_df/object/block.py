@@ -24,6 +24,7 @@ from notion_df.util.serialization import DualSerializable
 @dataclass
 class DatabaseResponse(Response):
     id: UUID
+    # TODO: use Parent here
     parent: PartialParent
     created_time: datetime
     last_edited_time: datetime
