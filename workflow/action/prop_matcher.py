@@ -180,6 +180,7 @@ class MatchWeekByDateValue(MatchAction, IterableAction):
         date_value = date.properties[date_manual_value]
         if not date_value:
             print(f'\t{date} -> Skipped')
+            return
         week = self.week_namespace.get_by_date_value(date_value.start)
         if date.retrieve().properties[date_to_week]:
             return
