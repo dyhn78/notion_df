@@ -137,12 +137,12 @@ class MigrationBackupLoadAction(IterableAction):
         if this_db_enum == DatabaseEnum.reading_db and linked_db_enum == DatabaseEnum.event_db:
             return pick('🔵관계')
         if this_db_enum == DatabaseEnum.issue_db and linked_db_enum == DatabaseEnum.stream_db:
-            if this_prev_db_enum in [DatabaseEnum.topic_db, DatabaseEnum.subject_db]:
+            if this_prev_db_enum in [DatabaseEnum.subject_db, DatabaseEnum.topic_db]:
                 return pick('🔴요소')
             else:
                 return pick('🔴구성')
         if this_db_enum == DatabaseEnum.stream_db and linked_db_enum == DatabaseEnum.stream_db:
-            if this_prev_db_enum in [DatabaseEnum.topic_db, DatabaseEnum.subject_db]:
+            if this_prev_db_enum in [DatabaseEnum.subject_db, DatabaseEnum.topic_db]:
                 return pick('🔴요소')
             else:
                 return pick('🔴관계')
