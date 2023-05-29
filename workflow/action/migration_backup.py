@@ -1,13 +1,13 @@
 import json
-from json import JSONDecodeError
 from pathlib import Path
 from typing import Optional, cast, Iterator
 
 from notion_df.entity import Entity, Page, Database
+from notion_df.object.block import PageResponse
 from notion_df.object.property import RelationProperty, PageProperties
 from notion_df.request.request_core import Response_T
 from notion_df.util.misc import get_generic_arg
-from workflow import project_root
+from workflow import project_path
 from workflow.action.action_core import IterableAction
 from workflow.constant.block_enum import DatabaseEnum
 
@@ -27,7 +27,7 @@ class ResponseBackupService:
             response_raw_data = json.load(file)
         return get_generic_arg(type(entity), Response_T).deserialize(response_raw_data)
 
-    def write(self, entity: Entity[Response_T]):
+    def write(self, entity: Entity[Response_T]) -> None:
         path = self._get_path(entity)
         path.parent.mkdir(parents=True, exist_ok=True)
         if path.is_file():
@@ -43,7 +43,6 @@ class MigrationBackupSaveAction(IterableAction):
         self.backup = ResponseBackupService(backup_path)
 
     def query_all(self) -> Iterator[Page]:
-        # return DatabaseEnum.event_db.entity.query(page_size=1)
         for db_enum in DatabaseEnum:
             yield from db_enum.entity.query()
 
@@ -65,12 +64,12 @@ class MigrationBackupLoadAction(IterableAction):
         return DatabaseEnum.from_entity(page.parent) is not None
 
     def process_page(self, this_page: Page):
-        this_db = this_page.parent
-        this_prev_response = self.response_backup.read(this_page)
+        this_db: Database = this_page.parent
+        this_prev_response: PageResponse = self.response_backup.read(this_page)
         if not this_prev_response:
             print(f'\t{this_page}: Skipped since no previous response backup')
             return
-        this_prev_parent = this_prev_response.parent.entity
+        this_prev_parent = this_prev_response.parent
         if this_prev_parent == this_db:
             print(f'\t{this_page}: Did not change the parent database')
             return
@@ -80,10 +79,10 @@ class MigrationBackupLoadAction(IterableAction):
             if not isinstance(this_prev_prop, RelationProperty):
                 continue
             for linked_page in cast(this_prev_prop.page_value, this_prev_prop_value):
-                
-                linked_prev_response = self.response_backup.read(linked_page)
+
+                linked_prev_response: PageResponse = self.response_backup.read(linked_page)
                 if linked_prev_response:
-                    linked_prev_db = linked_prev_response.parent.entity
+                    linked_prev_db = linked_prev_response.parent
                     linked_page.send_response(linked_prev_response)
                     linked_db = linked_page.parent
                 else:
@@ -121,7 +120,7 @@ class MigrationBackupLoadAction(IterableAction):
 
         def pick(prop_name: str) -> Optional[RelationProperty]:
             for _prop in candidate_props:
-                if _prop.name == prop_name:
+                if _prop.name.find(prop_name) != -1:
                     return _prop
 
         # customized cases
@@ -140,15 +139,15 @@ class MigrationBackupLoadAction(IterableAction):
         if this_db_enum == DatabaseEnum.reading_db and linked_db_enum == DatabaseEnum.event_db:
             return pick('🔵관계')
         if this_db_enum == DatabaseEnum.issue_db and linked_db_enum == DatabaseEnum.stream_db:
-            if this_prev_db_enum in [DatabaseEnum.subject_db, DatabaseEnum.topic_db]:
-                return pick('🔴요소')
+            if this_prev_db_enum in [DatabaseEnum.topic_db, DatabaseEnum.agenda_db]:
+                return pick('요소')
             else:
-                return pick('🔴구성')
+                return pick('구성')
         if this_db_enum == DatabaseEnum.stream_db and linked_db_enum == DatabaseEnum.stream_db:
-            if this_prev_db_enum in [DatabaseEnum.subject_db, DatabaseEnum.topic_db]:
-                return pick('🔴요소')
+            if this_prev_db_enum in [DatabaseEnum.topic_db, DatabaseEnum.agenda_db]:
+                return pick('요소')
             else:
-                return pick('🔴구성')
+                return pick('구성')
 
         # default cases
         if linked_db_enum:
@@ -158,5 +157,5 @@ class MigrationBackupLoadAction(IterableAction):
 
 
 if __name__ == '__main__':
-    query = MigrationBackupSaveAction(project_root / 'backup').execute_all()
+    query = MigrationBackupSaveAction(project_path / 'backup').execute_all()
     input()

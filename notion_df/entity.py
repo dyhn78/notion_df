@@ -12,7 +12,7 @@ from notion_df.object.block import BlockValue, BlockResponse, ChildPageBlockValu
 from notion_df.object.common import Icon
 from notion_df.object.file import ExternalFile, File
 from notion_df.object.filter import Filter
-from notion_df.object.parent import PartialParent
+from notion_df.object.partial_parent import PartialParent
 from notion_df.object.property import Property, PageProperties, DatabaseProperties, PagePropertyValue_T
 from notion_df.object.rich_text import RichText
 from notion_df.object.sort import Sort, TimestampSort, Direction
@@ -48,13 +48,10 @@ class Entity(Generic[Response_T], Hashable):
     def _get_id(cls, id_or_url: Union[UUID, str]) -> UUID:
         pass
 
-    def __getnewargs__(self):
-        return self.id,
-
     def __new__(cls, id_or_url: Union[UUID, str]):
-        _id = cls._get_id(id_or_url)
-        if (cls, _id) in namespace:
-            return namespace[(cls, _id)]
+        __id = cls._get_id(id_or_url)
+        if (cls, __id) in namespace:
+            return namespace[(cls, __id)]
         return super().__new__(cls)
 
     def __init__(self, id_or_url: Union[UUID, str]):
@@ -66,6 +63,12 @@ class Entity(Generic[Response_T], Hashable):
         namespace[(type(self), self.id)] = self
         self.last_response = None
         self.last_timestamp = 0
+
+    def __del__(self):
+        del namespace[(type(self), self.id)]
+
+    def __getnewargs__(self):
+        return self.id,
 
     def __hash__(self) -> int:
         return hash((type(self), self.id))
@@ -124,7 +127,7 @@ class Block(Entity[BlockResponse]):
 
     # noinspection DuplicatedCode
     def _send_response(self, response: BlockResponse) -> None:
-        self.parent = response.parent.entity
+        self.parent = response.parent
         self.created_time = response.created_time
         self.last_edited_time = response.last_edited_time
         self.created_by = response.created_by
@@ -201,7 +204,7 @@ class Database(Entity[DatabaseResponse]):
 
     # noinspection DuplicatedCode
     def _send_response(self, response: DatabaseResponse) -> None:
-        self.parent = response.parent.entity
+        self.parent = response.parent
         self.created_time = response.created_time
         self.last_edited_time = response.last_edited_time
         self.icon = response.icon
@@ -281,7 +284,7 @@ class Page(Entity[PageResponse]):
 
     # noinspection DuplicatedCode
     def _send_response(self, response: PageResponse) -> None:
-        self.parent = response.parent.entity
+        self.parent = response.parent
         self.created_time = response.created_time
         self.last_edited_time = response.last_edited_time
         self.created_by = response.created_by

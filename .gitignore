@@ -13,3 +13,4 @@ __pycache__
 *.ppk
 *.pem
 /backup
+/workflow/data

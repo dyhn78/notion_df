@@ -7,7 +7,7 @@ from uuid import UUID
 from notion_df.object.block import BlockValue, serialize_partial_block_list, PageResponse
 from notion_df.object.common import Icon
 from notion_df.object.file import ExternalFile
-from notion_df.object.parent import PartialParent
+from notion_df.object.partial_parent import PartialParent
 from notion_df.object.property import PageProperties, Property, PropertyValue_T
 from notion_df.request.request_core import SingleRequest, RequestSettings, Version, Method, MAX_PAGE_SIZE, \
     PaginatedRequest, BaseRequest

@@ -174,15 +174,19 @@ class Deserializable(metaclass=ABCMeta):
         if inspect.isabstract(cls):
             raise NotionDfTypeError('cannot instantiate abstract class', {'cls': cls, 'serialized': serialized})
 
-        serialized.update(overrides)
+        def deserialize_field(fd_name: str):
+            if fd_name in overrides:
+                return overrides[fd_name]
+            return deserialize(cls._get_type_hints()[fd_name], serialized[fd_name])
+
         init_params = {}
         for fd in fields(cls):
             if fd.init:
-                init_params[fd.name] = deserialize(cls._get_type_hints()[fd.name], serialized[fd.name])
+                init_params[fd.name] = deserialize_field(fd.name)
         self = cls(**init_params)  # type: ignore
         for fd in fields(cls):
             if not fd.init and (getattr(self, fd.name, None) is None) and fd.name in serialized:
-                setattr(self, fd.name, deserialize(cls._get_type_hints()[fd.name], serialized[fd.name]))
+                setattr(self, fd.name, deserialize_field(fd.name))
         return self
 
     @classmethod

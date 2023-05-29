@@ -2,8 +2,7 @@ from __future__ import annotations
 
 import inspect
 import re
-from itertools import chain
-from typing import Hashable, Any, Optional, Iterable, Iterator, TypeVar, get_args, cast, Generic, get_type_hints, \
+from typing import Any, Optional, Iterator, TypeVar, get_args, cast, Generic, get_type_hints, \
     overload
 from uuid import UUID
 
@@ -53,8 +52,7 @@ def get_page_id(id_or_url: str | UUID) -> UUID:
     match = uuid_pattern.search(id_or_url)
     if match:
         return UUID(match.group(0))
-    else:
-        return UUID(id_or_url)
+    return UUID(id_or_url)
 
 
 def get_block_id(id_or_url: str | UUID) -> UUID:
@@ -63,8 +61,7 @@ def get_block_id(id_or_url: str | UUID) -> UUID:
     match = uuid_pattern.search(id_or_url.split('#')[-1])
     if match:
         return UUID(match.group(0))
-    else:
-        return UUID(id_or_url)
+    return UUID(id_or_url)
 
 
 def get_page_url(id_or_url: str | UUID, workspace_name: str) -> str:

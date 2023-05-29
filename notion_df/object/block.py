@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
-from copy import deepcopy
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Optional
+from functools import cache
+from typing import Any, Optional, Union, TYPE_CHECKING, get_type_hints
 from uuid import UUID
 
 from typing_extensions import Self
@@ -12,7 +12,7 @@ from typing_extensions import Self
 from notion_df.object.common import Icon
 from notion_df.object.constant import BlockColor, CodeLanguage
 from notion_df.object.file import File
-from notion_df.object.parent import PartialParent
+from notion_df.object.partial_parent import PartialParent
 from notion_df.object.property import DatabaseProperties, PageProperties
 from notion_df.object.rich_text import Span, RichText
 from notion_df.object.user import PartialUser
@@ -20,12 +20,14 @@ from notion_df.request.request_core import Response
 from notion_df.util.collection import FinalClassDict
 from notion_df.util.serialization import DualSerializable
 
+if TYPE_CHECKING:
+    from notion_df.entity import Block, Database, Page
+
 
 @dataclass
 class DatabaseResponse(Response):
     id: UUID
-    # TODO: use Parent here
-    parent: PartialParent
+    parent: Union[Block, Page, None]
     created_time: datetime
     last_edited_time: datetime
     icon: Optional[Icon]
@@ -36,11 +38,22 @@ class DatabaseResponse(Response):
     archived: bool
     is_inline: bool
 
+    @classmethod
+    def _deserialize_this(cls, raw_data: dict[str, Any]) -> Self:
+        return cls._deserialize_from_dict(raw_data, raw_data=raw_data,
+                                          parent=PartialParent.deserialize(raw_data['parent']).entity)
+
+    @classmethod
+    @cache
+    def _get_type_hints(cls) -> dict[str, type]:  # TODO deduplicate
+        from notion_df.entity import Entity, Block, Database, Page
+        return get_type_hints(cls, {**globals(), **{cls.__name__: cls for cls in (Entity, Block, Database, Page)}})
+
 
 @dataclass
 class PageResponse(Response):
     id: UUID
-    parent: PartialParent
+    parent: Union[Block, Database, Page, None]
     created_time: datetime
     last_edited_time: datetime
     created_by: PartialUser
@@ -51,11 +64,22 @@ class PageResponse(Response):
     url: str
     properties: PageProperties
 
+    @classmethod
+    def _deserialize_this(cls, raw_data: dict[str, Any]) -> Self:
+        return cls._deserialize_from_dict(raw_data, raw_data=raw_data,
+                                          parent=PartialParent.deserialize(raw_data['parent']).entity)
+
+    @classmethod
+    @cache
+    def _get_type_hints(cls) -> dict[str, type]:
+        from notion_df.entity import Entity, Block, Database, Page
+        return get_type_hints(cls, {**globals(), **{cls.__name__: cls for cls in (Entity, Block, Database, Page)}})
+
 
 @dataclass
 class BlockResponse(Response):
     id: UUID
-    parent: PartialParent
+    parent: Union[Block, Page, None]
     created_time: datetime
     last_edited_time: datetime
     created_by: PartialUser
@@ -67,11 +91,18 @@ class BlockResponse(Response):
 
     @classmethod
     def _deserialize_this(cls, raw_data: dict[str, Any]):
-        raw_data_copy = deepcopy(raw_data)
         typename = raw_data['type']
         block_value_cls = block_value_registry[typename]
         block_value = block_value_cls.deserialize(raw_data[typename])
-        return cls._deserialize_from_dict(raw_data, raw_data=raw_data_copy, value=block_value)
+        return cls._deserialize_from_dict(raw_data, raw_data=raw_data,
+                                          parent=PartialParent.deserialize(raw_data['parent']).entity,
+                                          value=block_value)
+
+    @classmethod
+    @cache
+    def _get_type_hints(cls) -> dict[str, type]:
+        from notion_df.entity import Entity, Block, Database, Page
+        return get_type_hints(cls, {**globals(), **{cls.__name__: cls for cls in (Entity, Block, Database, Page)}})
 
 
 block_value_registry: FinalClassDict[str, type[BlockValue]] = FinalClassDict()

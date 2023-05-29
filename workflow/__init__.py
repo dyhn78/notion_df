@@ -1,3 +1,5 @@
 from pathlib import Path
 
-project_root = Path(__file__).resolve().parents[1]
+_this = Path(__file__).resolve()
+project_path = _this.parents[1]
+data_path = _this / 'data'

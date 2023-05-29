@@ -5,10 +5,10 @@ from pathlib import Path
 from notion_df.entity import Database
 from notion_df.object.property import RelationProperty
 from notion_df.variable import Settings
-from workflow import project_root
+from workflow import data_path
 from workflow.constant.block_enum import DatabaseEnum
 
-pickle_path: Path = project_root / 'all_relation_properties'
+pickle_path: Path = data_path / 'all_relation_properties'
 
 
 def init():
@@ -54,7 +54,7 @@ def get_week():
 
 
 if __name__ == '__main__':
-    # init()
+    init()
     get_date()
     print('----')
     get_week()

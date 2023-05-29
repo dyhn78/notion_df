@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import timedelta
 from pathlib import Path
 
-from workflow import project_root
+from workflow import project_path
 from workflow.action.action_core import Action, Logger
 from workflow.action.media_scraper import MediaScraper
 from workflow.action.migration_backup import MigrationBackupSaveAction, MigrationBackupLoadAction
@@ -79,5 +79,6 @@ def run_from_last_success(print_body: bool, create_window: bool, backup_path: Pa
 
 
 if __name__ == '__main__':
-    # run_from_last_success(print_body=True, create_window=False, backup_path=project_root / 'backup')
-    run_from_last_edited_time_bound(print_body=True, create_window=False, timedelta_size=timedelta(hours=3), backup_path=project_root / 'backup')
+    # run_from_last_success(print_body=True, create_window=False, backup_path=project_path / 'backup')
+    run_from_last_edited_time_bound(print_body=True, create_window=False, timedelta_size=timedelta(hours=3),
+                                    backup_path=project_path / 'backup')

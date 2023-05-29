@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import inspect
 from abc import abstractmethod, ABCMeta
-from copy import deepcopy
 from dataclasses import dataclass, field
 from datetime import datetime
 from pprint import pprint
@@ -10,6 +9,7 @@ from typing import TypeVar, Generic, Any, final, Optional, Iterator
 
 import requests
 from requests import JSONDecodeError
+from tenacity import retry, wait_exponential
 from typing_extensions import Self
 
 from notion_df.util.collection import StrEnum
@@ -18,7 +18,6 @@ from notion_df.util.serialization import deserialize, serialize, Deserializable
 from notion_df.variable import Settings, print_width
 
 MAX_PAGE_SIZE = 100
-TIMEOUT_SEC = 60
 
 
 @dataclass
@@ -28,7 +27,7 @@ class Response(Deserializable, metaclass=ABCMeta):
 
     @classmethod
     def _deserialize_this(cls, raw_data: dict[str, Any]) -> Self:
-        return cls._deserialize_from_dict(raw_data, raw_data=deepcopy(raw_data))
+        return cls._deserialize_from_dict(raw_data, raw_data=raw_data)
 
 
 Response_T = TypeVar('Response_T', bound=Response)
@@ -145,10 +144,11 @@ class PaginatedRequest(Generic[ResponseElement_T], BaseRequest, metaclass=ABCMet
             yield deserialize(cls.response_element_type, data_element)
 
 
+@retry(wait=wait_exponential(multiplier=1, min=4, max=180))
 def request(*, method: str, url: str, headers: dict[str, Any], params: Any, json: Any) -> requests.Response:
     if Settings.print:
         pprint(dict(method=method, url=url, headers=headers, params=params, json=json), width=print_width)
-    response = requests.request(method, url, headers=headers, params=params, json=json, timeout=TIMEOUT_SEC)
+    response = requests.request(method, url, headers=headers, params=params, json=json)
     try:
         response.raise_for_status()
     except requests.exceptions.HTTPError:

@@ -5,7 +5,9 @@ from abc import ABCMeta
 from collections.abc import MutableMapping
 from dataclasses import dataclass, field
 from datetime import datetime, date
-from typing import ClassVar, TypeVar, Generic, Any, Iterator, Optional, Literal, Union, Iterable, Final, TYPE_CHECKING
+from functools import cache
+from typing import ClassVar, TypeVar, Generic, Any, Iterator, Optional, Literal, Union, Iterable, Final, TYPE_CHECKING, \
+    get_type_hints
 
 from typing_extensions import Self
 
@@ -291,14 +293,12 @@ class FormulaDatabasePropertyValue(DatabasePropertyValue):
     r"""example value: 'if(prop(\"In stock\"), 0, prop(\"Price\"))'"""
 
 
+@dataclass
 class RelationDatabasePropertyValue(DatabasePropertyValue, metaclass=ABCMeta):
     """eligible property types: ['relation']"""
     # Note: this class cannot be defined dataclass,
     #  because dataclass does not immediately resolve type hints, which later leads get_type_hints() to fail
     database: Database
-
-    def __init__(self, database: Database):
-        self.database: Database = database
 
     @classmethod
     def deserialize(cls, serialized: dict[str, Any]) -> Self:
@@ -313,6 +313,12 @@ class RelationDatabasePropertyValue(DatabasePropertyValue, metaclass=ABCMeta):
                 raise NotionDfValueError('invalid relation_type',
                                          {'relation_type': relation_type, 'serialized': serialized})
         return subclass.deserialize(serialized)
+
+    @classmethod
+    @cache
+    def _get_type_hints(cls) -> dict[str, type]:  # TODO deduplicate
+        from notion_df.entity import Database
+        return get_type_hints(cls, {**globals(), **{cls.__name__: cls for cls in (Database,)}})
 
 
 class SingleRelationDatabasePropertyValue(RelationDatabasePropertyValue):
@@ -330,12 +336,9 @@ class SingleRelationDatabasePropertyValue(RelationDatabasePropertyValue):
         return cls(Database(serialized['database_id']))
 
 
+@dataclass
 class DualRelationDatabasePropertyValue(RelationDatabasePropertyValue):
     synced_property: DualRelationProperty
-
-    def __init__(self, database: Database, synced_property: DualRelationProperty):
-        super().__init__(database)
-        self.synced_property = synced_property
 
     def serialize(self) -> dict[str, Any]:
         return {
