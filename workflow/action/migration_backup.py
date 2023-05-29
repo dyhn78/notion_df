@@ -25,7 +25,10 @@ class ResponseBackupService:
             return
         with path.open('r') as file:
             response_raw_data = json.load(file)
-        return get_generic_arg(type(entity), Response_T).deserialize(response_raw_data)
+        try:
+            return get_generic_arg(type(entity), Response_T).deserialize(response_raw_data)
+        except:  # TODO
+            return
 
     def write(self, entity: Entity[Response_T]) -> None:
         path = self._get_path(entity)
