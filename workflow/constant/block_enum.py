@@ -43,8 +43,8 @@ class DatabaseEnum(Enum):
     reading_db = ('읽기', 'c326f77425a0446a8aa309478767c85b', EmojiCode.YELLOW_CIRCLE)
     division_db = ('자산', '52d387ea0aaa470cb69332708c61b34d', EmojiCode.YELLOW_HEART)  # TODO -> document
 
-    stream_db = ('전개', 'eb2f09a1de41412e8b2357bc04f26e74', EmojiCode.RED_CIRCLE)  # TODO -> stem
-    session_db = ('마디', '9f21ad86079d4caaa7ed9461a7f37288', EmojiCode.RED_HEART)
+    stream_db = ('전개', 'eb2f09a1de41412e8b2357bc04f26e74', EmojiCode.RED_CIRCLE)  # TODO -> advance
+    session_db = ('공간', '9f21ad86079d4caaa7ed9461a7f37288', EmojiCode.RED_HEART)  # TODO -> stage
 
     topic_db = ('주제', '2c5411ba6a0f43a0a8aa06295751e37a', EmojiCode.PURPLE_CIRCLE)
     agenda_db = ('담론', 'eca1ba6d4831459ca8becc283f1f8c4e', EmojiCode.PURPLE_HEART)
