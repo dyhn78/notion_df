@@ -94,7 +94,6 @@ class Logger:
     #  since Notion API does not directly support permanently deleting pages,
     #  and third party solutions like `https://github.com/pocc/bulk_delete_notion_pages`
     #  needs additional works to integrate.
-    # TODO: add toggleable heading block for each day; extend the log storage to 7 days
     def __init__(self, *, print_body: bool):
         self.print_body = print_body
         self.start_time = datetime.now().astimezone(my_tz)
