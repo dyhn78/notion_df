@@ -181,6 +181,11 @@ class Deserializable(metaclass=ABCMeta):
         def deserialize_field(fd_name: str):
             if fd_name in overrides:
                 return overrides[fd_name]
+            if fd_name not in cls._get_type_hints():
+                raise SerializationError(f'field "{fd_name}" has not explicit type hint')
+            if fd_name not in serialized:
+                raise SerializationError(
+                    f'required field "{fd_name}" is not provided either with "serialized" or "overrides"')
             return deserialize(cls._get_type_hints()[fd_name], serialized[fd_name])
 
         init_params = {}

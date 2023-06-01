@@ -66,11 +66,8 @@ class PageResponse(Response):
 
     @classmethod
     def _deserialize_this(cls, raw_data: dict[str, Any]) -> Self:
-        try:
-            return cls._deserialize_from_dict(raw_data, raw_data=raw_data,
+        return cls._deserialize_from_dict(raw_data, raw_data=raw_data,
                                           parent=PartialParent.deserialize(raw_data['parent']).entity)
-        except:
-            raise Exception(raw_data)
 
     @classmethod
     @cache
