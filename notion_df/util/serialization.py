@@ -17,8 +17,12 @@ from uuid import UUID
 import dateutil.parser
 from typing_extensions import Self
 
-from notion_df.util.exception import NotionDfValueError, NotionDfNotImplementedError, NotionDfTypeError
+from notion_df.util.exception import NotionDfNotImplementedError, NotionDfTypeError, NotionDfException
 from notion_df.variable import my_tz
+
+
+class SerializationError(NotionDfException):
+    ...
 
 
 def serialize(obj: Any):
@@ -40,7 +44,7 @@ def serialize(obj: Any):
         return serialize_datetime(obj)
     if isinstance(obj, UUID):
         return str(obj)
-    raise NotionDfValueError('cannot serialize', {'obj': obj})
+    raise SerializationError('cannot serialize', {'obj': obj})
 
 
 T = TypeVar('T')
@@ -77,14 +81,14 @@ def deserialize(typ: type, serialized: Any):
     if typ_origin == Literal:
         if serialized in typ_args:
             return serialized
-        raise NotionDfValueError('serialized value does not equal to any of Literal values', err_vars, linebreak=True)
+        raise SerializationError('serialized value does not equal to any of Literal values', err_vars, linebreak=True)
     if isinstance(typ, types.UnionType) or typ_origin == Union:  # also can handle Optional
         for typ_arg in typ_args:
             try:
                 return deserialize(typ_arg, serialized)
-            except NotionDfValueError:
+            except SerializationError:
                 pass
-        raise NotionDfValueError('cannot deserialize to any of the UnionType', err_vars, linebreak=True)
+        raise SerializationError('cannot deserialize to any of the UnionType', err_vars, linebreak=True)
     if isinstance(typ, types.GenericAlias) or isinstance(typ, _GenericAlias):
         err_vars.update({'typ.origin': typ_origin, 'typ.args': typ_args})
         try:
@@ -93,18 +97,18 @@ def deserialize(typ: type, serialized: Any):
                 return {k: deserialize(value_type, v) for k, v in serialized.items()}
             element_type = typ_args[0]
         except IndexError:
-            raise NotionDfValueError('cannot deserialize: GenericAlias type with invalid args',
+            raise SerializationError('cannot deserialize: GenericAlias type with invalid args',
                                      err_vars, linebreak=True)
         if issubclass(typ_origin, list):
             return [deserialize(element_type, e) for e in serialized]
         if issubclass(typ_origin, set):
             return {deserialize(element_type, e) for e in serialized}
-        raise NotionDfValueError('cannot deserialize: GenericAlias type with invalid origin',
+        raise SerializationError('cannot deserialize: GenericAlias type with invalid origin',
                                  err_vars, linebreak=True)
 
     # 2. class types
     if not inspect.isclass(typ):
-        raise NotionDfValueError('cannot deserialize: not supported type', err_vars, linebreak=True)
+        raise SerializationError('cannot deserialize: not supported type', err_vars, linebreak=True)
     if issubclass(typ, Deserializable):
         if isinstance(serialized, Deserializable):
             return serialized
@@ -114,7 +118,7 @@ def deserialize(typ: type, serialized: Any):
             return typ(serialized)
         except (ValueError, TypeError) as e:
             err_vars.update(exception=e)
-            raise NotionDfValueError('cannot deserialize', err_vars, linebreak=True)
+            raise SerializationError('cannot deserialize', err_vars, linebreak=True)
     if typ == UUID:
         if isinstance(serialized, UUID):
             return serialized
@@ -124,8 +128,8 @@ def deserialize(typ: type, serialized: Any):
             return deserialize_datetime(serialized)
         except (ValueError, TypeError) as e:
             err_vars.update(exception=e)
-            raise NotionDfValueError('cannot deserialize', err_vars, linebreak=True)
-    raise NotionDfValueError('cannot deserialize: not supported class', err_vars, linebreak=True)
+            raise SerializationError('cannot deserialize', err_vars, linebreak=True)
+    raise SerializationError('cannot deserialize: not supported class', err_vars, linebreak=True)
 
 
 @dataclass

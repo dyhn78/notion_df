@@ -5,11 +5,16 @@ from typing import Optional
 from urllib import parse
 
 import requests
+import requests.packages
 from bs4 import BeautifulSoup
 
 from notion_df.object.block import Heading1BlockValue, ParagraphBlockValue, Heading2BlockValue, Heading3BlockValue, \
     BlockValue
 from notion_df.object.rich_text import RichText
+
+# noinspection PyUnresolvedReferences
+# disable SSLError(1, '[SSL: DH_KEY_TOO_SMALL] dh key too small (_ssl.c:997)') error for yes24.com
+requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS = 'ALL:@SECLEVEL=1'
 
 
 def get_yes24_detail_page_url(book_name: str) -> Optional[str]:
@@ -17,8 +22,8 @@ def get_yes24_detail_page_url(book_name: str) -> Optional[str]:
         return
     book_name = ''.join(filter(lambda x: str.isalnum(x) or x == ' ', book_name))
     book_name_encoded = parse.quote_plus(book_name, encoding='euc-kr')
-    url_main_page = 'http://www.yes24.com'
-    url = f"http://www.yes24.com/searchcorner/Search?keywordAd=&keyword=&domain=BOOK&" \
+    url_main_page = 'https://www.yes24.com'
+    url = f"https://www.yes24.com/searchcorner/Search?keywordAd=&keyword=&domain=BOOK&" \
           f"qdomain=%c5%eb%c7%d5%b0%cb%bb%f6&query={book_name_encoded}"
 
     response = requests.get(url)
@@ -191,3 +196,7 @@ def get_block_value_of_contents_line(contents_line: str) -> BlockValue:
     elif CHAPTER_KOR.findall(contents_line) or CHAPTER_ENG.findall(contents_line):
         return Heading3BlockValue(rich_text, False)
     return ParagraphBlockValue(rich_text)
+
+
+if __name__ == '__main__':
+    print(get_yes24_detail_page_url('무깟디마'))

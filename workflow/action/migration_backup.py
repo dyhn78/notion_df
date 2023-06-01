@@ -7,6 +7,7 @@ from notion_df.object.block import PageResponse
 from notion_df.object.property import RelationProperty, PageProperties
 from notion_df.request.request_core import Response_T
 from notion_df.util.misc import get_generic_arg
+from notion_df.util.serialization import SerializationError
 from workflow import project_path
 from workflow.action.action_core import IterableAction
 from workflow.constant.block_enum import DatabaseEnum
@@ -25,10 +26,11 @@ class ResponseBackupService:
             return
         with path.open('r') as file:
             response_raw_data = json.load(file)
+        response_cls = get_generic_arg(type(entity), Response_T)
         try:
-            return get_generic_arg(type(entity), Response_T).deserialize(response_raw_data)
-        except:  # TODO
-            return
+            return response_cls.deserialize(response_raw_data)
+        except SerializationError:
+            print(f'Skip invalid response_raw_data: entity - {entity}, response_raw_data - {response_raw_data}')
 
     def write(self, entity: Entity[Response_T]) -> None:
         path = self._get_path(entity)
