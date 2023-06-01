@@ -5,6 +5,7 @@ mypy-extensions==1.0.0
 pytest==7.3.1
 python-dateutil==2.8.2
 requests==2.30.0
+urllib3<2  # urllib3>=2 throws error for legacy websites
 selenium==4.9.1
 tenacity==8.2.2
 types-requests==2.30.0.0
