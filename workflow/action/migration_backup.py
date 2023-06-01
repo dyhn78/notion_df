@@ -40,7 +40,9 @@ class ResponseBackupService:
         else:
             print(f'\t{entity}\n\t\t-> create')
         with path.open('w') as file:
-            json.dump(entity.last_response.raw_data, file, indent=2)
+            raw_data = entity.last_response.raw_data
+            assert raw_data is not None
+            json.dump(raw_data, file, indent=2)
 
 
 class MigrationBackupSaveAction(IterableAction):
