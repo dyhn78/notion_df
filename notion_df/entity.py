@@ -194,6 +194,9 @@ class Database(Entity[DatabaseResponse]):
         return get_page_id(id_or_url)
 
     def _attrs_to_repr_parent(self) -> dict[str, Any]:
+        from workflow.constant.block_enum import DatabaseEnum
+        print(DatabaseEnum.from_entity(self))
+        print(self.title)
         try:
             title_value = (str(self.icon) if self.icon is not None else '') + self.title.plain_text
         except AttributeError:

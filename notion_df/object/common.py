@@ -54,8 +54,11 @@ class Icon(DualSerializable, metaclass=ABCMeta):
         return subclass.deserialize(serialized)
 
 
-class Emoji(str, Icon):
+@dataclass
+class Emoji(Icon):
     # https://developers.notion.com/reference/emoji-object
+    value: str
+
     @classmethod
     def get_typename(cls) -> str:
         return 'emoji'
@@ -63,7 +66,7 @@ class Emoji(str, Icon):
     def serialize(self):
         return {
             "type": "emoji",
-            "emoji": str(self)
+            "emoji": self.value
         }
 
     @classmethod
