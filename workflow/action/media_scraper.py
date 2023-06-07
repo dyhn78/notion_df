@@ -7,6 +7,7 @@ from notion_df.object.common import SelectOption
 from notion_df.object.filter import CompoundFilter
 from notion_df.object.property import SelectProperty, CheckboxFormulaProperty, TitleProperty, RichTextProperty, \
     URLProperty, NumberProperty, FilesProperty, CheckboxProperty, PageProperties
+from notion_df.object.rich_text import TextSpan
 from notion_df.util.collection import StrEnum, Paginator
 from workflow.action.action_core import IterableAction
 from workflow.constant.block_enum import DatabaseEnum
@@ -182,7 +183,8 @@ class ReadingMediaScraperUnit:
         if scrap_result is None:
             return False
         new_properties = PageProperties({
-            location_prop: location_prop.page_value.from_plain_text(str(scrap_result)),
+            location_prop: location_prop.page_value([
+                TextSpan(scrap_result.location_str, link=scrap_result.search_url)]),
             not_available_prop: not scrap_result.available,
         })
         if not overwrite:

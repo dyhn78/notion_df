@@ -18,21 +18,28 @@ SelectLib_T = Literal['all_libs', 'gajwa']
 
 @dataclass
 class LibraryScrapResult:
+    lib_key: SelectLib_T
     lib_name: str
     priority: int
     book_code: str
     available: bool
+    search_url: str = None
 
     @classmethod
     def gajwa(cls, book_code: str, availability: bool) -> LibraryScrapResult:
-        return cls('가좌도서관', 1, book_code, availability)
+        return cls('gajwa', '가좌도서관', 1, book_code, availability)
 
     @classmethod
     def gy_all_libs(cls, book_code: str, availability: bool) -> LibraryScrapResult:
-        return cls('고양시 상호대차', -1, book_code, availability)
+        return cls('all_libs', '고양시 상호대차', -1, book_code, availability)
 
-    def __str__(self):
-        return " ".join(val for val in [self.lib_name, self.book_code, self.availability_str] if val)
+    @property
+    def location_str(self) -> str:
+        if self.lib_key == 'gajwa':
+            vals = [self.lib_key, self.book_code, self.availability_str]
+        else:
+            vals = [self.lib_key, self.availability_str]
+        return " ".join(val for val in vals if val)
 
     @property
     def availability_str(self) -> str:
@@ -62,11 +69,11 @@ var l = document.querySelector("{css_tag}");
 l.parentNode.removeChild(l);
         """)
 
-    def __init__(self, driver: WebDriver, title: str, select_lib: SelectLib_T):
+    def __init__(self, driver: WebDriver, title: str, lib_key: SelectLib_T):
         self.driver = driver
         self.driver_wait = WebDriverWait(self.driver, 10)
         # self.driver.minimize_window()
-        self.select_lib = select_lib
+        self.lib_key = lib_key
         self.title = title
         self.now_page_num = 1
         self.result: Optional[LibraryScrapResult] = None
@@ -82,17 +89,9 @@ l.parentNode.removeChild(l);
         # insert title
         self.driver_wait.until(
             EC.presence_of_element_located((By.CSS_SELECTOR, GYLibraryCSSTag.input_box)))
-        # sleep(5)  # TODO
         self.send_keys(GYLibraryCSSTag.input_box, self.title)
-        # self.find_element(GYLibraryCSSTag.input_box).send_keys(self.title)
-        # self.driver.find_element(
-        #     By.XPATH,
-        #     '/html/body/div[1]/div/div[2]/div[2]/div[2]/form/div/div[1]/div[2]/div[1]/input[1]').send_keys(self.title)
-        # self.find_element(GYLibraryCSSTag.input_box).send_keys(self.title)
-        # sleep(5)
-        # self.find_element(GYLibraryCSSTag.input_box).send_keys(self.title)
 
-        match self.select_lib:
+        match self.lib_key:
             case 'all_libs':
                 pass
             case 'gajwa':
@@ -104,18 +103,12 @@ l.parentNode.removeChild(l);
         self.find_element(GYLibraryCSSTag.search_button).click()
         self.driver.implicitly_wait(10)
 
-        # if no result
         if self.driver.find_elements(By.CLASS_NAME, "noResultNote"):
             return
-        # try:
-        #     if self.driver.find_elements(By.CLASS_NAME, "noResultNote"):
-        #         return
-        # except UnexpectedAlertPresentException:
-        #     wait = WebDriverWait(self.driver, 10)
-        #     alert = wait.until(expected_conditions.alert_is_present())
-        #     alert.accept()
 
+        search_url = self.driver.current_url
         self.examine_result()
+        self.result.search_url = search_url
         return self.result
 
     def examine_result(self):
@@ -162,19 +155,19 @@ l.parentNode.removeChild(l);
         tag = '#bookList > div.bookList.listViewStyle > ul > li > div.bookArea'
         book_areas = self.driver.find_elements(By.CSS_SELECTOR, tag)
         for book_area in book_areas:
-            self.result = GoyangLibraryScrapBookAreaParser(book_area, self.select_lib).result
-            if self.select_lib == 'gajwa' or (self.select_lib == 'all_libs' and self.result.available):
+            self.result = GoyangLibraryScrapBookAreaParser(book_area, self.lib_key).result
+            if self.lib_key == 'gajwa' or (self.lib_key == 'all_libs' and self.result.available):
                 return True
         return False
 
 
 class GoyangLibraryScrapBookAreaParser:
-    def __init__(self, book_area: WebElement, select_lib: SelectLib_T):
+    def __init__(self, book_area: WebElement, lib_key: SelectLib_T):
         self.book_area = book_area
-        self.select_lib = select_lib
-        if self.select_lib == 'gajwa':
+        self.lib_key = lib_key
+        if self.lib_key == 'gajwa':
             self.result = LibraryScrapResult.gajwa(self.get_book_code(), self.get_availability())
-        elif self.select_lib == 'all_libs':
+        elif self.lib_key == 'all_libs':
             # if all_libs, should proceed until element with availability=True arises.
             self.result = LibraryScrapResult.gy_all_libs(self.get_book_code(), self.get_availability())
 
