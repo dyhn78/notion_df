@@ -30,7 +30,9 @@ class DatabaseEnum(Enum):
         db = Database(self.id)
         if not hasattr(db, 'title'):
             db.title = RichText.from_plain_text(self.title)
+        if not hasattr(db, 'icon'):
             db.icon = Emoji(self.prefix)
+        print(db, db.title, db.icon)
         return db
 
     @classmethod
