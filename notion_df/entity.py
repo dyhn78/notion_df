@@ -195,7 +195,8 @@ class Database(Entity[DatabaseResponse]):
 
     def _attrs_to_repr_parent(self) -> dict[str, Any]:
         try:
-            # title_value = (str(self.icon) if self.icon is not None else '') + self.title.plain_text
+            # TODO: __str__()
+            #  title_value = (str(self.icon) if self.icon is not None else '') + self.title.plain_text
             title_value = self.title.plain_text
         except AttributeError:
             title_value = None
