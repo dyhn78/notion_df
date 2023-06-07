@@ -129,10 +129,10 @@ class Logger:
             summary_text = f"success - {self.format_time()}"
             summary_block_value = ParagraphBlockValue(RichText([TextSpan(summary_text)]))
             if self.update_last_success_time:
-                for block in self.last_success_time_blocks:
-                    block.delete()
                 log_last_success_time_parent_block.append_children([
                     ParagraphBlockValue(RichText([TextSpan(self.start_time_str)]))])
+                for block in self.last_success_time_blocks:
+                    block.delete()
         elif exc_type in [json.JSONDecodeError, KeyboardInterrupt]:
             summary_text = f"failure - {self.format_time()}: {exc_val}"
             summary_block_value = ParagraphBlockValue(RichText([TextSpan(summary_text)]))
