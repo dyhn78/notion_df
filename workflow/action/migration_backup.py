@@ -71,7 +71,8 @@ class MigrationBackupLoadAction(IterableAction):
         return DatabaseEnum.from_entity(page.parent) is not None
 
     def process_page(self, this_page: Page):
-        print(this_page, this_page.parent)
+        print(this_page)
+        print(this_page.parent)
         this_db: Database = this_page.parent
         this_prev_response: PageResponse = self.response_backup.read(this_page)
         if not this_prev_response:
