@@ -197,6 +197,7 @@ class Database(Entity[DatabaseResponse]):
         from workflow.constant.block_enum import DatabaseEnum
         print(DatabaseEnum.from_entity(self))
         print(self.title)
+        print(self.icon)
         try:
             title_value = (str(self.icon) if self.icon is not None else '') + self.title.plain_text
         except AttributeError:
