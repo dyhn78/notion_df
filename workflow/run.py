@@ -8,7 +8,7 @@ from workflow.action.action_core import Action, Logger
 from workflow.action.media_scraper import MediaScraper
 from workflow.action.migration_backup import MigrationBackupSaveAction, MigrationBackupLoadAction
 from workflow.action.prop_matcher import MatchActionBase, MatchWeekByDateValue, MatchDateByCreatedTime, \
-    MatchWeekByRefDate, MatchReadingsStartDate
+    MatchWeekByRefDate, MatchReadingsStartDate, MatchEventsStream
 from workflow.constant.block_enum import DatabaseEnum
 
 backup_path = project_path / 'backup'
@@ -33,6 +33,7 @@ class Workflow:
             MatchDateByCreatedTime(base, DatabaseEnum.event_db, '일간'),
             MatchDateByCreatedTime(base, DatabaseEnum.event_db, '생성'),
             MatchWeekByRefDate(base, DatabaseEnum.event_db, '주간', '일간'),
+            MatchEventsStream(base),
 
             MatchDateByCreatedTime(base, DatabaseEnum.issue_db, '생성'),
             MatchWeekByRefDate(base, DatabaseEnum.issue_db, '주간', '일간'),
