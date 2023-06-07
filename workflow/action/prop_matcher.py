@@ -2,26 +2,28 @@ from __future__ import annotations
 
 import datetime as dt
 from abc import ABCMeta
-from typing import cast
+from typing import cast, Iterable
 
 from notion_df.entity import Page, Database
 from notion_df.object.property import RelationProperty, TitleProperty, PageProperties, DateFormulaPropertyKey, \
     DateProperty, CheckboxFormulaProperty
 from notion_df.util.collection import Paginator
 from notion_df.util.misc import repr_object
-from notion_df.variable import my_tz, Settings
 from workflow.action.action_core import Action, IterableAction
 from workflow.constant.block_enum import DatabaseEnum
 from workflow.constant.emoji_code import EmojiCode
 
 korean_weekday = '월화수목금토일'
-record_datetime_auto = DateFormulaPropertyKey(EmojiCode.TIMER + '일시')
-date_to_week = RelationProperty(DatabaseEnum.week_db.prefix_title)
-date_manual_value = DateProperty(EmojiCode.CALENDAR + '날짜')
-event_to_date = RelationProperty(DatabaseEnum.date_db.prefix_title)
-reading_to_date = RelationProperty(DatabaseEnum.date_db.prefix + '시작')
-reading_to_event = RelationProperty(DatabaseEnum.event_db.prefix_title)
-reading_match_date_by_created_time = CheckboxFormulaProperty(EmojiCode.BLACK_NOTEBOOK + '시작일<-생성시간')
+record_datetime_auto_key = DateFormulaPropertyKey(EmojiCode.TIMER + '일시')
+date_to_week_prop = RelationProperty(DatabaseEnum.week_db.prefix_title)
+date_manual_value_prop = DateProperty(EmojiCode.CALENDAR + '날짜')
+event_to_date_prop = RelationProperty(DatabaseEnum.date_db.prefix_title)
+event_to_stream_prop = RelationProperty(DatabaseEnum.stream_db.prefix_title)
+event_to_issue_prop = RelationProperty(DatabaseEnum.issue_db.prefix_title)
+issue_to_stream_upper_prop = RelationProperty(DatabaseEnum.stream_db.prefix + '공통')
+reading_to_date_prop = RelationProperty(DatabaseEnum.date_db.prefix + '시작')
+reading_to_event_prop = RelationProperty(DatabaseEnum.event_db.prefix_title)
+reading_match_date_by_created_time_prop = CheckboxFormulaProperty(EmojiCode.BLACK_NOTEBOOK + '시작일<-생성시간')
 
 
 def get_record_created_date(record: Page) -> dt.date:
@@ -42,7 +44,11 @@ class MatchAction(Action, metaclass=ABCMeta):
         self.week_namespace = base.week_namespace
 
 
-class MatchDateByCreatedTime(MatchAction, IterableAction):
+class MatchIterableAction(MatchAction, IterableAction, metaclass=ABCMeta):
+    ...
+
+
+class MatchDateByCreatedTime(MatchIterableAction):
     def __init__(self, base: MatchActionBase, records: DatabaseEnum, record_to_date: str):
         super().__init__(base)
         self.record_db = Database(records.id)
@@ -69,7 +75,7 @@ class MatchDateByCreatedTime(MatchAction, IterableAction):
         print(f'\t{record}\n\t\t-> {_date if _date else ":Skipped"}')
 
 
-class MatchReadingsStartDate(MatchAction, IterableAction):
+class MatchReadingsStartDate(MatchIterableAction):
     def __init__(self, base: MatchActionBase):
         super().__init__(base)
         self.reading_db = Database(DatabaseEnum.reading_db.id)
@@ -77,37 +83,37 @@ class MatchReadingsStartDate(MatchAction, IterableAction):
 
     def query_all(self) -> Paginator[Page]:
         return self.reading_db.query(
-            reading_to_date.filter.is_empty() & (
-                    reading_to_event.filter.is_not_empty()
-                    | reading_match_date_by_created_time.filter.is_not_empty()
+            reading_to_date_prop.filter.is_empty() & (
+                    reading_to_event_prop.filter.is_not_empty()
+                    | reading_match_date_by_created_time_prop.filter.is_not_empty()
             )
         )
 
     def filter(self, page: Page) -> bool:
-        return (page.parent == self.reading_db and not page.properties[reading_to_date]
-                and (page.properties[reading_to_event]
-                     or page.properties[reading_match_date_by_created_time]))
+        return (page.parent == self.reading_db and not page.properties[reading_to_date_prop]
+                and (page.properties[reading_to_event_prop]
+                     or page.properties[reading_match_date_by_created_time_prop]))
 
     def process_page(self, reading: Page):
         def find_date():
-            reading_events = reading.properties[reading_to_event]
+            reading_events = reading.properties[reading_to_event_prop]
             dates = []
             # TODO: RollupPagePropertyValue 구현 후 이곳을 간소화
             for event in reading_events:
                 if not event.last_timestamp:
                     event.retrieve()
-                if not (date_list := event.properties[event_to_date]):
+                if not (date_list := event.properties[event_to_date_prop]):
                     continue
                 date = date_list[0]
                 if not date.last_timestamp:
                     date.retrieve()
-                if date.properties[date_manual_value] is None:
+                if date.properties[date_manual_value_prop] is None:
                     continue
                 dates.append(date)
             if dates:
                 # noinspection PyShadowingNames
-                return min(dates, key=lambda date: cast(Page, date).properties[date_manual_value].start)
-            if reading.properties[reading_match_date_by_created_time]:
+                return min(dates, key=lambda date: cast(Page, date).properties[date_manual_value_prop].start)
+            if reading.properties[reading_match_date_by_created_time_prop]:
                 reading_created_date = get_record_created_date(reading)
                 return self.date_namespace.get_by_date_value(reading_created_date)
 
@@ -116,16 +122,16 @@ class MatchReadingsStartDate(MatchAction, IterableAction):
             if not date:
                 return
             # final check if the property value is filled in the meantime
-            if reading.retrieve().properties[reading_to_date]:
+            if reading.retrieve().properties[reading_to_date_prop]:
                 return
-            reading.update(PageProperties({reading_to_date: reading_to_date.page_value([date])}))
+            reading.update(PageProperties({reading_to_date_prop: reading_to_date_prop.page_value([date])}))
             return date
 
         _date = wrapper()
         print(f'\t{reading}\n\t\t-> {_date if _date else ": Skipped"}')
 
 
-class MatchWeekByRefDate(MatchAction, IterableAction):
+class MatchWeekByRefDate(MatchIterableAction):
     def __init__(self, base: MatchActionBase, record_db_enum: DatabaseEnum,
                  record_to_week: str, record_to_date: str):
         super().__init__(base)
@@ -150,7 +156,7 @@ class MatchWeekByRefDate(MatchAction, IterableAction):
             record_date = record.properties[self.record_to_date][0]
             if not record_date.last_timestamp:
                 record_date.retrieve()
-            record_week = record_date.properties[date_to_week][0]
+            record_week = record_date.properties[date_to_week_prop][0]
 
             # final check if the property value is filled in the meantime
             if record.retrieve().properties[self.record_to_week]:
@@ -162,7 +168,7 @@ class MatchWeekByRefDate(MatchAction, IterableAction):
         print(f'\t{record}\n\t\t-> {_week if _week else ": Skipped"}')
 
 
-class MatchWeekByDateValue(MatchAction, IterableAction):
+class MatchWeekByDateValue(MatchIterableAction):
     def __init__(self, base: MatchActionBase):
         super().__init__(base)
         self.date_db = Database(DatabaseEnum.date_db.id)
@@ -171,21 +177,45 @@ class MatchWeekByDateValue(MatchAction, IterableAction):
         return repr_object(self, [])
 
     def query_all(self) -> Paginator[Page]:
-        return self.date_db.query(date_to_week.filter.is_empty())
+        return self.date_db.query(date_to_week_prop.filter.is_empty())
 
     def filter(self, page: Page) -> bool:
-        return page.parent == self.date_db and not page.properties[date_to_week]
+        return page.parent == self.date_db and not page.properties[date_to_week_prop]
 
     def process_page(self, date: Page):
-        date_value = date.properties[date_manual_value]
+        date_value = date.properties[date_manual_value_prop]
         if not date_value:
             print(f'\t{date} -> Skipped')
             return
         week = self.week_namespace.get_by_date_value(date_value.start)
-        if date.retrieve().properties[date_to_week]:
+        if date.retrieve().properties[date_to_week_prop]:
             return
-        date.update(PageProperties({date_to_week: date_to_week.page_value([week])}))
+        date.update(PageProperties({date_to_week_prop: date_to_week_prop.page_value([week])}))
         print(f'\t{date}\n\t\t-> {week}')
+
+
+class MatchEventsStream(MatchIterableAction):
+    def __init__(self, base: MatchActionBase):
+        super().__init__(base)
+
+    def query_all(self) -> Iterable[Page]:
+        return DatabaseEnum.event_db.entity.query(event_to_issue_prop.filter.is_not_empty())
+
+    def filter(self, event: Page) -> bool:
+        return bool(event.parent == DatabaseEnum.event_db.entity and event.properties[event_to_issue_prop])
+
+    def process_page(self, event: Page):
+        curr_streams: list[Page] = event.properties[event_to_stream_prop]
+        new_streams: set[Page] = set(curr_streams)
+        for issue in event.properties[event_to_issue_prop]:
+            if not issue.last_response:
+                issue.retrieve()
+            new_streams.update(issue.properties[issue_to_stream_upper_prop])
+        new_streams.difference_update(curr_streams)
+        if not new_streams:
+            return
+        event.update(PageProperties({
+            event_to_stream_prop: event_to_stream_prop.page_value(curr_streams + list(new_streams))}))
 
 
 class DatabaseIndex(metaclass=ABCMeta):
@@ -237,10 +267,16 @@ class WeekIndex(DatabaseIndex):
 
 
 if __name__ == '__main__':
+    from notion_df.variable import my_tz, Settings
     _base = MatchActionBase()
     now = dt.datetime.now().astimezone(my_tz)
+
     with Settings.print:
-        _action = MatchReadingsStartDate(_base)
-        Action.execute_by_last_edited_time([_action], now - dt.timedelta(hours=1))
+        _action = MatchEventsStream(_base)
+        _action.execute_all()
+    #
+    # with Settings.print:
+    #     _action = MatchReadingsStartDate(_base)
+    #     Action.execute_by_last_edited_time([_action], now - dt.timedelta(hours=1))
     # Action.execute_by_last_edited_time([MatchDateByCreatedTime(_base, DatabaseEnum.event_db, '일간')],
     #                                    now - dt.timedelta(hours=2), now)

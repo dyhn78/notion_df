@@ -29,12 +29,13 @@ class Action(metaclass=ABCMeta):
         return repr_object(self, [])
 
     @abstractmethod
-    def query_all(self) -> Iterator[Page]:
+    def query_all(self) -> Iterable[Page]:
         pass
 
     @abstractmethod
     def filter(self, page: Page) -> bool:
-        """from given retrieved pages, pick the ones which need to process."""
+        """from given retrieved pages, pick the ones which need to process.
+        this is supposed to reflect the filter condition of query_all()."""
         pass
 
     @abstractmethod
@@ -94,8 +95,9 @@ class Logger:
     #  since Notion API does not directly support permanently deleting pages,
     #  and third party solutions like `https://github.com/pocc/bulk_delete_notion_pages`
     #  needs additional works to integrate.
-    def __init__(self, *, print_body: bool):
+    def __init__(self, *, print_body: bool, update_last_success_time: bool):
         self.print_body = print_body
+        self.update_last_success_time = update_last_success_time
         self.start_time = datetime.now().astimezone(my_tz)
         self.start_time_str = self.start_time.strftime(log_date_format)
         self.start_time_group_str = self.start_time.strftime(log_date_group_format)
@@ -126,10 +128,11 @@ class Logger:
         if exc_type is None:
             summary_text = f"success - {self.format_time()}"
             summary_block_value = ParagraphBlockValue(RichText([TextSpan(summary_text)]))
-            for block in self.last_success_time_blocks:
-                block.delete()
-            log_last_success_time_parent_block.append_children([
-                ParagraphBlockValue(RichText([TextSpan(self.start_time_str)]))])
+            if self.update_last_success_time:
+                for block in self.last_success_time_blocks:
+                    block.delete()
+                log_last_success_time_parent_block.append_children([
+                    ParagraphBlockValue(RichText([TextSpan(self.start_time_str)]))])
         elif exc_type in [json.JSONDecodeError, KeyboardInterrupt]:
             summary_text = f"failure - {self.format_time()}: {exc_val}"
             summary_block_value = ParagraphBlockValue(RichText([TextSpan(summary_text)]))

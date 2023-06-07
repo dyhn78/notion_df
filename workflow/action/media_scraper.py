@@ -1,5 +1,5 @@
 from functools import cached_property
-from typing import Optional, Callable, Any, Iterable
+from typing import Optional, Callable, Any
 
 from notion_df.entity import Page, Database
 from notion_df.object.block import ChildPageBlockValue
@@ -8,26 +8,26 @@ from notion_df.object.filter import CompoundFilter
 from notion_df.object.property import SelectProperty, CheckboxFormulaProperty, TitleProperty, RichTextProperty, \
     URLProperty, NumberProperty, FilesProperty, CheckboxProperty, PageProperties
 from notion_df.util.collection import StrEnum, Paginator
-from workflow.action.action_core import Action, IterableAction
+from workflow.action.action_core import IterableAction
 from workflow.constant.block_enum import DatabaseEnum
 from workflow.service.gy_lib_service import GYLibraryScraper, LibraryScrapResult
 from workflow.service.webdriver_service import WebDriverFactory
 from workflow.service.yes24_service import get_yes24_detail_page_url, Yes24ScrapResult, get_block_value_of_contents_line
 
-edit_status = SelectProperty('🔰준비')
-media_type = SelectProperty('📘유형')
-is_book = CheckboxFormulaProperty('📔도서류')
-title = TitleProperty('📚제목')
-true_name = RichTextProperty('📚원제(검색용)')
-sub_name = RichTextProperty('📚부제')
-url = URLProperty('📚링크')
-author = RichTextProperty('📚만든이')
-publisher = RichTextProperty('📚만든곳')
-volume = NumberProperty('📚N(쪽)')
-cover_image = FilesProperty('📚표지')
-location = RichTextProperty('📚위치')
-not_available = CheckboxProperty('📚대출중')
-link_to_contents = RichTextProperty('📦결속')
+edit_status_prop = SelectProperty('🔰준비')
+media_type_prop = SelectProperty('📘유형')
+is_book_prop = CheckboxFormulaProperty('📔도서류')
+title_prop = TitleProperty('📚제목')
+true_name_prop = RichTextProperty('📚원제(검색용)')
+sub_name_prop = RichTextProperty('📚부제')
+url_prop = URLProperty('📚링크')
+author_prop = RichTextProperty('📚만든이')
+publisher_prop = RichTextProperty('📚만든곳')
+volume_prop = NumberProperty('📚N(쪽)')
+cover_image_prop = FilesProperty('📚표지')
+location_prop = RichTextProperty('📚위치')
+not_available_prop = CheckboxProperty('📚대출중')
+link_to_contents_prop = RichTextProperty('📦결속')
 
 
 class EditStatusValue(StrEnum):
@@ -49,16 +49,16 @@ class MediaScraper(IterableAction):
         return self.driver_factory()
 
     def query_all(self) -> Paginator[Page]:
-        return self.reading_db.query(is_book.filter.equals(True) & CompoundFilter('or', [
-            edit_status.filter.equals(option) for option in
+        return self.reading_db.query(is_book_prop.filter.equals(True) & CompoundFilter('or', [
+            edit_status_prop.filter.equals(option) for option in
             [EditStatusValue.default, EditStatusValue.metadata_overwrite, EditStatusValue.location_overwrite, None]
         ]))
 
     def filter(self, page: Page) -> bool:
-        return (page.parent == self.reading_db and page.properties[is_book] and
-                (page.properties[edit_status] in
+        return (page.parent == self.reading_db and page.properties[is_book_prop] and
+                (page.properties[edit_status_prop] in
                  [EditStatusValue.default, EditStatusValue.metadata_overwrite, EditStatusValue.location_overwrite]
-                 or page.properties[edit_status] is None))
+                 or page.properties[edit_status_prop] is None))
 
     def process_page(self, reading: Page):
         ReadingMediaScraperUnit(self, reading).execute()
@@ -74,22 +74,22 @@ class ReadingMediaScraperUnit:
         self.new_properties = PageProperties()
         self.callables: list[Callable[[], Any]] = []
 
-        self.title_value = self.extract_title(self.reading.properties[title].plain_text)
-        self.true_name_value = self.reading.properties[true_name].plain_text
+        self.title_value = self.extract_title(self.reading.properties[title_prop].plain_text)
+        self.true_name_value = self.reading.properties[true_name_prop].plain_text
 
     def extract_title(self, title_value: str) -> str:
         if title_value.find('_ ') != -1:
             return title_value.split('_ ')[1]
         if title_value.find(' _') != -1:
             true_title_value, author_value = title_value.split(' _', maxsplit=1)
-            self.new_properties[title] = \
+            self.new_properties[title_prop] = \
                 RichTextProperty.page_value.from_plain_text(f'{author_value}_ {true_title_value}')
             return true_title_value
         return title_value
 
     def execute(self) -> None:
         new_status_value = EditStatusValue.fill_manually
-        match getattr(self.reading.properties[edit_status], 'name', EditStatusValue.default):
+        match getattr(self.reading.properties[edit_status_prop], 'name', EditStatusValue.default):
             case EditStatusValue.default:
                 if self.process_yes24(False) and self.process_lib_gy(False):
                     new_status_value = EditStatusValue.confirm_manually
@@ -99,20 +99,20 @@ class ReadingMediaScraperUnit:
             case EditStatusValue.location_overwrite:
                 if self.process_lib_gy(True):
                     new_status_value = EditStatusValue.complete
-        self.new_properties[edit_status] = SelectOption(new_status_value)
+        self.new_properties[edit_status_prop] = SelectOption(new_status_value)
         self.reading.update(self.new_properties)
         for _callable in self.callables:
             _callable()
 
     def process_yes24(self, overwrite: bool) -> bool:
         def get_url() -> Optional[str]:
-            if url_value := self.reading.properties[url]:
+            if url_value := self.reading.properties[url_prop]:
                 return url_value
             if url_value := get_yes24_detail_page_url(self.true_name_value):
-                self.new_properties[url] = url_value
+                self.new_properties[url_prop] = url_value
                 return url_value
             if url_value := get_yes24_detail_page_url(self.title_value):
-                self.new_properties[url] = url_value
+                self.new_properties[url_prop] = url_value
                 return url_value
 
         detail_page_url = get_url()
@@ -124,14 +124,14 @@ class ReadingMediaScraperUnit:
             self.true_name_value = result.get_true_name()
 
         new_properties: PageProperties = PageProperties({
-            true_name: true_name.page_value.from_plain_text(result.get_true_name()),
-            sub_name: sub_name.page_value.from_plain_text(result.get_sub_name()),
-            author: author.page_value.from_plain_text(result.get_author()),
-            publisher: publisher.page_value.from_plain_text(result.get_publisher()),
-            volume: result.get_page_count(),
+            true_name_prop: true_name_prop.page_value.from_plain_text(result.get_true_name()),
+            sub_name_prop: sub_name_prop.page_value.from_plain_text(result.get_sub_name()),
+            author_prop: author_prop.page_value.from_plain_text(result.get_author()),
+            publisher_prop: publisher_prop.page_value.from_plain_text(result.get_publisher()),
+            volume_prop: result.get_page_count(),
         })
         if result.get_cover_image_url():
-            new_properties[cover_image] = cover_image.page_value.externals([
+            new_properties[cover_image_prop] = cover_image_prop.page_value.externals([
                 (result.get_cover_image_url(), self.title_value)])
         if not overwrite:
             new_properties = self.filter_not_overwrite(new_properties)
@@ -182,8 +182,8 @@ class ReadingMediaScraperUnit:
         if scrap_result is None:
             return False
         new_properties = PageProperties({
-            location: location.page_value.from_plain_text(str(scrap_result)),
-            not_available: not scrap_result.available,
+            location_prop: location_prop.page_value.from_plain_text(str(scrap_result)),
+            not_available_prop: not scrap_result.available,
         })
         if not overwrite:
             new_properties = self.filter_not_overwrite(new_properties)

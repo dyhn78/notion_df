@@ -11,6 +11,8 @@ from workflow.action.prop_matcher import MatchActionBase, MatchWeekByDateValue, 
     MatchWeekByRefDate, MatchReadingsStartDate
 from workflow.constant.block_enum import DatabaseEnum
 
+backup_path = project_path / 'backup'
+
 
 class Workflow:
     def __init__(self, create_window: bool, backup_path: Path):
@@ -52,21 +54,22 @@ class Workflow:
 
 
 def run_all(print_body: bool, create_window: bool, backup_path: Path) -> None:
-    with Logger(print_body=print_body):
+    with Logger(print_body=print_body, update_last_success_time=False):
         workflow = Workflow(create_window, backup_path)
         for action in workflow.actions:
             action.execute_all()
 
 
 def run_from_last_edited_time_bound(print_body: bool, create_window: bool, backup_path: Path,
-                                    timedelta_size: timedelta) -> None:
-    with Logger(print_body=print_body) as logger:
+                                    timedelta_size: timedelta, update_last_success_time: bool) -> None:
+    with Logger(print_body=print_body, update_last_success_time=update_last_success_time) as logger:
         workflow = Workflow(create_window, backup_path)
         Action.execute_by_last_edited_time(workflow.actions, logger.start_time - timedelta_size, logger.start_time)
 
 
-def run_from_last_success(print_body: bool, create_window: bool, backup_path: Path) -> bool:
-    with Logger(print_body=print_body) as logger:
+def run_from_last_success(print_body: bool, create_window: bool, backup_path: Path,
+                          update_last_success_time: bool) -> bool:
+    with Logger(print_body=print_body, update_last_success_time=update_last_success_time) as logger:
         workflow = Workflow(create_window, backup_path)
         if logger.last_success_time is not None:
             logger.enabled = Action.execute_by_last_edited_time(
@@ -79,6 +82,7 @@ def run_from_last_success(print_body: bool, create_window: bool, backup_path: Pa
 
 
 if __name__ == '__main__':
-    # run_from_last_success(print_body=True, create_window=False, backup_path=project_path / 'backup')
-    run_from_last_edited_time_bound(print_body=True, create_window=False, timedelta_size=timedelta(hours=3),
-                                    backup_path=project_path / 'backup')
+    pass
+    # run_from_last_success(print_body=True, create_window=False, backup_path=backup_path)
+    # run_from_last_edited_time_bound(print_body=True, create_window=False, timedelta_size=timedelta(hours=3),
+    #                                 backup_path=backup_path, update_last_success_time=False)

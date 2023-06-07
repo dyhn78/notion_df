@@ -373,13 +373,11 @@ class RollupDatabasePropertyValue(DatabasePropertyValue):
 
 
 class RelationPagePropertyValue(list['Page'], DualSerializable):
-    has_more: Optional[bool]
+    has_more: Optional[bool]  # set by Property._deserialize_page()
 
     def __init__(self, pages: Iterable[Page] = ()):
         super().__init__(pages)
-
-    def __bool__(self) -> bool:
-        return bool(len(self) or self.has_more)
+        self.has_more = None
 
     def serialize(self) -> Any:
         return [{'id': str(page.id)} for page in self]
@@ -389,8 +387,16 @@ class RelationPagePropertyValue(list['Page'], DualSerializable):
         from notion_df.entity import Page
 
         self = cls([Page(partial_page['id']) for partial_page in serialized])
-        self.has_more = None
         return self
+
+    def __bool__(self) -> bool:
+        return bool(len(self) or self.has_more)
+
+    def __add__(self, other: Iterable[Page]):
+        return RelationPagePropertyValue((*self, *other))
+
+    def __repr__(self) -> str:
+        return f'{type(self).__name__}({super().__repr__()})'
 
 
 @dataclass
