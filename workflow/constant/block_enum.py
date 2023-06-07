@@ -34,7 +34,6 @@ class DatabaseEnum(Enum):
             db.title = RichText([title_span])
         if not hasattr(db, 'icon'):
             db.icon = Emoji(self.prefix)
-        print(db, db.title, db.icon)
         return db
 
     @classmethod

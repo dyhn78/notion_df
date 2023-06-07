@@ -59,6 +59,12 @@ class Emoji(Icon):
     # https://developers.notion.com/reference/emoji-object
     value: str
 
+    def __repr__(self) -> str:
+        return f'{type(self).__name__}({self.value})'
+
+    def __str__(self) -> str:
+        return self.value
+
     @classmethod
     def get_typename(cls) -> str:
         return 'emoji'
