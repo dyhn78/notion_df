@@ -5,7 +5,7 @@ from typing import Optional
 
 from notion_df.entity import Database, Entity
 from notion_df.object.common import Emoji
-from notion_df.object.rich_text import RichText
+from notion_df.object.rich_text import RichText, TextSpan
 from notion_df.util.misc import get_page_id, get_page_url
 from workflow.constant.emoji_code import EmojiCode
 
@@ -29,7 +29,9 @@ class DatabaseEnum(Enum):
     def entity(self) -> Database:
         db = Database(self.id)
         if not hasattr(db, 'title'):
-            db.title = RichText.from_plain_text(self.title)
+            title_span = TextSpan(self.title)
+            title_span.plain_text = self.title
+            db.title = RichText([title_span])
         if not hasattr(db, 'icon'):
             db.icon = Emoji(self.prefix)
         print(db, db.title, db.icon)
