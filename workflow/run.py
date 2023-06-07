@@ -83,6 +83,7 @@ def run_from_last_success(print_body: bool, create_window: bool, backup_path: Pa
 
 if __name__ == '__main__':
     pass
+    run_from_last_success(print_body=True, create_window=False, backup_path=backup_path, update_last_success_time=False)
     # run_from_last_success(print_body=True, create_window=False, backup_path=backup_path)
     # run_from_last_edited_time_bound(print_body=True, create_window=False, timedelta_size=timedelta(hours=3),
     #                                 backup_path=backup_path, update_last_success_time=False)

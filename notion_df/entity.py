@@ -49,10 +49,13 @@ class Entity(Generic[Response_T], Hashable):
         pass
 
     def __new__(cls, id_or_url: Union[UUID, str]):
-        __id = cls._get_id(id_or_url)
-        if (cls, __id) in namespace:
-            return namespace[(cls, __id)]
-        return super().__new__(cls)
+        try:
+            __id = cls._get_id(id_or_url)
+            if (cls, __id) in namespace:
+                return namespace[(cls, __id)]
+            return super().__new__(cls)
+        finally:
+            del __id
 
     def __init__(self, id_or_url: Union[UUID, str]):
         if hasattr(self, '_initialized'):
