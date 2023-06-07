@@ -62,3 +62,7 @@ class DatabaseEnum(Enum):
     depr_location_db = ('장소', '920e2e10225d450d8bb084697f6d0fc6', EmojiCode.BLACK_HEART)
     depr_writing_db = ('표현', '069bbebd632f4a6ea3044575a064cf0f', EmojiCode.BLACK_HEART)
     depr_theme_db = ('주제 -220222', '5464267393e940a58e3f10db306bf3e4', EmojiCode.BLACK_HEART)
+
+
+for db in DatabaseEnum:
+    db.entity
