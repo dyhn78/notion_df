@@ -80,7 +80,6 @@ class Entity(Generic[Response_T], Hashable):
         return type(self) == type(other) and self.id == other.id
 
     @final
-    @cache
     def __repr__(self) -> str:
         if not hasattr(self, 'parent'):
             repr_parent = None
