@@ -67,12 +67,10 @@ def deserialize(typ: type, serialized: Any):
     typ_args = get_args(typ)
 
     # 0. explicitly unsupported values
-    if typ is None or serialized is None:
+    if typ is None or serialized is None or typ == Any:
         return serialized
 
     # 1. Non-class types
-    if typ == Any:
-        return serialized
     if type(typ) == NewType:
         typ_origin = cast(NewType, typ).__supertype__
         return typ(deserialize(typ_origin, serialized))

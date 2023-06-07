@@ -4,6 +4,8 @@ from enum import Enum
 from typing import Optional
 
 from notion_df.entity import Database, Entity
+from notion_df.object.common import Emoji
+from notion_df.object.rich_text import RichText
 from notion_df.util.misc import get_page_id, get_page_url
 from workflow.constant.emoji_code import EmojiCode
 
@@ -27,7 +29,8 @@ class DatabaseEnum(Enum):
     def entity(self) -> Database:
         db = Database(self.id)
         if not hasattr(db, 'title'):
-            db.title = self.title
+            db.title = RichText.from_plain_text(self.title)
+            db.icon = Emoji(self.prefix)
         return db
 
     @classmethod
