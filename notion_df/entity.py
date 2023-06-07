@@ -316,14 +316,19 @@ class Page(Entity[PageResponse]):
         response = RetrievePage(token, self.id).execute()
         return self.send_response(response)
 
-    def retrieve_property_item(self, property_id: str | Property[Any, PagePropertyValue_T, Any],
-                               page_size: Optional[int] = None) -> PagePropertyValue_T:
+    def retrieve_property_item(
+            self, property_id: str | Property[Any, PagePropertyValue_T, Any]) -> PagePropertyValue_T:
         if isinstance(property_id, Property):
             property_id = property_id.id
-        if property_id is None:
-            raise NotionDfValueError('property_id is None', {'self': self})
-        page_property = RetrievePagePropertyItem(token, self.id, property_id, page_size).execute()
-        return page_property
+            if property_id is None:
+                raise NotionDfValueError(
+                    "property.id is None. if you do not know the property id, retrieve the parent database first.",
+                    {"self": self})
+        page_property_value = RetrievePagePropertyItem(token, self.id, property_id).execute()
+        if not hasattr(self, 'properties'):
+            self.properties = PageProperties()
+            self.properties[property_id] = page_property_value
+        return page_property_value
 
     def update(self, properties: Optional[PageProperties] = None, icon: Optional[Icon] = None,
                cover: Optional[ExternalFile] = None, archived: Optional[bool] = None) -> Self:

@@ -9,8 +9,8 @@ from notion_df.object.common import Icon
 from notion_df.object.file import ExternalFile
 from notion_df.object.partial_parent import PartialParent
 from notion_df.object.property import PageProperties, Property, PropertyValue_T
-from notion_df.request.request_core import SingleRequest, RequestSettings, Version, Method, MAX_PAGE_SIZE, \
-    PaginatedRequest, BaseRequest
+from notion_df.request.request_core import SingleRequest, RequestSettings, Version, Method, PaginatedRequest, \
+    BaseRequest
 from notion_df.util.collection import DictFilter
 
 
@@ -79,9 +79,9 @@ class UpdatePage(SingleRequest[PageResponse]):
 @dataclass
 class RetrievePagePropertyItem(BaseRequest):
     """https://developers.notion.com/reference/retrieve-a-page-property"""
+    # for simplicity reasons, pagination is not supported.
     page_id: UUID
     property_id: str
-    page_size: int = None
 
     def get_settings(self) -> RequestSettings:
         return RequestSettings(Version.v20220628, Method.GET,
@@ -93,23 +93,15 @@ class RetrievePagePropertyItem(BaseRequest):
     execute_once = PaginatedRequest.execute_once
 
     def execute(self) -> PropertyValue_T:
-        # TODO: deduplicate with PaginatedRequest.execute() if possible.
-        page_size_total = self.page_size if self.page_size is not None else float('inf')
-        page_size = min(MAX_PAGE_SIZE, page_size_total)
-        page_size_retrieved = page_size
-
-        data = self.execute_once(page_size, None)
+        data = self.execute_once()
         if (prop_serialized := data)['object'] == 'property_item':
             # noinspection PyProtectedMember
             return Property._deserialize_page(prop_serialized)
 
         data_list = []
-        while page_size_retrieved < page_size_total and data['has_more']:
+        while data['has_more']:
             start_cursor = data['next_cursor']
-            page_size = min(MAX_PAGE_SIZE, page_size_total - page_size_retrieved)
-            page_size_retrieved += page_size
-
-            data = self.execute_once(page_size, start_cursor)
+            data = self.execute_once(start_cursor=start_cursor)
             data_list.append(data)
 
         typename = data_list[0]['property_item']['type']
