@@ -17,7 +17,7 @@ from uuid import UUID
 import dateutil.parser
 from typing_extensions import Self
 
-from notion_df.util.exception import NotionDfNotImplementedError, NotionDfTypeError, NotionDfException
+from notion_df.core.exception import NotionDfNotImplementedError, NotionDfTypeError, NotionDfException
 from notion_df.variable import my_tz
 
 

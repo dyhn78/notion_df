@@ -11,6 +11,8 @@ from typing import ClassVar, TypeVar, Generic, Any, Iterator, Optional, Literal,
 
 from typing_extensions import Self
 
+from notion_df.core.exception import NotionDfKeyError, NotionDfValueError
+from notion_df.core.serialization import DualSerializable, deserialize, serialize
 from notion_df.object.common import StatusGroups, SelectOption, DateRange
 from notion_df.object.constant import RollupFunction, NumberFormat, Number
 from notion_df.object.file import Files
@@ -20,9 +22,7 @@ from notion_df.object.filter import PropertyFilter, CheckboxFilterBuilder, Peopl
 from notion_df.object.rich_text import RichText
 from notion_df.object.user import PartialUser, User
 from notion_df.util.collection import FinalClassDict
-from notion_df.util.exception import NotionDfKeyError, NotionDfValueError
 from notion_df.util.misc import repr_object
-from notion_df.core.serialization import DualSerializable, deserialize, serialize
 
 if TYPE_CHECKING:
     from notion_df.entity import Page, Database
@@ -47,7 +47,7 @@ class Property(Generic[DatabasePropertyValue_T, PagePropertyValue_T, FilterBuild
         self.id: Optional[str] = None
 
     def __repr__(self) -> str:
-        return repr_object(self, ['name', 'id'])
+        return repr_object(self, name=self.name, id=self.id)
 
     def __eq__(self, other: Property) -> bool:
         if self.name != other.name:

@@ -2,10 +2,12 @@ from __future__ import annotations
 
 from datetime import datetime
 from typing import Optional, TypeVar, Union, Any, Literal, overload, Iterable
+from uuid import UUID
 
 from typing_extensions import Self
 
 from notion_df.core.entity_base import Entity
+from notion_df.core.exception import NotionDfValueError, NotionDfKeyError
 from notion_df.core.request import Paginator
 from notion_df.object.block import BlockValue, BlockResponse, ChildPageBlockValue, DatabaseResponse, PageResponse
 from notion_df.object.common import Icon
@@ -20,8 +22,8 @@ from notion_df.request.block import AppendBlockChildren, RetrieveBlock, Retrieve
 from notion_df.request.database import CreateDatabase, UpdateDatabase, RetrieveDatabase, QueryDatabase
 from notion_df.request.page import CreatePage, UpdatePage, RetrievePage, RetrievePagePropertyItem
 from notion_df.request.search import SearchByTitle
-from notion_df.util.exception import NotionDfValueError, NotionDfKeyError
-from notion_df.util.misc import get_page_id, UUID, get_block_id
+from notion_df.util.misc import repr_object, undefined
+from notion_df.util.uuid_util import get_page_or_database_id, get_block_id
 from notion_df.variable import Settings, token
 
 
@@ -106,18 +108,24 @@ class Database(Entity[DatabaseResponse]):
 
     @classmethod
     def _get_id(cls, id_or_url: Union[UUID, str]) -> UUID:
-        return get_page_id(id_or_url)
+        return get_page_or_database_id(id_or_url)
 
-    def _attrs_to_repr_parent(self) -> dict[str, Any]:
+    def __repr__(self) -> str:
         try:
-            # TODO: __str__()
-            #  title_value = (str(self.icon) if self.icon is not None else '') + self.title.plain_text
-            title_value = self.title.plain_text
-        except AttributeError:
-            title_value = None
-        return {
-            'title': title_value,
-        }
+            title = self.title.plain_text
+            url = self.url
+            _id = undefined
+        except (NotionDfKeyError, AttributeError):
+            title = url = undefined
+            _id = self.id
+        return repr_object(self, title=title, url=url, id=_id, parent=self._repr_parent())
+
+    def _repr_as_parent(self) -> str:
+        try:
+            title = self.title.plain_text
+        except (NotionDfKeyError, AttributeError):
+            title = undefined
+        return repr_object(self, title=title)
 
     # noinspection DuplicatedCode
     def _send_response(self, response: DatabaseResponse) -> None:
@@ -188,16 +196,24 @@ class Page(Entity[PageResponse]):
 
     @classmethod
     def _get_id(cls, id_or_url: Union[UUID, str]) -> UUID:
-        return get_page_id(id_or_url)
+        return get_page_or_database_id(id_or_url)
 
-    def _attrs_to_repr_parent(self) -> dict[str, Any]:
+    def __repr__(self) -> str:
         try:
-            title_value = (str(self.icon) if self.icon is not None else '') + self.properties.title.plain_text
+            title = self.properties.title.plain_text
+            url = self.url
+            _id = undefined
         except (NotionDfKeyError, AttributeError):
-            title_value = None
-        return {
-            'title': title_value,
-        }
+            title = url = undefined
+            _id = self.id
+        return repr_object(self, title=title, url=url, id=_id, parent=self._repr_parent())
+
+    def _repr_as_parent(self) -> str:
+        try:
+            title = self.properties.title.plain_text
+        except (NotionDfKeyError, AttributeError):
+            title = undefined
+        return repr_object(self, title=title)
 
     # noinspection DuplicatedCode
     def _send_response(self, response: PageResponse) -> None:

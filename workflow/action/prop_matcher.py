@@ -4,10 +4,10 @@ import datetime as dt
 from abc import ABCMeta
 from typing import cast, Iterable
 
+from notion_df.core.request import Paginator
 from notion_df.entity import Page, Database
 from notion_df.property import RelationProperty, TitleProperty, PageProperties, DateFormulaPropertyKey, \
     DateProperty, CheckboxFormulaProperty
-from notion_df.core.request import Paginator
 from notion_df.util.misc import repr_object
 from workflow.action.action_core import Action, IterableAction
 from workflow.constant.block_enum import DatabaseEnum
@@ -141,7 +141,10 @@ class MatchWeekByRefDate(MatchIterableAction):
         self.record_to_date = RelationProperty(f'{DatabaseEnum.date_db.prefix}{record_to_date}')
 
     def __repr__(self):
-        return repr_object(self, ['record_db_title', 'record_to_week', 'record_to_date'])
+        return repr_object(self,
+                           record_db_title=self.record_db_title,
+                           record_to_week=self.record_to_week,
+                           record_to_date=self.record_to_date)
 
     def query_all(self) -> Paginator[Page]:
         return self.record_db.query(
@@ -174,7 +177,7 @@ class MatchWeekByDateValue(MatchIterableAction):
         self.date_db = Database(DatabaseEnum.date_db.id)
 
     def __repr__(self):
-        return repr_object(self, [])
+        return repr_object(self)
 
     def query_all(self) -> Paginator[Page]:
         return self.date_db.query(date_to_week_prop.filter.is_empty())

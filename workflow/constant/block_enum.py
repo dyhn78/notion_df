@@ -3,11 +3,11 @@ from __future__ import annotations
 from enum import Enum
 from typing import Optional
 
-from notion_df.entity import Database
 from notion_df.core.entity_base import Entity
+from notion_df.entity import Database
 from notion_df.object.common import Emoji
 from notion_df.object.rich_text import RichText, TextSpan
-from notion_df.util.misc import get_page_id, get_page_url
+from notion_df.util.uuid_util import get_page_or_database_id, get_page_or_database_url
 from workflow.constant.emoji_code import EmojiCode
 
 _id_to_member = {}
@@ -17,8 +17,8 @@ class DatabaseEnum(Enum):
     def __init__(self, title: str, id_or_url: str, prefix: str):
         self._value_ = self._name_
         self.title = title
-        self.id = get_page_id(id_or_url)
-        self.url = get_page_url(id_or_url, 'dyhn')
+        self.id = get_page_or_database_id(id_or_url)
+        self.url = get_page_or_database_url(id_or_url, 'dyhn')
         self.prefix = prefix
         _id_to_member[Database(self.id)] = self
 

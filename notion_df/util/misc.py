@@ -1,72 +1,27 @@
 from __future__ import annotations
 
 import inspect
-import re
-from typing import Any, Optional, Iterator, TypeVar, get_args, cast, Generic, get_type_hints, \
-    overload
-from uuid import UUID
+from typing import Any, Optional, TypeVar, get_args, cast, Generic, get_type_hints
 
-from notion_df.util.exception import NotionDfTypeError, NotionDfValueError
+from notion_df.core.exception import NotionDfTypeError
 
-
-@overload
-def repr_object(cls_or_instance, attr_names: list[str]) -> str:
-    ...
+undefined = object()
+"""flag used on repr_object() to omit the attribute value."""
 
 
-@overload
-def repr_object(cls_or_instance, attr_dict: dict[str, Any]) -> str:
-    ...
+def repr_object(obj, *attrs: Any, **kw_attrs: Any) -> str:
+    def repr_attr(_attr_value): return repr(_attr_value) if isinstance(_attr_value, str) else str(_attr_value)
 
-
-def repr_object(cls_or_instance, attrs: list[str] | dict[str, Any]) -> str:
     attr_items = []
-    if isinstance(attr_names := attrs, list):
-        for attr_name in attr_names:
-            if (attr_value := getattr(cls_or_instance, attr_name)) is not None:
-                attr_items.append(f'{attr_name}={attr_value!r}')
-    elif isinstance(attr_dict := attrs, dict):
-        for attr_name, attr_value in attr_dict.items():
-            if attr_value is not None:
-                attr_items.append(f'{attr_name}={attr_value!r}')
-    else:
-        raise NotionDfValueError(vars={'self': cls_or_instance, 'attrs': attrs})
-
-    return f"{type(cls_or_instance).__name__}({', '.join(attr_items)})"
-
-
-def get_num_iterator() -> Iterator[int]:
-    num = 0
-    while True:
-        yield num
-        num += 1
-
-
-uuid_pattern = re.compile(r'[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}', re.I)
-
-
-def get_page_id(id_or_url: str | UUID) -> UUID:
-    # Regular expression to match both dashed and no-dash UUIDs
-    if isinstance(id_or_url, UUID):
-        return id_or_url
-    match = uuid_pattern.search(id_or_url)
-    if match:
-        return UUID(match.group(0))
-    return UUID(id_or_url)
-
-
-def get_block_id(id_or_url: str | UUID) -> UUID:
-    if isinstance(id_or_url, UUID):
-        return id_or_url
-    match = uuid_pattern.search(id_or_url.split('#')[-1])
-    if match:
-        return UUID(match.group(0))
-    return UUID(id_or_url)
-
-
-def get_page_url(id_or_url: str | UUID, workspace_name: str) -> str:
-    uuid = get_page_id(id_or_url)
-    return f'https://www.notion.so/{workspace_name}/' + str(uuid).replace('-', '')
+    for attr_value in attrs:
+        if attr_value is undefined:
+            continue
+        attr_items.append(repr_attr(attr_value))
+    for attr_name, attr_value in kw_attrs.items():
+        if attr_value is undefined:
+            continue
+        attr_items.append(f'{attr_name}={repr_attr(attr_value)}')
+    return f"{type(obj).__name__}({', '.join(attr_items)})"
 
 
 Type_T = TypeVar('Type_T', bound=type)

@@ -12,10 +12,10 @@ from requests import JSONDecodeError
 from tenacity import retry, wait_exponential
 from typing_extensions import Self
 
-from notion_df.util.collection import StrEnum
-from notion_df.util.exception import NotionDfValueError, NotionDfIndexError, NotionDfTypeError
-from notion_df.util.misc import repr_object
+from notion_df.core.exception import NotionDfValueError, NotionDfIndexError, NotionDfTypeError
 from notion_df.core.serialization import deserialize, serialize, Deserializable
+from notion_df.util.collection import StrEnum
+from notion_df.util.misc import repr_object
 from notion_df.variable import Settings, print_width
 
 MAX_PAGE_SIZE = 100
@@ -189,7 +189,7 @@ class Paginator(Sequence[T]):
         self._values: list[T] = []
 
     def __repr__(self):
-        return repr_object(self, ['element_type'])
+        return repr_object(self, element_type=self.element_type)
 
     def _fetch_until(self, index: int) -> None:
         """fetch until self._values[index] is possible"""

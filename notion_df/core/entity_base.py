@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 from abc import abstractmethod, ABCMeta
-from typing import Final, Generic, Hashable, Union, Optional, final, Any
+from typing import Final, Generic, Hashable, Union, Optional, final
 from uuid import UUID
 
 from typing_extensions import Self
 
 from notion_df.core.request import Response_T
-from notion_df.util.misc import repr_object
+from notion_df.util.misc import repr_object, undefined
 
 namespace: Final[dict[tuple[type[Entity], UUID], Entity]] = {}  # TODO: support multiple entities
 
@@ -51,7 +51,7 @@ class Entity(Generic[Response_T], Hashable, metaclass=ABCMeta):
     def __del__(self):
         del namespace[(type(self), self.id)]
 
-    def __getnewargs__(self):
+    def __getnewargs__(self):  # required for pickling
         return self.id,
 
     def __hash__(self) -> int:
@@ -60,24 +60,20 @@ class Entity(Generic[Response_T], Hashable, metaclass=ABCMeta):
     def __eq__(self, other: Entity) -> bool:
         return type(self) == type(other) and self.id == other.id
 
-    @final
     def __repr__(self) -> str:
+        return repr_object(self, id=self.id, parent=self._repr_parent())
+
+    @final
+    def _repr_parent(self) -> Optional[str]:
         if not hasattr(self, 'parent'):
-            repr_parent = None
+            return undefined
         elif self.parent is None:
-            repr_parent = 'workspace'
+            return 'workspace'
         else:
-            # TODO: fix `Entity(parent='Database()') <- remove this '' around parent value
-            repr_parent = repr_object(self.parent, self.parent._attrs_to_repr_parent())
+            return self.parent._repr_as_parent()
 
-        return repr_object(self, {
-            **self._attrs_to_repr_parent(),
-            'id_or_url': getattr(self, 'url', str(self.id)),
-            'parent': repr_parent
-        })
-
-    def _attrs_to_repr_parent(self) -> dict[str, Any]:
-        return {}
+    def _repr_as_parent(self) -> Optional[str]:
+        return repr_object(self, id=self.id)
 
     @final
     def send_response(self, response: Response_T) -> Self:

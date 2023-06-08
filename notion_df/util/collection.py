@@ -3,7 +3,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import TypeVar, NewType
 
-from notion_df.util.exception import NotionDfKeyError
+from notion_df.core.exception import NotionDfKeyError
 
 
 class StrEnum(str, Enum):
