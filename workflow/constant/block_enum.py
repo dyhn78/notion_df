@@ -4,7 +4,7 @@ from enum import Enum
 from typing import Optional
 
 from notion_df.entity import Database
-from notion_df.core.base_entity import Entity
+from notion_df.core.entity_base import Entity
 from notion_df.object.common import Emoji
 from notion_df.object.rich_text import RichText, TextSpan
 from notion_df.util.misc import get_page_id, get_page_url

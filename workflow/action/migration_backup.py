@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Optional, cast, Iterator
 
 from notion_df.entity import Page, Database
-from notion_df.core.base_entity import Entity
+from notion_df.core.entity_base import Entity
 from notion_df.object.block import PageResponse
 from notion_df.object.property import RelationProperty, PageProperties
 from notion_df.core.request import Response_T

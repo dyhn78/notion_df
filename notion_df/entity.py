@@ -5,7 +5,7 @@ from typing import Optional, TypeVar, Union, Any, Literal, overload, Iterable
 
 from typing_extensions import Self
 
-from notion_df.core.base_entity import Entity
+from notion_df.core.entity_base import Entity
 from notion_df.object.block import BlockValue, BlockResponse, ChildPageBlockValue, DatabaseResponse, PageResponse
 from notion_df.object.common import Icon
 from notion_df.object.file import ExternalFile, File
