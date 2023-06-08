@@ -2,14 +2,16 @@ from __future__ import annotations as _
 
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, field
-from typing import Optional, Any, Literal, final, Iterable
+from typing import Optional, Any, Literal, final, Iterable, cast
 from uuid import UUID
 
 from typing_extensions import Self
 
-from notion_df.object.common import DateRange, Annotations
-from notion_df.util.collection import FinalClassDict
 from notion_df.core.serialization import DualSerializable, deserialize, serialize
+from notion_df.object.common import DateRange, Annotations
+from notion_df.util.collection import FinalDict
+
+rich_text_span_registry: FinalDict[tuple[str, ...], type[Span]] = FinalDict()
 
 
 class Span(DualSerializable, metaclass=ABCMeta):
@@ -25,7 +27,8 @@ class Span(DualSerializable, metaclass=ABCMeta):
 
     def __init_subclass__(cls, **kwargs) -> None:
         super().__init_subclass__(**kwargs)
-        rich_text_span_registry[cls.get_typename()] = cls
+        if (typename := cls.get_typename()) and typename != cast(cls, super(cls, cls)).get_typename():
+            rich_text_span_registry[cls.get_typename()] = cls
 
     def serialize(self) -> dict[str, Any]:
         serialized = self._serialize_main()
@@ -40,7 +43,7 @@ class Span(DualSerializable, metaclass=ABCMeta):
     @classmethod
     @abstractmethod
     def get_typename(cls) -> tuple[str, ...]:
-        pass
+        return ()
 
     @classmethod
     @abstractmethod
@@ -75,9 +78,6 @@ class Span(DualSerializable, metaclass=ABCMeta):
 
     def __repr__(self):
         return self._repr_non_default_fields()
-
-
-rich_text_span_registry: FinalClassDict[tuple[str, ...], type[Span]] = FinalClassDict()
 
 
 class RichText(list[Span], DualSerializable):

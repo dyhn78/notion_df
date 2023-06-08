@@ -6,8 +6,8 @@ from collections.abc import MutableMapping
 from dataclasses import dataclass, field
 from datetime import datetime, date
 from functools import cache
-from typing import ClassVar, TypeVar, Generic, Any, Iterator, Optional, Literal, Union, Iterable, Final, TYPE_CHECKING, \
-    get_type_hints
+from typing import ClassVar, TypeVar, Generic, Any, Iterator, Optional, Literal, Union, Iterable, Final, \
+    TYPE_CHECKING, get_type_hints, cast
 
 from typing_extensions import Self
 
@@ -21,13 +21,13 @@ from notion_df.object.filter import PropertyFilter, CheckboxFilterBuilder, Peopl
     RelationFilterBuilder, SelectFilterBuilder, FilterBuilder, FormulaPropertyFilter
 from notion_df.object.rich_text import RichText
 from notion_df.object.user import PartialUser, User
-from notion_df.util.collection import FinalClassDict
+from notion_df.util.collection import FinalDict
 from notion_df.util.misc import repr_object
 
 if TYPE_CHECKING:
     from notion_df.entity import Page, Database
 
-property_registry: FinalClassDict[str, type[Property]] = FinalClassDict()
+property_registry: FinalDict[str, type[Property]] = FinalDict()
 PropertyValue_T = TypeVar('PropertyValue_T')
 # TODO (low priority): fix that `DatabasePropertyValue_T.bound == DatabasePropertyValue` does not ruin the type hinting
 DatabasePropertyValue_T = TypeVar('DatabasePropertyValue_T')
@@ -37,7 +37,7 @@ FilterBuilder_T = TypeVar('FilterBuilder_T', bound=FilterBuilder)
 
 class Property(Generic[DatabasePropertyValue_T, PagePropertyValue_T, FilterBuilder_T], metaclass=ABCMeta):
     # TODO: move base class and PropertyValue classes to notion_df.core.property
-    typename: ClassVar[str]
+    typename: ClassVar[str] = ''
     database_value: type[DatabasePropertyValue_T]
     page_value: type[PagePropertyValue_T]
     _filter_cls: type[FilterBuilder_T]
@@ -63,10 +63,11 @@ class Property(Generic[DatabasePropertyValue_T, PagePropertyValue_T, FilterBuild
 
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
-        if not inspect.isabstract(cls):
-            assert cls.typename
-        if typename := getattr(cls, 'typename', None):
-            property_registry[typename] = cls
+        if inspect.isabstract(cls):
+            return
+        assert cls.typename
+        if cls.typename != cast(cls, super(cls, cls)).typename:
+            property_registry[cls.typename] = cls
 
     @property
     def filter(self) -> FilterBuilder_T:

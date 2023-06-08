@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from typing import Any
 from uuid import UUID
 
-from notion_df.object.block import BlockValue, BlockResponse, serialize_partial_block_list
+from notion_df.object.block import BlockValue, BlockResponse, serialize_block_value_list
 from notion_df.core.request import SingleRequest, RequestSettings, Version, Method, PaginatedRequest
 from notion_df.util.collection import DictFilter
 
@@ -21,7 +21,7 @@ class AppendBlockChildren(SingleRequest[list[BlockResponse]]):
                                f'https://api.notion.com/v1/blocks/{self.id}/children')
 
     def get_body(self) -> Any:
-        return {'children': serialize_partial_block_list(self.children)}
+        return {'children': serialize_block_value_list(self.children)}
 
     @classmethod
     def parse_response_data(cls, data: dict[str, Any]) -> list[BlockResponse]:

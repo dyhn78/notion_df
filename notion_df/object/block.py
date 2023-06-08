@@ -4,21 +4,21 @@ from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
 from functools import cache
-from typing import Any, Optional, Union, TYPE_CHECKING, get_type_hints
+from typing import Any, Optional, Union, TYPE_CHECKING, get_type_hints, cast
 from uuid import UUID
 
 from typing_extensions import Self
 
+from notion_df.core.request import Response
+from notion_df.core.serialization import DualSerializable
 from notion_df.object.common import Icon
 from notion_df.object.constant import BlockColor, CodeLanguage
 from notion_df.object.file import File
 from notion_df.object.partial_parent import PartialParent
-from notion_df.property import DatabaseProperties, PageProperties
 from notion_df.object.rich_text import Span, RichText
 from notion_df.object.user import PartialUser
-from notion_df.core.request import Response
-from notion_df.util.collection import FinalClassDict
-from notion_df.core.serialization import DualSerializable
+from notion_df.property import DatabaseProperties, PageProperties
+from notion_df.util.collection import FinalDict
 
 if TYPE_CHECKING:
     from notion_df.entity import Block, Database, Page
@@ -108,17 +108,7 @@ class BlockResponse(Response):
         return get_type_hints(cls, {**globals(), **{cls.__name__: cls for cls in (Entity, Block, Database, Page)}})
 
 
-block_value_registry: FinalClassDict[str, type[BlockValue]] = FinalClassDict()
-
-
-def serialize_partial_block_list(block_type_list: Optional[list[BlockValue]]) -> Optional[list[dict[str, Any]]]:
-    if block_type_list is None:
-        return None
-    return [{
-        "object": "block",
-        "type": block_type.get_typename(),
-        block_type.get_typename(): block_type,
-    } for block_type in block_type_list]
+block_value_registry: FinalDict[str, type[BlockValue]] = FinalDict()
 
 
 @dataclass
@@ -126,10 +116,10 @@ class BlockValue(DualSerializable, metaclass=ABCMeta):
     @classmethod
     @abstractmethod
     def get_typename(cls) -> str:
-        pass
+        return ''
 
     def __init_subclass__(cls, **kwargs):
-        if typename := cls.get_typename():
+        if (typename := cls.get_typename()) and typename != cast(cls, super(cls, cls)).get_typename():
             block_value_registry[typename] = cls
 
     def serialize(self) -> dict[str, Any]:
@@ -138,6 +128,16 @@ class BlockValue(DualSerializable, metaclass=ABCMeta):
     @classmethod
     def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
         return cls._deserialize_from_dict(serialized)
+
+
+def serialize_block_value_list(block_value_list: Optional[list[BlockValue]]) -> Optional[list[dict[str, Any]]]:
+    if block_value_list is None:
+        return None
+    return [{
+        "object": "block",
+        "type": block_type.get_typename(),
+        block_type.get_typename(): block_type,
+    } for block_type in block_value_list]
 
 
 @dataclass
