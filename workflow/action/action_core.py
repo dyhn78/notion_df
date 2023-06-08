@@ -6,14 +6,14 @@ from abc import ABCMeta, abstractmethod
 from datetime import datetime, timedelta
 from itertools import chain
 from pprint import pprint
-from typing import Iterable, Optional, cast, Iterator
+from typing import Iterable, Optional, cast, Any
 from uuid import UUID
 
 from notion_df.entity import Page, search_by_title, Block
 from notion_df.object.block import DividerBlockValue, ParagraphBlockValue, ToggleBlockValue, CodeBlockValue
 from notion_df.object.rich_text import RichText, TextSpan, UserMention
 from notion_df.util.misc import repr_object
-from notion_df.util.serialization import deserialize_datetime
+from notion_df.core.serialization import deserialize_datetime
 from notion_df.variable import Settings, print_width, my_tz
 
 my_user_id = UUID('a007d150-bc67-422c-87db-030a71867dd9')
@@ -39,10 +39,10 @@ class Action(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def process(self, pages: Iterable[Page]):
+    def process(self, pages: Iterable[Page]) -> Any:
         pass
 
-    def execute_all(self):
+    def execute_all(self) -> None:
         self.process(self.query_all())
 
     @classmethod

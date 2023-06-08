@@ -16,9 +16,9 @@ from notion_df.object.partial_parent import PartialParent
 from notion_df.object.property import DatabaseProperties, PageProperties
 from notion_df.object.rich_text import Span, RichText
 from notion_df.object.user import PartialUser
-from notion_df.request.request_core import Response
+from notion_df.core.request import Response
 from notion_df.util.collection import FinalClassDict
-from notion_df.util.serialization import DualSerializable
+from notion_df.core.serialization import DualSerializable
 
 if TYPE_CHECKING:
     from notion_df.entity import Block, Database, Page
@@ -46,7 +46,8 @@ class DatabaseResponse(Response):
     @classmethod
     @cache
     def _get_type_hints(cls) -> dict[str, type]:  # TODO deduplicate
-        from notion_df.entity import Entity, Block, Database, Page
+        from notion_df.entity import Block, Database, Page
+        from notion_df.core.base_entity import Entity
         return get_type_hints(cls, {**globals(), **{cls.__name__: cls for cls in (Entity, Block, Database, Page)}})
 
 
@@ -72,7 +73,8 @@ class PageResponse(Response):
     @classmethod
     @cache
     def _get_type_hints(cls) -> dict[str, type]:
-        from notion_df.entity import Entity, Block, Database, Page
+        from notion_df.entity import Block, Database, Page
+        from notion_df.core.base_entity import Entity
         return get_type_hints(cls, {**globals(), **{cls.__name__: cls for cls in (Entity, Block, Database, Page)}})
 
 
@@ -101,7 +103,8 @@ class BlockResponse(Response):
     @classmethod
     @cache
     def _get_type_hints(cls) -> dict[str, type]:
-        from notion_df.entity import Entity, Block, Database, Page
+        from notion_df.entity import Block, Database, Page
+        from notion_df.core.base_entity import Entity
         return get_type_hints(cls, {**globals(), **{cls.__name__: cls for cls in (Entity, Block, Database, Page)}})
 
 

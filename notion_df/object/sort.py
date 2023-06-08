@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Literal, Any
 
 from notion_df.object.constant import TimestampName
-from notion_df.util.serialization import Serializable
+from notion_df.core.serialization import Serializable
 
 Direction = Literal['ascending', 'descending']
 

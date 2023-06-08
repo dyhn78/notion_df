@@ -5,7 +5,7 @@ from abc import abstractmethod, ABCMeta
 from dataclasses import dataclass, field
 from datetime import datetime
 from pprint import pprint
-from typing import TypeVar, Generic, Any, final, Optional, Iterator
+from typing import TypeVar, Generic, Any, final, Optional, Iterator, Sequence, overload
 
 import requests
 from requests import JSONDecodeError
@@ -13,8 +13,9 @@ from tenacity import retry, wait_exponential
 from typing_extensions import Self
 
 from notion_df.util.collection import StrEnum
-from notion_df.util.exception import NotionDfValueError
-from notion_df.util.serialization import deserialize, serialize, Deserializable
+from notion_df.util.exception import NotionDfValueError, NotionDfIndexError, NotionDfTypeError
+from notion_df.util.misc import repr_object
+from notion_df.core.serialization import deserialize, serialize, Deserializable
 from notion_df.variable import Settings, print_width
 
 MAX_PAGE_SIZE = 100
@@ -36,6 +37,9 @@ ResponseElement_T = TypeVar('ResponseElement_T')
 
 @dataclass
 class BaseRequest(metaclass=ABCMeta):
+    # TODO: refactor so that Request has entity information
+    #  - Request.execute() returns Paginator
+    #  - Paginator can interact with Request instance and able to call Entity._send_response()
     """base request form made of various Resources.
     all non-abstract subclasses must provide class type argument `Response_T`.
     get token from https://www.notion.so/my-integrations"""
@@ -172,3 +176,68 @@ class Method(StrEnum):
 class Version(StrEnum):
     v20220222 = '2022-02-22'
     v20220628 = '2022-06-28'
+
+
+T = TypeVar('T')
+
+
+class Paginator(Sequence[T]):
+    def __init__(self, element_type: type[T], it: Iterator[T]):
+        self.element_type: type[T] = element_type
+        """used on repr()"""
+        self._it: Iterator[T] = it
+        self._values: list[T] = []
+
+    def __repr__(self):
+        return repr_object(self, ['element_type'])
+
+    def _fetch_until(self, index: int) -> None:
+        """fetch until self._values[index] is possible"""
+        while len(self._values) <= index:
+            try:
+                self._values.append(next(self._it))
+            except StopIteration:
+                raise NotionDfIndexError("Index out of range", {'self': self, 'index': index})
+
+    def _fetch_all(self) -> None:
+        for element in self._it:
+            self._values.append(element)
+
+    def __len__(self):
+        self._fetch_all()
+        return len(self._values)
+
+    @overload
+    def __getitem__(self, index_or_id: int) -> T:
+        ...
+
+    @overload
+    def __getitem__(self, index_or_id: slice) -> list[T]:
+        ...
+
+    def __getitem__(self, index: int | slice) -> T | list[T]:
+        if isinstance(index, int):
+            if index >= 0:
+                self._fetch_until(index)
+            else:
+                self._fetch_all()
+            return self._values[index]
+        if isinstance(index, slice):
+            step = index.step if index.step is not None else 1
+
+            if ((index.start is not None and index.start < 0)
+                    or (index.stop is not None and index.stop < 0)
+                    or (index.stop is None and step > 0)
+                    or (index.start is None and step < 0)):
+                self._fetch_all()
+                return self._values[index]
+
+            start = index.start if index.start is not None else 0
+            stop = index.stop if index.stop is not None else 0
+            try:
+                self._fetch_until(max(start, stop))
+            except NotionDfIndexError:
+                pass
+            return [self._values[start:stop:step]]
+        else:
+            raise NotionDfTypeError("bad argument - expected int or slice", {'self': self, 'index': index})

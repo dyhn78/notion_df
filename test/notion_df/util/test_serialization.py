@@ -1,6 +1,6 @@
 from datetime import datetime, date
 
-from notion_df.util.serialization import deserialize_datetime, serialize_datetime
+from notion_df.core.serialization import deserialize_datetime, serialize_datetime
 from notion_df.variable import my_tz
 
 

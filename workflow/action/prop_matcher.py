@@ -7,7 +7,7 @@ from typing import cast, Iterable
 from notion_df.entity import Page, Database
 from notion_df.object.property import RelationProperty, TitleProperty, PageProperties, DateFormulaPropertyKey, \
     DateProperty, CheckboxFormulaProperty
-from notion_df.util.collection import Paginator
+from notion_df.core.request import Paginator
 from notion_df.util.misc import repr_object
 from workflow.action.action_core import Action, IterableAction
 from workflow.constant.block_enum import DatabaseEnum

@@ -9,7 +9,7 @@ from typing_extensions import Self
 
 from notion_df.object.common import DateRange, Annotations
 from notion_df.util.collection import FinalClassDict
-from notion_df.util.serialization import DualSerializable, deserialize, serialize
+from notion_df.core.serialization import DualSerializable, deserialize, serialize
 
 
 class Span(DualSerializable, metaclass=ABCMeta):

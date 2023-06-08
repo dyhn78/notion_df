@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import functools
+import os
 from abc import abstractmethod, ABCMeta
 from datetime import timezone, timedelta
 from typing import Final, Callable
 
 my_tz = timezone(timedelta(hours=9))
 print_width = 160
+token: Final[str] = os.getenv('NOTION_TOKEN')  # TODO: support multiple token
 
 
 class _Settings(metaclass=ABCMeta):

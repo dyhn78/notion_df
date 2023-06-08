@@ -11,7 +11,7 @@ from notion_df.object.filter import Filter
 from notion_df.object.property import DatabaseProperties
 from notion_df.object.rich_text import RichText
 from notion_df.object.sort import Sort
-from notion_df.request.request_core import SingleRequest, RequestSettings, Version, Method, PaginatedRequest
+from notion_df.core.request import SingleRequest, RequestSettings, Version, Method, PaginatedRequest
 from notion_df.util.collection import DictFilter
 
 

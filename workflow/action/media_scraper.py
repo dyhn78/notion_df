@@ -8,7 +8,8 @@ from notion_df.object.filter import CompoundFilter
 from notion_df.object.property import SelectProperty, CheckboxFormulaProperty, TitleProperty, RichTextProperty, \
     URLProperty, NumberProperty, FilesProperty, CheckboxProperty, PageProperties
 from notion_df.object.rich_text import TextSpan
-from notion_df.util.collection import StrEnum, Paginator
+from notion_df.util.collection import StrEnum
+from notion_df.core.request import Paginator
 from workflow.action.action_core import IterableAction
 from workflow.constant.block_enum import DatabaseEnum
 from workflow.service.gy_lib_service import GYLibraryScraper, LibraryScrapResult

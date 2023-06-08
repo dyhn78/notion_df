@@ -6,10 +6,10 @@ from uuid import UUID
 
 from typing_extensions import Self
 
-from notion_df.util.serialization import DualSerializable
+from notion_df.core.serialization import DualSerializable
 
 if TYPE_CHECKING:
-    from notion_df.entity import Entity
+    from notion_df.core.base_entity import Entity
 
 
 @dataclass

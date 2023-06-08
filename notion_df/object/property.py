@@ -22,7 +22,7 @@ from notion_df.object.user import PartialUser, User
 from notion_df.util.collection import FinalClassDict
 from notion_df.util.exception import NotionDfKeyError, NotionDfValueError
 from notion_df.util.misc import repr_object
-from notion_df.util.serialization import DualSerializable, deserialize, serialize
+from notion_df.core.serialization import DualSerializable, deserialize, serialize
 
 if TYPE_CHECKING:
     from notion_df.entity import Page, Database

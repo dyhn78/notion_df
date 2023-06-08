@@ -2,12 +2,13 @@ import json
 from pathlib import Path
 from typing import Optional, cast, Iterator
 
-from notion_df.entity import Entity, Page, Database
+from notion_df.entity import Page, Database
+from notion_df.core.base_entity import Entity
 from notion_df.object.block import PageResponse
 from notion_df.object.property import RelationProperty, PageProperties
-from notion_df.request.request_core import Response_T
+from notion_df.core.request import Response_T
 from notion_df.util.misc import get_generic_arg
-from notion_df.util.serialization import SerializationError
+from notion_df.core.serialization import SerializationError
 from workflow import project_path
 from workflow.action.action_core import IterableAction
 from workflow.constant.block_enum import DatabaseEnum
@@ -71,8 +72,6 @@ class MigrationBackupLoadAction(IterableAction):
         return DatabaseEnum.from_entity(page.parent) is not None
 
     def process_page(self, this_page: Page):
-        print(this_page)
-        print(this_page.parent)
         this_db: Database = this_page.parent
         this_prev_response: PageResponse = self.response_backup.read(this_page)
         if not this_prev_response:

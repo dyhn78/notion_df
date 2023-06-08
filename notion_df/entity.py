@@ -1,13 +1,11 @@
 from __future__ import annotations
 
-import os
-from abc import abstractmethod
 from datetime import datetime
-from functools import cache
-from typing import Optional, TypeVar, Union, Generic, final, Final, Any, Literal, overload, Hashable, Iterable
+from typing import Optional, TypeVar, Union, Any, Literal, overload, Iterable
 
 from typing_extensions import Self
 
+from notion_df.core.base_entity import Entity
 from notion_df.object.block import BlockValue, BlockResponse, ChildPageBlockValue, DatabaseResponse, PageResponse
 from notion_df.object.common import Icon
 from notion_df.object.file import ExternalFile, File
@@ -20,96 +18,11 @@ from notion_df.object.user import PartialUser
 from notion_df.request.block import AppendBlockChildren, RetrieveBlock, RetrieveBlockChildren, UpdateBlock, DeleteBlock
 from notion_df.request.database import CreateDatabase, UpdateDatabase, RetrieveDatabase, QueryDatabase
 from notion_df.request.page import CreatePage, UpdatePage, RetrievePage, RetrievePagePropertyItem
-from notion_df.request.request_core import Response_T
+from notion_df.core.request import Paginator
 from notion_df.request.search import SearchByTitle
-from notion_df.util.collection import Paginator
 from notion_df.util.exception import NotionDfValueError, NotionDfKeyError
-from notion_df.util.misc import get_page_id, UUID, repr_object, get_block_id
-from notion_df.variable import Settings
-
-token: Final[str] = os.getenv('NOTION_TOKEN')  # TODO: support multiple token
-namespace: Final[dict[tuple[type[Entity], UUID], Entity]] = {}  # TODO: support multiple entities
-
-
-class Entity(Generic[Response_T], Hashable):
-    """The base class for blocks, users, and comments.
-    There is only one instance with given subclass and id.
-    You can compare two blocks directly `block_1 == block_2`, not having to compare id `block_1.id == block_2.id`"""
-    id: UUID
-    parent: Union[Block, Database, Page, None]
-    last_response: Optional[Response_T]
-    """the latest response received by `send_response()`. 
-    this is initialized as None unlike the "proper attributes" (parent, title, properties)"""
-    last_timestamp: float
-    """timestamp of last response. initialized as 0."""
-
-    @classmethod
-    @abstractmethod
-    def _get_id(cls, id_or_url: Union[UUID, str]) -> UUID:
-        pass
-
-    def __new__(cls, id_or_url: Union[UUID, str]):
-        try:
-            __id = cls._get_id(id_or_url)
-            if (cls, __id) in namespace:
-                return namespace[(cls, __id)]
-            return super().__new__(cls)
-        finally:
-            del __id
-
-    def __init__(self, id_or_url: Union[UUID, str]):
-        if hasattr(self, '_initialized'):
-            return
-        self._initialized = True
-
-        self.id: Final[UUID] = self._get_id(id_or_url)
-        namespace[(type(self), self.id)] = self
-        self.last_response = None
-        self.last_timestamp = 0
-
-    def __del__(self):
-        del namespace[(type(self), self.id)]
-
-    def __getnewargs__(self):
-        return self.id,
-
-    def __hash__(self) -> int:
-        return hash((type(self), self.id))
-
-    def __eq__(self, other: Entity) -> bool:
-        return type(self) == type(other) and self.id == other.id
-
-    @final
-    def __repr__(self) -> str:
-        if not hasattr(self, 'parent'):
-            repr_parent = None
-        elif self.parent is None:
-            repr_parent = 'workspace'
-        else:
-            # TODO: fix `Entity(parent='Database()') <- remove this '' around parent value
-            repr_parent = repr_object(self.parent, self.parent._attrs_to_repr_parent())
-
-        return repr_object(self, {
-            **self._attrs_to_repr_parent(),
-            'id_or_url': getattr(self, 'url', str(self.id)),
-            'parent': repr_parent
-        })
-
-    def _attrs_to_repr_parent(self) -> dict[str, Any]:
-        return {}
-
-    @final
-    def send_response(self, response: Response_T) -> Self:
-        if response.timestamp > self.last_timestamp:
-            self._send_response(response)
-            self.last_response = response
-            self.last_timestamp = response.timestamp
-        return self
-
-    @abstractmethod
-    def _send_response(self, response: Response_T) -> None:
-        """copy the "proper attributes" to entity (without `last_response` and `last_timestamp`)"""
-        pass
+from notion_df.util.misc import get_page_id, UUID, get_block_id
+from notion_df.variable import Settings, token
 
 
 class Block(Entity[BlockResponse]):
@@ -392,6 +305,12 @@ def search_by_title(query: str, entity: Literal['page', 'database', None] = None
     response_elements = SearchByTitle(token, query, entity,
                                       TimestampSort('last_edited_time', sort_by_last_edited_time),
                                       page_size).execute()
+    if entity == 'page':
+        element_type = Page
+    elif entity == 'database':
+        element_type = Database
+    else:
+        element_type = Page | Database
 
     def it():
         for response_element in response_elements:
@@ -403,10 +322,4 @@ def search_by_title(query: str, entity: Literal['page', 'database', None] = None
                 raise NotionDfValueError('bad response', {'response_element': response_element})
         return
 
-    if entity == 'page':
-        element_type = Page
-    elif entity == 'database':
-        element_type = Database
-    else:
-        element_type = Page | Database
     return Paginator(element_type, it())
