@@ -5,7 +5,7 @@ from abc import ABCMeta
 from typing import cast, Iterable
 
 from notion_df.entity import Page, Database
-from notion_df.object.property import RelationProperty, TitleProperty, PageProperties, DateFormulaPropertyKey, \
+from notion_df.property import RelationProperty, TitleProperty, PageProperties, DateFormulaPropertyKey, \
     DateProperty, CheckboxFormulaProperty
 from notion_df.core.request import Paginator
 from notion_df.util.misc import repr_object

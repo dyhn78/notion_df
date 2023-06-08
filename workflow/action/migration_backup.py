@@ -5,7 +5,7 @@ from typing import Optional, cast, Iterator
 from notion_df.entity import Page, Database
 from notion_df.core.entity_base import Entity
 from notion_df.object.block import PageResponse
-from notion_df.object.property import RelationProperty, PageProperties
+from notion_df.property import RelationProperty, PageProperties
 from notion_df.core.request import Response_T
 from notion_df.util.misc import get_generic_arg
 from notion_df.core.serialization import SerializationError

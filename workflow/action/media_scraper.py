@@ -5,7 +5,7 @@ from notion_df.entity import Page, Database
 from notion_df.object.block import ChildPageBlockValue
 from notion_df.object.common import SelectOption
 from notion_df.object.filter import CompoundFilter
-from notion_df.object.property import SelectProperty, CheckboxFormulaProperty, TitleProperty, RichTextProperty, \
+from notion_df.property import SelectProperty, CheckboxFormulaProperty, TitleProperty, RichTextProperty, \
     URLProperty, NumberProperty, FilesProperty, CheckboxProperty, PageProperties
 from notion_df.object.rich_text import TextSpan
 from notion_df.util.collection import StrEnum

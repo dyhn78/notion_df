@@ -36,6 +36,7 @@ FilterBuilder_T = TypeVar('FilterBuilder_T', bound=FilterBuilder)
 
 
 class Property(Generic[DatabasePropertyValue_T, PagePropertyValue_T, FilterBuilder_T], metaclass=ABCMeta):
+    # TODO: move base class and PropertyValue classes to notion_df.core.property
     typename: ClassVar[str]
     database_value: type[DatabasePropertyValue_T]
     page_value: type[PagePropertyValue_T]

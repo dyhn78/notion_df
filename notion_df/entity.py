@@ -6,19 +6,19 @@ from typing import Optional, TypeVar, Union, Any, Literal, overload, Iterable
 from typing_extensions import Self
 
 from notion_df.core.entity_base import Entity
+from notion_df.core.request import Paginator
 from notion_df.object.block import BlockValue, BlockResponse, ChildPageBlockValue, DatabaseResponse, PageResponse
 from notion_df.object.common import Icon
 from notion_df.object.file import ExternalFile, File
 from notion_df.object.filter import Filter
 from notion_df.object.partial_parent import PartialParent
-from notion_df.object.property import Property, PageProperties, DatabaseProperties, PagePropertyValue_T
 from notion_df.object.rich_text import RichText
 from notion_df.object.sort import Sort, TimestampSort, Direction
 from notion_df.object.user import PartialUser
+from notion_df.property import Property, PageProperties, DatabaseProperties, PagePropertyValue_T
 from notion_df.request.block import AppendBlockChildren, RetrieveBlock, RetrieveBlockChildren, UpdateBlock, DeleteBlock
 from notion_df.request.database import CreateDatabase, UpdateDatabase, RetrieveDatabase, QueryDatabase
 from notion_df.request.page import CreatePage, UpdatePage, RetrievePage, RetrievePagePropertyItem
-from notion_df.core.request import Paginator
 from notion_df.request.search import SearchByTitle
 from notion_df.util.exception import NotionDfValueError, NotionDfKeyError
 from notion_df.util.misc import get_page_id, UUID, get_block_id

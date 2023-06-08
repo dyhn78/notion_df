@@ -13,7 +13,7 @@ from notion_df.object.common import Icon
 from notion_df.object.constant import BlockColor, CodeLanguage
 from notion_df.object.file import File
 from notion_df.object.partial_parent import PartialParent
-from notion_df.object.property import DatabaseProperties, PageProperties
+from notion_df.property import DatabaseProperties, PageProperties
 from notion_df.object.rich_text import Span, RichText
 from notion_df.object.user import PartialUser
 from notion_df.core.request import Response

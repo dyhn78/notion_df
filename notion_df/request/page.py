@@ -8,7 +8,7 @@ from notion_df.object.block import BlockValue, serialize_partial_block_list, Pag
 from notion_df.object.common import Icon
 from notion_df.object.file import ExternalFile
 from notion_df.object.partial_parent import PartialParent
-from notion_df.object.property import PageProperties, Property, PropertyValue_T
+from notion_df.property import PageProperties, Property, PropertyValue_T
 from notion_df.core.request import SingleRequest, RequestSettings, Version, Method, PaginatedRequest, \
     BaseRequest
 from notion_df.util.collection import DictFilter
