@@ -21,6 +21,21 @@ from notion_df.variable import Settings, print_width
 MAX_PAGE_SIZE = 100
 
 
+@retry(wait=wait_exponential(multiplier=1, min=4, max=180))
+def request(*, method: str, url: str, headers: dict[str, Any], params: Any, json: Any) -> requests.Response:
+    if Settings.print:
+        pprint(dict(method=method, url=url, headers=headers, params=params, json=json), width=print_width)
+    response = requests.request(method, url, headers=headers, params=params, json=json, timeout=30)
+    try:
+        response.raise_for_status()
+    except requests.exceptions.HTTPError:
+        try:
+            raise requests.exceptions.HTTPError(response.json())
+        except JSONDecodeError:
+            raise requests.exceptions.HTTPError(response.text)
+    return response
+
+
 @dataclass
 class Response(Deserializable, metaclass=ABCMeta):
     timestamp: float = field(init=False, default_factory=datetime.now().timestamp)
@@ -96,7 +111,7 @@ class SingleRequest(Generic[Response_T], BaseRequest, metaclass=ABCMeta):
 
 class PaginatedRequest(Generic[ResponseElement_T], BaseRequest, metaclass=ABCMeta):
     response_element_type: type[ResponseElement_T]
-    page_size: int = None
+    page_size: int = None  # TODO - AS-IS: total size of all pages summed, TO-BE: each request size
 
     def __init_subclass__(cls, **kwargs):
         if not inspect.isabstract(cls):
@@ -146,21 +161,6 @@ class PaginatedRequest(Generic[ResponseElement_T], BaseRequest, metaclass=ABCMet
     def parse_response_data(cls, data: dict[str, Any]) -> Iterator[ResponseElement_T]:
         for data_element in data['results']:
             yield deserialize(cls.response_element_type, data_element)
-
-
-@retry(wait=wait_exponential(multiplier=1, min=4, max=180))
-def request(*, method: str, url: str, headers: dict[str, Any], params: Any, json: Any) -> requests.Response:
-    if Settings.print:
-        pprint(dict(method=method, url=url, headers=headers, params=params, json=json), width=print_width)
-    response = requests.request(method, url, headers=headers, params=params, json=json)
-    try:
-        response.raise_for_status()
-    except requests.exceptions.HTTPError:
-        try:
-            raise requests.exceptions.HTTPError(response.json())
-        except JSONDecodeError:
-            raise requests.exceptions.HTTPError(response.text)
-    return response
 
 
 class Method(StrEnum):
