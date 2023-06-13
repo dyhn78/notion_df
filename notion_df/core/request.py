@@ -9,7 +9,7 @@ from typing import TypeVar, Generic, Any, final, Optional, Iterator, Sequence, o
 
 import requests
 from requests import JSONDecodeError
-from tenacity import retry, wait_exponential
+from tenacity import retry, wait_exponential, stop_after_attempt
 from typing_extensions import Self
 
 from notion_df.core.exception import NotionDfValueError, NotionDfIndexError, NotionDfTypeError
@@ -21,7 +21,7 @@ from notion_df.variable import Settings, print_width
 MAX_PAGE_SIZE = 100
 
 
-@retry(wait=wait_exponential(multiplier=1, min=4, max=180))
+@retry(wait=wait_exponential(multiplier=1, min=4, max=180, stop=stop_after_attempt(10)))
 def request(*, method: str, url: str, headers: dict[str, Any], params: Any, json: Any) -> requests.Response:
     if Settings.print:
         pprint(dict(method=method, url=url, headers=headers, params=params, json=json), width=print_width)
