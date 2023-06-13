@@ -151,7 +151,7 @@ class MigrationBackupLoadAction(IterableAction):
         if this_db_enum == DatabaseEnum.issue_db and linked_db_enum == DatabaseEnum.stream_db:
             if this_prev_db_enum in [DatabaseEnum.topic_db, DatabaseEnum.agenda_db]:
                 return pick('진행')
-            return pick('구성')
+            return pick('관계')
         if this_db_enum == DatabaseEnum.stream_db and linked_db_enum == DatabaseEnum.stream_db:
             if this_prev_db_enum in [DatabaseEnum.topic_db, DatabaseEnum.agenda_db]:
                 return pick('요소')
