@@ -21,7 +21,7 @@ from notion_df.variable import Settings, print_width
 MAX_PAGE_SIZE = 100
 
 
-@retry(wait=wait_exponential(multiplier=1, min=4, stop=stop_after_delay(300)))
+@retry(wait=wait_exponential(multiplier=1, min=4), stop=stop_after_delay(300))
 def request(*, method: str, url: str, headers: dict[str, Any], params: Any, json: Any) -> requests.Response:
     if Settings.print:
         pprint(dict(method=method, url=url, headers=headers, params=params, json=json), width=print_width)
