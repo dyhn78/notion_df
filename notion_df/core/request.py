@@ -9,7 +9,7 @@ from typing import TypeVar, Generic, Any, final, Optional, Iterator, Sequence, o
 
 import requests
 from requests import JSONDecodeError
-from tenacity import retry, wait_exponential, stop_after_delay
+from tenacity import retry, wait_exponential, stop_after_delay, retry_if_exception
 from typing_extensions import Self
 
 from notion_df.core.exception import NotionDfValueError, NotionDfIndexError, NotionDfTypeError
@@ -21,7 +21,12 @@ from notion_df.variable import Settings, print_width
 MAX_PAGE_SIZE = 100
 
 
-@retry(wait=wait_exponential(multiplier=1, min=4), stop=stop_after_delay(300))
+def is_server_error(exception: BaseException) -> bool:
+    return isinstance(exception, requests.exceptions.HTTPError) and 500 <= exception.response.status_code < 600
+
+
+@retry(wait=wait_exponential(multiplier=1, min=4), stop=stop_after_delay(600),
+       retry=retry_if_exception(is_server_error))
 def request(*, method: str, url: str, headers: dict[str, Any], params: Any, json: Any) -> requests.Response:
     if Settings.print:
         pprint(dict(method=method, url=url, headers=headers, params=params, json=json), width=print_width)
@@ -30,9 +35,10 @@ def request(*, method: str, url: str, headers: dict[str, Any], params: Any, json
             response.raise_for_status()
         except requests.exceptions.HTTPError:
             try:
-                raise requests.exceptions.HTTPError(response.json())
+                data = response.json()
             except JSONDecodeError:
-                raise requests.exceptions.HTTPError(response.text)
+                data = response.text
+            raise requests.exceptions.HTTPError(data, response=response)
         return response
 
 
