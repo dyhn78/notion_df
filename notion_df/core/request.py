@@ -25,15 +25,15 @@ MAX_PAGE_SIZE = 100
 def request(*, method: str, url: str, headers: dict[str, Any], params: Any, json: Any) -> requests.Response:
     if Settings.print:
         pprint(dict(method=method, url=url, headers=headers, params=params, json=json), width=print_width)
-    response = requests.request(method, url, headers=headers, params=params, json=json, timeout=30)
-    try:
-        response.raise_for_status()
-    except requests.exceptions.HTTPError:
+    with requests.request(method, url, headers=headers, params=params, json=json, timeout=30) as response:
         try:
-            raise requests.exceptions.HTTPError(response.json())
-        except JSONDecodeError:
-            raise requests.exceptions.HTTPError(response.text)
-    return response
+            response.raise_for_status()
+        except requests.exceptions.HTTPError:
+            try:
+                raise requests.exceptions.HTTPError(response.json())
+            except JSONDecodeError:
+                raise requests.exceptions.HTTPError(response.text)
+        return response
 
 
 @dataclass
