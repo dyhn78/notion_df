@@ -20,7 +20,7 @@ date_manual_value_prop = DateProperty(EmojiCode.CALENDAR + '날짜')
 event_to_date_prop = RelationProperty(DatabaseEnum.date_db.prefix_title)
 event_to_stream_prop = RelationProperty(DatabaseEnum.stream_db.prefix_title)
 event_to_issue_prop = RelationProperty(DatabaseEnum.issue_db.prefix_title)
-issue_to_stream_upper_prop = RelationProperty(DatabaseEnum.stream_db.prefix + '공통')
+issue_to_stream_main_prop = RelationProperty(DatabaseEnum.stream_db.prefix_title)
 reading_to_date_prop = RelationProperty(DatabaseEnum.date_db.prefix + '시작')
 reading_to_event_prop = RelationProperty(DatabaseEnum.event_db.prefix_title)
 reading_match_date_by_created_time_prop = CheckboxFormulaProperty(EmojiCode.BLACK_NOTEBOOK + '시작일<-생성시간')
@@ -213,7 +213,7 @@ class MatchEventsStream(MatchIterableAction):
         for issue in event.properties[event_to_issue_prop]:
             if not issue.last_response:
                 issue.retrieve()
-            new_streams.update(issue.properties[issue_to_stream_upper_prop])
+            new_streams.update(issue.properties[issue_to_stream_main_prop])
         new_streams.difference_update(curr_streams)
         if not new_streams:
             return
