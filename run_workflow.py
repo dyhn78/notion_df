@@ -26,8 +26,8 @@ if __name__ == '__main__':
     print(f'{"#" * 5 } Start.')
 
     from workflow.run import run_from_last_success
-
-    log_enabled = run_from_last_success(False, False, this_path.parent / 'backup', True)
+    # TODO: add click command
+    log_enabled = run_from_last_success(True, False, this_path.parent / 'backup', True)
     print(f'{"#" * 5 } {"Done." if log_enabled else "No new record."}')
     if is_already_running(this_path):
         sys.stderr.write("Other script is running.\n")
