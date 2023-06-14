@@ -2,10 +2,12 @@ import json
 from pathlib import Path
 from typing import Optional, cast, Iterator
 
+from requests import HTTPError
+
 from notion_df.entity import Page, Database
 from notion_df.core.entity_base import Entity
 from notion_df.object.block import PageResponse
-from notion_df.property import RelationProperty, PageProperties
+from notion_df.property import RelationProperty, PageProperties, Property
 from notion_df.core.request import Response_T
 from notion_df.util.misc import get_generic_arg
 from notion_df.core.serialization import SerializationError
@@ -102,7 +104,15 @@ class MigrationBackupLoadAction(IterableAction):
                 if not new_prop:
                     continue
                 this_new_properties.setdefault(new_prop, new_prop.page_value()).append(linked_page)
-        this_page.update(this_new_properties)
+        try:
+            this_page.update(this_new_properties)
+        except HTTPError as e:  # TODO: add error class
+            if str(e.args[0]['message']).find('unsaved transcation') != -1:
+                for prop in this_new_properties:
+                    this_new_properties[prop] = RelationProperty.page_value(
+                        page for page in this_new_properties[prop] if validate_page_existence(page))
+                this_page.update(this_new_properties)
+            raise e
         print(f'\t{this_page}: {this_new_properties}')
 
     @classmethod
@@ -162,6 +172,16 @@ class MigrationBackupLoadAction(IterableAction):
             if prop := pick(linked_db_enum.prefix_title):
                 return prop
         return candidate_props[0]
+
+
+def validate_page_existence(page: Page) -> bool:
+    if page.last_response:
+        return True
+    try:
+        page.retrieve()
+        return True
+    except HTTPError:
+        return False
 
 
 if __name__ == '__main__':
