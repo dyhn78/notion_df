@@ -382,7 +382,13 @@ class RelationPagePropertyValue(list['Page'], DualSerializable):
         self.has_more = None
 
     def serialize(self) -> Any:
-        return [{'id': str(page.id)} for page in self]
+        _cache = set()
+        serialized = []
+        for page in self:
+            if page not in cache:
+                serialized.append({'id': str(page.id)})
+            _cache.add(page)
+        return serialized
 
     @classmethod
     def _deserialize_this(cls, serialized: list[dict[str, Any]]) -> Self:
