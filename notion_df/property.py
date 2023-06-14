@@ -385,7 +385,7 @@ class RelationPagePropertyValue(list['Page'], DualSerializable):
         _cache = set()
         serialized = []
         for page in self:
-            if page not in cache:
+            if page not in _cache:
                 serialized.append({'id': str(page.id)})
             _cache.add(page)
         return serialized
