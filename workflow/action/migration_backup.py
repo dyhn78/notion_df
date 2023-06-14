@@ -107,7 +107,7 @@ class MigrationBackupLoadAction(IterableAction):
         try:
             this_page.update(this_new_properties)
         except HTTPError as e:  # TODO: add error class
-            if str(e.args[0]['message']).find('unsaved transcation') != -1:
+            if str(e.args[0]['message']).find('Unsaved transactions') != -1:
                 for prop in this_new_properties:
                     this_new_properties[prop] = RelationProperty.page_value(
                         page for page in this_new_properties[prop] if validate_page_existence(page))
