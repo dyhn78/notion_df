@@ -4,13 +4,13 @@ from typing import Optional, cast, Iterator
 
 from requests import HTTPError
 
-from notion_df.entity import Page, Database
 from notion_df.core.entity_base import Entity
-from notion_df.object.block import PageResponse
-from notion_df.property import RelationProperty, PageProperties, Property
 from notion_df.core.request import Response_T
-from notion_df.util.misc import get_generic_arg
 from notion_df.core.serialization import SerializationError
+from notion_df.entity import Page, Database
+from notion_df.object.block import PageResponse
+from notion_df.property import RelationProperty, PageProperties
+from notion_df.util.misc import get_generic_arg
 from workflow import project_path
 from workflow.action.action_core import IterableAction
 from workflow.constant.block_enum import DatabaseEnum
