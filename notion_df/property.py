@@ -76,12 +76,17 @@ class Property(Generic[DatabasePropertyValue_T, PagePropertyValue_T, FilterBuild
 
         return self._filter_cls(build)
 
+    # TODO: integrate inside PageProperties - _serialize_page(), _deserialize_page(), _deserialize_database()
+    #  since we will not create Property types dynamically
+
     # noinspection PyMethodMayBeStatic
-    def _serialize_page(self, prop_value: PropertyValue_T) -> dict[str, Any]:
+    def _serialize_page(self, prop_value: PagePropertyValue_T) -> dict[str, Any]:
+        if type(prop_value) != self.page_value:
+            prop_value = self.page_value(prop_value)
         return serialize(prop_value)
 
     @classmethod
-    def _deserialize_page(cls, prop_serialized: dict[str, Any]) -> PropertyValue_T:
+    def _deserialize_page(cls, prop_serialized: dict[str, Any]) -> PagePropertyValue_T:
         """allow proxy-deserialization of subclasses."""
         typename = prop_serialized['type']
         if cls == Property:
@@ -90,7 +95,7 @@ class Property(Generic[DatabasePropertyValue_T, PagePropertyValue_T, FilterBuild
         return deserialize(cls.page_value, prop_serialized[typename])
 
     @classmethod
-    def _deserialize_database(cls, prop_serialized: dict[str, Any]) -> PropertyValue_T:
+    def _deserialize_database(cls, prop_serialized: dict[str, Any]) -> DatabasePropertyValue_T:
         """allow proxy-deserialization of subclasses."""
         typename = prop_serialized['type']
         if cls == Property:
@@ -205,18 +210,6 @@ class PageProperties(Properties, MutableMapping[Property[Any, PagePropertyValue_
         super().__init__(properties)
         self._title: Optional[TitleProperty] = None
 
-    def __getitem__(self, key: str | Property[Any, PagePropertyValue_T, Any]) \
-            -> PagePropertyValue_T:
-        return super().__getitem__(key)
-
-    def __setitem__(self, key: str | Property[Any, PagePropertyValue_T, Any],
-                    value: PagePropertyValue_T) -> None:
-        return super().__setitem__(key, value)
-
-    def __delitem__(self, key: str | Property[Any, PagePropertyValue_T, Any]) \
-            -> None:
-        return super().__delitem__(key)
-
     def serialize(self) -> dict[str, Any]:
         # noinspection PyProtectedMember
         return {key.name: {
@@ -239,6 +232,18 @@ class PageProperties(Properties, MutableMapping[Property[Any, PagePropertyValue_
             if isinstance(property_key, TitleProperty):
                 self._title = property_key
         return self
+
+    def __getitem__(self, key: str | Property[Any, PagePropertyValue_T, Any]) \
+            -> PagePropertyValue_T:
+        return super().__getitem__(key)
+
+    def __setitem__(self, key: str | Property[Any, PagePropertyValue_T, Any],
+                    value: PagePropertyValue_T) -> None:
+        return super().__setitem__(key, value)
+
+    def __delitem__(self, key: str | Property[Any, PagePropertyValue_T, Any]) \
+            -> None:
+        return super().__delitem__(key)
 
     @property
     def title(self) -> TitleProperty.page_value:

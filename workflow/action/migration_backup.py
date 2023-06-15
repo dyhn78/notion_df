@@ -185,5 +185,5 @@ def validate_page_existence(page: Page) -> bool:
 
 
 if __name__ == '__main__':
-    query = MigrationBackupSaveAction(project_path / 'backup').execute_all()
+    MigrationBackupSaveAction(project_path / 'backup').execute_all()
     input()
