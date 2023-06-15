@@ -23,8 +23,10 @@ MAX_PAGE_SIZE = 100
 
 def is_server_error(exception: BaseException) -> bool:
     return ((isinstance(exception, requests.exceptions.HTTPError) 
-            and 500 <= exception.response.status_code < 600)
+            and (500 <= exception.response.status_code < 600
+            or exception.response.status_code == 409))  # conflict
             or isinstance(exception, requests.exceptions.ReadTimeout))
+
 
 @retry(wait=wait_exponential(multiplier=1, min=4), stop=stop_after_delay(600),
        retry=retry_if_exception(is_server_error))
