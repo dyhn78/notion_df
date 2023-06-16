@@ -4,7 +4,7 @@ from typing import Optional, cast, Iterator
 
 from requests import HTTPError
 
-from notion_df.core.entity_base import Entity
+from notion_df.core.entity_base import Entity, namespace
 from notion_df.core.request import Response_T
 from notion_df.core.serialization import SerializationError
 from notion_df.entity import Page, Database
@@ -54,7 +54,9 @@ class MigrationBackupSaveAction(IterableAction):
 
     def query_all(self) -> Iterator[Page]:
         for db_enum in DatabaseEnum:
-            yield from db_enum.entity.query()
+            for block in db_enum.entity.query():
+                yield block
+                del block
 
     def filter(self, page: Page) -> bool:
         return isinstance(page.parent, Database)
