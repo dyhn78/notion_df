@@ -76,7 +76,8 @@ class ReadingMediaScraperUnit:
         self.new_properties = PageProperties()
         self.callables: list[Callable[[], Any]] = []
 
-        self.title_value = self.extract_title(self.reading.properties[title_prop].plain_text)
+        self.title_value = self.reading.properties[title_prop].plain_text
+        self.name_value = self.extract_title(self.title_value)
         self.true_name_value = self.reading.properties[true_name_prop].plain_text
 
     def extract_title(self, title_value: str) -> str:
@@ -113,7 +114,7 @@ class ReadingMediaScraperUnit:
             if url_value := get_yes24_detail_page_url(self.true_name_value):
                 self.new_properties[url_prop] = url_value
                 return url_value
-            if url_value := get_yes24_detail_page_url(self.title_value):
+            if url_value := get_yes24_detail_page_url(self.name_value):
                 self.new_properties[url_prop] = url_value
                 return url_value
 
@@ -134,7 +135,7 @@ class ReadingMediaScraperUnit:
         })
         if result.get_cover_image_url():
             new_properties[cover_image_prop] = cover_image_prop.page_value.externals([
-                (result.get_cover_image_url(), self.title_value)])
+                (result.get_cover_image_url(), self.name_value)])
         if not overwrite:
             new_properties = self.filter_not_overwrite(new_properties)
         self.new_properties.update(new_properties)
@@ -145,7 +146,7 @@ class ReadingMediaScraperUnit:
                 for block in self.reading.as_block().retrieve_children():
                     if isinstance(block.value, ChildPageBlockValue):
                         block_title = block.value.title
-                        if self.title_value in block_title or block_title.strip() in ['', '=', '>']:
+                        if self.name_value in block_title or block_title.strip() in ['', '=', '>']:
                             _content_page = Page(block.id)
                             _content_page.update(content_page_properties)
                             return _content_page
@@ -170,13 +171,13 @@ class ReadingMediaScraperUnit:
             unit = GYLibraryScraper(self.driver, self.true_name_value, 'gajwa')
             if result := unit.execute():
                 return result
-            unit = GYLibraryScraper(self.driver, self.title_value, 'gajwa')
+            unit = GYLibraryScraper(self.driver, self.name_value, 'gajwa')
             if result := unit.execute():
                 return result
             unit = GYLibraryScraper(self.driver, self.true_name_value, 'all_libs')
             if result := unit.execute():
                 return result
-            unit = GYLibraryScraper(self.driver, self.title_value, 'all_libs')
+            unit = GYLibraryScraper(self.driver, self.name_value, 'all_libs')
             if result := unit.execute():
                 return result
 
