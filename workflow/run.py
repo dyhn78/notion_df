@@ -14,70 +14,68 @@ from workflow.constant.block_enum import DatabaseEnum
 backup_path = project_path / 'backup'
 
 
-class Workflow:
-    def __init__(self, create_window: bool, backup_path: Path):
-        base = MatchActionBase()
-        self.actions: list[Action] = [
-            MigrationBackupLoadAction(backup_path),
-            MigrationBackupSaveAction(backup_path),
+def get_actions(create_window: bool, backup_path: Path) -> list[Action]:
+    base = MatchActionBase()
+    return [
+        MigrationBackupLoadAction(backup_path),
+        MigrationBackupSaveAction(backup_path),
 
-            MatchWeekByDateValue(base),
+        MatchWeekByDateValue(base),
 
-            MatchDateByCreatedTime(base, DatabaseEnum.journal_db, '일간'),
-            MatchDateByCreatedTime(base, DatabaseEnum.journal_db, '생성'),
-            MatchWeekByRefDate(base, DatabaseEnum.journal_db, '주간', '일간'),
+        MatchDateByCreatedTime(base, DatabaseEnum.journal_db, '일간'),
+        MatchDateByCreatedTime(base, DatabaseEnum.journal_db, '생성'),
+        MatchWeekByRefDate(base, DatabaseEnum.journal_db, '주간', '일간'),
 
-            MatchDateByCreatedTime(base, DatabaseEnum.note_db, '생성'),
-            MatchWeekByRefDate(base, DatabaseEnum.note_db, '생성', '생성'),
+        MatchDateByCreatedTime(base, DatabaseEnum.note_db, '생성'),
+        MatchWeekByRefDate(base, DatabaseEnum.note_db, '생성', '생성'),
 
-            MatchDateByCreatedTime(base, DatabaseEnum.event_db, '일간'),
-            MatchDateByCreatedTime(base, DatabaseEnum.event_db, '생성'),
-            MatchWeekByRefDate(base, DatabaseEnum.event_db, '주간', '일간'),
-            MatchEventsStream(base),
+        MatchDateByCreatedTime(base, DatabaseEnum.event_db, '일간'),
+        MatchDateByCreatedTime(base, DatabaseEnum.event_db, '생성'),
+        MatchWeekByRefDate(base, DatabaseEnum.event_db, '주간', '일간'),
+        MatchEventsStream(base),
 
-            MatchDateByCreatedTime(base, DatabaseEnum.issue_db, '생성'),
-            MatchWeekByRefDate(base, DatabaseEnum.issue_db, '주간', '일간'),
+        MatchDateByCreatedTime(base, DatabaseEnum.issue_db, '생성'),
+        MatchWeekByRefDate(base, DatabaseEnum.issue_db, '주간', '일간'),
 
-            MatchReadingsStartDate(base),
-            MatchDateByCreatedTime(base, DatabaseEnum.reading_db, '생성'),
-            MatchWeekByRefDate(base, DatabaseEnum.reading_db, '시작', '시작'),
+        MatchReadingsStartDate(base),
+        MatchDateByCreatedTime(base, DatabaseEnum.reading_db, '생성'),
+        MatchWeekByRefDate(base, DatabaseEnum.reading_db, '시작', '시작'),
 
-            MatchDateByCreatedTime(base, DatabaseEnum.topic_db, '생성'),
-            MatchWeekByRefDate(base, DatabaseEnum.topic_db, '생성', '생성'),
+        MatchDateByCreatedTime(base, DatabaseEnum.topic_db, '생성'),
+        MatchWeekByRefDate(base, DatabaseEnum.topic_db, '생성', '생성'),
 
-            MatchDateByCreatedTime(base, DatabaseEnum.document_db, '생성'),
-            MatchWeekByRefDate(base, DatabaseEnum.document_db, '생성', '생성'),
+        MatchDateByCreatedTime(base, DatabaseEnum.document_db, '생성'),
+        MatchWeekByRefDate(base, DatabaseEnum.document_db, '생성', '생성'),
 
-            # TODO 배포후: <읽기 -  📕유형 <- 전개/꼭지> 추가 (스펙 논의 필요)
+        # TODO 배포후: <읽기 -  📕유형 <- 전개/꼭지> 추가 (스펙 논의 필요)
 
-            MediaScraper(create_window),
-        ]
+        MediaScraper(create_window),
+    ]
 
 
 def run_all(print_body: bool, create_window: bool, backup_path: Path) -> None:
     with Logger(print_body=print_body, update_last_success_time=False):
-        workflow = Workflow(create_window, backup_path)
-        for action in workflow.actions:
+        for action in get_actions(create_window, backup_path):
             action.execute_all()
 
 
 def run_from_last_edited_time_bound(print_body: bool, create_window: bool, backup_path: Path,
                                     timedelta_size: timedelta, update_last_success_time: bool) -> None:
     with Logger(print_body=print_body, update_last_success_time=update_last_success_time) as logger:
-        workflow = Workflow(create_window, backup_path)
-        Action.execute_by_last_edited_time(workflow.actions, logger.start_time - timedelta_size, logger.start_time)
+        Action.execute_by_last_edited_time(get_actions(create_window, backup_path),
+                                           logger.start_time - timedelta_size, logger.start_time)
 
 
 def run_from_last_success(print_body: bool, create_window: bool, backup_path: Path,
                           update_last_success_time: bool) -> bool:
     with Logger(print_body=print_body, update_last_success_time=update_last_success_time) as logger:
-        workflow = Workflow(create_window, backup_path)
+        actions = get_actions(create_window, backup_path)
         if logger.last_success_time is not None:
             logger.enabled = Action.execute_by_last_edited_time(
-                workflow.actions, logger.last_success_time)
+                actions, logger.last_success_time)
             return logger.enabled
         else:
-            for action in workflow.actions:
+            for action in actions:
                 action.execute_all()
             return True
 
