@@ -197,3 +197,8 @@ class ReadingMediaScraperUnit:
     def filter_not_overwrite(self, new_properties: PageProperties):
         return PageProperties({prop: prop_value for prop, prop_value in new_properties.items()
                                              if self.reading.properties.get(prop)})
+
+
+if __name__ == '__main__':
+    action = MediaScraper(create_window=False)
+    action.process_page(Page('https://www.notion.so/dyhn/_-f5caa69f928b4dc1a87b76c3a4917b40?pvs=4'))

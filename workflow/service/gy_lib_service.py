@@ -36,9 +36,9 @@ class LibraryScrapResult:
     @property
     def location_str(self) -> str:
         if self.lib_key == 'gajwa':
-            vals = [self.lib_key, self.book_code, self.availability_str]
+            vals = [self.lib_name, self.book_code, self.availability_str]
         else:
-            vals = [self.lib_key, self.availability_str]
+            vals = [self.lib_name, self.availability_str]
         return " ".join(val for val in vals if val)
 
     @property
