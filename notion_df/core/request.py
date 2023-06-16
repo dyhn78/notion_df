@@ -22,10 +22,12 @@ MAX_PAGE_SIZE = 100
 
 
 def is_server_error(exception: BaseException) -> bool:
-    return ((isinstance(exception, requests.exceptions.HTTPError) 
-            and (500 <= exception.response.status_code < 600
-            or exception.response.status_code == 409))  # conflict
-            or isinstance(exception, requests.exceptions.ReadTimeout))
+    if isinstance(exception, requests.exceptions.HTTPError):
+        status_code = exception.response.status_code
+        return 500 <= status_code < 600 or status_code == 409  # conflict
+    if isinstance(exception, requests.exceptions.ReadTimeout):
+        return True
+    return False
 
 
 @retry(wait=wait_exponential(multiplier=1, min=4), stop=stop_after_delay(600),
@@ -53,6 +55,9 @@ class Response(Deserializable, metaclass=ABCMeta):
     @classmethod
     def _deserialize_this(cls, raw_data: dict[str, Any]) -> Self:
         return cls._deserialize_from_dict(raw_data, raw_data=raw_data)
+
+    def __del__(self):
+        del self.raw_data
 
 
 Response_T = TypeVar('Response_T', bound=Response)

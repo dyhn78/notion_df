@@ -49,6 +49,7 @@ class Entity(Generic[Response_T], Hashable, metaclass=ABCMeta):
         self.last_timestamp = 0
 
     def __del__(self):
+        del self.last_response
         del namespace[(type(self), self.id)]
 
     def __getnewargs__(self):  # required for pickling
