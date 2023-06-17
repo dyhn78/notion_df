@@ -81,8 +81,8 @@ class Property(Generic[DatabasePropertyValue_T, PagePropertyValue_T, FilterBuild
 
     # noinspection PyMethodMayBeStatic
     def _serialize_page(self, prop_value: PagePropertyValue_T) -> dict[str, Any]:
-        if type(prop_value) != self.page_value:
-            prop_value = self.page_value(prop_value)
+        # if type(prop_value) != self.page_value:
+        #    prop_value = self.page_value(prop_value)
         return serialize(prop_value)
 
     @classmethod
