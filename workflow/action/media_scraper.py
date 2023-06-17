@@ -196,7 +196,7 @@ class ReadingMediaScraperUnit:
 
     def filter_not_overwrite(self, new_properties: PageProperties):
         return PageProperties({prop: prop_value for prop, prop_value in new_properties.items()
-                                             if self.reading.properties.get(prop)})
+                                             if not self.reading.properties.get(prop)})
 
 
 if __name__ == '__main__':
