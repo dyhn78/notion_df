@@ -77,18 +77,19 @@ class ReadingMediaScraperUnit:
         self.callables: list[Callable[[], Any]] = []
 
         self.title_value = self.reading.properties[title_prop].plain_text
-        self.name_value = self.extract_title(self.title_value)
+        self.name_value = self.extract_name(self.title_value)
         self.true_name_value = self.reading.properties[true_name_prop].plain_text
 
-    def extract_title(self, title_value: str) -> str:
-        if title_value.find('_ ') != -1:
-            return title_value.split('_ ')[1]
-        if title_value.find(' _') != -1:
-            true_title_value, author_value = title_value.split(' _', maxsplit=1)
+    def extract_name(self, title: str) -> str:
+        if title.find('_ ') != -1:
+            name = title.split('_ ')[1]
+        elif title.find(' _') != -1:
+            name, author_value = title.split(' _', maxsplit=1)
             self.new_properties[title_prop] = \
-                RichTextProperty.page_value.from_plain_text(f'{author_value}_ {true_title_value}')
-            return true_title_value
-        return title_value
+                RichTextProperty.page_value.from_plain_text(f'{author_value}_ {name}')
+        else:
+            name = title
+        return name.split('(')[0]
 
     def execute(self) -> None:
         new_status_value = EditStatusValue.fill_manually
