@@ -26,8 +26,8 @@ def get_actions(create_window: bool, backup_path: Path) -> list[Action]:
         MatchDateByCreatedTime(base, DatabaseEnum.journal_db, '생성'),
         MatchWeekByRefDate(base, DatabaseEnum.journal_db, '주간', '일간'),
 
-        MatchDateByCreatedTime(base, DatabaseEnum.note_db, '생성'),
-        MatchWeekByRefDate(base, DatabaseEnum.note_db, '생성', '생성'),
+        MatchDateByCreatedTime(base, DatabaseEnum.space_db, '생성'),
+        MatchWeekByRefDate(base, DatabaseEnum.space_db, '생성', '생성'),
 
         MatchDateByCreatedTime(base, DatabaseEnum.event_db, '일간'),
         MatchDateByCreatedTime(base, DatabaseEnum.event_db, '생성'),
@@ -35,17 +35,17 @@ def get_actions(create_window: bool, backup_path: Path) -> list[Action]:
 
         MatchDateByCreatedTime(base, DatabaseEnum.issue_db, '생성'),
         MatchWeekByRefDate(base, DatabaseEnum.issue_db, '주간', '일간'),
-        MatchStream.get_actions(base),
+        *MatchStream.get_actions(base),
 
         MatchReadingsStartDate(base),
         MatchDateByCreatedTime(base, DatabaseEnum.reading_db, '생성'),
         MatchWeekByRefDate(base, DatabaseEnum.reading_db, '시작', '시작'),
 
+        MatchDateByCreatedTime(base, DatabaseEnum.point_db, '생성'),
+        MatchWeekByRefDate(base, DatabaseEnum.point_db, '생성', '생성'),
+
         MatchDateByCreatedTime(base, DatabaseEnum.topic_db, '생성'),
         MatchWeekByRefDate(base, DatabaseEnum.topic_db, '생성', '생성'),
-
-        MatchDateByCreatedTime(base, DatabaseEnum.document_db, '생성'),
-        MatchWeekByRefDate(base, DatabaseEnum.document_db, '생성', '생성'),
 
         # TODO 배포후: <읽기 -  📕유형 <- 전개/꼭지> 추가 (스펙 논의 필요)
 
