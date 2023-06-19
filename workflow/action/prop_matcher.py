@@ -20,7 +20,6 @@ date_manual_value_prop = DateProperty(EmojiCode.CALENDAR + '날짜')
 event_to_date_prop = RelationProperty(DatabaseEnum.date_db.prefix_title)
 event_to_stream_prop = RelationProperty(DatabaseEnum.stream_db.prefix_title)
 event_to_issue_prop = RelationProperty(DatabaseEnum.issue_db.prefix_title)
-issue_to_stream_main_prop = RelationProperty(DatabaseEnum.stream_db.prefix_title)
 reading_to_date_prop = RelationProperty(DatabaseEnum.date_db.prefix + '시작')
 reading_to_event_prop = RelationProperty(DatabaseEnum.event_db.prefix_title)
 reading_match_date_by_created_time_prop = CheckboxFormulaProperty(EmojiCode.BLACK_NOTEBOOK + '시작일<-생성시간')
@@ -197,28 +196,47 @@ class MatchWeekByDateValue(MatchIterableAction):
         print(f'\t{date}\n\t\t-> {week}')
 
 
-class MatchEventsStream(MatchIterableAction):
-    def __init__(self, base: MatchActionBase):
+class MatchStream(MatchIterableAction):
+    def __init__(self, base: MatchActionBase, record: DatabaseEnum, ref: DatabaseEnum,
+                 record_to_ref_prop_name: str, record_to_stream_prop_name: str, ref_to_stream_prop_name: str):
         super().__init__(base)
+        self.record_db = record.entity
+        self.ref_db = ref.entity
+        self.record_to_ref_prop = RelationProperty(record_to_ref_prop_name)
+        self.record_to_stream_prop = RelationProperty(record_to_stream_prop_name)
+        self.ref_to_stream_prop = RelationProperty(ref_to_stream_prop_name)
+
+    @classmethod
+    def get_actions(cls, base: MatchActionBase) -> list[MatchStream]:
+        # TODO:
+        #  - [ ] rewrite MatchActionBase as singleton, global object
+        #  - [ ] define MatchAction.get_actions() as abstractmethod
+        stream_prop_name = DatabaseEnum.stream_db.prefix_title
+        return [
+            MatchStream(base, DatabaseEnum.event_db, DatabaseEnum.issue_db,
+                        DatabaseEnum.issue_db.prefix_title, stream_prop_name, stream_prop_name),
+            MatchStream(base, DatabaseEnum.issue_db, DatabaseEnum.event_db,
+                        DatabaseEnum.event_db.prefix_title, stream_prop_name, stream_prop_name),
+        ]
 
     def query_all(self) -> Iterable[Page]:
-        return DatabaseEnum.event_db.entity.query(event_to_issue_prop.filter.is_not_empty())
+        return self.record_db.query(self.record_to_ref_prop.filter.is_not_empty())
 
     def filter(self, event: Page) -> bool:
-        return bool(event.parent == DatabaseEnum.event_db.entity and event.properties[event_to_issue_prop])
+        return bool(event.parent == self.record_db and event.properties[self.record_to_ref_prop])
 
     def process_page(self, event: Page):
-        curr_streams: list[Page] = event.properties[event_to_stream_prop]
+        curr_streams: list[Page] = event.properties[self.record_to_stream_prop]
         new_streams: set[Page] = set(curr_streams)
-        for issue in event.properties[event_to_issue_prop]:
+        for issue in event.properties[self.record_to_ref_prop]:
             if not issue.last_response:
                 issue.retrieve()
-            new_streams.update(issue.properties[issue_to_stream_main_prop])
+            new_streams.update(issue.properties[self.ref_to_stream_prop])
         new_streams.difference_update(curr_streams)
         if not new_streams:
             return
         event.update(PageProperties({
-            event_to_stream_prop: event_to_stream_prop.page_value(curr_streams + list(new_streams))}))
+            self.record_to_stream_prop: self.record_to_stream_prop.page_value(curr_streams + list(new_streams))}))
 
 
 class DatabaseIndex(metaclass=ABCMeta):
@@ -275,7 +293,7 @@ if __name__ == '__main__':
     now = dt.datetime.now().astimezone(my_tz)
 
     with Settings.print:
-        _action = MatchEventsStream(_base)
+        _action = MatchStream.get_actions(_base)[0]
         _action.execute_all()
     #
     # with Settings.print:
