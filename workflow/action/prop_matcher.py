@@ -215,8 +215,8 @@ class MatchStream(MatchIterableAction):
         return [
             MatchStream(base, DatabaseEnum.event_db, DatabaseEnum.issue_db,
                         DatabaseEnum.issue_db.prefix_title, stream_prop_name, stream_prop_name),
-            MatchStream(base, DatabaseEnum.issue_db, DatabaseEnum.event_db,
-                        DatabaseEnum.event_db.prefix_title, stream_prop_name, stream_prop_name),
+            # MatchStream(base, DatabaseEnum.issue_db, DatabaseEnum.event_db,
+            #             DatabaseEnum.event_db.prefix_title, stream_prop_name, stream_prop_name),
         ]
 
     def query_all(self) -> Iterable[Page]:
