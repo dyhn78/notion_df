@@ -233,6 +233,11 @@ class MatchStream(MatchIterableAction):
                 issue.retrieve()
             new_streams.update(issue.properties[self.ref_to_stream_prop])
         new_streams.difference_update(curr_streams)
+        for stream in new_streams:
+            if not stream.last_response:
+                stream.retrieve()
+            if stream.properties["📕유형"] != "⏰️진척":
+                new_stream.discard(stream)
         if not new_streams:
             return
         event.update(PageProperties({
