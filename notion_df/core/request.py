@@ -25,7 +25,9 @@ def is_server_error(exception: BaseException) -> bool:
     if isinstance(exception, requests.exceptions.HTTPError):
         status_code = exception.response.status_code
         return 500 <= status_code < 600 or status_code == 409  # conflict
-    for cls in [requests.exceptions.SSLError, requests.exceptions.ReadTimeout]:
+    for cls in [requests.exceptions.SSLError, 
+                requests.exceptions.ReadTimeout,
+                requests.exceptions.ChunkedEncodingError]:
         if isinstance(exception, cls):
             return True
     return False
