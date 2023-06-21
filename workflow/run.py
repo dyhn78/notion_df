@@ -11,7 +11,7 @@ from workflow.action.prop_matcher import MatchActionBase, MatchWeekByDateValue, 
     MatchWeekByRefDate, MatchReadingsStartDate, MatchStream
 from workflow.constant.block_enum import DatabaseEnum
 
-backup_path = project_path / 'backup'
+default_backup_path = project_path / 'backup'
 
 
 def get_actions(create_window: bool, backup_path: Path) -> list[Action]:
@@ -22,20 +22,23 @@ def get_actions(create_window: bool, backup_path: Path) -> list[Action]:
 
         MatchWeekByDateValue(base),
 
+        MatchDateByCreatedTime(base, DatabaseEnum.event_db, '일간'),
+        MatchDateByCreatedTime(base, DatabaseEnum.event_db, '생성'),
+        MatchWeekByRefDate(base, DatabaseEnum.event_db, '주간', '일간'),
+        MatchStream(base, DatabaseEnum.event_db, DatabaseEnum.issue_db, DatabaseEnum.issue_db.prefix_title,
+                    DatabaseEnum.stream_db.prefix_title, DatabaseEnum.stream_db.prefix_title),
+        MatchStream(base, DatabaseEnum.event_db, DatabaseEnum.reading_db, DatabaseEnum.reading_db.prefix_title,
+                    DatabaseEnum.stream_db.prefix_title, DatabaseEnum.stream_db.prefix_title),
+
+        MatchDateByCreatedTime(base, DatabaseEnum.issue_db, '생성'),
+        MatchWeekByRefDate(base, DatabaseEnum.issue_db, '주간', '일간'),
+
         MatchDateByCreatedTime(base, DatabaseEnum.journal_db, '일간'),
         MatchDateByCreatedTime(base, DatabaseEnum.journal_db, '생성'),
         MatchWeekByRefDate(base, DatabaseEnum.journal_db, '주간', '일간'),
 
         MatchDateByCreatedTime(base, DatabaseEnum.stage_db, '생성'),
         MatchWeekByRefDate(base, DatabaseEnum.stage_db, '생성', '생성'),
-
-        MatchDateByCreatedTime(base, DatabaseEnum.event_db, '일간'),
-        MatchDateByCreatedTime(base, DatabaseEnum.event_db, '생성'),
-        MatchWeekByRefDate(base, DatabaseEnum.event_db, '주간', '일간'),
-
-        MatchDateByCreatedTime(base, DatabaseEnum.issue_db, '생성'),
-        MatchWeekByRefDate(base, DatabaseEnum.issue_db, '주간', '일간'),
-        *MatchStream.get_actions(base),
 
         MatchReadingsStartDate(base),
         MatchDateByCreatedTime(base, DatabaseEnum.reading_db, '생성'),
@@ -82,7 +85,8 @@ def run_from_last_success(print_body: bool, create_window: bool, backup_path: Pa
 
 if __name__ == '__main__':
     pass
-    run_from_last_success(print_body=True, create_window=False, backup_path=backup_path, update_last_success_time=False)
+    run_from_last_success(print_body=True, create_window=False, backup_path=default_backup_path,
+                          update_last_success_time=False)
     # run_from_last_success(print_body=True, create_window=False, backup_path=backup_path)
     # run_from_last_edited_time_bound(print_body=True, create_window=False, timedelta_size=timedelta(hours=3),
     #                                 backup_path=backup_path, update_last_success_time=False)

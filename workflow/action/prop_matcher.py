@@ -206,21 +206,6 @@ class MatchStream(MatchIterableAction):
         self.record_to_stream_prop = RelationProperty(record_to_stream_prop_name)
         self.ref_to_stream_prop = RelationProperty(ref_to_stream_prop_name)
 
-    @classmethod
-    def get_actions(cls, base: MatchActionBase) -> list[MatchStream]:
-        # TODO:
-        #  - [ ] rewrite MatchActionBase as singleton, global object
-        #  - [ ] define MatchAction.get_actions() as abstractmethod
-        stream_prop_name = DatabaseEnum.stream_db.prefix_title
-        return [
-            MatchStream(base, DatabaseEnum.event_db, DatabaseEnum.issue_db,
-                        DatabaseEnum.issue_db.prefix_title, stream_prop_name, stream_prop_name),
-            MatchStream(base, DatabaseEnum.event_db, DatabaseEnum.reading_db,
-                        DatabaseEnum.reading_db.prefix_title, stream_prop_name, stream_prop_name),
-            # MatchStream(base, DatabaseEnum.issue_db, DatabaseEnum.event_db,
-            #             DatabaseEnum.event_db.prefix_title, stream_prop_name, stream_prop_name),
-        ]
-
     def query_all(self) -> Iterable[Page]:
         return self.record_db.query(self.record_to_ref_prop.filter.is_not_empty())
 
@@ -294,13 +279,14 @@ class WeekIndex(DatabaseIndex):
 
 
 if __name__ == '__main__':
-    from notion_df.variable import my_tz, Settings
-    _base = MatchActionBase()
-    now = dt.datetime.now().astimezone(my_tz)
-
-    with Settings.print:
-        _action = MatchStream.get_actions(_base)[0]
-        _action.execute_all()
+    pass
+    # from notion_df.variable import my_tz, Settings
+    # _base = MatchActionBase()
+    # now = dt.datetime.now().astimezone(my_tz)
+    #
+    # with Settings.print:
+    #     _action = MatchStream.get_actions(_base)[0]
+    #     _action.execute_all()
     #
     # with Settings.print:
     #     _action = MatchReadingsStartDate(_base)
