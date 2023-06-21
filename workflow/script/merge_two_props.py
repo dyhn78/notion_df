@@ -1,5 +1,3 @@
-from pprint import pprint
-
 from notion_df.property import DualRelationProperty, PageProperties
 from notion_df.variable import Settings
 from workflow.constant.block_enum import DatabaseEnum
