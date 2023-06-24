@@ -20,8 +20,8 @@ class DatabaseEnum(Enum):
     journal_db = ('일지', 'c226cffe6cf84ab996bbc384bf26bf1d', EmojiCode.ORANGE_CIRCLE)
     stage_db = ('바탕', 'fa7d93f6fbd341f089b185745c834811', EmojiCode.ORANGE_HEART)
 
-    topic_db = ('분야', '52d387ea0aaa470cb69332708c61b34d', EmojiCode.YELLOW_HEART)
-    reading_db = ('읽기', 'c326f77425a0446a8aa309478767c85b', EmojiCode.YELLOW_CIRCLE)
+    topic_db = ('분야', '52d387ea0aaa470cb69332708c61b34d', EmojiCode.YELLOW_CIRCLE)
+    reading_db = ('읽기', 'c326f77425a0446a8aa309478767c85b', EmojiCode.YELLOW_HEART)
 
     stream_db = ('진행', 'eb2f09a1de41412e8b2357bc04f26e74', EmojiCode.RED_CIRCLE)
     section_db = ('전개', '9f21ad86079d4caaa7ed9461a7f37288', EmojiCode.RED_HEART)
