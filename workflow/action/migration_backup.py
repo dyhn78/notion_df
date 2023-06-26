@@ -108,14 +108,17 @@ class MigrationBackupLoadAction(IterableAction):
                 this_new_properties.setdefault(new_prop, new_prop.page_value()).append(linked_page)
         try:
             this_page.update(this_new_properties)
+            return
         except HTTPError as e:  # TODO: add error class
-            # if str(e.args[0]['message']).find('Unsaved transactions') != -1:
-            #     for prop in this_new_properties:
-            #         this_new_properties[prop] = RelationProperty.page_value(
-            #             page for page in this_new_properties[prop] if validate_page_existence(page))
-            #     this_page.update(this_new_properties)
+            if str(e.args[0]['message']).find('Unsaved transactions') != -1:
+                for prop in this_new_properties:
+                    this_new_properties[prop] = RelationProperty.page_value(
+                        page for page in this_new_properties[prop] if validate_page_existence(page))
+                this_page.update(this_new_properties)
+                return
             raise e
-        print(f'\t{this_page}: {this_new_properties}')
+        finally:
+            print(f'\t{this_page}: {this_new_properties}')
 
     @classmethod
     def find_new_relation_property(
