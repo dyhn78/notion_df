@@ -223,7 +223,7 @@ class MatchStream(MatchIterableAction):
         for stream in new_streams:
             if not stream.last_response:
                 stream.retrieve()
-        new_streams = {stream for stream in new_streams if stream.properties["📕유형"] == "⏰️진척"}
+        new_streams = {stream for stream in new_streams if stream.properties["📕유형"] == "🧵진척"}
         if not new_streams:
             return
         event.update(PageProperties({
