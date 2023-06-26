@@ -14,6 +14,7 @@ from workflow.constant.block_enum import DatabaseEnum
 default_backup_path = project_path / 'backup'
 
 
+# TODO: move to actions/main.py
 def get_actions(create_window: bool, backup_path: Path) -> list[Action]:
     base = MatchActionBase()
     return [
