@@ -103,6 +103,8 @@ class MigrationBackupLoadAction(IterableAction):
                     linked_db = linked_prev_db = linked_page.parent
                 new_prop: RelationProperty = self.find_new_relation_property(this_db, this_prev_parent, linked_db,
                                                                              linked_prev_db, this_prev_prop)
+                if not new_prop:
+                    continue
                 this_new_properties.setdefault(new_prop, this_page.properties[new_prop])
                 if linked_page in this_new_properties[new_prop]:
                     continue
