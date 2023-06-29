@@ -33,7 +33,7 @@ def is_server_error(exception: BaseException) -> bool:
     return False
 
 
-@retry(wait=wait_exponential(multiplier=1, min=4), stop=stop_after_delay(600),
+@retry(wait=wait_exponential(exp_base=2, min=3), stop=stop_after_delay(60),
        retry=retry_if_exception(is_server_error))
 def request(*, method: str, url: str, headers: dict[str, Any], params: Any, json: Any) -> requests.Response:
     if Settings.print:
