@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import datetime as dt
 from abc import ABCMeta
-from typing import cast, Iterable
+from typing import cast, Iterable, Optional
 
 from notion_df.core.request import Paginator
 from notion_df.entity import Page, Database
@@ -20,7 +20,8 @@ date_manual_value_prop = DateProperty(EmojiCode.CALENDAR + '날짜')
 event_to_date_prop = RelationProperty(DatabaseEnum.date_db.prefix_title)
 event_to_stream_prop = RelationProperty(DatabaseEnum.stream_db.prefix_title)
 event_to_issue_prop = RelationProperty(DatabaseEnum.issue_db.prefix_title)
-reading_to_date_prop = RelationProperty(DatabaseEnum.date_db.prefix + '시작')
+reading_to_main_date_prop = RelationProperty(DatabaseEnum.date_db.prefix_title)
+reading_to_start_date_prop = RelationProperty(DatabaseEnum.date_db.prefix + '시작')
 reading_to_event_prop = RelationProperty(DatabaseEnum.event_db.prefix_title)
 reading_match_date_by_created_time_prop = CheckboxFormulaProperty(EmojiCode.BLACK_NOTEBOOK + '시작일<-생성시간')
 
@@ -82,51 +83,56 @@ class MatchReadingsStartDate(MatchIterableAction):
 
     def query_all(self) -> Paginator[Page]:
         return self.reading_db.query(
-            reading_to_date_prop.filter.is_empty() & (
+            reading_to_start_date_prop.filter.is_empty() & (
                     reading_to_event_prop.filter.is_not_empty()
+                    | reading_to_main_date_prop.filter.is_not_empty()
                     | reading_match_date_by_created_time_prop.filter.is_not_empty()
             )
         )
 
     def filter(self, page: Page) -> bool:
-        return (page.parent == self.reading_db and not page.properties[reading_to_date_prop]
+        return (page.parent == self.reading_db and not page.properties[reading_to_start_date_prop]
                 and (page.properties[reading_to_event_prop]
                      or page.properties[reading_match_date_by_created_time_prop]))
 
     def process_page(self, reading: Page):
         def find_date():
-            reading_events = reading.properties[reading_to_event_prop]
-            dates = []
-            # TODO: RollupPagePropertyValue 구현 후 이곳을 간소화
-            for event in reading_events:
-                if not event.last_timestamp:
-                    event.retrieve()
-                if not (date_list := event.properties[event_to_date_prop]):
-                    continue
-                date = date_list[0]
-                if not date.last_timestamp:
-                    date.retrieve()
-                if date.properties[date_manual_value_prop] is None:
-                    continue
-                dates.append(date)
-            if dates:
-                # noinspection PyShadowingNames
-                return min(dates, key=lambda date: cast(Page, date).properties[date_manual_value_prop].start)
+            def get_earliest_date(dates: Iterable[Page]) -> Page:
+                return min(dates, key=lambda _date: cast(Page, _date).properties[date_manual_value_prop].start)
+
+            def get_reading_event_dates() -> Iterable[Page]:
+                reading_events = reading.properties[reading_to_event_prop]
+                # TODO: RollupPagePropertyValue 구현 후 이곳을 간소화
+                for event in reading_events:
+                    if not event.last_timestamp:
+                        event.retrieve()
+                    if not (date_list := event.properties[event_to_date_prop]):
+                        continue
+                    date = date_list[0]
+                    if not date.last_timestamp:
+                        date.retrieve()
+                    if date.properties[date_manual_value_prop] is None:
+                        continue
+                    yield date
+
+            if reading_event_and_main_dates := (list(get_reading_event_dates())
+                                                + reading.properties[reading_to_main_date_prop]):
+                return get_earliest_date(reading_event_and_main_dates)
             if reading.properties[reading_match_date_by_created_time_prop]:
                 reading_created_date = get_record_created_date(reading)
                 return self.date_namespace.get_by_date_value(reading_created_date)
 
-        def wrapper():
+        def _process_page() -> Optional[Page]:
             date = find_date()
             if not date:
                 return
             # final check if the property value is filled in the meantime
-            if reading.retrieve().properties[reading_to_date_prop]:
+            if reading.retrieve().properties[reading_to_main_date_prop]:
                 return
-            reading.update(PageProperties({reading_to_date_prop: reading_to_date_prop.page_value([date])}))
+            reading.update(PageProperties({reading_to_main_date_prop: reading_to_main_date_prop.page_value([date])}))
             return date
 
-        _date = wrapper()
+        _date = _process_page()
         print(f'\t{reading}\n\t\t-> {_date if _date else ": Skipped"}')
 
 
