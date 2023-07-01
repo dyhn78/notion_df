@@ -127,9 +127,9 @@ class MatchReadingsStartDate(MatchIterableAction):
             if not date:
                 return
             # final check if the property value is filled in the meantime
-            if reading.retrieve().properties[reading_to_main_date_prop]:
+            if reading.retrieve().properties[reading_to_start_date_prop]:
                 return
-            reading.update(PageProperties({reading_to_main_date_prop: reading_to_main_date_prop.page_value([date])}))
+            reading.update(PageProperties({reading_to_start_date_prop: reading_to_start_date_prop.page_value([date])}))
             return date
 
         _date = _process_page()
