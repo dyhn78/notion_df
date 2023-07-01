@@ -115,8 +115,8 @@ class MatchReadingsStartDate(MatchIterableAction):
                         continue
                     yield date
 
-            if reading_event_and_main_dates := (list(get_reading_event_dates())
-                                                + reading.properties[reading_to_main_date_prop]):
+            if reading_event_and_main_dates := {*get_reading_event_dates(),
+                                                *reading.properties[reading_to_main_date_prop]}:
                 return get_earliest_date(reading_event_and_main_dates)
             if reading.properties[reading_match_date_by_created_time_prop]:
                 reading_created_date = get_record_created_date(reading)
