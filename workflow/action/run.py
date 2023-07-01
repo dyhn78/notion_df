@@ -42,7 +42,7 @@ def get_actions(create_window: bool, backup_path: Path) -> list[Action]:
 
         MatchReadingsStartDate(base),
         MatchDateByCreatedTime(base, DatabaseEnum.reading_db, '생성'),
-        MatchWeekByRefDate(base, DatabaseEnum.reading_db, '일간', '주간'),
+        MatchWeekByRefDate(base, DatabaseEnum.reading_db, '주간', '일간'),
         MatchWeekByRefDate(base, DatabaseEnum.reading_db, '시작', '시작'),  # TODO: can be deprecated
 
         MatchDateByCreatedTime(base, DatabaseEnum.point_db, '생성'),
