@@ -46,13 +46,13 @@ def get_actions(create_window: bool, backup_path: Path) -> list[Action]:
         MatchWeekByRefDate(base, DatabaseEnum.reading_db, '시작', '시작'),  # TODO: can be deprecated
 
         MatchDateByCreatedTime(base, DatabaseEnum.point_db, '일간'),
-        MatchWeekByRefDate(base, DatabaseEnum.point_db, '일간', '주간'),
+        MatchWeekByRefDate(base, DatabaseEnum.point_db, '주간', '일간'),
 
         MatchDateByCreatedTime(base, DatabaseEnum.topic_db, '일간'),
-        MatchWeekByRefDate(base, DatabaseEnum.topic_db, '일간', '주간'),
+        MatchWeekByRefDate(base, DatabaseEnum.topic_db, '주간', '일간'),
 
         MatchDateByCreatedTime(base, DatabaseEnum.subject_db, '일간'),
-        MatchWeekByRefDate(base, DatabaseEnum.subject_db, '일간', '주간'),
+        MatchWeekByRefDate(base, DatabaseEnum.subject_db, '주간', '일간'),
 
         # TODO 배포후: <읽기 -  📕유형 <- 전개/꼭지> 추가 (스펙 논의 필요)
 
