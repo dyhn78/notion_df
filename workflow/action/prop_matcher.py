@@ -6,6 +6,7 @@ from typing import cast, Iterable, Optional
 
 from notion_df.core.request import Paginator
 from notion_df.entity import Page, Database
+from notion_df.object.filter import created_time_filter
 from notion_df.object.rich_text import TextSpan
 from notion_df.property import RelationProperty, TitleProperty, PageProperties, DateFormulaPropertyKey, \
     DateProperty, CheckboxFormulaProperty, RichTextProperty
@@ -201,27 +202,37 @@ class MatchWeekByDateValue(MatchAction):
 
 
 class MatchTimeManualValue(MatchAction):
-    def __init__(self, base: MatchActionBase, record: DatabaseEnum):
+    def __init__(self, base: MatchActionBase, record: DatabaseEnum, record_to_date: RelationProperty):
         super().__init__(base)
         self.record_db = Database(record.id)
+        self.record_to_date = record_to_date
 
     def query_all(self) -> Iterable[Page]:
-        return self.record_db.query(time_manual_value_prop.filter.is_empty())
+        # since the benefits are concentrated on near present days,
+        # we could easily limit query_all() with today without lamentations
+        return self.record_db.query(time_manual_value_prop.filter.is_empty()
+                                    & created_time_filter.equals(dt.date.today()))
 
     def filter(self, record: Page) -> bool:
         return record.parent == self.record_db and not record.properties[time_manual_value_prop]
 
     def process_page(self, record: Page) -> None:
-        def _process_page():
-            time_manual_value = record.created_time.strftime('%H:%M')
+        def _find_value() -> Optional[str]:
+            record_date = record.properties[self.record_to_date][0]
+            record_date_value = record_date.properties[date_manual_value_prop].start
+            if record.created_time.date() != record_date_value:
+                return
+            return record.created_time.strftime('%H:%M')
 
+        def _update_page() -> Optional[str]:
+            time_manual_value = _find_value()
             if record.retrieve().properties[time_manual_value_prop]:
                 return
             record.update(PageProperties({
                 time_manual_value_prop: time_manual_value_prop.page_value([TextSpan(time_manual_value)])}))
             return time_manual_value
 
-        _date = _process_page()
+        _date = _update_page()
         print(f'\t{record}\n\t\t-> {_date if _date else ":Skipped"}')
 
 

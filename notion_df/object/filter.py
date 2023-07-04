@@ -116,6 +116,17 @@ class TimestampFilter(Filter):
         }
 
 
+def _get_timestamp_filter_builder(name: TimestampName) -> DateFilterBuilder:
+    def build(filter_condition: dict[str, Any]):
+        return TimestampFilter(name, filter_condition)
+
+    return DateFilterBuilder(build)
+
+
+created_time_filter = _get_timestamp_filter_builder('created_time')
+last_edited_time_filter = _get_timestamp_filter_builder('last_edited_time')
+
+
 @dataclass
 class FilterBuilder(metaclass=ABCMeta):
     def __init__(self, build: Callable[[FilterCondition], Filter]):
