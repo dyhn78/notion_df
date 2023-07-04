@@ -8,7 +8,7 @@ from workflow.action.action_core import Action, Logger
 from workflow.action.media_scraper import MediaScraper
 from workflow.action.migration_backup import MigrationBackupSaveAction, MigrationBackupLoadAction
 from workflow.action.prop_matcher import MatchActionBase, MatchWeekByDateValue, MatchDateByCreatedTime, \
-    MatchWeekByRefDate, MatchReadingsStartDate, MatchStream
+    MatchWeekByRefDate, MatchReadingsStartDate, MatchStream, MatchTimeManualValue
 from workflow.constant.block_enum import DatabaseEnum
 
 default_backup_path = project_path / 'backup'
@@ -25,6 +25,7 @@ def get_actions(create_window: bool, backup_path: Path) -> list[Action]:
         MatchDateByCreatedTime(base, DatabaseEnum.event_db, '일간'),
         MatchDateByCreatedTime(base, DatabaseEnum.event_db, '생성'),
         MatchWeekByRefDate(base, DatabaseEnum.event_db, '주간', '일간'),
+        MatchTimeManualValue(base, DatabaseEnum.event_db),
         MatchStream(base, DatabaseEnum.event_db, DatabaseEnum.issue_db, DatabaseEnum.issue_db.prefix_title,
                     DatabaseEnum.stream_db.prefix_title, DatabaseEnum.stream_db.prefix_title),
         MatchStream(base, DatabaseEnum.event_db, DatabaseEnum.reading_db, DatabaseEnum.reading_db.prefix_title,
@@ -36,6 +37,7 @@ def get_actions(create_window: bool, backup_path: Path) -> list[Action]:
         MatchDateByCreatedTime(base, DatabaseEnum.journal_db, '일간'),
         MatchDateByCreatedTime(base, DatabaseEnum.journal_db, '생성'),
         MatchWeekByRefDate(base, DatabaseEnum.journal_db, '주간', '일간'),
+        MatchTimeManualValue(base, DatabaseEnum.journal_db),
 
         MatchDateByCreatedTime(base, DatabaseEnum.stage_db, '일간'),
         MatchWeekByRefDate(base, DatabaseEnum.stage_db, '주간', '일간'),
@@ -54,7 +56,7 @@ def get_actions(create_window: bool, backup_path: Path) -> list[Action]:
         MatchDateByCreatedTime(base, DatabaseEnum.subject_db, '일간'),
         MatchWeekByRefDate(base, DatabaseEnum.subject_db, '주간', '일간'),
 
-        # TODO 배포후: <읽기 -  📕유형 <- 전개/꼭지> 추가 (스펙 논의 필요)
+        # TODO 배포후: <읽기 - 📕유형 <- 꼭지> 추가 (스펙 논의 필요)
 
         MediaScraper(create_window),
     ]

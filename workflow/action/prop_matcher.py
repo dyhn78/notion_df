@@ -6,10 +6,11 @@ from typing import cast, Iterable, Optional
 
 from notion_df.core.request import Paginator
 from notion_df.entity import Page, Database
+from notion_df.object.rich_text import TextSpan
 from notion_df.property import RelationProperty, TitleProperty, PageProperties, DateFormulaPropertyKey, \
-    DateProperty, CheckboxFormulaProperty
+    DateProperty, CheckboxFormulaProperty, RichTextProperty
 from notion_df.util.misc import repr_object
-from workflow.action.action_core import Action, IterableAction
+from workflow.action.action_core import IterableAction
 from workflow.constant.block_enum import DatabaseEnum
 from workflow.constant.emoji_code import EmojiCode
 
@@ -17,6 +18,7 @@ korean_weekday = '월화수목금토일'
 record_datetime_auto_key = DateFormulaPropertyKey(EmojiCode.TIMER + '일시')
 date_to_week_prop = RelationProperty(DatabaseEnum.week_db.prefix_title)
 date_manual_value_prop = DateProperty(EmojiCode.CALENDAR + '날짜')
+time_manual_value_prop = RichTextProperty(EmojiCode.CALENDAR + '시간')
 event_to_date_prop = RelationProperty(DatabaseEnum.date_db.prefix_title)
 event_to_stream_prop = RelationProperty(DatabaseEnum.stream_db.prefix_title)
 event_to_issue_prop = RelationProperty(DatabaseEnum.issue_db.prefix_title)
@@ -37,28 +39,24 @@ class MatchActionBase:
         self.week_namespace = WeekIndex()
 
 
-class MatchAction(Action, metaclass=ABCMeta):
+class MatchAction(IterableAction, metaclass=ABCMeta):
     def __init__(self, base: MatchActionBase):
         self.base = base
         self.date_namespace = base.date_namespace
         self.week_namespace = base.week_namespace
 
 
-class MatchIterableAction(MatchAction, IterableAction, metaclass=ABCMeta):
-    ...
-
-
-class MatchDateByCreatedTime(MatchIterableAction):
-    def __init__(self, base: MatchActionBase, records: DatabaseEnum, record_to_date: str):
+class MatchDateByCreatedTime(MatchAction):
+    def __init__(self, base: MatchActionBase, record: DatabaseEnum, record_to_date: str):
         super().__init__(base)
-        self.record_db = Database(records.id)
+        self.record_db = Database(record.id)
         self.record_to_date = RelationProperty(f'{DatabaseEnum.date_db.prefix}{record_to_date}')
 
     def query_all(self) -> Paginator[Page]:
         return self.record_db.query(self.record_to_date.filter.is_empty())
 
-    def filter(self, page: Page) -> bool:
-        return page.parent == self.record_db and not page.properties[self.record_to_date]
+    def filter(self, record: Page) -> bool:
+        return record.parent == self.record_db and not record.properties[self.record_to_date]
 
     def process_page(self, record: Page):
         def wrapper():
@@ -75,7 +73,7 @@ class MatchDateByCreatedTime(MatchIterableAction):
         print(f'\t{record}\n\t\t-> {_date if _date else ":Skipped"}')
 
 
-class MatchReadingsStartDate(MatchIterableAction):
+class MatchReadingsStartDate(MatchAction):
     def __init__(self, base: MatchActionBase):
         super().__init__(base)
         self.reading_db = Database(DatabaseEnum.reading_db.id)
@@ -136,7 +134,7 @@ class MatchReadingsStartDate(MatchIterableAction):
         print(f'\t{reading}\n\t\t-> {_date if _date else ": Skipped"}')
 
 
-class MatchWeekByRefDate(MatchIterableAction):
+class MatchWeekByRefDate(MatchAction):
     def __init__(self, base: MatchActionBase, record_db_enum: DatabaseEnum,
                  record_to_week: str, record_to_date: str):
         super().__init__(base)
@@ -176,7 +174,7 @@ class MatchWeekByRefDate(MatchIterableAction):
         print(f'\t{record}\n\t\t-> {_week if _week else ": Skipped"}')
 
 
-class MatchWeekByDateValue(MatchIterableAction):
+class MatchWeekByDateValue(MatchAction):
     def __init__(self, base: MatchActionBase):
         super().__init__(base)
         self.date_db = Database(DatabaseEnum.date_db.id)
@@ -202,7 +200,32 @@ class MatchWeekByDateValue(MatchIterableAction):
         print(f'\t{date}\n\t\t-> {week}')
 
 
-class MatchStream(MatchIterableAction):
+class MatchTimeManualValue(MatchAction):
+    def __init__(self, base: MatchActionBase, record: DatabaseEnum):
+        super().__init__(base)
+        self.record_db = Database(record.id)
+
+    def query_all(self) -> Iterable[Page]:
+        return self.record_db.query(time_manual_value_prop.filter.is_empty())
+
+    def filter(self, record: Page) -> bool:
+        return record.parent == self.record_db and not record.properties[time_manual_value_prop]
+
+    def process_page(self, record: Page) -> None:
+        def _process_page():
+            time_manual_value = record.created_time.strftime('%H:%M')
+
+            if record.retrieve().properties[time_manual_value_prop]:
+                return
+            record.update(PageProperties({
+                time_manual_value_prop: time_manual_value_prop.page_value([TextSpan(time_manual_value)])}))
+            return time_manual_value
+
+        _date = _process_page()
+        print(f'\t{record}\n\t\t-> {_date if _date else ":Skipped"}')
+
+
+class MatchStream(MatchAction):
     def __init__(self, base: MatchActionBase, record: DatabaseEnum, ref: DatabaseEnum,
                  record_to_ref_prop_name: str, record_to_stream_prop_name: str, ref_to_stream_prop_name: str):
         super().__init__(base)
@@ -218,7 +241,7 @@ class MatchStream(MatchIterableAction):
     def filter(self, record: Page) -> bool:
         return bool(record.parent == self.record_db and record.properties[self.record_to_ref_prop])
 
-    def process_page(self, record: Page):
+    def process_page(self, record: Page) -> None:
         curr_streams: list[Page] = record.properties[self.record_to_stream_prop]
         new_streams: set[Page] = set(curr_streams)
         for ref in record.properties[self.record_to_ref_prop]:
