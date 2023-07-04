@@ -52,17 +52,21 @@ class Request:
             raise RequestError(response, self)
 
 
-@dataclass
 class RequestError(Exception):
-    response: requests.Response = field(repr=False)
-    raw_data: Any = field(init=False)
+    response: requests.Response
     request: Request
+    raw_data: Any
 
-    def __post_init__(self):
+    def __init__(self, response: requests.Response, request: Request):
+        self.response = response
+        self.request = request
         try:
             self.raw_data = self.response.json()
         except requests.JSONDecodeError:
             self.raw_data = self.response.text
+
+    def __repr__(self) -> str:
+        return repr_object(self, self.raw_data, request=self.request)
 
 
 @dataclass
