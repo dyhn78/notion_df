@@ -5,7 +5,7 @@ from typing import Optional, cast, Iterator
 from requests import HTTPError
 
 from notion_df.core.entity_base import Entity
-from notion_df.core.request import Response_T
+from notion_df.core.request import Response_T, RequestError
 from notion_df.core.serialization import SerializationError
 from notion_df.entity import Page, Database
 from notion_df.object.block import PageResponse
@@ -112,8 +112,8 @@ class MigrationBackupLoadAction(IterableAction):
         try:
             this_page.update(this_new_properties)
             return
-        except HTTPError as e:  # TODO: add error class
-            if str(e.args[0]['message']).find('Unsaved transactions') != -1:
+        except RequestError as e:
+            if 'Unsaved transactions' in e.raw_data['message']:
                 for prop in this_new_properties:
                     this_new_properties[prop] = RelationProperty.page_value(
                         page for page in this_new_properties[prop] if validate_page_existence(page))

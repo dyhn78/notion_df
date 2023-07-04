@@ -4,7 +4,6 @@ import inspect
 from abc import abstractmethod, ABCMeta
 from dataclasses import dataclass, field
 from datetime import datetime
-from functools import cached_property
 from pprint import pprint
 from typing import TypeVar, Generic, Any, final, Optional, Iterator, Sequence, overload
 
@@ -49,21 +48,31 @@ class Request:
             response.raise_for_status()
             return response
         except requests.HTTPError:
-            raise RequestError(response, self)
+            raise RequestError(self, response)
 
 
 class RequestError(Exception):
-    response: requests.Response
     request: Request
+    response: requests.Response
     raw_data: Any
+    """ex) {'object': 'error', 'status': 400, 'code': 'validation_error', 
+    'message': 'Unsaved transactions: Invalid value for property with limit'}"""
+    code: str = ''
+    """ex) 'validation_error'"""
+    message: str = ''
+    """ex) 'Unsaved transactions: Invalid value for property with limit'"""
 
-    def __init__(self, response: requests.Response, request: Request):
+    def __init__(self, request: Request, response: requests.Response):
         self.response = response
         self.request = request
         try:
             self.raw_data = self.response.json()
+            self.code = self.raw_data['code']
+            self.message = self.raw_data['message']
         except requests.JSONDecodeError:
             self.raw_data = self.response.text
+        except KeyError as e:  # unexpected error format
+            raise KeyError(*e.args, self.raw_data)
 
     def __str__(self) -> str:
         return repr_object(self, self.raw_data, request=self.request)
