@@ -65,7 +65,7 @@ class RequestError(Exception):
         except requests.JSONDecodeError:
             self.raw_data = self.response.text
 
-    def __repr__(self) -> str:
+    def __str__(self) -> str:
         return repr_object(self, self.raw_data, request=self.request)
 
 
