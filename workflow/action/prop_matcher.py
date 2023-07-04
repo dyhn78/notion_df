@@ -215,16 +215,16 @@ class MatchStream(MatchIterableAction):
     def query_all(self) -> Iterable[Page]:
         return self.record_db.query(self.record_to_ref_prop.filter.is_not_empty())
 
-    def filter(self, event: Page) -> bool:
-        return bool(event.parent == self.record_db and event.properties[self.record_to_ref_prop])
+    def filter(self, record: Page) -> bool:
+        return bool(record.parent == self.record_db and record.properties[self.record_to_ref_prop])
 
-    def process_page(self, event: Page):
-        curr_streams: list[Page] = event.properties[self.record_to_stream_prop]
+    def process_page(self, record: Page):
+        curr_streams: list[Page] = record.properties[self.record_to_stream_prop]
         new_streams: set[Page] = set(curr_streams)
-        for issue in event.properties[self.record_to_ref_prop]:
-            if not issue.last_response:
-                issue.retrieve()
-            new_streams.update(issue.properties[self.ref_to_stream_prop])
+        for ref in record.properties[self.record_to_ref_prop]:
+            if not ref.last_response:
+                ref.retrieve()
+            new_streams.update(ref.properties[self.ref_to_stream_prop])
         new_streams.difference_update(curr_streams)
         for stream in new_streams:
             if not stream.last_response:
@@ -233,7 +233,7 @@ class MatchStream(MatchIterableAction):
                        stream.properties["📕유형"] == "🌳진행"}  # TODO: define property variable
         if not new_streams:
             return
-        event.update(PageProperties({
+        record.update(PageProperties({
             self.record_to_stream_prop: self.record_to_stream_prop.page_value(curr_streams + list(new_streams))}))
 
 
