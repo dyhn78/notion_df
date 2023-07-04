@@ -113,7 +113,7 @@ class MigrationBackupLoadAction(IterableAction):
             this_page.update(this_new_properties)
             return
         except RequestError as e:
-            if 'Unsaved transactions' in e.raw_data['message']:
+            if 'Unsaved transactions' in e.message:
                 for prop in this_new_properties:
                     this_new_properties[prop] = RelationProperty.page_value(
                         page for page in this_new_properties[prop] if validate_page_existence(page))
