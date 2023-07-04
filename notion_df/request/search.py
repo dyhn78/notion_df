@@ -3,12 +3,12 @@ from typing import Any, Literal, Union
 
 from notion_df.object.block import DatabaseResponse, PageResponse
 from notion_df.object.sort import TimestampSort
-from notion_df.core.request import RequestSettings, Version, Method, PaginatedRequest
+from notion_df.core.request import RequestSettings, Version, Method, PaginatedRequestBuilder
 from notion_df.util.collection import DictFilter
 
 
 @dataclass
-class SearchByTitle(PaginatedRequest[Union[PageResponse, DatabaseResponse]]):
+class SearchByTitle(PaginatedRequestBuilder[Union[PageResponse, DatabaseResponse]]):
     response_element_type = Union[PageResponse, DatabaseResponse]
     query: str
     entity: Literal['page', 'database', None] = None

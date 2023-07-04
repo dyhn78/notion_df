@@ -9,13 +9,13 @@ from notion_df.object.common import Icon
 from notion_df.object.file import ExternalFile
 from notion_df.object.partial_parent import PartialParent
 from notion_df.property import PageProperties, Property, PropertyValue_T
-from notion_df.core.request import SingleRequest, RequestSettings, Version, Method, PaginatedRequest, \
-    BaseRequest
+from notion_df.core.request import SingleRequestBuilder, RequestSettings, Version, Method, PaginatedRequestBuilder, \
+    RequestBuilder
 from notion_df.util.collection import DictFilter
 
 
 @dataclass
-class RetrievePage(SingleRequest[PageResponse]):
+class RetrievePage(SingleRequestBuilder[PageResponse]):
     """https://developers.notion.com/reference/retrieve-a-page"""
     id: UUID
     response_type = PageResponse
@@ -29,7 +29,7 @@ class RetrievePage(SingleRequest[PageResponse]):
 
 
 @dataclass
-class CreatePage(SingleRequest[PageResponse]):
+class CreatePage(SingleRequestBuilder[PageResponse]):
     """https://developers.notion.com/reference/post-page"""
     response_type = PageResponse
     parent: PartialParent
@@ -53,7 +53,7 @@ class CreatePage(SingleRequest[PageResponse]):
 
 
 @dataclass
-class UpdatePage(SingleRequest[PageResponse]):
+class UpdatePage(SingleRequestBuilder[PageResponse]):
     """https://developers.notion.com/reference/patch-page"""
     response_type = PageResponse
     id: UUID
@@ -77,7 +77,7 @@ class UpdatePage(SingleRequest[PageResponse]):
 
 
 @dataclass
-class RetrievePagePropertyItem(BaseRequest):
+class RetrievePagePropertyItem(RequestBuilder):
     """https://developers.notion.com/reference/retrieve-a-page-property"""
     # for simplicity reasons, pagination is not supported.
     page_id: UUID
@@ -90,7 +90,7 @@ class RetrievePagePropertyItem(BaseRequest):
     def get_body(self) -> None:
         return
 
-    execute_once = PaginatedRequest.execute_once
+    execute_once = PaginatedRequestBuilder.execute_once
 
     def execute(self) -> PropertyValue_T:
         data = self.execute_once()

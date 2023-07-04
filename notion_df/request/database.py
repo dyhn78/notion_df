@@ -11,12 +11,12 @@ from notion_df.object.filter import Filter
 from notion_df.property import DatabaseProperties
 from notion_df.object.rich_text import RichText
 from notion_df.object.sort import Sort
-from notion_df.core.request import SingleRequest, RequestSettings, Version, Method, PaginatedRequest
+from notion_df.core.request import SingleRequestBuilder, RequestSettings, Version, Method, PaginatedRequestBuilder
 from notion_df.util.collection import DictFilter
 
 
 @dataclass
-class RetrieveDatabase(SingleRequest[DatabaseResponse]):
+class RetrieveDatabase(SingleRequestBuilder[DatabaseResponse]):
     response_type = DatabaseResponse
     id: UUID
 
@@ -29,7 +29,7 @@ class RetrieveDatabase(SingleRequest[DatabaseResponse]):
 
 
 @dataclass
-class CreateDatabase(SingleRequest[DatabaseResponse]):
+class CreateDatabase(SingleRequestBuilder[DatabaseResponse]):
     """https://developers.notion.com/reference/create-a-database"""
     response_type = DatabaseResponse
     parent_id: UUID
@@ -56,7 +56,7 @@ class CreateDatabase(SingleRequest[DatabaseResponse]):
 
 
 @dataclass
-class UpdateDatabase(SingleRequest[DatabaseResponse]):
+class UpdateDatabase(SingleRequestBuilder[DatabaseResponse]):
     response_type = DatabaseResponse
     id: UUID
     title: RichText
@@ -78,7 +78,7 @@ class UpdateDatabase(SingleRequest[DatabaseResponse]):
 
 
 @dataclass
-class QueryDatabase(PaginatedRequest[PageResponse]):
+class QueryDatabase(PaginatedRequestBuilder[PageResponse]):
     response_element_type = PageResponse
     id: UUID
     filter: Filter

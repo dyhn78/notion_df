@@ -5,12 +5,12 @@ from typing import Any
 from uuid import UUID
 
 from notion_df.object.block import BlockValue, BlockResponse, serialize_block_value_list
-from notion_df.core.request import SingleRequest, RequestSettings, Version, Method, PaginatedRequest
+from notion_df.core.request import SingleRequestBuilder, RequestSettings, Version, Method, PaginatedRequestBuilder
 from notion_df.util.collection import DictFilter
 
 
 @dataclass
-class AppendBlockChildren(SingleRequest[list[BlockResponse]]):
+class AppendBlockChildren(SingleRequestBuilder[list[BlockResponse]]):
     """https://developers.notion.com/reference/patch-block-children"""
     response_type = list[BlockResponse]
     id: UUID
@@ -32,7 +32,7 @@ class AppendBlockChildren(SingleRequest[list[BlockResponse]]):
 
 
 @dataclass
-class RetrieveBlock(SingleRequest[BlockResponse]):
+class RetrieveBlock(SingleRequestBuilder[BlockResponse]):
     """https://developers.notion.com/reference/retrieve-a-block"""
     response_type = BlockResponse
     id: UUID
@@ -46,7 +46,7 @@ class RetrieveBlock(SingleRequest[BlockResponse]):
 
 
 @dataclass
-class RetrieveBlockChildren(PaginatedRequest[BlockResponse]):
+class RetrieveBlockChildren(PaginatedRequestBuilder[BlockResponse]):
     """https://developers.notion.com/reference/get-block-children"""
     response_element_type = BlockResponse
     id: UUID
@@ -61,7 +61,7 @@ class RetrieveBlockChildren(PaginatedRequest[BlockResponse]):
 
 
 @dataclass
-class UpdateBlock(SingleRequest[BlockResponse]):
+class UpdateBlock(SingleRequestBuilder[BlockResponse]):
     """https://developers.notion.com/reference/update-a-block"""
     response_type = BlockResponse
     id: UUID
@@ -81,7 +81,7 @@ class UpdateBlock(SingleRequest[BlockResponse]):
 
 
 @dataclass
-class DeleteBlock(SingleRequest[BlockResponse]):
+class DeleteBlock(SingleRequestBuilder[BlockResponse]):
     """https://developers.notion.com/reference/delete-a-block"""
     response_type = BlockResponse
     id: UUID

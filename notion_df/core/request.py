@@ -4,11 +4,11 @@ import inspect
 from abc import abstractmethod, ABCMeta
 from dataclasses import dataclass, field
 from datetime import datetime
+from functools import cached_property
 from pprint import pprint
 from typing import TypeVar, Generic, Any, final, Optional, Iterator, Sequence, overload
 
 import requests
-from requests import JSONDecodeError
 from tenacity import retry, wait_exponential, stop_after_delay, retry_if_exception
 from typing_extensions import Self
 
@@ -21,33 +21,48 @@ from notion_df.variable import Settings, print_width
 MAX_PAGE_SIZE = 100
 
 
-def is_server_error(exception: BaseException) -> bool:
-    if isinstance(exception, requests.exceptions.HTTPError):
-        status_code = exception.response.status_code
-        return 500 <= status_code < 600 or status_code == 409  # conflict
-    for cls in [requests.exceptions.SSLError, 
-                requests.exceptions.ReadTimeout,
-                requests.exceptions.ChunkedEncodingError]:
-        if isinstance(exception, cls):
-            return True
-    return False
+@dataclass
+class Request:
+    method: Method
+    url: str
+    headers: dict[str, Any]
+    params: Any
+    json: Any
 
+    @staticmethod
+    def is_server_error(exception: BaseException) -> bool:
+        if isinstance(exception, RequestError):
+            status_code = exception.response.status_code
+            return 500 <= status_code < 600 or status_code == 409  # conflict
+        return any(isinstance(exception, cls) for cls in [requests.exceptions.SSLError,
+                                                          requests.exceptions.ReadTimeout,
+                                                          requests.exceptions.ChunkedEncodingError])
 
-@retry(wait=wait_exponential(exp_base=2, min=3), stop=stop_after_delay(60),
-       retry=retry_if_exception(is_server_error))
-def request(*, method: str, url: str, headers: dict[str, Any], params: Any, json: Any) -> requests.Response:
-    if Settings.print:
-        pprint(dict(method=method, url=url, headers=headers, params=params, json=json), width=print_width)
-    with requests.request(method, url, headers=headers, params=params, json=json, timeout=30) as response:
+    @retry(wait=wait_exponential(exp_base=2, min=3), stop=stop_after_delay(60),
+           retry=retry_if_exception(is_server_error))
+    def execute(self) -> requests.Response:
+        if Settings.print:
+            pprint(self, width=print_width)
+        response = requests.request(method=self.method.value, url=self.url, headers=self.headers,
+                                    params=self.params, json=self.json, timeout=30)
         try:
             response.raise_for_status()
-        except requests.exceptions.HTTPError:
-            try:
-                data = response.json()
-            except JSONDecodeError:
-                data = response.text
-            raise requests.exceptions.HTTPError(data, response=response)
-        return response
+            return response
+        except requests.HTTPError:
+            raise RequestError(response, self)
+
+
+@dataclass
+class RequestError(Exception):
+    response: requests.Response = field(repr=False)
+    raw_data: Any = field(init=False)
+    request: Request
+
+    def __post_init__(self):
+        try:
+            self.raw_data = self.response.json()
+        except requests.JSONDecodeError:
+            self.raw_data = self.response.text
 
 
 @dataclass
@@ -68,7 +83,7 @@ ResponseElement_T = TypeVar('ResponseElement_T')
 
 
 @dataclass
-class BaseRequest(metaclass=ABCMeta):
+class RequestBuilder(metaclass=ABCMeta):
     # TODO: refactor so that Request has entity information
     #  - Request.execute() returns Paginator
     #  - Paginator can interact with Request instance and able to call Entity._send_response()
@@ -107,7 +122,22 @@ class RequestSettings:
     url: str
 
 
-class SingleRequest(Generic[Response_T], BaseRequest, metaclass=ABCMeta):
+class Method(StrEnum):
+    GET = 'GET'
+    POST = 'POST'
+    PUT = 'PUT'
+    PATCH = 'PATCH'
+    DELETE = 'DELETE'
+    # HEAD = 'HEAD'
+    # OPTIONS = 'OPTIONS'
+
+
+class Version(StrEnum):
+    v20220222 = '2022-02-22'
+    v20220628 = '2022-06-28'
+
+
+class SingleRequestBuilder(Generic[Response_T], RequestBuilder, metaclass=ABCMeta):
     response_type: type[Response_T]
 
     def __init_subclass__(cls, **kwargs):
@@ -117,8 +147,8 @@ class SingleRequest(Generic[Response_T], BaseRequest, metaclass=ABCMeta):
     @final
     def execute(self) -> Response_T:
         settings = self.get_settings()
-        response = request(method=settings.method.value, url=settings.url, headers=self.headers, params=None,
-                           json=serialize(self.get_body()))
+        response = Request(method=settings.method, url=settings.url, headers=self.headers, params=None,
+                           json=serialize(self.get_body())).execute()
         return self.parse_response_data(response.json())  # nomypy
 
     @classmethod
@@ -126,7 +156,7 @@ class SingleRequest(Generic[Response_T], BaseRequest, metaclass=ABCMeta):
         return cls.response_type.deserialize(data)
 
 
-class PaginatedRequest(Generic[ResponseElement_T], BaseRequest, metaclass=ABCMeta):
+class PaginatedRequestBuilder(Generic[ResponseElement_T], RequestBuilder, metaclass=ABCMeta):
     response_element_type: type[ResponseElement_T]
     page_size: int = None  # TODO - AS-IS: total size of all pages summed, TO-BE: each request size
 
@@ -155,8 +185,8 @@ class PaginatedRequest(Generic[ResponseElement_T], BaseRequest, metaclass=ABCMet
         else:
             raise NotionDfValueError('bad method', {'method': settings.method})
 
-        response = request(method=settings.method.value, url=settings.url, headers=self.headers, params=params,
-                           json=serialize(body))
+        response = Request(method=settings.method, url=settings.url, headers=self.headers, params=params,
+                           json=serialize(body)).execute()
         return response.json()
 
     def execute(self) -> Iterator[ResponseElement_T]:
@@ -178,21 +208,6 @@ class PaginatedRequest(Generic[ResponseElement_T], BaseRequest, metaclass=ABCMet
     def parse_response_data(cls, data: dict[str, Any]) -> Iterator[ResponseElement_T]:
         for data_element in data['results']:
             yield deserialize(cls.response_element_type, data_element)
-
-
-class Method(StrEnum):
-    GET = 'GET'
-    POST = 'POST'
-    PUT = 'PUT'
-    PATCH = 'PATCH'
-    DELETE = 'DELETE'
-    # HEAD = 'HEAD'
-    # OPTIONS = 'OPTIONS'
-
-
-class Version(StrEnum):
-    v20220222 = '2022-02-22'
-    v20220628 = '2022-06-28'
 
 
 T = TypeVar('T')
