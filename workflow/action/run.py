@@ -25,7 +25,7 @@ def get_actions(create_window: bool, backup_path: Path) -> list[Action]:
         MatchDateByCreatedTime(base, DatabaseEnum.event_db, '일간'),
         MatchDateByCreatedTime(base, DatabaseEnum.event_db, '생성'),
         MatchWeekByRefDate(base, DatabaseEnum.event_db, '주간', '일간'),
-        MatchTimeManualValue(base, DatabaseEnum.event_db),
+        MatchTimeManualValue(base, DatabaseEnum.event_db, '일간'),
         MatchStream(base, DatabaseEnum.event_db, DatabaseEnum.issue_db, DatabaseEnum.issue_db.prefix_title,
                     DatabaseEnum.stream_db.prefix_title, DatabaseEnum.stream_db.prefix_title),
         MatchStream(base, DatabaseEnum.event_db, DatabaseEnum.reading_db, DatabaseEnum.reading_db.prefix_title,
@@ -37,7 +37,7 @@ def get_actions(create_window: bool, backup_path: Path) -> list[Action]:
         MatchDateByCreatedTime(base, DatabaseEnum.journal_db, '일간'),
         MatchDateByCreatedTime(base, DatabaseEnum.journal_db, '생성'),
         MatchWeekByRefDate(base, DatabaseEnum.journal_db, '주간', '일간'),
-        MatchTimeManualValue(base, DatabaseEnum.journal_db),
+        MatchTimeManualValue(base, DatabaseEnum.journal_db, '일간'),
 
         MatchDateByCreatedTime(base, DatabaseEnum.stage_db, '일간'),
         MatchWeekByRefDate(base, DatabaseEnum.stage_db, '주간', '일간'),

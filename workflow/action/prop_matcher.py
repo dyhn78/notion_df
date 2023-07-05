@@ -202,10 +202,10 @@ class MatchWeekByDateValue(MatchAction):
 
 
 class MatchTimeManualValue(MatchAction):
-    def __init__(self, base: MatchActionBase, record: DatabaseEnum, record_to_date: RelationProperty):
+    def __init__(self, base: MatchActionBase, record: DatabaseEnum, record_to_date: str):
         super().__init__(base)
         self.record_db = Database(record.id)
-        self.record_to_date = record_to_date
+        self.record_to_date = RelationProperty(DatabaseEnum.date_db.prefix + record_to_date)
 
     def query_all(self) -> Iterable[Page]:
         # since the benefits are concentrated on near present days,
