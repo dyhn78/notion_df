@@ -214,25 +214,25 @@ class MatchTimeManualValue(MatchAction):
                                     & created_time_filter.equals(dt.date.today()))
 
     def filter(self, record: Page) -> bool:
-        return record.parent == self.record_db and not record.properties[time_manual_value_prop]
+        if not (record.parent == self.record_db and not record.properties[time_manual_value_prop]):
+            return False
+        try:
+            record_date = record.properties[self.record_to_date][0]
+        except IndexError:
+            return True
+        record_date_value = record_date.properties[date_manual_value_prop].start
+        return record.created_time.date() == record_date_value
 
     def process_page(self, record: Page) -> None:
-        def _find_value() -> Optional[str]:
-            record_date = record.properties[self.record_to_date][0]
-            record_date_value = record_date.properties[date_manual_value_prop].start
-            if record.created_time.date() != record_date_value:
-                return
-            return record.created_time.strftime('%H:%M')
-
-        def _update_page() -> Optional[str]:
-            time_manual_value = _find_value()
+        def _process_page() -> Optional[str]:
+            time_manual_value = record.created_time.strftime('%H:%M')
             if record.retrieve().properties[time_manual_value_prop]:
                 return
             record.update(PageProperties({
                 time_manual_value_prop: time_manual_value_prop.page_value([TextSpan(time_manual_value)])}))
             return time_manual_value
 
-        _date = _update_page()
+        _date = _process_page()
         print(f'\t{record}\n\t\t-> {_date if _date else ":Skipped"}')
 
 
