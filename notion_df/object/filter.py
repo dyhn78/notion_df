@@ -15,119 +15,6 @@ FilterCondition = dict[str, Any]
 
 
 @dataclass
-class Filter(Serializable, metaclass=ABCMeta):
-    # https://developers.notion.com/reference/post-database-query-filter
-    def __and__(self, other: Filter) -> CompoundFilter:
-        return self.__compound(other, 'and')
-
-    def __or__(self, other: Filter) -> CompoundFilter:
-        return self.__compound(other, 'or')
-
-    def __compound(self, other: Filter, operator: CompoundOperator) -> CompoundFilter:
-        if isinstance(self, CompoundFilter) and self.operator == operator:
-            if isinstance(other, CompoundFilter) and other.operator == operator:
-                return CompoundFilter(operator, self.elements + other.elements)
-            return CompoundFilter(operator, self.elements + [other])
-        if isinstance(other, CompoundFilter) and other.operator == operator:
-            return CompoundFilter(operator, [self] + other.elements)
-        return CompoundFilter(operator, [self, other])
-
-
-@dataclass
-class CompoundFilter(Filter):
-    operator: CompoundOperator
-    elements: list[Filter]
-
-    def serialize(self):
-        return {self.operator: serialize(self.elements)}
-
-
-def and_filter(elements: list[Filter]) -> CompoundFilter:
-    return CompoundFilter('and', elements)
-
-
-def or_filter(elements: list[Filter]) -> CompoundFilter:
-    return CompoundFilter('or', elements)
-
-
-@dataclass
-class PropertyFilter(Filter):
-    name_or_id: str | UUID
-    typename: str
-    condition: FilterCondition
-
-    def serialize(self):
-        return {
-            "property": self.name_or_id,
-            self.typename: serialize(self.condition)
-        }
-
-
-@dataclass
-class FormulaPropertyFilter(Filter):
-    name_or_id: str | UUID
-    typename: str
-    value_typename: str
-    condition: FilterCondition
-
-    def serialize(self):
-        return {
-            "property": self.name_or_id,
-            self.typename: {self.value_typename: serialize(self.condition)}
-        }
-
-
-@dataclass
-class RollupPropertyAggregateFilter(Filter):
-    name_or_id: str | UUID
-    aggregate_type: RollupAggregate
-    typename: str
-    condition: FilterCondition
-
-    def serialize(self):
-        return {
-            "property": self.name_or_id,
-            "rollup": {
-                self.aggregate_type: {
-                    self.typename: serialize(self.condition)
-                }
-            }
-        }
-
-    def serialize2(self):
-        # TODO: find which is correct by actual testing
-        return {
-            "property": self.name_or_id,
-            self.aggregate_type: {
-                self.typename: serialize(self.condition)
-            }
-        }
-
-
-@dataclass
-class TimestampFilter(Filter):
-    name: TimestampName
-    condition: FilterCondition
-
-    def serialize(self):
-        return {
-            "timestamp_type": self.name,
-            self.name: serialize(self.condition)
-        }
-
-
-def _get_timestamp_filter_builder(name: TimestampName) -> DateFilterBuilder:
-    def build(filter_condition: dict[str, Any]):
-        return TimestampFilter(name, filter_condition)
-
-    return DateFilterBuilder(build)
-
-
-created_time_filter = _get_timestamp_filter_builder('created_time')
-last_edited_time_filter = _get_timestamp_filter_builder('last_edited_time')
-
-
-@dataclass
 class FilterBuilder(metaclass=ABCMeta):
     def __init__(self, build: Callable[[FilterCondition], Filter]):
         self._build = build
@@ -365,3 +252,116 @@ class RelationFilterBuilder(FilterBuilder):
 
     def is_not_empty(self) -> Filter:
         return self._build({'is_not_empty': True})
+
+
+@dataclass
+class Filter(Serializable, metaclass=ABCMeta):
+    # https://developers.notion.com/reference/post-database-query-filter
+    def __and__(self, other: Filter) -> CompoundFilter:
+        return self.__compound(other, 'and')
+
+    def __or__(self, other: Filter) -> CompoundFilter:
+        return self.__compound(other, 'or')
+
+    def __compound(self, other: Filter, operator: CompoundOperator) -> CompoundFilter:
+        if isinstance(self, CompoundFilter) and self.operator == operator:
+            if isinstance(other, CompoundFilter) and other.operator == operator:
+                return CompoundFilter(operator, self.elements + other.elements)
+            return CompoundFilter(operator, self.elements + [other])
+        if isinstance(other, CompoundFilter) and other.operator == operator:
+            return CompoundFilter(operator, [self] + other.elements)
+        return CompoundFilter(operator, [self, other])
+
+
+@dataclass
+class CompoundFilter(Filter):
+    operator: CompoundOperator
+    elements: list[Filter]
+
+    def serialize(self):
+        return {self.operator: serialize(self.elements)}
+
+
+def and_filter(elements: list[Filter]) -> CompoundFilter:
+    return CompoundFilter('and', elements)
+
+
+def or_filter(elements: list[Filter]) -> CompoundFilter:
+    return CompoundFilter('or', elements)
+
+
+@dataclass
+class PropertyFilter(Filter):
+    name_or_id: str | UUID
+    typename: str
+    condition: FilterCondition
+
+    def serialize(self):
+        return {
+            "property": self.name_or_id,
+            self.typename: serialize(self.condition)
+        }
+
+
+@dataclass
+class FormulaPropertyFilter(Filter):
+    name_or_id: str | UUID
+    typename: str
+    value_typename: str
+    condition: FilterCondition
+
+    def serialize(self):
+        return {
+            "property": self.name_or_id,
+            self.typename: {self.value_typename: serialize(self.condition)}
+        }
+
+
+@dataclass
+class RollupPropertyAggregateFilter(Filter):
+    name_or_id: str | UUID
+    aggregate_type: RollupAggregate
+    typename: str
+    condition: FilterCondition
+
+    def serialize(self):
+        return {
+            "property": self.name_or_id,
+            "rollup": {
+                self.aggregate_type: {
+                    self.typename: serialize(self.condition)
+                }
+            }
+        }
+
+    def serialize2(self):
+        # TODO: find which is correct by actual testing
+        return {
+            "property": self.name_or_id,
+            self.aggregate_type: {
+                self.typename: serialize(self.condition)
+            }
+        }
+
+
+@dataclass
+class TimestampFilter(Filter):
+    name: TimestampName
+    condition: FilterCondition
+
+    def serialize(self):
+        return {
+            "timestamp_type": self.name,
+            self.name: serialize(self.condition)
+        }
+
+
+def _get_timestamp_filter_builder(name: TimestampName) -> DateFilterBuilder:
+    def build(filter_condition: dict[str, Any]):
+        return TimestampFilter(name, filter_condition)
+
+    return DateFilterBuilder(build)
+
+
+created_time_filter = _get_timestamp_filter_builder('created_time')
+last_edited_time_filter = _get_timestamp_filter_builder('last_edited_time')
