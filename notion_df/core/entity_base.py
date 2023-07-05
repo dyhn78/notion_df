@@ -70,10 +70,10 @@ class Entity(Generic[Response_T], Hashable, metaclass=ABCMeta):
             return undefined
         elif self.parent is None:
             return 'workspace'
-        else:  # [1:-1] : remove quote - TODO remove this hack
-            return self.parent._repr_as_parent()[1:-1]
+        else:
+            return self.parent._repr_as_parent()
 
-    def _repr_as_parent(self) -> Optional[str]:
+    def _repr_as_parent(self) -> str:
         return repr_object(self, id=self.id)
 
     @final
