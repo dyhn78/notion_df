@@ -114,18 +114,16 @@ class Database(Entity[DatabaseResponse]):
         try:
             title = self.title.plain_text
             url = self.url
-            _id = undefined
+            return repr_object(self, title=title, url=url, parent=self._repr_parent())
         except (NotionDfKeyError, AttributeError):
-            title = url = undefined
-            _id = self.id
-        return repr_object(self, title=title, url=url, id=_id, parent=self._repr_parent())
+            return repr_object(self, id=self.id, parent=self._repr_parent())
 
     def _repr_as_parent(self) -> str:
         try:
             title = self.title.plain_text
+            return repr_object(self, title=title)
         except (NotionDfKeyError, AttributeError):
-            title = undefined
-        return repr_object(self, title=title)
+            repr_object(self, id=self.id)
 
     # noinspection DuplicatedCode
     def _send_response(self, response: DatabaseResponse) -> None:
@@ -211,9 +209,9 @@ class Page(Entity[PageResponse]):
     def _repr_as_parent(self) -> str:
         try:
             title = self.properties.title.plain_text
+            return repr_object(self, title=title)
         except (NotionDfKeyError, AttributeError):
-            title = undefined
-        return repr_object(self, title=title)
+            return repr_object(self, id=self.id)
 
     # noinspection DuplicatedCode
     def _send_response(self, response: PageResponse) -> None:

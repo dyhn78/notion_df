@@ -22,8 +22,8 @@ class Span(DualSerializable, metaclass=ABCMeta):
     * set `None` (the default value) to retain the current annotations.
     * set `Annotations()` to remove the annotations and make a plain text.
     """
-    plain_text: Optional[str]
-    href: Optional[str]
+    plain_text: str
+    href: str
 
     def __init_subclass__(cls, **kwargs) -> None:
         super().__init_subclass__(**kwargs)
@@ -112,8 +112,8 @@ class TextSpan(Span):
     * set `None` (the default value) to retain the current annotations.
     * set `Annotations()` to remove the annotations and make a plain text.
     """
-    plain_text: Optional[str] = field(init=False, default=None, repr=False)
-    href: Optional[str] = field(init=False, default=None, repr=False)
+    plain_text: str = field(init=False, default='', repr=False)
+    href: str = field(init=False, default='', repr=False)
 
     def _serialize_main(self) -> dict[str, Any]:
         return {
@@ -148,8 +148,8 @@ class Equation(Span):
     * set `None` (the default value) to retain the current annotations.
     * set `Annotations()` to remove the annotations and make a plain text.
     """
-    plain_text: Optional[str] = field(init=False, default=None, repr=False)
-    href: Optional[str] = field(init=False, default=None, repr=False)
+    plain_text: str = field(init=False, default='', repr=False)
+    href: str = field(init=False, default='', repr=False)
 
     def _serialize_main(self) -> dict[str, Any]:
         return {
@@ -176,8 +176,8 @@ class UserMention(Span):
     * set `None` (the default value) to retain the current annotations.
     * set `Annotations()` to remove the annotations and make a plain text.
     """
-    plain_text: Optional[str] = field(init=False, default=None, repr=False)
-    href: Optional[str] = field(init=False, default=None, repr=False)
+    plain_text: str = field(init=False, default='', repr=False)
+    href: str = field(init=False, default='', repr=False)
 
     def _serialize_main(self) -> dict[str, Any]:
         return {
@@ -210,8 +210,8 @@ class PageMention(Span):
     * set `None` (the default value) to retain the current annotations.
     * set `Annotations()` to remove the annotations and make a plain text.
     """
-    plain_text: Optional[str] = field(init=False, default=None, repr=False)
-    href: Optional[str] = field(init=False, default=None, repr=False)
+    plain_text: str = field(init=False, default='', repr=False)
+    href: str = field(init=False, default='', repr=False)
 
     def _serialize_main(self) -> dict[str, Any]:
         return {
@@ -241,8 +241,8 @@ class DatabaseMention(Span):
     * set `None` (the default value) to retain the current annotations.
     * set `Annotations()` to remove the annotations and make a plain text.
     """
-    plain_text: Optional[str] = field(init=False, default=None, repr=False)
-    href: Optional[str] = field(init=False, default=None, repr=False)
+    plain_text: str = field(init=False, default='', repr=False)
+    href: str = field(init=False, default='', repr=False)
 
     def _serialize_main(self) -> dict[str, Any]:
         return {
@@ -272,8 +272,8 @@ class DateMention(Span):
     * set `None` (the default value) to retain the current annotations.
     * set `Annotations()` to remove the annotations and make a plain text.
     """
-    plain_text: Optional[str] = field(init=False, default=None, repr=False)
-    href: Optional[str] = field(init=False, default=None, repr=False)
+    plain_text: str = field(init=False, default='', repr=False)
+    href: str = field(init=False, default='', repr=False)
 
     def _serialize_main(self) -> dict[str, Any]:
         return {
@@ -303,8 +303,8 @@ class TemplateDateMention(Span):
     * set `None` (the default value) to retain the current annotations.
     * set `Annotations()` to remove the annotations and make a plain text.
     """
-    plain_text: Optional[str] = field(init=False, default=None, repr=False)
-    href: Optional[str] = field(init=False, default=None, repr=False)
+    plain_text: str = field(init=False, default='', repr=False)
+    href: str = field(init=False, default='', repr=False)
 
     def _serialize_main(self) -> dict[str, Any]:
         return {
@@ -337,8 +337,8 @@ class TemplateUserMention(Span):
     * set `None` (the default value) to retain the current annotations.
     * set `Annotations()` to remove the annotations and make a plain text.
     """
-    plain_text: Optional[str] = field(init=False, default=None, repr=False)
-    href: Optional[str] = field(init=False, default=None, repr=False)
+    plain_text: str = field(init=False, default='', repr=False)
+    href: str = field(init=False, default='', repr=False)
 
     def _serialize_main(self) -> dict[str, Any]:
         return {
@@ -372,8 +372,8 @@ class LinkPreviewMention(Span):
     * set `None` (the default value) to retain the current annotations.
     * set `Annotations()` to remove the annotations and make a plain text.
     """
-    plain_text: Optional[str] = field(init=False, default=None, repr=False)
-    href: Optional[str] = field(init=False, default=None, repr=False)
+    plain_text: str = field(init=False, default='', repr=False)
+    href: str = field(init=False, default='', repr=False)
 
     def _serialize_main(self) -> dict[str, Any]:
         return {
