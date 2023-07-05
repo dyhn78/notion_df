@@ -253,22 +253,26 @@ class MatchStream(MatchAction):
         return bool(record.parent == self.record_db and record.properties[self.record_to_ref_prop])
 
     def process_page(self, record: Page) -> None:
-        curr_streams: list[Page] = record.properties[self.record_to_stream_prop]
-        new_streams: set[Page] = set(curr_streams)
+        curr_stream_list: list[Page] = record.properties[self.record_to_stream_prop]
+        new_stream_set: set[Page] = set(curr_stream_list)
         for ref in record.properties[self.record_to_ref_prop]:
             if not ref.last_response:
                 ref.retrieve()
-            new_streams.update(ref.properties[self.ref_to_stream_prop])
-        new_streams.difference_update(curr_streams)
-        for stream in new_streams:
-            if not stream.last_response:
-                stream.retrieve()
-        new_streams = {stream for stream in new_streams if
-                       stream.properties["📕유형"] == "🌳진행"}  # TODO: define property variable
-        if not new_streams:
+            ref_stream_set = set(ref.properties[self.ref_to_stream_prop])
+            for stream in ref_stream_set:
+                if not stream.last_response:
+                    stream.retrieve()
+            ref_stream_set = {stream for stream in ref_stream_set
+                              if stream.properties["📕유형"] == "🌳진행"}  # TODO: define property variable
+            ref_stream_set.difference_update(curr_stream_list)
+            if set(curr_stream_list) & ref_stream_set:
+                continue
+            new_stream_set.update(ref_stream_set)
+        new_stream_set.difference_update(curr_stream_list)
+        if not new_stream_set:
             return
-        record.update(PageProperties({
-            self.record_to_stream_prop: self.record_to_stream_prop.page_value(curr_streams + list(new_streams))}))
+        new_stream = curr_stream_list + list(new_stream_set)
+        record.update(PageProperties({self.record_to_stream_prop: self.record_to_stream_prop.page_value(new_stream)}))
 
 
 class DatabaseIndex(metaclass=ABCMeta):
