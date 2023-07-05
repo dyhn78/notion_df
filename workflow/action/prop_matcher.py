@@ -155,24 +155,24 @@ class MatchWeekByRefDate(MatchAction):
             self.record_to_week.filter.is_empty() & self.record_to_date.filter.is_not_empty())
 
     def filter(self, page: Page) -> bool:
-        return (page.parent == self.record_db and not page.properties[self.record_to_week]
-                and page.properties[self.record_to_date])
+        return page.parent == self.record_db and page.properties[self.record_to_date]
 
-    def process_page(self, record: Page):
-        def wrapper():
-            record_date = record.properties[self.record_to_date][0]
-            if not record_date.last_timestamp:
-                record_date.retrieve()
-            record_week = record_date.properties[date_to_week_prop][0]
+    def process_page(self, record: Page) -> None:
+        def _process_page():
+            new_record_weeks = self.record_to_week.page_value()
+            for record_date in record.properties[self.record_to_date]:
+                if not record_date.last_response:
+                    record_date.retrieve()
+                new_record_weeks.append(record_date.properties[date_to_week_prop][0])
 
             # final check if the property value is filled in the meantime
-            if record.retrieve().properties[self.record_to_week]:
+            if record.properties[self.record_to_week] != record.retrieve().properties[self.record_to_week]:
                 return
-            record.update(PageProperties({self.record_to_week: self.record_to_week.page_value([record_week])}))
-            return record_week
+            record.update(PageProperties({self.record_to_week: new_record_weeks}))
+            return new_record_weeks
 
-        _week = wrapper()
-        print(f'\t{record}\n\t\t-> {_week if _week else ": Skipped"}')
+        _weeks = _process_page()
+        print(f'\t{record}\n\t\t-> {list(_weeks) if _weeks else ": Skipped"}')
 
 
 class MatchWeekByDateValue(MatchAction):

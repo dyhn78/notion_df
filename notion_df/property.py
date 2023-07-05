@@ -387,6 +387,8 @@ class RelationPagePropertyValue(list['Page'], DualSerializable):
         self.has_more = None
 
     def serialize(self) -> Any:
+        # TODO: move deduplication logic to instance attribute level
+        #  check that if overriding .append() is enough - or should I override extend and += too?
         _cache = set()
         serialized = []
         for page in self:
