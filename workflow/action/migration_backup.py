@@ -166,7 +166,7 @@ class MigrationBackupLoadAction(IterableAction):
             return pick('관계')
         if this_db_enum == DatabaseEnum.issue_db and linked_db_enum == DatabaseEnum.issue_db:
             return pick('관계')
-        if this_db_enum == DatabaseEnum.stream_db and linked_db_enum == DatabaseEnum.stream_db:
+        if this_db_enum == DatabaseEnum.topic_db and linked_db_enum == DatabaseEnum.topic_db:
             return pick('관계')
 
         # default cases
