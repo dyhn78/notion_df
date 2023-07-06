@@ -271,6 +271,7 @@ class MatchStream(MatchAction):
                 continue
             new_stream_set.update(ref_stream_set)
         # new_stream_set.difference_update(curr_stream_list)
+        # TODO: add check comparing curr_stream_list to prev_stream_list
         if not new_stream_set:
             return
         new_stream = curr_stream_list + list(new_stream_set)
