@@ -15,13 +15,13 @@ _id_to_member = {}
 
 class DatabaseEnum(Enum):
 
-    schedule_db = ('일정', 'e8782fe4e1a34c9d846d57b01a370327', EmojiCode.BLUE_CIRCLE)
+    schedule_db = ('일정', 'e8782fe4e1a34c9d846d57b01a370327', EmojiCode.PURPLE_HEART)
 
-    event_db = ('일지', 'c8d46c01d6c941a9bf8df5d115a05f03', EmojiCode.ORANGE_CIRCLE)  # journal
-    issue_db = ('줄기', 'e8782fe4e1a34c9d846d57b01a370327', EmojiCode.BLUE_HEART)
+    event_db = ('일지', 'c8d46c01d6c941a9bf8df5d115a05f03', EmojiCode.PURPLE_CIRCLE)  # journal
+    issue_db = ('줄기', 'e8782fe4e1a34c9d846d57b01a370327', EmojiCode.BLUE_CIRCLE)
 
     journal_db = ('일지', 'c226cffe6cf84ab996bbc384bf26bf1d', EmojiCode.ORANGE_CIRCLE)  # DEPR
-    stage_db = ('바탕', 'fa7d93f6fbd341f089b185745c834811', EmojiCode.ORANGE_HEART)
+    stage_db = ('바탕', 'fa7d93f6fbd341f089b185745c834811', EmojiCode.BLUE_HEART)
     
     topic_db = ('꼭지', 'eb2f09a1de41412e8b2357bc04f26e74', EmojiCode.RED_CIRCLE)
     stream_db = ('전개', '9f21ad86079d4caaa7ed9461a7f37288', EmojiCode.RED_HEART)  # DEPR
