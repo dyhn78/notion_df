@@ -160,9 +160,9 @@ class MigrationBackupLoadAction(IterableAction):
                 return pick(this_prev_prop.name)
             if this_prev_prop.name in ['💚주간', '💚시작']:
                 return pick(this_prev_prop.name) or pick('💚생성')
-        if this_db_enum == DatabaseEnum.event_db and linked_db_enum == DatabaseEnum.reading_db:
+        if this_db_enum == DatabaseEnum.journal_db and linked_db_enum == DatabaseEnum.reading_db:
             return pick('관계')
-        if this_db_enum == DatabaseEnum.reading_db and linked_db_enum == DatabaseEnum.event_db:
+        if this_db_enum == DatabaseEnum.reading_db and linked_db_enum == DatabaseEnum.journal_db:
             return pick('관계')
         if this_db_enum == DatabaseEnum.issue_db and linked_db_enum == DatabaseEnum.issue_db:
             return pick('관계')

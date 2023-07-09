@@ -16,24 +16,23 @@ _id_to_member = {}
 class DatabaseEnum(Enum):
 
     schedule_db = ('일정', 'e8782fe4e1a34c9d846d57b01a370327', EmojiCode.PURPLE_CIRCLE)
-    event_db = ('일지', 'c8d46c01d6c941a9bf8df5d115a05f03', EmojiCode.PURPLE_HEART)  # journal
+    journal_db = ('일과', 'c8d46c01d6c941a9bf8df5d115a05f03', EmojiCode.PURPLE_HEART)
     
-    issue_db = ('줄기', 'e8782fe4e1a34c9d846d57b01a370327', EmojiCode.BLUE_CIRCLE)
-    journal_db = ('일지', 'c226cffe6cf84ab996bbc384bf26bf1d', EmojiCode.ORANGE_CIRCLE)  # DEPR
-    stage_db = ('바탕', 'fa7d93f6fbd341f089b185745c834811', EmojiCode.BLUE_HEART)
+    issue_db = ('줄기', 'e8782fe4e1a34c9d846d57b01a370327', EmojiCode.ORANGE_CIRCLE)
+    subject_db = ('바탕', 'fa7d93f6fbd341f089b185745c834811', EmojiCode.ORANGE_HEART)
     
     topic_db = ('꼭지', 'eb2f09a1de41412e8b2357bc04f26e74', EmojiCode.RED_CIRCLE)
-    stream_db = ('전개', '9f21ad86079d4caaa7ed9461a7f37288', EmojiCode.RED_HEART)  # DEPR
-
-    section_db = ('자산', '52d387ea0aaa470cb69332708c61b34d', EmojiCode.YELLOW_HEART)
-    reading_db = ('읽기', 'c326f77425a0446a8aa309478767c85b', EmojiCode.YELLOW_CIRCLE)  # DEPR
-
     point_db = ('요점', '2c5411ba6a0f43a0a8aa06295751e37a', EmojiCode.RED_HEART)
-    subject_db = ('담론', 'eca1ba6d4831459ca8becc283f1f8c4e', EmojiCode.PURPLE_HEART)  # DEPR
+
+    reading_db = ('읽기', 'c326f77425a0446a8aa309478767c85b', EmojiCode.YELLOW_CIRCLE)
+    asset_db = ('자산', '52d387ea0aaa470cb69332708c61b34d', EmojiCode.YELLOW_HEART)
 
     date_db = ('일간', '961d1ca0a3d24a46b838ba85e710f18d', EmojiCode.GREEN_CIRCLE)
     week_db = ('주간', 'd020b399cf5947a59d11a0b9e0ea45d0', EmojiCode.GREEN_HEART)
 
+    journal_depr_db = ('일지', 'c226cffe6cf84ab996bbc384bf26bf1d', EmojiCode.ORANGE_CIRCLE)  # DEPR
+    stream_db = ('전개', '9f21ad86079d4caaa7ed9461a7f37288', EmojiCode.RED_HEART)  # DEPR
+    subject_depr_db = ('담론', 'eca1ba6d4831459ca8becc283f1f8c4e', EmojiCode.PURPLE_HEART)  # DEPR
     depr_people_db = ('인물', '3c08cdba5a044e9c9b7e31ee8509f506', EmojiCode.BLACK_HEART)
     depr_channel_db = ('채널', '2d3f4ea770854b8e9e30abecd4d31a86', EmojiCode.BLACK_HEART)
     depr_location_db = ('장소', '920e2e10225d450d8bb084697f6d0fc6', EmojiCode.BLACK_HEART)

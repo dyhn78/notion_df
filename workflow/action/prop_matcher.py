@@ -25,7 +25,7 @@ event_to_stream_prop = RelationProperty(DatabaseEnum.topic_db.prefix_title)
 event_to_issue_prop = RelationProperty(DatabaseEnum.issue_db.prefix_title)
 reading_to_main_date_prop = RelationProperty(DatabaseEnum.date_db.prefix_title)
 reading_to_start_date_prop = RelationProperty(DatabaseEnum.date_db.prefix + '시작')
-reading_to_event_prop = RelationProperty(DatabaseEnum.event_db.prefix_title)
+reading_to_event_prop = RelationProperty(DatabaseEnum.journal_db.prefix_title)
 reading_match_date_by_created_time_prop = CheckboxFormulaProperty(EmojiCode.BLACK_NOTEBOOK + '시작일<-생성시간')
 
 
@@ -78,7 +78,7 @@ class MatchReadingsStartDate(MatchAction):
     def __init__(self, base: MatchActionBase):
         super().__init__(base)
         self.reading_db = Database(DatabaseEnum.reading_db.id)
-        self.event_db = Database(DatabaseEnum.event_db.id)
+        self.event_db = Database(DatabaseEnum.journal_db.id)
 
     def query_all(self) -> Paginator[Page]:
         return self.reading_db.query(
@@ -342,5 +342,5 @@ if __name__ == '__main__':
     # with Settings.print:
     #     _action = MatchReadingsStartDate(_base)
     #     Action.execute_by_last_edited_time([_action], now - dt.timedelta(hours=1))
-    # Action.execute_by_last_edited_time([MatchDateByCreatedTime(_base, DatabaseEnum.event_db, '일간')],
+    # Action.execute_by_last_edited_time([MatchDateByCreatedTime(_base, DatabaseEnum.journal_db, '일간')],
     #                                    now - dt.timedelta(hours=2), now)
