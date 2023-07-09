@@ -168,7 +168,7 @@ class MatchWeekByRefDate(MatchAction):
             # final check if the property value is filled in the meantime
             prev_record_weeks = record.properties[self.record_to_week] 
             curr_record_weeks = record.retrieve().properties[self.record_to_week]
-            if prev_record_weeks != curr_record_weeks or curr_record_weeks == new_record_weeks:
+            if (set(prev_record_weeks) != set(curr_record_weeks)) or (set(curr_record_weeks) == set(new_record_weeks)):
                 return
             record.update(PageProperties({self.record_to_week: new_record_weeks}))
             return new_record_weeks
