@@ -22,6 +22,9 @@ def get_actions(create_window: bool, backup_path: Path) -> list[Action]:
 
         MatchWeekByDateValue(base),
 
+        MatchDateByCreatedTime(base, DatabaseEnum.schedule_db, '생성'),
+        MatchWeekByRefDate(base, DatabaseEnum.schedule_db, '주간', '일간'),
+
         MatchDateByCreatedTime(base, DatabaseEnum.event_db, '일간'),
         MatchDateByCreatedTime(base, DatabaseEnum.event_db, '생성'),
         MatchWeekByRefDate(base, DatabaseEnum.event_db, '주간', '일간'),
