@@ -273,7 +273,7 @@ class MatchStream(MatchAction):
             if set(curr_stream_list) & ref_stream_set:
                 continue
             new_stream_set.update(ref_stream_set)
-        # new_stream_set.difference_update(curr_stream_list)
+        new_stream_set.difference_update(curr_stream_list)
         # TODO: add check comparing curr_stream_list to prev_stream_list
         if not new_stream_set:
             return
