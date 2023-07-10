@@ -9,7 +9,7 @@ from notion_df.entity import Page, Database
 from notion_df.object.filter import created_time_filter
 from notion_df.object.rich_text import TextSpan
 from notion_df.property import RelationProperty, TitleProperty, PageProperties, DateFormulaPropertyKey, \
-    DateProperty, CheckboxFormulaProperty, RichTextProperty
+    DateProperty, CheckboxFormulaProperty, RichTextProperty, SelectProperty
 from notion_df.util.misc import repr_object
 from workflow.action.action_core import IterableAction
 from workflow.constant.block_enum import DatabaseEnum
@@ -20,9 +20,11 @@ record_datetime_auto_key = DateFormulaPropertyKey(EmojiCode.TIMER + '일시')
 date_to_week_prop = RelationProperty(DatabaseEnum.week_db.prefix_title)
 date_manual_value_prop = DateProperty(EmojiCode.CALENDAR + '날짜')
 time_manual_value_prop = RichTextProperty(EmojiCode.CALENDAR + '시간')
-event_to_date_prop = RelationProperty(DatabaseEnum.date_db.prefix_title)
-event_to_stream_prop = RelationProperty(DatabaseEnum.topic_db.prefix_title)
-event_to_issue_prop = RelationProperty(DatabaseEnum.issue_db.prefix_title)
+journal_to_date_prop = RelationProperty(DatabaseEnum.date_db.prefix_title)
+journal_to_topic_prop = RelationProperty(DatabaseEnum.topic_db.prefix_title)
+journal_to_issue_prop = RelationProperty(DatabaseEnum.issue_db.prefix_title)
+topic_base_type_prop = SelectProperty("📕유형")
+topic_base_type_progress = "🌳진행"
 reading_to_main_date_prop = RelationProperty(DatabaseEnum.date_db.prefix_title)
 reading_to_start_date_prop = RelationProperty(DatabaseEnum.date_db.prefix + '시작')
 reading_to_event_prop = RelationProperty(DatabaseEnum.journal_db.prefix_title)
@@ -105,7 +107,7 @@ class MatchReadingsStartDate(MatchAction):
                 for event in reading_events:
                     if not event.last_timestamp:
                         event.retrieve()
-                    if not (date_list := event.properties[event_to_date_prop]):
+                    if not (date_list := event.properties[journal_to_date_prop]):
                         continue
                     date = date_list[0]
                     if not date.last_timestamp:
@@ -168,9 +170,6 @@ class MatchWeekByRefDate(MatchAction):
             # final check if the property value is filled in the meantime
             prev_record_weeks = record.properties[self.record_to_week] 
             curr_record_weeks = record.retrieve().properties[self.record_to_week]
-            print("prev:", prev_record_weeks)
-            print("curr:", curr_record_weeks)
-            print("new:", new_record_weeks)
             if (set(prev_record_weeks) != set(curr_record_weeks)) or (set(curr_record_weeks) == set(new_record_weeks)):
                 return
             record.update(PageProperties({self.record_to_week: new_record_weeks}))
@@ -241,15 +240,15 @@ class MatchTimeManualValue(MatchAction):
         print(f'\t{record}\n\t\t-> {_date if _date else ":Skipped"}')
 
 
-class MatchStream(MatchAction):
+class MatchTopic(MatchAction):
     def __init__(self, base: MatchActionBase, record: DatabaseEnum, ref: DatabaseEnum,
-                 record_to_ref_prop_name: str, record_to_stream_prop_name: str, ref_to_stream_prop_name: str):
+                 record_to_ref_prop_name: str, record_to_topic_prop_name: str, ref_to_topic_prop_name: str):
         super().__init__(base)
         self.record_db = record.entity
         self.ref_db = ref.entity
         self.record_to_ref_prop = RelationProperty(record_to_ref_prop_name)
-        self.record_to_stream_prop = RelationProperty(record_to_stream_prop_name)
-        self.ref_to_stream_prop = RelationProperty(ref_to_stream_prop_name)
+        self.record_to_topic_prop = RelationProperty(record_to_topic_prop_name)
+        self.ref_to_topic_prop = RelationProperty(ref_to_topic_prop_name)
 
     def query_all(self) -> Iterable[Page]:
         return self.record_db.query(self.record_to_ref_prop.filter.is_not_empty())
@@ -258,27 +257,28 @@ class MatchStream(MatchAction):
         return bool(record.parent == self.record_db and record.properties[self.record_to_ref_prop])
 
     def process_page(self, record: Page) -> None:
-        curr_stream_list: list[Page] = record.properties[self.record_to_stream_prop]
-        new_stream_set: set[Page] = set(curr_stream_list)
+        # rewrite so that it utilizes the RelationPagePropertyValue's feature 
+        #  (rather than based on builtin list and set)
+        curr_topic_list: list[Page] = list(record.properties[self.record_to_topic_prop])
+        new_topic_set: set[Page] = set(curr_topic_list)
         for ref in record.properties[self.record_to_ref_prop]:
             if not ref.last_response:
                 ref.retrieve()
-            ref_stream_set = set(ref.properties[self.ref_to_stream_prop])
-            for stream in ref_stream_set:
-                if not stream.last_response:
-                    stream.retrieve()
-            ref_stream_set = {stream for stream in ref_stream_set
-                              if stream.properties["📕유형"] == "🌳진행"}  # TODO: define property variable
-            ref_stream_set.difference_update(curr_stream_list)
-            if set(curr_stream_list) & ref_stream_set:
+            ref_topic_set = set(ref.properties[self.ref_to_topic_prop])
+            for topic in ref_topic_set:
+                if not topic.last_response:
+                    topic.retrieve()
+            ref_topic_set = {topic for topic in ref_topic_set
+                               if topic.properties[topic_base_type_prop] == topic_base_type_progress}
+            if set(curr_topic_list) & ref_topic_set:
                 continue
-            new_stream_set.update(ref_stream_set)
-        new_stream_set.difference_update(curr_stream_list)
-        # TODO: add check comparing curr_stream_list to prev_stream_list
-        if not new_stream_set:
+            new_topic_set.update(ref_topic_set)
+        new_topic_set.difference_update(curr_topic_list)
+        if not new_topic_set:
             return
-        new_stream = curr_stream_list + list(new_stream_set)
-        record.update(PageProperties({self.record_to_stream_prop: self.record_to_stream_prop.page_value(new_stream)}))
+        new_topic = curr_topic_list + list(new_topic_set)
+        record.update(PageProperties({
+            self.record_to_topic_prop: self.record_to_topic_prop.page_value(new_topic)}))
 
 
 class DatabaseIndex(metaclass=ABCMeta):
@@ -336,7 +336,7 @@ if __name__ == '__main__':
     # now = dt.datetime.now().astimezone(my_tz)
     #
     # with Settings.print:
-    #     _action = MatchStream.get_actions(_base)[0]
+    #     _action = MatchTopic.get_actions(_base)[0]
     #     _action.execute_all()
     #
     # with Settings.print:

@@ -7,8 +7,8 @@ from typing import Any, Iterator
 
 from typing_extensions import Self
 
-from notion_df.object.constant import BlockColor, OptionColor
 from notion_df.core.serialization import DualSerializable
+from notion_df.object.constant import BlockColor, OptionColor
 
 
 @dataclass
@@ -113,6 +113,7 @@ class SelectOption(DualSerializable):
         return cls._deserialize_from_dict(serialized)
 
     def __eq__(self, other: SelectOption | str) -> bool:
+        """compare with str to match the name or id."""
         if isinstance(other, SelectOption):
             if self.id != other.id and self.id is not None and other.id is not None:
                 return False
