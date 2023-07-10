@@ -385,7 +385,6 @@ class RelationPagePropertyValue(MutableSequence['Page'], DualSerializable):
     if has_more is True, its boolean value is True even if there are no elements on the local object."""
 
     def __init__(self, pages: Iterable[Page] = ()):
-        super().__init__(pages)
         self._data_list = []
         self._data_set = set()
         self.extend(pages)
