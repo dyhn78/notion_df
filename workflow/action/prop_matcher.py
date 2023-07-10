@@ -76,6 +76,41 @@ class MatchDateByCreatedTime(MatchAction):
         print(f'\t{record}\n\t\t-> {_date if _date else ":Skipped"}')
 
 
+class MatchTimeManualValue(MatchAction):
+    def __init__(self, base: MatchActionBase, record: DatabaseEnum, record_to_date: str):
+        super().__init__(base)
+        self.record_db = Database(record.id)
+        self.record_to_date = RelationProperty(DatabaseEnum.date_db.prefix + record_to_date)
+
+    def query_all(self) -> Iterable[Page]:
+        # since the benefits are concentrated on near present days,
+        # we could easily limit query_all() with today without lamentations
+        return self.record_db.query(time_manual_value_prop.filter.is_empty()
+                                    & created_time_filter.equals(dt.date.today()))
+
+    def filter(self, record: Page) -> bool:
+        if not (record.parent == self.record_db and not record.properties[time_manual_value_prop]):
+            return False
+        try:
+            record_date = record.properties[self.record_to_date][0]
+        except IndexError:
+            return True
+        record_date_value = record_date.properties[date_manual_value_prop].start
+        return record.created_time.date() == record_date_value
+
+    def process_page(self, record: Page) -> None:
+        def _process_page() -> Optional[str]:
+            time_manual_value = record.created_time.strftime('%H:%M')
+            if record.retrieve().properties[time_manual_value_prop]:
+                return
+            record.update(PageProperties({
+                time_manual_value_prop: time_manual_value_prop.page_value([TextSpan(time_manual_value)])}))
+            return time_manual_value
+
+        _date = _process_page()
+        print(f'\t{record}\n\t\t-> {_date if _date else ":Skipped"}')
+
+
 class MatchReadingsStartDate(MatchAction):
     def __init__(self, base: MatchActionBase):
         super().__init__(base)
@@ -167,8 +202,8 @@ class MatchWeekByRefDate(MatchAction):
                     record_date.retrieve()
                 new_record_weeks.append(record_date.properties[date_to_week_prop][0])
 
-            # final check if the property value is filled in the meantime
-            prev_record_weeks = record.properties[self.record_to_week] 
+            # final check if the property value is filled or changed in the meantime
+            prev_record_weeks = record.properties[self.record_to_week]
             curr_record_weeks = record.retrieve().properties[self.record_to_week]
             if (set(prev_record_weeks) != set(curr_record_weeks)) or (set(curr_record_weeks) == set(new_record_weeks)):
                 return
@@ -203,41 +238,6 @@ class MatchWeekByDateValue(MatchAction):
             return
         date.update(PageProperties({date_to_week_prop: date_to_week_prop.page_value([week])}))
         print(f'\t{date}\n\t\t-> {week}')
-
-
-class MatchTimeManualValue(MatchAction):
-    def __init__(self, base: MatchActionBase, record: DatabaseEnum, record_to_date: str):
-        super().__init__(base)
-        self.record_db = Database(record.id)
-        self.record_to_date = RelationProperty(DatabaseEnum.date_db.prefix + record_to_date)
-
-    def query_all(self) -> Iterable[Page]:
-        # since the benefits are concentrated on near present days,
-        # we could easily limit query_all() with today without lamentations
-        return self.record_db.query(time_manual_value_prop.filter.is_empty()
-                                    & created_time_filter.equals(dt.date.today()))
-
-    def filter(self, record: Page) -> bool:
-        if not (record.parent == self.record_db and not record.properties[time_manual_value_prop]):
-            return False
-        try:
-            record_date = record.properties[self.record_to_date][0]
-        except IndexError:
-            return True
-        record_date_value = record_date.properties[date_manual_value_prop].start
-        return record.created_time.date() == record_date_value
-
-    def process_page(self, record: Page) -> None:
-        def _process_page() -> Optional[str]:
-            time_manual_value = record.created_time.strftime('%H:%M')
-            if record.retrieve().properties[time_manual_value_prop]:
-                return
-            record.update(PageProperties({
-                time_manual_value_prop: time_manual_value_prop.page_value([TextSpan(time_manual_value)])}))
-            return time_manual_value
-
-        _date = _process_page()
-        print(f'\t{record}\n\t\t-> {_date if _date else ":Skipped"}')
 
 
 class MatchTopic(MatchAction):
