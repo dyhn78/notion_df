@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 import inspect
-from abc import ABCMeta
-from collections.abc import MutableMapping
+from abc import ABCMeta, abstractmethod
+from collections.abc import MutableMapping, MutableSequence
 from dataclasses import dataclass, field
 from datetime import datetime, date
 from functools import cache
 from typing import ClassVar, TypeVar, Generic, Any, Iterator, Optional, Literal, Union, Iterable, Final, \
-    TYPE_CHECKING, get_type_hints, cast
+    TYPE_CHECKING, get_type_hints, cast, overload
 
 from typing_extensions import Self
 
@@ -379,23 +379,20 @@ class RollupDatabasePropertyValue(DatabasePropertyValue):
     rollup_property_id: str
 
 
-class RelationPagePropertyValue(list['Page'], DualSerializable):
-    has_more: Optional[bool]  # set by Property._deserialize_page()
+class RelationPagePropertyValue(MutableSequence['Page'], DualSerializable):
+    has_more: Optional[bool]
+    """set by Property._deserialize_page().
+    if has_more is True, its boolean value is True even if there are no elements on the local object."""
 
     def __init__(self, pages: Iterable[Page] = ()):
         super().__init__(pages)
+        self._data_list = []
+        self._data_set = set()
+        self.extend(pages)
         self.has_more = None
 
     def serialize(self) -> Any:
-        # TODO: move deduplication logic to instance attribute level
-        #  check that if overriding .append() is enough - or should I override extend and += too?
-        _cache = set()
-        serialized = []
-        for page in self:
-            if page not in _cache:
-                serialized.append({'id': str(page.id)})
-            _cache.add(page)
-        return serialized
+        return [{'id': str(page.id) for page in self._data_list}]
 
     @classmethod
     def _deserialize_this(cls, serialized: list[dict[str, Any]]) -> Self:
@@ -404,14 +401,81 @@ class RelationPagePropertyValue(list['Page'], DualSerializable):
         self = cls([Page(partial_page['id']) for partial_page in serialized])
         return self
 
+    def __repr__(self) -> str:
+        return repr_object(self, self._data_list)
+
     def __bool__(self) -> bool:
         return bool(len(self) or self.has_more)
 
     def __add__(self, other: Iterable[Page]):
         return RelationPagePropertyValue((*self, *other))
 
-    def __repr__(self) -> str:
-        return f'{type(self).__name__}({super().__repr__()})'
+    def __len__(self) -> int:
+        return len(self._data_list)
+
+    def __contains__(self, page: 'Page') -> bool:
+        return page in self._data_set
+
+    @overload
+    @abstractmethod
+    def __getitem__(self, index: int) -> 'Page':
+        ...
+
+    @overload
+    @abstractmethod
+    def __getitem__(self, index: slice) -> list['Page']:
+        ...
+
+    def __getitem__(self, index: int | slice) -> 'Page' | list['Page']:
+        return self._data_list[index]
+
+    @overload
+    @abstractmethod
+    def __setitem__(self, index: int, page: 'Page') -> None:
+        ...
+
+    @overload
+    @abstractmethod
+    def __setitem__(self, index: slice, pages: Iterable['Page']) -> None:
+        ...
+
+    def __setitem__(self, index: int | slice, value: Union['Page', Iterable['Page']]) -> None:
+        from notion_df.entity import Page
+
+        if isinstance(index, int) and isinstance(page := value, Page):
+            self._data_set.remove(self._data_list[index])
+            self._data_set.add(page)
+        elif isinstance(index, slice) and isinstance(pages := value, Iterable):
+            self._data_set.difference_update(self._data_list[index])
+            self._data_set.update(pages)
+        else:
+            raise TypeError(f'index: {index}, value: {value}')
+        self._data_list[index] = value
+
+    @overload
+    @abstractmethod
+    def __delitem__(self, index: int) -> None:
+        ...
+
+    @overload
+    @abstractmethod
+    def __delitem__(self, index: slice) -> None:
+        ...
+
+    def __delitem__(self, index: int | slice) -> None:
+        if isinstance(index, int):
+            self._data_set.remove(self._data_list[index])
+        elif isinstance(index, slice):
+            self._data_set.difference_update(self._data_list[index])
+        else:
+            raise TypeError(index)
+        del self._data_list[index]
+
+    def insert(self, index: int, page: 'Page') -> None:
+        if page in self:
+            return
+        self._data_list.insert(index, page)
+        self._data_set.add(page)
 
 
 @dataclass
