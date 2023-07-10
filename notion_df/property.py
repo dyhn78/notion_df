@@ -406,7 +406,7 @@ class RelationPagePropertyValue(MutableSequence['Page'], DualSerializable):
     def __bool__(self) -> bool:
         return bool(len(self) or self.has_more)
 
-    def __add__(self, other: Iterable[Page]):
+    def __add__(self, other: Iterable[Page]) -> RelationPagePropertyValue:
         return RelationPagePropertyValue((*self, *other))
 
     def __len__(self) -> int:
