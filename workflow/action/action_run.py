@@ -37,8 +37,8 @@ def get_actions(create_window: bool, backup_path: Path) -> list[Action]:
         MatchDateByCreatedTime(base, DatabaseEnum.issue_db, '생성'),
         MatchWeekByRefDate(base, DatabaseEnum.issue_db, '주간', '일간'),
 
-        MatchDateByCreatedTime(base, DatabaseEnum.agenda_db, '일간'),
-        MatchWeekByRefDate(base, DatabaseEnum.agenda_db, '주간', '일간'),
+        MatchDateByCreatedTime(base, DatabaseEnum.subject_db, '일간'),
+        MatchWeekByRefDate(base, DatabaseEnum.subject_db, '주간', '일간'),
 
         MatchWeekByRefDate(base, DatabaseEnum.topic_db, '주간', '일간'),
 
@@ -50,16 +50,16 @@ def get_actions(create_window: bool, backup_path: Path) -> list[Action]:
         MatchDateByCreatedTime(base, DatabaseEnum.asset_db, '일간'),
         MatchWeekByRefDate(base, DatabaseEnum.asset_db, '주간', '일간'),
 
-        MatchDateByCreatedTime(base, DatabaseEnum.subject_db, '일간'),
-        MatchWeekByRefDate(base, DatabaseEnum.subject_db, '주간', '일간'),
+        MatchDateByCreatedTime(base, DatabaseEnum.agenda_db, '일간'),
+        MatchWeekByRefDate(base, DatabaseEnum.agenda_db, '주간', '일간'),
 
-        MatchDateByCreatedTime(base, DatabaseEnum.journal_depr_db, '일간'),
-        MatchDateByCreatedTime(base, DatabaseEnum.journal_depr_db, '생성'),
-        MatchWeekByRefDate(base, DatabaseEnum.journal_depr_db, '주간', '일간'),
-        MatchTimeManualValue(base, DatabaseEnum.journal_depr_db, '일간'),
+        MatchDateByCreatedTime(base, DatabaseEnum.depr_journal_db, '일간'),
+        MatchDateByCreatedTime(base, DatabaseEnum.depr_journal_db, '생성'),
+        MatchWeekByRefDate(base, DatabaseEnum.depr_journal_db, '주간', '일간'),
+        MatchTimeManualValue(base, DatabaseEnum.depr_journal_db, '일간'),
 
-        MatchDateByCreatedTime(base, DatabaseEnum.subject_depr_db, '일간'),
-        MatchWeekByRefDate(base, DatabaseEnum.subject_depr_db, '주간', '일간'),
+        MatchDateByCreatedTime(base, DatabaseEnum.depr_subject_db, '일간'),
+        MatchWeekByRefDate(base, DatabaseEnum.depr_subject_db, '주간', '일간'),
 
         # TODO 배포후: <읽기 - 📕유형 <- 꼭지> 추가 (스펙 논의 필요)
 
