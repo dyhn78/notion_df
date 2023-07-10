@@ -25,7 +25,7 @@ if __name__ == '__main__':
         sys.exit(1)
     print(f'{"#" * 5 } Start.')
 
-    from workflow.action.run import run_from_last_success
+    from workflow.action.action_run import run_from_last_success
     # TODO: add click command
     log_enabled = run_from_last_success(False, False, this_path.parent / 'backup', True)
     print(f'{"#" * 5 } {"Done." if log_enabled else "No new record."}')
