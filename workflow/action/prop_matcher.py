@@ -273,10 +273,10 @@ class MatchTopic(MatchAction):
             if set(curr_topic_list) & ref_topic_set:
                 continue
             new_topic_set.update(ref_topic_set)
-        curr_topic_list = list(record.retrieve().properties[self.record_to_topic_prop])
         new_topic_set.difference_update(curr_topic_list)
         if not new_topic_set:
             return
+        curr_topic_list = list(record.retrieve().properties[self.record_to_topic_prop])
         new_topic = curr_topic_list + list(new_topic_set)
         record.update(PageProperties({
             self.record_to_topic_prop: self.record_to_topic_prop.page_value(new_topic)}))
