@@ -273,8 +273,7 @@ class MatchTopic(MatchAction):
             if set(curr_topic_list) & ref_topic_set:
                 continue
             new_topic_set.update(ref_topic_set)
-        new_topic_set.difference_update(curr_topic_list)
-        if not new_topic_set:
+        if not new_topic_set - set(curr_topic_list):
             return
         curr_topic_list = list(record.retrieve().properties[self.record_to_topic_prop])
         new_topic = curr_topic_list + list(new_topic_set)
