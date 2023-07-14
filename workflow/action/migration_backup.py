@@ -82,8 +82,8 @@ class MigrationBackupLoadAction(IterableAction):
         if not this_prev_response:
             print(f'\t{this_page}: Skipped since no previous response backup')
             return
-        this_prev_parent = this_prev_response.parent
-        if this_prev_parent == this_db:
+        this_prev_db = this_prev_response.parent
+        if this_prev_db == this_db:
             print(f'\t{this_page}: Did not change the parent database')
             return
 
@@ -109,8 +109,8 @@ class MigrationBackupLoadAction(IterableAction):
                     continue
                 if any(linked_page in this_page.properties[prop] for prop in candidate_props):
                     continue
-                new_prop: RelationProperty = self.find_new_relation_property(this_page, this_db, this_prev_parent,
-                                                                             linked_db, linked_prev_db, this_prev_prop)
+                new_prop: RelationProperty = self.find_new_relation_property(this_db, this_prev_db, linked_db,
+                                                                             linked_prev_db, this_prev_prop)
                 if not new_prop:
                     continue
                 this_new_properties.setdefault(new_prop, this_page.properties[new_prop])
@@ -146,7 +146,7 @@ class MigrationBackupLoadAction(IterableAction):
 
     @classmethod
     def find_new_relation_property(
-            cls, this_page: Page, this_db: Database, this_prev_db: Optional[Database],
+            cls, this_db: Database, this_prev_db: Optional[Database],
             linked_db: Database, linked_prev_db: Optional[Database],
             this_prev_prop: RelationProperty) -> Optional[RelationProperty]:
         """this method guarantee that the returning property is picked from its candidates (this_db.properties)"""
