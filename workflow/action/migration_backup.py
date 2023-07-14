@@ -94,14 +94,16 @@ class MigrationBackupLoadAction(IterableAction):
             for linked_page in cast(this_prev_prop.page_value, this_prev_prop_value):
 
                 linked_prev_response: PageResponse = self.response_backup.read(linked_page)
-                if linked_prev_response:
-                    linked_prev_db = linked_prev_response.parent
-                    linked_page.send_response(linked_prev_response)
+                if linked_page.last_response:
                     linked_db = linked_page.parent
+                    if linked_prev_response:
+                        linked_prev_db = linked_prev_response.parent
+                    else:
+                        linked_prev_db = None
+                elif linked_prev_response:
+                    linked_db = linked_prev_db = linked_prev_response.parent
                 else:
-                    if not linked_page.last_response:
-                        linked_page.retrieve()
-                    linked_db = linked_prev_db = linked_page.parent
+                    linked_db = linked_prev_db = linked_page.retrieve().parent
                 candidate_props = self.get_candidate_props(this_db, linked_db)
                 if not candidate_props:
                     continue
@@ -152,9 +154,7 @@ class MigrationBackupLoadAction(IterableAction):
         candidate_props = cls.get_candidate_props(this_db, linked_db)
 
         def pick(prop_name: str) -> Optional[RelationProperty]:
-            for _prop in candidate_props:
-                if _prop.name.find(prop_name) != -1:
-                    return _prop
+            return next((_prop for _prop in candidate_props if prop_name in _prop.name), None)
 
         # customized cases
         if linked_db_enum == DatabaseEnum.date_db:
