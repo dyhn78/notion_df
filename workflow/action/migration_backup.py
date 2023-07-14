@@ -1,4 +1,5 @@
 import json
+from functools import cache
 from pathlib import Path
 from typing import Optional, cast, Iterator
 
@@ -101,8 +102,13 @@ class MigrationBackupLoadAction(IterableAction):
                     if not linked_page.last_response:
                         linked_page.retrieve()
                     linked_db = linked_prev_db = linked_page.parent
-                new_prop: RelationProperty = self.find_new_relation_property(this_db, this_prev_parent, linked_db,
-                                                                             linked_prev_db, this_prev_prop)
+                candidate_props = self.get_candidate_props(this_db, linked_db)
+                if not candidate_props:
+                    continue
+                if any(linked_page in this_page.properties[prop] for prop in candidate_props):
+                    continue
+                new_prop: RelationProperty = self.find_new_relation_property(this_page, this_db, this_prev_parent,
+                                                                             linked_db, linked_prev_db, this_prev_prop)
                 if not new_prop:
                     continue
                 this_new_properties.setdefault(new_prop, this_page.properties[new_prop])
@@ -122,16 +128,9 @@ class MigrationBackupLoadAction(IterableAction):
             print(f'\t{this_page}: {this_new_properties}')
 
     @classmethod
-    def find_new_relation_property(
-            cls, this_db: Database, this_prev_db: Optional[Database],
-            linked_db: Database, linked_prev_db: Optional[Database],
-            this_prev_prop: RelationProperty) -> Optional[RelationProperty]:
-        """this method guarantee that the returning property is picked from its candidates (this_db.properties)"""
-        this_db_enum = DatabaseEnum.from_entity(this_db)
-        this_prev_db_enum = DatabaseEnum.from_entity(this_prev_db)
-        linked_db_enum = DatabaseEnum.from_entity(linked_db)
+    @cache
+    def get_candidate_props(cls, this_db: Database, linked_db: Database) -> list[RelationProperty]:
         candidate_props: list[RelationProperty] = []
-
         if not this_db.last_response:
             this_db.retrieve()
         for prop in this_db.properties:
@@ -139,8 +138,18 @@ class MigrationBackupLoadAction(IterableAction):
                 continue
             if this_db.properties[prop].database == linked_db:
                 candidate_props.append(prop)
-        if not candidate_props:
-            return
+        return candidate_props
+
+    @classmethod
+    def find_new_relation_property(
+            cls, this_page: Page, this_db: Database, this_prev_db: Optional[Database],
+            linked_db: Database, linked_prev_db: Optional[Database],
+            this_prev_prop: RelationProperty) -> Optional[RelationProperty]:
+        """this method guarantee that the returning property is picked from its candidates (this_db.properties)"""
+        this_db_enum = DatabaseEnum.from_entity(this_db)
+        this_prev_db_enum = DatabaseEnum.from_entity(this_prev_db)
+        linked_db_enum = DatabaseEnum.from_entity(linked_db)
+        candidate_props = cls.get_candidate_props(this_db, linked_db)
 
         def pick(prop_name: str) -> Optional[RelationProperty]:
             for _prop in candidate_props:
