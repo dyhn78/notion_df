@@ -14,13 +14,12 @@ _id_to_member = {}
 
 
 class DatabaseEnum(Enum):
+    journal_db = ('일과', 'c8d46c01d6c941a9bf8df5d115a05f03', EmojiCode.BLUE_CIRCLE)
+    schedule_db = ('일정', 'e8782fe4e1a34c9d846d57b01a370327', EmojiCode.BLUE_HEART)
 
-    schedule_db = ('일정', 'e8782fe4e1a34c9d846d57b01a370327', EmojiCode.BLUE_CIRCLE)
-    journal_db = ('일과', 'c8d46c01d6c941a9bf8df5d115a05f03', EmojiCode.BLUE_HEART)
-    
     issue_db = ('줄기', 'e8782fe4e1a34c9d846d57b01a370327', EmojiCode.ORANGE_CIRCLE)
     subject_db = ('바탕', 'fa7d93f6fbd341f089b185745c834811', EmojiCode.ORANGE_HEART)
-    
+
     topic_db = ('꼭지', 'eb2f09a1de41412e8b2357bc04f26e74', EmojiCode.RED_CIRCLE)
     agenda_db = ('요점', '2c5411ba6a0f43a0a8aa06295751e37a', EmojiCode.RED_HEART)
 
