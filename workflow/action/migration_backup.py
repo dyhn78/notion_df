@@ -106,8 +106,6 @@ class MigrationBackupLoadAction(IterableAction):
                 if not new_prop:
                     continue
                 this_new_properties.setdefault(new_prop, this_page.properties[new_prop])
-                if linked_page in this_new_properties[new_prop]:
-                    continue
                 this_new_properties[new_prop].append(linked_page)
         try:
             this_page.update(this_new_properties)

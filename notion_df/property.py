@@ -391,7 +391,7 @@ class RelationPagePropertyValue(MutableSequence['Page'], DualSerializable):
         self.has_more = None
 
     def serialize(self) -> Any:
-        return [{'id': str(page.id) for page in self._data_list}]
+        return [{'id': str(page.id)} for page in self._data_list]
 
     @classmethod
     def _deserialize_this(cls, serialized: list[dict[str, Any]]) -> Self:
