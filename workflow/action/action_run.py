@@ -37,6 +37,8 @@ def get_actions(create_window: bool, backup_path: Path) -> list[Action]:
                    DatabaseEnum.topic_db.prefix_title, DatabaseEnum.topic_db.prefix_title),
         MatchTopic(base, DatabaseEnum.journal_db, DatabaseEnum.reading_db, DatabaseEnum.reading_db.prefix_title,
                    DatabaseEnum.topic_db.prefix_title, DatabaseEnum.topic_db.prefix_title),
+        MatchTopic(base, DatabaseEnum.journal_db, DatabaseEnum.schedule_db, DatabaseEnum.schedule_db.prefix_title,
+                   DatabaseEnum.topic_db.prefix_title, DatabaseEnum.topic_db.prefix_title),
 
         MatchDateByCreatedTime(base, DatabaseEnum.issue_db, '생성'),
         MatchWeekByRefDate(base, DatabaseEnum.issue_db, '주간', '일간'),
