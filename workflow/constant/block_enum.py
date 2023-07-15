@@ -13,6 +13,7 @@ from workflow.constant.emoji_code import EmojiCode
 _id_to_member = {}
 
 
+# TODO move to core
 class DatabaseEnum(Enum):
     schedule_db = ('전개', 'addc94642ee74825bd31109f4fd1c9ee', EmojiCode.BLUE_HEART)
     journal_db = ('일지', 'c8d46c01d6c941a9bf8df5d115a05f03', EmojiCode.BLUE_CIRCLE)
