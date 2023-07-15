@@ -6,7 +6,7 @@ from pathlib import Path
 from workflow import project_path
 from workflow.action.action_core import Action, Logger
 from workflow.action.media_scraper import MediaScraper
-from workflow.action.migration_backup import MigrationBackupSaveAction
+from workflow.action.migration_backup import MigrationBackupSaveAction, MigrationBackupLoadAction
 from workflow.action.prop_matcher import MatchActionBase, MatchWeekByDateValue, MatchDateByCreatedTime, \
     MatchWeekByRefDate, MatchReadingsStartDate, MatchTopic, MatchTimeManualValue
 from workflow.constant.block_enum import DatabaseEnum
@@ -17,7 +17,7 @@ default_backup_path = project_path / 'backup'
 def get_actions(create_window: bool, backup_path: Path) -> list[Action]:
     base = MatchActionBase()
     return [
-        # MigrationBackupLoadAction(backup_path),
+        MigrationBackupLoadAction(backup_path),
         MigrationBackupSaveAction(backup_path),
 
         MatchWeekByDateValue(base),
