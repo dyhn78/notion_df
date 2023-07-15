@@ -14,7 +14,7 @@ _id_to_member = {}
 
 
 class DatabaseEnum(Enum):
-    journal_db = ('일과', 'c8d46c01d6c941a9bf8df5d115a05f03', EmojiCode.BLUE_CIRCLE)
+    journal_db = ('일지', 'c8d46c01d6c941a9bf8df5d115a05f03', EmojiCode.BLUE_CIRCLE)
     schedule_db = ('일정', 'e8782fe4e1a34c9d846d57b01a370327', EmojiCode.BLUE_HEART)
 
     issue_db = ('줄기', 'e8782fe4e1a34c9d846d57b01a370327', EmojiCode.ORANGE_CIRCLE)
