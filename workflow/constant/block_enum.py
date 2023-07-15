@@ -16,7 +16,7 @@ _id_to_member = {}
 # TODO move to core
 class DatabaseEnum(Enum):
     schedule_db = ('전개', 'addc94642ee74825bd31109f4fd1c9ee', EmojiCode.BLUE_HEART)
-    journal_db = ('일지', 'c8d46c01d6c941a9bf8df5d115a05f03', EmojiCode.BLUE_CIRCLE)
+    journal_db = ('일과', 'c8d46c01d6c941a9bf8df5d115a05f03', EmojiCode.BLUE_CIRCLE)
 
     issue_db = ('줄기', 'e8782fe4e1a34c9d846d57b01a370327', EmojiCode.ORANGE_CIRCLE)
     subject_db = ('바탕', 'fa7d93f6fbd341f089b185745c834811', EmojiCode.ORANGE_HEART)
