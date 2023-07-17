@@ -6,7 +6,7 @@ from notion_df.entity import Database
 from notion_df.property import RelationProperty
 from notion_df.variable import Settings
 from workflow import data_path
-from workflow.constant.block_enum import DatabaseEnum
+from workflow.main.block_enum import DatabaseEnum
 
 pickle_path: Path = data_path / 'all_relation_properties'
 

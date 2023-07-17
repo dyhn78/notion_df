@@ -12,8 +12,8 @@ from notion_df.property import RelationProperty, TitleProperty, PageProperties, 
     DateProperty, CheckboxFormulaProperty, RichTextProperty, SelectProperty
 from notion_df.util.misc import repr_object
 from workflow.action.action_core import IterableAction
-from workflow.constant.block_enum import DatabaseEnum
-from workflow.constant.emoji_code import EmojiCode
+from workflow.constant import EmojiCode
+from workflow.main.block_enum import DatabaseEnum
 
 korean_weekday = '월화수목금토일'
 record_datetime_auto_key = DateFormulaPropertyKey(EmojiCode.TIMER + '일시')

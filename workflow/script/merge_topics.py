@@ -4,7 +4,7 @@ from notion_df.entity import Database
 from notion_df.object.filter import and_filter
 from notion_df.property import DualRelationProperty, PageProperties
 from notion_df.variable import Settings
-from workflow.constant.block_enum import DatabaseEnum
+from workflow.main.block_enum import DatabaseEnum
 
 # ['⚫️측면', '⚫️양상']
 old_props_1 = [DualRelationProperty(name) for name in ['⚫️주목', '⚫️지평']]

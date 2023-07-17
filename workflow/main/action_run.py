@@ -9,7 +9,7 @@ from workflow.action.media_scraper import MediaScraper
 from workflow.action.migration_backup import MigrationBackupSaveAction, MigrationBackupLoadAction
 from workflow.action.prop_matcher import MatchActionBase, MatchWeekByDateValue, MatchDateByCreatedTime, \
     MatchWeekByRefDate, MatchReadingsStartDate, MatchTopic, MatchTimeManualValue
-from workflow.constant.block_enum import DatabaseEnum
+from workflow.main.block_enum import DatabaseEnum
 
 default_backup_path = project_path / 'backup'
 

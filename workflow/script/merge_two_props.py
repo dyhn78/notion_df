@@ -1,6 +1,6 @@
 from notion_df.property import DualRelationProperty, PageProperties
 from notion_df.variable import Settings
-from workflow.constant.block_enum import DatabaseEnum
+from workflow.main.block_enum import DatabaseEnum
 
 issue_to_stream = DualRelationProperty('🔴진행')
 issue_to_stream_old = DualRelationProperty('🔴관계')
