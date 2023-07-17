@@ -22,7 +22,7 @@ def get_actions(create_window: bool, backup_path: Path) -> list[Action]:
 
         MatchWeekByDateValue(base),
 
-        MatchDateByCreatedTime(base, DatabaseEnum.schedule_db, '관리'),
+        MatchDateByCreatedTime(base, DatabaseEnum.schedule_db, '진도'),
         MatchWeekByRefDate(base, DatabaseEnum.schedule_db, '주간', '일간'),
         MatchTopic(base, DatabaseEnum.schedule_db, DatabaseEnum.issue_db, DatabaseEnum.issue_db.prefix_title,
                    DatabaseEnum.topic_db.prefix_title, DatabaseEnum.topic_db.prefix_title),
@@ -30,21 +30,22 @@ def get_actions(create_window: bool, backup_path: Path) -> list[Action]:
                    DatabaseEnum.topic_db.prefix_title, DatabaseEnum.topic_db.prefix_title),
 
         MatchDateByCreatedTime(base, DatabaseEnum.journal_db, '일간'),
-        MatchDateByCreatedTime(base, DatabaseEnum.journal_db, '관리'),
+        MatchDateByCreatedTime(base, DatabaseEnum.journal_db, '진도'),
         MatchWeekByRefDate(base, DatabaseEnum.journal_db, '주간', '일간'),
         MatchTimeManualValue(base, DatabaseEnum.journal_db, '일간'),
         MatchTopic(base, DatabaseEnum.journal_db, DatabaseEnum.issue_db, DatabaseEnum.issue_db.prefix_title,
                    DatabaseEnum.topic_db.prefix_title, DatabaseEnum.topic_db.prefix_title),
+        MatchTopic(base, DatabaseEnum.journal_db, DatabaseEnum.stage_db, DatabaseEnum.stage_db.prefix_title,
+                   DatabaseEnum.topic_db.prefix_title, DatabaseEnum.topic_db.prefix_title),
         MatchTopic(base, DatabaseEnum.journal_db, DatabaseEnum.reading_db, DatabaseEnum.reading_db.prefix_title,
                    DatabaseEnum.topic_db.prefix_title, DatabaseEnum.topic_db.prefix_title),
-        # MatchTopic(base, DatabaseEnum.journal_db, DatabaseEnum.schedule_db, DatabaseEnum.schedule_db.prefix_title,
-        #            DatabaseEnum.topic_db.prefix_title, DatabaseEnum.topic_db.prefix_title),
+
 
         MatchDateByCreatedTime(base, DatabaseEnum.issue_db, '생성'),
         MatchWeekByRefDate(base, DatabaseEnum.issue_db, '주간', '일간'),
 
-        MatchDateByCreatedTime(base, DatabaseEnum.subject_db, '일간'),
-        MatchWeekByRefDate(base, DatabaseEnum.subject_db, '주간', '일간'),
+        MatchDateByCreatedTime(base, DatabaseEnum.stage_db, '일간'),
+        MatchWeekByRefDate(base, DatabaseEnum.stage_db, '주간', '일간'),
 
         MatchWeekByRefDate(base, DatabaseEnum.topic_db, '주간', '일간'),
 
@@ -53,11 +54,11 @@ def get_actions(create_window: bool, backup_path: Path) -> list[Action]:
         MatchWeekByRefDate(base, DatabaseEnum.reading_db, '주간', '일간'),
         MatchWeekByRefDate(base, DatabaseEnum.reading_db, '시작', '시작'),  # TODO: can be deprecated
 
-        MatchDateByCreatedTime(base, DatabaseEnum.asset_db, '일간'),
-        MatchWeekByRefDate(base, DatabaseEnum.asset_db, '주간', '일간'),
+        MatchDateByCreatedTime(base, DatabaseEnum.doc_db, '일간'),
+        MatchWeekByRefDate(base, DatabaseEnum.doc_db, '주간', '일간'),
 
-        MatchDateByCreatedTime(base, DatabaseEnum.agenda_db, '일간'),
-        MatchWeekByRefDate(base, DatabaseEnum.agenda_db, '주간', '일간'),
+        MatchDateByCreatedTime(base, DatabaseEnum.subject_db, '일간'),
+        MatchWeekByRefDate(base, DatabaseEnum.subject_db, '주간', '일간'),
 
         MatchDateByCreatedTime(base, DatabaseEnum.depr_journal_db, '일간'),
         MatchDateByCreatedTime(base, DatabaseEnum.depr_journal_db, '생성'),

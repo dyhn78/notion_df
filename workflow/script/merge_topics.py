@@ -11,7 +11,7 @@ old_props_1 = [DualRelationProperty(name) for name in ['⚫️주목', '⚫️�
 new_prop_1 = DualRelationProperty('🟣관계')
 old_prop_2 = DualRelationProperty('⚫️측면')
 new_prop_2 = DualRelationProperty('🟣공통')
-topic_db = Database(DatabaseEnum.agenda_db.id)
+topic_db = Database(DatabaseEnum.subject_db.id)
 
 
 def main():
