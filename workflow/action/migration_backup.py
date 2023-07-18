@@ -73,17 +73,22 @@ class MigrationBackupLoadAction(IterableAction):
         return iter([])
 
     def filter(self, page: Page) -> bool:
-        return DatabaseEnum.from_entity(page.parent) is not None
+        return True
 
-    def process_page(self, this_page: Page):
+    def process_page(self, page: Page) -> None:
+        this_page = next((breadcrumb_page for breadcrumb_page in iter_breadcrumb(page)
+                         if DatabaseEnum.from_entity(breadcrumb_page.parent) is not None), None)
+        if this_page is None:
+            print(f'\t{page}: Moved outside DatabaseEnum')
+
         this_db: Database = this_page.parent
-        this_prev_response: PageResponse = self.response_backup.read(this_page)
+        this_prev_response: Optional[PageResponse] = self.response_backup.read(page)
         if not this_prev_response:
-            print(f'\t{this_page}: Skipped since no previous response backup')
+            print(f'\t{page}: No previous response backup')
             return
         this_prev_db = this_prev_response.parent
-        if this_prev_db == this_db:
-            print(f'\t{this_page}: Did not change the parent database')
+        if page == this_page and this_prev_db == this_db:
+            print(f'\t{page}: Did not change the parent database')
             return
 
         this_new_properties = PageProperties()
@@ -182,6 +187,14 @@ class MigrationBackupLoadAction(IterableAction):
             if prop := pick(linked_db_enum.prefix_title):
                 return prop
         return candidate_props[0]
+
+
+def iter_breadcrumb(page: Page) -> Iterator[Page]:
+    if not page.last_response:
+        page.retrieve()
+    yield page
+    if page.parent is not None:
+        yield from iter_breadcrumb(page.parent)
 
 
 def validate_page_existence(page: Page) -> bool:
