@@ -61,7 +61,12 @@ class MigrationBackupSaveAction(IterableAction):
     def filter(self, page: Page) -> bool:
         return isinstance(page.parent, Database)
 
-    def process_page(self, page: Page):
+    def process_page(self, page: Page) -> None:
+        for prop in page.properties:
+            if not isinstance(prop, RelationProperty):
+                continue
+            if page.properties[prop].has_more:
+                page.retrieve_property_item(prop.id)
         self.backup.write(page)
 
 
