@@ -8,7 +8,7 @@ from workflow.action.media_scraper import MediaScraper
 from workflow.action.migration_backup import MigrationBackupSaveAction, MigrationBackupLoadAction
 from workflow.action.prop_matcher import MatchActionBase, MatchWeekByDateValue, MatchDateByCreatedTime, \
     MatchWeekByRefDate, MatchReadingsStartDate, MatchTopic, MatchTimeManualValue
-from workflow.constant.block_enum import DatabaseEnum
+from workflow.config.block_enum import DatabaseEnum
 
 
 def get_actions(create_window: bool, backup_path: Path) -> list[Action]:

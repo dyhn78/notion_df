@@ -27,7 +27,7 @@ if __name__ == '__main__':
         sys.exit(1)
     print(f'{"#" * 5 } Start.')
 
-    from workflow.action.action import actions
+    from workflow.config.actions import actions
     from workflow.action.action_core import run_from_last_success
     log_enabled = run_from_last_success(actions, False, True)
     print(f'{"#" * 5 } {"Done." if log_enabled else "No new record."}')

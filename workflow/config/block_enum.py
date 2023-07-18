@@ -8,7 +8,7 @@ from notion_df.entity import Database
 from notion_df.object.common import Emoji
 from notion_df.object.rich_text import RichText, TextSpan
 from notion_df.util.uuid_util import get_page_or_database_id, get_page_or_database_url
-from workflow.constant.emoji_code import EmojiCode
+from workflow.config.emoji_code import EmojiCode
 
 _id_to_member = {}
 

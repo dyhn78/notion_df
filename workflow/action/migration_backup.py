@@ -13,7 +13,7 @@ from notion_df.object.block import PageResponse
 from notion_df.property import RelationProperty, PageProperties
 from notion_df.util.misc import get_generic_arg
 from workflow.action.action_core import IterableAction
-from workflow.constant.block_enum import DatabaseEnum
+from workflow.config.block_enum import DatabaseEnum
 
 
 class ResponseBackupService:
