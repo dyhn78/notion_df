@@ -12,9 +12,8 @@ from notion_df.entity import Page, Database
 from notion_df.object.block import PageResponse
 from notion_df.property import RelationProperty, PageProperties
 from notion_df.util.misc import get_generic_arg
-from workflow import project_path
 from workflow.action.action_core import IterableAction
-from workflow.main.block_enum import DatabaseEnum
+from workflow.constant.block_enum import DatabaseEnum
 
 
 class ResponseBackupService:
@@ -193,8 +192,3 @@ def validate_page_existence(page: Page) -> bool:
         return True
     except HTTPError:
         return False
-
-
-if __name__ == '__main__':
-    MigrationBackupSaveAction(project_path / 'backup').execute_all()
-    input()

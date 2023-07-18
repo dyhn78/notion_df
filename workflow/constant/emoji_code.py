@@ -1,4 +1,3 @@
-# TODO move to constant.py
 class EmojiCode:
     RED_CIRCLE = '🔴'
     RED_HEART = '❤️'

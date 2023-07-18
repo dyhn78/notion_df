@@ -45,18 +45,6 @@ class Action(metaclass=ABCMeta):
     def execute_all(self) -> None:
         self.process(self.query_all())
 
-    @classmethod
-    def execute_by_last_edited_time(cls, actions: list[Action], lower_bound: datetime,
-                                    upper_bound: Optional[datetime] = None) -> bool:
-        # TODO: if no recent_pages, raise SkipException instead of returning False
-        recent_pages = set(search_pages_by_last_edited_time(lower_bound, upper_bound))
-        recent_pages.discard(Page(log_page_id))
-        if not recent_pages:
-            return False
-        for self in actions:
-            self.process(page for page in recent_pages if self.filter(page))
-        return True
-
 
 class IterableAction(Action, metaclass=ABCMeta):
     def process(self, pages: Iterable[Page]):
@@ -88,6 +76,42 @@ def search_pages_by_last_edited_time(lower_bound: datetime, upper_bound: Optiona
     if Settings.print.enabled:
         pprint(pages, width=print_width)
     return pages
+
+
+def execute_by_last_edited_time(actions: list[Action], lower_bound: datetime,
+                                upper_bound: Optional[datetime] = None) -> bool:
+    # TODO: if no recent_pages, raise SkipException instead of returning False
+    recent_pages = set(search_pages_by_last_edited_time(lower_bound, upper_bound))
+    recent_pages.discard(Page(log_page_id))
+    if not recent_pages:
+        return False
+    for self in actions:
+        self.process(page for page in recent_pages if self.filter(page))
+    return True
+
+
+def run_all(actions: list[Action], print_body: bool) -> None:
+    with Logger(print_body=print_body, update_last_success_time=False):
+        for action in actions:
+            action.execute_all()
+
+
+def run_from_last_edited_time_bound(actions: list[Action], print_body: bool,
+                                    timedelta_size: timedelta, update_last_success_time: bool) -> None:
+    with Logger(print_body=print_body, update_last_success_time=update_last_success_time) as logger:
+        execute_by_last_edited_time(actions, logger.start_time - timedelta_size, logger.start_time)
+
+
+def run_from_last_success(actions: list[Action], print_body: bool,
+                          update_last_success_time: bool) -> bool:
+    with Logger(print_body=print_body, update_last_success_time=update_last_success_time) as logger:
+        if logger.last_success_time is not None:
+            logger.enabled = execute_by_last_edited_time(actions, logger.last_success_time)
+            return logger.enabled
+        else:
+            for action in actions:
+                action.execute_all()
+            return True
 
 
 class Logger:
