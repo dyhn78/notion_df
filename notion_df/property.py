@@ -142,6 +142,10 @@ class Properties(DualSerializable, MutableMapping[Property, PropertyValue_T], me
                 return self._key_by_id[key]
             return self._key_by_name[key]
         if isinstance(key, Property):
+            # TODO: make Properties able to resolve elements(__getitem__, __setitem__, __delitem__)
+            #  both using self.name and self.id [also see Property.__hash__]
+            if key.name is None and (key_by_id := self._key_by_id.get(key.id)):
+                return key_by_id
             # TODO: add frozen key options (if user copied only keys from another properties instance)
             #  this will check `key in self._key_by_name()`
             return key
