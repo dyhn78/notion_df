@@ -40,10 +40,11 @@ class Request:
     @retry(wait=wait_exponential(exp_base=2, min=3), stop=stop_after_delay(60),
            retry=retry_if_exception(is_server_error))
     def execute(self) -> requests.Response:
-        if Settings.print:
-            pprint(self, width=print_width)
         response = requests.request(method=self.method.value, url=self.url, headers=self.headers,
                                     params=self.params, json=self.json, timeout=30)
+        if Settings.print:
+            pprint(self, width=print_width)
+            print(f'->: {response.text}')
         try:
             response.raise_for_status()
             return response
@@ -115,7 +116,7 @@ class RequestBuilder(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def execute(self) -> Response:
+    def execute(self):
         """the unified execution method."""
         pass
 

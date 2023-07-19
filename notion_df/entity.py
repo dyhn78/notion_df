@@ -123,7 +123,7 @@ class Database(Entity[DatabaseResponse]):
             title = self.title.plain_text
             return repr_object(self, title=title)
         except (NotionDfKeyError, AttributeError):
-            repr_object(self, id=self.id)
+            return repr_object(self, id=self.id)
 
     # noinspection DuplicatedCode
     def _send_response(self, response: DatabaseResponse) -> None:
@@ -249,17 +249,19 @@ class Page(Entity[PageResponse]):
 
     def retrieve_property_item(
             self, property_id: str | Property[Any, PagePropertyValue_T, Any]) -> PagePropertyValue_T:
-        if isinstance(property_id, Property):
-            property_id = property_id.id
+        if isinstance(prop := property_id, Property):
+            property_id = prop.id
             if property_id is None:
                 raise NotionDfValueError(
                     "property.id is None. if you do not know the property id, retrieve the parent database first.",
                     {"self": self})
-        page_property_value = RetrievePagePropertyItem(token, self.id, property_id).execute()
+            _, property_value = RetrievePagePropertyItem(token, self.id, property_id).execute()
+        else:
+            prop, property_value = RetrievePagePropertyItem(token, self.id, property_id).execute()
         if not hasattr(self, 'properties'):
             self.properties = PageProperties()
-            self.properties[property_id] = page_property_value
-        return page_property_value
+        self.properties[prop] = property_value
+        return property_value
 
     def update(self, properties: Optional[PageProperties] = None, icon: Optional[Icon] = None,
                cover: Optional[ExternalFile] = None, archived: Optional[bool] = None) -> Self:

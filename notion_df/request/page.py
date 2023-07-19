@@ -4,13 +4,13 @@ from dataclasses import dataclass, field
 from typing import Any, Optional
 from uuid import UUID
 
+from notion_df.core.request import SingleRequestBuilder, RequestSettings, Version, Method, PaginatedRequestBuilder, \
+    RequestBuilder
 from notion_df.object.block import BlockValue, serialize_block_value_list, PageResponse
 from notion_df.object.common import Icon
 from notion_df.object.file import ExternalFile
 from notion_df.object.partial_parent import PartialParent
-from notion_df.property import PageProperties, Property, PropertyValue_T
-from notion_df.core.request import SingleRequestBuilder, RequestSettings, Version, Method, PaginatedRequestBuilder, \
-    RequestBuilder
+from notion_df.property import PageProperties, Property, property_registry, PagePropertyValue_T
 from notion_df.util.collection import DictFilter
 
 
@@ -93,20 +93,29 @@ class RetrievePagePropertyItem(RequestBuilder):
 
     execute_once = PaginatedRequestBuilder.execute_once
 
-    def execute(self) -> PropertyValue_T:
+    def execute(self) -> tuple[Property[Any, PagePropertyValue_T, Any], PagePropertyValue_T]:
         data = self.execute_once()
         if (prop_serialized := data)['object'] == 'property_item':
             # noinspection PyProtectedMember
-            return Property._deserialize_page(prop_serialized)
+            return Property._deserialize_page_value(prop_serialized)
 
-        data_list = []
+        data_list = [data]
         while data['has_more']:
             start_cursor = data['next_cursor']
             data = self.execute_once(start_cursor=start_cursor)
             data_list.append(data)
 
         typename = data_list[0]['property_item']['type']
-        value_list = [data['result'][typename] for data in data_list]
-        merged_prop_serialized = {**data_list[0]['result'], 'type': typename, typename: value_list}
+        value_list = []
+        for data in data_list:
+            for result in data['results']:
+                value_list.append(result[typename])
+        prop_serialized = {'type': typename, typename: value_list, 'has_more': False}
+
+        # TODO deduplicate with PageProperties._deserialize_this()
+        property_key_cls = property_registry[typename]
+        property_key = property_key_cls(None)
+        property_key.id = self.property_id
         # noinspection PyProtectedMember
-        return Property._deserialize_page(merged_prop_serialized)
+        property_value = property_key_cls._deserialize_page_value(prop_serialized)
+        return property_key, property_value
