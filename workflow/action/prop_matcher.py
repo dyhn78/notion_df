@@ -27,7 +27,7 @@ topic_base_type_prop = SelectProperty("📕유형")
 topic_base_type_progress = "🌳진행"
 reading_to_main_date_prop = RelationProperty(DatabaseEnum.date_db.prefix_title)
 reading_to_start_date_prop = RelationProperty(DatabaseEnum.date_db.prefix + '시작')
-reading_to_event_prop = RelationProperty(DatabaseEnum.journal_db.prefix_title)
+reading_to_journal_prop = RelationProperty(DatabaseEnum.journal_db.prefix_title)
 reading_match_date_by_created_time_prop = CheckboxFormulaProperty(EmojiCode.BLACK_NOTEBOOK + '시작일<-생성시간')
 
 
@@ -115,12 +115,12 @@ class MatchReadingsStartDate(MatchAction):
     def __init__(self, base: MatchActionBase):
         super().__init__(base)
         self.reading_db = Database(DatabaseEnum.reading_db.id)
-        self.event_db = Database(DatabaseEnum.journal_db.id)
+        self.journal_db = Database(DatabaseEnum.journal_db.id)
 
     def query_all(self) -> Paginator[Page]:
         return self.reading_db.query(
             reading_to_start_date_prop.filter.is_empty() & (
-                    reading_to_event_prop.filter.is_not_empty()
+                    reading_to_journal_prop.filter.is_not_empty()
                     | reading_to_main_date_prop.filter.is_not_empty()
                     | reading_match_date_by_created_time_prop.filter.is_not_empty()
             )
@@ -128,21 +128,24 @@ class MatchReadingsStartDate(MatchAction):
 
     def filter(self, page: Page) -> bool:
         return (page.parent == self.reading_db and not page.properties[reading_to_start_date_prop]
-                and (page.properties[reading_to_event_prop]
+                and (page.properties[reading_to_journal_prop]
                      or page.properties[reading_match_date_by_created_time_prop]))
 
     def process_page(self, reading: Page):
         def find_date():
             def get_earliest_date(dates: Iterable[Page]) -> Page:
+                for date in dates:
+                    if not date.last_timestamp:
+                        date.retrieve()
                 return min(dates, key=lambda _date: cast(Page, _date).properties[date_manual_value_prop].start)
 
-            def get_reading_event_dates() -> Iterable[Page]:
-                reading_events = reading.properties[reading_to_event_prop]
+            def get_reading_journal_dates() -> Iterable[Page]:
+                reading_journals = reading.properties[reading_to_journal_prop]
                 # TODO: RollupPagePropertyValue 구현 후 이곳을 간소화
-                for event in reading_events:
-                    if not event.last_timestamp:
-                        event.retrieve()
-                    if not (date_list := event.properties[journal_to_date_prop]):
+                for journal in reading_journals:
+                    if not journal.last_timestamp:
+                        journal.retrieve()
+                    if not (date_list := journal.properties[journal_to_date_prop]):
                         continue
                     date = date_list[0]
                     if not date.last_timestamp:
@@ -151,9 +154,9 @@ class MatchReadingsStartDate(MatchAction):
                         continue
                     yield date
 
-            if reading_event_and_main_dates := {*get_reading_event_dates(),
-                                                *reading.properties[reading_to_main_date_prop]}:
-                return get_earliest_date(reading_event_and_main_dates)
+            if reading_journal_and_main_dates := {*get_reading_journal_dates(),
+                                                  *reading.properties[reading_to_main_date_prop]}:
+                return get_earliest_date(reading_journal_and_main_dates)
             if reading.properties[reading_match_date_by_created_time_prop]:
                 reading_created_date = get_record_created_date(reading)
                 return self.date_namespace.get_by_date_value(reading_created_date)
@@ -269,7 +272,7 @@ class MatchTopic(MatchAction):
                 if not topic.last_response:
                     topic.retrieve()
             ref_topic_set = {topic for topic in ref_topic_set
-                               if topic.properties[topic_base_type_prop] == topic_base_type_progress}
+                             if topic.properties[topic_base_type_prop] == topic_base_type_progress}
             if set(curr_topic_list) & ref_topic_set:
                 continue
             new_topic_set.update(ref_topic_set)
