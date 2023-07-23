@@ -3,7 +3,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import Optional
 
-from notion_df.core.entity_base import Entity
+from notion_df.core.entity import Entity
 from notion_df.entity import Database
 from notion_df.object.common import Emoji
 from notion_df.object.rich_text import RichText, TextSpan

@@ -6,7 +6,7 @@ from uuid import UUID
 
 from typing_extensions import Self
 
-from notion_df.core.entity_base import Entity
+from notion_df.core.entity import Entity
 from notion_df.core.exception import NotionDfValueError, NotionDfKeyError
 from notion_df.core.request import Paginator
 from notion_df.object.block import BlockValue, BlockResponse, ChildPageBlockValue, DatabaseResponse, PageResponse

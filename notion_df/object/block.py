@@ -47,7 +47,7 @@ class DatabaseResponse(Response):
     @cache
     def _get_type_hints(cls) -> dict[str, type]:  # TODO deduplicate
         from notion_df.entity import Block, Database, Page
-        from notion_df.core.entity_base import Entity
+        from notion_df.core.entity import Entity
         return get_type_hints(cls, {**globals(), **{cls.__name__: cls for cls in (Entity, Block, Database, Page)}})
 
 
@@ -74,7 +74,7 @@ class PageResponse(Response):
     @cache
     def _get_type_hints(cls) -> dict[str, type]:
         from notion_df.entity import Block, Database, Page
-        from notion_df.core.entity_base import Entity
+        from notion_df.core.entity import Entity
         return get_type_hints(cls, {**globals(), **{cls.__name__: cls for cls in (Entity, Block, Database, Page)}})
 
 
@@ -104,7 +104,7 @@ class BlockResponse(Response):
     @cache
     def _get_type_hints(cls) -> dict[str, type]:
         from notion_df.entity import Block, Database, Page
-        from notion_df.core.entity_base import Entity
+        from notion_df.core.entity import Entity
         return get_type_hints(cls, {**globals(), **{cls.__name__: cls for cls in (Entity, Block, Database, Page)}})
 
 
