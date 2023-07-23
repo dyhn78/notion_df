@@ -5,7 +5,7 @@ from typing import Optional, cast, Iterator
 
 from requests import HTTPError
 
-from notion_df.core.entity import Entity
+from notion_df.core.entity_core import Entity
 from notion_df.core.request import Response_T, RequestError
 from notion_df.core.serialization import SerializationError
 from notion_df.entity import Page, Database
