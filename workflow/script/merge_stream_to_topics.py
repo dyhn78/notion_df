@@ -6,7 +6,7 @@ from workflow.config.block_enum import DatabaseEnum
 
 topic_to_stream = DualRelationProperty('🔴진행')
 topic_to_stream_old = DualRelationProperty('🔴depr')
-topic_db = DatabaseEnum.subject_db.entity
+topic_db = DatabaseEnum.point_db.entity
 
 
 def main():

@@ -51,11 +51,11 @@ def get_actions(create_window: bool, backup_path: Path) -> list[Action]:
         MatchWeekByRefDate(base, DatabaseEnum.reading_db, '주간', '일간'),
         MatchWeekByRefDate(base, DatabaseEnum.reading_db, '시작', '시작'),  # TODO: can be deprecated
 
-        MatchDateByCreatedTime(base, DatabaseEnum.doc_db, '일간'),
-        MatchWeekByRefDate(base, DatabaseEnum.doc_db, '주간', '일간'),
+        MatchDateByCreatedTime(base, DatabaseEnum.capture_db, '일간'),
+        MatchWeekByRefDate(base, DatabaseEnum.capture_db, '주간', '일간'),
 
-        MatchDateByCreatedTime(base, DatabaseEnum.subject_db, '일간'),
-        MatchWeekByRefDate(base, DatabaseEnum.subject_db, '주간', '일간'),
+        MatchDateByCreatedTime(base, DatabaseEnum.point_db, '일간'),
+        MatchWeekByRefDate(base, DatabaseEnum.point_db, '주간', '일간'),
 
         MatchDateByCreatedTime(base, DatabaseEnum.depr_journal_db, '일간'),
         MatchDateByCreatedTime(base, DatabaseEnum.depr_journal_db, '생성'),
