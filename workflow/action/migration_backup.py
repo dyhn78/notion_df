@@ -3,8 +3,6 @@ from functools import cache
 from pathlib import Path
 from typing import Optional, cast, Iterator
 
-from requests import HTTPError
-
 from notion_df.core.entity_core import Entity
 from notion_df.core.request import Response_T, RequestError
 from notion_df.core.serialization import SerializationError
@@ -213,5 +211,5 @@ def validate_page_existence(page: Page) -> bool:
     try:
         page.retrieve()
         return True
-    except HTTPError:
+    except RequestError:
         return False
