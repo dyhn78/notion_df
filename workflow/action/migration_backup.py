@@ -162,10 +162,11 @@ class MigrationBackupLoadAction(IterableAction):
         this_db_enum = DatabaseEnum.from_entity(this_db)
         this_prev_db_enum = DatabaseEnum.from_entity(this_prev_db)
         linked_db_enum = DatabaseEnum.from_entity(linked_db)
+        linked_prev_db_enum = DatabaseEnum.from_entity(linked_prev_db)
         candidate_props = cls.get_candidate_props(this_db, linked_db)
 
-        def pick(prop_name: str) -> Optional[RelationProperty]:
-            return next((_prop for _prop in candidate_props if prop_name in _prop.name), None)
+        def pick(_prop_name: str) -> Optional[RelationProperty]:
+            return next((_prop for _prop in candidate_props if _prop_name in _prop.name), None)
 
         # customized cases
         if linked_db_enum == DatabaseEnum.date_db:
@@ -178,6 +179,10 @@ class MigrationBackupLoadAction(IterableAction):
                 return pick(this_prev_prop.name)
             if this_prev_prop.name in ['💚주간', '💚시작']:
                 return pick(this_prev_prop.name) or pick('💚생성')
+        if this_db_enum == linked_db_enum and this_prev_db_enum == linked_prev_db_enum:
+            for prop_name_stem in ['구성', '공통', '요소', '관계']:
+                if (prop_name_stem in this_prev_prop.name) and (prop_name := pick(prop_name_stem)):
+                    return prop_name
         if this_db_enum == DatabaseEnum.journal_db and linked_db_enum == DatabaseEnum.reading_db:
             return pick('관계')
         if this_db_enum == DatabaseEnum.reading_db and linked_db_enum == DatabaseEnum.journal_db:
