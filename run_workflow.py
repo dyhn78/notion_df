@@ -1,7 +1,5 @@
-import os
 import sys
 from pathlib import Path
-from time import sleep
 
 import psutil
 
@@ -21,6 +19,8 @@ def is_already_running(script_path: Path):
 
 
 if __name__ == '__main__':
+    exit(0)
+
     this_path = Path(__file__).resolve()
     if is_already_running(this_path):
         sys.stderr.write("Script is already running.\n")
