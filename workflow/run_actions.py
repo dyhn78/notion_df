@@ -2,20 +2,20 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from workflow import project_path
+from workflow import backup_path
 from workflow.action.action_core import Action
 from workflow.action.media_scraper import MediaScraper
 from workflow.action.migration_backup import MigrationBackupSaveAction, MigrationBackupLoadAction
 from workflow.action.prop_matcher import MatchActionBase, MatchWeekByDateValue, MatchDateByCreatedTime, \
     MatchWeekByRefDate, MatchReadingsStartDate, MatchTopic, MatchTimeManualValue
-from workflow.config.block_enum import DatabaseEnum
+from workflow.block_enum import DatabaseEnum
 
 
-def get_actions(create_window: bool, backup_path: Path) -> list[Action]:
+def get_actions(create_window: bool, _backup_path: Path) -> list[Action]:
     base = MatchActionBase()
     return [
-        MigrationBackupLoadAction(backup_path),
-        MigrationBackupSaveAction(backup_path),
+        MigrationBackupLoadAction(_backup_path),
+        MigrationBackupSaveAction(_backup_path),
 
         MatchWeekByDateValue(base),
 
@@ -71,4 +71,4 @@ def get_actions(create_window: bool, backup_path: Path) -> list[Action]:
     ]
 
 
-actions = get_actions(False, project_path / 'backup')
+actions = get_actions(False, backup_path)

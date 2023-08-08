@@ -2,7 +2,7 @@ from pprint import pprint
 
 from notion_df.property import DualRelationProperty, PageProperties
 from notion_df.variable import Settings
-from workflow.config.block_enum import DatabaseEnum
+from workflow.block_enum import DatabaseEnum
 
 topic_to_stream = DualRelationProperty('🔴진행')
 topic_to_stream_old = DualRelationProperty('🔴depr')

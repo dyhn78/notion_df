@@ -7,7 +7,7 @@ from notion_df.entity import Page, Database
 from notion_df.object.block import PageResponse
 from notion_df.property import RelationProperty, PageProperties
 from workflow.action.action_core import IterableAction
-from workflow.config.block_enum import DatabaseEnum
+from workflow.block_enum import DatabaseEnum
 from workflow.service.backup_service import ResponseBackupService
 
 
