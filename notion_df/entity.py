@@ -338,4 +338,6 @@ def search_by_title(query: str, entity: Literal['page', 'database', None] = None
                 raise NotionDfValueError('bad response', {'response_element': response_element})
         return
 
+    it()
+
     return Paginator(element_type, it())

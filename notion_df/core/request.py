@@ -88,6 +88,24 @@ class Response(Deserializable, metaclass=ABCMeta):
     def _deserialize_this(cls, raw_data: dict[str, Any]) -> Self:
         return cls._deserialize_from_dict(raw_data, raw_data=raw_data)
 
+    @classmethod
+    def deserialize(cls, serialized: Any) -> Self:
+        from notion_df.object.block import BlockResponse, DatabaseResponse, PageResponse
+
+        if cls != Response:
+            return cls._deserialize_this(serialized)
+
+        object_kind = serialized['object']
+        if object_kind == 'block':
+            subclass = BlockResponse
+        elif object_kind == 'database':
+            subclass = DatabaseResponse
+        elif object_kind == 'page':
+            subclass = PageResponse
+        else:
+            raise ValueError(object_kind)
+        return subclass.deserialize(serialized)
+
     def __del__(self):
         del self.raw_data
 
