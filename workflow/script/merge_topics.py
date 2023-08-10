@@ -1,7 +1,7 @@
 from uuid import UUID
 
+from notion_df.data.filter import and_filter
 from notion_df.entity import Database
-from notion_df.object.filter import and_filter
 from notion_df.property import DualRelationProperty, PageProperties
 from notion_df.variable import Settings
 from workflow.block_enum import DatabaseEnum

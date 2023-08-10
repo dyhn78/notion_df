@@ -5,9 +5,9 @@ from abc import ABCMeta
 from typing import cast, Iterable, Optional
 
 from notion_df.core.request import Paginator
+from notion_df.data.filter import created_time_filter
+from notion_df.data.rich_text import TextSpan
 from notion_df.entity import Page, Database
-from notion_df.object.filter import created_time_filter
-from notion_df.object.rich_text import TextSpan
 from notion_df.property import RelationProperty, TitleProperty, PageProperties, DateFormulaPropertyKey, \
     DateProperty, CheckboxFormulaProperty, RichTextProperty, SelectProperty
 from notion_df.util.misc import repr_object

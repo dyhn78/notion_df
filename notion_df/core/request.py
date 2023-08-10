@@ -80,7 +80,7 @@ class RequestError(Exception):
 
 
 @dataclass
-class Response(Deserializable, metaclass=ABCMeta):
+class Data(Deserializable, metaclass=ABCMeta):
     timestamp: float = field(init=False, default_factory=datetime.now().timestamp)
     raw_data: dict[str, Any] = field(init=False, default=None)
 
@@ -90,18 +90,18 @@ class Response(Deserializable, metaclass=ABCMeta):
 
     @classmethod
     def deserialize(cls, serialized: Any) -> Self:
-        from notion_df.object.block import BlockResponse, DatabaseResponse, PageResponse
+        from notion_df.data.entity_data import BlockData, DatabaseData, PageData
 
-        if cls != Response:
+        if cls != Data:
             return cls._deserialize_this(serialized)
 
         object_kind = serialized['object']
         if object_kind == 'block':
-            subclass = BlockResponse
+            subclass = BlockData
         elif object_kind == 'database':
-            subclass = DatabaseResponse
+            subclass = DatabaseData
         elif object_kind == 'page':
-            subclass = PageResponse
+            subclass = PageData
         else:
             raise ValueError(object_kind)
         return subclass.deserialize(serialized)
@@ -110,7 +110,7 @@ class Response(Deserializable, metaclass=ABCMeta):
         del self.raw_data
 
 
-Response_T = TypeVar('Response_T', bound=Response)
+Response_T = TypeVar('Response_T', bound=Data)
 ResponseElement_T = TypeVar('ResponseElement_T')
 
 

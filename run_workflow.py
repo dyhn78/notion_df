@@ -7,7 +7,7 @@ import psutil
 
 
 # TODO: add click command
-# TODO: move inside action_core.py
+# TODO: move inside action/core.py
 def is_already_running(script_path: Path):
     count = 0
     for process in psutil.process_iter(['name', 'cmdline']):

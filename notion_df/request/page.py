@@ -6,19 +6,19 @@ from uuid import UUID
 
 from notion_df.core.request import SingleRequestBuilder, RequestSettings, Version, Method, PaginatedRequestBuilder, \
     RequestBuilder
-from notion_df.object.block import BlockValue, serialize_block_value_list, PageResponse
-from notion_df.object.common import Icon
-from notion_df.object.file import ExternalFile
-from notion_df.object.partial_parent import PartialParent
+from notion_df.data.common import Icon
+from notion_df.data.entity_data import BlockValue, serialize_block_value_list, PageData
+from notion_df.data.file import ExternalFile
+from notion_df.data.partial_parent import PartialParent
 from notion_df.property import PageProperties, Property, property_registry, PagePropertyValue_T
 from notion_df.util.collection import DictFilter
 
 
 @dataclass
-class RetrievePage(SingleRequestBuilder[PageResponse]):
+class RetrievePage(SingleRequestBuilder[PageData]):
     """https://developers.notion.com/reference/retrieve-a-page"""
     id: UUID
-    response_type = PageResponse
+    response_type = PageData
 
     def get_settings(self) -> RequestSettings:
         return RequestSettings(Version.v20220628, Method.GET,
@@ -29,9 +29,9 @@ class RetrievePage(SingleRequestBuilder[PageResponse]):
 
 
 @dataclass
-class CreatePage(SingleRequestBuilder[PageResponse]):
+class CreatePage(SingleRequestBuilder[PageData]):
     """https://developers.notion.com/reference/post-page"""
-    response_type = PageResponse
+    response_type = PageData
     parent: PartialParent
     properties: PageProperties = field(default_factory=PageProperties)
     children: list[BlockValue] = None
@@ -53,10 +53,10 @@ class CreatePage(SingleRequestBuilder[PageResponse]):
 
 
 @dataclass
-class UpdatePage(SingleRequestBuilder[PageResponse]):
+class UpdatePage(SingleRequestBuilder[PageData]):
     """https://developers.notion.com/reference/patch-page"""
     # TODO: inspect that UpdatePage.response immediately update the page.last_response status ? (b031c3a)
-    response_type = PageResponse
+    response_type = PageData
     id: UUID
     properties: Optional[PageProperties] = None
     """send empty PageProperty to delete all properties."""

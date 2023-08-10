@@ -9,14 +9,14 @@ from typing_extensions import Self
 from notion_df.core.entity_core import Entity
 from notion_df.core.exception import NotionDfValueError, NotionDfKeyError
 from notion_df.core.request import Paginator
-from notion_df.object.block import BlockValue, BlockResponse, ChildPageBlockValue, DatabaseResponse, PageResponse
-from notion_df.object.common import Icon
-from notion_df.object.file import ExternalFile, File
-from notion_df.object.filter import Filter
-from notion_df.object.partial_parent import PartialParent
-from notion_df.object.rich_text import RichText
-from notion_df.object.sort import Sort, TimestampSort, Direction
-from notion_df.object.user import PartialUser
+from notion_df.data.common import Icon
+from notion_df.data.entity_data import BlockValue, BlockData, ChildPageBlockValue, DatabaseData, PageData
+from notion_df.data.file import ExternalFile, File
+from notion_df.data.filter import Filter
+from notion_df.data.partial_parent import PartialParent
+from notion_df.data.rich_text import RichText
+from notion_df.data.sort import Sort, TimestampSort, Direction
+from notion_df.data.user import PartialUser
 from notion_df.property import Property, PageProperties, DatabaseProperties, PagePropertyValue_T
 from notion_df.request.block import AppendBlockChildren, RetrieveBlock, RetrieveBlockChildren, UpdateBlock, DeleteBlock
 from notion_df.request.database import CreateDatabase, UpdateDatabase, RetrieveDatabase, QueryDatabase
@@ -27,7 +27,7 @@ from notion_df.util.uuid_util import get_page_or_database_id, get_block_id
 from notion_df.variable import Settings, token
 
 
-class Block(Entity[BlockResponse]):
+class Block(Entity[BlockData]):
     parent: Union[Page, Block, None]
     created_time: datetime
     last_edited_time: datetime
@@ -43,7 +43,7 @@ class Block(Entity[BlockResponse]):
         return get_block_id(id_or_url)
 
     # noinspection DuplicatedCode
-    def _send_response(self, response: BlockResponse) -> None:
+    def _send_response(self, response: BlockData) -> None:
         self.parent = response.parent
         self.created_time = response.created_time
         self.last_edited_time = response.last_edited_time
@@ -54,7 +54,7 @@ class Block(Entity[BlockResponse]):
         self.value = response.value
 
     @staticmethod
-    def _send_child_block_responses(block_responses: Iterable[BlockResponse]) -> Paginator[Block]:
+    def _send_child_block_responses(block_responses: Iterable[BlockData]) -> Paginator[Block]:
         def it():
             for block_response in block_responses:
                 block = Block(block_response.id)
@@ -94,7 +94,7 @@ class Block(Entity[BlockResponse]):
         return database
 
 
-class Database(Entity[DatabaseResponse]):
+class Database(Entity[DatabaseData]):
     parent: Union[Page, Block, None]
     created_time: datetime
     last_edited_time: datetime
@@ -126,7 +126,7 @@ class Database(Entity[DatabaseResponse]):
             return repr_object(self, id=self.id)
 
     # noinspection DuplicatedCode
-    def _send_response(self, response: DatabaseResponse) -> None:
+    def _send_response(self, response: DatabaseData) -> None:
         self.parent = response.parent
         self.created_time = response.created_time
         self.last_edited_time = response.last_edited_time
@@ -139,7 +139,7 @@ class Database(Entity[DatabaseResponse]):
         self.is_inline = response.is_inline
 
     @staticmethod
-    def _send_child_page_responses(page_responses: Iterable[PageResponse]) -> Paginator[Page]:
+    def _send_child_page_responses(page_responses: Iterable[PageData]) -> Paginator[Page]:
         def it():
             for page_response in page_responses:
                 page = Page(page_response.id)
@@ -180,7 +180,7 @@ class Database(Entity[DatabaseResponse]):
         return page
 
 
-class Page(Entity[PageResponse]):
+class Page(Entity[PageData]):
     parent: Union[Page, Block, Database, None]
     created_time: datetime
     last_edited_time: datetime
@@ -214,7 +214,7 @@ class Page(Entity[PageResponse]):
             return repr_object(self, id=self.id)
 
     # noinspection DuplicatedCode
-    def _send_response(self, response: PageResponse) -> None:
+    def _send_response(self, response: PageData) -> None:
         self.parent = response.parent
         self.created_time = response.created_time
         self.last_edited_time = response.last_edited_time
@@ -330,9 +330,9 @@ def search_by_title(query: str, entity: Literal['page', 'database', None] = None
 
     def it():
         for response_element in response_elements:
-            if isinstance(response_element, DatabaseResponse):
+            if isinstance(response_element, DatabaseData):
                 yield Database(response_element.id).send_response(response_element)
-            elif isinstance(response_element, PageResponse):
+            elif isinstance(response_element, PageData):
                 yield Page(response_element.id).send_response(response_element)
             else:
                 raise NotionDfValueError('bad response', {'response_element': response_element})

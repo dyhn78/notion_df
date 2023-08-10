@@ -4,15 +4,15 @@ from dataclasses import dataclass, field
 from typing import Any
 from uuid import UUID
 
-from notion_df.object.block import BlockValue, BlockResponse, serialize_block_value_list
 from notion_df.core.request import SingleRequestBuilder, RequestSettings, Version, Method, PaginatedRequestBuilder
+from notion_df.data.entity_data import BlockValue, BlockData, serialize_block_value_list
 from notion_df.util.collection import DictFilter
 
 
 @dataclass
-class AppendBlockChildren(SingleRequestBuilder[list[BlockResponse]]):
+class AppendBlockChildren(SingleRequestBuilder[list[BlockData]]):
     """https://developers.notion.com/reference/patch-block-children"""
-    response_type = list[BlockResponse]
+    response_type = list[BlockData]
     id: UUID
     children: list[BlockValue]
 
@@ -24,17 +24,17 @@ class AppendBlockChildren(SingleRequestBuilder[list[BlockResponse]]):
         return {'children': serialize_block_value_list(self.children)}
 
     @classmethod
-    def parse_response_data(cls, data: dict[str, Any]) -> list[BlockResponse]:
+    def parse_response_data(cls, data: dict[str, Any]) -> list[BlockData]:
         data_element_list = []
         for data_element in data['results']:
-            data_element_list.append(BlockResponse.deserialize(data_element))
+            data_element_list.append(BlockData.deserialize(data_element))
         return data_element_list
 
 
 @dataclass
-class RetrieveBlock(SingleRequestBuilder[BlockResponse]):
+class RetrieveBlock(SingleRequestBuilder[BlockData]):
     """https://developers.notion.com/reference/retrieve-a-block"""
-    response_type = BlockResponse
+    response_type = BlockData
     id: UUID
 
     def get_settings(self) -> RequestSettings:
@@ -46,9 +46,9 @@ class RetrieveBlock(SingleRequestBuilder[BlockResponse]):
 
 
 @dataclass
-class RetrieveBlockChildren(PaginatedRequestBuilder[BlockResponse]):
+class RetrieveBlockChildren(PaginatedRequestBuilder[BlockData]):
     """https://developers.notion.com/reference/get-block-children"""
-    response_element_type = BlockResponse
+    response_element_type = BlockData
     id: UUID
     page_size: int = None
 
@@ -61,9 +61,9 @@ class RetrieveBlockChildren(PaginatedRequestBuilder[BlockResponse]):
 
 
 @dataclass
-class UpdateBlock(SingleRequestBuilder[BlockResponse]):
+class UpdateBlock(SingleRequestBuilder[BlockData]):
     """https://developers.notion.com/reference/update-a-block"""
-    response_type = BlockResponse
+    response_type = BlockData
     id: UUID
     block_type: BlockValue = field(default=None)
     archived: bool = field(default=None)
@@ -81,9 +81,9 @@ class UpdateBlock(SingleRequestBuilder[BlockResponse]):
 
 
 @dataclass
-class DeleteBlock(SingleRequestBuilder[BlockResponse]):
+class DeleteBlock(SingleRequestBuilder[BlockData]):
     """https://developers.notion.com/reference/delete-a-block"""
-    response_type = BlockResponse
+    response_type = BlockData
     id: UUID
 
     def get_settings(self) -> RequestSettings:

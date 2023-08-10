@@ -9,14 +9,14 @@ from uuid import UUID
 
 from typing_extensions import Self
 
-from notion_df.core.request import Response
+from notion_df.core.request import Data
 from notion_df.core.serialization import DualSerializable
-from notion_df.object.common import Icon
-from notion_df.object.constant import BlockColor, CodeLanguage
-from notion_df.object.file import File
-from notion_df.object.partial_parent import PartialParent
-from notion_df.object.rich_text import Span, RichText
-from notion_df.object.user import PartialUser
+from notion_df.data.common import Icon
+from notion_df.data.constant import BlockColor, CodeLanguage
+from notion_df.data.file import File
+from notion_df.data.partial_parent import PartialParent
+from notion_df.data.rich_text import Span, RichText
+from notion_df.data.user import PartialUser
 from notion_df.property import DatabaseProperties, PageProperties
 from notion_df.util.collection import FinalDict
 
@@ -25,7 +25,7 @@ if TYPE_CHECKING:
 
 
 @dataclass
-class DatabaseResponse(Response):
+class DatabaseData(Data):
     id: UUID
     parent: Union[Block, Page, None]
     created_time: datetime
@@ -52,7 +52,7 @@ class DatabaseResponse(Response):
 
 
 @dataclass
-class PageResponse(Response):
+class PageData(Data):
     id: UUID
     parent: Union[Block, Database, Page, None]
     created_time: datetime
@@ -79,7 +79,7 @@ class PageResponse(Response):
 
 
 @dataclass
-class BlockResponse(Response):
+class BlockData(Data):
     id: UUID
     parent: Union[Block, Page, None]
     created_time: datetime
@@ -161,7 +161,7 @@ class BreadcrumbBlockValue(BlockValue):
 class BulletedListItemBlockValue(BlockValue):
     rich_text: RichText
     color: BlockColor = BlockColor.DEFAULT
-    children: list[BlockResponse] = field(init=False, default=None)
+    children: list[BlockData] = field(init=False, default=None)
 
     @classmethod
     def get_typename(cls) -> str:
@@ -173,7 +173,7 @@ class CalloutBlockValue(BlockValue):
     rich_text: RichText
     icon: Icon
     color: BlockColor = BlockColor.DEFAULT
-    children: list[BlockResponse] = field(init=False, default=None)
+    children: list[BlockData] = field(init=False, default=None)
 
     @classmethod
     def get_typename(cls) -> str:
@@ -324,7 +324,7 @@ class ImageBlockValue(BlockValue):
 class NumberedListItemBlockValue(BlockValue):
     rich_text: RichText
     color: BlockColor = BlockColor.DEFAULT
-    children: list[BlockResponse] = field(init=False, default=None)
+    children: list[BlockData] = field(init=False, default=None)
 
     @classmethod
     def get_typename(cls) -> str:
@@ -335,7 +335,7 @@ class NumberedListItemBlockValue(BlockValue):
 class ParagraphBlockValue(BlockValue):
     rich_text: RichText
     color: BlockColor = BlockColor.DEFAULT
-    children: list[BlockResponse] = field(init=False, default=None)
+    children: list[BlockData] = field(init=False, default=None)
 
     @classmethod
     def get_typename(cls) -> str:
@@ -363,7 +363,7 @@ class PDFBlockValue(BlockValue):
 class QuoteBlockValue(BlockValue):
     rich_text: RichText
     color: BlockColor = BlockColor.DEFAULT
-    children: list[BlockResponse] = field(init=False, default=None)
+    children: list[BlockData] = field(init=False, default=None)
 
     @classmethod
     def get_typename(cls) -> str:
@@ -392,7 +392,7 @@ class SyncedBlockValue(BlockValue, metaclass=ABCMeta):
 @dataclass
 class OriginalSyncedBlockType(SyncedBlockValue):
     """cannot be changed (2023-04-02)"""
-    children: list[BlockResponse] = field(init=False, default=None)
+    children: list[BlockData] = field(init=False, default=None)
 
     def serialize(self) -> dict[str, Any]:
         return {
@@ -446,7 +446,7 @@ class ToDoBlockValue(BlockValue):
     rich_text: RichText
     checked: bool
     color: BlockColor = BlockColor.DEFAULT
-    children: list[BlockResponse] = field(init=False, default=None)
+    children: list[BlockData] = field(init=False, default=None)
 
     @classmethod
     def get_typename(cls) -> str:
@@ -457,7 +457,7 @@ class ToDoBlockValue(BlockValue):
 class ToggleBlockValue(BlockValue):
     rich_text: RichText
     color: BlockColor = BlockColor.DEFAULT
-    children: list[BlockResponse] = field(init=False, default=None)
+    children: list[BlockData] = field(init=False, default=None)
 
     @classmethod
     def get_typename(cls) -> str:

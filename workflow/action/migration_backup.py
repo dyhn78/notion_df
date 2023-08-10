@@ -3,8 +3,8 @@ from pathlib import Path
 from typing import Optional, cast, Iterator
 
 from notion_df.core.request import RequestError
+from notion_df.data.entity_data import PageData
 from notion_df.entity import Page, Database
-from notion_df.object.block import PageResponse
 from notion_df.property import RelationProperty, PageProperties
 from workflow.action.action_core import IterableAction
 from workflow.block_enum import DatabaseEnum
@@ -50,7 +50,7 @@ class MigrationBackupLoadAction(IterableAction):
             print(f'\t{page}: Moved outside DatabaseEnum')
 
         this_db: Database = this_page.parent
-        this_prev_response: Optional[PageResponse] = self.response_backup.read(page)
+        this_prev_response: Optional[PageData] = self.response_backup.read(page)
         if not this_prev_response:
             print(f'\t{page}: No previous response backup')
             return
@@ -65,7 +65,7 @@ class MigrationBackupLoadAction(IterableAction):
                 continue
             for linked_page in cast(this_prev_prop.page_value, this_prev_prop_value):
 
-                linked_prev_response: PageResponse = self.response_backup.read(linked_page)
+                linked_prev_response: PageData = self.response_backup.read(linked_page)
                 if linked_page.last_response:
                     linked_db = linked_page.parent
                     if linked_prev_response:

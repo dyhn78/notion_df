@@ -13,14 +13,14 @@ from typing_extensions import Self
 
 from notion_df.core.exception import NotionDfKeyError, NotionDfValueError
 from notion_df.core.serialization import DualSerializable, deserialize, serialize
-from notion_df.object.common import StatusGroups, SelectOption, DateRange
-from notion_df.object.constant import RollupFunction, NumberFormat, Number
-from notion_df.object.file import Files
-from notion_df.object.filter import PropertyFilter, CheckboxFilterBuilder, PeopleFilterBuilder, \
+from notion_df.data.common import StatusGroups, SelectOption, DateRange
+from notion_df.data.constant import RollupFunction, NumberFormat, Number
+from notion_df.data.file import Files
+from notion_df.data.filter import PropertyFilter, CheckboxFilterBuilder, PeopleFilterBuilder, \
     DateFilterBuilder, TextFilterBuilder, FilesFilterBuilder, NumberFilterBuilder, MultiSelectFilterBuilder, \
     RelationFilterBuilder, SelectFilterBuilder, FilterBuilder, FormulaPropertyFilter
-from notion_df.object.rich_text import RichText
-from notion_df.object.user import PartialUser, User
+from notion_df.data.rich_text import RichText
+from notion_df.data.user import PartialUser, User
 from notion_df.util.collection import FinalDict
 from notion_df.util.misc import repr_object
 

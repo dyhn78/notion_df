@@ -4,9 +4,9 @@ from enum import Enum
 from typing import Optional
 
 from notion_df.core.entity_core import Entity
+from notion_df.data.common import Emoji
+from notion_df.data.rich_text import RichText, TextSpan
 from notion_df.entity import Database
-from notion_df.object.common import Emoji
-from notion_df.object.rich_text import RichText, TextSpan
 from notion_df.util.uuid_util import get_page_or_database_id, get_page_or_database_url
 from workflow.emoji_code import EmojiCode
 
