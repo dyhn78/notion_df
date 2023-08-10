@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import datetime as dt
 from abc import ABCMeta
-from typing import cast, Iterable, Optional
+from typing import Iterable, Optional
 
 from notion_df.core.request import Paginator
 from notion_df.data.filter import created_time_filter
@@ -33,7 +33,7 @@ reading_match_date_by_created_time_prop = CheckboxFormulaProperty(EmojiCode.BLAC
 
 def get_record_created_date(record: Page) -> dt.date:
     # TODO: '📆일시' parsing 지원
-    return (record.get_data().created_time + dt.timedelta(hours=-5)).date()
+    return (record.get().data.created_time + dt.timedelta(hours=-5)).date()
 
 
 class MatchActionBase:
@@ -52,7 +52,7 @@ class MatchAction(IterableAction, metaclass=ABCMeta):
 class MatchDateByCreatedTime(MatchAction):
     def __init__(self, base: MatchActionBase, record: DatabaseEnum, record_to_date: str):
         super().__init__(base)
-        self.record_db = Database(record.id)
+        self.record_db = record.entity
         self.record_to_date = RelationProperty(f'{DatabaseEnum.date_db.prefix}{record_to_date}')
 
     def query_all(self) -> Paginator[Page]:
@@ -67,7 +67,7 @@ class MatchDateByCreatedTime(MatchAction):
             date = self.date_namespace.get_by_date_value(record_created_date)
 
             # final check if the property value is filled in the meantime
-            if record.retrieve().properties[self.record_to_date]:
+            if record.retrieve().data.properties[self.record_to_date]:
                 return
             record.update(PageProperties({self.record_to_date: self.record_to_date.page_value([date])}))
             return date
@@ -101,7 +101,7 @@ class MatchTimeManualValue(MatchAction):
     def process_page(self, record: Page) -> None:
         def _process_page() -> Optional[str]:
             time_manual_value = record.data.created_time.strftime('%H:%M')
-            if record.retrieve().properties[time_manual_value_prop]:
+            if record.retrieve().data.properties[time_manual_value_prop]:
                 return
             record.update(PageProperties({
                 time_manual_value_prop: time_manual_value_prop.page_value([TextSpan(time_manual_value)])}))
@@ -114,8 +114,8 @@ class MatchTimeManualValue(MatchAction):
 class MatchReadingsStartDate(MatchAction):
     def __init__(self, base: MatchActionBase):
         super().__init__(base)
-        self.reading_db = Database(DatabaseEnum.reading_db.id)
-        self.journal_db = Database(DatabaseEnum.journal_db.id)
+        self.reading_db = DatabaseEnum.reading_db.entity
+        self.journal_db = DatabaseEnum.journal_db.entity
 
     def query_all(self) -> Paginator[Page]:
         return self.reading_db.query(
@@ -133,18 +133,20 @@ class MatchReadingsStartDate(MatchAction):
 
     def process_page(self, reading: Page):
         def find_date():
+            def get_start_date(date: Page) -> dt.date:
+                return date.get().data.properties[date_manual_value_prop].start
+
             def get_earliest_date(dates: Iterable[Page]) -> Page:
-                return min(dates, key=lambda _date: cast(Page,
-                                                         _date).get_data().properties[date_manual_value_prop].start)
+                return min(dates, key=get_start_date)
 
             def get_reading_journal_dates() -> Iterable[Page]:
                 reading_journals = reading.data.properties[reading_to_journal_prop]
                 # TODO: RollupPagePropertyValue 구현 후 이곳을 간소화
                 for journal in reading_journals:
-                    if not (date_list := journal.get_data().properties[journal_to_date_prop]):
+                    if not (date_list := journal.get().data.properties[journal_to_date_prop]):
                         continue
                     date = date_list[0]
-                    if date.get_data().properties[date_manual_value_prop] is None:
+                    if date.get().data.properties[date_manual_value_prop] is None:
                         continue
                     yield date
 
@@ -160,7 +162,7 @@ class MatchReadingsStartDate(MatchAction):
             if not date:
                 return
             # final check if the property value is filled in the meantime
-            if reading.retrieve().properties[reading_to_start_date_prop]:
+            if reading.retrieve().data.properties[reading_to_start_date_prop]:
                 return
             reading.update(PageProperties({reading_to_start_date_prop: reading_to_start_date_prop.page_value([date])}))
             return date
@@ -173,7 +175,7 @@ class MatchWeekByRefDate(MatchAction):
     def __init__(self, base: MatchActionBase, record_db_enum: DatabaseEnum,
                  record_to_week: str, record_to_date: str):
         super().__init__(base)
-        self.record_db = Database(record_db_enum.id)
+        self.record_db = record_db_enum.entity
         self.record_db_title = self.record_db.data.title = record_db_enum.title
         self.record_to_week = RelationProperty(f'{DatabaseEnum.week_db.prefix}{record_to_week}')
         self.record_to_date = RelationProperty(f'{DatabaseEnum.date_db.prefix}{record_to_date}')
@@ -201,7 +203,7 @@ class MatchWeekByRefDate(MatchAction):
 
             # final check if the property value is filled or changed in the meantime
             prev_record_weeks = record.data.properties[self.record_to_week]
-            curr_record_weeks = record.retrieve().properties[self.record_to_week]
+            curr_record_weeks = record.retrieve().data.properties[self.record_to_week]
             if (set(prev_record_weeks) != set(curr_record_weeks)) or (set(curr_record_weeks) == set(new_record_weeks)):
                 return
             record.update(PageProperties({self.record_to_week: new_record_weeks}))
@@ -214,7 +216,7 @@ class MatchWeekByRefDate(MatchAction):
 class MatchWeekByDateValue(MatchAction):
     def __init__(self, base: MatchActionBase):
         super().__init__(base)
-        self.date_db = Database(DatabaseEnum.date_db.id)
+        self.date_db = DatabaseEnum.date_db.entity
 
     def __repr__(self):
         return repr_object(self)
@@ -231,7 +233,7 @@ class MatchWeekByDateValue(MatchAction):
             print(f'\t{date} -> Skipped')
             return
         week = self.week_namespace.get_by_date_value(date_value.start)
-        if date.retrieve().properties[date_to_week_prop]:
+        if date.retrieve().data.properties[date_to_week_prop]:
             return
         date.update(PageProperties({date_to_week_prop: date_to_week_prop.page_value([week])}))
         print(f'\t{date}\n\t\t-> {week}')
@@ -266,7 +268,7 @@ class MatchTopic(MatchAction):
             new_topic_set.update(ref_topic_set)
         if not new_topic_set - set(curr_topic_list):
             return
-        curr_topic_list = list(record.retrieve().properties[self.record_to_topic_prop])
+        curr_topic_list = list(record.retrieve().data.properties[self.record_to_topic_prop])
         new_topic = curr_topic_list + list(new_topic_set)
         record.update(PageProperties({
             self.record_to_topic_prop: self.record_to_topic_prop.page_value(new_topic)}))
@@ -274,7 +276,7 @@ class MatchTopic(MatchAction):
 
 class DatabaseIndex(metaclass=ABCMeta):
     def __init__(self, database: DatabaseEnum, title: str):
-        self.database = Database(database.id)
+        self.database = database.entity
         self.title = TitleProperty(title)
         self.pages_by_title_plain_text: dict[str, Page] = {}
 

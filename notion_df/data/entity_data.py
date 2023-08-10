@@ -39,9 +39,9 @@ class DatabaseData(Data):
     is_inline: bool
 
     @classmethod
-    def _deserialize_this(cls, raw_data: dict[str, Any]) -> Self:
-        return cls._deserialize_from_dict(raw_data, raw_data=raw_data,
-                                          parent=PartialParent.deserialize(raw_data['parent']).entity)
+    def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
+        return cls._deserialize_from_dict(raw, raw=raw,
+                                          parent=PartialParent.deserialize(raw['parent']).entity)
 
     @classmethod
     @cache
@@ -66,9 +66,9 @@ class PageData(Data):
     properties: PageProperties
 
     @classmethod
-    def _deserialize_this(cls, raw_data: dict[str, Any]) -> Self:
-        return cls._deserialize_from_dict(raw_data, raw_data=raw_data,
-                                          parent=PartialParent.deserialize(raw_data['parent']).entity)
+    def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
+        return cls._deserialize_from_dict(raw, raw=raw,
+                                          parent=PartialParent.deserialize(raw['parent']).entity)
 
     @classmethod
     @cache
@@ -92,12 +92,12 @@ class BlockData(Data):
     value: BlockValue
 
     @classmethod
-    def _deserialize_this(cls, raw_data: dict[str, Any]):
-        typename = raw_data['type']
+    def _deserialize_this(cls, raw: dict[str, Any]):
+        typename = raw['type']
         block_value_cls = block_value_registry[typename]
-        block_value = block_value_cls.deserialize(raw_data[typename])
-        return cls._deserialize_from_dict(raw_data, raw_data=raw_data,
-                                          parent=PartialParent.deserialize(raw_data['parent']).entity,
+        block_value = block_value_cls.deserialize(raw[typename])
+        return cls._deserialize_from_dict(raw, raw=raw,
+                                          parent=PartialParent.deserialize(raw['parent']).entity,
                                           value=block_value)
 
     @classmethod

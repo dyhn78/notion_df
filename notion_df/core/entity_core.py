@@ -4,6 +4,8 @@ from abc import abstractmethod, ABCMeta
 from typing import Final, Generic, Hashable, Union, Optional, final
 from uuid import UUID
 
+from typing_extensions import Self
+
 from notion_df.core.request import Data_T
 from notion_df.util.misc import repr_object, undefined
 
@@ -68,18 +70,18 @@ class Entity(Generic[Data_T], Hashable, metaclass=ABCMeta):
     def _repr_as_parent(self) -> str:
         return repr_object(self, id=self.id)
 
-    def get_data(self) -> Data_T:
-        """get the local data, or retrieve as fallback."""
+    def get(self) -> Self:
+        """if there is no local data, retrieve."""
         if self.data is None:
             self.retrieve()  # TODO: raise EntityNotExistError(ValueError), with validate_page_existence()
-        return self.data
+        return self
 
-    def set_data(self, data: Data_T) -> Data_T:
-        """keep the latest data between the current data and new data."""
-        if data.timestamp > (self.data.timestamp if self.data else 0):
+    def set(self, data: Data_T) -> Self:
+        """set the data as the more recent one between current one and new one."""
+        if (self.data is None) or (data.timestamp > self.data.timestamp):
             self.data = data
-        return self.data
+        return self
 
     @abstractmethod
-    def retrieve(self) -> Data_T:
+    def retrieve(self) -> Self:
         pass

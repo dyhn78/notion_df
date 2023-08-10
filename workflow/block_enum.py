@@ -5,6 +5,7 @@ from typing import Optional
 
 from notion_df.core.entity_core import Entity
 from notion_df.data.common import Emoji
+from notion_df.data.entity_data import DatabaseData
 from notion_df.data.rich_text import RichText, TextSpan
 from notion_df.entity import Database
 from notion_df.util.uuid_util import get_page_or_database_id, get_page_or_database_url
@@ -56,12 +57,11 @@ class DatabaseEnum(Enum):
     @property
     def entity(self) -> Database:
         db = Database(self.id)
-        if not hasattr(db, 'title'):
+        if db.data is None:
             title_span = TextSpan(self.title)
             title_span.plain_text = self.title
-            db.data.title = RichText([title_span])
-        if not hasattr(db, 'icon'):
-            db.data.icon = Emoji(self.prefix)
+            db.data = DatabaseData(self.id, None, None, None, Emoji(self.prefix),
+                                   None, None, RichText([title_span]), None, False, False)
         return db
 
     @classmethod

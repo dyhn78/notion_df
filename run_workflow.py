@@ -29,7 +29,7 @@ if __name__ == '__main__':
 
     from workflow.run_actions import actions
     from workflow.action.action_core import run_from_last_success
-    log_enabled = run_from_last_success(actions, False, True)
+    log_enabled = run_from_last_success(actions, False, False)
     print(f'{"#" * 5 } {"Done." if log_enabled else "No new record."}')
     if is_already_running(this_path):
         sys.stderr.write("Other script is running.\n")

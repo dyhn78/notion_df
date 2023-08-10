@@ -75,7 +75,7 @@ class MigrationBackupLoadAction(IterableAction):
                 elif linked_prev_data:
                     linked_db = linked_prev_db = linked_prev_data.parent
                 else:
-                    linked_db = linked_prev_db = linked_page.retrieve().parent
+                    linked_db = linked_prev_db = linked_page.retrieve().data.parent
                 candidate_props = self.get_candidate_props(this_db, linked_db)
                 if not candidate_props:
                     continue
@@ -163,15 +163,14 @@ class MigrationBackupLoadAction(IterableAction):
 
 
 def iter_breadcrumb(page: Page) -> Iterator[Page]:
-    page.get_data()
-    yield page
+    yield page.get()
     if page.data.parent is not None:
         yield from iter_breadcrumb(page.data.parent)
 
 
 def validate_page_existence(page: Page) -> bool:
     try:
-        page.get_data()
+        page.get()
         return True
     except RequestError:
         return False

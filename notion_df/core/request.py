@@ -85,8 +85,8 @@ class Data(Deserializable, metaclass=ABCMeta):
     raw: dict[str, Any] = field(init=False, default=None)
 
     @classmethod
-    def _deserialize_this(cls, raw_data: dict[str, Any]) -> Self:
-        return cls._deserialize_from_dict(raw_data, raw_data=raw_data)
+    def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
+        return cls._deserialize_from_dict(raw, raw=raw)
 
     @classmethod
     def deserialize(cls, serialized: Any) -> Self:
