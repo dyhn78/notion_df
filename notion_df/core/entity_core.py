@@ -70,13 +70,13 @@ class Entity(Generic[Data_T], Hashable, metaclass=ABCMeta):
     def _repr_as_parent(self) -> str:
         return repr_object(self, id=self.id)
 
-    def get(self) -> Self:
-        """if there is no local data, retrieve."""
+    def get_data(self) -> Data_T:
+        """get the local data, or retrieve if there is not."""
         if self.data is None:
             self.retrieve()  # TODO: raise EntityNotExistError(ValueError), with validate_page_existence()
-        return self
+        return self.data
 
-    def set(self, data: Data_T) -> Self:
+    def set_data(self, data: Data_T) -> Self:
         """set the data as the more recent one between current one and new one."""
         if (self.data is None) or (data.timestamp > self.data.timestamp):
             self.data = data

@@ -33,7 +33,7 @@ reading_match_date_by_created_time_prop = CheckboxFormulaProperty(EmojiCode.BLAC
 
 def get_record_created_date(record: Page) -> dt.date:
     # TODO: '📆일시' parsing 지원
-    return (record.get().data.created_time + dt.timedelta(hours=-5)).date()
+    return (record.get_data().created_time + dt.timedelta(hours=-5)).date()
 
 
 class MatchActionBase:
@@ -134,7 +134,7 @@ class MatchReadingsStartDate(MatchAction):
     def process_page(self, reading: Page):
         def find_date():
             def get_start_date(date: Page) -> dt.date:
-                return date.get().data.properties[date_manual_value_prop].start
+                return date.get_data().properties[date_manual_value_prop].start
 
             def get_earliest_date(dates: Iterable[Page]) -> Page:
                 return min(dates, key=get_start_date)
@@ -143,10 +143,10 @@ class MatchReadingsStartDate(MatchAction):
                 reading_journals = reading.data.properties[reading_to_journal_prop]
                 # TODO: RollupPagePropertyValue 구현 후 이곳을 간소화
                 for journal in reading_journals:
-                    if not (date_list := journal.get().data.properties[journal_to_date_prop]):
+                    if not (date_list := journal.get_data().properties[journal_to_date_prop]):
                         continue
                     date = date_list[0]
-                    if date.get().data.properties[date_manual_value_prop] is None:
+                    if date.get_data().properties[date_manual_value_prop] is None:
                         continue
                     yield date
 

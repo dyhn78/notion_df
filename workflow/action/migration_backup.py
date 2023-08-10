@@ -163,14 +163,15 @@ class MigrationBackupLoadAction(IterableAction):
 
 
 def iter_breadcrumb(page: Page) -> Iterator[Page]:
-    yield page.get()
+    page.get_data()
+    yield page
     if page.data.parent is not None:
         yield from iter_breadcrumb(page.data.parent)
 
 
 def validate_page_existence(page: Page) -> bool:
     try:
-        page.get()
+        page.get_data()
         return True
     except RequestError:
         return False
