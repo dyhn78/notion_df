@@ -33,7 +33,7 @@ reading_match_date_by_created_time_prop = CheckboxFormulaProperty(EmojiCode.BLAC
 
 def get_record_created_date(record: Page) -> dt.date:
     # TODO: '📆일시' parsing 지원
-    return (record.data.created_time + dt.timedelta(hours=-5)).date()
+    return (record.get_data().created_time + dt.timedelta(hours=-5)).date()
 
 
 class MatchActionBase:
@@ -67,7 +67,7 @@ class MatchDateByCreatedTime(MatchAction):
             date = self.date_namespace.get_by_date_value(record_created_date)
 
             # final check if the property value is filled in the meantime
-            if record.retrieve().data.properties[self.record_to_date]:
+            if record.retrieve().properties[self.record_to_date]:
                 return
             record.update(PageProperties({self.record_to_date: self.record_to_date.page_value([date])}))
             return date
@@ -101,7 +101,7 @@ class MatchTimeManualValue(MatchAction):
     def process_page(self, record: Page) -> None:
         def _process_page() -> Optional[str]:
             time_manual_value = record.data.created_time.strftime('%H:%M')
-            if record.retrieve().data.properties[time_manual_value_prop]:
+            if record.retrieve().properties[time_manual_value_prop]:
                 return
             record.update(PageProperties({
                 time_manual_value_prop: time_manual_value_prop.page_value([TextSpan(time_manual_value)])}))
@@ -134,16 +134,17 @@ class MatchReadingsStartDate(MatchAction):
     def process_page(self, reading: Page):
         def find_date():
             def get_earliest_date(dates: Iterable[Page]) -> Page:
-                return min(dates, key=lambda _date: cast(Page, _date).data.properties[date_manual_value_prop].start)
+                return min(dates, key=lambda _date: cast(Page,
+                                                         _date).get_data().properties[date_manual_value_prop].start)
 
             def get_reading_journal_dates() -> Iterable[Page]:
                 reading_journals = reading.data.properties[reading_to_journal_prop]
                 # TODO: RollupPagePropertyValue 구현 후 이곳을 간소화
                 for journal in reading_journals:
-                    if not (date_list := journal.data.properties[journal_to_date_prop]):
+                    if not (date_list := journal.get_data().properties[journal_to_date_prop]):
                         continue
                     date = date_list[0]
-                    if date.data.properties[date_manual_value_prop] is None:
+                    if date.get_data().properties[date_manual_value_prop] is None:
                         continue
                     yield date
 
@@ -159,7 +160,7 @@ class MatchReadingsStartDate(MatchAction):
             if not date:
                 return
             # final check if the property value is filled in the meantime
-            if reading.retrieve().data.properties[reading_to_start_date_prop]:
+            if reading.retrieve().properties[reading_to_start_date_prop]:
                 return
             reading.update(PageProperties({reading_to_start_date_prop: reading_to_start_date_prop.page_value([date])}))
             return date
@@ -200,7 +201,7 @@ class MatchWeekByRefDate(MatchAction):
 
             # final check if the property value is filled or changed in the meantime
             prev_record_weeks = record.data.properties[self.record_to_week]
-            curr_record_weeks = record.retrieve().data.properties[self.record_to_week]
+            curr_record_weeks = record.retrieve().properties[self.record_to_week]
             if (set(prev_record_weeks) != set(curr_record_weeks)) or (set(curr_record_weeks) == set(new_record_weeks)):
                 return
             record.update(PageProperties({self.record_to_week: new_record_weeks}))
@@ -230,7 +231,7 @@ class MatchWeekByDateValue(MatchAction):
             print(f'\t{date} -> Skipped')
             return
         week = self.week_namespace.get_by_date_value(date_value.start)
-        if date.retrieve().data.properties[date_to_week_prop]:
+        if date.retrieve().properties[date_to_week_prop]:
             return
         date.update(PageProperties({date_to_week_prop: date_to_week_prop.page_value([week])}))
         print(f'\t{date}\n\t\t-> {week}')
@@ -265,7 +266,7 @@ class MatchTopic(MatchAction):
             new_topic_set.update(ref_topic_set)
         if not new_topic_set - set(curr_topic_list):
             return
-        curr_topic_list = list(record.retrieve().data.properties[self.record_to_topic_prop])
+        curr_topic_list = list(record.retrieve().properties[self.record_to_topic_prop])
         new_topic = curr_topic_list + list(new_topic_set)
         record.update(PageProperties({
             self.record_to_topic_prop: self.record_to_topic_prop.page_value(new_topic)}))

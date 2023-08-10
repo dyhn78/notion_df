@@ -50,32 +50,32 @@ class MigrationBackupLoadAction(IterableAction):
             print(f'\t{page}: Moved outside DatabaseEnum')
 
         this_db: Database = this_page.data.parent
-        this_prev_response: Optional[PageData] = self.response_backup.read(page)
-        if not this_prev_response:
+        this_prev_data: Optional[PageData] = self.response_backup.read(page)
+        if not this_prev_data:
             print(f'\t{page}: No previous response backup')
             return
-        this_prev_db = this_prev_response.parent
+        this_prev_db = this_prev_data.parent
         if page == this_page and this_prev_db == this_db:
             print(f'\t{page}: Did not change the parent database')
             return
 
         this_new_properties = PageProperties()
-        for this_prev_prop, this_prev_prop_value in this_prev_response.properties.items():
+        for this_prev_prop, this_prev_prop_value in this_prev_data.properties.items():
             if not isinstance(this_prev_prop, RelationProperty):
                 continue
             for linked_page in cast(Iterable[Page], this_prev_prop_value):
 
-                linked_prev_response: PageData = self.response_backup.read(linked_page)
+                linked_prev_data: PageData = self.response_backup.read(linked_page)
                 if linked_page.data:
                     linked_db = linked_page.data.parent
-                    if linked_prev_response:
-                        linked_prev_db = linked_prev_response.parent
+                    if linked_prev_data:
+                        linked_prev_db = linked_prev_data.parent
                     else:
                         linked_prev_db = None
-                elif linked_prev_response:
-                    linked_db = linked_prev_db = linked_prev_response.parent
+                elif linked_prev_data:
+                    linked_db = linked_prev_db = linked_prev_data.parent
                 else:
-                    linked_db = linked_prev_db = linked_page.retrieve().data.parent
+                    linked_db = linked_prev_db = linked_page.retrieve().parent
                 candidate_props = self.get_candidate_props(this_db, linked_db)
                 if not candidate_props:
                     continue
@@ -163,18 +163,15 @@ class MigrationBackupLoadAction(IterableAction):
 
 
 def iter_breadcrumb(page: Page) -> Iterator[Page]:
-    if not page.data:
-        page.retrieve()
+    page.get_data()
     yield page
     if page.data.parent is not None:
         yield from iter_breadcrumb(page.data.parent)
 
 
 def validate_page_existence(page: Page) -> bool:
-    if page.data:
-        return True
     try:
-        page.retrieve()
+        page.get_data()
         return True
     except RequestError:
         return False

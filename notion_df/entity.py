@@ -3,8 +3,6 @@ from __future__ import annotations
 from typing import Optional, TypeVar, Union, Any, Literal, overload, Iterable
 from uuid import UUID
 
-from typing_extensions import Self
-
 from notion_df.core.entity_core import Entity
 from notion_df.core.exception import NotionDfValueError, NotionDfKeyError
 from notion_df.core.request import Paginator
@@ -35,26 +33,23 @@ class Block(Entity[BlockData]):
         def it():
             for block_data in block_datas:
                 block = Block(block_data.id)
-                block.data = block_data
+                block.set_data(block_data)
                 yield block
 
         return Paginator(Block, it())
 
-    def retrieve(self) -> Self:
-        self.data = RetrieveBlock(token, self.id).execute()
-        return self
+    def retrieve(self) -> BlockData:
+        return self.set_data(RetrieveBlock(token, self.id).execute())
 
     def retrieve_children(self) -> Paginator[Block]:
         block_datas = RetrieveBlockChildren(token, self.id).execute()
         return self._send_child_block_datas(block_datas)
 
-    def update(self, block_type: Optional[BlockValue], archived: Optional[bool]) -> Self:
-        self.data = UpdateBlock(token, self.id, block_type, archived).execute()
-        return self
+    def update(self, block_type: Optional[BlockValue], archived: Optional[bool]) -> BlockData:
+        return self.set_data(UpdateBlock(token, self.id, block_type, archived).execute())
 
-    def delete(self) -> Self:
-        self.data = DeleteBlock(token, self.id).execute()
-        return self
+    def delete(self) -> BlockData:
+        return self.set_data(DeleteBlock(token, self.id).execute())
 
     def append_children(self, child_values: list[BlockValue]) -> list[Block]:
         if not child_values:
@@ -67,7 +62,7 @@ class Block(Entity[BlockData]):
                               icon: Optional[Icon] = None, cover: Optional[File] = None) -> Database:
         data = CreateDatabase(token, self.id, title, properties, icon, cover).execute()
         db = Database(data.id)
-        db.data = data
+        db.set_data(data)
         return db
 
 
@@ -79,7 +74,7 @@ class Database(Entity[DatabaseData]):
     def __repr__(self) -> str:
         try:
             title = self.data.title.plain_text
-            url = self._data.url
+            url = self.data.url
             return repr_object(self, title=title, url=url, parent=self._repr_parent())
         except (NotionDfKeyError, AttributeError):
             return repr_object(self, id=self.id, parent=self._repr_parent())
@@ -96,41 +91,38 @@ class Database(Entity[DatabaseData]):
         def it():
             for page_data in page_datas:
                 page = Page(page_data.id)
-                page.data = page_data
-                page
+                page.set_data(page_data)
                 yield page
 
         return Paginator(Page, it())
 
-    def retrieve(self) -> Self:
-        if Settings.print and self._data:
+    def retrieve(self) -> DatabaseData:
+        if Settings.print and self.data:
             print('retrieve', self.data.title.plain_text, self.data.url)
-        self.data = RetrieveDatabase(token, self.id).execute()
-        return self
+        return self.set_data(RetrieveDatabase(token, self.id).execute())
 
     # noinspection PyShadowingBuiltins
     def query(self, filter: Optional[Filter] = None, sort: Optional[list[Sort]] = None,
               page_size: Optional[int] = None) -> Paginator[Page]:
-        if Settings.print and self._data:
+        if Settings.print and self.data:
             print('query', self.data.title.plain_text, self.data.url)
         page_datas = QueryDatabase(token, self.id, filter, sort, page_size).execute()
         return self._send_child_page_datas(page_datas)
 
-    def update(self, title: RichText, properties: DatabaseProperties) -> Self:
-        if Settings.print and self._data:
+    def update(self, title: RichText, properties: DatabaseProperties) -> DatabaseData:
+        if Settings.print and self.data:
             print('update', self.data.title.plain_text, self.data.url)
-        self.data = UpdateDatabase(token, self.id, title, properties).execute()
-        return self
+        return self.set_data(UpdateDatabase(token, self.id, title, properties).execute())
 
     def create_child_page(self, properties: Optional[PageProperties] = None,
                           children: Optional[list[BlockValue]] = None,
                           icon: Optional[Icon] = None, cover: Optional[File] = None) -> Page:
-        if Settings.print and self._data:
+        if Settings.print and self.data:
             print('create_child_page', self.data.title.plain_text, self.data.url)
         page_data = CreatePage(token, PartialParent('database_id', self.id),
                                properties, children, icon, cover).execute()
         page = Page(page_data.id)
-        page.data = page_data
+        page.set_data(page_data)
         return page
 
 
@@ -158,24 +150,23 @@ class Page(Entity[PageData]):
 
     def as_block(self) -> Block:
         block = Block(self.id)
-        if block._data is None or self._data.timestamp > block._data.timestamp:
-            block.data = BlockData(id=self.id,
-                                   parent=self.data.parent,
-                                   created_time=self.data.created_time,
-                                   last_edited_time=self.data.last_edited_time,
-                                   created_by=self.data.created_by,
-                                   last_edited_by=self.data.last_edited_by,
-                                   has_children=(block._data.has_children if block._data else None),
-                                   archived=self.data.archived,
-                                   value=(block._data.value if block._data else ChildPageBlockValue(title='')))
+        if block.data is None or self.data.timestamp > block.data.timestamp:
+            block.set_data(BlockData(id=self.id,
+                                     parent=self.data.parent,
+                                     created_time=self.data.created_time,
+                                     last_edited_time=self.data.last_edited_time,
+                                     created_by=self.data.created_by,
+                                     last_edited_by=self.data.last_edited_by,
+                                     has_children=(block.data.has_children if block.data else None),
+                                     archived=self.data.archived,
+                                     value=(block.data.value if block.data else ChildPageBlockValue(title=''))))
             block.data.timestamp = self.data.timestamp
         return block
 
-    def retrieve(self) -> Self:
-        if Settings.print and self._data:
+    def retrieve(self) -> PageData:
+        if Settings.print and self.data:
             print('retrieve', self.data.properties.title.plain_text, self.data.url)
-        self.data = RetrievePage(token, self.id).execute()
-        return self
+        return self.set_data(RetrievePage(token, self.id).execute())
 
     def retrieve_property_item(
             self, property_id: str | Property[Any, PagePropertyValue_T, Any]) -> PagePropertyValue_T:
@@ -188,16 +179,15 @@ class Page(Entity[PageData]):
             _, prop_value = RetrievePagePropertyItem(token, self.id, property_id).execute()
         else:
             prop, prop_value = RetrievePagePropertyItem(token, self.id, property_id).execute()
-        if self._data:
+        if self.data:
             self.data.properties[prop] = prop_value
         return prop_value
 
     def update(self, properties: Optional[PageProperties] = None, icon: Optional[Icon] = None,
-               cover: Optional[ExternalFile] = None, archived: Optional[bool] = None) -> Self:
-        if Settings.print and self._data:
+               cover: Optional[ExternalFile] = None, archived: Optional[bool] = None) -> PageData:
+        if Settings.print and self.data:
             print('update', self.data.properties.title.plain_text, self.data.url)
-        self.data = UpdatePage(token, self.id, properties, icon, cover, archived).execute()
-        return self
+        return self.set_data(UpdatePage(token, self.id, properties, icon, cover, archived).execute())
 
     def create_child_page(self, properties: Optional[PageProperties] = None,
                           children: Optional[list[BlockValue]] = None,
@@ -206,7 +196,7 @@ class Page(Entity[PageData]):
             print('create_child_page', self.data.properties.title.plain_text, self.data.url)
         page_data = CreatePage(token, PartialParent('page_id', self.id), properties, children, icon, cover).execute()
         page = Page(page_data.id)
-        page.data = page_data
+        page.set_data(page_data)
         return page
 
     def create_child_database(self, title: RichText, *,
@@ -260,11 +250,11 @@ def search_by_title(query: str, entity: Literal['page', 'database', None] = None
         for data_element in data_elements:
             if isinstance(data_element, DatabaseData):
                 db = Database(data_element.id)
-                db.data = data_element
+                db.set_data(data_element)
                 yield db
             elif isinstance(data_element, PageData):
                 page = Page(data_element.id)
-                page.data = data_element
+                page.set_data(data_element)
                 yield page
             else:
                 raise NotionDfValueError('bad data', {'data_element': data_element})
