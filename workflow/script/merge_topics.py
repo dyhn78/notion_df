@@ -26,11 +26,11 @@ def main():
 
         new_prop_1_value: set[UUID] = set()
         for old_prop in old_props_1:
-            new_prop_1_value |= set(topic.properties[old_prop])
+            new_prop_1_value |= set(topic.data.properties[old_prop])
             topic_new_properties[old_prop] = new_prop_1.page_value()
         topic_new_properties[new_prop_1] = new_prop_1.page_value(new_prop_1_value)
 
-        topic_new_properties[new_prop_2] = topic.properties[old_prop_2]
+        topic_new_properties[new_prop_2] = topic.data.properties[old_prop_2]
         topic_new_properties[old_prop_2] = new_prop_1.page_value()
 
         with Settings.print:

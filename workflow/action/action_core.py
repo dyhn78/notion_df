@@ -68,9 +68,9 @@ def search_pages_by_last_edited_time(lower_bound: datetime, upper_bound: Optiona
     lower_bound = lower_bound.replace(second=0, microsecond=0)
     pages = []
     for page in search_by_title('', 'page'):
-        if upper_bound is not None and page.last_edited_time > upper_bound:
+        if upper_bound is not None and page.data.last_edited_time > upper_bound:
             continue
-        if page.last_edited_time < lower_bound:
+        if page.data.last_edited_time < lower_bound:
             break
         pages.append(page)
     if Settings.print.enabled:
@@ -131,7 +131,7 @@ class Logger:
         self.last_success_time_blocks = log_last_success_time_parent_block.retrieve_children()
         last_execution_time_block = self.last_success_time_blocks[0]
         last_execution_time_str = cast(ParagraphBlockValue,
-                                       last_execution_time_block.value).rich_text.plain_text
+                                       last_execution_time_block.data.value).rich_text.plain_text
         if last_execution_time_str == 'ALL':
             self.last_success_time = None
         else:
@@ -170,14 +170,14 @@ class Logger:
 
         log_group_block = None
         for block in reversed(log_page_block.retrieve_children()):
-            if isinstance(block.value, DividerBlockValue):
+            if isinstance(block.data.value, DividerBlockValue):
                 log_group_block = log_page_block.append_children([
                     ToggleBlockValue(RichText([TextSpan(self.start_time_group_str)]))])[0]
                 break
-            if cast(ToggleBlockValue, block.value).rich_text.plain_text == self.start_time_group_str:
+            if cast(ToggleBlockValue, block.data.value).rich_text.plain_text == self.start_time_group_str:
                 log_group_block = block
                 break
-            if self.start_time - block.created_time > timedelta(days=7):
+            if self.start_time - block.data.created_time > timedelta(days=7):
                 block.delete()
         assert isinstance(log_group_block, Block)
 

@@ -6,23 +6,19 @@ from uuid import UUID
 
 from typing_extensions import Self
 
-from notion_df.core.request import Response_T
+from notion_df.core.request import Data_T
 from notion_df.util.misc import repr_object, undefined
 
 namespace: Final[dict[tuple[type[Entity], UUID], Entity]] = {}  # TODO: support multiple entities
 
 
-class Entity(Generic[Response_T], Hashable, metaclass=ABCMeta):
+class Entity(Generic[Data_T], Hashable, metaclass=ABCMeta):
     """The base class for blocks, users, and comments.
     There is only one instance with given subclass and id.
     You can compare two blocks directly `block_1 == block_2`, not having to compare id `block_1.id == block_2.id`"""
     id: UUID
-    parent: Optional[Entity]  # TODO: fix that user and comments does not have parent
-    last_response: Optional[Response_T]
-    """the latest response received by `send_response()`. 
-    this is initialized as None unlike the "proper attributes" (parent, title, properties)"""
-    last_timestamp: float
-    """timestamp of last response. initialized as 0."""
+    _data: Optional[Data_T] = None
+    """the latest data of the entity, which does not trigger auto-retrieve. None if empty."""
 
     @classmethod
     @abstractmethod
@@ -45,11 +41,10 @@ class Entity(Generic[Response_T], Hashable, metaclass=ABCMeta):
 
         self.id: Final[UUID] = self._get_id(id_or_url)
         namespace[(type(self), self.id)] = self
-        self.last_response = None
-        self.last_timestamp = 0
+        self._data: Optional[Data_T] = None
 
     def __del__(self):
-        del self.last_response
+        del self.data
         del namespace[(type(self), self.id)]
 
     def __getnewargs__(self):  # required for pickling
@@ -66,25 +61,39 @@ class Entity(Generic[Response_T], Hashable, metaclass=ABCMeta):
 
     @final
     def _repr_parent(self) -> Optional[str]:
-        if not hasattr(self, 'parent'):
+        if self._data is None:
             return undefined
-        elif self.parent is None:
+        elif self._data.parent is None:
             return 'workspace'
-        else:
-            return self.parent._repr_as_parent()
+        else:  # TODO: fix that user and comments does not have parent
+            return self._data.parent._repr_as_parent()
 
     def _repr_as_parent(self) -> str:
         return repr_object(self, id=self.id)
 
-    @final
-    def send_response(self, response: Response_T) -> Self:
-        if response.timestamp > self.last_timestamp:
-            self._send_response(response)
-            self.last_response = response
-            self.last_timestamp = response.timestamp
-        return self
+    @property
+    def data(self) -> Data_T:
+        """the latest data of the entity. if there is no local data yet, automatically retrieve it."""
+        if self._data is None:
+            self.retrieve()  # TODO: raise EntityNotExistError(ValueError), with validate_page_existence()
+        return self._data
+
+    @data.setter
+    def data(self, data: Data_T) -> None:
+        """keep the latest data between the current data and new data."""
+        if data.timestamp > (self._data.timestamp if self._data else 0):
+            self._send_data(data)
+            self._data = data
+
+    @data.deleter
+    def data(self) -> None:
+        """reset the data, so that you can force-retrieve next time or intentionally pass the outdated data."""
+        self._data = None
+
+    def _send_data(self, data: Data_T) -> None:
+        """copy the "proper attributes" to entity (without `data` and `last_timestamp`)"""
+        pass  # TODO delete
 
     @abstractmethod
-    def _send_response(self, response: Response_T) -> None:
-        """copy the "proper attributes" to entity (without `last_response` and `last_timestamp`)"""
+    def retrieve(self) -> Self:
         pass

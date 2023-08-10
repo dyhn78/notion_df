@@ -59,9 +59,9 @@ class DatabaseEnum(Enum):
         if not hasattr(db, 'title'):
             title_span = TextSpan(self.title)
             title_span.plain_text = self.title
-            db.title = RichText([title_span])
+            db.data.title = RichText([title_span])
         if not hasattr(db, 'icon'):
-            db.icon = Emoji(self.prefix)
+            db.data.icon = Emoji(self.prefix)
         return db
 
     @classmethod

@@ -82,7 +82,7 @@ class RequestError(Exception):
 @dataclass
 class Data(Deserializable, metaclass=ABCMeta):
     timestamp: float = field(init=False, default_factory=datetime.now().timestamp)
-    raw_data: dict[str, Any] = field(init=False, default=None)
+    raw: dict[str, Any] = field(init=False, default=None)
 
     @classmethod
     def _deserialize_this(cls, raw_data: dict[str, Any]) -> Self:
@@ -107,11 +107,11 @@ class Data(Deserializable, metaclass=ABCMeta):
         return subclass.deserialize(serialized)
 
     def __del__(self):
-        del self.raw_data
+        del self.raw
 
 
-Response_T = TypeVar('Response_T', bound=Data)
-ResponseElement_T = TypeVar('ResponseElement_T')
+Data_T = TypeVar('Data_T', bound=Data)
+DataElement_T = TypeVar('DataElement_T')
 
 
 @dataclass
@@ -120,7 +120,7 @@ class RequestBuilder(metaclass=ABCMeta):
     #  - Request.execute() returns Paginator
     #  - Paginator can interact with Request instance and able to call Entity._send_response()
     """base request form made of various Resources.
-    all non-abstract subclasses must provide class type argument `Response_T`.
+    all non-abstract subclasses must provide class type argument `Data_T`.
     get token from https://www.notion.so/my-integrations"""
     token: str
 
@@ -169,27 +169,27 @@ class Version(StrEnum):
     v20220628 = '2022-06-28'
 
 
-class SingleRequestBuilder(Generic[Response_T], RequestBuilder, metaclass=ABCMeta):
-    response_type: type[Response_T]
+class SingleRequestBuilder(Generic[Data_T], RequestBuilder, metaclass=ABCMeta):
+    response_type: type[Data_T]
 
     def __init_subclass__(cls, **kwargs):
         if not inspect.isabstract(cls):
             assert cls.response_type
 
     @final
-    def execute(self) -> Response_T:
+    def execute(self) -> Data_T:
         settings = self.get_settings()
         response = Request(method=settings.method, url=settings.url, headers=self.headers, params=None,
                            json=serialize(self.get_body())).execute()
         return self.parse_response_data(response.json())  # nomypy
 
     @classmethod
-    def parse_response_data(cls, data: dict[str, Any]) -> Response_T:
+    def parse_response_data(cls, data: dict[str, Any]) -> Data_T:
         return cls.response_type.deserialize(data)
 
 
-class PaginatedRequestBuilder(Generic[ResponseElement_T], RequestBuilder, metaclass=ABCMeta):
-    response_element_type: type[ResponseElement_T]
+class PaginatedRequestBuilder(Generic[DataElement_T], RequestBuilder, metaclass=ABCMeta):
+    response_element_type: type[DataElement_T]
     page_size: int = None  # TODO - AS-IS: total size of all pages summed, TO-BE: each request size
 
     def __init_subclass__(cls, **kwargs):
@@ -221,7 +221,7 @@ class PaginatedRequestBuilder(Generic[ResponseElement_T], RequestBuilder, metacl
                            json=serialize(body)).execute()
         return response.json()
 
-    def execute(self) -> Iterator[ResponseElement_T]:
+    def execute(self) -> Iterator[DataElement_T]:
         page_size_total = self.page_size if self.page_size is not None else float('inf')
         page_size_retrieved = 0
 
@@ -237,7 +237,7 @@ class PaginatedRequestBuilder(Generic[ResponseElement_T], RequestBuilder, metacl
         return
 
     @classmethod
-    def parse_response_data(cls, data: dict[str, Any]) -> Iterator[ResponseElement_T]:
+    def parse_response_data(cls, data: dict[str, Any]) -> Iterator[DataElement_T]:
         for data_element in data['results']:
             yield deserialize(cls.response_element_type, data_element)
 

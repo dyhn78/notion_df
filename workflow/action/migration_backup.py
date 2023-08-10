@@ -1,6 +1,6 @@
 from functools import cache
 from pathlib import Path
-from typing import Optional, cast, Iterator
+from typing import Optional, cast, Iterator, Iterable
 
 from notion_df.core.request import RequestError
 from notion_df.data.entity_data import PageData
@@ -22,13 +22,13 @@ class MigrationBackupSaveAction(IterableAction):
                 del block
 
     def filter(self, page: Page) -> bool:
-        return isinstance(page.parent, Database)
+        return isinstance(page.data.parent, Database)
 
     def process_page(self, page: Page) -> None:
-        for prop in page.properties:
+        for prop in page.data.properties:
             if not isinstance(prop, RelationProperty):
                 continue
-            if page.properties[prop].has_more:
+            if page.data.properties[prop].has_more:
                 page.retrieve_property_item(prop.id)
         self.backup.write(page)
 
@@ -45,11 +45,11 @@ class MigrationBackupLoadAction(IterableAction):
 
     def process_page(self, page: Page) -> None:
         this_page = next((breadcrumb_page for breadcrumb_page in iter_breadcrumb(page)
-                         if DatabaseEnum.from_entity(breadcrumb_page.parent) is not None), None)
+                         if DatabaseEnum.from_entity(breadcrumb_page.data.parent) is not None), None)
         if this_page is None:
             print(f'\t{page}: Moved outside DatabaseEnum')
 
-        this_db: Database = this_page.parent
+        this_db: Database = this_page.data.parent
         this_prev_response: Optional[PageData] = self.response_backup.read(page)
         if not this_prev_response:
             print(f'\t{page}: No previous response backup')
@@ -63,11 +63,11 @@ class MigrationBackupLoadAction(IterableAction):
         for this_prev_prop, this_prev_prop_value in this_prev_response.properties.items():
             if not isinstance(this_prev_prop, RelationProperty):
                 continue
-            for linked_page in cast(this_prev_prop.page_value, this_prev_prop_value):
+            for linked_page in cast(Iterable[Page], this_prev_prop_value):
 
                 linked_prev_response: PageData = self.response_backup.read(linked_page)
-                if linked_page.last_response:
-                    linked_db = linked_page.parent
+                if linked_page.data:
+                    linked_db = linked_page.data.parent
                     if linked_prev_response:
                         linked_prev_db = linked_prev_response.parent
                     else:
@@ -75,17 +75,17 @@ class MigrationBackupLoadAction(IterableAction):
                 elif linked_prev_response:
                     linked_db = linked_prev_db = linked_prev_response.parent
                 else:
-                    linked_db = linked_prev_db = linked_page.retrieve().parent
+                    linked_db = linked_prev_db = linked_page.retrieve().data.parent
                 candidate_props = self.get_candidate_props(this_db, linked_db)
                 if not candidate_props:
                     continue
-                if any(linked_page in this_page.properties[prop] for prop in candidate_props):
+                if any(linked_page in this_page.data.properties[prop] for prop in candidate_props):
                     continue
                 new_prop: RelationProperty = self.find_new_relation_property(this_db, this_prev_db, linked_db,
                                                                              linked_prev_db, this_prev_prop)
                 if not new_prop:
                     continue
-                this_new_properties.setdefault(new_prop, this_page.properties[new_prop])
+                this_new_properties.setdefault(new_prop, this_page.data.properties[new_prop])
                 this_new_properties[new_prop].append(linked_page)
         if not this_new_properties:
             return
@@ -107,12 +107,12 @@ class MigrationBackupLoadAction(IterableAction):
     @cache
     def get_candidate_props(cls, this_db: Database, linked_db: Database) -> list[RelationProperty]:
         candidate_props: list[RelationProperty] = []
-        if not this_db.last_response:
+        if not this_db.data:
             this_db.retrieve()
-        for prop in this_db.properties:
+        for prop in this_db.data.properties:
             if not isinstance(prop, RelationProperty):
                 continue
-            if this_db.properties[prop].database == linked_db:
+            if this_db.data.properties[prop].database == linked_db:
                 candidate_props.append(prop)
         return candidate_props
 
@@ -163,15 +163,15 @@ class MigrationBackupLoadAction(IterableAction):
 
 
 def iter_breadcrumb(page: Page) -> Iterator[Page]:
-    if not page.last_response:
+    if not page.data:
         page.retrieve()
     yield page
-    if page.parent is not None:
-        yield from iter_breadcrumb(page.parent)
+    if page.data.parent is not None:
+        yield from iter_breadcrumb(page.data.parent)
 
 
 def validate_page_existence(page: Page) -> bool:
-    if page.last_response:
+    if page.data:
         return True
     try:
         page.retrieve()

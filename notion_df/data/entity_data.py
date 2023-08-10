@@ -87,7 +87,7 @@ class BlockData(Data):
     created_by: PartialUser
     last_edited_by: PartialUser
     has_children: Optional[bool]
-    """Note: the None value never occurs from direct server response. It only happens from Page.as_block()"""
+    """Note: the None value never occurs from direct server data. It only happens from Page.as_block()"""
     archived: bool
     value: BlockValue
 

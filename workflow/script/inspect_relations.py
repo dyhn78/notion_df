@@ -17,10 +17,10 @@ def init():
         for db_enum in DatabaseEnum:
             db = db_enum.entity
             db.retrieve()
-            for prop in db.properties:
+            for prop in db.data.properties:
                 if isinstance(prop, RelationProperty):
                     from typing import cast
-                    linked_db = cast(prop.database_value, db.properties[prop]).database
+                    linked_db = cast(prop.database_value, db.data.properties[prop]).database
                     _all_relation_properties[(db, linked_db)].append(prop)
     pickle.dump(_all_relation_properties, pickle_path.open('wb'))
 
@@ -32,9 +32,9 @@ def get_all_relation_properties():
 
 def get_multiple():
     for (db, linked_db), prop_list in get_all_relation_properties().items():
-        if len(prop_list) > 1 and db.title.plain_text < linked_db.title.plain_text and DatabaseEnum.from_entity(
+        if len(prop_list) > 1 and db.data.title.plain_text < linked_db.data.title.plain_text and DatabaseEnum.from_entity(
                 db) and DatabaseEnum.from_entity(db).name.find('depr') == -1:
-            print(db.title.plain_text, linked_db.title.plain_text, prop_list)
+            print(db.data.title.plain_text, linked_db.data.title.plain_text, prop_list)
 
 
 def get_date():

@@ -33,7 +33,7 @@ reading_match_date_by_created_time_prop = CheckboxFormulaProperty(EmojiCode.BLAC
 
 def get_record_created_date(record: Page) -> dt.date:
     # TODO: '📆일시' parsing 지원
-    return (record.created_time + dt.timedelta(hours=-5)).date()
+    return (record.data.created_time + dt.timedelta(hours=-5)).date()
 
 
 class MatchActionBase:
@@ -59,7 +59,7 @@ class MatchDateByCreatedTime(MatchAction):
         return self.record_db.query(self.record_to_date.filter.is_empty())
 
     def filter(self, record: Page) -> bool:
-        return record.parent == self.record_db and not record.properties[self.record_to_date]
+        return record.data.parent == self.record_db and not record.data.properties[self.record_to_date]
 
     def process_page(self, record: Page):
         def wrapper():
@@ -67,7 +67,7 @@ class MatchDateByCreatedTime(MatchAction):
             date = self.date_namespace.get_by_date_value(record_created_date)
 
             # final check if the property value is filled in the meantime
-            if record.retrieve().properties[self.record_to_date]:
+            if record.retrieve().data.properties[self.record_to_date]:
                 return
             record.update(PageProperties({self.record_to_date: self.record_to_date.page_value([date])}))
             return date
@@ -89,19 +89,19 @@ class MatchTimeManualValue(MatchAction):
                                     & created_time_filter.equals(dt.date.today()))
 
     def filter(self, record: Page) -> bool:
-        if not (record.parent == self.record_db and not record.properties[time_manual_value_prop]):
+        if not (record.data.parent == self.record_db and not record.data.properties[time_manual_value_prop]):
             return False
         try:
-            record_date = record.properties[self.record_to_date][0]
+            record_date = record.data.properties[self.record_to_date][0]
         except IndexError:
             return True
-        record_date_value = record_date.properties[date_manual_value_prop].start
-        return record.created_time.date() == record_date_value
+        record_date_value = record_date.data.properties[date_manual_value_prop].start
+        return record.data.created_time.date() == record_date_value
 
     def process_page(self, record: Page) -> None:
         def _process_page() -> Optional[str]:
-            time_manual_value = record.created_time.strftime('%H:%M')
-            if record.retrieve().properties[time_manual_value_prop]:
+            time_manual_value = record.data.created_time.strftime('%H:%M')
+            if record.retrieve().data.properties[time_manual_value_prop]:
                 return
             record.update(PageProperties({
                 time_manual_value_prop: time_manual_value_prop.page_value([TextSpan(time_manual_value)])}))
@@ -127,37 +127,30 @@ class MatchReadingsStartDate(MatchAction):
         )
 
     def filter(self, page: Page) -> bool:
-        return (page.parent == self.reading_db and not page.properties[reading_to_start_date_prop]
-                and (page.properties[reading_to_journal_prop]
-                     or page.properties[reading_match_date_by_created_time_prop]))
+        return (page.data.parent == self.reading_db and not page.data.properties[reading_to_start_date_prop]
+                and (page.data.properties[reading_to_journal_prop]
+                     or page.data.properties[reading_match_date_by_created_time_prop]))
 
     def process_page(self, reading: Page):
         def find_date():
             def get_earliest_date(dates: Iterable[Page]) -> Page:
-                for date in dates:
-                    if not date.last_timestamp:
-                        date.retrieve()
-                return min(dates, key=lambda _date: cast(Page, _date).properties[date_manual_value_prop].start)
+                return min(dates, key=lambda _date: cast(Page, _date).data.properties[date_manual_value_prop].start)
 
             def get_reading_journal_dates() -> Iterable[Page]:
-                reading_journals = reading.properties[reading_to_journal_prop]
+                reading_journals = reading.data.properties[reading_to_journal_prop]
                 # TODO: RollupPagePropertyValue 구현 후 이곳을 간소화
                 for journal in reading_journals:
-                    if not journal.last_timestamp:
-                        journal.retrieve()
-                    if not (date_list := journal.properties[journal_to_date_prop]):
+                    if not (date_list := journal.data.properties[journal_to_date_prop]):
                         continue
                     date = date_list[0]
-                    if not date.last_timestamp:
-                        date.retrieve()
-                    if date.properties[date_manual_value_prop] is None:
+                    if date.data.properties[date_manual_value_prop] is None:
                         continue
                     yield date
 
             if reading_journal_and_main_dates := {*get_reading_journal_dates(),
-                                                  *reading.properties[reading_to_main_date_prop]}:
+                                                  *reading.data.properties[reading_to_main_date_prop]}:
                 return get_earliest_date(reading_journal_and_main_dates)
-            if reading.properties[reading_match_date_by_created_time_prop]:
+            if reading.data.properties[reading_match_date_by_created_time_prop]:
                 reading_created_date = get_record_created_date(reading)
                 return self.date_namespace.get_by_date_value(reading_created_date)
 
@@ -166,7 +159,7 @@ class MatchReadingsStartDate(MatchAction):
             if not date:
                 return
             # final check if the property value is filled in the meantime
-            if reading.retrieve().properties[reading_to_start_date_prop]:
+            if reading.retrieve().data.properties[reading_to_start_date_prop]:
                 return
             reading.update(PageProperties({reading_to_start_date_prop: reading_to_start_date_prop.page_value([date])}))
             return date
@@ -180,7 +173,7 @@ class MatchWeekByRefDate(MatchAction):
                  record_to_week: str, record_to_date: str):
         super().__init__(base)
         self.record_db = Database(record_db_enum.id)
-        self.record_db_title = self.record_db.title = record_db_enum.title
+        self.record_db_title = self.record_db.data.title = record_db_enum.title
         self.record_to_week = RelationProperty(f'{DatabaseEnum.week_db.prefix}{record_to_week}')
         self.record_to_date = RelationProperty(f'{DatabaseEnum.date_db.prefix}{record_to_date}')
 
@@ -195,19 +188,19 @@ class MatchWeekByRefDate(MatchAction):
             self.record_to_week.filter.is_empty() & self.record_to_date.filter.is_not_empty())
 
     def filter(self, page: Page) -> bool:
-        return page.parent == self.record_db and page.properties[self.record_to_date]
+        return page.data.parent == self.record_db and page.data.properties[self.record_to_date]
 
     def process_page(self, record: Page) -> None:
         def _process_page():
             new_record_weeks = self.record_to_week.page_value()
-            for record_date in record.properties[self.record_to_date]:
-                if not record_date.last_response:
+            for record_date in record.data.properties[self.record_to_date]:
+                if not record_date.data:
                     record_date.retrieve()
-                new_record_weeks.append(record_date.properties[date_to_week_prop][0])
+                new_record_weeks.append(record_date.data.properties[date_to_week_prop][0])
 
             # final check if the property value is filled or changed in the meantime
-            prev_record_weeks = record.properties[self.record_to_week]
-            curr_record_weeks = record.retrieve().properties[self.record_to_week]
+            prev_record_weeks = record.data.properties[self.record_to_week]
+            curr_record_weeks = record.retrieve().data.properties[self.record_to_week]
             if (set(prev_record_weeks) != set(curr_record_weeks)) or (set(curr_record_weeks) == set(new_record_weeks)):
                 return
             record.update(PageProperties({self.record_to_week: new_record_weeks}))
@@ -229,15 +222,15 @@ class MatchWeekByDateValue(MatchAction):
         return self.date_db.query(date_to_week_prop.filter.is_empty())
 
     def filter(self, page: Page) -> bool:
-        return page.parent == self.date_db and not page.properties[date_to_week_prop]
+        return page.data.parent == self.date_db and not page.data.properties[date_to_week_prop]
 
     def process_page(self, date: Page):
-        date_value = date.properties[date_manual_value_prop]
+        date_value = date.data.properties[date_manual_value_prop]
         if not date_value:
             print(f'\t{date} -> Skipped')
             return
         week = self.week_namespace.get_by_date_value(date_value.start)
-        if date.retrieve().properties[date_to_week_prop]:
+        if date.retrieve().data.properties[date_to_week_prop]:
             return
         date.update(PageProperties({date_to_week_prop: date_to_week_prop.page_value([week])}))
         print(f'\t{date}\n\t\t-> {week}')
@@ -257,28 +250,22 @@ class MatchTopic(MatchAction):
         return self.record_db.query(self.record_to_ref_prop.filter.is_not_empty())
 
     def filter(self, record: Page) -> bool:
-        return bool(record.parent == self.record_db and record.properties[self.record_to_ref_prop])
+        return bool(record.data.parent == self.record_db and record.data.properties[self.record_to_ref_prop])
 
     def process_page(self, record: Page) -> None:
         # rewrite so that it utilizes the RelationPagePropertyValue's feature 
         #  (rather than based on builtin list and set)
-        curr_topic_list: list[Page] = list(record.properties[self.record_to_topic_prop])
+        curr_topic_list: list[Page] = list(record.data.properties[self.record_to_topic_prop])
         new_topic_set: set[Page] = set(curr_topic_list)
-        for ref in record.properties[self.record_to_ref_prop]:
-            if not ref.last_response:
-                ref.retrieve()
-            ref_topic_set = set(ref.properties[self.ref_to_topic_prop])
-            for topic in ref_topic_set:
-                if not topic.last_response:
-                    topic.retrieve()
-            ref_topic_set = {topic for topic in ref_topic_set
-                             if topic.properties[topic_base_type_prop] == topic_base_type_progress}
+        for ref in record.data.properties[self.record_to_ref_prop]:
+            ref_topic_set = {topic for topic in ref.data.properties[self.ref_to_topic_prop]
+                             if topic.data.properties[topic_base_type_prop] == topic_base_type_progress}
             if set(curr_topic_list) & ref_topic_set:
                 continue
             new_topic_set.update(ref_topic_set)
         if not new_topic_set - set(curr_topic_list):
             return
-        curr_topic_list = list(record.retrieve().properties[self.record_to_topic_prop])
+        curr_topic_list = list(record.retrieve().data.properties[self.record_to_topic_prop])
         new_topic = curr_topic_list + list(new_topic_set)
         record.update(PageProperties({
             self.record_to_topic_prop: self.record_to_topic_prop.page_value(new_topic)}))
@@ -299,7 +286,7 @@ class DatabaseIndex(metaclass=ABCMeta):
                 page = self.database.create_child_page(PageProperties({
                     self.title: self.title.page_value.from_plain_text(title_plain_text)
                 }))
-            self.pages_by_title_plain_text[page.properties.title.plain_text] = page
+            self.pages_by_title_plain_text[page.data.properties.title.plain_text] = page
         return page
 
 
