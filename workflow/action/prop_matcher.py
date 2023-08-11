@@ -261,7 +261,7 @@ class MatchTopic(MatchAction):
         curr_topic_list: list[Page] = list(record.data.properties[self.record_to_topic_prop])
         new_topic_set: set[Page] = set(curr_topic_list)
         for ref in record.data.properties[self.record_to_ref_prop]:
-            ref_topic_set = {topic for topic in ref.data.properties[self.ref_to_topic_prop]
+            ref_topic_set = {topic for topic in ref.get_data().properties[self.ref_to_topic_prop]
                              if topic.data.properties[topic_base_type_prop] == topic_base_type_progress}
             if set(curr_topic_list) & ref_topic_set:
                 continue
