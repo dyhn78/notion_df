@@ -107,9 +107,7 @@ class MigrationBackupLoadAction(IterableAction):
     @cache
     def get_candidate_props(cls, this_db: Database, linked_db: Database) -> list[RelationProperty]:
         candidate_props: list[RelationProperty] = []
-        if not this_db.data:
-            this_db.retrieve()
-        for prop in this_db.data.properties:
+        for prop in this_db.get_data().properties:
             if not isinstance(prop, RelationProperty):
                 continue
             if this_db.data.properties[prop].database == linked_db:
