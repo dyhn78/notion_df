@@ -60,8 +60,9 @@ class DatabaseEnum(Enum):
         if db.data is None:
             title_span = TextSpan(self.title)
             title_span.plain_text = self.title
+            # noinspection PyTypeChecker
             db.data = DatabaseData(self.id, None, None, None, Emoji(self.prefix),
-                                   None, None, RichText([title_span]), None, False, False)
+                                   None, None, RichText([title_span]), None, False, False, timestamp=0)
         return db
 
     @classmethod

@@ -81,7 +81,7 @@ class RequestError(Exception):
 
 @dataclass
 class Data(Deserializable, metaclass=ABCMeta):
-    timestamp: float = field(init=False, default_factory=datetime.now().timestamp)
+    timestamp: float = field(init=True, kw_only=True, default_factory=datetime.now().timestamp)
     raw: dict[str, Any] = field(init=False, default=None)
 
     @classmethod

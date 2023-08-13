@@ -334,7 +334,8 @@ class RelationDatabasePropertyValue(DatabasePropertyValue, metaclass=ABCMeta):
 
     @classmethod
     @cache
-    def _get_type_hints(cls) -> dict[str, type]:  # TODO deduplicate
+    def _get_type_hints(cls) -> dict[str, type]:
+        # TODO deduplicate
         from notion_df.entity import Database
         return get_type_hints(cls, {**globals(), **{cls.__name__: cls for cls in (Database,)}})
 

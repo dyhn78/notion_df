@@ -4,7 +4,7 @@ import inspect
 import re
 import types
 from abc import ABCMeta, abstractmethod
-from dataclasses import dataclass, fields, InitVar
+from dataclasses import fields, InitVar, Field
 from datetime import datetime, date
 from decimal import Decimal
 from enum import Enum
@@ -130,9 +130,8 @@ def deserialize(typ: type, serialized: Any):
     raise SerializationError('cannot deserialize: not supported class', err_vars, linebreak=True)
 
 
-@dataclass
 class Serializable(metaclass=ABCMeta):
-    """dataclass representation of the resources defined in Notion REST API.
+    """representation of the resources defined in Notion REST API.
     can be dumped into JSON object."""
 
     @abstractmethod
@@ -141,9 +140,11 @@ class Serializable(metaclass=ABCMeta):
 
     @final
     def _serialize_as_dict(self, **overrides: Any) -> dict[str, Any]:
-        """helper method to implement serialize().
+        """this can only be called from a dataclass.
+        helper method to implement serialize().
         Note: this drops post-init fields."""
         serialized = {}
+        # noinspection PyDataclass
         for fd in fields(self):
             if not fd.init:
                 continue
@@ -152,9 +153,8 @@ class Serializable(metaclass=ABCMeta):
         return serialized
 
 
-@dataclass
 class Deserializable(metaclass=ABCMeta):
-    """dataclass representation of the resources defined in Notion REST API.
+    """representation of the resources defined in Notion REST API.
     can be loaded from JSON object."""
 
     @classmethod
@@ -171,31 +171,40 @@ class Deserializable(metaclass=ABCMeta):
     @classmethod
     @final
     def _deserialize_from_dict(cls, serialized: dict[str, Any], **overrides: Any) -> Self:
-        """helper method to implement _deserialize_this(). must be called from a dataclass.
+        """this can only be called from a dataclass.
+        helper method to implement _deserialize_this().
         Note: this collects post-init fields as well."""
         if inspect.isabstract(cls):
             raise NotionDfTypeError('cannot instantiate abstract class', {'cls': cls, 'serialized': serialized})
+        undefined = object()
 
-        def deserialize_field(fd_name: str):
-            if fd_name in overrides:
-                return overrides[fd_name]
-            if fd_name not in cls._get_type_hints():
-                raise SerializationError(
-                    f'field "{fd_name}" should have explicit type hint or provided as "overrides"')
-            if fd_name not in serialized:
-                raise SerializationError(
-                    f'required field "{fd_name}" should be provided either as "serialized" or "overrides"')
-            return deserialize(cls._get_type_hints()[fd_name], serialized[fd_name])
+        def deserialize_field(_fd: Field):
+            if _fd.name in overrides:
+                return overrides[_fd.name]
+            if _fd.name in serialized:
+                if _fd.name not in cls._get_type_hints():
+                    raise SerializationError(
+                        f'field "{_fd.name}" should have explicit type hint or provided as "overrides"')
+                return deserialize(cls._get_type_hints()[_fd.name], serialized[_fd.name])
+            if _fd.default or _fd.default_factory:
+                return undefined
+            raise SerializationError(
+                f'field "{_fd.name}" has no default value, '
+                f'therefore it should be provided either as "serialized" or "overrides"')
 
-        init_params = {}
+        init_params: dict[str, Any] = {}
+        post_init_params: dict[str, Any] = {}
+        # noinspection PyDataclass
         for fd in fields(cls):
-            if fd.init:
-                init_params[fd.name] = deserialize_field(fd.name)
+            if (fd_value := deserialize_field(fd)) != undefined:
+                if fd.init:
+                    init_params[fd.name] = fd_value
+                else:
+                    post_init_params[fd.name] = fd_value
+
         self = cls(**init_params)  # type: ignore
-        for fd in fields(cls):
-            if not fd.init and (getattr(self, fd.name, None) is None) \
-                    and (fd.name in serialized or fd.name in overrides):
-                setattr(self, fd.name, deserialize_field(fd.name))
+        for fd_name, fd_value in post_init_params.items():
+            setattr(self, fd_name, fd_value)
         return self
 
     @classmethod
@@ -205,9 +214,12 @@ class Deserializable(metaclass=ABCMeta):
 
     @final
     def _repr_non_default_fields(self):
+        """this can only be called from a dataclass.
+        helper method to implement __repr__()."""
+        # noinspection PyDataclass
         return (f'{type(self).__name__}('
-                + ','.join(f'{fd.name}={getattr(self, fd.name)}' for fd in fields(self)
-                           if getattr(self, fd.name) != fd.default)
+                + ','.join(f'{fd.name}={getattr(self, fd.name)}'
+                           for fd in fields(self) if getattr(self, fd.name) != fd.default)
                 + ')')
 
 

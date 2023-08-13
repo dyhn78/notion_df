@@ -45,7 +45,8 @@ class DatabaseData(Data):
 
     @classmethod
     @cache
-    def _get_type_hints(cls) -> dict[str, type]:  # TODO deduplicate
+    def _get_type_hints(cls) -> dict[str, type]:
+        # TODO deduplicate
         from notion_df.entity import Block, Database, Page
         from notion_df.core.entity_core import Entity
         return get_type_hints(cls, {**globals(), **{cls.__name__: cls for cls in (Entity, Block, Database, Page)}})
