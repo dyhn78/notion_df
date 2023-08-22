@@ -20,6 +20,7 @@ record_datetime_auto_key = DateFormulaPropertyKey(EmojiCode.TIMER + '일시')
 date_to_week_prop = RelationProperty(DatabaseEnum.week_db.prefix_title)
 date_manual_value_prop = DateProperty(EmojiCode.CALENDAR + '날짜')
 time_manual_value_prop = RichTextProperty(EmojiCode.CALENDAR + '시간')
+date_range_manual_value_prop = DateProperty(EmojiCode.BIG_CALENDAR + '날짜 범위')
 journal_to_date_prop = RelationProperty(DatabaseEnum.date_db.prefix_title)
 journal_to_topic_prop = RelationProperty(DatabaseEnum.topic_db.prefix_title)
 journal_to_issue_prop = RelationProperty(DatabaseEnum.issue_db.prefix_title)
@@ -30,6 +31,10 @@ reading_to_start_date_prop = RelationProperty(DatabaseEnum.date_db.prefix + '시
 reading_to_journal_prop = RelationProperty(DatabaseEnum.journal_db.prefix_title)
 reading_match_date_by_created_time_prop = CheckboxFormulaProperty(EmojiCode.BLACK_NOTEBOOK + '시작일<-생성시간')
 
+
+# TODO
+#  - 읽기 - 📕유형 <- 꼭지> 추가 (스펙 논의 필요)
+#  - 일간/주간 1년 앞서 자동생성
 
 class MatchActionBase:
     def __init__(self):
@@ -316,12 +321,19 @@ def get_record_created_date(record: Page) -> dt.date:
     return (record.get_data().created_time + dt.timedelta(hours=-5)).date()
 
 
-def _get_start_date(date: Page) -> dt.date:
-    return date.get_data().properties[date_manual_value_prop].start
-
-
 def get_earliest_date(dates: Iterable[Page]) -> Page:
-    """only works for children of `DatabaseEnum.date_db`"""
+    """only works for children of `DatabaseEnum.date_db` or `week_db`"""
+
+    def _get_start_date(date: Page) -> dt.date:
+        parent_db = DatabaseEnum.from_entity(date.get_data().parent)
+        if parent_db == DatabaseEnum.date_db:
+            prop = date_manual_value_prop
+        elif parent_db == DatabaseEnum.week_db:
+            prop = date_range_manual_value_prop
+        else:
+            raise ValueError(date)
+        return date.get_data().properties[prop].start
+
     return min(dates, key=_get_start_date)
 
 

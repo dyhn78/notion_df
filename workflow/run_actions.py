@@ -65,8 +65,6 @@ def get_actions(create_window: bool, _backup_path: Path) -> list[Action]:
         MatchDateByCreatedTime(base, DatabaseEnum.depr_subject_db, '일간'),
         MatchWeekByRefDate(base, DatabaseEnum.depr_subject_db, '주간', '일간'),
 
-        # TODO 배포후: <읽기 - 📕유형 <- 꼭지> 추가 (스펙 논의 필요)
-
         MediaScraper(create_window),
     ]
 
