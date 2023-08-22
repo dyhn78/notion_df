@@ -31,11 +31,6 @@ reading_to_journal_prop = RelationProperty(DatabaseEnum.journal_db.prefix_title)
 reading_match_date_by_created_time_prop = CheckboxFormulaProperty(EmojiCode.BLACK_NOTEBOOK + '시작일<-생성시간')
 
 
-def get_record_created_date(record: Page) -> dt.date:
-    # TODO: '📆일시' parsing 지원
-    return (record.get_data().created_time + dt.timedelta(hours=-5)).date()
-
-
 class MatchActionBase:
     def __init__(self):
         self.date_namespace = DateIndex()
@@ -133,12 +128,6 @@ class MatchReadingsStartDate(MatchAction):
 
     def process_page(self, reading: Page):
         def find_date():
-            def get_start_date(date: Page) -> dt.date:
-                return date.get_data().properties[date_manual_value_prop].start
-
-            def get_earliest_date(dates: Iterable[Page]) -> Page:
-                return min(dates, key=get_start_date)
-
             def get_reading_journal_dates() -> Iterable[Page]:
                 reading_journals = reading.data.properties[reading_to_journal_prop]
                 # TODO: RollupPagePropertyValue 구현 후 이곳을 간소화
@@ -320,6 +309,20 @@ class WeekIndex(DatabaseIndex):
     @classmethod
     def last_day_of_week(cls, date_value: dt.date) -> dt.date:
         return cls.first_day_of_week(date_value) + dt.timedelta(days=6)
+
+
+def get_record_created_date(record: Page) -> dt.date:
+    # TODO: '📆일시' parsing 지원
+    return (record.get_data().created_time + dt.timedelta(hours=-5)).date()
+
+
+def _get_start_date(date: Page) -> dt.date:
+    return date.get_data().properties[date_manual_value_prop].start
+
+
+def get_earliest_date(dates: Iterable[Page]) -> Page:
+    """only works for children of `DatabaseEnum.date_db`"""
+    return min(dates, key=_get_start_date)
 
 
 if __name__ == '__main__':

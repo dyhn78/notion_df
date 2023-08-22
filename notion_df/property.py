@@ -643,14 +643,14 @@ class NumberProperty(Property[NumberDatabasePropertyValue, Number, NumberFilterB
 class PeopleProperty(Property[PlainDatabasePropertyValue, list[User], PeopleFilterBuilder]):
     typename = 'people'
     database_value = PlainDatabasePropertyValue
-    page_value = list[User]
+    page_value: type[list[User]] = list[User]
     _filter_cls = PeopleFilterBuilder
 
 
 class PhoneNumberProperty(Property[PlainDatabasePropertyValue, str, TextFilterBuilder]):
     typename = 'phone_number'
-    database_value = PlainDatabasePropertyValue
-    page_value = str
+    database_value: type[PlainDatabasePropertyValue] = PlainDatabasePropertyValue
+    page_value: type[str] = str
     _filter_cls = TextFilterBuilder
 
 
@@ -658,7 +658,7 @@ class RelationProperty(Property[RelationDatabasePropertyValue_T, RelationPagePro
     """cannot access database properties - use subclasses instead."""
     typename = 'relation'
     database_value: type[RelationDatabasePropertyValue] = RelationDatabasePropertyValue
-    page_value = RelationPagePropertyValue
+    page_value: type[RelationPagePropertyValue] = RelationPagePropertyValue
     _filter_cls = RelationFilterBuilder
 
     @classmethod

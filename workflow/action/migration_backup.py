@@ -7,6 +7,7 @@ from notion_df.data.entity_data import PageData
 from notion_df.entity import Page, Database
 from notion_df.property import RelationProperty, PageProperties
 from workflow.action.action_core import IterableAction
+from workflow.action.prop_matcher import get_earliest_date
 from workflow.block_enum import DatabaseEnum
 from workflow.service.backup_service import ResponseBackupService
 
@@ -87,6 +88,10 @@ class MigrationBackupLoadAction(IterableAction):
                     continue
                 this_new_properties.setdefault(new_prop, this_page.data.properties[new_prop])
                 this_new_properties[new_prop].append(linked_page)
+        for this_new_prop in this_new_properties:
+            if any(stem in this_new_prop.name for stem in ['시작', '생성']):
+                dates = cast(RelationProperty.page_value, this_new_properties[this_new_prop])
+                this_new_properties[this_new_prop] = RelationProperty.page_value([get_earliest_date(dates)])
         if not this_new_properties:
             return
         try:
