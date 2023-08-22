@@ -2,13 +2,13 @@ from __future__ import annotations
 
 from typing import Literal, Union
 
-from notion_df.util.collection import StrEnum
+from notion_df.util.collection import PlainStrEnum
 
 TimestampName = Literal['created_time', 'last_edited_time']
 Number = Union[int, float]
 
 
-class BlockColor(StrEnum):
+class BlockColor(PlainStrEnum):
     DEFAULT = 'default'
     GRAY = 'gray'
     BROWN = 'brown'
@@ -30,7 +30,7 @@ class BlockColor(StrEnum):
     RED_BACKGROUND = 'red_background'
 
 
-class OptionColor(StrEnum):
+class OptionColor(PlainStrEnum):
     DEFAULT = 'default'
     GRAY = 'gray'
     BROWN = 'brown'
@@ -43,7 +43,7 @@ class OptionColor(StrEnum):
     RED = 'red'
 
 
-class NumberFormat(StrEnum):
+class NumberFormat(PlainStrEnum):
     NUMBER = 'number'
     NUMBER_WITH_COMMAS = 'number_with_commas'
     PERCENT = 'percent'
@@ -85,7 +85,7 @@ class NumberFormat(StrEnum):
     SINGAPORE_DOLLAR = 'singapore_dollar'
 
 
-class RollupFunction(StrEnum):
+class RollupFunction(PlainStrEnum):
     AVERAGE = 'average'
     CHECKED = 'checked'
     COUNT = 'count'
@@ -112,7 +112,7 @@ class RollupFunction(StrEnum):
     UNIQUE = 'unique'
 
 
-class CodeLanguage(StrEnum):
+class CodeLanguage(PlainStrEnum):
     ABAP = "abap"
     ARDUINO = "arduino"
     BASH = "bash"

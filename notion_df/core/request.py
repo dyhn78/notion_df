@@ -13,7 +13,7 @@ from typing_extensions import Self
 
 from notion_df.core.exception import NotionDfValueError, NotionDfIndexError, NotionDfTypeError
 from notion_df.core.serialization import deserialize, serialize, Deserializable
-from notion_df.util.collection import StrEnum
+from notion_df.util.collection import PlainStrEnum
 from notion_df.util.misc import repr_object
 from notion_df.variable import Settings, print_width
 
@@ -154,7 +154,7 @@ class RequestSettings:
     url: str
 
 
-class Method(StrEnum):
+class Method(PlainStrEnum):
     GET = 'GET'
     POST = 'POST'
     PUT = 'PUT'
@@ -164,7 +164,7 @@ class Method(StrEnum):
     # OPTIONS = 'OPTIONS'
 
 
-class Version(StrEnum):
+class Version(PlainStrEnum):
     v20220222 = '2022-02-22'
     v20220628 = '2022-06-28'
 
