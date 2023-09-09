@@ -51,19 +51,19 @@ def get_actions(create_window: bool, _backup_path: Path) -> list[Action]:
         MatchWeekByRefDate(base, DatabaseEnum.reading_db, '주간', '일간'),
         MatchWeekByRefDate(base, DatabaseEnum.reading_db, '시작', '시작'),  # TODO: can be deprecated
 
-        MatchDateByCreatedTime(base, DatabaseEnum.class_db, '일간'),
-        MatchWeekByRefDate(base, DatabaseEnum.class_db, '주간', '일간'),
-
         MatchDateByCreatedTime(base, DatabaseEnum.point_db, '일간'),
         MatchWeekByRefDate(base, DatabaseEnum.point_db, '주간', '일간'),
+        #
+        # MatchDateByCreatedTime(base, DatabaseEnum.depr_asset_db, '일간'),
+        # MatchWeekByRefDate(base, DatabaseEnum.depr_asset_db, '주간', '일간'),
 
-        MatchDateByCreatedTime(base, DatabaseEnum.depr_journal_db, '일간'),
-        MatchDateByCreatedTime(base, DatabaseEnum.depr_journal_db, '생성'),
-        MatchWeekByRefDate(base, DatabaseEnum.depr_journal_db, '주간', '일간'),
-        MatchTimeManualValue(base, DatabaseEnum.depr_journal_db, '일간'),
-
-        MatchDateByCreatedTime(base, DatabaseEnum.depr_subject_db, '일간'),
-        MatchWeekByRefDate(base, DatabaseEnum.depr_subject_db, '주간', '일간'),
+        # MatchDateByCreatedTime(base, DatabaseEnum.depr_journal_db, '일간'),
+        # MatchDateByCreatedTime(base, DatabaseEnum.depr_journal_db, '생성'),
+        # MatchWeekByRefDate(base, DatabaseEnum.depr_journal_db, '주간', '일간'),
+        # MatchTimeManualValue(base, DatabaseEnum.depr_journal_db, '일간'),
+        #
+        # MatchDateByCreatedTime(base, DatabaseEnum.depr_subject_db, '일간'),
+        # MatchWeekByRefDate(base, DatabaseEnum.depr_subject_db, '주간', '일간'),
 
         MediaScraper(create_window),
     ]
