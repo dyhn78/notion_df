@@ -24,7 +24,6 @@ class DatabaseEnum(Enum):
     agenda_db = ('요점', '2c5411ba6a0f43a0a8aa06295751e37a', EmojiCode.RED_HEART)
 
     reading_db = ('읽기', 'c326f77425a0446a8aa309478767c85b', EmojiCode.YELLOW_CIRCLE)
-    asset_db = ('자산', '52d387ea0aaa470cb69332708c61b34d', EmojiCode.YELLOW_HEART)
 
     date_db = ('일간', '961d1ca0a3d24a46b838ba85e710f18d', EmojiCode.GREEN_CIRCLE)
     week_db = ('주간', 'd020b399cf5947a59d11a0b9e0ea45d0', EmojiCode.GREEN_HEART)
@@ -40,6 +39,7 @@ class DatabaseEnum(Enum):
     depr_channel_db = ('채널', '2d3f4ea770854b8e9e30abecd4d31a86', EmojiCode.BLACK_HEART)
     depr_location_db = ('장소', '920e2e10225d450d8bb084697f6d0fc6', EmojiCode.BLACK_HEART)
     depr_theme_db = ('주제 -220222', '5464267393e940a58e3f10db306bf3e4', EmojiCode.BLACK_HEART)
+    depr_asset_db = ('자산', '52d387ea0aaa470cb69332708c61b34d', EmojiCode.YELLOW_HEART)
 
     def __init__(self, title: str, id_or_url: str, prefix: str):
         self._value_ = self._name_
