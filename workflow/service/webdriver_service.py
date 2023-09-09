@@ -9,15 +9,16 @@ from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 
 
-class WebDriverFactory:
+class WebDriverGenerator:
     ON_WINDOWS = (os.name == 'nt')
 
     def __init__(self, create_window: bool):
         self.drivers: list[webdriver.Chrome] = []
         self.create_window = create_window
 
-    def __call__(self) -> webdriver.Chrome:
-        service = Service(ChromeDriverManager().install())
+    def generate(self) -> webdriver.Chrome:
+        driver_path = ChromeDriverManager().install()
+        service = Service(driver_path)
         if not self.create_window and self.ON_WINDOWS:
             # https://www.zacoding.com/en/post/python-selenium-hide-console/
             from subprocess import CREATE_NO_WINDOW
@@ -27,7 +28,7 @@ class WebDriverFactory:
             options.add_argument('--headless')
             options.add_argument('--disable-dev-shm-usage')
             options.add_argument('--no-sandbox')
-        driver = webdriver.Chrome(service=service, options=options)
+        driver = webdriver.Chrome(executable_path=driver_path, service=service, options=options)
         self.drivers.append(driver)
         return driver
 
