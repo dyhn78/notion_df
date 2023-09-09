@@ -13,7 +13,7 @@ from typing_extensions import Self
 
 from notion_df.core.exception import NotionDfValueError, NotionDfIndexError, NotionDfTypeError
 from notion_df.core.serialization import deserialize, serialize, Deserializable
-from notion_df.util.collection import StrEnum
+from notion_df.util.collection import PlainStrEnum
 from notion_df.util.misc import repr_object
 from notion_df.variable import Settings, print_width
 
@@ -40,10 +40,11 @@ class Request:
     @retry(wait=wait_exponential(exp_base=2, min=3), stop=stop_after_delay(60),
            retry=retry_if_exception(is_server_error))
     def execute(self) -> requests.Response:
-        if Settings.print:
-            pprint(self, width=print_width)
         response = requests.request(method=self.method.value, url=self.url, headers=self.headers,
                                     params=self.params, json=self.json, timeout=30)
+        if Settings.print:
+            pprint(self, width=print_width)
+            print(f'->: {response.text}')
         try:
             response.raise_for_status()
             return response
@@ -79,20 +80,38 @@ class RequestError(Exception):
 
 
 @dataclass
-class Response(Deserializable, metaclass=ABCMeta):
-    timestamp: float = field(init=False, default_factory=datetime.now().timestamp)
-    raw_data: dict[str, Any] = field(init=False, default=None)
+class Data(Deserializable, metaclass=ABCMeta):
+    timestamp: float = field(init=True, kw_only=True, default_factory=datetime.now().timestamp)
+    raw: dict[str, Any] = field(init=False, default=None)
 
     @classmethod
-    def _deserialize_this(cls, raw_data: dict[str, Any]) -> Self:
-        return cls._deserialize_from_dict(raw_data, raw_data=raw_data)
+    def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
+        return cls._deserialize_from_dict(raw, raw=raw)
+
+    @classmethod
+    def deserialize(cls, serialized: Any) -> Self:
+        from notion_df.data.entity_data import BlockData, DatabaseData, PageData
+
+        if cls != Data:
+            return cls._deserialize_this(serialized)
+
+        object_kind = serialized['object']
+        if object_kind == 'block':
+            subclass = BlockData
+        elif object_kind == 'database':
+            subclass = DatabaseData
+        elif object_kind == 'page':
+            subclass = PageData
+        else:
+            raise ValueError(object_kind)
+        return subclass.deserialize(serialized)
 
     def __del__(self):
-        del self.raw_data
+        del self.raw
 
 
-Response_T = TypeVar('Response_T', bound=Response)
-ResponseElement_T = TypeVar('ResponseElement_T')
+Data_T = TypeVar('Data_T', bound=Data)
+DataElement_T = TypeVar('DataElement_T')
 
 
 @dataclass
@@ -101,7 +120,7 @@ class RequestBuilder(metaclass=ABCMeta):
     #  - Request.execute() returns Paginator
     #  - Paginator can interact with Request instance and able to call Entity._send_response()
     """base request form made of various Resources.
-    all non-abstract subclasses must provide class type argument `Response_T`.
+    all non-abstract subclasses must provide class type argument `Data_T`.
     get token from https://www.notion.so/my-integrations"""
     token: str
 
@@ -115,7 +134,7 @@ class RequestBuilder(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def execute(self) -> Response:
+    def execute(self):
         """the unified execution method."""
         pass
 
@@ -135,7 +154,7 @@ class RequestSettings:
     url: str
 
 
-class Method(StrEnum):
+class Method(PlainStrEnum):
     GET = 'GET'
     POST = 'POST'
     PUT = 'PUT'
@@ -145,32 +164,32 @@ class Method(StrEnum):
     # OPTIONS = 'OPTIONS'
 
 
-class Version(StrEnum):
+class Version(PlainStrEnum):
     v20220222 = '2022-02-22'
     v20220628 = '2022-06-28'
 
 
-class SingleRequestBuilder(Generic[Response_T], RequestBuilder, metaclass=ABCMeta):
-    response_type: type[Response_T]
+class SingleRequestBuilder(Generic[Data_T], RequestBuilder, metaclass=ABCMeta):
+    response_type: type[Data_T]
 
     def __init_subclass__(cls, **kwargs):
         if not inspect.isabstract(cls):
             assert cls.response_type
 
     @final
-    def execute(self) -> Response_T:
+    def execute(self) -> Data_T:
         settings = self.get_settings()
         response = Request(method=settings.method, url=settings.url, headers=self.headers, params=None,
                            json=serialize(self.get_body())).execute()
         return self.parse_response_data(response.json())  # nomypy
 
     @classmethod
-    def parse_response_data(cls, data: dict[str, Any]) -> Response_T:
+    def parse_response_data(cls, data: dict[str, Any]) -> Data_T:
         return cls.response_type.deserialize(data)
 
 
-class PaginatedRequestBuilder(Generic[ResponseElement_T], RequestBuilder, metaclass=ABCMeta):
-    response_element_type: type[ResponseElement_T]
+class PaginatedRequestBuilder(Generic[DataElement_T], RequestBuilder, metaclass=ABCMeta):
+    response_element_type: type[DataElement_T]
     page_size: int = None  # TODO - AS-IS: total size of all pages summed, TO-BE: each request size
 
     def __init_subclass__(cls, **kwargs):
@@ -202,7 +221,7 @@ class PaginatedRequestBuilder(Generic[ResponseElement_T], RequestBuilder, metacl
                            json=serialize(body)).execute()
         return response.json()
 
-    def execute(self) -> Iterator[ResponseElement_T]:
+    def execute(self) -> Iterator[DataElement_T]:
         page_size_total = self.page_size if self.page_size is not None else float('inf')
         page_size_retrieved = 0
 
@@ -218,7 +237,7 @@ class PaginatedRequestBuilder(Generic[ResponseElement_T], RequestBuilder, metacl
         return
 
     @classmethod
-    def parse_response_data(cls, data: dict[str, Any]) -> Iterator[ResponseElement_T]:
+    def parse_response_data(cls, data: dict[str, Any]) -> Iterator[DataElement_T]:
         for data_element in data['results']:
             yield deserialize(cls.response_element_type, data_element)
 

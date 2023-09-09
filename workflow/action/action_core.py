@@ -10,9 +10,9 @@ from typing import Iterable, Optional, cast, Any
 from uuid import UUID
 
 from notion_df.core.serialization import deserialize_datetime
+from notion_df.data.entity_data import DividerBlockValue, ParagraphBlockValue, ToggleBlockValue, CodeBlockValue
+from notion_df.data.rich_text import RichText, TextSpan, UserMention
 from notion_df.entity import Page, search_by_title, Block
-from notion_df.object.block import DividerBlockValue, ParagraphBlockValue, ToggleBlockValue, CodeBlockValue
-from notion_df.object.rich_text import RichText, TextSpan, UserMention
 from notion_df.util.misc import repr_object
 from notion_df.variable import Settings, print_width, my_tz
 
@@ -45,18 +45,6 @@ class Action(metaclass=ABCMeta):
     def execute_all(self) -> None:
         self.process(self.query_all())
 
-    @classmethod
-    def execute_by_last_edited_time(cls, actions: list[Action], lower_bound: datetime,
-                                    upper_bound: Optional[datetime] = None) -> bool:
-        # TODO: if no recent_pages, raise SkipException instead of returning False
-        recent_pages = set(search_pages_by_last_edited_time(lower_bound, upper_bound))
-        recent_pages.discard(Page(log_page_id))
-        if not recent_pages:
-            return False
-        for self in actions:
-            self.process(page for page in recent_pages if self.filter(page))
-        return True
-
 
 class IterableAction(Action, metaclass=ABCMeta):
     def process(self, pages: Iterable[Page]):
@@ -80,14 +68,50 @@ def search_pages_by_last_edited_time(lower_bound: datetime, upper_bound: Optiona
     lower_bound = lower_bound.replace(second=0, microsecond=0)
     pages = []
     for page in search_by_title('', 'page'):
-        if upper_bound is not None and page.last_edited_time > upper_bound:
+        if upper_bound is not None and page.data.last_edited_time > upper_bound:
             continue
-        if page.last_edited_time < lower_bound:
+        if page.data.last_edited_time < lower_bound:
             break
         pages.append(page)
     if Settings.print.enabled:
         pprint(pages, width=print_width)
     return pages
+
+
+def execute_by_last_edited_time(actions: list[Action], lower_bound: datetime,
+                                upper_bound: Optional[datetime] = None) -> bool:
+    # TODO: if no recent_pages, raise SkipException instead of returning False
+    recent_pages = set(search_pages_by_last_edited_time(lower_bound, upper_bound))
+    recent_pages.discard(Page(log_page_id))
+    if not recent_pages:
+        return False
+    for self in actions:
+        self.process(page for page in recent_pages if self.filter(page))
+    return True
+
+
+def run_all(actions: list[Action], print_body: bool) -> None:
+    with Logger(print_body=print_body, update_last_success_time=False):
+        for action in actions:
+            action.execute_all()
+
+
+def run_from_last_edited_time_bound(actions: list[Action], print_body: bool,
+                                    timedelta_size: timedelta, update_last_success_time: bool) -> None:
+    with Logger(print_body=print_body, update_last_success_time=update_last_success_time) as logger:
+        execute_by_last_edited_time(actions, logger.start_time - timedelta_size, logger.start_time)
+
+
+def run_from_last_success(actions: list[Action], print_body: bool,
+                          update_last_success_time: bool) -> bool:
+    with Logger(print_body=print_body, update_last_success_time=update_last_success_time) as logger:
+        if logger.last_success_time is not None:
+            logger.enabled = execute_by_last_edited_time(actions, logger.last_success_time)
+            return logger.enabled
+        else:
+            for action in actions:
+                action.execute_all()
+            return True
 
 
 class Logger:
@@ -107,7 +131,7 @@ class Logger:
         self.last_success_time_blocks = log_last_success_time_parent_block.retrieve_children()
         last_execution_time_block = self.last_success_time_blocks[0]
         last_execution_time_str = cast(ParagraphBlockValue,
-                                       last_execution_time_block.value).rich_text.plain_text
+                                       last_execution_time_block.data.value).rich_text.plain_text
         if last_execution_time_str == 'ALL':
             self.last_success_time = None
         else:
@@ -146,14 +170,14 @@ class Logger:
 
         log_group_block = None
         for block in reversed(log_page_block.retrieve_children()):
-            if isinstance(block.value, DividerBlockValue):
+            if isinstance(block.data.value, DividerBlockValue):
                 log_group_block = log_page_block.append_children([
                     ToggleBlockValue(RichText([TextSpan(self.start_time_group_str)]))])[0]
                 break
-            if cast(ToggleBlockValue, block.value).rich_text.plain_text == self.start_time_group_str:
+            if cast(ToggleBlockValue, block.data.value).rich_text.plain_text == self.start_time_group_str:
                 log_group_block = block
                 break
-            if self.start_time - block.created_time > timedelta(days=7):
+            if self.start_time - block.data.created_time > timedelta(days=7):
                 block.delete()
         assert isinstance(log_group_block, Block)
 

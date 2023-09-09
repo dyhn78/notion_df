@@ -6,6 +6,8 @@ from time import sleep
 import psutil
 
 
+# TODO: add click command
+# TODO: move inside action/core.py
 def is_already_running(script_path: Path):
     count = 0
     for process in psutil.process_iter(['name', 'cmdline']):
@@ -25,9 +27,9 @@ if __name__ == '__main__':
         sys.exit(1)
     print(f'{"#" * 5 } Start.')
 
-    from workflow.action.action_run import run_from_last_success
-    # TODO: add click command
-    log_enabled = run_from_last_success(False, False, this_path.parent / 'backup', True)
+    from workflow.run_actions import actions
+    from workflow.action.action_core import run_from_last_success
+    log_enabled = run_from_last_success(actions, False, True)
     print(f'{"#" * 5 } {"Done." if log_enabled else "No new record."}')
     if is_already_running(this_path):
         sys.stderr.write("Other script is running.\n")

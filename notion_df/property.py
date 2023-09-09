@@ -13,14 +13,14 @@ from typing_extensions import Self
 
 from notion_df.core.exception import NotionDfKeyError, NotionDfValueError
 from notion_df.core.serialization import DualSerializable, deserialize, serialize
-from notion_df.object.common import StatusGroups, SelectOption, DateRange
-from notion_df.object.constant import RollupFunction, NumberFormat, Number
-from notion_df.object.file import Files
-from notion_df.object.filter import PropertyFilter, CheckboxFilterBuilder, PeopleFilterBuilder, \
+from notion_df.data.common import StatusGroups, SelectOption, DateRange
+from notion_df.data.constant import RollupFunction, NumberFormat, Number
+from notion_df.data.file import Files
+from notion_df.data.filter import PropertyFilter, CheckboxFilterBuilder, PeopleFilterBuilder, \
     DateFilterBuilder, TextFilterBuilder, FilesFilterBuilder, NumberFilterBuilder, MultiSelectFilterBuilder, \
     RelationFilterBuilder, SelectFilterBuilder, FilterBuilder, FormulaPropertyFilter
-from notion_df.object.rich_text import RichText
-from notion_df.object.user import PartialUser, User
+from notion_df.data.rich_text import RichText
+from notion_df.data.user import PartialUser, User
 from notion_df.util.collection import FinalDict
 from notion_df.util.misc import repr_object
 
@@ -42,7 +42,9 @@ class Property(Generic[DatabasePropertyValue_T, PagePropertyValue_T, FilterBuild
     page_value: type[PagePropertyValue_T]
     _filter_cls: type[FilterBuilder_T]
 
-    def __init__(self, name: str):
+    def __init__(self, name: Optional[str]):
+        # TODO: consider signature `(self, *, name: Optional[str], id: Optional[str])`
+        #  - raise ValueError if both are empty
         self.name: Final[str] = name
         self.id: Optional[str] = None
 
@@ -50,7 +52,7 @@ class Property(Generic[DatabasePropertyValue_T, PagePropertyValue_T, FilterBuild
         return repr_object(self, name=self.name, id=self.id)
 
     def __eq__(self, other: Property) -> bool:
-        if self.name != other.name:
+        if self.name is not None and other.name is not None and self.name != other.name:
             return False
         if self.id is not None and other.id is not None and self.id != other.id:
             return False
@@ -59,6 +61,8 @@ class Property(Generic[DatabasePropertyValue_T, PagePropertyValue_T, FilterBuild
         return True
 
     def __hash__(self):
+        # TODO: make Properties able to resolve elements(__getitem__, __setitem__, __delitem__)
+        #  both using self.name and self.id
         return hash(self.name)
 
     def __init_subclass__(cls, **kwargs):
@@ -76,31 +80,34 @@ class Property(Generic[DatabasePropertyValue_T, PagePropertyValue_T, FilterBuild
 
         return self._filter_cls(build)
 
-    # TODO: integrate inside PageProperties - _serialize_page(), _deserialize_page(), _deserialize_database()
-    #  since we will not create Property types dynamically
+    # TODO
+    ##  - integrate inside PageProperties - _serialize_page(), _deserialize_page(), _deserialize_database()
+    ##   since we will not create Property types dynamically
+    #  - rewrite to _deserialize_page_item(), return tuple[Prop, PropValue]
+    #  - RetrievePagePropertyItem.execute() & Page.retrieve_property_item() should call this and return tuple
 
     # noinspection PyMethodMayBeStatic
-    def _serialize_page(self, prop_value: PagePropertyValue_T) -> dict[str, Any]:
+    def _serialize_page_value(self, prop_value: PagePropertyValue_T) -> dict[str, Any]:
         # if type(prop_value) != self.page_value:
         #    prop_value = self.page_value(prop_value)
         return serialize(prop_value)
 
     @classmethod
-    def _deserialize_page(cls, prop_serialized: dict[str, Any]) -> PagePropertyValue_T:
+    def _deserialize_page_value(cls, prop_serialized: dict[str, Any]) -> PagePropertyValue_T:
         """allow proxy-deserialization of subclasses."""
         typename = prop_serialized['type']
         if cls == Property:
             subclass = property_registry[typename]
-            return subclass._deserialize_page(prop_serialized)
+            return subclass._deserialize_page_value(prop_serialized)
         return deserialize(cls.page_value, prop_serialized[typename])
 
     @classmethod
-    def _deserialize_database(cls, prop_serialized: dict[str, Any]) -> DatabasePropertyValue_T:
+    def _deserialize_database_value(cls, prop_serialized: dict[str, Any]) -> DatabasePropertyValue_T:
         """allow proxy-deserialization of subclasses."""
         typename = prop_serialized['type']
         if cls == Property:
             subclass = property_registry[typename]
-            return subclass._deserialize_page(prop_serialized)
+            return subclass._deserialize_page_value(prop_serialized)
         return deserialize(cls.database_value, prop_serialized[typename])
 
 
@@ -138,6 +145,10 @@ class Properties(DualSerializable, MutableMapping[Property, PropertyValue_T], me
                 return self._key_by_id[key]
             return self._key_by_name[key]
         if isinstance(key, Property):
+            # TODO: make Properties able to resolve elements(__getitem__, __setitem__, __delitem__)
+            #  both using self.name and self.id [also see Property.__hash__]
+            if key.name is None and (key_by_id := self._key_by_id.get(key.id)):
+                return key_by_id
             # TODO: add frozen key options (if user copied only keys from another properties instance)
             #  this will check `key in self._key_by_name()`
             return key
@@ -189,7 +200,7 @@ class DatabaseProperties(Properties,
             property_key = property_key_cls(prop_name)
             property_key.id = prop_serialized['id']
             # noinspection PyProtectedMember
-            property_value = property_key_cls._deserialize_database(prop_serialized)
+            property_value = property_key_cls._deserialize_database_value(prop_serialized)
             self[property_key] = property_value
         return self
 
@@ -214,7 +225,7 @@ class PageProperties(Properties, MutableMapping[Property[Any, PagePropertyValue_
         # noinspection PyProtectedMember
         return {key.name: {
             'type': key.typename,
-            key.typename: key._serialize_page(value),
+            key.typename: key._serialize_page_value(value),
         } for key, value in self.items()}
 
     @classmethod
@@ -226,7 +237,7 @@ class PageProperties(Properties, MutableMapping[Property[Any, PagePropertyValue_
             property_key = property_key_cls(prop_name)
             property_key.id = prop_serialized['id']
             # noinspection PyProtectedMember
-            property_value = property_key_cls._deserialize_page(prop_serialized)
+            property_value = property_key_cls._deserialize_page_value(prop_serialized)
             self[property_key] = property_value
 
             if isinstance(property_key, TitleProperty):
@@ -323,7 +334,8 @@ class RelationDatabasePropertyValue(DatabasePropertyValue, metaclass=ABCMeta):
 
     @classmethod
     @cache
-    def _get_type_hints(cls) -> dict[str, type]:  # TODO deduplicate
+    def _get_type_hints(cls) -> dict[str, type]:
+        # TODO deduplicate
         from notion_df.entity import Database
         return get_type_hints(cls, {**globals(), **{cls.__name__: cls for cls in (Database,)}})
 
@@ -551,12 +563,12 @@ class FormulaProperty(Property[FormulaDatabasePropertyValue, PagePropertyValue_T
 
         return self._filter_cls(build)
 
-    def _serialize_page(self, prop_value: PropertyValue_T) -> dict[str, Any]:
+    def _serialize_page_value(self, prop_value: PropertyValue_T) -> dict[str, Any]:
         return {'type': self.value_typename,
                 self.value_typename: prop_value}
 
     @classmethod
-    def _deserialize_page(cls, prop_serialized: dict[str, Any]) -> PropertyValue_T:
+    def _deserialize_page_value(cls, prop_serialized: dict[str, Any]) -> PropertyValue_T:
         typename = prop_serialized['type']
         value_typename = prop_serialized[typename]['type']
         if cls == FormulaProperty:
@@ -572,7 +584,7 @@ class FormulaProperty(Property[FormulaDatabasePropertyValue, PagePropertyValue_T
                 case _:
                     raise NotionDfValueError('invalid value_typename.',
                                              {'prop_serialized': prop_serialized, 'value_typename': value_typename})
-            return subclass._deserialize_page(prop_serialized)
+            return subclass._deserialize_page_value(prop_serialized)
         return deserialize(cls.page_value, prop_serialized[typename][value_typename])
 
 
@@ -631,14 +643,14 @@ class NumberProperty(Property[NumberDatabasePropertyValue, Number, NumberFilterB
 class PeopleProperty(Property[PlainDatabasePropertyValue, list[User], PeopleFilterBuilder]):
     typename = 'people'
     database_value = PlainDatabasePropertyValue
-    page_value = list[User]
+    page_value: type[list[User]] = list[User]
     _filter_cls = PeopleFilterBuilder
 
 
 class PhoneNumberProperty(Property[PlainDatabasePropertyValue, str, TextFilterBuilder]):
     typename = 'phone_number'
-    database_value = PlainDatabasePropertyValue
-    page_value = str
+    database_value: type[PlainDatabasePropertyValue] = PlainDatabasePropertyValue
+    page_value: type[str] = str
     _filter_cls = TextFilterBuilder
 
 
@@ -646,12 +658,12 @@ class RelationProperty(Property[RelationDatabasePropertyValue_T, RelationPagePro
     """cannot access database properties - use subclasses instead."""
     typename = 'relation'
     database_value: type[RelationDatabasePropertyValue] = RelationDatabasePropertyValue
-    page_value = RelationPagePropertyValue
+    page_value: type[RelationPagePropertyValue] = RelationPagePropertyValue
     _filter_cls = RelationFilterBuilder
 
     @classmethod
-    def _deserialize_page(cls, prop_serialized: dict[str, Any]) -> PropertyValue_T:
-        prop_value = super()._deserialize_page(prop_serialized)
+    def _deserialize_page_value(cls, prop_serialized: dict[str, Any]) -> PropertyValue_T:
+        prop_value = super()._deserialize_page_value(prop_serialized)
         prop_value.has_more = prop_serialized['has_more']
         return prop_value
 

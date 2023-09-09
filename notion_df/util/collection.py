@@ -12,6 +12,11 @@ class StrEnum(str, Enum):
         return self._value_
 
 
+class PlainStrEnum(StrEnum):
+    def __str__(self) -> str:
+        return self.value
+
+
 Keychain = NewType('Keychain', tuple[str, ...])
 
 KT = TypeVar('KT')

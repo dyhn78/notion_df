@@ -9,14 +9,14 @@ from uuid import UUID
 
 from typing_extensions import Self
 
-from notion_df.core.request import Response
+from notion_df.core.request import Data
 from notion_df.core.serialization import DualSerializable
-from notion_df.object.common import Icon
-from notion_df.object.constant import BlockColor, CodeLanguage
-from notion_df.object.file import File
-from notion_df.object.partial_parent import PartialParent
-from notion_df.object.rich_text import Span, RichText
-from notion_df.object.user import PartialUser
+from notion_df.data.common import Icon
+from notion_df.data.constant import BlockColor, CodeLanguage
+from notion_df.data.file import File
+from notion_df.data.partial_parent import PartialParent
+from notion_df.data.rich_text import Span, RichText
+from notion_df.data.user import PartialUser
 from notion_df.property import DatabaseProperties, PageProperties
 from notion_df.util.collection import FinalDict
 
@@ -25,7 +25,7 @@ if TYPE_CHECKING:
 
 
 @dataclass
-class DatabaseResponse(Response):
+class DatabaseData(Data):
     id: UUID
     parent: Union[Block, Page, None]
     created_time: datetime
@@ -39,20 +39,21 @@ class DatabaseResponse(Response):
     is_inline: bool
 
     @classmethod
-    def _deserialize_this(cls, raw_data: dict[str, Any]) -> Self:
-        return cls._deserialize_from_dict(raw_data, raw_data=raw_data,
-                                          parent=PartialParent.deserialize(raw_data['parent']).entity)
+    def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
+        return cls._deserialize_from_dict(raw, raw=raw,
+                                          parent=PartialParent.deserialize(raw['parent']).entity)
 
     @classmethod
     @cache
-    def _get_type_hints(cls) -> dict[str, type]:  # TODO deduplicate
+    def _get_type_hints(cls) -> dict[str, type]:
+        # TODO deduplicate
         from notion_df.entity import Block, Database, Page
-        from notion_df.core.entity_base import Entity
+        from notion_df.core.entity_core import Entity
         return get_type_hints(cls, {**globals(), **{cls.__name__: cls for cls in (Entity, Block, Database, Page)}})
 
 
 @dataclass
-class PageResponse(Response):
+class PageData(Data):
     id: UUID
     parent: Union[Block, Database, Page, None]
     created_time: datetime
@@ -66,20 +67,20 @@ class PageResponse(Response):
     properties: PageProperties
 
     @classmethod
-    def _deserialize_this(cls, raw_data: dict[str, Any]) -> Self:
-        return cls._deserialize_from_dict(raw_data, raw_data=raw_data,
-                                          parent=PartialParent.deserialize(raw_data['parent']).entity)
+    def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
+        return cls._deserialize_from_dict(raw, raw=raw,
+                                          parent=PartialParent.deserialize(raw['parent']).entity)
 
     @classmethod
     @cache
     def _get_type_hints(cls) -> dict[str, type]:
         from notion_df.entity import Block, Database, Page
-        from notion_df.core.entity_base import Entity
+        from notion_df.core.entity_core import Entity
         return get_type_hints(cls, {**globals(), **{cls.__name__: cls for cls in (Entity, Block, Database, Page)}})
 
 
 @dataclass
-class BlockResponse(Response):
+class BlockData(Data):
     id: UUID
     parent: Union[Block, Page, None]
     created_time: datetime
@@ -87,24 +88,24 @@ class BlockResponse(Response):
     created_by: PartialUser
     last_edited_by: PartialUser
     has_children: Optional[bool]
-    """Note: the None value never occurs from direct server response. It only happens from Page.as_block()"""
+    """Note: the None value never occurs from direct server data. It only happens from Page.as_block()"""
     archived: bool
     value: BlockValue
 
     @classmethod
-    def _deserialize_this(cls, raw_data: dict[str, Any]):
-        typename = raw_data['type']
+    def _deserialize_this(cls, raw: dict[str, Any]):
+        typename = raw['type']
         block_value_cls = block_value_registry[typename]
-        block_value = block_value_cls.deserialize(raw_data[typename])
-        return cls._deserialize_from_dict(raw_data, raw_data=raw_data,
-                                          parent=PartialParent.deserialize(raw_data['parent']).entity,
+        block_value = block_value_cls.deserialize(raw[typename])
+        return cls._deserialize_from_dict(raw, raw=raw,
+                                          parent=PartialParent.deserialize(raw['parent']).entity,
                                           value=block_value)
 
     @classmethod
     @cache
     def _get_type_hints(cls) -> dict[str, type]:
         from notion_df.entity import Block, Database, Page
-        from notion_df.core.entity_base import Entity
+        from notion_df.core.entity_core import Entity
         return get_type_hints(cls, {**globals(), **{cls.__name__: cls for cls in (Entity, Block, Database, Page)}})
 
 
@@ -161,7 +162,7 @@ class BreadcrumbBlockValue(BlockValue):
 class BulletedListItemBlockValue(BlockValue):
     rich_text: RichText
     color: BlockColor = BlockColor.DEFAULT
-    children: list[BlockResponse] = field(init=False, default=None)
+    children: list[BlockData] = field(init=False, default=None)
 
     @classmethod
     def get_typename(cls) -> str:
@@ -173,7 +174,7 @@ class CalloutBlockValue(BlockValue):
     rich_text: RichText
     icon: Icon
     color: BlockColor = BlockColor.DEFAULT
-    children: list[BlockResponse] = field(init=False, default=None)
+    children: list[BlockData] = field(init=False, default=None)
 
     @classmethod
     def get_typename(cls) -> str:
@@ -324,7 +325,7 @@ class ImageBlockValue(BlockValue):
 class NumberedListItemBlockValue(BlockValue):
     rich_text: RichText
     color: BlockColor = BlockColor.DEFAULT
-    children: list[BlockResponse] = field(init=False, default=None)
+    children: list[BlockData] = field(init=False, default=None)
 
     @classmethod
     def get_typename(cls) -> str:
@@ -335,7 +336,7 @@ class NumberedListItemBlockValue(BlockValue):
 class ParagraphBlockValue(BlockValue):
     rich_text: RichText
     color: BlockColor = BlockColor.DEFAULT
-    children: list[BlockResponse] = field(init=False, default=None)
+    children: list[BlockData] = field(init=False, default=None)
 
     @classmethod
     def get_typename(cls) -> str:
@@ -363,7 +364,7 @@ class PDFBlockValue(BlockValue):
 class QuoteBlockValue(BlockValue):
     rich_text: RichText
     color: BlockColor = BlockColor.DEFAULT
-    children: list[BlockResponse] = field(init=False, default=None)
+    children: list[BlockData] = field(init=False, default=None)
 
     @classmethod
     def get_typename(cls) -> str:
@@ -392,7 +393,7 @@ class SyncedBlockValue(BlockValue, metaclass=ABCMeta):
 @dataclass
 class OriginalSyncedBlockType(SyncedBlockValue):
     """cannot be changed (2023-04-02)"""
-    children: list[BlockResponse] = field(init=False, default=None)
+    children: list[BlockData] = field(init=False, default=None)
 
     def serialize(self) -> dict[str, Any]:
         return {
@@ -446,7 +447,7 @@ class ToDoBlockValue(BlockValue):
     rich_text: RichText
     checked: bool
     color: BlockColor = BlockColor.DEFAULT
-    children: list[BlockResponse] = field(init=False, default=None)
+    children: list[BlockData] = field(init=False, default=None)
 
     @classmethod
     def get_typename(cls) -> str:
@@ -457,7 +458,7 @@ class ToDoBlockValue(BlockValue):
 class ToggleBlockValue(BlockValue):
     rich_text: RichText
     color: BlockColor = BlockColor.DEFAULT
-    children: list[BlockResponse] = field(init=False, default=None)
+    children: list[BlockData] = field(init=False, default=None)
 
     @classmethod
     def get_typename(cls) -> str:

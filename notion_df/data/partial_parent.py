@@ -9,7 +9,7 @@ from typing_extensions import Self
 from notion_df.core.serialization import DualSerializable
 
 if TYPE_CHECKING:
-    from notion_df.core.entity_base import Entity
+    from notion_df.core.entity_core import Entity
 
 
 @dataclass

@@ -6,8 +6,8 @@ from datetime import datetime, date
 from typing import Literal, Any, Callable, Optional
 from uuid import UUID
 
-from notion_df.object.constant import TimestampName, Number
 from notion_df.core.serialization import Serializable, serialize
+from notion_df.data.constant import TimestampName, Number
 
 CompoundOperator = Literal['and', 'or']
 RollupAggregate = Literal['any', 'every', 'none']
