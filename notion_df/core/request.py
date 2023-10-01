@@ -37,7 +37,7 @@ class Request:
                                                           requests.exceptions.ReadTimeout,
                                                           requests.exceptions.ChunkedEncodingError])
 
-    @retry(wait=wait_exponential(exp_base=2, min=5), stop=stop_after_delay(300),
+    @retry(wait=wait_exponential(exp_base=2, min=5), stop=stop_after_delay(600),
            retry=retry_if_exception(is_server_error))  # TODO: add request info on TimeoutError
     def execute(self) -> requests.Response:
         response = requests.request(method=self.method.value, url=self.url, headers=self.headers,
