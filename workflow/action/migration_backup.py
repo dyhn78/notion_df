@@ -125,6 +125,7 @@ class MigrationBackupLoadAction(IterableAction):
             linked_db: Database, linked_prev_db: Optional[Database],
             this_prev_prop: RelationProperty) -> Optional[RelationProperty]:
         """this method guarantee that the returning property is picked from its candidates (this_db.properties)"""
+        # TODO: if candidate_props is empty, create a mention-backlink instead
         this_db_enum = DatabaseEnum.from_entity(this_db)
         this_prev_db_enum = DatabaseEnum.from_entity(this_prev_db)
         linked_db_enum = DatabaseEnum.from_entity(linked_db)
