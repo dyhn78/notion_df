@@ -9,6 +9,8 @@ from pprint import pprint
 from typing import Iterable, Optional, cast, Any
 from uuid import UUID
 
+import tenacity
+
 from notion_df.core.serialization import deserialize_datetime
 from notion_df.data.entity_data import DividerBlockValue, ParagraphBlockValue, ToggleBlockValue, CodeBlockValue
 from notion_df.data.rich_text import RichText, TextSpan, UserMention
