@@ -164,6 +164,7 @@ class Logger:
             summary_text = f"failure - {self.format_time()}: {exc_val}"
             summary_block_value = ParagraphBlockValue(RichText([TextSpan(summary_text)]))
         else:
+            # TODO: needs full print by redirecting print() stream to logger
             summary_text = f"error - {self.format_time()} - {exc_type.__name__} - {exc_val}"
             summary_block_value = ToggleBlockValue(RichText([TextSpan(summary_text), UserMention(my_user_id)]))
             traceback_str = traceback.format_exc()
