@@ -100,6 +100,7 @@ def run_all(actions: list[Action], print_body: bool) -> None:
 
 def run_from_last_edited_time_bound(actions: list[Action], print_body: bool,
                                     timedelta_size: timedelta, update_last_success_time: bool) -> None:
+    # TODO: if the last result was RetryError, sleep for 10 mins
     with Logger(print_body=print_body, update_last_success_time=update_last_success_time) as logger:
         execute_by_last_edited_time(actions, logger.start_time - timedelta_size, logger.start_time)
 
