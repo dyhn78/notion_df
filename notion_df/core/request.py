@@ -41,7 +41,7 @@ class Request:
            retry=retry_if_exception(is_server_error))  # TODO: add request info on TimeoutError
     def execute(self) -> requests.Response:
         response = requests.request(method=self.method.value, url=self.url, headers=self.headers,
-                                    params=self.params, json=self.json, timeout=30)
+                                    params=self.params, json=self.json, timeout=180)  # TODO: relate with tenacity
         if Settings.print:
             pprint(self, width=print_width)
             print(f'->: {response.text}')
