@@ -1,4 +1,5 @@
-from abc import ABCMeta, abstractmethod
+import functools
+from abc import ABCMeta
 from dataclasses import dataclass, field
 from typing import Any, final
 from uuid import UUID
@@ -29,17 +30,18 @@ class User(DualSerializable, metaclass=ABCMeta):
     name: str = field(init=False, default=None)
     avatar_url: str = field(init=False, default=None)
 
-    @classmethod
-    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
-        self = cls._deserialize_main(serialized)
-        self.name = serialized['name']
-        self.avatar_url = serialized['avatar_url']
-        return self
+    def __init_subclass__(cls, **kwargs) -> None:
+        super().__init_subclass__(**kwargs)
+        _deserialize_this = cls._deserialize_this
 
-    @classmethod
-    @abstractmethod
-    def _deserialize_main(cls, serialized: dict[str, Any]) -> Self:
-        pass
+        @functools.wraps(_deserialize_this)
+        def _deserialize_this_wrapped(raw: dict[str, Any]):
+            self = _deserialize_this(raw)
+            self.name = raw['name']
+            self.avatar_url = raw['avatar_url']
+            return self
+
+        setattr(cls, '_deserialize_this', _deserialize_this_wrapped)
 
     @classmethod
     @final
@@ -73,7 +75,7 @@ class Person(User):
         }
 
     @classmethod
-    def _deserialize_main(cls, serialized: dict[str, Any]) -> Self:
+    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
         return cls(serialized['id'], serialized['person']['email'])
 
 
@@ -93,7 +95,7 @@ class WorkspaceBot(User):
         }
 
     @classmethod
-    def _deserialize_main(cls, serialized: dict[str, Any]) -> Self:
+    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
         return cls(serialized['id'], serialized['bot']['workspace_name'])
 
 
@@ -111,5 +113,5 @@ class UserBot(User):
         }
 
     @classmethod
-    def _deserialize_main(cls, serialized: dict[str, Any]) -> Self:
+    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
         return cls(serialized['id'])

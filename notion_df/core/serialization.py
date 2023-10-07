@@ -17,7 +17,7 @@ from uuid import UUID
 import dateutil.parser
 from typing_extensions import Self
 
-from notion_df.core.exception import NotionDfNotImplementedError, NotionDfTypeError, NotionDfException
+from notion_df.core.exception import NotionDfTypeError, NotionDfException
 from notion_df.variable import my_tz
 
 
@@ -136,11 +136,12 @@ class Serializable(metaclass=ABCMeta):
 
     @abstractmethod
     def serialize(self) -> Any:
-        pass
+        raise NotImplementedError
 
     @final
     def _serialize_as_dict(self, **overrides: Any) -> dict[str, Any]:
-        """this can only be called from a dataclass.
+        """this can only be called from dataclasses.
+
         helper method to implement serialize().
         Note: this drops post-init fields."""
         serialized = {}
@@ -166,17 +167,35 @@ class Deserializable(metaclass=ABCMeta):
     @abstractmethod
     def _deserialize_this(cls, serialized: Any) -> Self:
         """override this to modify deserialization of itself."""
-        raise NotionDfNotImplementedError
+        raise NotImplementedError
 
     @classmethod
     @final
     def _deserialize_from_dict(cls, serialized: dict[str, Any], **overrides: Any) -> Self:
-        """this can only be called from a dataclass.
+        """this should only be called from dataclass.
+
         helper method to implement _deserialize_this().
         Note: this collects post-init fields as well."""
+        # TODO: post-init fields should be explicitly set inside each _deserialize_this()
         if inspect.isabstract(cls):
             raise NotionDfTypeError('cannot instantiate abstract class', {'cls': cls, 'serialized': serialized})
-        undefined = object()
+        init_params, post_init_params = cls._prepare_deserialize_from_dict(serialized, **overrides)
+
+        # noinspection PyArgumentList
+        self = cls(**init_params)
+        for fd_name, fd_value in post_init_params.items():
+            setattr(self, fd_name, fd_value)
+        return self
+
+    @classmethod
+    @final
+    def _prepare_deserialize_from_dict(
+            cls, serialized: dict[str, Any], **overrides: Any) -> tuple[dict[str, Any], dict[str, Any]]:
+        """this should only be called from dataclass.
+
+        helper method to implement _deserialize_this(). get kwargs to put on __init__().
+        Note: this collects post-init fields as well."""
+        _undefined = object()
 
         def deserialize_field(_fd: Field):
             if _fd.name in overrides:
@@ -186,26 +205,25 @@ class Deserializable(metaclass=ABCMeta):
                     raise SerializationError(
                         f'field "{_fd.name}" should have explicit type hint or provided as "overrides"')
                 return deserialize(cls._get_type_hints()[_fd.name], serialized[_fd.name])
-            if _fd.default or _fd.default_factory:
-                return undefined
-            raise SerializationError(
-                f'field "{_fd.name}" has no default value, '
-                f'therefore it should be provided either as "serialized" or "overrides"')
+            return _undefined
+            # if _fd.default or _fd.default_factory:
+            #     return undefined
+            # raise SerializationError(
+            #     f'field "{_fd.name}" has no default value, '
+            #     f'therefore it should be provided either as "serialized" or "overrides"')
 
         init_params: dict[str, Any] = {}
         post_init_params: dict[str, Any] = {}
         # noinspection PyDataclass
         for fd in fields(cls):
-            if (fd_value := deserialize_field(fd)) != undefined:
-                if fd.init:
-                    init_params[fd.name] = fd_value
-                else:
-                    post_init_params[fd.name] = fd_value
-
-        self = cls(**init_params)  # type: ignore
-        for fd_name, fd_value in post_init_params.items():
-            setattr(self, fd_name, fd_value)
-        return self
+            fd_value = deserialize_field(fd)
+            if fd_value is _undefined:
+                continue
+            if fd.init:
+                init_params[fd.name] = fd_value
+            else:
+                post_init_params[fd.name] = fd_value
+        return init_params, post_init_params
 
     @classmethod
     @cache

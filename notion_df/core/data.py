@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import functools
 from abc import ABCMeta
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, TypeVar
+from typing import Any, TypeVar, Optional
+
 from typing_extensions import Self
 
 from notion_df.core.serialization import Deserializable
@@ -11,12 +13,29 @@ from notion_df.core.serialization import Deserializable
 
 @dataclass
 class Data(Deserializable, metaclass=ABCMeta):
-    timestamp: float = field(init=True, kw_only=True, default_factory=datetime.now().timestamp)
-    raw: dict[str, Any] = field(init=False, default=None)
+    raw: dict[str, Any] = field(init=False)
+    timestamp: float = field(init=False)
+    """the timestamp of deserialization if created with external raw data, or 0 if created by user."""
 
-    @classmethod
-    def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
-        return cls._deserialize_from_dict(raw, raw=raw)
+    def __post_init__(self):
+        self.raw = {}
+        self.timestamp = 0
+
+    def __del__(self):
+        del self.raw
+
+    def __init_subclass__(cls, **kwargs) -> None:
+        super().__init_subclass__(**kwargs)
+        _deserialize_this = cls._deserialize_this
+
+        @functools.wraps(_deserialize_this)
+        def _deserialize_this_wrapped(raw: dict[str, Any]):
+            self = _deserialize_this(raw)
+            self.raw = raw
+            self.timestamp = datetime.now().timestamp
+            return self
+
+        setattr(cls, '_deserialize_this', _deserialize_this_wrapped)
 
     @classmethod
     def deserialize(cls, serialized: Any) -> Self:
@@ -24,7 +43,6 @@ class Data(Deserializable, metaclass=ABCMeta):
 
         if cls != Data:
             return cls._deserialize_this(serialized)
-
         match object_kind := serialized['object']:
             case 'block':
                 subclass = BlockData
@@ -36,8 +54,10 @@ class Data(Deserializable, metaclass=ABCMeta):
                 raise ValueError(object_kind)
         return subclass.deserialize(serialized)
 
-    def __del__(self):
-        del self.raw
+    @property
+    def time(self) -> Optional[datetime]:
+        """the time of deserialization if created with external raw data, or None if created by user."""
+        return datetime.fromtimestamp(self.timestamp) if self.timestamp else None
 
 
 Data_T = TypeVar('Data_T', bound=Data)

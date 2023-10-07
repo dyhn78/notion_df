@@ -11,9 +11,9 @@ from typing_extensions import Self
 
 from notion_df.core.data import Data
 from notion_df.core.serialization import DualSerializable
-from notion_df.object.misc import Icon, PartialParent
 from notion_df.object.constant import BlockColor, CodeLanguage
 from notion_df.object.file import File
+from notion_df.object.misc import Icon, PartialParent
 from notion_df.object.rich_text import Span, RichText
 from notion_df.object.user import PartialUser
 from notion_df.property import DatabaseProperties, PageProperties
@@ -39,8 +39,7 @@ class DatabaseData(Data):
 
     @classmethod
     def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
-        return cls._deserialize_from_dict(raw, raw=raw,
-                                          parent=PartialParent.deserialize(raw['parent']).entity)
+        return cls._deserialize_from_dict(raw, parent=PartialParent.deserialize(raw['parent']).entity)
 
     @classmethod
     @cache
@@ -67,8 +66,7 @@ class PageData(Data):
 
     @classmethod
     def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
-        return cls._deserialize_from_dict(raw, raw=raw,
-                                          parent=PartialParent.deserialize(raw['parent']).entity)
+        return cls._deserialize_from_dict(raw, parent=PartialParent.deserialize(raw['parent']).entity)
 
     @classmethod
     @cache
@@ -96,8 +94,7 @@ class BlockData(Data):
         typename = raw['type']
         block_value_cls = block_value_registry[typename]
         block_value = block_value_cls.deserialize(raw[typename])
-        return cls._deserialize_from_dict(raw, raw=raw,
-                                          parent=PartialParent.deserialize(raw['parent']).entity,
+        return cls._deserialize_from_dict(raw, parent=PartialParent.deserialize(raw['parent']).entity,
                                           value=block_value)
 
     @classmethod
@@ -126,8 +123,8 @@ class BlockValue(DualSerializable, metaclass=ABCMeta):
         return self._serialize_as_dict()
 
     @classmethod
-    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
-        return cls._deserialize_from_dict(serialized)
+    def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
+        return cls._deserialize_from_dict(raw)
 
 
 def serialize_block_value_list(block_value_list: Optional[list[BlockValue]]) -> Optional[list[dict[str, Any]]]:

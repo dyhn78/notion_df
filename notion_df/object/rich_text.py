@@ -1,5 +1,6 @@
 from __future__ import annotations as _
 
+import functools
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, field
 from typing import Optional, Any, Literal, final, Iterable, cast
@@ -11,7 +12,7 @@ from notion_df.core.serialization import DualSerializable, deserialize, serializ
 from notion_df.object.misc import DateRange, Annotations
 from notion_df.util.collection import FinalDict
 
-rich_text_span_registry: FinalDict[tuple[str, ...], type[Span]] = FinalDict()
+span_registry: FinalDict[tuple[str, ...], type[Span]] = FinalDict()
 
 
 class Span(DualSerializable, metaclass=ABCMeta):
@@ -28,17 +29,27 @@ class Span(DualSerializable, metaclass=ABCMeta):
     def __init_subclass__(cls, **kwargs) -> None:
         super().__init_subclass__(**kwargs)
         if (typename := cls.get_typename()) and typename != cast(cls, super(cls, cls)).get_typename():
-            rich_text_span_registry[cls.get_typename()] = cls
+            span_registry[cls.get_typename()] = cls
 
-    def serialize(self) -> dict[str, Any]:
-        serialized = self._serialize_main()
-        if self.annotations:
-            serialized['annotations'] = self.annotations.serialize()
-        return serialized
+        _serialize = cls.serialize
+        _deserialize_this = cls._deserialize_this
 
-    @abstractmethod
-    def _serialize_main(self) -> dict[str, Any]:
-        pass
+        @functools.wraps(_serialize)
+        def _serialize_wrapped(self: cls):
+            raw = _serialize(self)
+            raw['annotations'] = self.annotations.serialize()
+            return raw
+
+        @functools.wraps(_deserialize_this)
+        def _deserialize_this_wrapped(raw: dict[str, Any]):
+            self = _deserialize_this(raw)
+            self.annotations = Annotations.deserialize(raw['annotations'])
+            self.plain_text = raw['plain_text']
+            self.href = raw['href']
+            return self
+
+        setattr(cls, 'serialize', _serialize_wrapped)
+        setattr(cls, '_deserialize_this', _deserialize_this_wrapped)
 
     @classmethod
     @abstractmethod
@@ -46,35 +57,20 @@ class Span(DualSerializable, metaclass=ABCMeta):
         return ()
 
     @classmethod
-    @abstractmethod
-    def _deserialize_main(cls, serialized: dict[str, Any]) -> Self:
-        pass
-
-    @classmethod
     @final
-    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
-        self = cls._deserialize_main(serialized)
-        self.annotations = Annotations.deserialize(serialized['annotations'])
-        self.plain_text = serialized['plain_text']
-        self.href = serialized['href']
-        return self
-
-    @classmethod
-    @final
-    def deserialize(cls, serialized: dict[str, Any]) -> Self:
+    def deserialize(cls, raw: dict[str, Any]) -> Self:
         if cls != Span:
-            return cls._deserialize_this(serialized)
+            return cls._deserialize_this(raw)
 
-        def get_typename(_serialized: dict[str, Any]) -> tuple[str, ...]:
-            if 'type' in _serialized:
-                typename = _serialized['type']
-                return (typename,) + get_typename(_serialized[typename])
+        def get_typename(_raw: dict[str, Any]) -> tuple[str, ...]:
+            if 'type' in _raw:
+                typename = _raw['type']
+                return (typename,) + get_typename(_raw[typename])
             return ()
 
-        # (ex) KeyError: ('mention', 'user', 'person') -> ('mention', 'user')
-        # TODO: fix this temporary hack!
-        subclass = rich_text_span_registry[get_typename(serialized)[:2]]
-        return subclass.deserialize(serialized)
+        #  TODO: remove this temporary hack [[ (ex) KeyError: ('mention', 'user', 'person') -> ('mention', 'user') ]]
+        subclass = span_registry[get_typename(raw)[:2]]
+        return subclass.deserialize(raw)
 
     def __repr__(self):
         return self._repr_non_default_fields()
@@ -115,7 +111,7 @@ class TextSpan(Span):
     plain_text: str = field(init=False, default='', repr=False)
     href: str = field(init=False, default='', repr=False)
 
-    def _serialize_main(self) -> dict[str, Any]:
+    def serialize(self) -> dict[str, Any]:
         return {
             'type': 'text',
             'text': {
@@ -132,7 +128,7 @@ class TextSpan(Span):
         return 'text',
 
     @classmethod
-    def _deserialize_main(cls, serialized: dict[str, Any]) -> Self:
+    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
         link_item = serialized['text']['link']
         link = link_item['url'] if link_item else None
         return cls(serialized['text']['content'], link)
@@ -151,7 +147,7 @@ class Equation(Span):
     plain_text: str = field(init=False, default='', repr=False)
     href: str = field(init=False, default='', repr=False)
 
-    def _serialize_main(self) -> dict[str, Any]:
+    def serialize(self) -> dict[str, Any]:
         return {
             'type': 'equation',
             'expression': self.expression
@@ -162,7 +158,7 @@ class Equation(Span):
         return 'equation',
 
     @classmethod
-    def _deserialize_main(cls, serialized: dict[str, Any]) -> Self:
+    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
         return cls(serialized['expression'])
 
 
@@ -179,7 +175,7 @@ class UserMention(Span):
     plain_text: str = field(init=False, default='', repr=False)
     href: str = field(init=False, default='', repr=False)
 
-    def _serialize_main(self) -> dict[str, Any]:
+    def serialize(self) -> dict[str, Any]:
         return {
             'type': 'mention',
             'mention': {
@@ -196,7 +192,7 @@ class UserMention(Span):
         return 'mention', 'user'
 
     @classmethod
-    def _deserialize_main(cls, serialized: dict[str, Any]) -> Self:
+    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
         return cls(serialized['mention']['user']['id'])
 
 
@@ -213,7 +209,7 @@ class PageMention(Span):
     plain_text: str = field(init=False, default='', repr=False)
     href: str = field(init=False, default='', repr=False)
 
-    def _serialize_main(self) -> dict[str, Any]:
+    def serialize(self) -> dict[str, Any]:
         return {
             'type': 'mention',
             'mention': {
@@ -227,7 +223,7 @@ class PageMention(Span):
         return 'mention', 'page'
 
     @classmethod
-    def _deserialize_main(cls, serialized: dict[str, Any]) -> Self:
+    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
         return cls(serialized['mention']['page'])
 
 
@@ -244,7 +240,7 @@ class DatabaseMention(Span):
     plain_text: str = field(init=False, default='', repr=False)
     href: str = field(init=False, default='', repr=False)
 
-    def _serialize_main(self) -> dict[str, Any]:
+    def serialize(self) -> dict[str, Any]:
         return {
             'type': 'mention',
             'mention': {
@@ -258,7 +254,7 @@ class DatabaseMention(Span):
         return 'mention', 'database'
 
     @classmethod
-    def _deserialize_main(cls, serialized: dict[str, Any]) -> Self:
+    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
         return cls(serialized['mention']['database'])
 
 
@@ -275,7 +271,7 @@ class DateMention(Span):
     plain_text: str = field(init=False, default='', repr=False)
     href: str = field(init=False, default='', repr=False)
 
-    def _serialize_main(self) -> dict[str, Any]:
+    def serialize(self) -> dict[str, Any]:
         return {
             'type': 'mention',
             'mention': {
@@ -289,7 +285,7 @@ class DateMention(Span):
         return 'mention', 'date'
 
     @classmethod
-    def _deserialize_main(cls, serialized: dict[str, Any]) -> Self:
+    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
         return cls(serialized['mention']['date'])
 
 
@@ -306,7 +302,7 @@ class TemplateDateMention(Span):
     plain_text: str = field(init=False, default='', repr=False)
     href: str = field(init=False, default='', repr=False)
 
-    def _serialize_main(self) -> dict[str, Any]:
+    def serialize(self) -> dict[str, Any]:
         return {
             'type': 'mention',
             'mention': {
@@ -323,7 +319,7 @@ class TemplateDateMention(Span):
         return 'mention', 'template_mention', 'template_mention_date'
 
     @classmethod
-    def _deserialize_main(cls, serialized: dict[str, Any]) -> Self:
+    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
         return cls(serialized['mention']['database'])
 
 
@@ -340,7 +336,7 @@ class TemplateUserMention(Span):
     plain_text: str = field(init=False, default='', repr=False)
     href: str = field(init=False, default='', repr=False)
 
-    def _serialize_main(self) -> dict[str, Any]:
+    def serialize(self) -> dict[str, Any]:
         return {
             'type': 'mention',
             'mention': {
@@ -357,7 +353,7 @@ class TemplateUserMention(Span):
         return 'mention', 'template_mention', 'template_mention_user'
 
     @classmethod
-    def _deserialize_main(cls, serialized: dict[str, Any]) -> Self:
+    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
         return cls()
 
 
@@ -375,7 +371,7 @@ class LinkPreviewMention(Span):
     plain_text: str = field(init=False, default='', repr=False)
     href: str = field(init=False, default='', repr=False)
 
-    def _serialize_main(self) -> dict[str, Any]:
+    def serialize(self) -> dict[str, Any]:
         return {
             'type': 'mention',
             'mention': {
@@ -391,5 +387,5 @@ class LinkPreviewMention(Span):
         return 'mention', 'link_preview'
 
     @classmethod
-    def _deserialize_main(cls, serialized: dict[str, Any]) -> Self:
+    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
         return cls(serialized['mention']['link_preview']['url'])
