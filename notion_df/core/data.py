@@ -38,12 +38,12 @@ class Data(Deserializable, metaclass=ABCMeta):
         setattr(cls, '_deserialize_this', _deserialize_this_wrapped)
 
     @classmethod
-    def deserialize(cls, serialized: Any) -> Self:
+    def deserialize(cls, raw: Any) -> Self:
         from notion_df.object.data import BlockData, DatabaseData, PageData
 
         if cls != Data:
-            return cls._deserialize_this(serialized)
-        match object_kind := serialized['object']:
+            return cls._deserialize_this(raw)
+        match object_kind := raw['object']:
             case 'block':
                 subclass = BlockData
             case 'database':
@@ -52,7 +52,7 @@ class Data(Deserializable, metaclass=ABCMeta):
                 subclass = PageData
             case _:
                 raise ValueError(object_kind)
-        return subclass.deserialize(serialized)
+        return subclass.deserialize(raw)
 
     @property
     def time(self) -> Optional[datetime]:

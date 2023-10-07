@@ -13,12 +13,12 @@ from typing_extensions import Self
 
 from notion_df.core.exception import NotionDfKeyError, NotionDfValueError
 from notion_df.core.serialization import DualSerializable, deserialize, serialize
-from notion_df.object.misc import StatusGroups, SelectOption, DateRange
 from notion_df.object.constant import RollupFunction, NumberFormat, Number
 from notion_df.object.file import Files
 from notion_df.object.filter import PropertyFilter, CheckboxFilterBuilder, PeopleFilterBuilder, \
     DateFilterBuilder, TextFilterBuilder, FilesFilterBuilder, NumberFilterBuilder, MultiSelectFilterBuilder, \
     RelationFilterBuilder, SelectFilterBuilder, FilterBuilder, FormulaPropertyFilter
+from notion_df.object.misc import StatusGroups, SelectOption, DateRange
 from notion_df.object.rich_text import RichText
 from notion_df.object.user import PartialUser, User
 from notion_df.util.collection import FinalDict
@@ -192,9 +192,9 @@ class DatabaseProperties(Properties,
         } for key, value in self.items()}
 
     @classmethod
-    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
+    def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
         self = cls()
-        for prop_name, prop_serialized in serialized.items():
+        for prop_name, prop_serialized in raw.items():
             typename = prop_serialized['type']
             property_key_cls = property_registry[typename]
             property_key = property_key_cls(prop_name)
@@ -229,9 +229,9 @@ class PageProperties(Properties, MutableMapping[Property[Any, PagePropertyValue_
         } for key, value in self.items()}
 
     @classmethod
-    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
+    def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
         self = cls()
-        for prop_name, prop_serialized in serialized.items():
+        for prop_name, prop_serialized in raw.items():
             typename = prop_serialized['type']
             property_key_cls = property_registry[typename]
             property_key = property_key_cls(prop_name)
@@ -275,8 +275,8 @@ class DatabasePropertyValue(DualSerializable, metaclass=ABCMeta):
         return self._serialize_as_dict()
 
     @classmethod
-    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
-        return cls._deserialize_from_dict(serialized)
+    def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
+        return cls._deserialize_from_dict(raw)
 
 
 @dataclass
@@ -319,18 +319,18 @@ class RelationDatabasePropertyValue(DatabasePropertyValue, metaclass=ABCMeta):
     database: Database
 
     @classmethod
-    def deserialize(cls, serialized: dict[str, Any]) -> Self:
+    def deserialize(cls, raw: dict[str, Any]) -> Self:
         if cls != RelationDatabasePropertyValue:
-            return cls._deserialize_this(serialized)
-        match (relation_type := serialized['type']):
+            return cls._deserialize_this(raw)
+        match (relation_type := raw['type']):
             case 'single_property':
                 subclass = SingleRelationDatabasePropertyValue
             case 'dual_property':
                 subclass = DualRelationDatabasePropertyValue
             case _:
                 raise NotionDfValueError('invalid relation_type',
-                                         {'relation_type': relation_type, 'serialized': serialized})
-        return subclass.deserialize(serialized)
+                                         {'relation_type': relation_type, 'serialized': raw})
+        return subclass.deserialize(raw)
 
     @classmethod
     @cache
@@ -349,10 +349,10 @@ class SingleRelationDatabasePropertyValue(RelationDatabasePropertyValue):
         }
 
     @classmethod
-    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
+    def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
         from notion_df.entity import Database
 
-        return cls(Database(serialized['database_id']))
+        return cls(Database(raw['database_id']))
 
 
 @dataclass
@@ -368,13 +368,13 @@ class DualRelationDatabasePropertyValue(RelationDatabasePropertyValue):
         }
 
     @classmethod
-    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
+    def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
         from notion_df.entity import Database
 
-        synced_property = DualRelationProperty(serialized['dual_property']['synced_property_name'])
-        synced_property.id = serialized['dual_property']['synced_property_id']
+        synced_property = DualRelationProperty(raw['dual_property']['synced_property_name'])
+        synced_property.id = raw['dual_property']['synced_property_id']
 
-        return cls(database=Database(serialized['database_id']), synced_property=synced_property)
+        return cls(database=Database(raw['database_id']), synced_property=synced_property)
 
 
 RelationDatabasePropertyValue_T = TypeVar('RelationDatabasePropertyValue_T', bound=RelationDatabasePropertyValue)
@@ -406,10 +406,10 @@ class RelationPagePropertyValue(MutableSequence['Page'], DualSerializable):
         return [{'id': str(page.id)} for page in self._data_list]
 
     @classmethod
-    def _deserialize_this(cls, serialized: list[dict[str, Any]]) -> Self:
+    def _deserialize_this(cls, raw: list[dict[str, Any]]) -> Self:
         from notion_df.entity import Page
 
-        self = cls([Page(partial_page['id']) for partial_page in serialized])
+        self = cls([Page(partial_page['id']) for partial_page in raw])
         return self
 
     def __repr__(self) -> str:
@@ -502,9 +502,9 @@ class RollupPagePropertyValue(DualSerializable):
                 self.value_typename: self.value}
 
     @classmethod
-    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
-        value_typename = serialized['type']
-        return cls(function=serialized['function'], value_typename=value_typename, value=serialized[value_typename])
+    def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
+        value_typename = raw['type']
+        return cls(function=raw['function'], value_typename=value_typename, value=raw[value_typename])
 
 
 class CheckboxProperty(Property[PlainDatabasePropertyValue, bool, CheckboxFilterBuilder]):

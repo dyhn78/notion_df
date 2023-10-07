@@ -20,8 +20,8 @@ class PartialUser(DualSerializable):
         }
 
     @classmethod
-    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
-        return cls(UUID(serialized['id']))
+    def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
+        return cls(UUID(raw['id']))
 
 
 @dataclass
@@ -45,19 +45,19 @@ class User(DualSerializable, metaclass=ABCMeta):
 
     @classmethod
     @final
-    def deserialize(cls, serialized: dict[str, Any]) -> Self:
+    def deserialize(cls, raw: dict[str, Any]) -> Self:
         def get_subclass() -> type[User]:
-            typename = serialized['type']
+            typename = raw['type']
             if typename == 'person':
                 return Person
             else:
-                bot_owner_typename = serialized['bot']['owner']['type']
+                bot_owner_typename = raw['bot']['owner']['type']
                 if bot_owner_typename == 'workspace':
                     return WorkspaceBot
                 else:
                     return UserBot
 
-        return get_subclass()._deserialize_this(serialized)
+        return get_subclass()._deserialize_this(raw)
 
 
 @dataclass
@@ -75,8 +75,8 @@ class Person(User):
         }
 
     @classmethod
-    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
-        return cls(serialized['id'], serialized['person']['email'])
+    def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
+        return cls(raw['id'], raw['person']['email'])
 
 
 @dataclass
@@ -95,8 +95,8 @@ class WorkspaceBot(User):
         }
 
     @classmethod
-    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
-        return cls(serialized['id'], serialized['bot']['workspace_name'])
+    def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
+        return cls(raw['id'], raw['bot']['workspace_name'])
 
 
 @dataclass
@@ -113,5 +113,5 @@ class UserBot(User):
         }
 
     @classmethod
-    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
-        return cls(serialized['id'])
+    def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
+        return cls(raw['id'])

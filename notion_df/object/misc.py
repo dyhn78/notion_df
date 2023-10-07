@@ -28,11 +28,11 @@ class PartialParent(DualSerializable):
         }
 
     @classmethod
-    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
-        typename = serialized['type']
+    def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
+        typename = raw['type']
         if typename == 'workspace':
             return cls('workspace', None)
-        parent_id = UUID(serialized[typename])
+        parent_id = UUID(raw[typename])
         return cls(typename, parent_id)
 
     @property
@@ -63,8 +63,8 @@ class Annotations(DualSerializable):
         return self._serialize_as_dict()
 
     @classmethod
-    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
-        return cls._deserialize_from_dict(serialized)
+    def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
+        return cls._deserialize_from_dict(raw)
 
     def __repr__(self):
         # repr() only non-default fields
@@ -86,11 +86,11 @@ class Icon(DualSerializable, metaclass=ABCMeta):
         pass
 
     @classmethod
-    def deserialize(cls, serialized: dict[str, Any]) -> Self:
+    def deserialize(cls, raw: dict[str, Any]) -> Self:
         if cls != Icon:
-            return cls._deserialize_this(serialized)
-        subclass = icon_registry[serialized['type']]
-        return subclass.deserialize(serialized)
+            return cls._deserialize_this(raw)
+        subclass = icon_registry[raw['type']]
+        return subclass.deserialize(raw)
 
 
 @dataclass
@@ -115,8 +115,8 @@ class Emoji(Icon):
         }
 
     @classmethod
-    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
-        return cls(serialized['emoji'])
+    def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
+        return cls(raw['emoji'])
 
 
 @dataclass
@@ -132,8 +132,8 @@ class DateRange(DualSerializable):
         return self._serialize_as_dict()
 
     @classmethod
-    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
-        return cls._deserialize_from_dict(serialized)
+    def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
+        return cls._deserialize_from_dict(raw)
 
 
 @dataclass
@@ -148,8 +148,8 @@ class SelectOption(DualSerializable):
         return self._serialize_as_dict()
 
     @classmethod
-    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
-        return cls._deserialize_from_dict(serialized)
+    def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
+        return cls._deserialize_from_dict(raw)
 
     def __eq__(self, other: SelectOption | str) -> bool:
         """compare with str to match the name or id."""
@@ -182,8 +182,8 @@ class StatusGroups(DualSerializable):
         return self._serialize_as_dict()
 
     @classmethod
-    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
-        return cls._deserialize_from_dict(serialized)
+    def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
+        return cls._deserialize_from_dict(raw)
 
     def __eq__(self, other: StatusGroups) -> bool:
         if self.id != other.id and self.id is not None and other.id is not None:

@@ -17,18 +17,18 @@ class File(Icon, metaclass=ABCMeta):
     """https://developers.notion.com/reference/file-object"""
 
     @classmethod
-    def deserialize(cls, serialized: dict[str, Any]) -> Self:
+    def deserialize(cls, raw: dict[str, Any]) -> Self:
         if cls != File:
-            return cls._deserialize_this(serialized)
-        match serialized['type']:
+            return cls._deserialize_this(raw)
+        match raw['type']:
             case 'file':
                 subclass = InternalFile
             case 'external':
                 subclass = ExternalFile
             case _:
                 raise NotionDfValueError('invalid relation_type',
-                                         {'type': serialized['type'], 'serialized': serialized})
-        return subclass.deserialize(serialized)
+                                         {'type': raw['type'], 'serialized': raw})
+        return subclass.deserialize(raw)
 
 
 class Files(list[File], DualSerializable):
@@ -43,8 +43,8 @@ class Files(list[File], DualSerializable):
         return serialize(list(self))
 
     @classmethod
-    def _deserialize_this(cls, serialized: Any) -> Self:
-        return cls(deserialize(list[File], serialized))
+    def _deserialize_this(cls, raw: Any) -> Self:
+        return cls(deserialize(list[File], raw))
 
 
 @dataclass
@@ -66,8 +66,8 @@ class InternalFile(File):
         }
 
     @classmethod
-    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
-        return cls(serialized['file']['url'], serialized['file']['expiry_time'])
+    def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
+        return cls(raw['file']['url'], raw['file']['expiry_time'])
 
 
 @dataclass
@@ -89,5 +89,5 @@ class ExternalFile(File):
         }
 
     @classmethod
-    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
-        return cls(serialized['external']['url'], '')
+    def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
+        return cls(raw['external']['url'], '')

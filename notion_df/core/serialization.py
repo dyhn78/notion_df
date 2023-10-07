@@ -159,13 +159,13 @@ class Deserializable(metaclass=ABCMeta):
     can be loaded from JSON object."""
 
     @classmethod
-    def deserialize(cls, serialized: Any) -> Self:
+    def deserialize(cls, raw: Any) -> Self:
         """override this to allow proxy-deserialize of subclasses."""
-        return cls._deserialize_this(serialized)
+        return cls._deserialize_this(raw)
 
     @classmethod
     @abstractmethod
-    def _deserialize_this(cls, serialized: Any) -> Self:
+    def _deserialize_this(cls, raw: Any) -> Self:
         """override this to modify deserialization of itself."""
         raise NotImplementedError
 

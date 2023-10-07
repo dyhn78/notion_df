@@ -259,8 +259,8 @@ class FileBlockValue(BlockValue):
         return {'caption': self.caption, **self.file.serialize()}
 
     @classmethod
-    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
-        return cls(File.deserialize(serialized), serialized['caption'])
+    def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
+        return cls(File.deserialize(raw), raw['caption'])
 
 
 @dataclass
@@ -309,8 +309,8 @@ class ImageBlockValue(BlockValue):
         return self.file.serialize()
 
     @classmethod
-    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
-        return cls(File.deserialize(serialized))
+    def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
+        return cls(File.deserialize(raw))
 
     @classmethod
     def get_typename(cls) -> str:
@@ -348,8 +348,8 @@ class PDFBlockValue(BlockValue):
         return {'caption': self.caption, **self.file.serialize()}
 
     @classmethod
-    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
-        return cls(File.deserialize(serialized), serialized['caption'])
+    def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
+        return cls(File.deserialize(raw), raw['caption'])
 
     @classmethod
     def get_typename(cls) -> str:
@@ -376,14 +376,14 @@ class SyncedBlockValue(BlockValue, metaclass=ABCMeta):
         return 'synced_block'
 
     @classmethod
-    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
+    def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
         def get_subclass():
-            if serialized['synced_from']:
+            if raw['synced_from']:
                 return DuplicatedSyncedBlockType
             else:
                 return OriginalSyncedBlockType
 
-        return get_subclass().deserialize(serialized)
+        return get_subclass().deserialize(raw)
 
 
 @dataclass
@@ -475,8 +475,8 @@ class VideoBlockValue(BlockValue):
         return self.file.serialize()
 
     @classmethod
-    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
-        return cls(File.deserialize(serialized))
+    def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
+        return cls(File.deserialize(raw))
 
     @classmethod
     def get_typename(cls) -> str:

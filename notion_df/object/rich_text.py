@@ -15,16 +15,22 @@ from notion_df.util.collection import FinalDict
 span_registry: FinalDict[tuple[str, ...], type[Span]] = FinalDict()
 
 
+@dataclass
 class Span(DualSerializable, metaclass=ABCMeta):
     # https://developers.notion.com/reference/rich-text
-    annotations: Optional[Annotations]
+    annotations = None  # actual type: Optional[Annotations]
     """
     Note: when updating block texts,
+    
     * set `None` (the default value) to retain the current annotations.
     * set `Annotations()` to remove the annotations and make a plain text.
     """
-    plain_text: str
-    href: str
+    plain_text: str = field(init=False, repr=False)
+    href: str = field(init=False, repr=False)
+
+    def __post_init__(self):
+        self.plain_text = ''
+        self.href = ''
 
     def __init_subclass__(cls, **kwargs) -> None:
         super().__init_subclass__(**kwargs)
@@ -37,7 +43,8 @@ class Span(DualSerializable, metaclass=ABCMeta):
         @functools.wraps(_serialize)
         def _serialize_wrapped(self: cls):
             raw = _serialize(self)
-            raw['annotations'] = self.annotations.serialize()
+            if self.annotations is not None:
+                raw['annotations'] = self.annotations.serialize()
             return raw
 
         @functools.wraps(_deserialize_this)
@@ -92,24 +99,23 @@ class RichText(list[Span], DualSerializable):
         return serialize(list(self))
 
     @classmethod
-    def _deserialize_this(cls, serialized: Any) -> Self:
-        return cls(deserialize(list[Span], serialized))
+    def _deserialize_this(cls, raw: Any) -> Self:
+        return cls(deserialize(list[Span], raw))
 
 
 @dataclass
 class TextSpan(Span):
     content: str
     """max_length: 2000"""
-    link: Optional[str] = None
+    link: Optional[str] = field(default=None)
     # ---
-    annotations: Optional[Annotations] = None
+    annotations: Optional[Annotations] = field(default=None)
     """
     Note: when updating block texts,
+    
     * set `None` (the default value) to retain the current annotations.
     * set `Annotations()` to remove the annotations and make a plain text.
     """
-    plain_text: str = field(init=False, default='', repr=False)
-    href: str = field(init=False, default='', repr=False)
 
     def serialize(self) -> dict[str, Any]:
         return {
@@ -128,10 +134,10 @@ class TextSpan(Span):
         return 'text',
 
     @classmethod
-    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
-        link_item = serialized['text']['link']
+    def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
+        link_item = raw['text']['link']
         link = link_item['url'] if link_item else None
-        return cls(serialized['text']['content'], link)
+        return cls(raw['text']['content'], link)
 
 
 @dataclass
@@ -141,11 +147,10 @@ class Equation(Span):
     annotations: Optional[Annotations] = None
     """
     Note: when updating block texts,
+    
     * set `None` (the default value) to retain the current annotations.
     * set `Annotations()` to remove the annotations and make a plain text.
     """
-    plain_text: str = field(init=False, default='', repr=False)
-    href: str = field(init=False, default='', repr=False)
 
     def serialize(self) -> dict[str, Any]:
         return {
@@ -158,8 +163,8 @@ class Equation(Span):
         return 'equation',
 
     @classmethod
-    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
-        return cls(serialized['expression'])
+    def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
+        return cls(raw['expression'])
 
 
 @dataclass
@@ -169,11 +174,10 @@ class UserMention(Span):
     annotations: Optional[Annotations] = None
     """
     Note: when updating block texts,
+    
     * set `None` (the default value) to retain the current annotations.
     * set `Annotations()` to remove the annotations and make a plain text.
     """
-    plain_text: str = field(init=False, default='', repr=False)
-    href: str = field(init=False, default='', repr=False)
 
     def serialize(self) -> dict[str, Any]:
         return {
@@ -192,8 +196,8 @@ class UserMention(Span):
         return 'mention', 'user'
 
     @classmethod
-    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
-        return cls(serialized['mention']['user']['id'])
+    def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
+        return cls(raw['mention']['user']['id'])
 
 
 @dataclass
@@ -203,11 +207,10 @@ class PageMention(Span):
     annotations: Optional[Annotations] = None
     """
     Note: when updating block texts,
+    
     * set `None` (the default value) to retain the current annotations.
     * set `Annotations()` to remove the annotations and make a plain text.
     """
-    plain_text: str = field(init=False, default='', repr=False)
-    href: str = field(init=False, default='', repr=False)
 
     def serialize(self) -> dict[str, Any]:
         return {
@@ -223,8 +226,8 @@ class PageMention(Span):
         return 'mention', 'page'
 
     @classmethod
-    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
-        return cls(serialized['mention']['page'])
+    def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
+        return cls(raw['mention']['page'])
 
 
 @dataclass
@@ -234,11 +237,10 @@ class DatabaseMention(Span):
     annotations: Optional[Annotations] = None
     """
     Note: when updating block texts,
+    
     * set `None` (the default value) to retain the current annotations.
     * set `Annotations()` to remove the annotations and make a plain text.
     """
-    plain_text: str = field(init=False, default='', repr=False)
-    href: str = field(init=False, default='', repr=False)
 
     def serialize(self) -> dict[str, Any]:
         return {
@@ -254,8 +256,8 @@ class DatabaseMention(Span):
         return 'mention', 'database'
 
     @classmethod
-    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
-        return cls(serialized['mention']['database'])
+    def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
+        return cls(raw['mention']['database'])
 
 
 @dataclass
@@ -265,11 +267,10 @@ class DateMention(Span):
     annotations: Optional[Annotations] = None
     """
     Note: when updating block texts,
+    
     * set `None` (the default value) to retain the current annotations.
     * set `Annotations()` to remove the annotations and make a plain text.
     """
-    plain_text: str = field(init=False, default='', repr=False)
-    href: str = field(init=False, default='', repr=False)
 
     def serialize(self) -> dict[str, Any]:
         return {
@@ -285,8 +286,8 @@ class DateMention(Span):
         return 'mention', 'date'
 
     @classmethod
-    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
-        return cls(serialized['mention']['date'])
+    def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
+        return cls(raw['mention']['date'])
 
 
 @dataclass
@@ -296,11 +297,10 @@ class TemplateDateMention(Span):
     annotations: Optional[Annotations] = None
     """
     Note: when updating block texts,
+    
     * set `None` (the default value) to retain the current annotations.
     * set `Annotations()` to remove the annotations and make a plain text.
     """
-    plain_text: str = field(init=False, default='', repr=False)
-    href: str = field(init=False, default='', repr=False)
 
     def serialize(self) -> dict[str, Any]:
         return {
@@ -319,8 +319,8 @@ class TemplateDateMention(Span):
         return 'mention', 'template_mention', 'template_mention_date'
 
     @classmethod
-    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
-        return cls(serialized['mention']['database'])
+    def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
+        return cls(raw['mention']['database'])
 
 
 @dataclass
@@ -330,11 +330,10 @@ class TemplateUserMention(Span):
     annotations: Optional[Annotations] = None
     """
     Note: when updating block texts,
+    
     * set `None` (the default value) to retain the current annotations.
     * set `Annotations()` to remove the annotations and make a plain text.
     """
-    plain_text: str = field(init=False, default='', repr=False)
-    href: str = field(init=False, default='', repr=False)
 
     def serialize(self) -> dict[str, Any]:
         return {
@@ -353,7 +352,7 @@ class TemplateUserMention(Span):
         return 'mention', 'template_mention', 'template_mention_user'
 
     @classmethod
-    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
+    def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
         return cls()
 
 
@@ -365,11 +364,10 @@ class LinkPreviewMention(Span):
     annotations: Optional[Annotations] = None
     """
     Note: when updating block texts,
+    
     * set `None` (the default value) to retain the current annotations.
     * set `Annotations()` to remove the annotations and make a plain text.
     """
-    plain_text: str = field(init=False, default='', repr=False)
-    href: str = field(init=False, default='', repr=False)
 
     def serialize(self) -> dict[str, Any]:
         return {
@@ -387,5 +385,5 @@ class LinkPreviewMention(Span):
         return 'mention', 'link_preview'
 
     @classmethod
-    def _deserialize_this(cls, serialized: dict[str, Any]) -> Self:
-        return cls(serialized['mention']['link_preview']['url'])
+    def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
+        return cls(raw['mention']['link_preview']['url'])
