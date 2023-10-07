@@ -8,9 +8,9 @@ import requests
 import requests.packages
 from bs4 import BeautifulSoup
 
-from notion_df.data.entity_data import Heading1BlockValue, ParagraphBlockValue, Heading2BlockValue, Heading3BlockValue, \
+from notion_df.object.data import Heading1BlockValue, ParagraphBlockValue, Heading2BlockValue, Heading3BlockValue, \
     BlockValue
-from notion_df.data.rich_text import RichText
+from notion_df.object.rich_text import RichText
 
 # noinspection PyUnresolvedReferences
 # disable SSLError(1, '[SSL: DH_KEY_TOO_SMALL] dh key too small (_ssl.c:997)') error for yes24.com

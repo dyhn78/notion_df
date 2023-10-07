@@ -9,7 +9,7 @@ from typing_extensions import Self
 
 from notion_df.core.exception import NotionDfValueError
 from notion_df.core.serialization import serialize, deserialize, DualSerializable
-from notion_df.data.common import Icon
+from notion_df.object.misc import Icon
 
 
 @dataclass

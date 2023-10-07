@@ -5,16 +5,15 @@ from uuid import UUID
 
 from typing_extensions import Self
 
-from notion_df.core.entity_core import Entity
+from notion_df.core.entity import Entity
 from notion_df.core.exception import NotionDfValueError, NotionDfKeyError
 from notion_df.core.request import Paginator
-from notion_df.data.common import Icon
-from notion_df.data.entity_data import BlockValue, BlockData, ChildPageBlockValue, DatabaseData, PageData
-from notion_df.data.file import ExternalFile, File
-from notion_df.data.filter import Filter
-from notion_df.data.partial_parent import PartialParent
-from notion_df.data.rich_text import RichText
-from notion_df.data.sort import Sort, TimestampSort, Direction
+from notion_df.object.misc import Icon, PartialParent
+from notion_df.object.data import BlockValue, BlockData, ChildPageBlockValue, DatabaseData, PageData
+from notion_df.object.file import ExternalFile, File
+from notion_df.object.filter import Filter
+from notion_df.object.rich_text import RichText
+from notion_df.object.sort import Sort, TimestampSort, Direction
 from notion_df.property import Property, PageProperties, DatabaseProperties, PagePropertyValue_T
 from notion_df.request.block import AppendBlockChildren, RetrieveBlock, RetrieveBlockChildren, UpdateBlock, DeleteBlock
 from notion_df.request.database import CreateDatabase, UpdateDatabase, RetrieveDatabase, QueryDatabase
@@ -35,7 +34,7 @@ class Block(Entity[BlockData]):
         def it():
             for block_data in block_datas:
                 block = Block(block_data.id)
-                block.set_data(block_data).data
+                block.set_data(block_data)
                 yield block
 
         return Paginator(Block, it())

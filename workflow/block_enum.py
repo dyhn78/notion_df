@@ -3,13 +3,13 @@ from __future__ import annotations
 from enum import Enum
 from typing import Optional
 
-from notion_df.core.entity_core import Entity
-from notion_df.data.common import Emoji
-from notion_df.data.entity_data import DatabaseData
-from notion_df.data.rich_text import RichText, TextSpan
+from notion_df.core.entity import Entity
+from notion_df.object.misc import Emoji
+from notion_df.object.data import DatabaseData
+from notion_df.object.rich_text import RichText, TextSpan
 from notion_df.entity import Database
 from notion_df.util.uuid_util import get_page_or_database_id, get_page_or_database_url
-from workflow.emoji_code import EmojiCode
+from workflow.constant import EmojiCode
 
 _id_to_member = {}
 
@@ -61,8 +61,18 @@ class DatabaseEnum(Enum):
             title_span = TextSpan(self.title)
             title_span.plain_text = self.title
             # noinspection PyTypeChecker
-            db.data = DatabaseData(self.id, None, None, None, Emoji(self.prefix),
-                                   None, None, RichText([title_span]), None, False, False, timestamp=0)
+            db.data = DatabaseData(id=self.id,
+                                   parent=None,
+                                   created_time=None,
+                                   last_edited_time=None,
+                                   icon=Emoji(self.prefix),
+                                   cover=None,
+                                   url=None,
+                                   title=RichText([title_span]),
+                                   properties=None,
+                                   archived=False,
+                                   is_inline=False,
+                                   timestamp=0)
         return db
 
     @classmethod

@@ -5,14 +5,14 @@ from typing import Any
 from uuid import UUID
 
 from notion_df.core.request import SingleRequestBuilder, RequestSettings, Version, Method, PaginatedRequestBuilder
-from notion_df.data.entity_data import BlockValue, BlockData, serialize_block_value_list
+from notion_df.object.data import BlockValue, BlockData, serialize_block_value_list
 from notion_df.util.collection import DictFilter
 
 
 @dataclass
 class AppendBlockChildren(SingleRequestBuilder[list[BlockData]]):
     """https://developers.notion.com/reference/patch-block-children"""
-    response_type = list[BlockData]
+    data_type = list[BlockData]
     id: UUID
     children: list[BlockValue]
 
@@ -34,7 +34,7 @@ class AppendBlockChildren(SingleRequestBuilder[list[BlockData]]):
 @dataclass
 class RetrieveBlock(SingleRequestBuilder[BlockData]):
     """https://developers.notion.com/reference/retrieve-a-block"""
-    response_type = BlockData
+    data_type = BlockData
     id: UUID
 
     def get_settings(self) -> RequestSettings:
@@ -48,7 +48,7 @@ class RetrieveBlock(SingleRequestBuilder[BlockData]):
 @dataclass
 class RetrieveBlockChildren(PaginatedRequestBuilder[BlockData]):
     """https://developers.notion.com/reference/get-block-children"""
-    response_element_type = BlockData
+    data_element_type = BlockData
     id: UUID
     page_size: int = None
 
@@ -63,7 +63,7 @@ class RetrieveBlockChildren(PaginatedRequestBuilder[BlockData]):
 @dataclass
 class UpdateBlock(SingleRequestBuilder[BlockData]):
     """https://developers.notion.com/reference/update-a-block"""
-    response_type = BlockData
+    data_type = BlockData
     id: UUID
     block_type: BlockValue = field(default=None)
     archived: bool = field(default=None)
@@ -83,7 +83,7 @@ class UpdateBlock(SingleRequestBuilder[BlockData]):
 @dataclass
 class DeleteBlock(SingleRequestBuilder[BlockData]):
     """https://developers.notion.com/reference/delete-a-block"""
-    response_type = BlockData
+    data_type = BlockData
     id: UUID
 
     def get_settings(self) -> RequestSettings:

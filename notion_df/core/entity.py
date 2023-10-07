@@ -6,7 +6,7 @@ from uuid import UUID
 
 from typing_extensions import Self
 
-from notion_df.core.request import Data_T
+from notion_df.core.data import Data_T
 from notion_df.util.misc import repr_object, undefined
 
 namespace: Final[dict[tuple[type[Entity], UUID], Entity]] = {}  # TODO: support multiple entities

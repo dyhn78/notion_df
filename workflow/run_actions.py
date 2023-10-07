@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from workflow import backup_path
-from workflow.action.action_core import Action
+from workflow.core.action import Action
 from workflow.action.media_scraper import MediaScraper
 from workflow.action.migration_backup import MigrationBackupSaveAction, MigrationBackupLoadAction
 from workflow.action.prop_matcher import MatchActionBase, MatchWeekByDateValue, MatchDateByCreatedTime, \

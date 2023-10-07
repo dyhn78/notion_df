@@ -9,14 +9,13 @@ from uuid import UUID
 
 from typing_extensions import Self
 
-from notion_df.core.request import Data
+from notion_df.core.data import Data
 from notion_df.core.serialization import DualSerializable
-from notion_df.data.common import Icon
-from notion_df.data.constant import BlockColor, CodeLanguage
-from notion_df.data.file import File
-from notion_df.data.partial_parent import PartialParent
-from notion_df.data.rich_text import Span, RichText
-from notion_df.data.user import PartialUser
+from notion_df.object.misc import Icon, PartialParent
+from notion_df.object.constant import BlockColor, CodeLanguage
+from notion_df.object.file import File
+from notion_df.object.rich_text import Span, RichText
+from notion_df.object.user import PartialUser
 from notion_df.property import DatabaseProperties, PageProperties
 from notion_df.util.collection import FinalDict
 
@@ -48,7 +47,7 @@ class DatabaseData(Data):
     def _get_type_hints(cls) -> dict[str, type]:
         # TODO deduplicate
         from notion_df.entity import Block, Database, Page
-        from notion_df.core.entity_core import Entity
+        from notion_df.core.entity import Entity
         return get_type_hints(cls, {**globals(), **{cls.__name__: cls for cls in (Entity, Block, Database, Page)}})
 
 
@@ -75,7 +74,7 @@ class PageData(Data):
     @cache
     def _get_type_hints(cls) -> dict[str, type]:
         from notion_df.entity import Block, Database, Page
-        from notion_df.core.entity_core import Entity
+        from notion_df.core.entity import Entity
         return get_type_hints(cls, {**globals(), **{cls.__name__: cls for cls in (Entity, Block, Database, Page)}})
 
 
@@ -105,7 +104,7 @@ class BlockData(Data):
     @cache
     def _get_type_hints(cls) -> dict[str, type]:
         from notion_df.entity import Block, Database, Page
-        from notion_df.core.entity_core import Entity
+        from notion_df.core.entity import Entity
         return get_type_hints(cls, {**globals(), **{cls.__name__: cls for cls in (Entity, Block, Database, Page)}})
 
 

@@ -1,7 +1,7 @@
 from datetime import date
 from pprint import pprint
 
-from notion_df.data.common import DateRange
+from notion_df.object.misc import DateRange
 from notion_df.entity import Database
 from notion_df.property import DateProperty, URLProperty
 

@@ -12,8 +12,8 @@ from uuid import UUID
 import tenacity
 
 from notion_df.core.serialization import deserialize_datetime
-from notion_df.data.entity_data import DividerBlockValue, ParagraphBlockValue, ToggleBlockValue, CodeBlockValue
-from notion_df.data.rich_text import RichText, TextSpan, UserMention
+from notion_df.object.data import DividerBlockValue, ParagraphBlockValue, ToggleBlockValue, CodeBlockValue
+from notion_df.object.rich_text import RichText, TextSpan, UserMention
 from notion_df.entity import Page, search_by_title, Block
 from notion_df.util.misc import repr_object
 from notion_df.variable import Settings, print_width, my_tz

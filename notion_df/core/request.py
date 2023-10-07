@@ -2,17 +2,16 @@ from __future__ import annotations
 
 import inspect
 from abc import abstractmethod, ABCMeta
-from dataclasses import dataclass, field
-from datetime import datetime
+from dataclasses import dataclass
 from pprint import pprint
 from typing import TypeVar, Generic, Any, final, Optional, Iterator, Sequence, overload
 
 import requests
 from tenacity import retry, wait_exponential, stop_after_delay, retry_if_exception
-from typing_extensions import Self
 
+from notion_df.core.data import Data_T
 from notion_df.core.exception import NotionDfValueError, NotionDfIndexError, NotionDfTypeError
-from notion_df.core.serialization import deserialize, serialize, Deserializable
+from notion_df.core.serialization import deserialize, serialize
 from notion_df.util.collection import PlainStrEnum
 from notion_df.util.misc import repr_object
 from notion_df.variable import Settings, print_width
@@ -80,41 +79,6 @@ class RequestError(Exception):
 
 
 @dataclass
-class Data(Deserializable, metaclass=ABCMeta):
-    timestamp: float = field(init=True, kw_only=True, default_factory=datetime.now().timestamp)
-    raw: dict[str, Any] = field(init=False, default=None)
-
-    @classmethod
-    def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
-        return cls._deserialize_from_dict(raw, raw=raw)
-
-    @classmethod
-    def deserialize(cls, serialized: Any) -> Self:
-        from notion_df.data.entity_data import BlockData, DatabaseData, PageData
-
-        if cls != Data:
-            return cls._deserialize_this(serialized)
-
-        object_kind = serialized['object']
-        if object_kind == 'block':
-            subclass = BlockData
-        elif object_kind == 'database':
-            subclass = DatabaseData
-        elif object_kind == 'page':
-            subclass = PageData
-        else:
-            raise ValueError(object_kind)
-        return subclass.deserialize(serialized)
-
-    def __del__(self):
-        del self.raw
-
-
-Data_T = TypeVar('Data_T', bound=Data)
-DataElement_T = TypeVar('DataElement_T')
-
-
-@dataclass
 class RequestBuilder(metaclass=ABCMeta):
     # TODO: refactor so that Request has entity information
     #  - Request.execute() returns Paginator
@@ -170,11 +134,11 @@ class Version(PlainStrEnum):
 
 
 class SingleRequestBuilder(Generic[Data_T], RequestBuilder, metaclass=ABCMeta):
-    response_type: type[Data_T]
+    data_type: type[Data_T]
 
     def __init_subclass__(cls, **kwargs):
         if not inspect.isabstract(cls):
-            assert cls.response_type
+            assert cls.data_type
 
     @final
     def execute(self) -> Data_T:
@@ -185,16 +149,19 @@ class SingleRequestBuilder(Generic[Data_T], RequestBuilder, metaclass=ABCMeta):
 
     @classmethod
     def parse_response_data(cls, data: dict[str, Any]) -> Data_T:
-        return cls.response_type.deserialize(data)
+        return cls.data_type.deserialize(data)
+
+
+DataElement_T = TypeVar('DataElement_T')
 
 
 class PaginatedRequestBuilder(Generic[DataElement_T], RequestBuilder, metaclass=ABCMeta):
-    response_element_type: type[DataElement_T]
+    data_element_type: type[DataElement_T]
     page_size: int = None  # TODO - AS-IS: total size of all pages summed, TO-BE: each request size
 
     def __init_subclass__(cls, **kwargs):
         if not inspect.isabstract(cls):
-            assert cls.response_element_type
+            assert cls.data_element_type
 
     @final
     def execute_once(self, page_size: int = MAX_PAGE_SIZE, start_cursor: Optional[str] = None) -> dict[str, Any]:
@@ -239,7 +206,7 @@ class PaginatedRequestBuilder(Generic[DataElement_T], RequestBuilder, metaclass=
     @classmethod
     def parse_response_data(cls, data: dict[str, Any]) -> Iterator[DataElement_T]:
         for data_element in data['results']:
-            yield deserialize(cls.response_element_type, data_element)
+            yield deserialize(cls.data_element_type, data_element)
 
 
 T = TypeVar('T')
