@@ -13,13 +13,9 @@ from notion_df.core.serialization import Deserializable
 
 @dataclass
 class Data(Deserializable, metaclass=ABCMeta):
-    raw: dict[str, Any] = field(init=False)
-    timestamp: float = field(init=False)
+    raw: dict[str, Any] = field(init=False, default_factory=dict)
+    timestamp: int = field(init=False, default=0)
     """the timestamp of deserialization if created with external raw data, or 0 if created by user."""
-
-    def __post_init__(self):
-        self.raw = {}
-        self.timestamp = 0
 
     def __del__(self):
         del self.raw
@@ -29,10 +25,10 @@ class Data(Deserializable, metaclass=ABCMeta):
         _deserialize_this = cls._deserialize_this
 
         @functools.wraps(_deserialize_this)
-        def _deserialize_this_wrapped(raw: dict[str, Any]):
-            self = _deserialize_this(raw)
+        def _deserialize_this_wrapped(raw: dict[str, Any]) -> Self:
+            self: Data = _deserialize_this(raw)
             self.raw = raw
-            self.timestamp = datetime.now().timestamp
+            self.timestamp = datetime.now().timestamp()
             return self
 
         setattr(cls, '_deserialize_this', _deserialize_this_wrapped)
