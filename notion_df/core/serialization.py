@@ -176,25 +176,9 @@ class Deserializable(metaclass=ABCMeta):
 
         helper method to implement _deserialize_this().
         Note: this collects post-init fields as well."""
-        # TODO: post-init fields should be explicitly set inside each _deserialize_this()
         if inspect.isabstract(cls):
             raise NotionDfTypeError('cannot instantiate abstract class', {'cls': cls, 'serialized': serialized})
-        init_params, post_init_params = cls._prepare_deserialize_from_dict(serialized, **overrides)
 
-        # noinspection PyArgumentList
-        self = cls(**init_params)
-        for fd_name, fd_value in post_init_params.items():
-            setattr(self, fd_name, fd_value)
-        return self
-
-    @classmethod
-    @final
-    def _prepare_deserialize_from_dict(
-            cls, serialized: dict[str, Any], **overrides: Any) -> tuple[dict[str, Any], dict[str, Any]]:
-        """this should only be called from dataclass.
-
-        helper method to implement _deserialize_this(). get kwargs to put on __init__().
-        Note: this collects post-init fields as well."""
         _undefined = object()
 
         def deserialize_field(_fd: Field):
@@ -206,6 +190,7 @@ class Deserializable(metaclass=ABCMeta):
                         f'field "{_fd.name}" should have explicit type hint or provided as "overrides"')
                 return deserialize(cls._get_type_hints()[_fd.name], serialized[_fd.name])
             return _undefined
+            # TODO: post-init fields should be explicitly set inside each _deserialize_this()
             # if _fd.default or _fd.default_factory:
             #     return undefined
             # raise SerializationError(
@@ -223,7 +208,12 @@ class Deserializable(metaclass=ABCMeta):
                 init_params[fd.name] = fd_value
             else:
                 post_init_params[fd.name] = fd_value
-        return init_params, post_init_params
+
+        # noinspection PyArgumentList
+        self = cls(**init_params)
+        for fd_name, fd_value in post_init_params.items():
+            setattr(self, fd_name, fd_value)
+        return self
 
     @classmethod
     @cache
