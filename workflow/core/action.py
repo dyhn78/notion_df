@@ -45,7 +45,7 @@ class Action(metaclass=ABCMeta):
         pass
 
     def execute_all(self) -> None:
-        self.process(self.query_all())
+        self.process(page for page in self.query_all() if self.filter(page))
 
 
 class IterableAction(Action, metaclass=ABCMeta):
@@ -57,6 +57,9 @@ class IterableAction(Action, metaclass=ABCMeta):
             return
         print(self)
         for page in chain([_page], pages):
+            # TODO: check filter() before update
+            #  process_page() may return Iterable[Callable[[], Any]] and defer execution to process()
+            # - like MediaScraper
             self.process_page(page)
 
     @abstractmethod
@@ -80,6 +83,12 @@ def search_pages_by_last_edited_time(lower_bound: datetime, upper_bound: Optiona
     return pages
 
 
+class Workflow:
+    def __init__(self, actions: list[Action]):
+        ...  # TODO
+
+
+# rewrite as Workflow.execute_by_...()
 def execute_by_last_edited_time(actions: list[Action], lower_bound: datetime,
                                 upper_bound: Optional[datetime] = None) -> bool:
     # TODO: if no recent_pages, raise SkipException instead of returning False
