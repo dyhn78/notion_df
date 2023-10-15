@@ -9,6 +9,7 @@ from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 
 
+# TODO: rename WebDriverFactory.create()
 class WebDriverGenerator:
     ON_WINDOWS = (os.name == 'nt')
 
@@ -33,9 +34,8 @@ class WebDriverGenerator:
         return driver
 
     def __del__(self):
-        if not self.create_window:
-            for driver in self.drivers:
-                driver.quit()
+        for driver in self.drivers:
+            driver.quit()       
 
 
 def retry_webdriver(function: Callable, recursion_limit=1) -> Callable:
