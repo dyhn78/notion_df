@@ -42,7 +42,7 @@ class MigrationBackupLoadAction(IterableAction):
         return iter([])
 
     def filter(self, page: Page) -> bool:
-        return isinstance(page.data.parent, Database)
+        return True
 
     def process_page(self, page: Page) -> None:
         this_page = next((breadcrumb_page for breadcrumb_page in iter_breadcrumb(page)
