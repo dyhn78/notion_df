@@ -9,15 +9,14 @@ from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 
 
-# TODO: rename WebDriverFactory.create()
-class WebDriverGenerator:
+class WebDriverFactory:
     ON_WINDOWS = (os.name == 'nt')
 
     def __init__(self, create_window: bool):
         self.drivers: list[webdriver.Chrome] = []
         self.create_window = create_window
 
-    def generate(self) -> webdriver.Chrome:
+    def create(self) -> webdriver.Chrome:
         driver_path = ChromeDriverManager().install()
         service = Service(driver_path)
         if not self.create_window and self.ON_WINDOWS:

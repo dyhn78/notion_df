@@ -1,18 +1,18 @@
 from typing import Optional, Callable, Any
 
 from notion_df.core.request import Paginator
-from notion_df.object.misc import SelectOption
+from notion_df.entity import Page, Database
 from notion_df.object.data import ChildPageBlockValue
 from notion_df.object.filter import CompoundFilter
+from notion_df.object.misc import SelectOption
 from notion_df.object.rich_text import TextSpan
-from notion_df.entity import Page, Database
 from notion_df.property import SelectProperty, CheckboxFormulaProperty, TitleProperty, RichTextProperty, \
     URLProperty, NumberProperty, FilesProperty, CheckboxProperty, PageProperties
 from notion_df.util.collection import StrEnum
-from workflow.core.action import IterableAction
 from workflow.block_enum import DatabaseEnum
+from workflow.core.action import IterableAction
 from workflow.service.gy_lib_service import GYLibraryScraper, LibraryScrapResult
-from workflow.service.webdriver_service import WebDriverGenerator
+from workflow.service.webdriver_service import WebDriverFactory
 from workflow.service.yes24_service import get_yes24_detail_page_url, Yes24ScrapResult, get_block_value_of_contents_line
 
 edit_status_prop = SelectProperty('🔰준비')
@@ -43,7 +43,7 @@ class EditStatusValue(StrEnum):
 class MediaScraper(IterableAction):
     def __init__(self, create_window: bool):
         self.reading_db = Database(DatabaseEnum.reading_db.id)
-        self.driver_generator = WebDriverGenerator(create_window=create_window)
+        self.driver_factory = WebDriverFactory(create_window=create_window)
 
     def query_all(self) -> Paginator[Page]:
         return self.reading_db.query(is_book_prop.filter.equals(True) & CompoundFilter('or', [
@@ -65,7 +65,7 @@ class MediaScraper(IterableAction):
 class ReadingMediaScraperUnit:
     def __init__(self, action: MediaScraper, reading: Page):
         self.action = action
-        self.driver = action.driver_generator.generate()
+        self.driver = action.driver_factory.create()
 
         self.reading = reading
         self.new_properties = PageProperties()
