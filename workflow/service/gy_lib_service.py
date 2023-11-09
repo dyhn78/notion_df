@@ -71,7 +71,7 @@ l.parentNode.removeChild(l);
 
     def __init__(self, driver: WebDriver, title: str, lib_key: SelectLib_T):
         self.driver = driver
-        self.driver_wait = WebDriverWait(self.driver, 30)
+        self.driver_wait = WebDriverWait(self.driver, 120)
         # self.driver.minimize_window()
         self.lib_key = lib_key
         self.title = title
