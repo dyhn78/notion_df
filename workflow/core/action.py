@@ -6,15 +6,15 @@ from abc import ABCMeta, abstractmethod
 from datetime import datetime, timedelta
 from itertools import chain
 from pprint import pprint
-from typing import Iterable, Optional, cast, Any
+from typing import Iterable, Optional, cast, Any, Iterator, TypeVar
 from uuid import UUID
 
 import tenacity
 
 from notion_df.core.serialization import deserialize_datetime
+from notion_df.entity import Page, search_by_title, Block
 from notion_df.object.data import DividerBlockValue, ParagraphBlockValue, ToggleBlockValue, CodeBlockValue
 from notion_df.object.rich_text import RichText, TextSpan, UserMention
-from notion_df.entity import Page, search_by_title, Block
 from notion_df.util.misc import repr_object
 from notion_df.variable import Settings, print_width, my_tz
 
@@ -50,21 +50,31 @@ class Action(metaclass=ABCMeta):
 
 class IterableAction(Action, metaclass=ABCMeta):
     def process(self, pages: Iterable[Page]):
-        pages = iter(pages)
-        try:
-            _page = next(pages)
-        except StopIteration:
+        pages_it = peek(pages)
+        if pages_it is None:
             return
         print(self)
-        for page in chain([_page], pages):
+        for page in pages_it:
             # TODO: check filter() before update
             #  process_page() may return Iterable[Callable[[], Any]] and defer execution to process()
-            # - like MediaScraper
+            #  - like MediaScraper
             self.process_page(page)
 
     @abstractmethod
     def process_page(self, page: Page):
         pass
+
+
+T = TypeVar('T')
+
+
+def peek(it: Iterable[T]) -> Optional[Iterator[T]]:
+    it = iter(it)
+    try:
+        _first_element = next(it)
+    except StopIteration:
+        return None
+    return chain([_first_element], it)
 
 
 def search_pages_by_last_edited_time(lower_bound: datetime, upper_bound: Optional[datetime] = None) -> list[Page]:

@@ -9,7 +9,7 @@ from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 
 
-class WebDriverFactory:
+class WebDriverService:
     ON_WINDOWS = (os.name == 'nt')
 
     def __init__(self, create_window: bool):

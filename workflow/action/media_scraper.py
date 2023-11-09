@@ -1,4 +1,6 @@
-from typing import Optional, Callable, Any
+from typing import Optional, Callable, Any, Iterable
+
+from selenium.webdriver.chrome.webdriver import WebDriver
 
 from notion_df.core.request import Paginator
 from notion_df.entity import Page, Database
@@ -10,9 +12,9 @@ from notion_df.property import SelectProperty, CheckboxFormulaProperty, TitlePro
     URLProperty, NumberProperty, FilesProperty, CheckboxProperty, PageProperties
 from notion_df.util.collection import StrEnum
 from workflow.block_enum import DatabaseEnum
-from workflow.core.action import IterableAction
+from workflow.core.action import Action, peek
 from workflow.service.gy_lib_service import GYLibraryScraper, LibraryScrapResult
-from workflow.service.webdriver_service import WebDriverFactory
+from workflow.service.webdriver_service import WebDriverService
 from workflow.service.yes24_service import get_yes24_detail_page_url, Yes24ScrapResult, get_block_value_of_contents_line
 
 edit_status_prop = SelectProperty('🔰준비')
@@ -40,10 +42,10 @@ class EditStatusValue(StrEnum):
     confirm_manually = '👤결과 검정'
 
 
-class MediaScraper(IterableAction):
+class MediaScraper(Action):
     def __init__(self, create_window: bool):
         self.reading_db = Database(DatabaseEnum.reading_db.id)
-        self.driver_factory = WebDriverFactory(create_window=create_window)
+        self.driver_service = WebDriverService(create_window=create_window)
 
     def query_all(self) -> Paginator[Page]:
         return self.reading_db.query(is_book_prop.filter.equals(True) & CompoundFilter('or', [
@@ -57,15 +59,19 @@ class MediaScraper(IterableAction):
                  [EditStatusValue.default, EditStatusValue.metadata_overwrite, EditStatusValue.location_overwrite]
                  or page.data.properties[edit_status_prop] is None))
 
-    def process_page(self, reading: Page):
-        ReadingMediaScraperUnit(self, reading).execute()
-        print(f'\t{reading}')
+    def process(self, readings: Iterable[Page]) -> Any:
+        readings_it = peek(readings)
+        if readings_it is None:
+            return
+        with self.driver_service.create() as driver:
+            for reading in readings_it:
+                ReadingMediaScraperUnit(reading, driver).execute()
+                print(f'\t{reading}')
 
 
 class ReadingMediaScraperUnit:
-    def __init__(self, action: MediaScraper, reading: Page):
-        self.action = action
-        self.driver = action.driver_factory.create()
+    def __init__(self, reading: Page, driver: WebDriver):
+        self.driver = driver
 
         self.reading = reading
         self.new_properties = PageProperties()
@@ -196,5 +202,5 @@ class ReadingMediaScraperUnit:
 
 
 if __name__ == '__main__':
-    action = MediaScraper(create_window=False)
-    action.process_page(Page('https://www.notion.so/dyhn/_-f5caa69f928b4dc1a87b76c3a4917b40?pvs=4'))
+    _action = MediaScraper(create_window=False)
+    _action.process_page(Page('https://www.notion.so/dyhn/_-f5caa69f928b4dc1a87b76c3a4917b40?pvs=4'))

@@ -11,7 +11,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 
 from notion_df.util.collection import StrEnum
-from workflow.service.webdriver_service import WebDriverFactory
+from workflow.service.webdriver_service import WebDriverService
 
 SelectLib_T = Literal['all_libs', 'gajwa']
 
@@ -198,9 +198,8 @@ class GoyangLibraryScrapBookAreaParser:
 
 if __name__ == '__main__':
     my_title = '하나부터 열까지 신경 쓸 게 너무 많은 브랜딩'
-    driver_generator = WebDriverFactory(create_window=True)
-    driver = driver_generator.create()
-    gy = GYLibraryScraper(driver, my_title, 'gajwa')
+    _driver = WebDriverService(create_window=True).create()
+    gy = GYLibraryScraper(_driver, my_title, 'gajwa')
     print(gy.execute())
-    gy = GYLibraryScraper(driver, my_title, 'all_libs')
+    gy = GYLibraryScraper(_driver, my_title, 'all_libs')
     print(gy.execute())
