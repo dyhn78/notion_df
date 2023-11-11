@@ -24,10 +24,12 @@ class WebDriverFactory:
             from subprocess import CREATE_NO_WINDOW
             service.creationflags = CREATE_NO_WINDOW
         options = Options()
+        options.add_argument('--incognito')
         if not self.create_window:
             options.add_argument('--headless')
-            options.add_argument('--disable-dev-shm-usage')
             options.add_argument('--no-sandbox')
+            options.add_argument('--disable-dev-shm-usage')
+            options.add_argument('--disable-setuid-sandbox')
         driver = webdriver.Chrome(executable_path=driver_path, service=service, options=options)
         self.drivers.append(driver)
         return driver
