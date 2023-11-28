@@ -1,13 +1,13 @@
-import os
+import subprocess
 import sys
 from pathlib import Path
 from time import sleep
 
 import psutil
 
+from workflow import run_actions
 
-# TODO: add click command
-# TODO: move inside action/core.py
+
 def is_already_running(script_path: Path):
     count = 0
     for process in psutil.process_iter(['name', 'cmdline']):
@@ -21,21 +21,9 @@ def is_already_running(script_path: Path):
 
 
 if __name__ == '__main__':
-    this_path = Path(__file__).resolve()
-    if is_already_running(this_path):
-        sys.stderr.write("Script is already running.\n")
-        sys.exit(1)
-    print(f'{"#" * 5 } Start.')
-
-    from workflow.run_actions import actions
-    from workflow.core.action import run_from_last_success
-    log_enabled = run_from_last_success(actions=actions, print_body=False, update_last_success_time=True)
-    print(f'{"#" * 5 } {"Done." if log_enabled else "No new record."}')
-    if is_already_running(this_path):
-        sys.stderr.write("Other script is running.\n")
-        sys.exit(1)
-    sleep(5)
-    try:
-        os.execv(sys.executable, [sys.executable, this_path])
-    except OSError as e:
-        print("Execution failed:", e)
+    while True:
+        if is_already_running(Path(__file__).resolve()):
+            sys.stderr.write(f"{__name__} is already running.\n")
+            sys.exit(1)
+        subprocess.run([sys.executable, run_actions.__file__])
+        sleep(5)
