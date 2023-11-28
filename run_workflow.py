@@ -27,7 +27,7 @@ this_file = Path(__file__).resolve()
 if __name__ == '__main__':
     while True:
         if is_already_running(this_file):
-            sys.stderr.write(f"{__name__} is already running.\n")
+            sys.stderr.write(f"{this_file.name} is already running.\n")
             sys.exit(1)
         subprocess.run([sys.executable, run_actions.__file__],
                        env={**os.environ, 'PYTHONPATH': this_file.parent})
