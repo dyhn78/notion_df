@@ -20,10 +20,14 @@ def is_already_running(script_path: Path):
     return count > 1
 
 
+this_file = Path(__file__).resolve()
+
+
 if __name__ == '__main__':
     while True:
-        if is_already_running(Path(__file__).resolve()):
+        if is_already_running(this_file):
             sys.stderr.write(f"{__name__} is already running.\n")
             sys.exit(1)
-        subprocess.run([sys.executable, run_actions.__file__])
+        subprocess.run([sys.executable, run_actions.__file__],
+                       env={'PYTHONPATH': this_file.parent})
         sleep(5)
