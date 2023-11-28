@@ -1,3 +1,4 @@
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -29,5 +30,5 @@ if __name__ == '__main__':
             sys.stderr.write(f"{__name__} is already running.\n")
             sys.exit(1)
         subprocess.run([sys.executable, run_actions.__file__],
-                       env={'PYTHONPATH': this_file.parent})
+                       env={**os.environ, 'PYTHONPATH': this_file.parent})
         sleep(5)
