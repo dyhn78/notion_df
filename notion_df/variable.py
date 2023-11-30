@@ -60,3 +60,4 @@ class _DummySettings(_Settings):
 
 class Settings:
     print: _BooleanSettings = _BooleanSettings(False)
+    debug: _BooleanSettings = _BooleanSettings(False)
