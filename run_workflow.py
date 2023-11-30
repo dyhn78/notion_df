@@ -26,7 +26,4 @@ if __name__ == '__main__':
     subprocess.run([sys.executable, run_actions.__file__],
                    env={**os.environ, 'PYTHONPATH': Path(__file__).resolve().parent})
     sleep(5)
-    try:
-        os.execv(sys.executable, [sys.executable, Path(__file__).resolve()])
-    except OSError as e:
-        print("Execution failed:", e)
+    os.execv(sys.executable, [sys.executable, Path(__file__).resolve()])
