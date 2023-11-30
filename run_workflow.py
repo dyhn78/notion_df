@@ -1,6 +1,7 @@
 import os
 import subprocess
 import sys
+from datetime import datetime
 from pathlib import Path
 from time import sleep
 
@@ -23,7 +24,9 @@ if __name__ == '__main__':
     if is_already_running():
         sys.stderr.write(f"{run_actions.__name__} is already running.\n")
         sys.exit(1)
-    subprocess.run([sys.executable, run_actions.__file__],
-                   env={**os.environ, 'PYTHONPATH': Path(__file__).resolve().parent})
+    with Path(f'logs/{datetime.now().isoformat()}.log').open() as log_file:
+        subprocess.run([sys.executable, run_actions.__file__],
+                       env={**os.environ, 'PYTHONPATH': Path(__file__).resolve().parent},
+                       stdout=log_file)
     sleep(5)
     os.execv(sys.executable, [sys.executable, Path(__file__).resolve()])
