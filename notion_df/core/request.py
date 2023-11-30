@@ -7,8 +7,7 @@ from pprint import pprint
 from typing import TypeVar, Generic, Any, final, Optional, Iterator, Sequence, overload
 
 import requests
-from tenacity import retry, retry_if_exception, stop_after_attempt, \
-    wait_none
+from tenacity import retry, retry_if_exception, wait_exponential, stop_after_delay
 
 from notion_df.core.data import Data_T
 from notion_df.core.exception import NotionDfValueError, NotionDfIndexError, NotionDfTypeError
@@ -37,8 +36,8 @@ class Request:
                                                           requests.exceptions.ReadTimeout,
                                                           requests.exceptions.ChunkedEncodingError])
 
-    @retry(wait=wait_none(),
-           stop=stop_after_attempt(10),
+    @retry(wait=wait_exponential(30),
+           stop=stop_after_delay(86400),
            retry=retry_if_exception(is_server_error))  # TODO: add request info on TimeoutError
     def execute(self) -> requests.Response:
         response = requests.request(method=self.method.value, url=self.url, headers=self.headers,
