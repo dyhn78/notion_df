@@ -9,26 +9,22 @@ import psutil
 from workflow import run_actions
 
 
-def is_already_running(script_path: Path):
+def is_already_running():
     count = 0
     for process in psutil.process_iter(['name', 'cmdline']):
         try:
-            if process.cmdline()[:2] in [[sys.executable, str(script_path)],
-                                         [Path(sys.executable).name, script_path.name]]:
+            if process.cmdline()[:2] == [sys.executable, run_actions.__file__]:
                 count += 1
         except (psutil.AccessDenied, psutil.NoSuchProcess):
             continue
     return count > 1
 
 
-this_file = Path(__file__).resolve()
-
-
 if __name__ == '__main__':
     while True:
-        if is_already_running(this_file):
-            sys.stderr.write(f"{this_file.name} is already running.\n")
+        if is_already_running():
+            sys.stderr.write(f"{run_actions.__name__} is already running.\n")
             sys.exit(1)
         subprocess.run([sys.executable, run_actions.__file__],
-                       env={**os.environ, 'PYTHONPATH': this_file.parent})
+                       env={**os.environ, 'PYTHONPATH': Path(__file__).resolve().parent})
         sleep(5)
