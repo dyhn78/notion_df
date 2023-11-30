@@ -257,14 +257,14 @@ class PageProperties(Properties, MutableMapping[Property[Any, PagePropertyValue_
         return super().__delitem__(key)
 
     @property
-    def title(self) -> TitleProperty.page_value:
+    def title(self) -> RichText:
         # TODO
         if self._title is None:
             raise NotionDfKeyError('title key is missing')
         return self[self._title]
 
     @title.setter
-    def title(self, value: TitleProperty.page_value) -> None:
+    def title(self, value: RichText) -> None:
         if self._title is None:
             raise NotionDfKeyError('title key is missing')
         self[self._title] = value

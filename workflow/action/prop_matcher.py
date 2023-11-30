@@ -5,15 +5,15 @@ from abc import ABCMeta
 from typing import Iterable, Optional
 
 from notion_df.core.request import Paginator
+from notion_df.entity import Page, Database
 from notion_df.object.filter import created_time_filter
 from notion_df.object.rich_text import TextSpan
-from notion_df.entity import Page, Database
 from notion_df.property import RelationProperty, TitleProperty, PageProperties, DateFormulaPropertyKey, \
     DateProperty, CheckboxFormulaProperty, RichTextProperty, SelectProperty
 from notion_df.util.misc import repr_object
-from workflow.core.action import IterableAction
 from workflow.block_enum import DatabaseEnum
 from workflow.constant import EmojiCode
+from workflow.core.action import IterableAction
 
 korean_weekday = '월화수목금토일'
 record_datetime_auto_key = DateFormulaPropertyKey(EmojiCode.TIMER + '일시')
@@ -58,7 +58,7 @@ class MatchDateByCreatedTime(MatchAction):
     def query_all(self) -> Paginator[Page]:
         return self.record_db.query(self.record_to_date.filter.is_empty())
 
-    def filter(self, record: Page) -> bool:
+    def _filter(self, record: Page) -> bool:
         return record.data.parent == self.record_db and not record.data.properties[self.record_to_date]
 
     def process_page(self, record: Page):
@@ -88,7 +88,7 @@ class MatchTimeManualValue(MatchAction):
         return self.record_db.query(time_manual_value_prop.filter.is_empty()
                                     & created_time_filter.equals(dt.date.today()))
 
-    def filter(self, record: Page) -> bool:
+    def _filter(self, record: Page) -> bool:
         if not (record.data.parent == self.record_db and not record.data.properties[time_manual_value_prop]):
             return False
         try:
@@ -126,7 +126,7 @@ class MatchReadingsStartDate(MatchAction):
             )
         )
 
-    def filter(self, page: Page) -> bool:
+    def _filter(self, page: Page) -> bool:
         return (page.data.parent == self.reading_db and not page.data.properties[reading_to_start_date_prop]
                 and (page.data.properties[reading_to_journal_prop]
                      or page.data.properties[reading_match_date_by_created_time_prop]))
@@ -184,7 +184,7 @@ class MatchWeekByRefDate(MatchAction):
         return self.record_db.query(
             self.record_to_week.filter.is_empty() & self.record_to_date.filter.is_not_empty())
 
-    def filter(self, page: Page) -> bool:
+    def _filter(self, page: Page) -> bool:
         return page.data.parent == self.record_db and page.data.properties[self.record_to_date]
 
     def process_page(self, record: Page) -> None:
@@ -218,7 +218,7 @@ class MatchWeekByDateValue(MatchAction):
     def query_all(self) -> Paginator[Page]:
         return self.date_db.query(date_to_week_prop.filter.is_empty())
 
-    def filter(self, page: Page) -> bool:
+    def _filter(self, page: Page) -> bool:
         return page.data.parent == self.date_db and not page.data.properties[date_to_week_prop]
 
     def process_page(self, date: Page):
@@ -246,7 +246,7 @@ class MatchTopic(MatchAction):
     def query_all(self) -> Iterable[Page]:
         return self.record_db.query(self.record_to_ref_prop.filter.is_not_empty())
 
-    def filter(self, record: Page) -> bool:
+    def _filter(self, record: Page) -> bool:
         return bool(record.data.parent == self.record_db and record.data.properties[self.record_to_ref_prop])
 
     def process_page(self, record: Page) -> None:

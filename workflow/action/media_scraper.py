@@ -53,7 +53,7 @@ class MediaScraper(Action):
             [EditStatusValue.default, EditStatusValue.metadata_overwrite, EditStatusValue.location_overwrite, None]
         ]))
 
-    def filter(self, page: Page) -> bool:
+    def _filter(self, page: Page) -> bool:
         return (page.data.parent == self.reading_db and page.data.properties[is_book_prop] and
                 (page.data.properties[edit_status_prop] in
                  [EditStatusValue.default, EditStatusValue.metadata_overwrite, EditStatusValue.location_overwrite]
@@ -203,4 +203,4 @@ class ReadingMediaScraperUnit:
 
 if __name__ == '__main__':
     _action = MediaScraper(create_window=False)
-    _action.process_page(Page('https://www.notion.so/dyhn/_-f5caa69f928b4dc1a87b76c3a4917b40?pvs=4'))
+    _action.process([Page('https://www.notion.so/dyhn/_-f5caa69f928b4dc1a87b76c3a4917b40?pvs=4')])

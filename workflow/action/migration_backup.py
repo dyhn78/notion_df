@@ -3,12 +3,12 @@ from pathlib import Path
 from typing import Optional, cast, Iterator, Iterable
 
 from notion_df.core.request import RequestError
-from notion_df.object.data import PageData
 from notion_df.entity import Page, Database
+from notion_df.object.data import PageData
 from notion_df.property import RelationProperty, PageProperties
-from workflow.core.action import IterableAction
 from workflow.action.prop_matcher import get_earliest_date
 from workflow.block_enum import DatabaseEnum
+from workflow.core.action import IterableAction
 from workflow.service.backup_service import ResponseBackupService
 
 
@@ -22,7 +22,7 @@ class MigrationBackupSaveAction(IterableAction):
                 yield block
                 del block
 
-    def filter(self, page: Page) -> bool:
+    def _filter(self, page: Page) -> bool:
         return isinstance(page.data.parent, Database)
 
     def process_page(self, page: Page) -> None:
@@ -41,7 +41,7 @@ class MigrationBackupLoadAction(IterableAction):
     def query_all(self) -> Iterator[Page]:
         return iter([])
 
-    def filter(self, page: Page) -> bool:
+    def _filter(self, page: Page) -> bool:
         return True
 
     def process_page(self, page: Page) -> None:
