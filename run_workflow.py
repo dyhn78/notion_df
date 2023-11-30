@@ -29,7 +29,8 @@ if __name__ == '__main__':
         sys.stderr.write(f"{run_actions.__name__} is already running.\n")
         sys.exit(1)
     log_dir.mkdir(exist_ok=True)
-    with (log_dir / f'{datetime.now().isoformat()}.log').open('w') as log_file:
+    log_file_name = datetime.now().isoformat().replace(':', '-').replace('.', '-') + '.log'
+    with (log_dir / log_file_name).open('w') as log_file:
         subprocess.run([sys.executable, run_actions.__file__],
                        env={**os.environ, 'PYTHONPATH': project_dir},
                        stdout=log_file, stderr=log_file)
