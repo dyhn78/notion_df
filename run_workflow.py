@@ -32,6 +32,6 @@ if __name__ == '__main__':
     with (log_dir / f'{datetime.now().isoformat()}.log').open('w') as log_file:
         subprocess.run([sys.executable, run_actions.__file__],
                        env={**os.environ, 'PYTHONPATH': project_dir},
-                       stdout=log_file)
+                       stdout=log_file, stderr=log_file)
     sleep(5)
     os.execv(sys.executable, [sys.executable, Path(__file__).resolve()])
