@@ -20,13 +20,18 @@ def is_already_running():
     return False
 
 
+project_dir = Path(__file__).resolve().parent
+log_dir = project_dir / 'logs'
+
+
 if __name__ == '__main__':
     if is_already_running():
         sys.stderr.write(f"{run_actions.__name__} is already running.\n")
         sys.exit(1)
-    with Path(f'logs/{datetime.now().isoformat()}.log').open('w') as log_file:
+    log_dir.mkdir(exist_ok=True)
+    with (log_dir / f'{datetime.now().isoformat()}.log').open('w') as log_file:
         subprocess.run([sys.executable, run_actions.__file__],
-                       env={**os.environ, 'PYTHONPATH': Path(__file__).resolve().parent},
+                       env={**os.environ, 'PYTHONPATH': project_dir},
                        stdout=log_file)
     sleep(5)
     os.execv(sys.executable, [sys.executable, Path(__file__).resolve()])
