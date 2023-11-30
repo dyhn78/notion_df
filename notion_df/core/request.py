@@ -44,7 +44,6 @@ class Request:
                                     params=self.params, json=self.json, timeout=600)  # TODO: relate with tenacity
         if Settings.print:
             pprint(self, width=print_width)
-            print(f'->: {response.text}')
         try:
             response.raise_for_status()
             return response
