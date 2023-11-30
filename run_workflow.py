@@ -20,10 +20,13 @@ def is_already_running():
 
 
 if __name__ == '__main__':
-    while True:
-        if is_already_running():
-            sys.stderr.write(f"{run_actions.__name__} is already running.\n")
-            sys.exit(1)
-        subprocess.run([sys.executable, run_actions.__file__],
-                       env={**os.environ, 'PYTHONPATH': Path(__file__).resolve().parent})
-        sleep(5)
+    if is_already_running():
+        sys.stderr.write(f"{run_actions.__name__} is already running.\n")
+        sys.exit(1)
+    subprocess.run([sys.executable, run_actions.__file__],
+                   env={**os.environ, 'PYTHONPATH': Path(__file__).resolve().parent})
+    sleep(5)
+    try:
+        os.execv(sys.executable, [sys.executable, Path(__file__).resolve()])
+    except OSError as e:
+        print("Execution failed:", e)
