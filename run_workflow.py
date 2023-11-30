@@ -10,14 +10,13 @@ from workflow import run_actions
 
 
 def is_already_running():
-    count = 0
     for process in psutil.process_iter(['name', 'cmdline']):
         try:
             if process.cmdline()[:2] == [sys.executable, run_actions.__file__]:
-                count += 1
+                return True
         except (psutil.AccessDenied, psutil.NoSuchProcess):
             continue
-    return count > 1
+    return False
 
 
 if __name__ == '__main__':
