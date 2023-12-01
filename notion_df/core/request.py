@@ -37,8 +37,8 @@ class Request:
                                                           requests.exceptions.ReadTimeout,
                                                           requests.exceptions.ChunkedEncodingError])
 
-    @tenacity.retry(wait=tenacity.wait_chain(tenacity.wait_exponential(30, max=3600),
-                                             tenacity.wait_fixed(3600)),
+    @tenacity.retry(wait=tenacity.wait_none(),
+                    stop=tenacity.stop_after_attempt(5),
                     retry=tenacity.retry_if_exception(is_server_error))  # TODO: add request info on TimeoutError
     def execute(self) -> requests.Response:
         logger.debug(self)
