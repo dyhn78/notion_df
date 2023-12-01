@@ -38,12 +38,12 @@ class Request:
                                                           requests.exceptions.ChunkedEncodingError])
 
     @tenacity.retry(wait=tenacity.wait_none(),
-                    stop=tenacity.stop_after_attempt(5),
+                    stop=tenacity.stop_after_attempt(3),
                     retry=tenacity.retry_if_exception(is_server_error))  # TODO: add request info on TimeoutError
     def execute(self) -> requests.Response:
         logger.debug(self)
         response = requests.request(method=self.method.value, url=self.url, headers=self.headers,
-                                    params=self.params, json=self.json, timeout=600)  # TODO: relate with tenacity
+                                    params=self.params, json=self.json, timeout=120)  # TODO: relate with tenacity
         logger.trace(pprint.pformat(response.text, width=print_width))
         try:
             response.raise_for_status()
