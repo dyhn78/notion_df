@@ -27,7 +27,7 @@ class ResponseBackupService:
         try:
             return response_cls.deserialize(response_raw_data)
         except SerializationError:
-            logger.error(f'Skip invalid response_raw_data: entity - {entity}, response_raw_data - {response_raw_data}')
+            logger.warning(f'Skip invalid response_raw_data: entity - {entity}, response_raw_data - {response_raw_data}')
 
     def write(self, entity: Entity[Data_T]) -> None:
         path = self._get_path(entity)
