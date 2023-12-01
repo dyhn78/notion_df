@@ -1,21 +1,26 @@
 from __future__ import annotations
 
+from datetime import timedelta
 from pathlib import Path
+from typing import Optional
 
-from workflow import backup_dir
+from loguru import logger
+
+from workflow import backup_dir, log_dir
 from workflow.action.media_scraper import MediaScraper
 from workflow.action.migration_backup import MigrationBackupSaveAction, MigrationBackupLoadAction
 from workflow.action.prop_matcher import MatchActionBase, MatchWeekByDateValue, MatchDateByCreatedTime, \
     MatchWeekByRefDate, MatchReadingsStartDate, MatchTopic, MatchTimeManualValue
 from workflow.block_enum import DatabaseEnum
 from workflow.core.action import Action
+from workflow.core.action import run_from_last_success
 
 
-def get_actions(create_window: bool, _backup_path: Path) -> list[Action]:
+def get_actions() -> list[Action]:
     base = MatchActionBase()
     return [
-        MigrationBackupLoadAction(_backup_path),
-        MigrationBackupSaveAction(_backup_path),
+        MigrationBackupLoadAction(backup_dir),
+        MigrationBackupSaveAction(backup_dir),
 
         MatchWeekByDateValue(base),
 
@@ -60,8 +65,20 @@ def get_actions(create_window: bool, _backup_path: Path) -> list[Action]:
         # MatchDateByCreatedTime(base, DatabaseEnum.depr_subject_db, '일간'),
         # MatchWeekByRefDate(base, DatabaseEnum.depr_subject_db, '주간', '일간'),
 
-        MediaScraper(create_window),
+        MediaScraper(create_window=False),
     ]
 
 
-actions = get_actions(False, backup_dir)
+def get_latest_log_path() -> Optional[Path]:
+    log_path_list = sorted(log_dir.iterdir())
+    if not log_path_list:
+        return
+    return log_path_list[-1]
+
+
+if __name__ == '__main__':
+    logger.add((get_latest_log_path() or log_dir / '{time}.log'),
+               level='DEBUG', rotation='100 MB', retention=timedelta(weeks=2))
+    logger.info(f'{"#" * 5} Start.')
+    new_record = run_from_last_success(actions=get_actions(), update_last_success_time=True)
+    logger.info(f'{"#" * 5} {"Done." if new_record else "No new record."}')

@@ -6,13 +6,13 @@ from time import sleep
 
 import psutil
 
-from workflow import run_actions, project_dir
+from workflow import actions, project_dir
 
 
 def is_already_running():
     for process in psutil.process_iter(['name', 'cmdline']):
         try:
-            if process.cmdline()[:2] == [sys.executable, run_actions.__file__]:
+            if process.cmdline()[:2] == [sys.executable, actions.__file__]:
                 return True
         except (psutil.AccessDenied, psutil.NoSuchProcess):
             continue
@@ -21,9 +21,9 @@ def is_already_running():
 
 if __name__ == '__main__':
     if is_already_running():
-        sys.stderr.write(f"{run_actions.__name__} is already running.\n")
+        sys.stderr.write(f"{actions.__name__} is already running.\n")
         sys.exit(1)
-    subprocess.run([sys.executable, run_actions.__file__],
+    subprocess.run([sys.executable, actions.__file__],
                    env={**os.environ, 'PYTHONPATH': project_dir})
     sleep(5)
     os.execv(sys.executable, [sys.executable, Path(__file__).resolve()])

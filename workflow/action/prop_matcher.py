@@ -12,7 +12,7 @@ from notion_df.property import RelationProperty, TitleProperty, PageProperties, 
     DateProperty, CheckboxFormulaProperty, RichTextProperty, SelectProperty
 from notion_df.util.misc import repr_object
 from workflow.block_enum import DatabaseEnum
-from workflow.constant import EmojiCode
+from workflow.emoji_code import EmojiCode
 from workflow.core.action import IterableAction
 
 korean_weekday = '월화수목금토일'

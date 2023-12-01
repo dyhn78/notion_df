@@ -13,8 +13,8 @@ from workflow.service.backup_service import ResponseBackupService
 
 
 class MigrationBackupSaveAction(IterableAction):
-    def __init__(self, backup_path: Path):
-        self.backup = ResponseBackupService(backup_path)
+    def __init__(self, backup_dir: Path):
+        self.backup = ResponseBackupService(backup_dir)
 
     def query_all(self) -> Iterator[Page]:
         for db_enum in DatabaseEnum:
@@ -35,8 +35,8 @@ class MigrationBackupSaveAction(IterableAction):
 
 
 class MigrationBackupLoadAction(IterableAction):
-    def __init__(self, backup_path: Path):
-        self.response_backup = ResponseBackupService(backup_path)
+    def __init__(self, backup_dir: Path):
+        self.response_backup = ResponseBackupService(backup_dir)
 
     def query_all(self) -> Iterator[Page]:
         return iter([])

@@ -9,7 +9,7 @@ from notion_df.object.data import DatabaseData
 from notion_df.object.misc import Emoji
 from notion_df.object.rich_text import RichText, TextSpan
 from notion_df.util.uuid_util import get_page_or_database_id, get_page_or_database_url
-from workflow.constant import EmojiCode
+from workflow.emoji_code import EmojiCode
 
 _id_to_member = {}
 
