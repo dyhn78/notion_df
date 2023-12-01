@@ -2,6 +2,7 @@ from functools import cache
 from pathlib import Path
 from typing import Optional, cast, Iterator, Iterable
 
+import tenacity
 from loguru import logger
 
 from notion_df.core.request import RequestError
@@ -32,11 +33,14 @@ class MigrationBackupSaveAction(IterableAction):
             if not isinstance(prop, RelationProperty):
                 continue
             prop_value = page.data.properties[prop]
-            # TODO: delete len() condition - it is set because of Notion 504 error
+            # TODO: resolve Notion 504 error
             #  https://notiondevs.slack.com/archives/C01CZTMG85C/p1701409539104549
-            # if prop_value.has_more:
-            if prop_value.has_more and len(prop_value) >= 25:
-                page.retrieve_property_item(prop.id)
+            if prop_value.has_more:
+                try: 
+                    page.retrieve_property_item(prop.id)
+                except tenacity.RetryError:
+                    logger.error(f'failed Page.retrieve_property_item({page}, prop={prop.name})')
+                    pass               
         self.backup.write(page)
 
 
