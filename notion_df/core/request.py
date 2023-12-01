@@ -40,12 +40,12 @@ class Request:
                                              tenacity.wait_fixed(3600)),
                     retry=tenacity.retry_if_exception(is_server_error))  # TODO: add request info on TimeoutError
     def execute(self) -> requests.Response:
-        response = requests.request(method=self.method.value, url=self.url, headers=self.headers,
-                                    params=self.params, json=self.json, timeout=600)  # TODO: relate with tenacity
         if Settings.print:
             pprint(self, width=print_width)
-            if Settings.debug:
-                print(response.text)
+        response = requests.request(method=self.method.value, url=self.url, headers=self.headers,
+                                    params=self.params, json=self.json, timeout=600)  # TODO: relate with tenacity
+        if Settings.debug:
+            print(response.text)
         try:
             response.raise_for_status()
             return response

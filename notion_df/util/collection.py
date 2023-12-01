@@ -6,7 +6,7 @@ from typing import TypeVar, NewType
 from notion_df.core.exception import NotionDfKeyError
 
 
-class StrEnum(str, Enum):
+class StrEnum(str, Enum):  # TODO: use builtin StrEnum after py3.11
     @property
     def value(self) -> str:
         return self._value_
@@ -14,6 +14,9 @@ class StrEnum(str, Enum):
 
 class PlainStrEnum(StrEnum):
     def __str__(self) -> str:
+        return self.value
+
+    def __repr__(self) -> str:
         return self.value
 
 

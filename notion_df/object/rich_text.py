@@ -4,9 +4,8 @@ import functools
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, field
 from typing import Optional, Any, Literal, final, Iterable, cast
-from uuid import UUID
-
 from typing_extensions import Self
+from uuid import UUID
 
 from notion_df.core.serialization import DualSerializable, deserialize, serialize
 from notion_df.object.misc import DateRange, Annotations
@@ -41,7 +40,7 @@ class Span(DualSerializable, metaclass=ABCMeta):
         _deserialize_this = cls._deserialize_this
 
         @functools.wraps(_serialize)
-        def _serialize_wrapped(self: cls):
+        def _serialize_wrapped(self: Span):
             raw = _serialize(self)
             if self.annotations is not None:
                 raw['annotations'] = self.annotations.serialize()
