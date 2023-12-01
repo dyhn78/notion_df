@@ -29,7 +29,11 @@ class MigrationBackupSaveAction(IterableAction):
         for prop in page.data.properties:
             if not isinstance(prop, RelationProperty):
                 continue
-            if page.data.properties[prop].has_more:
+            prop_value = page.data.properties[prop]
+            # TODO: delete len() condition - it is set because of Notion 504 error
+            #  https://notiondevs.slack.com/archives/C01CZTMG85C/p1701409539104549
+            # if prop_value.has_more:
+            if prop_value.has_more and len(prop_value) >= 25:
                 page.retrieve_property_item(prop.id)
         self.backup.write(page)
 
