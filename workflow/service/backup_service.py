@@ -2,6 +2,8 @@ import json
 from pathlib import Path
 from typing import Optional
 
+from loguru import logger
+
 from notion_df.core.entity import Entity
 from notion_df.core.data import Data_T
 from notion_df.core.serialization import SerializationError
@@ -25,15 +27,15 @@ class ResponseBackupService:
         try:
             return response_cls.deserialize(response_raw_data)
         except SerializationError:
-            print(f'Skip invalid response_raw_data: entity - {entity}, response_raw_data - {response_raw_data}')
+            logger.error(f'Skip invalid response_raw_data: entity - {entity}, response_raw_data - {response_raw_data}')
 
     def write(self, entity: Entity[Data_T]) -> None:
         path = self._get_path(entity)
         path.parent.mkdir(parents=True, exist_ok=True)
         if path.is_file():
-            print(f'\t{entity}\n\t\t-> overwrite')
+            logger.info(f'\t{entity}\n\t\t-> overwrite')
         else:
-            print(f'\t{entity}\n\t\t-> create')
+            logger.info(f'\t{entity}\n\t\t-> create')
         with path.open('w') as file:
             raw_data = entity.data.raw
             assert raw_data is not None

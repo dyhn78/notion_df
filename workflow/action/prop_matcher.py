@@ -4,6 +4,8 @@ import datetime as dt
 from abc import ABCMeta
 from typing import Iterable, Optional
 
+from loguru import logger
+
 from notion_df.core.request import Paginator
 from notion_df.entity import Page, Database
 from notion_df.object.filter import created_time_filter
@@ -73,7 +75,7 @@ class MatchDateByCreatedTime(MatchAction):
             return date
 
         _date = wrapper()
-        print(f'\t{record}\n\t\t-> {_date if _date else ":Skipped"}')
+        logger.info(f'\t{record}\n\t\t-> {_date if _date else ":Skipped"}')
 
 
 class MatchTimeManualValue(MatchAction):
@@ -108,7 +110,7 @@ class MatchTimeManualValue(MatchAction):
             return time_manual_value
 
         _date = _process_page()
-        print(f'\t{record}\n\t\t-> {_date if _date else ":Skipped"}')
+        logger.info(f'\t{record}\n\t\t-> {_date if _date else ":Skipped"}')
 
 
 class MatchReadingsStartDate(MatchAction):
@@ -162,7 +164,7 @@ class MatchReadingsStartDate(MatchAction):
             return date
 
         _date = _process_page()
-        print(f'\t{reading}\n\t\t-> {_date if _date else ": Skipped"}')
+        logger.info(f'\t{reading}\n\t\t-> {_date if _date else ": Skipped"}')
 
 
 class MatchWeekByRefDate(MatchAction):
@@ -204,7 +206,7 @@ class MatchWeekByRefDate(MatchAction):
             return new_record_weeks
 
         _weeks = _process_page()
-        print(f'\t{record}\n\t\t-> {list(_weeks) if _weeks else ": Skipped"}')
+        logger.info(f'\t{record}\n\t\t-> {list(_weeks) if _weeks else ": Skipped"}')
 
 
 class MatchWeekByDateValue(MatchAction):
@@ -224,13 +226,13 @@ class MatchWeekByDateValue(MatchAction):
     def process_page(self, date: Page):
         date_value = date.data.properties[date_manual_value_prop]
         if not date_value:
-            print(f'\t{date} -> Skipped')
+            logger.info(f'\t{date} -> Skipped')
             return
         week = self.week_namespace.get_by_date_value(date_value.start)
         if date.retrieve().data.properties[date_to_week_prop]:
             return
         date.update(PageProperties({date_to_week_prop: date_to_week_prop.page_value([week])}))
-        print(f'\t{date}\n\t\t-> {week}')
+        logger.info(f'\t{date}\n\t\t-> {week}')
 
 
 class MatchTopic(MatchAction):

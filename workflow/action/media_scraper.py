@@ -1,5 +1,6 @@
 from typing import Optional, Callable, Any, Iterable
 
+from loguru import logger
 from selenium.webdriver.chrome.webdriver import WebDriver
 
 from notion_df.core.request import Paginator
@@ -66,7 +67,7 @@ class MediaScraper(Action):
         with self.driver_service.create() as driver:
             for reading in readings_it:
                 ReadingMediaScraperUnit(reading, driver).execute()
-                print(f'\t{reading}')
+                logger.info(f'\t{reading}')
 
 
 class ReadingMediaScraperUnit:

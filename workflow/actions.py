@@ -77,7 +77,7 @@ def get_latest_log_path() -> Optional[Path]:
 
 
 if __name__ == '__main__':
-    logger.add((get_latest_log_path() or log_dir / '{time}.log'),
+    logger.add((get_latest_log_path() or (log_dir / '{time}.log')),
                level='DEBUG', rotation='100 MB', retention=timedelta(weeks=2))
     logger.info(f'{"#" * 5} Start.')
     new_record = run_from_last_success(actions=get_actions(), update_last_success_time=True)

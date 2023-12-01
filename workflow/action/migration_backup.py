@@ -2,6 +2,8 @@ from functools import cache
 from pathlib import Path
 from typing import Optional, cast, Iterator, Iterable
 
+from loguru import logger
+
 from notion_df.core.request import RequestError
 from notion_df.entity import Page, Database
 from notion_df.object.data import PageData
@@ -52,16 +54,16 @@ class MigrationBackupLoadAction(IterableAction):
         this_page = next((breadcrumb_page for breadcrumb_page in iter_breadcrumb(page)
                          if DatabaseEnum.from_entity(breadcrumb_page.data.parent) is not None), None)
         if this_page is None:
-            print(f'\t{page}: Moved outside DatabaseEnum')
+            logger.info(f'\t{page}: Moved outside DatabaseEnum')
 
         this_db: Database = this_page.data.parent
         this_prev_data: Optional[PageData] = self.response_backup.read(page)
         if not this_prev_data:
-            print(f'\t{page}: No previous response backup')
+            logger.info(f'\t{page}: No previous response backup')
             return
         this_prev_db = this_prev_data.parent
         if page == this_page and this_prev_db == this_db:
-            print(f'\t{page}: Did not change the parent database')
+            logger.info(f'\t{page}: Did not change the parent database')
             return
 
         this_new_properties = PageProperties()
@@ -110,7 +112,7 @@ class MigrationBackupLoadAction(IterableAction):
                 return
             raise e
         finally:
-            print(f'\t{this_page}: {this_new_properties}')
+            logger.info(f'\t{this_page}: {this_new_properties}')
 
     @classmethod
     @cache
