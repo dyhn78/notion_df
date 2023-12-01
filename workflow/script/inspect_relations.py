@@ -4,24 +4,22 @@ from pathlib import Path
 
 from notion_df.entity import Database
 from notion_df.property import RelationProperty
-from notion_df.variable import Settings
-from workflow import data_path
+from workflow import data_dir
 from workflow.block_enum import DatabaseEnum
 
-pickle_path: Path = data_path / 'all_relation_properties'
+pickle_path: Path = data_dir / 'all_relation_properties'
 
 
 def init():
-    with Settings.print:
-        _all_relation_properties: dict[tuple[Database, Database], list[RelationProperty]] = defaultdict(list)
-        for db_enum in DatabaseEnum:
-            db = db_enum.entity
-            db.retrieve()
-            for prop in db.data.properties:
-                if isinstance(prop, RelationProperty):
-                    from typing import cast
-                    linked_db = cast(prop.database_value, db.data.properties[prop]).database
-                    _all_relation_properties[(db, linked_db)].append(prop)
+    _all_relation_properties: dict[tuple[Database, Database], list[RelationProperty]] = defaultdict(list)
+    for db_enum in DatabaseEnum:
+        db = db_enum.entity
+        db.retrieve()
+        for prop in db.data.properties:
+            if isinstance(prop, RelationProperty):
+                from typing import cast
+                linked_db = cast(prop.database_value, db.data.properties[prop]).database
+                _all_relation_properties[(db, linked_db)].append(prop)
     pickle.dump(_all_relation_properties, pickle_path.open('wb'))
 
 
@@ -58,4 +56,3 @@ if __name__ == '__main__':
     get_date()
     print('----')
     get_week()
-

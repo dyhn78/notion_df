@@ -1,20 +1,21 @@
 from __future__ import annotations
 
 import inspect
+import pprint
 from abc import abstractmethod, ABCMeta
 from dataclasses import dataclass
-from pprint import pprint
 from typing import TypeVar, Generic, Any, final, Optional, Iterator, Sequence, overload
 
 import requests
 import tenacity
+from loguru import logger
 
 from notion_df.core.data import Data_T
 from notion_df.core.exception import NotionDfValueError, NotionDfIndexError, NotionDfTypeError
 from notion_df.core.serialization import deserialize, serialize
 from notion_df.util.collection import PlainStrEnum
 from notion_df.util.misc import repr_object
-from notion_df.variable import Settings, print_width
+from notion_df.variable import print_width
 
 MAX_PAGE_SIZE = 100
 
@@ -40,12 +41,10 @@ class Request:
                                              tenacity.wait_fixed(3600)),
                     retry=tenacity.retry_if_exception(is_server_error))  # TODO: add request info on TimeoutError
     def execute(self) -> requests.Response:
-        if Settings.print:
-            pprint(self, width=print_width)
+        logger.info(self)
         response = requests.request(method=self.method.value, url=self.url, headers=self.headers,
                                     params=self.params, json=self.json, timeout=600)  # TODO: relate with tenacity
-        if Settings.debug:
-            print(response.text)
+        logger.trace(pprint.pformat(response.text, width=print_width))
         try:
             response.raise_for_status()
             return response

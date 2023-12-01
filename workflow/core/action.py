@@ -6,18 +6,19 @@ import traceback
 from abc import ABCMeta, abstractmethod
 from datetime import datetime, timedelta
 from itertools import chain
-from pprint import pprint
+from pprint import pformat
 from typing import Iterable, Optional, cast, Any, Iterator, TypeVar, final
 from uuid import UUID
 
 import tenacity
+from loguru import logger
 
 from notion_df.core.serialization import deserialize_datetime
 from notion_df.entity import Page, search_by_title, Block, Database
 from notion_df.object.data import DividerBlockValue, ParagraphBlockValue, ToggleBlockValue, CodeBlockValue
 from notion_df.object.rich_text import RichText, TextSpan, UserMention
 from notion_df.util.misc import repr_object
-from notion_df.variable import Settings, print_width, my_tz
+from notion_df.variable import print_width, my_tz
 
 log_page_id = '6d16dc6747394fca95dc169c8c736e2d'
 log_page_block = Block(log_page_id)
@@ -26,6 +27,7 @@ log_date_group_format = '%Y-%m-%d'
 log_last_success_time_parent_block = Block('c66d852e27e84d92b6203dfdadfefad8')
 
 my_user_id = UUID('a007d150-bc67-422c-87db-030a71867dd9')
+
 
 class Action(metaclass=ABCMeta):
     def __repr__(self):
@@ -101,8 +103,7 @@ def search_pages_by_last_edited_time(lower_bound: datetime, upper_bound: Optiona
         if page.data.last_edited_time < lower_bound:
             break
         pages.append(page)
-    if Settings.print.enabled:
-        pprint(pages, width=print_width)
+    logger.debug(pformat(pages, width=print_width))
     return pages
 
 
@@ -124,38 +125,37 @@ def execute_by_last_edited_time(actions: list[Action], lower_bound: datetime,
     return True
 
 
-def run_all(actions: list[Action], print_body: bool) -> None:
-    with Logger(print_body=print_body, update_last_success_time=False):
+def run_all(actions: list[Action]) -> None:
+    with Reporter(update_last_success_time=False):
         for action in actions:
             action.execute_all()
 
 
-def run_from_last_edited_time_bound(actions: list[Action], print_body: bool,
+def run_from_last_edited_time_bound(actions: list[Action],
                                     timedelta_size: timedelta, update_last_success_time: bool) -> None:
     # TODO: if the last result was RetryError, sleep for 10 mins
-    with Logger(print_body=print_body, update_last_success_time=update_last_success_time) as logger:
-        execute_by_last_edited_time(actions, logger.start_time - timedelta_size, logger.start_time)
+    with Reporter(update_last_success_time=update_last_success_time) as reporter:
+        execute_by_last_edited_time(actions, reporter.start_time - timedelta_size, reporter.start_time)
 
 
-def run_from_last_success(actions: list[Action], print_body: bool,
+def run_from_last_success(actions: list[Action],
                           update_last_success_time: bool) -> bool:
-    with Logger(print_body=print_body, update_last_success_time=update_last_success_time) as logger:
-        if logger.last_success_time is not None:
-            logger.enabled = execute_by_last_edited_time(actions, logger.last_success_time)
-            return logger.enabled
+    with Reporter(update_last_success_time=update_last_success_time) as reporter:
+        if reporter.last_success_time is not None:
+            reporter.enabled = execute_by_last_edited_time(actions, reporter.last_success_time)
+            return reporter.enabled
         else:
             for action in actions:
                 action.execute_all()
             return True
 
 
-class Logger:
+class Reporter:
     # Note: the log_page is implemented as page with log blocks, not database with log pages,
     #  since Notion API does not directly support permanently deleting pages,
     #  and third party solutions like `https://github.com/pocc/bulk_delete_notion_pages`
     #  needs additional works to integrate.
-    def __init__(self, *, print_body: bool, update_last_success_time: bool):
-        self.print_body = print_body
+    def __init__(self, *, update_last_success_time: bool):
         self.update_last_success_time = update_last_success_time
         self.start_time = datetime.now().astimezone(my_tz)
         self.start_time_str = self.start_time.strftime(log_date_format)
@@ -172,8 +172,7 @@ class Logger:
         else:
             self.last_success_time = deserialize_datetime(last_execution_time_str)
 
-    def __enter__(self) -> Logger:
-        Settings.print.enabled = self.print_body
+    def __enter__(self) -> Reporter:
         return self
 
     def format_time(self) -> str:

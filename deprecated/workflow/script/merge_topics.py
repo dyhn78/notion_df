@@ -1,9 +1,8 @@
 from uuid import UUID
 
-from notion_df.object.filter import and_filter
 from notion_df.entity import Database
+from notion_df.object.filter import and_filter
 from notion_df.property import DualRelationProperty, PageProperties
-from notion_df.variable import Settings
 from workflow.block_enum import DatabaseEnum
 
 # ['⚫️측면', '⚫️양상']
@@ -33,8 +32,7 @@ def main():
         topic_new_properties[new_prop_2] = topic.data.properties[old_prop_2]
         topic_new_properties[old_prop_2] = new_prop_1.page_value()
 
-        with Settings.print:
-            topic.update(topic_new_properties)
+        topic.update(topic_new_properties)
 
 
 if __name__ == '__main__':
