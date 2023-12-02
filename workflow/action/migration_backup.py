@@ -20,10 +20,7 @@ class MigrationBackupSaveAction(IterableAction):
         self.backup = ResponseBackupService(backup_dir)
 
     def query_all(self) -> Iterator[Page]:
-        for db_enum in DatabaseEnum:
-            for block in db_enum.entity.query():
-                yield block
-                del block
+        return iter([])
 
     def _filter(self, page: Page) -> bool:
         return isinstance(page.data.parent, Database)
