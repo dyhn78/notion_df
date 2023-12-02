@@ -150,6 +150,7 @@ def run_from_last_success(actions: list[Action],
             return True
 
 
+# TODO: do not update last_success_time if when the value has changed from the init
 class Reporter:
     # Note: the log_page is implemented as page with log blocks, not database with log pages,
     #  since Notion API does not directly support permanently deleting pages,
