@@ -21,4 +21,4 @@ if __name__ == '__main__':
                    env={**os.environ, 'PYTHONPATH': project_dir},
                    check=False)
     sleep(5)
-    os.execv(sys.executable, [sys.executable, Path(__file__).resolve()])
+    os.execv(sys.executable, [sys.executable, '-m', 'workflow.actions_run'])
