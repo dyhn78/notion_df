@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+import re
 from enum import Enum
 from typing import Optional
 
 from notion_df.core.entity import Entity
-from notion_df.entity import Database
+from notion_df.entity import Database, Page
 from notion_df.object.data import DatabaseData
 from notion_df.object.misc import Emoji
 from notion_df.object.rich_text import RichText, TextSpan
@@ -29,7 +30,6 @@ class DatabaseEnum(Enum):
 
     schedule_db = ('계획', 'addc94642ee74825bd31109f4fd1c9ee', EmojiCode.ORANGE_CIRCLE)
     review_db = ('회고', '52d387ea0aaa470cb69332708c61b34d', EmojiCode.ORANGE_HEART)
-
     depr_journal_db = ('일지', 'c226cffe6cf84ab996bbc384bf26bf1d', EmojiCode.ORANGE_CIRCLE)
     depr_writing_db = ('표현', '069bbebd632f4a6ea3044575a064cf0f', EmojiCode.BLACK_HEART)
     depr_stream_db = ('전개', '9f21ad86079d4caaa7ed9461a7f37288', EmojiCode.RED_HEART)
@@ -46,6 +46,8 @@ class DatabaseEnum(Enum):
         self.url = get_page_or_database_url(id_or_url, 'dyhn')
         self.prefix = prefix
         _id_to_member[Database(self.id)] = self
+        # noinspection PyStatementEffect
+        self.entity
 
     @property
     def prefix_title(self):
@@ -74,3 +76,14 @@ class DatabaseEnum(Enum):
     @classmethod
     def from_entity(cls, entity: Entity) -> Optional[DatabaseEnum]:
         return _id_to_member.get(entity)
+
+
+def is_template(page: Page) -> bool:
+    page.get_data()
+    database = page.data.parent
+    if not database or not isinstance(database, Database):
+        return False
+    # logger.critical(f'database.data.title - {database.data.title}')
+    # logger.critical(f'page.data.properties.title - {page.data.properties.title}')
+    # TODO: figure when isinstance(database.data.title.plain_text, str) wrongly set
+    return bool(re.match(f'<{database.get_data().title.plain_text}> .*', page.data.properties.title.plain_text))

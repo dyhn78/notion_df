@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import re
 import traceback
 from abc import ABCMeta, abstractmethod
 from datetime import datetime, timedelta
@@ -14,11 +13,12 @@ import tenacity
 from loguru import logger
 
 from notion_df.core.serialization import deserialize_datetime
-from notion_df.entity import Page, search_by_title, Block, Database
+from notion_df.entity import Page, search_by_title, Block
 from notion_df.object.data import DividerBlockValue, ParagraphBlockValue, ToggleBlockValue, CodeBlockValue
 from notion_df.object.rich_text import RichText, TextSpan, UserMention
 from notion_df.util.misc import repr_object
 from notion_df.variable import print_width, my_tz
+from workflow.block_enum import is_template
 
 log_page_id = '6d16dc6747394fca95dc169c8c736e2d'
 log_page_block = Block(log_page_id)
@@ -53,16 +53,6 @@ class Action(metaclass=ABCMeta):
 
     def execute_all(self) -> None:
         self.process(page for page in self.query_all() if self.filter(page))
-
-
-def is_template(page: Page) -> bool:
-    page.get_data()
-    database = page.data.parent
-    if not database or not isinstance(database, Database):
-        return False
-    # logger.critical(f'database.data.title - {database.data.title}')
-    # logger.critical(f'page.data.properties.title - {page.data.properties.title}')
-    return bool(re.match(f'<{database.get_data().title.plain_text}> .*', page.data.properties.title.plain_text))
 
 
 class IterableAction(Action, metaclass=ABCMeta):
@@ -152,7 +142,9 @@ def run_from_last_success(actions: list[Action],
             return True
 
 
+# TODO: rename as WorkflowLog
 # TODO: do not update last_success_time if when the value has changed from the init
+# TODO: if last_success_time_block says 'STOP' abort the workflow.
 class Reporter:
     # Note: the log_page is implemented as page with log blocks, not database with log pages,
     #  since Notion API does not directly support permanently deleting pages,
