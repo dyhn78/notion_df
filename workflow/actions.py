@@ -82,4 +82,4 @@ if __name__ == '__main__':
     logger.info(f'{"#" * 5} Start.')
     with logger.catch():
         new_record = run_from_last_success(actions=get_actions(), update_last_success_time=True)
-    logger.info(f'{"#" * 5} {"Done." if new_record else "No new record."}')
+        logger.info(f'{"#" * 5} {"Done." if new_record else "No new record."}')
