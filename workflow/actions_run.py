@@ -1,7 +1,6 @@
 import os
 import subprocess
 import sys
-from pathlib import Path
 from time import sleep
 
 import psutil
@@ -17,8 +16,11 @@ if __name__ == '__main__':
         except (psutil.AccessDenied, psutil.NoSuchProcess):
             continue
 
-    subprocess.run([sys.executable, actions.__file__],
-                   env={**os.environ, 'PYTHONPATH': project_dir},
-                   check=False)
-    sleep(5)
+    proc = subprocess.run([sys.executable, actions.__file__],
+                          env={**os.environ, 'PYTHONPATH': project_dir},
+                          check=False)
+    if proc.returncode != 0:
+        sleep(600)
+    else:
+        sleep(5)
     os.execv(sys.executable, [sys.executable, '-m', 'workflow.actions_run'])
