@@ -9,9 +9,10 @@ from typing_extensions import Self
 from notion_df.core.data import Data_T
 from notion_df.util.misc import repr_object, undefined
 
-namespace: Final[dict[tuple[type[Entity], UUID], Entity]] = {}  # TODO: support multiple entities
+namespace: Final[dict[tuple[type[Entity], UUID], Entity]] = {}
 
 
+# TODO!!: merge with entity.data. support Entity.copy() whose return value is non-requestable object with current()
 class Entity(Generic[Data_T], Hashable, metaclass=ABCMeta):
     """The base class for blocks, users, and comments.
     There is only one instance with given subclass and id.
@@ -43,6 +44,7 @@ class Entity(Generic[Data_T], Hashable, metaclass=ABCMeta):
         namespace[(type(self), self.id)] = self
 
     def __del__(self):
+        # TODO: use weakref instead. validate it with unit test which assert sys.getrefcount()
         del self.data
         del namespace[(type(self), self.id)]
 

@@ -52,7 +52,7 @@ class Action(metaclass=ABCMeta):
         pass
 
     def execute_all(self) -> None:
-        self.process(page for page in self.query_all() if self._filter(page))
+        self.process(page for page in self.query_all() if self.filter(page))
 
 
 def is_template(page: Page) -> bool:
@@ -112,7 +112,7 @@ class Workflow:
         ...  # TODO
 
 
-# rewrite as Workflow.execute_by_...()
+# TODO: rewrite as Workflow.execute_by_...()
 def execute_by_last_edited_time(actions: list[Action], lower_bound: datetime,
                                 upper_bound: Optional[datetime] = None) -> bool:
     # TODO: if no recent_pages, raise SkipException instead of returning False
@@ -121,7 +121,7 @@ def execute_by_last_edited_time(actions: list[Action], lower_bound: datetime,
     if not recent_pages:
         return False
     for self in actions:
-        self.process(page for page in recent_pages if self._filter(page))
+        self.process(page for page in recent_pages if self.filter(page))
     return True
 
 
