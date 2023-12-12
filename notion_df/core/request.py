@@ -37,13 +37,13 @@ class Request:
                                                           requests.exceptions.ReadTimeout,
                                                           requests.exceptions.ChunkedEncodingError])
 
-    @tenacity.retry(wait=tenacity.wait_chain(tenacity.wait_exponential(30, max=3600),
-                                             tenacity.wait_fixed(3600)),
+    @tenacity.retry(wait=tenacity.wait_none(),
+                    stop=tenacity.stop_after_attempt(3),
                     retry=tenacity.retry_if_exception(is_server_error))  # TODO: add request info on TimeoutError
     def execute(self) -> requests.Response:
         logger.debug(self)
         response = requests.request(method=self.method.value, url=self.url, headers=self.headers,
-                                    params=self.params, json=self.json, timeout=600)  # TODO: relate with tenacity
+                                    params=self.params, json=self.json, timeout=80)  # TODO: relate with tenacity
         logger.trace(pprint.pformat(response.text, width=print_width))
         try:
             response.raise_for_status()
@@ -82,8 +82,8 @@ class RequestError(Exception):
 @dataclass
 class RequestBuilder(metaclass=ABCMeta):
     # TODO: make it more functional-programming-like
-    #  request: Request = Request.build_request()
-    #  paginated_request: Request = Request.paginated_request()
+    #  page_create_request: Request = Request.build()
+    #  database_query_request: PaginatedRequest = PaginatedRequest.build()
     """base request form made of various Resources.
     all non-abstract subclasses must provide class type argument `Data_T`.
     get token from https://www.notion.so/my-integrations"""

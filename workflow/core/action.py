@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import re
 import traceback
 from abc import ABCMeta, abstractmethod
 from datetime import datetime, timedelta
@@ -14,11 +13,12 @@ import tenacity
 from loguru import logger
 
 from notion_df.core.serialization import deserialize_datetime
-from notion_df.entity import Page, search_by_title, Block, Database
+from notion_df.entity import Page, search_by_title, Block
 from notion_df.object.data import DividerBlockValue, ParagraphBlockValue, ToggleBlockValue, CodeBlockValue
 from notion_df.object.rich_text import RichText, TextSpan, UserMention
 from notion_df.util.misc import repr_object
 from notion_df.variable import print_width, my_tz
+from workflow.block_enum import is_template
 
 log_page_id = '6d16dc6747394fca95dc169c8c736e2d'
 log_page_block = Block(log_page_id)
@@ -52,15 +52,7 @@ class Action(metaclass=ABCMeta):
         pass
 
     def execute_all(self) -> None:
-        self.process(page for page in self.query_all() if self._filter(page))
-
-
-def is_template(page: Page) -> bool:
-    page.get_data()
-    database = page.data.parent
-    if not database or not isinstance(database, Database):
-        return False
-    return bool(re.match(f'<{database.data.title.plain_text}> .*', page.data.properties.title.plain_text))
+        self.process(page for page in self.query_all() if self.filter(page))
 
 
 class IterableAction(Action, metaclass=ABCMeta):
@@ -112,7 +104,7 @@ class Workflow:
         ...  # TODO
 
 
-# rewrite as Workflow.execute_by_...()
+# TODO: rewrite as Workflow.execute_by_...()
 def execute_by_last_edited_time(actions: list[Action], lower_bound: datetime,
                                 upper_bound: Optional[datetime] = None) -> bool:
     # TODO: if no recent_pages, raise SkipException instead of returning False
@@ -121,7 +113,7 @@ def execute_by_last_edited_time(actions: list[Action], lower_bound: datetime,
     if not recent_pages:
         return False
     for self in actions:
-        self.process(page for page in recent_pages if self._filter(page))
+        self.process(page for page in recent_pages if self.filter(page))
     return True
 
 
@@ -150,6 +142,9 @@ def run_from_last_success(actions: list[Action],
             return True
 
 
+# TODO: rename as WorkflowLog
+# TODO: do not update last_success_time if when the value has changed from the init
+# TODO: if last_success_time_block says 'STOP' abort the workflow.
 class Reporter:
     # Note: the log_page is implemented as page with log blocks, not database with log pages,
     #  since Notion API does not directly support permanently deleting pages,
