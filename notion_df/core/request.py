@@ -81,9 +81,9 @@ class RequestError(Exception):
 
 @dataclass
 class RequestBuilder(metaclass=ABCMeta):
-    # TODO: refactor so that Request has entity information
-    #  - Request.execute() returns Paginator
-    #  - Paginator can interact with Request instance and able to call Entity._send_response()
+    # TODO: make it more functional-programming-like
+    #  request: Request = Request.build_request()
+    #  paginated_request: Request = Request.paginated_request()
     """base request form made of various Resources.
     all non-abstract subclasses must provide class type argument `Data_T`.
     get token from https://www.notion.so/my-integrations"""
