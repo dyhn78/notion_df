@@ -390,7 +390,7 @@ class DateIndex(DatabaseIndex):
         if cls._get_record_date_value(title_plain_text):
             return None
         date_value = date.data.properties[date_manual_value_prop].start
-        return f'{date_value.strftime("%y%m%d")}| {title_plain_text}'
+        return f"{date_value.strftime('%y%m%d')}{'|' if '|' in title_plain_text else ''} {title_plain_text}"
 
     @classmethod
     def _get_record_date_value(cls, title_plain_text: str) -> Optional[dt.date]:
