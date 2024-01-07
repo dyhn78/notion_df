@@ -42,11 +42,11 @@ def get_actions() -> list[Action]:
 
         MatchEventProgress(base),
 
-        MatchDateByCreatedTime(base, DatabaseEnum.event_db, '일간'),
+        MatchDateByCreatedTime(base, DatabaseEnum.event_db, '일간', read_title=True, write_title=True),
         MatchDateByCreatedTime(base, DatabaseEnum.event_db, '정리'),
         MatchWeekByRefDate(base, DatabaseEnum.event_db, '주간', '일간'),
         MatchTimeManualValue(base, DatabaseEnum.event_db, '일간'),
-        MatchDateByCreatedTime(base, DatabaseEnum.journal_db, '일간'),
+        MatchDateByCreatedTime(base, DatabaseEnum.journal_db, '일간', read_title=True, write_title=True),
         MatchWeekByRefDate(base, DatabaseEnum.journal_db, '주간', '일간'),
 
         MatchDateByCreatedTime(base, DatabaseEnum.issue_db, '생성'),

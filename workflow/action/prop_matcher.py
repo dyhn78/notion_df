@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import datetime as dt
+import re
 from abc import ABCMeta
 from typing import Iterable, Optional, Any
 
@@ -9,9 +10,9 @@ from loguru import logger
 from notion_df.core.request import Paginator
 from notion_df.entity import Page, Database
 from notion_df.object.filter import created_time_filter
-from notion_df.object.rich_text import TextSpan
+from notion_df.object.rich_text import TextSpan, RichText
 from notion_df.property import RelationProperty, TitleProperty, PageProperties, DateFormulaPropertyKey, \
-    DateProperty, CheckboxFormulaProperty, RichTextProperty, SelectProperty
+    DateProperty, CheckboxFormulaProperty, RichTextProperty, SelectProperty, RelationPagePropertyValue
 from notion_df.util.misc import repr_object
 from workflow.block_enum import DatabaseEnum
 from workflow.core.action import IterableAction
@@ -82,10 +83,13 @@ class MatchEventProgress(MatchAction):
 
 
 class MatchDateByCreatedTime(MatchAction):
-    def __init__(self, base: MatchActionBase, record: DatabaseEnum, record_to_date: str):
+    def __init__(self, base: MatchActionBase, record: DatabaseEnum, record_to_date: str, *,
+                 read_title: bool = False, write_title: bool = False):
         super().__init__(base)
         self.record_db = record.entity
         self.record_to_date = RelationProperty(f'{DatabaseEnum.date_db.prefix}{record_to_date}')
+        self.read_title = read_title
+        self.write_title = write_title
 
     def query_all(self) -> Paginator[Page]:
         return self.record_db.query(self.record_to_date.filter.is_empty())
@@ -93,19 +97,36 @@ class MatchDateByCreatedTime(MatchAction):
     def _filter(self, record: Page) -> bool:
         return record.data.parent == self.record_db and not record.data.properties[self.record_to_date]
 
-    def process_page(self, record: Page):
-        def wrapper():
-            record_created_date = get_record_created_date(record)
-            date = self.date_namespace.get_by_date_value(record_created_date)
-
-            # final check if the property value is filled in the meantime
-            if record.retrieve().data.properties[self.record_to_date]:
+    def process_page(self, record: Page) -> None:
+        record_created_date = get_record_created_date(record)
+        if self.read_title:
+            date = self.date_namespace.by_record_title(record.data.properties.title.plain_text)
+            if date is not None:
+                # final check if the property value is filled in the meantime
+                if record.retrieve().data.properties[self.record_to_date]:
+                    logger.info(f'\t{record}\n\t\t-> :Skipped')
+                    return
+                record.update(PageProperties({
+                    self.record_to_date: self.record_to_date.page_value([date]),
+                }))
+                logger.info(f'\t{record}\n\t\t-> {date}')
                 return
-            record.update(PageProperties({self.record_to_date: self.record_to_date.page_value([date])}))
-            return date
 
-        _date = wrapper()
-        logger.info(f'\t{record}\n\t\t-> {_date if _date else ":Skipped"}')
+        date = self.date_namespace.by_date_value(record_created_date)
+        properties: PageProperties[RelationPagePropertyValue | RichText] = PageProperties({
+            self.record_to_date: self.record_to_date.page_value([date]),
+        })
+        if self.write_title:
+            title = self.date_namespace.format_record_title(record.data.properties.title.plain_text, date)
+            properties[record.data.properties.title_prop] = RichText.from_plain_text(title)
+
+        # final check if the property value is filled in the meantime
+        if record.retrieve().data.properties[self.record_to_date]:
+            logger.info(f'\t{record}\n\t\t-> :Skipped')
+            return
+        record.update(properties)
+        logger.info(f'\t{record}\n\t\t-> {date}')
+        return
 
 
 class MatchTimeManualValue(MatchAction):
@@ -181,7 +202,7 @@ class MatchReadingsStartDate(MatchAction):
                 return get_earliest_date(reading_event_and_main_dates)
             if reading.data.properties[reading_match_date_by_created_time_prop]:
                 reading_created_date = get_record_created_date(reading)
-                return self.date_namespace.get_by_date_value(reading_created_date)
+                return self.date_namespace.by_date_value(reading_created_date)
 
         def _process_page() -> Optional[Page]:
             date = find_date()
@@ -300,33 +321,64 @@ class DeprMatchTopic(MatchAction):
             self.record_to_topic_prop: self.record_to_topic_prop.page_value(new_topic)}))
 
 
+# TODO: rename DatabaseNamespace
 class DatabaseIndex(metaclass=ABCMeta):
-    def __init__(self, database: DatabaseEnum, title: str):
+    def __init__(self, database: DatabaseEnum, title_prop: str):
         self.database = database.entity
-        self.title = TitleProperty(title)
+        self.title_prop = TitleProperty(title_prop)
         self.pages_by_title_plain_text: dict[str, Page] = {}
 
-    def get_by_title_plain_text(self, title_plain_text: str) -> Page:
+    def by_title(self, title_plain_text: str) -> Page:
         if not (page := self.pages_by_title_plain_text.get(title_plain_text)):
-            date_list = self.database.query(self.title.filter.equals(title_plain_text))
+            date_list = self.database.query(self.title_prop.filter.equals(title_plain_text))
             if date_list:
                 page = date_list[0]
             else:
                 page = self.database.create_child_page(PageProperties({
-                    self.title: self.title.page_value.from_plain_text(title_plain_text)
+                    self.title_prop: self.title_prop.page_value.from_plain_text(title_plain_text)
                 }))
             self.pages_by_title_plain_text[page.data.properties.title.plain_text] = page
         return page
 
 
+# TODO: rename DateINamespace
 class DateIndex(DatabaseIndex):
     def __init__(self):
-        super().__init__(DatabaseEnum.date_db, f'{EmojiCode.GREEN_BOOK}제목')
+        super().__init__(DatabaseEnum.date_db, EmojiCode.GREEN_BOOK + '제목')
 
-    def get_by_date_value(self, date_value: dt.date) -> Page:
+    def by_date_value(self, date_value: dt.date) -> Page:
         day_name = korean_weekday[date_value.weekday()] + '요일'
         title_plain_text = f'{date_value.strftime("%y%m%d")} {day_name}'
-        return self.get_by_title_plain_text(title_plain_text)
+        return self.by_title(title_plain_text)
+
+    def by_record_title(self, title_plain_text: str) -> Optional[Page]:
+        date_value = self._get_record_date_value(title_plain_text)
+        if date_value is None:
+            return
+        return self.by_date_value(date_value)
+
+    @classmethod
+    def format_record_title(cls, title_plain_text: str, date: Page) -> Optional[str]:
+        if cls._get_record_date_value(title_plain_text):
+            return None
+        date_value = date.data.properties[date_manual_value_prop].start
+        return f'{date_value.strftime("%y%m%d")}| {title_plain_text}'
+
+    @classmethod
+    def _get_record_date_value(cls, title_plain_text: str) -> Optional[dt.date]:
+        pattern = r'^(\d{2})(\d{2})(\d{2}).*'
+        match = re.match(pattern, title_plain_text)
+
+        if not match:
+            return None
+        year, month, day = match.groups()
+        if year > 90:  # TODO
+            return None
+        try:
+            return dt.date(2000 + year, month, day)
+        except ValueError:
+            # In case the date is not valid (like '000229' for non-leap year)
+            return None
 
 
 class WeekIndex(DatabaseIndex):
@@ -335,7 +387,7 @@ class WeekIndex(DatabaseIndex):
 
     def get_by_date_value(self, date_value: dt.date) -> Page:
         title_plain_text = self.first_day_of_week(date_value).strftime("%y/%U")
-        return self.get_by_title_plain_text(title_plain_text)
+        return self.by_title(title_plain_text)
 
     @classmethod
     def first_day_of_week(cls, date_value: dt.date) -> dt.date:
