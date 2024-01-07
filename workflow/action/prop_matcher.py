@@ -67,7 +67,8 @@ class MatchEventProgress(MatchAction):
                                    and event_to_reading_prog_prop.filter.is_empty())
 
     def _filter(self, event: Page) -> bool:
-        return event.data.parent == self.event_db
+        return (event.data.parent == self.event_db
+                and not event.data.properties[event_to_reading_prog_prop])
 
     def process_page(self, event: Page) -> Any:
         # TODO: more edge case handling
