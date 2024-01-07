@@ -3,8 +3,8 @@ from __future__ import annotations
 from workflow import backup_dir
 from workflow.action.media_scraper import MediaScraper
 from workflow.action.migration_backup import MigrationBackupLoadAction, MigrationBackupSaveAction
-from workflow.action.prop_matcher import MatchActionBase, MatchWeekByDateValue, MatchEventProgress, \
-    MatchDateByCreatedTime, MatchWeekByRefDate, MatchTimeManualValue, MatchReadingsStartDate
+from workflow.action.prop_matcher import MatchActionBase, MatchWeekByDateValue, MatchEventProgressForward, \
+    MatchDateByCreatedTime, MatchWeekByRefDate, MatchTimeManualValue, MatchReadingsStartDate, MatchEventProgressBackward
 from workflow.block_enum import DatabaseEnum
 from workflow.core.action import Action
 
@@ -17,12 +17,12 @@ def get_actions() -> list[Action]:
 
         MatchWeekByDateValue(base),
 
-        MatchEventProgress(base),
-
         MatchDateByCreatedTime(base, DatabaseEnum.event_db, '일간', read_title=True, write_title=True),
         MatchDateByCreatedTime(base, DatabaseEnum.event_db, '정리'),
         MatchWeekByRefDate(base, DatabaseEnum.event_db, '주간', '일간'),
         MatchTimeManualValue(base, DatabaseEnum.event_db, '일간'),
+        MatchEventProgressForward(base),
+        MatchEventProgressBackward(base),
         MatchDateByCreatedTime(base, DatabaseEnum.journal_db, '일간', read_title=True, write_title=True),
         MatchWeekByRefDate(base, DatabaseEnum.journal_db, '주간', '일간'),
 

@@ -56,15 +56,15 @@ class MatchAction(IterableAction, metaclass=ABCMeta):
         self.week_namespace = base.week_namespace
         
 
-class MatchEventProgress(MatchAction):
+class MatchEventProgressForward(MatchAction):
     event_db = DatabaseEnum.event_db.entity
 
     def __init__(self, base: MatchActionBase):
         super().__init__(base)
 
     def query_all(self) -> Iterable[Page]:
-        return self.event_db.query(event_to_reading_prop.filter.is_not_empty()
-                                   and event_to_reading_prog_prop.filter.is_empty())
+        return self.event_db.query(filter=(event_to_reading_prop.filter.is_not_empty()
+                                           & event_to_reading_prog_prop.filter.is_empty()))
 
     def _filter(self, event: Page) -> bool:
         return event.data.parent == self.event_db
@@ -80,6 +80,30 @@ class MatchEventProgress(MatchAction):
         reading = reading_list[0]
         event.update(properties=PageProperties({
             event_to_reading_prog_prop: event_to_reading_prog_prop.page_value([reading])
+        }))
+
+
+class MatchEventProgressBackward(MatchAction):
+    event_db = DatabaseEnum.event_db.entity
+
+    def __init__(self, base: MatchActionBase):
+        super().__init__(base)
+
+    def query_all(self) -> Iterable[Page]:
+        return self.event_db.query(filter=(event_to_reading_prop.filter.is_not_empty()
+                                           & event_to_reading_prog_prop.filter.is_empty()))
+
+    def _filter(self, event: Page) -> bool:
+        return event.data.parent == self.event_db
+
+    def process_page(self, event: Page) -> Any:
+        event_readings = event.data.properties[event_to_reading_prop]
+        event_readings_new = event_readings + event.data.properties[event_to_reading_prog_prop]
+        if event_readings == event_readings_new:
+            logger.info(f'{event} -> :Skipped')
+            return
+        event.update(PageProperties({
+            event_to_reading_prop: event_readings_new
         }))
 
 
