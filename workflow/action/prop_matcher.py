@@ -419,20 +419,3 @@ def get_earliest_date(dates: Iterable[Page]) -> Page:
         return date.get_data().properties[prop].start
 
     return min(dates, key=_get_start_date)
-
-
-if __name__ == '__main__':
-    pass
-    # from notion_df.variable import my_tz, Settings
-    # _base = MatchActionBase()
-    # now = dt.datetime.now().astimezone(my_tz)
-    #
-    # with Settings.print:
-    #     _action = DeprMatchTopic.get_actions(_base)[0]
-    #     _action.execute_all()
-    #
-    # with Settings.print:
-    #     _action = MatchReadingsStartDate(_base)
-    #     Action.execute_by_last_edited_time([_action], now - dt.timedelta(hours=1))
-    # Action.execute_by_last_edited_time([MatchDateByCreatedTime(_base, DatabaseEnum.event_db, '일간')],
-    #                                    now - dt.timedelta(hours=2), now)

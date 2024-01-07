@@ -398,6 +398,7 @@ class RelationPagePropertyValue(MutableSequence['Page'], DualSerializable):
     if has_more is True, its boolean value is True even if there are no elements on the local object."""
 
     def __init__(self, pages: Iterable[Page] = ()):
+        # TODO: implement OrderedSet and use it (for the sake of Single responsibility principle)
         self._data_list = []
         self._data_set = set()
         self.extend(pages)
@@ -416,17 +417,20 @@ class RelationPagePropertyValue(MutableSequence['Page'], DualSerializable):
     def __repr__(self) -> str:
         return repr_object(self, self._data_list)
 
-    def __bool__(self) -> bool:
-        return bool(len(self) or self.has_more)
-
-    def __add__(self, other: Iterable[Page]) -> RelationPagePropertyValue:
-        return RelationPagePropertyValue((*self, *other))
-
     def __len__(self) -> int:
         return len(self._data_list)
 
     def __contains__(self, page: 'Page') -> bool:
         return page in self._data_set
+
+    def __bool__(self) -> bool:
+        return bool(len(self) or self.has_more)
+
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, RelationPagePropertyValue) and self._data_list == other._data_list
+
+    def __add__(self, other: Iterable[Page]) -> RelationPagePropertyValue:
+        return RelationPagePropertyValue((*self, *other))
 
     @overload
     @abstractmethod
