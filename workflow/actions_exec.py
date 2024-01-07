@@ -139,7 +139,8 @@ def get_latest_log_path() -> Optional[Path]:
 
 
 def main():
-    logger.add((get_latest_log_path() or (log_dir / '{time}.log')),
+    logger.add(log_dir / '{time}.log',
+               # (get_latest_log_path() or (log_dir / '{time}.log')),
                level='DEBUG', rotation='100 MB', retention=timedelta(weeks=2))
     logger.info(f'{"#" * 5} Start.')
     with logger.catch():
