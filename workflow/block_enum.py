@@ -19,8 +19,8 @@ class DatabaseEnum(Enum):
     date_db = ('일간', '961d1ca0a3d24a46b838ba85e710f18d', EmojiCode.GREEN_CIRCLE)
     week_db = ('주간', 'd020b399cf5947a59d11a0b9e0ea45d0', EmojiCode.GREEN_HEART)
 
-    journal_db = ('일과', 'c8d46c01d6c941a9bf8df5d115a05f03', EmojiCode.BLUE_CIRCLE)
-    stage_db = ('바탕', 'fa7d93f6fbd341f089b185745c834811', EmojiCode.BLUE_HEART)
+    event_db = ('일과', 'c8d46c01d6c941a9bf8df5d115a05f03', EmojiCode.BLUE_CIRCLE)
+    journal_db = ('바탕', 'fa7d93f6fbd341f089b185745c834811', EmojiCode.BLUE_HEART)
 
     issue_db = ('줄기', 'e8782fe4e1a34c9d846d57b01a370327', EmojiCode.YELLOW_CIRCLE)
     reading_db = ('읽기', 'c326f77425a0446a8aa309478767c85b', EmojiCode.YELLOW_HEART)
@@ -28,9 +28,9 @@ class DatabaseEnum(Enum):
     topic_db = ('꼭지', 'eb2f09a1de41412e8b2357bc04f26e74', EmojiCode.RED_CIRCLE)
     point_db = ('요점', '2c5411ba6a0f43a0a8aa06295751e37a', EmojiCode.RED_HEART)
 
-    schedule_db = ('계획', 'addc94642ee74825bd31109f4fd1c9ee', EmojiCode.ORANGE_CIRCLE)
-    review_db = ('회고', '52d387ea0aaa470cb69332708c61b34d', EmojiCode.ORANGE_HEART)
-    depr_journal_db = ('일지', 'c226cffe6cf84ab996bbc384bf26bf1d', EmojiCode.ORANGE_CIRCLE)
+    depr_schedule_db = ('계획', 'addc94642ee74825bd31109f4fd1c9ee', EmojiCode.ORANGE_CIRCLE)
+    depr_review_db = ('회고', '52d387ea0aaa470cb69332708c61b34d', EmojiCode.ORANGE_HEART)
+    depr_event_db = ('일지', 'c226cffe6cf84ab996bbc384bf26bf1d', EmojiCode.ORANGE_CIRCLE)
     depr_writing_db = ('표현', '069bbebd632f4a6ea3044575a064cf0f', EmojiCode.BLACK_HEART)
     depr_stream_db = ('전개', '9f21ad86079d4caaa7ed9461a7f37288', EmojiCode.RED_HEART)
     depr_subject_db = ('담론', 'eca1ba6d4831459ca8becc283f1f8c4e', EmojiCode.PURPLE_HEART)

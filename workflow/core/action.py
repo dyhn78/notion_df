@@ -35,12 +35,13 @@ class Action(metaclass=ABCMeta):
 
     @abstractmethod
     def query_all(self) -> Iterable[Page]:
+        """query the database - the result will go through _filter()."""
         pass
 
     @abstractmethod
     def _filter(self, page: Page) -> bool:
-        """from given retrieved pages, pick the ones which need to process.
-        this is supposed to reflect the filter condition of query_all()."""
+        """from given retrieved pages regardless of `recent_pages` or `query_all()`,
+        pick the ones which need to process."""
         pass
 
     @final
@@ -68,7 +69,7 @@ class IterableAction(Action, metaclass=ABCMeta):
             self.process_page(page)
 
     @abstractmethod
-    def process_page(self, page: Page):
+    def process_page(self, page: Page) -> Any:
         pass
 
 
@@ -118,7 +119,7 @@ def execute_by_last_edited_time(actions: list[Action], lower_bound: datetime,
 
 
 def run_all(actions: list[Action]) -> None:
-    with Reporter(update_last_success_time=False):
+    with WorkflowLog(update_last_success_time=False):
         for action in actions:
             action.execute_all()
 
@@ -126,26 +127,24 @@ def run_all(actions: list[Action]) -> None:
 def run_from_last_edited_time_bound(actions: list[Action],
                                     timedelta_size: timedelta, update_last_success_time: bool) -> None:
     # TODO: if the last result was RetryError, sleep for 10 mins
-    with Reporter(update_last_success_time=update_last_success_time) as reporter:
-        execute_by_last_edited_time(actions, reporter.start_time - timedelta_size, reporter.start_time)
+    with WorkflowLog(update_last_success_time=update_last_success_time) as wf_log:
+        execute_by_last_edited_time(actions, wf_log.start_time - timedelta_size, wf_log.start_time)
 
 
 def run_from_last_success(actions: list[Action],
                           update_last_success_time: bool) -> bool:
-    with Reporter(update_last_success_time=update_last_success_time) as reporter:
-        if reporter.last_success_time is not None:
-            reporter.enabled = execute_by_last_edited_time(actions, reporter.last_success_time)
-            return reporter.enabled
+    with WorkflowLog(update_last_success_time=update_last_success_time) as wf_log:
+        if wf_log.last_success_time is not None:
+            wf_log.enabled = execute_by_last_edited_time(actions, wf_log.last_success_time)
+            return wf_log.enabled
         else:
             for action in actions:
                 action.execute_all()
             return True
 
 
-# TODO: rename as WorkflowLog
 # TODO: do not update last_success_time if when the value has changed from the init
-# TODO: if last_success_time_block says 'STOP' abort the workflow.
-class Reporter:
+class WorkflowLog:
     # Note: the log_page is implemented as page with log blocks, not database with log pages,
     #  since Notion API does not directly support permanently deleting pages,
     #  and third party solutions like `https://github.com/pocc/bulk_delete_notion_pages`
@@ -160,14 +159,17 @@ class Reporter:
 
         self.last_success_time_blocks = log_last_success_time_parent_block.retrieve_children()
         last_execution_time_block = self.last_success_time_blocks[0]
-        last_execution_time_str = cast(ParagraphBlockValue,
-                                       last_execution_time_block.data.value).rich_text.plain_text
-        if last_execution_time_str == 'ALL':
+        self.last_execution_time_str = (cast(ParagraphBlockValue, last_execution_time_block.data.value)
+                                        .rich_text.plain_text)
+        if self.last_execution_time_str == 'STOP':
+            logger.info("self.last_execution_time_str == 'STOP'")  # TODO refactor
+            exit(0)
+        if self.last_execution_time_str == 'ALL':
             self.last_success_time = None
         else:
-            self.last_success_time = deserialize_datetime(last_execution_time_str)
+            self.last_success_time = deserialize_datetime(self.last_execution_time_str)
 
-    def __enter__(self) -> Reporter:
+    def __enter__(self) -> WorkflowLog:
         return self
 
     def format_time(self) -> str:

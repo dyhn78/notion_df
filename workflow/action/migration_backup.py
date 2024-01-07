@@ -158,9 +158,9 @@ class MigrationBackupLoadAction(IterableAction):
             for prop_name_stem in ['구성', '공통', '요소', '관계']:
                 if (prop_name_stem in this_prev_prop.name) and (prop_name := pick(prop_name_stem)):
                     return prop_name
-        if this_db_enum == DatabaseEnum.journal_db and linked_db_enum == DatabaseEnum.reading_db:
+        if this_db_enum == DatabaseEnum.event_db and linked_db_enum == DatabaseEnum.reading_db:
             return pick('관계')
-        if this_db_enum == DatabaseEnum.reading_db and linked_db_enum == DatabaseEnum.journal_db:
+        if this_db_enum == DatabaseEnum.reading_db and linked_db_enum == DatabaseEnum.event_db:
             return pick('관계')
         if this_db_enum == DatabaseEnum.issue_db and linked_db_enum == DatabaseEnum.issue_db:
             return pick('관계')

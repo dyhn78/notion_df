@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import datetime as dt
 from abc import ABCMeta
-from typing import Iterable, Optional
+from typing import Iterable, Optional, Any
 
 from loguru import logger
 
@@ -14,8 +14,8 @@ from notion_df.property import RelationProperty, TitleProperty, PageProperties, 
     DateProperty, CheckboxFormulaProperty, RichTextProperty, SelectProperty
 from notion_df.util.misc import repr_object
 from workflow.block_enum import DatabaseEnum
-from workflow.emoji_code import EmojiCode
 from workflow.core.action import IterableAction
+from workflow.emoji_code import EmojiCode
 
 korean_weekday = '월화수목금토일'
 record_datetime_auto_key = DateFormulaPropertyKey(EmojiCode.TIMER + '일시')
@@ -23,14 +23,18 @@ date_to_week_prop = RelationProperty(DatabaseEnum.week_db.prefix_title)
 date_manual_value_prop = DateProperty(EmojiCode.CALENDAR + '날짜')
 time_manual_value_prop = RichTextProperty(EmojiCode.CALENDAR + '시간')
 date_range_manual_value_prop = DateProperty(EmojiCode.BIG_CALENDAR + '날짜 범위')
-journal_to_date_prop = RelationProperty(DatabaseEnum.date_db.prefix_title)
-journal_to_topic_prop = RelationProperty(DatabaseEnum.topic_db.prefix_title)
-journal_to_issue_prop = RelationProperty(DatabaseEnum.issue_db.prefix_title)
+event_to_date_prop = RelationProperty(DatabaseEnum.date_db.prefix_title)
+event_to_topic_prop = RelationProperty(DatabaseEnum.topic_db.prefix_title)
+event_to_issue_prop = RelationProperty(DatabaseEnum.issue_db.prefix_title)
+event_to_reading0_prop = RelationProperty(DatabaseEnum.reading_db.prefix_title)
+"""관계"""
+event_to_reading1_prop = RelationProperty(DatabaseEnum.reading_db.prefix + '진도')
+"""읽기"""
 topic_base_type_prop = SelectProperty("📕유형")
 topic_base_type_progress = "🌳진행"
 reading_to_main_date_prop = RelationProperty(DatabaseEnum.date_db.prefix_title)
 reading_to_start_date_prop = RelationProperty(DatabaseEnum.date_db.prefix + '시작')
-reading_to_journal_prop = RelationProperty(DatabaseEnum.journal_db.prefix_title)
+reading_to_event_prop = RelationProperty(DatabaseEnum.event_db.prefix_title)
 reading_match_date_by_created_time_prop = CheckboxFormulaProperty(EmojiCode.BLACK_NOTEBOOK + '시작일<-생성시간')
 
 
@@ -49,6 +53,23 @@ class MatchAction(IterableAction, metaclass=ABCMeta):
         self.base = base
         self.date_namespace = base.date_namespace
         self.week_namespace = base.week_namespace
+        
+
+class MatchEventProgress(MatchAction):
+    event_db = DatabaseEnum.event_db.entity
+
+    def __init__(self, base: MatchActionBase):
+        super().__init__(base)
+
+    def query_all(self) -> Iterable[Page]:
+        return self.event_db.query()
+
+    def _filter(self, page: Page) -> bool:
+        return page.data.parent == self.event_db
+
+    def process_page(self, page: Page) -> Any:
+        # TODO: more edge case handling
+        ...
 
 
 class MatchDateByCreatedTime(MatchAction):
@@ -117,12 +138,12 @@ class MatchReadingsStartDate(MatchAction):
     def __init__(self, base: MatchActionBase):
         super().__init__(base)
         self.reading_db = DatabaseEnum.reading_db.entity
-        self.journal_db = DatabaseEnum.journal_db.entity
+        self.event_db = DatabaseEnum.event_db.entity
 
     def query_all(self) -> Paginator[Page]:
         return self.reading_db.query(
             reading_to_start_date_prop.filter.is_empty() & (
-                    reading_to_journal_prop.filter.is_not_empty()
+                    reading_to_event_prop.filter.is_not_empty()
                     | reading_to_main_date_prop.filter.is_not_empty()
                     | reading_match_date_by_created_time_prop.filter.is_not_empty()
             )
@@ -130,25 +151,25 @@ class MatchReadingsStartDate(MatchAction):
 
     def _filter(self, page: Page) -> bool:
         return (page.data.parent == self.reading_db and not page.data.properties[reading_to_start_date_prop]
-                and (page.data.properties[reading_to_journal_prop]
+                and (page.data.properties[reading_to_event_prop]
                      or page.data.properties[reading_match_date_by_created_time_prop]))
 
     def process_page(self, reading: Page):
         def find_date():
-            def get_reading_journal_dates() -> Iterable[Page]:
-                reading_journals = reading.data.properties[reading_to_journal_prop]
+            def get_reading_event_dates() -> Iterable[Page]:
+                reading_events = reading.data.properties[reading_to_event_prop]
                 # TODO: RollupPagePropertyValue 구현 후 이곳을 간소화
-                for journal in reading_journals:
-                    if not (date_list := journal.get_data().properties[journal_to_date_prop]):
+                for event in reading_events:
+                    if not (date_list := event.get_data().properties[event_to_date_prop]):
                         continue
                     date = date_list[0]
                     if date.get_data().properties[date_manual_value_prop] is None:
                         continue
                     yield date
 
-            if reading_journal_and_main_dates := {*get_reading_journal_dates(),
-                                                  *reading.data.properties[reading_to_main_date_prop]}:
-                return get_earliest_date(reading_journal_and_main_dates)
+            if reading_event_and_main_dates := {*get_reading_event_dates(),
+                                                *reading.data.properties[reading_to_main_date_prop]}:
+                return get_earliest_date(reading_event_and_main_dates)
             if reading.data.properties[reading_match_date_by_created_time_prop]:
                 reading_created_date = get_record_created_date(reading)
                 return self.date_namespace.get_by_date_value(reading_created_date)
@@ -235,7 +256,7 @@ class MatchWeekByDateValue(MatchAction):
         logger.info(f'\t{date}\n\t\t-> {week}')
 
 
-class MatchTopic(MatchAction):
+class DeprMatchTopic(MatchAction):
     def __init__(self, base: MatchActionBase, record: DatabaseEnum, ref: DatabaseEnum,
                  record_to_ref_prop_name: str, record_to_topic_prop_name: str, ref_to_topic_prop_name: str):
         super().__init__(base)
@@ -346,11 +367,11 @@ if __name__ == '__main__':
     # now = dt.datetime.now().astimezone(my_tz)
     #
     # with Settings.print:
-    #     _action = MatchTopic.get_actions(_base)[0]
+    #     _action = DeprMatchTopic.get_actions(_base)[0]
     #     _action.execute_all()
     #
     # with Settings.print:
     #     _action = MatchReadingsStartDate(_base)
     #     Action.execute_by_last_edited_time([_action], now - dt.timedelta(hours=1))
-    # Action.execute_by_last_edited_time([MatchDateByCreatedTime(_base, DatabaseEnum.journal_db, '일간')],
+    # Action.execute_by_last_edited_time([MatchDateByCreatedTime(_base, DatabaseEnum.event_db, '일간')],
     #                                    now - dt.timedelta(hours=2), now)
