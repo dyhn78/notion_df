@@ -74,7 +74,7 @@ class MatchEventProgressForward(MatchAction):
         if not (len(reading_list := event.data.properties[event_to_reading_prop]) == 1
                 and not event.data.properties[event_to_issue_prop]
                 and not event.data.properties[event_to_topic_prop]):
-            logger.info(f'{event} -> :Skipped')
+            logger.info(f'{event} -> Skipped')
             return
         reading = reading_list[0]
         event.update(properties=PageProperties({
@@ -99,7 +99,7 @@ class MatchEventProgressBackward(MatchAction):
         event_readings = event.data.properties[event_to_reading_prop]
         event_readings_new = event_readings + event.data.properties[event_to_reading_prog_prop]
         if event_readings == event_readings_new:
-            logger.info(f'{event} -> :Skipped')
+            logger.info(f'{event} -> Skipped')
             return
         event.update(PageProperties({
             event_to_reading_prop: event_readings_new
@@ -128,7 +128,7 @@ class MatchDateByCreatedTime(MatchAction):
             if date is not None:
                 # final check if the property value is filled in the meantime
                 if record.retrieve().data.properties[self.record_to_date]:
-                    logger.info(f'{record} -> :Skipped')
+                    logger.info(f'{record} -> Skipped')
                     return
                 record.update(PageProperties({
                     self.record_to_date: self.record_to_date.page_value([date]),
@@ -146,7 +146,7 @@ class MatchDateByCreatedTime(MatchAction):
 
         # final check if the property value is filled in the meantime
         if record.retrieve().data.properties[self.record_to_date]:
-            logger.info(f'{record} -> :Skipped')
+            logger.info(f'{record} -> Skipped')
             return
         record.update(properties)
         logger.info(f'{record} -> {date}')
@@ -185,7 +185,7 @@ class MatchTimeManualValue(MatchAction):
             return time_manual_value
 
         _date = _process_page()
-        logger.info(f'{record} -> {_date if _date else ":Skipped"}')
+        logger.info(f'{record} -> {_date if _date else "Skipped"}')
 
 
 class MatchReadingsStartDate(MatchAction):
