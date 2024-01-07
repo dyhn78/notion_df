@@ -4,8 +4,9 @@ import functools
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, field
 from typing import Optional, Any, Literal, final, Iterable, cast
-from typing_extensions import Self
 from uuid import UUID
+
+from typing_extensions import Self
 
 from notion_df.core.serialization import DualSerializable, deserialize, serialize
 from notion_df.object.misc import DateRange, Annotations
@@ -92,6 +93,7 @@ class RichText(list[Span], DualSerializable):
 
     @classmethod
     def from_plain_text(cls, plain_text: Optional[str]) -> Self:
+        """TODO integrate to __init__"""
         return cls([TextSpan(plain_text)]) if plain_text else cls()
 
     def serialize(self) -> Any:

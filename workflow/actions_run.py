@@ -1,6 +1,7 @@
 import os
 import subprocess
 import sys
+from pathlib import Path
 from time import sleep
 
 import psutil
@@ -23,4 +24,5 @@ if __name__ == '__main__':
         sleep(600)
     else:
         sleep(5)
-    os.execv(sys.executable, [sys.executable, '-m', 'workflow.actions_run'])
+    this_module_name = '.'.join(Path(__file__).resolve().relative_to(project_dir).with_suffix('').parts)
+    os.execv(sys.executable, [sys.executable, '-m', this_module_name])
