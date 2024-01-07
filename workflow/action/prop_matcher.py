@@ -26,10 +26,10 @@ date_range_manual_value_prop = DateProperty(EmojiCode.BIG_CALENDAR + '날짜 범
 event_to_date_prop = RelationProperty(DatabaseEnum.date_db.prefix_title)
 event_to_topic_prop = RelationProperty(DatabaseEnum.topic_db.prefix_title)
 event_to_issue_prop = RelationProperty(DatabaseEnum.issue_db.prefix_title)
-event_to_reading0_prop = RelationProperty(DatabaseEnum.reading_db.prefix_title)
-"""관계"""
-event_to_reading1_prop = RelationProperty(DatabaseEnum.reading_db.prefix + '진도')
-"""읽기"""
+event_to_reading_prop = RelationProperty(DatabaseEnum.reading_db.prefix_title)
+"""💛읽기"""
+event_to_reading_prog_prop = RelationProperty(DatabaseEnum.reading_db.prefix + '진도')
+"""💛진도"""
 topic_base_type_prop = SelectProperty("📕유형")
 topic_base_type_progress = "🌳진행"
 reading_to_main_date_prop = RelationProperty(DatabaseEnum.date_db.prefix_title)
@@ -62,14 +62,23 @@ class MatchEventProgress(MatchAction):
         super().__init__(base)
 
     def query_all(self) -> Iterable[Page]:
-        return self.event_db.query()
+        return self.event_db.query(event_to_reading_prop.filter.is_not_empty()
+                                   and event_to_reading_prog_prop.filter.is_empty())
 
-    def _filter(self, page: Page) -> bool:
-        return page.data.parent == self.event_db
+    def _filter(self, event: Page) -> bool:
+        return event.data.parent == self.event_db
 
-    def process_page(self, page: Page) -> Any:
+    def process_page(self, event: Page) -> Any:
         # TODO: more edge case handling
-        ...
+        if not (len(reading_list := event.data.properties[event_to_reading_prop]) == 1
+                and not event.data.properties[event_to_issue_prop]
+                and not event.data.properties[event_to_topic_prop]):
+            logger.info(f'\t{event}\n\t\t-> :Skipped')
+            return
+        reading = reading_list[0]
+        event.update(properties=PageProperties({
+            event_to_reading_prog_prop: event_to_reading_prog_prop.page_value([reading])
+        }))
 
 
 class MatchDateByCreatedTime(MatchAction):
