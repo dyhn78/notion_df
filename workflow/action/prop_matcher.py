@@ -67,14 +67,13 @@ class MatchEventProgressForward(MatchAction):
                                            & event_to_reading_prog_prop.filter.is_empty()))
 
     def _filter(self, event: Page) -> bool:
-        return event.data.parent == self.event_db
+        return event.data.parent == self.event_db and not event.data.properties[event_to_reading_prog_prop]
 
     def process_page(self, event: Page) -> Any:
         # TODO: more edge case handling
         if not (len(reading_list := event.data.properties[event_to_reading_prop]) == 1
                 and not event.data.properties[event_to_issue_prop]
-                and not event.data.properties[event_to_topic_prop]
-                and not event.data.properties[event_to_reading_prog_prop]):
+                and not event.data.properties[event_to_topic_prop]):
             logger.info(f'\t{event}\n\t\t-> :Skipped')
             return
         reading = reading_list[0]
