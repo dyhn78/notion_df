@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import inspect
 import json
 import traceback
 from datetime import timedelta, datetime
+from functools import wraps
 from pathlib import Path
-from typing import Optional, cast
+from typing import Optional, cast, Callable, ParamSpec
 
 import tenacity
 from loguru import logger
@@ -94,12 +96,41 @@ class WorkflowLog:
             summary_block.append_children(child_block_values)
 
 
-def execute_all(actions: list[Action]) -> None:
+P = ParamSpec('P')
+
+
+def get_latest_log_path() -> Optional[Path]:
+    log_path_list = sorted(log_dir.iterdir())
+    if not log_path_list:
+        return
+    return log_path_list[-1]
+
+
+def with_logger(func: Callable[P, bool]) -> Callable[P, bool]:
+    @wraps(func)
+    def wrapper(*args: P.args, **kwargs: P.kwargs) -> bool:
+        logger.add(log_dir / '{time}.log',
+                   # (get_latest_log_path() or (log_dir / '{time}.log')),
+                   level='DEBUG', rotation='100 MB', retention=timedelta(weeks=2))
+        logger.info(f'{"#" * 5} Start.')
+        with logger.catch():
+            has_new_record = func(*args, **kwargs)
+        logger.info(f'{"#" * 5} {"Done." if has_new_record else "No new record."}')
+        return has_new_record
+
+    wrapper.__signature__ = inspect.signature(func)
+    return wrapper
+
+
+@with_logger
+def execute_all(actions: list[Action]) -> bool:
     with WorkflowLog(update_last_success_time=False):
         for action in actions:
             action.execute_all()
+    return True
 
 
+@with_logger
 def execute_by_last_edited_time(actions: list[Action], lower_bound: datetime,
                                 upper_bound: Optional[datetime] = None) -> bool:
     # TODO: if no recent_pages, raise SkipException instead of returning False
@@ -112,33 +143,24 @@ def execute_by_last_edited_time(actions: list[Action], lower_bound: datetime,
     return True
 
 
+@with_logger
 def execute_from_last_edited_time_bound(actions: list[Action],
-                                        timedelta_size: timedelta, update_last_success_time: bool) -> None:
+                                        timedelta_size: timedelta, update_last_success_time: bool) -> bool:
     # TODO: if the last result was RetryError, sleep for 10 mins
     with WorkflowLog(update_last_success_time=update_last_success_time) as wf_log:
-        execute_by_last_edited_time(actions, wf_log.start_time - timedelta_size, wf_log.start_time)
+        wf_log.enabled = execute_by_last_edited_time(actions, wf_log.start_time - timedelta_size, wf_log.start_time)
+        return wf_log.enabled
 
 
-def execute_from_last_success(actions: list[Action], update_last_success_time: bool) -> None:
-    logger.add(log_dir / '{time}.log',
-               # (get_latest_log_path() or (log_dir / '{time}.log')),
-               level='DEBUG', rotation='100 MB', retention=timedelta(weeks=2))
-    logger.info(f'{"#" * 5} Start.')
-    with logger.catch():
-        with WorkflowLog(update_last_success_time=update_last_success_time) as wf_log:
-            if wf_log.last_success_time is not None:
-                wf_log.enabled = execute_by_last_edited_time(actions, wf_log.last_success_time)
-            else:
-                for action in actions:
-                    action.execute_all()
-        logger.info(f'{"#" * 5} {"Done." if wf_log.enabled else "No new record."}')
-
-
-def get_latest_log_path() -> Optional[Path]:
-    log_path_list = sorted(log_dir.iterdir())
-    if not log_path_list:
-        return
-    return log_path_list[-1]
+@with_logger
+def execute_from_last_success(actions: list[Action], update_last_success_time: bool) -> bool:
+    with WorkflowLog(update_last_success_time=update_last_success_time) as wf_log:
+        if wf_log.last_success_time is None:
+            for action in actions:
+                action.execute_all()
+            return True
+        wf_log.enabled = execute_by_last_edited_time(actions, wf_log.last_success_time, None)
+        return wf_log.enabled
 
 
 if __name__ == '__main__':
