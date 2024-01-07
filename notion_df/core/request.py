@@ -22,6 +22,7 @@ MAX_PAGE_SIZE = 100
 
 @dataclass
 class Request:
+    # TODO: async with throttling  https://chat.openai.com/c/adcf80cd-d800-4fef-bfa9-56c548e0058a
     method: Method
     url: str
     headers: dict[str, Any]
