@@ -20,43 +20,6 @@ from workflow.core.action import Action, search_pages_by_last_edited_time, log_p
     log_date_group_format, log_last_success_time_parent_block, my_user_id, log_page_block
 
 
-def run_by_last_edited_time(actions: list[Action], lower_bound: datetime,
-                            upper_bound: Optional[datetime] = None) -> bool:
-    # TODO: if no recent_pages, raise SkipException instead of returning False
-    recent_pages = set(search_pages_by_last_edited_time(lower_bound, upper_bound))
-    recent_pages.discard(Page(log_page_id))
-    if not recent_pages:
-        return False
-    for self in actions:
-        self.process(page for page in recent_pages if self.filter(page))
-    return True
-
-
-def run_all(actions: list[Action]) -> None:
-    with WorkflowLog(update_last_success_time=False):
-        for action in actions:
-            action.execute_all()
-
-
-def run_from_last_edited_time_bound(actions: list[Action],
-                                    timedelta_size: timedelta, update_last_success_time: bool) -> None:
-    # TODO: if the last result was RetryError, sleep for 10 mins
-    with WorkflowLog(update_last_success_time=update_last_success_time) as wf_log:
-        run_by_last_edited_time(actions, wf_log.start_time - timedelta_size, wf_log.start_time)
-
-
-def run_from_last_success(actions: list[Action],
-                          update_last_success_time: bool) -> bool:
-    with WorkflowLog(update_last_success_time=update_last_success_time) as wf_log:
-        if wf_log.last_success_time is not None:
-            wf_log.enabled = run_by_last_edited_time(actions, wf_log.last_success_time)
-            return wf_log.enabled
-        else:
-            for action in actions:
-                action.execute_all()
-            return True
-
-
 class WorkflowLog:
     # Note: the log_page is implemented as page with log blocks, not database with log pages,
     #  since Notion API does not directly support permanently deleting pages,
@@ -131,6 +94,46 @@ class WorkflowLog:
             summary_block.append_children(child_block_values)
 
 
+def execute_all(actions: list[Action]) -> None:
+    with WorkflowLog(update_last_success_time=False):
+        for action in actions:
+            action.execute_all()
+
+
+def execute_by_last_edited_time(actions: list[Action], lower_bound: datetime,
+                                upper_bound: Optional[datetime] = None) -> bool:
+    # TODO: if no recent_pages, raise SkipException instead of returning False
+    recent_pages = set(search_pages_by_last_edited_time(lower_bound, upper_bound))
+    recent_pages.discard(Page(log_page_id))
+    if not recent_pages:
+        return False
+    for self in actions:
+        self.process(page for page in recent_pages if self.filter(page))
+    return True
+
+
+def execute_from_last_edited_time_bound(actions: list[Action],
+                                        timedelta_size: timedelta, update_last_success_time: bool) -> None:
+    # TODO: if the last result was RetryError, sleep for 10 mins
+    with WorkflowLog(update_last_success_time=update_last_success_time) as wf_log:
+        execute_by_last_edited_time(actions, wf_log.start_time - timedelta_size, wf_log.start_time)
+
+
+def execute_from_last_success(actions: list[Action], update_last_success_time: bool) -> None:
+    logger.add(log_dir / '{time}.log',
+               # (get_latest_log_path() or (log_dir / '{time}.log')),
+               level='DEBUG', rotation='100 MB', retention=timedelta(weeks=2))
+    logger.info(f'{"#" * 5} Start.')
+    with logger.catch():
+        with WorkflowLog(update_last_success_time=update_last_success_time) as wf_log:
+            if wf_log.last_success_time is not None:
+                wf_log.enabled = execute_by_last_edited_time(actions, wf_log.last_success_time)
+            else:
+                for action in actions:
+                    action.execute_all()
+        logger.info(f'{"#" * 5} {"Done." if wf_log.enabled else "No new record."}')
+
+
 def get_latest_log_path() -> Optional[Path]:
     log_path_list = sorted(log_dir.iterdir())
     if not log_path_list:
@@ -138,16 +141,6 @@ def get_latest_log_path() -> Optional[Path]:
     return log_path_list[-1]
 
 
-def main():
-    logger.add(log_dir / '{time}.log',
-               # (get_latest_log_path() or (log_dir / '{time}.log')),
-               level='DEBUG', rotation='100 MB', retention=timedelta(weeks=2))
-    logger.info(f'{"#" * 5} Start.')
-    with logger.catch():
-        new_record = run_from_last_success(actions=get_actions(), update_last_success_time=True)
-        logger.info(f'{"#" * 5} {"Done." if new_record else "No new record."}')
-
-
 if __name__ == '__main__':
-    main()
-    # run_by_last_edited_time(get_actions(), datetime(2024, 1, 7, 17, 0, 0, tzinfo=my_tz), None)
+    execute_from_last_success(actions=get_actions(), update_last_success_time=True)
+    # execute_by_last_edited_time(get_actions(), datetime(2024, 1, 7, 17, 0, 0, tzinfo=my_tz), None)
