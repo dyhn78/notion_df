@@ -74,7 +74,7 @@ class MatchEventProgressForward(MatchAction):
         if not (len(reading_list := event.data.properties[event_to_reading_prop]) == 1
                 and not event.data.properties[event_to_issue_prop]
                 and not event.data.properties[event_to_topic_prop]):
-            logger.info(f'\t{event}\n\t\t-> :Skipped')
+            logger.info(f'{event} -> :Skipped')
             return
         reading = reading_list[0]
         event.update(properties=PageProperties({
@@ -128,12 +128,12 @@ class MatchDateByCreatedTime(MatchAction):
             if date is not None:
                 # final check if the property value is filled in the meantime
                 if record.retrieve().data.properties[self.record_to_date]:
-                    logger.info(f'\t{record}\n\t\t-> :Skipped')
+                    logger.info(f'{record} -> :Skipped')
                     return
                 record.update(PageProperties({
                     self.record_to_date: self.record_to_date.page_value([date]),
                 }))
-                logger.info(f'\t{record}\n\t\t-> {date}')
+                logger.info(f'{record} -> {date}')
                 return
 
         date = self.date_namespace.by_date_value(record_created_date)
@@ -146,10 +146,10 @@ class MatchDateByCreatedTime(MatchAction):
 
         # final check if the property value is filled in the meantime
         if record.retrieve().data.properties[self.record_to_date]:
-            logger.info(f'\t{record}\n\t\t-> :Skipped')
+            logger.info(f'{record} -> :Skipped')
             return
         record.update(properties)
-        logger.info(f'\t{record}\n\t\t-> {date}')
+        logger.info(f'{record} -> {date}')
         return
 
 
@@ -185,7 +185,7 @@ class MatchTimeManualValue(MatchAction):
             return time_manual_value
 
         _date = _process_page()
-        logger.info(f'\t{record}\n\t\t-> {_date if _date else ":Skipped"}')
+        logger.info(f'{record} -> {_date if _date else ":Skipped"}')
 
 
 class MatchReadingsStartDate(MatchAction):
@@ -239,7 +239,7 @@ class MatchReadingsStartDate(MatchAction):
             return date
 
         _date = _process_page()
-        logger.info(f'\t{reading}\n\t\t-> {_date if _date else ": Skipped"}')
+        logger.info(f'{reading} -> {_date if _date else ": Skipped"}')
 
 
 class MatchWeekByRefDate(MatchAction):
@@ -281,7 +281,7 @@ class MatchWeekByRefDate(MatchAction):
             return new_record_weeks
 
         _weeks = _process_page()
-        logger.info(f'\t{record}\n\t\t-> {list(_weeks) if _weeks else ": Skipped"}')
+        logger.info(f'{record} -> {list(_weeks) if _weeks else ": Skipped"}')
 
 
 class MatchWeekByDateValue(MatchAction):
@@ -301,13 +301,13 @@ class MatchWeekByDateValue(MatchAction):
     def process_page(self, date: Page):
         date_value = date.data.properties[date_manual_value_prop]
         if not date_value:
-            logger.info(f'\t{date} -> Skipped')
+            logger.info(f'{date} -> Skipped')
             return
         week = self.week_namespace.get_by_date_value(date_value.start)
         if date.retrieve().data.properties[date_to_week_prop]:
             return
         date.update(PageProperties({date_to_week_prop: date_to_week_prop.page_value([week])}))
-        logger.info(f'\t{date}\n\t\t-> {week}')
+        logger.info(f'{date} -> {week}')
 
 
 class DeprMatchTopic(MatchAction):
