@@ -39,7 +39,7 @@ def get_date():
     for (db, linked_db), prop_list in get_all_relation_properties().items():
         db_enum = DatabaseEnum.from_entity(db)
         linked_db_enum = DatabaseEnum.from_entity(linked_db)
-        if linked_db_enum in (DatabaseEnum.date_db,):
+        if linked_db_enum in (DatabaseEnum.datei_db,):
             print(db_enum.prefix_title, linked_db_enum.prefix_title, sorted(prop.name for prop in prop_list))
 
 
@@ -47,7 +47,7 @@ def get_week():
     for (db, linked_db), prop_list in get_all_relation_properties().items():
         db_enum = DatabaseEnum.from_entity(db)
         linked_db_enum = DatabaseEnum.from_entity(linked_db)
-        if linked_db_enum in (DatabaseEnum.week_db,):
+        if linked_db_enum in (DatabaseEnum.weeki_db,):
             print(db_enum.prefix_title, linked_db_enum.prefix_title, sorted(prop.name for prop in prop_list))
 
 

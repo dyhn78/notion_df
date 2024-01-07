@@ -144,12 +144,12 @@ class MigrationBackupLoadAction(IterableAction):
             return next((_prop for _prop in candidate_props if _prop_name in _prop.name), None)
 
         # customized cases
-        if linked_db_enum == DatabaseEnum.date_db:
+        if linked_db_enum == DatabaseEnum.datei_db:
             if this_prev_prop.name == '🟢생성':
                 return pick(this_prev_prop.name)
             if this_prev_prop.name in ['🟢일간', '🟢시작']:
                 return pick(this_prev_prop.name) or pick('🟢생성')
-        if linked_db_enum == DatabaseEnum.week_db:
+        if linked_db_enum == DatabaseEnum.weeki_db:
             if this_prev_prop.name == '💚생성':
                 return pick(this_prev_prop.name)
             if this_prev_prop.name in ['💚주간', '💚시작']:
