@@ -136,6 +136,10 @@ class MatchDateByCreatedTime(MatchAction):
                 logger.info(f'{record} -> {date}')
                 return
 
+        # final check if the property value is filled in the meantime
+        if record.retrieve().data.properties[self.record_to_date]:
+            logger.info(f'{record} -> Skipped')
+            return
         date = self.date_namespace.by_date(record_created_date)
         properties: PageProperties[RelationPagePropertyValue | RichText] = PageProperties({
             self.record_to_date: self.record_to_date.page_value([date]),
@@ -143,11 +147,6 @@ class MatchDateByCreatedTime(MatchAction):
         if self.write_title:
             title = self.date_namespace.format_record_title(record.data.properties.title.plain_text, date)
             properties[record.data.properties.title_prop] = RichText.from_plain_text(title)
-
-        # final check if the property value is filled in the meantime
-        if record.retrieve().data.properties[self.record_to_date]:
-            logger.info(f'{record} -> Skipped')
-            return
         record.update(properties)
         logger.info(f'{record} -> {date}')
         return
