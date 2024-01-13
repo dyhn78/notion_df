@@ -136,6 +136,10 @@ class MatchDateByCreatedTime(MatchAction):
                 logger.info(f'{record} -> {date}')
                 return
 
+        # final check if the property value is filled in the meantime
+        if record.retrieve().data.properties[self.record_to_date]:
+            logger.info(f'{record} -> Skipped')
+            return
         date = self.date_namespace.by_date(record_created_date)
         properties: PageProperties[RelationPagePropertyValue | RichText] = PageProperties({
             self.record_to_date: self.record_to_date.page_value([date]),
@@ -143,11 +147,6 @@ class MatchDateByCreatedTime(MatchAction):
         if self.write_title:
             title = self.date_namespace.format_record_title(record.data.properties.title.plain_text, date)
             properties[record.data.properties.title_prop] = RichText.from_plain_text(title)
-
-        # final check if the property value is filled in the meantime
-        if record.retrieve().data.properties[self.record_to_date]:
-            logger.info(f'{record} -> Skipped')
-            return
         record.update(properties)
         logger.info(f'{record} -> {date}')
         return
@@ -388,7 +387,7 @@ class DateINamespace(DatabaseNamespace):
         if cls._get_record_date(title_plain_text):
             return None
         date = datei.data.properties[datei_date_prop].start
-        return f"{date.strftime('%y%m%d')}{'|' if '|' not in title_plain_text else ''} {title_plain_text}"
+        return f"{date.strftime('%y%m%d')} {title_plain_text}"
 
     @classmethod
     def _get_record_date(cls, title_plain_text: str) -> Optional[dt.date]:
