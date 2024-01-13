@@ -115,8 +115,8 @@ def with_logger(func: Callable[P, bool]) -> Callable[P, bool]:
         logger.info(f'{"#" * 5} Start.')
         with logger.catch():
             has_new_record = func(*args, **kwargs)
-        logger.info(f'{"#" * 5} {"Done." if has_new_record else "No new record."}')
-        return has_new_record
+            logger.info(f'{"#" * 5} {"Done." if has_new_record else "No new record."}')
+            return has_new_record
 
     wrapper.__signature__ = inspect.signature(func)
     return wrapper
@@ -164,5 +164,5 @@ def execute_from_last_success(actions: list[Action], update_last_success_time: b
 
 
 if __name__ == '__main__':
-    execute_from_last_success(actions=get_actions(), update_last_success_time=True)
+    execute_from_last_success(actions=get_actions(), update_last_success_time=False)
     # execute_by_last_edited_time(get_actions(), datetime(2024, 1, 7, 17, 0, 0, tzinfo=my_tz), None)

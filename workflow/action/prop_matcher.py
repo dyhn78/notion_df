@@ -397,7 +397,7 @@ class DateINamespace(DatabaseNamespace):
 
         if not match:
             return None
-        year, month, day = match.groups()
+        year, month, day = (int(s) for s in match.groups())
         if year > 90:  # TODO
             return None
         try:
