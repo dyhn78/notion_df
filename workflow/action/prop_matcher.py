@@ -387,7 +387,8 @@ class DateINamespace(DatabaseNamespace):
         if cls._get_record_date(title_plain_text):
             return None
         date = datei.data.properties[datei_date_prop].start
-        return f"{date.strftime('%y%m%d')} {title_plain_text}"
+        digit_pattern = re.compile(r'[\d. -]+')
+        return f"{date.strftime('%y%m%d')}{'|' if digit_pattern.match(title_plain_text) else ''} {title_plain_text}"
 
     @classmethod
     def _get_record_date(cls, title_plain_text: str) -> Optional[dt.date]:
