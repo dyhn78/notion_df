@@ -34,13 +34,13 @@ def get_actions() -> list[Action]:
         MatchWeekByRefDate(base, DatabaseEnum.reading_db, '시작', '시작'),  # TODO: can be deprecated
 
         MatchWeekByRefDate(base, DatabaseEnum.topic_db, '주간', '일간'),
+        MatchDateByCreatedTime(base, DatabaseEnum.gist_db, '일간'),
+        MatchWeekByRefDate(base, DatabaseEnum.gist_db, '주간', '일간'),
+
+        MatchDateByCreatedTime(base, DatabaseEnum.schedule_db, '정리'),
+        MatchWeekByRefDate(base, DatabaseEnum.schedule_db, '주간', '일간'),
         MatchDateByCreatedTime(base, DatabaseEnum.point_db, '일간'),
         MatchWeekByRefDate(base, DatabaseEnum.point_db, '주간', '일간'),
-
-        MatchDateByCreatedTime(base, DatabaseEnum.depr_schedule_db, '정리'),
-        MatchWeekByRefDate(base, DatabaseEnum.depr_schedule_db, '주간', '일간'),
-        MatchDateByCreatedTime(base, DatabaseEnum.depr_review_db, '일간'),
-        MatchWeekByRefDate(base, DatabaseEnum.depr_review_db, '주간', '일간'),
 
         MediaScraper(create_window=False),
 
@@ -50,9 +50,9 @@ def get_actions() -> list[Action]:
         #            DatabaseEnum.topic_db.prefix_title, DatabaseEnum.topic_db.prefix_title),
         # DeprMatchTopic(base, DatabaseEnum.event_db, DatabaseEnum.reading_db, DatabaseEnum.reading_db.prefix_title,
         #            DatabaseEnum.topic_db.prefix_title, DatabaseEnum.topic_db.prefix_title),
-        # DeprMatchTopic(base, DatabaseEnum.depr_schedule_db, DatabaseEnum.issue_db, DatabaseEnum.issue_db.prefix_title,
+        # DeprMatchTopic(base, DatabaseEnum.schedule_db, DatabaseEnum.issue_db, DatabaseEnum.issue_db.prefix_title,
         #                DatabaseEnum.topic_db.prefix_title, DatabaseEnum.topic_db.prefix_title),
-        # DeprMatchTopic(base, DatabaseEnum.depr_schedule_db, DatabaseEnum.reading_db,
+        # DeprMatchTopic(base, DatabaseEnum.schedule_db, DatabaseEnum.reading_db,
         #                DatabaseEnum.reading_db.prefix_title,
         #                DatabaseEnum.topic_db.prefix_title, DatabaseEnum.topic_db.prefix_title),
         # MatchDateByCreatedTime(base, DatabaseEnum.depr_event_db, '일간'),
