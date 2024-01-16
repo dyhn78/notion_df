@@ -145,15 +145,15 @@ class MigrationBackupLoadAction(IterableAction):
 
         # customized cases
         if linked_db_enum == DatabaseEnum.datei_db:
-            if this_prev_prop.name == '🟢생성':
+            if this_prev_prop.name == '🟣생성':
                 return pick(this_prev_prop.name)
-            if this_prev_prop.name in ['🟢일간', '🟢시작']:
-                return pick(this_prev_prop.name) or pick('🟢생성')
+            if this_prev_prop.name in ['🟣일간', '🟣시작']:
+                return pick(this_prev_prop.name) or pick('🟣생성')
         if linked_db_enum == DatabaseEnum.weeki_db:
-            if this_prev_prop.name == '💚생성':
+            if this_prev_prop.name == '💜생성':
                 return pick(this_prev_prop.name)
-            if this_prev_prop.name in ['💚주간', '💚시작']:
-                return pick(this_prev_prop.name) or pick('💚생성')
+            if this_prev_prop.name in ['💜주간', '💜시작']:
+                return pick(this_prev_prop.name) or pick('💜생성')
         if this_db_enum == linked_db_enum and this_prev_db_enum == linked_prev_db_enum:
             for prop_name_stem in ['구성', '공통', '요소', '관계']:
                 if (prop_name_stem in this_prev_prop.name) and (prop_name := pick(prop_name_stem)):
