@@ -20,7 +20,6 @@ class Action(metaclass=ABCMeta):
     @final
     def process_all(self) -> Any:
         """query and process"""
-        logger.info(self)
         return self._process_all()
 
     @abstractmethod
@@ -30,7 +29,6 @@ class Action(metaclass=ABCMeta):
     @final
     def process_pages(self, pages: Iterable[Page]) -> Any:
         """process the given pages"""
-        logger.info(self)
         return self._process_pages(pages)
 
     @abstractmethod
@@ -65,22 +63,21 @@ class Action(metaclass=ABCMeta):
 
 
 class CompositeAction(Action):
-    def __init__(self, actions: list[Action]):
+    def __init__(self, actions: list[Action]) -> None:
         self.actions = actions
 
     def _process_all(self) -> Any:
         for action in self.actions:
+            logger.info(action)
             action.process_all()
 
     def _process_pages(self, pages: Iterable[Page]) -> Any:
         for action in self.actions:
+            logger.info(action)
             action.process_pages(pages)
 
 
 class IndividualAction(Action):
-    def __repr__(self):
-        return repr_object(self)
-
     @final
     def _process_all(self) -> Any:
         return self._process_pages(page for page in self._query() if not is_template(page))
