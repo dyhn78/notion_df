@@ -6,7 +6,7 @@ from time import sleep
 
 import psutil
 
-from workflow import actions_exec, project_dir
+from workflow import actions_run_internal, project_dir
 
 
 def get_module_name(file_path: str) -> str:
@@ -14,18 +14,18 @@ def get_module_name(file_path: str) -> str:
 
 
 this_module_name = get_module_name(__file__)
-exec_module_name = get_module_name(actions_exec.__file__)
+internal_module_name = get_module_name(actions_run_internal.__file__)
 
 if __name__ == '__main__':
     for process in psutil.process_iter(['name', 'cmdline']):
         try:
-            if process.cmdline()[:3] == [sys.executable, '-m', exec_module_name]:
-                sys.stderr.write(f"{actions_exec.__name__} is already running.\n")
+            if process.cmdline()[:3] == [sys.executable, '-m', internal_module_name]:
+                sys.stderr.write(f"{actions_run_internal.__name__} is already running.\n")
                 sys.exit(1)
         except (psutil.AccessDenied, psutil.NoSuchProcess):
             continue
 
-    proc = subprocess.run([sys.executable, '-m', exec_module_name],
+    proc = subprocess.run([sys.executable, '-m', internal_module_name],
                           env={**os.environ},
                           cwd=project_dir,
                           check=False)

@@ -164,5 +164,4 @@ def execute_from_last_success(actions: list[Action], update_last_success_time: b
 
 
 if __name__ == '__main__':
-    execute_from_last_success(actions=get_actions(), update_last_success_time=True)
-    # execute_by_last_edited_time(get_actions(), datetime(2024, 1, 7, 17, 0, 0, tzinfo=my_tz), None)
+    execute_by_last_edited_time(get_actions(), datetime(2024, 1, 7, 17, 0, 0, tzinfo=my_tz), None)
