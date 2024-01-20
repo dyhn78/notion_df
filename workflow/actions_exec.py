@@ -21,15 +21,15 @@ from workflow import log_dir
 from workflow.actions import get_actions
 from workflow.core.action import Action, search_pages_by_last_edited_time
 
-log_page_id = '6d16dc6747394fca95dc169c8c736e2d'
-log_page_block = Block(log_page_id)
-log_date_format = '%Y-%m-%d %H:%M:%S+09:00'
-log_date_group_format = '%Y-%m-%d'
-log_last_success_time_parent_block = Block('c66d852e27e84d92b6203dfdadfefad8')
-my_user_id = UUID('a007d150-bc67-422c-87db-030a71867dd9')
-
 
 class WorkflowRecord:
+    user_id = UUID('a007d150-bc67-422c-87db-030a71867dd9')
+    page_id = UUID('6d16dc6747394fca95dc169c8c736e2d')
+    page_block = Block(page_id)
+    last_success_time_parent_block = Block('c66d852e27e84d92b6203dfdadfefad8')
+    date_format = '%Y-%m-%d %H:%M:%S+09:00'
+    date_group_format = '%Y-%m-%d'
+
     # Note: the record page is implemented as page with log blocks, not database with log pages,
     #  since Notion API does not directly support permanently deleting pages,
     #  and third party solutions like `https://github.com/pocc/bulk_delete_notion_pages`
@@ -37,12 +37,12 @@ class WorkflowRecord:
     def __init__(self, *, update_last_success_time: bool):
         self.update_last_success_time = update_last_success_time
         self.start_time = datetime.now().astimezone(my_tz)
-        self.start_time_str = self.start_time.strftime(log_date_format)
-        self.start_time_group_str = self.start_time.strftime(log_date_group_format)
+        self.start_time_str = self.start_time.strftime(WorkflowRecord.date_format)
+        self.start_time_group_str = self.start_time.strftime(WorkflowRecord.date_group_format)
         self.enabled = True
         self.processed_pages: Optional[int] = None
 
-        self.last_success_time_blocks = log_last_success_time_parent_block.retrieve_children()
+        self.last_success_time_blocks = WorkflowRecord.last_success_time_parent_block.retrieve_children()
         last_execution_time_block = self.last_success_time_blocks[0]
         self.last_execution_time_str = (cast(ParagraphBlockValue, last_execution_time_block.data.value)
                                         .rich_text.plain_text)
@@ -69,7 +69,7 @@ class WorkflowRecord:
             summary_text = f"success - {self.format_time()}"
             summary_block_value = ParagraphBlockValue(RichText([TextSpan(summary_text)]))
             if self.update_last_success_time:
-                log_last_success_time_parent_block.append_children([
+                WorkflowRecord.last_success_time_parent_block.append_children([
                     ParagraphBlockValue(RichText([TextSpan(self.start_time_str)]))])
                 for block in self.last_success_time_blocks:
                     block.delete()
@@ -79,16 +79,17 @@ class WorkflowRecord:
         else:
             # TODO: needs full print by redirecting print() stream to logger
             summary_text = f"error - {self.format_time()} - {exc_type.__name__} - {exc_val}"
-            summary_block_value = ToggleBlockValue(RichText([TextSpan(summary_text), UserMention(my_user_id)]))
+            summary_block_value = ToggleBlockValue(
+                RichText([TextSpan(summary_text), UserMention(WorkflowRecord.user_id)]))
             traceback_str = traceback.format_exc()
             child_block_values = []
             for i in range(0, len(traceback_str), 1000):
                 child_block_values.append(CodeBlockValue(RichText.from_plain_text(traceback_str[i:i + 1000])))
 
         log_group_block = None
-        for block in reversed(log_page_block.retrieve_children()):
+        for block in reversed(WorkflowRecord.page_block.retrieve_children()):
             if isinstance(block.data.value, DividerBlockValue):
-                log_group_block = log_page_block.append_children([
+                log_group_block = WorkflowRecord.page_block.append_children([
                     ToggleBlockValue(RichText([TextSpan(self.start_time_group_str)]))])[0]
                 break
             if cast(ToggleBlockValue, block.data.value).rich_text.plain_text == self.start_time_group_str:
@@ -142,7 +143,7 @@ def execute_by_last_edited_time(actions: list[Action], lower_bound: datetime,
                                 upper_bound: Optional[datetime] = None) -> bool:
     # TODO: if no recent_pages, raise SkipException instead of returning False
     recent_pages = set(search_pages_by_last_edited_time(lower_bound, upper_bound))
-    recent_pages.discard(Page(log_page_id))
+    recent_pages.discard(Page(WorkflowRecord.page_id))
     recent_pages = {page for page in recent_pages}
     if not recent_pages:
         return False
