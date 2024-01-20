@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
-from itertools import chain
-from typing import Iterable, Optional, Any, Iterator, TypeVar
+from functools import wraps
+from typing import Iterable, Any, final
+
+from loguru import logger
 
 from notion_df.entity import Page
 from notion_df.util.misc import repr_object
@@ -10,21 +12,21 @@ from workflow.block_enum import exclude_template
 
 
 class Action(metaclass=ABCMeta):
-    def __repr__(self):
+    def __repr__(self) -> str:
         return repr_object(self)
 
-    def __init_subclass__(cls, **kwargs):
-        cls.query_all = exclude_template(cls.query_all)
+    def __init_subclass__(cls, **kwargs) -> None:
+        process_prev = cls.process
+
+        @wraps(process_prev)
+        def process_new(self: Action, pages: Iterable[Page]):
+            logger.info(self)
+            return process_prev(self, pages)
+
+        setattr(cls, cls.process.__name__, process_new)
 
     @abstractmethod
-    def query_all(self) -> Iterable[Page]:
-        """full-scan mode"""
-        pass
-
-    @abstractmethod
-    def filter(self, page: Page) -> bool:
-        """from given retrieved pages regardless of `recent_pages` or `query_all()`,
-        pick the ones which need to process."""
+    def execute_all(self) -> Any:
         pass
 
     @abstractmethod
@@ -32,27 +34,34 @@ class Action(metaclass=ABCMeta):
         pass
 
 
-class IterableAction(Action, metaclass=ABCMeta):
+class IndividualAction(Action, metaclass=ABCMeta):
+    def __repr__(self):
+        return repr_object(self)
+
+    def __init_subclass__(cls, **kwargs) -> None:
+        super().__init_subclass__(**kwargs)
+        setattr(cls, cls.query.__name__, exclude_template(cls.query))
+
+    @final
+    def execute_all(self) -> Any:
+        return self.process(self.query())
+
+    @abstractmethod
+    def query(self) -> Iterable[Page]:
+        """full-scan mode"""
+        pass
+
+    @abstractmethod
+    def process(self, pages: Iterable[Page]) -> Any:
+        pass
+
+
+class SequentialAction(IndividualAction, metaclass=ABCMeta):
+    @final
     def process(self, pages: Iterable[Page]):
-        pages_it = peek(pages)
-        if pages_it is None:
-            return
-        print(self)
-        for page in pages_it:
+        for page in pages:
             self.process_page(page)
 
     @abstractmethod
     def process_page(self, page: Page) -> Any:
         pass
-
-
-T = TypeVar('T')
-
-
-def peek(it: Iterable[T]) -> Optional[Iterator[T]]:
-    it = iter(it)
-    try:
-        _first_element = next(it)
-    except StopIteration:
-        return None
-    return chain([_first_element], it)

@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import TypeVar, NewType
+from itertools import chain
+from typing import TypeVar, NewType, Iterable, Optional, Iterator
 
 from notion_df.core.exception import NotionDfKeyError
 
@@ -44,3 +45,15 @@ class DictFilter:
     @staticmethod
     def not_none(d: dict[KT, VT]) -> dict[KT, VT]:
         return {k: v for k, v in d.items() if v is not None}
+
+
+T = TypeVar('T')
+
+
+def peek(it: Iterable[T]) -> Optional[Iterator[T]]:
+    it = iter(it)
+    try:
+        _first_element = next(it)
+    except StopIteration:
+        return None
+    return chain([_first_element], it)

@@ -81,8 +81,8 @@ class Property(Generic[DatabasePropertyValue_T, PagePropertyValue_T, FilterBuild
         return self._filter_cls(build)
 
     # TODO
-    ##  - integrate inside PageProperties - _serialize_page(), _deserialize_page(), _deserialize_database()
-    ##   since we will not create Property types dynamically
+    #  - integrate inside PageProperties - _serialize_page(), _deserialize_page(), _deserialize_database()
+    #   since we will not create Property types dynamically
     #  - rewrite to _deserialize_page_item(), return tuple[Prop, PropValue]
     #  - RetrievePagePropertyItem.execute() & Page.retrieve_property_item() should call this and return tuple
 

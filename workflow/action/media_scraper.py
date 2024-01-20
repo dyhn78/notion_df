@@ -11,9 +11,9 @@ from notion_df.object.misc import SelectOption
 from notion_df.object.rich_text import TextSpan
 from notion_df.property import SelectProperty, CheckboxFormulaProperty, TitleProperty, RichTextProperty, \
     URLProperty, NumberProperty, FilesProperty, CheckboxProperty, PageProperties
-from notion_df.util.collection import StrEnum
+from notion_df.util.collection import StrEnum, peek
 from workflow.block_enum import DatabaseEnum
-from workflow.core.action import Action, peek
+from workflow.core.action import IndividualAction
 from workflow.service.gy_lib_service import GYLibraryScraper, LibraryScrapResult
 from workflow.service.webdriver_service import WebDriverService
 from workflow.service.yes24_service import get_yes24_detail_page_url, Yes24ScrapResult, get_block_value_of_contents_line
@@ -43,29 +43,34 @@ class EditStatusValue(StrEnum):
     confirm_manually = '👤결과 검정'
 
 
-class MediaScraper(Action):
+class MediaScraper(IndividualAction):
     def __init__(self, *, create_window: bool):
         self.reading_db = Database(DatabaseEnum.reading_db.id)
         self.driver_service = WebDriverService(create_window=create_window)
 
-    def query_all(self) -> Paginator[Page]:
-        return self.reading_db.query(is_book_prop.filter.equals(True) & CompoundFilter('or', [
-            edit_status_prop.filter.equals(option) for option in
-            [EditStatusValue.default, EditStatusValue.metadata_overwrite, EditStatusValue.location_overwrite, None]
-        ]))
+    def query(self) -> Paginator[Page]:
+        return self.reading_db.query(
+            is_book_prop.filter.equals(True)
+            & CompoundFilter('or', [
+                edit_status_prop.filter.equals(option) for option in
+                [EditStatusValue.default, EditStatusValue.metadata_overwrite,
+                 EditStatusValue.location_overwrite, None]
+            ]))
 
     def filter(self, page: Page) -> bool:
-        return (page.data.parent == self.reading_db and page.data.properties[is_book_prop] and
-                (page.data.properties[edit_status_prop] in
-                 [EditStatusValue.default, EditStatusValue.metadata_overwrite, EditStatusValue.location_overwrite]
-                 or page.data.properties[edit_status_prop] is None))
+        return (page.data.parent == self.reading_db
+                and page.data.properties[is_book_prop]
+                and (page.data.properties[edit_status_prop] in
+                     [EditStatusValue.default, EditStatusValue.metadata_overwrite,
+                      EditStatusValue.location_overwrite, None]))
 
     def process(self, readings: Iterable[Page]) -> Any:
-        readings_it = peek(readings)
-        if readings_it is None:
+        readings = (reading for reading in readings if self.filter(reading))
+        reading_it = peek(readings)
+        if reading_it is None:
             return
         with self.driver_service.create() as driver:
-            for reading in readings_it:
+            for reading in reading_it:
                 ReadingMediaScraperUnit(reading, driver).execute()
                 logger.info(f'\t{reading}')
 

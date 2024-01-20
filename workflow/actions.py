@@ -3,18 +3,18 @@ from __future__ import annotations
 from workflow import backup_dir
 from workflow.action.media_scraper import MediaScraper
 from workflow.action.migration_backup import MigrationBackupLoadAction, MigrationBackupSaveAction
-from workflow.action.prop_matcher import MatchActionBase, MatchWeekByDateValue, MatchEventProgressForward, \
-    MatchDateByCreatedTime, MatchWeekByRefDate, MatchTimeManualValue, MatchReadingsStartDate, MatchEventProgressBackward
+from workflow.action.prop_matcher import MatchActionBase, MatchWeekByDateValue, MatchDateByCreatedTime, \
+    MatchWeekByRefDate, MatchTimestr, MatchReadingsStartDate, MatchEventProgress
 from workflow.block_enum import DatabaseEnum
-from workflow.core.action import Action
+from workflow.core.action import IndividualAction
 
 
 class Workflow:
-    def __init__(self, actions: list[Action]):
+    def __init__(self, actions: list[IndividualAction]):
         ...  # TODO
 
 
-def get_actions() -> list[Action]:
+def get_actions() -> list[IndividualAction]:
     base = MatchActionBase()
     return [
         MigrationBackupLoadAction(backup_dir),
@@ -25,9 +25,8 @@ def get_actions() -> list[Action]:
         MatchDateByCreatedTime(base, DatabaseEnum.event_db, '일간', read_title=True, write_title=True),
         MatchDateByCreatedTime(base, DatabaseEnum.event_db, '정리'),
         MatchWeekByRefDate(base, DatabaseEnum.event_db, '주간', '일간'),
-        MatchTimeManualValue(base, DatabaseEnum.event_db, '일간'),
-        MatchEventProgressForward(base),
-        MatchEventProgressBackward(base),
+        MatchTimestr(base, DatabaseEnum.event_db, '일간'),
+        MatchEventProgress(base),
         MatchDateByCreatedTime(base, DatabaseEnum.schedule_db, '정리'),
 
         MatchDateByCreatedTime(base, DatabaseEnum.journal_db, '일간', read_title=True, write_title=True),
@@ -67,7 +66,7 @@ def get_actions() -> list[Action]:
         # MatchDateByCreatedTime(base, DatabaseEnum.depr_event_db, '일간'),
         # MatchDateByCreatedTime(base, DatabaseEnum.depr_event_db, '생성'),
         # MatchWeekByRefDate(base, DatabaseEnum.depr_event_db, '주간', '일간'),
-        # MatchTimeManualValue(base, DatabaseEnum.depr_event_db, '일간'),
+        # MatchTimestr(base, DatabaseEnum.depr_event_db, '일간'),
         # MatchDateByCreatedTime(base, DatabaseEnum.depr_subject_db, '일간'),
         # MatchWeekByRefDate(base, DatabaseEnum.depr_subject_db, '주간', '일간'),
     ]

@@ -21,7 +21,7 @@ from notion_df.variable import my_tz, print_width
 from workflow import log_dir
 from workflow.actions import get_actions
 from workflow.block_enum import exclude_template
-from workflow.core.action import Action
+from workflow.core.action import IndividualAction
 
 log_page_id = '6d16dc6747394fca95dc169c8c736e2d'
 log_page_block = Block(log_page_id)
@@ -115,7 +115,7 @@ def get_latest_log_path() -> Optional[Path]:
 P = ParamSpec('P')
 
 
-def with_logger(func: Callable[P, bool]) -> Callable[P, bool]:
+def log_actions(func: Callable[P, bool]) -> Callable[P, bool]:
     @wraps(func)
     def wrapper(*args: P.args, **kwargs: P.kwargs) -> bool:
         logger.add(log_dir / '{time}.log',
@@ -147,16 +147,16 @@ def search_pages_by_last_edited_time(lower_bound: datetime, upper_bound: Optiona
     return pages
 
 
-@with_logger
-def execute_all(actions: list[Action]) -> bool:
+@log_actions
+def execute_all(actions: list[IndividualAction]) -> bool:
     with WorkflowLog(update_last_success_time=False):
         for action in actions:
-            action.process(page for page in action.query_all())
+            action.execute_all()
     return True
 
 
-@with_logger
-def execute_by_last_edited_time(actions: list[Action], lower_bound: datetime,
+@log_actions
+def execute_by_last_edited_time(actions: list[IndividualAction], lower_bound: datetime,
                                 upper_bound: Optional[datetime] = None) -> bool:
     # TODO: if no recent_pages, raise SkipException instead of returning False
     recent_pages = set(search_pages_by_last_edited_time(lower_bound, upper_bound))
@@ -169,8 +169,8 @@ def execute_by_last_edited_time(actions: list[Action], lower_bound: datetime,
     return True
 
 
-@with_logger
-def execute_from_last_edited_time_bound(actions: list[Action],
+@log_actions
+def execute_from_last_edited_time_bound(actions: list[IndividualAction],
                                         timedelta_size: timedelta, update_last_success_time: bool) -> bool:
     # TODO: if the last result was RetryError, sleep for 10 mins
     with WorkflowLog(update_last_success_time=update_last_success_time) as wf_log:
@@ -178,12 +178,12 @@ def execute_from_last_edited_time_bound(actions: list[Action],
         return wf_log.enabled
 
 
-@with_logger
-def execute_from_last_success(actions: list[Action], update_last_success_time: bool) -> bool:
+@log_actions
+def execute_from_last_success(actions: list[IndividualAction], update_last_success_time: bool) -> bool:
     with WorkflowLog(update_last_success_time=update_last_success_time) as wf_log:
         if wf_log.last_success_time is None:
             for action in actions:
-                action.process(page for page in action.query_all() if action.filter(page))
+                action.execute_all()
             return True
         wf_log.enabled = execute_by_last_edited_time(actions, wf_log.last_success_time, None)
         return wf_log.enabled

@@ -11,21 +11,20 @@ from notion_df.object.data import PageData
 from notion_df.property import RelationProperty, PageProperties
 from workflow.action.prop_matcher import get_earliest_date
 from workflow.block_enum import DatabaseEnum
-from workflow.core.action import IterableAction
+from workflow.core.action import SequentialAction
 from workflow.service.backup_service import ResponseBackupService
 
 
-class MigrationBackupSaveAction(IterableAction):
+class MigrationBackupSaveAction(SequentialAction):
     def __init__(self, backup_dir: Path):
         self.backup = ResponseBackupService(backup_dir)
 
-    def query_all(self) -> Iterator[Page]:
-        return iter([])
-
-    def filter(self, page: Page) -> bool:
-        return isinstance(page.data.parent, Database)
+    def query(self) -> Iterable[Page]:
+        return []
 
     def process_page(self, page: Page) -> None:
+        if not isinstance(page.data.parent, Database):
+            return
         for prop in page.data.properties:
             if not isinstance(prop, RelationProperty):
                 continue
@@ -33,7 +32,7 @@ class MigrationBackupSaveAction(IterableAction):
             # TODO: resolve Notion 504 error
             #  https://notiondevs.slack.com/archives/C01CZTMG85C/p1701409539104549
             if prop_value.has_more:
-                try: 
+                try:
                     page.retrieve_property_item(prop.id)
                 except tenacity.RetryError:
                     logger.error(f'failed Page.retrieve_property_item({page}, prop={prop.name})')
@@ -41,19 +40,16 @@ class MigrationBackupSaveAction(IterableAction):
         self.backup.write(page)
 
 
-class MigrationBackupLoadAction(IterableAction):
+class MigrationBackupLoadAction(SequentialAction):
     def __init__(self, backup_dir: Path):
         self.response_backup = ResponseBackupService(backup_dir)
 
-    def query_all(self) -> Iterator[Page]:
-        return iter([])
-
-    def filter(self, page: Page) -> bool:
-        return True
+    def query(self) -> Iterable[Page]:
+        return []
 
     def process_page(self, page: Page) -> None:
         this_page = next((breadcrumb_page for breadcrumb_page in iter_breadcrumb(page)
-                         if DatabaseEnum.from_entity(breadcrumb_page.data.parent) is not None), None)
+                          if DatabaseEnum.from_entity(breadcrumb_page.data.parent) is not None), None)
         if this_page is None:
             logger.info(f'\t{page}: Moved outside DatabaseEnum')
 

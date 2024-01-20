@@ -76,18 +76,18 @@ class DatabaseEnum(Enum):
         return _id_to_member.get(entity)
 
 
+P = ParamSpec('P')
+
+
 def is_template(page: Page) -> bool:
     page.get_data()
     database = page.data.parent
     if not database or not isinstance(database, Database):
         return False
+    # TODO: figure when isinstance(database.data.title.plain_text, str) wrongly set
     # logger.critical(f'database.data.title - {database.data.title}')
     # logger.critical(f'page.data.properties.title - {page.data.properties.title}')
-    # TODO: figure when isinstance(database.data.title.plain_text, str) wrongly set
     return bool(re.match(f'<{database.get_data().title.plain_text}> .*', page.data.properties.title.plain_text))
-
-
-P = ParamSpec('P')
 
 
 def exclude_template(func: Callable[P, Iterable[Page]]) -> Callable[P, Iterable[Page]]:

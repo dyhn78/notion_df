@@ -282,11 +282,13 @@ class CompoundFilter(Filter):
         return {self.operator: serialize(self.elements)}
 
 
-def and_filter(elements: list[Filter]) -> CompoundFilter:
+# noinspection PyPep8Naming
+def AND(elements: list[Filter]) -> CompoundFilter:
     return CompoundFilter('and', elements)
 
 
-def or_filter(elements: list[Filter]) -> CompoundFilter:
+# noinspection PyPep8Naming
+def OR(elements: list[Filter]) -> CompoundFilter:
     return CompoundFilter('or', elements)
 
 
