@@ -6,10 +6,10 @@ from workflow.action.migration_backup import MigrationBackupLoadAction, Migratio
 from workflow.action.prop_matcher import MatchActionBase, MatchWeekByDateValue, MatchDateByCreatedTime, \
     MatchWeekByRefDate, MatchTimestr, MatchReadingsStartDate, MatchEventProgress
 from workflow.block_enum import DatabaseEnum
-from workflow.core.action import IndividualAction
+from workflow.core.action import Action
 
 
-def get_actions() -> list[IndividualAction]:
+def get_actions() -> list[Action]:
     base = MatchActionBase()
     return [
         MigrationBackupLoadAction(backup_dir),

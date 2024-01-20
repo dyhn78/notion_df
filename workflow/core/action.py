@@ -1,18 +1,12 @@
 from __future__ import annotations
 
-import inspect
 from abc import ABCMeta, abstractmethod
-from datetime import datetime, timedelta
-from functools import wraps
-from pprint import pformat
-from typing import Iterable, Any, final, Optional, ParamSpec, Callable
+from typing import Iterable, Any, final
 
 from loguru import logger
 
-from notion_df.entity import Page, search_by_title
+from notion_df.entity import Page
 from notion_df.util.misc import repr_object
-from notion_df.variable import print_width
-from workflow import log_dir
 from workflow.block_enum import exclude_template
 
 
@@ -39,49 +33,6 @@ class Action(metaclass=ABCMeta):
     @abstractmethod
     def _process_pages(self, pages: Iterable[Page]) -> Any:
         pass
-
-
-# TODO: integrate into Action
-@exclude_template
-def search_pages_by_last_edited_time(lower_bound: datetime, upper_bound: Optional[datetime] = None) -> Iterable[Page]:
-    """Note: Notion APIs' last_edited_time info is only with minutes resolution"""
-    # TODO: integrate with base function
-    lower_bound = lower_bound.replace(second=0, microsecond=0)
-    pages = []
-    for page in search_by_title('', 'page'):
-        if upper_bound is not None and page.data.last_edited_time > upper_bound:
-            continue
-        if page.data.last_edited_time < lower_bound:
-            break
-        pages.append(page)
-    logger.debug(pformat(pages, width=print_width))
-    return pages
-
-
-P = ParamSpec('P')
-
-
-# TODO: integrate into Action
-def log_actions(func: Callable[P, bool]) -> Callable[P, bool]:
-    # def get_latest_log_path() -> Optional[Path]:
-    #     log_path_list = sorted(log_dir.iterdir())
-    #     if not log_path_list:
-    #         return None
-    #     return log_path_list[-1]
-
-    @wraps(func)
-    def wrapper(*args: P.args, **kwargs: P.kwargs) -> bool:
-        logger.add(log_dir / '{time}.log',
-                   # (get_latest_log_path() or (log_dir / '{time}.log')),
-                   level='DEBUG', rotation='100 MB', retention=timedelta(weeks=2))
-        logger.info(f'{"#" * 5} Start.')
-        with logger.catch():
-            has_new_record = func(*args, **kwargs)
-            logger.info(f'{"#" * 5} {"Done." if has_new_record else "No new record."}')
-            return has_new_record
-
-    wrapper.__signature__ = inspect.signature(func)
-    return wrapper
 
 
 class CompositeAction(Action):
