@@ -1,12 +1,9 @@
 from __future__ import annotations
 
-import inspect
 import json
 import traceback
 from datetime import timedelta, datetime
-from functools import wraps
-from pathlib import Path
-from typing import Optional, cast, Callable, ParamSpec
+from typing import Optional, cast
 from uuid import UUID
 
 import tenacity
@@ -17,9 +14,8 @@ from notion_df.entity import Page, Block
 from notion_df.object.data import ParagraphBlockValue, ToggleBlockValue, CodeBlockValue, DividerBlockValue
 from notion_df.object.rich_text import RichText, TextSpan, UserMention
 from notion_df.variable import my_tz
-from workflow import log_dir
 from workflow.actions import get_actions
-from workflow.core.action import Action, search_pages_by_last_edited_time
+from workflow.core.action import Action, search_pages_by_last_edited_time, log_actions
 
 
 class WorkflowRecord:
@@ -102,32 +98,6 @@ class WorkflowRecord:
         summary_block = log_group_block.append_children([summary_block_value])[0]
         if child_block_values:
             summary_block.append_children(child_block_values)
-
-
-def get_latest_log_path() -> Optional[Path]:
-    log_path_list = sorted(log_dir.iterdir())
-    if not log_path_list:
-        return
-    return log_path_list[-1]
-
-
-P = ParamSpec('P')
-
-
-def log_actions(func: Callable[P, bool]) -> Callable[P, bool]:
-    @wraps(func)
-    def wrapper(*args: P.args, **kwargs: P.kwargs) -> bool:
-        logger.add(log_dir / '{time}.log',
-                   # (get_latest_log_path() or (log_dir / '{time}.log')),
-                   level='DEBUG', rotation='100 MB', retention=timedelta(weeks=2))
-        logger.info(f'{"#" * 5} Start.')
-        with logger.catch():
-            has_new_record = func(*args, **kwargs)
-            logger.info(f'{"#" * 5} {"Done." if has_new_record else "No new record."}')
-            return has_new_record
-
-    wrapper.__signature__ = inspect.signature(func)
-    return wrapper
 
 
 @log_actions
