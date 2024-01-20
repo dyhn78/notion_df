@@ -1,17 +1,19 @@
 from __future__ import annotations
 
+from datetime import timedelta
+
 from workflow import backup_dir
 from workflow.action.media_scraper import MediaScraper
 from workflow.action.migration_backup import MigrationBackupLoadAction, MigrationBackupSaveAction
 from workflow.action.prop_matcher import MatchActionBase, MatchWeekByDateValue, MatchDateByCreatedTime, \
     MatchWeekByRefDate, MatchTimestr, MatchReadingsStartDate, MatchEventProgress
 from workflow.block_enum import DatabaseEnum
-from workflow.core.action import Action
+from workflow.core.action import Action, CompositeAction
 
 
-def get_actions() -> list[Action]:
+def get_action() -> Action:
     base = MatchActionBase()
-    return [
+    return CompositeAction([
         MigrationBackupLoadAction(backup_dir),
         MigrationBackupSaveAction(backup_dir),
 
@@ -64,4 +66,9 @@ def get_actions() -> list[Action]:
         # MatchTimestr(base, DatabaseEnum.depr_event_db, '일간'),
         # MatchDateByCreatedTime(base, DatabaseEnum.depr_subject_db, '일간'),
         # MatchWeekByRefDate(base, DatabaseEnum.depr_subject_db, '주간', '일간'),
-    ]
+    ])
+
+
+if __name__ == '__main__':
+    # get_action().run_by_last_edited_time(datetime(2024, 1, 7, 17, 0, 0, tzinfo=my_tz), None)
+    get_action().run_recent(interval=timedelta(hours=24))

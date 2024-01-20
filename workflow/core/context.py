@@ -6,7 +6,7 @@ import traceback
 from datetime import datetime, timedelta
 from functools import wraps
 from pprint import pformat
-from typing import Optional, Iterable, Callable, ParamSpec, cast
+from typing import Optional, Callable, ParamSpec, cast, TypeVar
 from uuid import UUID
 
 import tenacity
@@ -25,7 +25,7 @@ class WorkflowSkipException(Exception):
     pass
 
 
-def search_pages_by_last_edited_time(lower_bound: datetime, upper_bound: Optional[datetime] = None) -> Iterable[Page]:
+def search_pages_by_last_edited_time(lower_bound: datetime, upper_bound: Optional[datetime] = None) -> set[Page]:
     """Note: Notion APIs' last_edited_time info is only with minutes resolution"""
     lower_bound = lower_bound.replace(second=0, microsecond=0)
     pages = set()
@@ -39,14 +39,15 @@ def search_pages_by_last_edited_time(lower_bound: datetime, upper_bound: Optiona
     pages.discard(Page(WorkflowRecord.page_id))
     pages = {page for page in pages if not is_template(page)}
     if not pages:
-        pass  # TODO: raise WorkflowSkipException if empty
+        raise WorkflowSkipException()
     return pages
 
 
 P = ParamSpec('P')
+T = TypeVar('T')
 
 
-def log_action(func: Callable[P, bool]) -> Callable[P, bool]:
+def log_action(func: Callable[P, T]) -> Callable[P, Optional[T]]:
     # def get_latest_log_path() -> Optional[Path]:
     #     log_path_list = sorted(log_dir.iterdir())
     #     if not log_path_list:
@@ -54,15 +55,19 @@ def log_action(func: Callable[P, bool]) -> Callable[P, bool]:
     #     return log_path_list[-1]
 
     @wraps(func)
-    def wrapper(*args: P.args, **kwargs: P.kwargs) -> bool:
+    def wrapper(*args: P.args, **kwargs: P.kwargs) -> Optional[T]:
         logger.add(log_dir / '{time}.log',
                    # (get_latest_log_path() or (log_dir / '{time}.log')),
                    level='DEBUG', rotation='100 MB', retention=timedelta(weeks=2))
-        logger.info(f'{"#" * 5} Start.')
-        with logger.catch():  # TODO: recognize WorkflowSkipException (replace 'has_new_record')
-            has_new_record = func(*args, **kwargs)
-            logger.info(f'{"#" * 5} {"Done." if has_new_record else "No new record."}')
-            return has_new_record
+        with logger.catch():
+            try:
+                logger.info(f'{"#" * 5} Start.')
+                ret = func(*args, **kwargs)
+                logger.info(f'{"#" * 5} Done.')
+                return ret
+            except WorkflowSkipException:
+                logger.info(f'{"#" * 5} No new record.')
+                return
 
     wrapper.__signature__ = inspect.signature(func)
     return wrapper
@@ -108,7 +113,8 @@ class WorkflowRecord:
         return f'{self.start_time_str} - {round(execution_time.total_seconds(), 3)} seconds'
 
     def __exit__(self, exc_type: type, exc_val, exc_tb) -> None:
-        if not self.enabled:  # TODO: recognize WorkflowSkipException (replace 'enabled')
+        logger.info(f'exc_type - {exc_type}, exc_val - {exc_val}, exc_tb - """{exc_tb}"""')
+        if exc_type is WorkflowSkipException:
             return
         child_block_values = []
         if exc_type is None:
