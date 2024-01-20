@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from datetime import timedelta
-
 from workflow import backup_dir
 from workflow.action.media_scraper import MediaScraper
 from workflow.action.migration_backup import MigrationBackupLoadAction, MigrationBackupSaveAction
@@ -71,4 +69,5 @@ def get_action() -> Action:
 
 if __name__ == '__main__':
     # get_action().run_by_last_edited_time(datetime(2024, 1, 7, 17, 0, 0, tzinfo=my_tz), None)
-    get_action().run_recent(interval=timedelta(hours=24))
+    # get_action().run_recent(interval=timedelta(hours=24))
+    get_action().run_from_last_success(update_last_success_time=True)

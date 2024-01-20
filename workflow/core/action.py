@@ -70,11 +70,11 @@ class CompositeAction(Action):
 
     def _process_all(self) -> Any:
         for action in self.actions:
-            action._process_all()
+            action.process_all()
 
     def _process_pages(self, pages: Iterable[Page]) -> Any:
         for action in self.actions:
-            action._process_pages(pages)
+            action.process_pages(pages)
 
 
 class IndividualAction(Action):

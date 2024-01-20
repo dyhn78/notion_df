@@ -81,6 +81,7 @@ class _MatchEventProgressForward(MatchSequentialAction):
             return
         if event.data.properties[event_to_reading_prog_prop]:
             logger.info(f'{event} : Skipped - {event_to_reading_prog_prop.name} not empty')
+            return
 
         # TODO: more edge case handling
         if not (len(reading_list := event.data.properties[event_to_reading_prop]) == 1
@@ -296,7 +297,7 @@ class MatchWeekByRefDate(MatchSequentialAction):
             return new_record_weeks
 
         _weeks = _process_page()
-        logger.info(f'{record} -> {list(_weeks) if _weeks else ": Skipped"}')
+        logger.info(f'{record} : {list(_weeks) if _weeks else "Skipped"}')
 
 
 class MatchWeekByDateValue(MatchSequentialAction):

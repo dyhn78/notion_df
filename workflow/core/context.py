@@ -38,6 +38,7 @@ def search_pages_by_last_edited_time(lower_bound: datetime, upper_bound: Optiona
     logger.debug(pformat(pages, width=print_width))
     pages.discard(Page(WorkflowRecord.page_id))
     pages = {page for page in pages if not is_template(page)}
+    logger.info(f'pages - {pages}')
     if not pages:
         raise WorkflowSkipException()
     return pages
