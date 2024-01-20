@@ -15,7 +15,7 @@ from notion_df.property import RelationProperty, TitleProperty, PageProperties, 
     DateProperty, CheckboxFormulaProperty, RichTextProperty, SelectProperty, RelationPagePropertyValue
 from notion_df.util.misc import repr_object
 from workflow.block_enum import DatabaseEnum
-from workflow.core.action import IterableAction
+from workflow.core.action import IterableAction, Action
 from workflow.emoji_code import EmojiCode
 
 korean_weekday = '월화수목금토일'
@@ -49,14 +49,18 @@ class MatchActionBase:
         self.week_namespace = WeekINamespace()
 
 
-class MatchAction(IterableAction, metaclass=ABCMeta):
+class MatchAction(Action, metaclass=ABCMeta):
     def __init__(self, base: MatchActionBase):
         self.base = base
         self.date_namespace = base.date_namespace
         self.week_namespace = base.week_namespace
-        
 
-class MatchEventProgressForward(MatchAction):
+
+class MatchIterableAction(MatchAction, IterableAction, metaclass=ABCMeta):
+    pass
+
+
+class MatchEventProgressForward(MatchIterableAction):
     event_db = DatabaseEnum.event_db.entity
 
     def __init__(self, base: MatchActionBase):
@@ -82,7 +86,7 @@ class MatchEventProgressForward(MatchAction):
         }))
 
 
-class MatchEventProgressBackward(MatchAction):
+class MatchEventProgressBackward(MatchIterableAction):
     event_db = DatabaseEnum.event_db.entity
 
     def __init__(self, base: MatchActionBase):
@@ -106,7 +110,7 @@ class MatchEventProgressBackward(MatchAction):
         }))
 
 
-class MatchDateByCreatedTime(MatchAction):
+class MatchDateByCreatedTime(MatchIterableAction):
     def __init__(self, base: MatchActionBase, record: DatabaseEnum, record_to_date: str, *,
                  read_title: bool = False, write_title: bool = False):
         super().__init__(base)
@@ -152,7 +156,7 @@ class MatchDateByCreatedTime(MatchAction):
         return
 
 
-class MatchTimeManualValue(MatchAction):
+class MatchTimeManualValue(MatchIterableAction):
     def __init__(self, base: MatchActionBase, record: DatabaseEnum, record_to_date: str):
         super().__init__(base)
         self.record_db = Database(record.id)
@@ -187,7 +191,7 @@ class MatchTimeManualValue(MatchAction):
         logger.info(f'{record} -> {_date if _date else "Skipped"}')
 
 
-class MatchReadingsStartDate(MatchAction):
+class MatchReadingsStartDate(MatchIterableAction):
     def __init__(self, base: MatchActionBase):
         super().__init__(base)
         self.reading_db = DatabaseEnum.reading_db.entity
@@ -241,7 +245,7 @@ class MatchReadingsStartDate(MatchAction):
         logger.info(f'{reading} -> {_date if _date else ": Skipped"}')
 
 
-class MatchWeekByRefDate(MatchAction):
+class MatchWeekByRefDate(MatchIterableAction):
     def __init__(self, base: MatchActionBase, record_db_enum: DatabaseEnum,
                  record_to_week: str, record_to_date: str):
         super().__init__(base)
@@ -287,7 +291,7 @@ class MatchWeekByRefDate(MatchAction):
         logger.info(f'{record} -> {list(_weeks) if _weeks else ": Skipped"}')
 
 
-class MatchWeekByDateValue(MatchAction):
+class MatchWeekByDateValue(MatchIterableAction):
     def __init__(self, base: MatchActionBase):
         super().__init__(base)
         self.date_db = DatabaseEnum.datei_db.entity
@@ -313,7 +317,7 @@ class MatchWeekByDateValue(MatchAction):
         logger.info(f'{datei} -> {week}')
 
 
-class DeprMatchTopic(MatchAction):
+class DeprMatchTopic(MatchIterableAction):
     def __init__(self, base: MatchActionBase, record: DatabaseEnum, ref: DatabaseEnum,
                  record_to_ref_prop_name: str, record_to_topic_prop_name: str, ref_to_topic_prop_name: str):
         super().__init__(base)
