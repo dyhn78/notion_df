@@ -6,20 +6,28 @@ import traceback
 from datetime import timedelta, datetime
 from functools import wraps
 from pathlib import Path
+from pprint import pformat
 from typing import Optional, cast, Callable, ParamSpec
+from uuid import UUID
 
 import tenacity
 from loguru import logger
 
 from notion_df.core.serialization import deserialize_datetime
-from notion_df.entity import Page, Block
+from notion_df.entity import Page, Block, search_by_title
 from notion_df.object.data import ParagraphBlockValue, ToggleBlockValue, CodeBlockValue, DividerBlockValue
 from notion_df.object.rich_text import RichText, TextSpan, UserMention
-from notion_df.variable import my_tz
+from notion_df.variable import my_tz, print_width
 from workflow import log_dir
 from workflow.actions import get_actions
-from workflow.core.action import Action, search_pages_by_last_edited_time, log_page_id, log_date_format, \
-    log_date_group_format, log_last_success_time_parent_block, my_user_id, log_page_block
+from workflow.core.action import Action
+
+log_page_id = '6d16dc6747394fca95dc169c8c736e2d'
+log_page_block = Block(log_page_id)
+log_date_format = '%Y-%m-%d %H:%M:%S+09:00'
+log_date_group_format = '%Y-%m-%d'
+log_last_success_time_parent_block = Block('c66d852e27e84d92b6203dfdadfefad8')
+my_user_id = UUID('a007d150-bc67-422c-87db-030a71867dd9')
 
 
 class WorkflowLog:
@@ -96,14 +104,14 @@ class WorkflowLog:
             summary_block.append_children(child_block_values)
 
 
-P = ParamSpec('P')
-
-
 def get_latest_log_path() -> Optional[Path]:
     log_path_list = sorted(log_dir.iterdir())
     if not log_path_list:
         return
     return log_path_list[-1]
+
+
+P = ParamSpec('P')
 
 
 def with_logger(func: Callable[P, bool]) -> Callable[P, bool]:
@@ -122,11 +130,26 @@ def with_logger(func: Callable[P, bool]) -> Callable[P, bool]:
     return wrapper
 
 
+def search_pages_by_last_edited_time(lower_bound: datetime, upper_bound: Optional[datetime] = None) -> list[Page]:
+    """Note: Notion APIs' last_edited_time info is only with minutes resolution"""
+    # TODO: integrate with base function
+    lower_bound = lower_bound.replace(second=0, microsecond=0)
+    pages = []
+    for page in search_by_title('', 'page'):
+        if upper_bound is not None and page.data.last_edited_time > upper_bound:
+            continue
+        if page.data.last_edited_time < lower_bound:
+            break
+        pages.append(page)
+    logger.debug(pformat(pages, width=print_width))
+    return pages
+
+
 @with_logger
 def execute_all(actions: list[Action]) -> bool:
     with WorkflowLog(update_last_success_time=False):
         for action in actions:
-            action.execute_all()
+            action.process(page for page in action.query_all() if action.filter(page))
     return True
 
 
@@ -138,8 +161,8 @@ def execute_by_last_edited_time(actions: list[Action], lower_bound: datetime,
     recent_pages.discard(Page(log_page_id))
     if not recent_pages:
         return False
-    for self in actions:
-        self.process(page for page in recent_pages if self.filter(page))
+    for action in actions:
+        action.process(page for page in recent_pages if action.filter(page))
     return True
 
 
@@ -157,7 +180,7 @@ def execute_from_last_success(actions: list[Action], update_last_success_time: b
     with WorkflowLog(update_last_success_time=update_last_success_time) as wf_log:
         if wf_log.last_success_time is None:
             for action in actions:
-                action.execute_all()
+                action.process(page for page in action.query_all() if action.filter(page))
             return True
         wf_log.enabled = execute_by_last_edited_time(actions, wf_log.last_success_time, None)
         return wf_log.enabled

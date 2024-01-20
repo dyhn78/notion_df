@@ -9,6 +9,11 @@ from workflow.block_enum import DatabaseEnum
 from workflow.core.action import Action
 
 
+class Workflow:
+    def __init__(self, actions: list[Action]):
+        ...  # TODO
+
+
 def get_actions() -> list[Action]:
     base = MatchActionBase()
     return [
