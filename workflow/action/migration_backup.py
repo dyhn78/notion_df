@@ -19,10 +19,10 @@ class MigrationBackupSaveAction(SequentialAction):
     def __init__(self, backup_dir: Path):
         self.backup = ResponseBackupService(backup_dir)
 
-    def query(self) -> Iterable[Page]:
+    def _query(self) -> Iterable[Page]:
         return []
 
-    def process_page(self, page: Page) -> None:
+    def _process_page(self, page: Page) -> None:
         if not isinstance(page.data.parent, Database):
             return
         for prop in page.data.properties:
@@ -44,10 +44,10 @@ class MigrationBackupLoadAction(SequentialAction):
     def __init__(self, backup_dir: Path):
         self.response_backup = ResponseBackupService(backup_dir)
 
-    def query(self) -> Iterable[Page]:
+    def _query(self) -> Iterable[Page]:
         return []
 
-    def process_page(self, page: Page) -> None:
+    def _process_page(self, page: Page) -> None:
         this_page = next((breadcrumb_page for breadcrumb_page in iter_breadcrumb(page)
                           if DatabaseEnum.from_entity(breadcrumb_page.data.parent) is not None), None)
         if this_page is None:

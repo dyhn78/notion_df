@@ -48,7 +48,7 @@ class MediaScraper(IndividualAction):
         self.reading_db = Database(DatabaseEnum.reading_db.id)
         self.driver_service = WebDriverService(create_window=create_window)
 
-    def query(self) -> Paginator[Page]:
+    def _query(self) -> Paginator[Page]:
         return self.reading_db.query(
             is_book_prop.filter.equals(True)
             & CompoundFilter('or', [

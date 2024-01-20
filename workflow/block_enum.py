@@ -2,8 +2,7 @@ from __future__ import annotations
 
 import re
 from enum import Enum
-from functools import wraps
-from typing import Optional, Callable, ParamSpec, Iterable
+from typing import Optional
 
 from notion_df.core.entity import Entity
 from notion_df.entity import Database, Page
@@ -76,9 +75,6 @@ class DatabaseEnum(Enum):
         return _id_to_member.get(entity)
 
 
-P = ParamSpec('P')
-
-
 def is_template(page: Page) -> bool:
     page.get_data()
     database = page.data.parent
@@ -88,11 +84,3 @@ def is_template(page: Page) -> bool:
     # logger.critical(f'database.data.title - {database.data.title}')
     # logger.critical(f'page.data.properties.title - {page.data.properties.title}')
     return bool(re.match(f'<{database.get_data().title.plain_text}> .*', page.data.properties.title.plain_text))
-
-
-def exclude_template(func: Callable[P, Iterable[Page]]) -> Callable[P, Iterable[Page]]:
-    @wraps(func)
-    def wrapper(*args, **kwargs) -> Iterable[Page]:
-        return (page for page in func(*args, **kwargs) if not is_template(page))
-
-    return wrapper

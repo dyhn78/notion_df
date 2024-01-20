@@ -7,7 +7,7 @@ from loguru import logger
 
 from notion_df.entity import Page
 from notion_df.util.misc import repr_object
-from workflow.block_enum import exclude_template
+from workflow.block_enum import is_template
 
 
 class Action(metaclass=ABCMeta):
@@ -53,16 +53,12 @@ class IndividualAction(Action):
     def __repr__(self):
         return repr_object(self)
 
-    def __init_subclass__(cls, **kwargs) -> None:
-        super().__init_subclass__(**kwargs)
-        setattr(cls, cls.query.__name__, exclude_template(cls.query))
-
     @final
     def _process_all(self) -> Any:
-        return self._process_pages(self.query())
+        return self._process_pages(page for page in self._query() if not is_template(page))
 
     @abstractmethod
-    def query(self) -> Iterable[Page]:
+    def _query(self) -> Iterable[Page]:
         pass
 
     @abstractmethod
@@ -74,8 +70,8 @@ class SequentialAction(IndividualAction):
     @final
     def _process_pages(self, pages: Iterable[Page]) -> Any:
         for page in pages:
-            self.process_page(page)
+            self._process_page(page)
 
     @abstractmethod
-    def process_page(self, page: Page) -> Any:
+    def _process_page(self, page: Page) -> Any:
         pass

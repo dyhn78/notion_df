@@ -18,7 +18,30 @@ from notion_df.object.data import ParagraphBlockValue, ToggleBlockValue, CodeBlo
 from notion_df.object.rich_text import RichText, TextSpan, UserMention
 from notion_df.variable import print_width, my_tz
 from workflow import log_dir
-from workflow.block_enum import exclude_template, is_template
+from workflow.block_enum import is_template
+
+
+class WorkflowSkipException(Exception):
+    pass
+
+
+def search_pages_by_last_edited_time(lower_bound: datetime, upper_bound: Optional[datetime] = None) -> Iterable[Page]:
+    """Note: Notion APIs' last_edited_time info is only with minutes resolution"""
+    lower_bound = lower_bound.replace(second=0, microsecond=0)
+    pages = set()
+    for page in search_by_title('', 'page'):
+        if upper_bound is not None and page.data.last_edited_time > upper_bound:
+            continue
+        if page.data.last_edited_time < lower_bound:
+            break
+        pages.add(page)
+    logger.debug(pformat(pages, width=print_width))
+    pages.discard(Page(WorkflowRecord.page_id))
+    pages = {page for page in pages if not is_template(page)}
+    if not pages:
+        pass  # TODO: raise WorkflowSkipException if empty
+    return pages
+
 
 P = ParamSpec('P')
 
@@ -36,7 +59,7 @@ def log_action(func: Callable[P, bool]) -> Callable[P, bool]:
                    # (get_latest_log_path() or (log_dir / '{time}.log')),
                    level='DEBUG', rotation='100 MB', retention=timedelta(weeks=2))
         logger.info(f'{"#" * 5} Start.')
-        with logger.catch():
+        with logger.catch():  # TODO: recognize WorkflowSkipException (replace 'has_new_record')
             has_new_record = func(*args, **kwargs)
             logger.info(f'{"#" * 5} {"Done." if has_new_record else "No new record."}')
             return has_new_record
@@ -85,7 +108,7 @@ class WorkflowRecord:
         return f'{self.start_time_str} - {round(execution_time.total_seconds(), 3)} seconds'
 
     def __exit__(self, exc_type: type, exc_val, exc_tb) -> None:
-        if not self.enabled:
+        if not self.enabled:  # TODO: recognize WorkflowSkipException (replace 'enabled')
             return
         child_block_values = []
         if exc_type is None:
@@ -125,21 +148,3 @@ class WorkflowRecord:
         summary_block = log_group_block.append_children([summary_block_value])[0]
         if child_block_values:
             summary_block.append_children(child_block_values)
-
-
-@exclude_template
-def search_pages_by_last_edited_time(lower_bound: datetime, upper_bound: Optional[datetime] = None) -> Iterable[Page]:
-    """Note: Notion APIs' last_edited_time info is only with minutes resolution"""
-    # TODO: integrate with base function
-    lower_bound = lower_bound.replace(second=0, microsecond=0)
-    pages = set()
-    for page in search_by_title('', 'page'):
-        if upper_bound is not None and page.data.last_edited_time > upper_bound:
-            continue
-        if page.data.last_edited_time < lower_bound:
-            break
-        pages.add(page)
-    logger.debug(pformat(pages, width=print_width))
-    pages.discard(Page(WorkflowRecord.page_id))
-    pages = {page for page in pages if not is_template(page)}
-    return pages
