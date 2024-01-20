@@ -15,7 +15,7 @@ from notion_df.property import RelationProperty, TitleProperty, PageProperties, 
     DateProperty, CheckboxFormulaProperty, RichTextProperty, SelectProperty, RelationPagePropertyValue
 from notion_df.util.misc import repr_object
 from workflow.block_enum import DatabaseEnum
-from workflow.core.action import SequentialAction, Action
+from workflow.core.action import SequentialAction, Action, CompositeAction
 from workflow.emoji_code import EmojiCode
 
 korean_weekday = '월화수목금토일'
@@ -60,18 +60,10 @@ class MatchSequentialAction(MatchAction, SequentialAction, metaclass=ABCMeta):
     pass
 
 
-class MatchEventProgress(MatchAction):
+class MatchEventProgress(MatchAction, CompositeAction):
     def __init__(self, base: MatchActionBase):
-        super().__init__(base)
-        self.actions = [_MatchEventProgressForward(base), _MatchEventProgressBackward(base)]
-
-    def execute_all(self) -> Any:
-        for action in self.actions:
-            action.execute_all()
-
-    def process(self, pages: Iterable[Page]) -> Any:
-        for action in self.actions:
-            action.process(pages)
+        MatchAction.__init__(self, base)
+        CompositeAction.__init__(self, [_MatchEventProgressForward(base), _MatchEventProgressBackward(base)])
 
 
 class _MatchEventProgressForward(MatchSequentialAction):

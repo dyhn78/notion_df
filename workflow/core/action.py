@@ -1,13 +1,16 @@
 from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
+from datetime import datetime
 from functools import wraps
-from typing import Iterable, Any, final
+from pprint import pformat
+from typing import Iterable, Any, final, Optional
 
 from loguru import logger
 
-from notion_df.entity import Page
+from notion_df.entity import Page, search_by_title
 from notion_df.util.misc import repr_object
+from notion_df.variable import print_width
 from workflow.block_enum import exclude_template
 
 
@@ -16,25 +19,39 @@ class Action(metaclass=ABCMeta):
         return repr_object(self)
 
     def __init_subclass__(cls, **kwargs) -> None:
-        process_prev = cls.process
+        process_pages_prev = cls.process_pages
 
-        @wraps(process_prev)
-        def process_new(self: Action, pages: Iterable[Page]):
+        @wraps(process_pages_prev)
+        def process_pages_new(self: Action, pages: Iterable[Page]):
             logger.info(self)
-            return process_prev(self, pages)
+            return process_pages_prev(self, pages)
 
-        setattr(cls, cls.process.__name__, process_new)
+        setattr(cls, cls.process_pages.__name__, process_pages_new)
 
     @abstractmethod
-    def execute_all(self) -> Any:
+    def process_all(self) -> Any:
         pass
 
     @abstractmethod
-    def process(self, pages: Iterable[Page]) -> Any:
+    def process_pages(self, pages: Iterable[Page]) -> Any:
         pass
 
 
-class IndividualAction(Action, metaclass=ABCMeta):
+class CompositeAction(Action):
+    @abstractmethod
+    def __init__(self, actions: list[Action]):
+        self.actions = actions
+
+    def process_all(self) -> Any:
+        for action in self.actions:
+            action.process_all()
+
+    def process_pages(self, pages: Iterable[Page]) -> Any:
+        for action in self.actions:
+            action.process_pages(pages)
+
+
+class IndividualAction(Action):
     def __repr__(self):
         return repr_object(self)
 
@@ -43,8 +60,8 @@ class IndividualAction(Action, metaclass=ABCMeta):
         setattr(cls, cls.query.__name__, exclude_template(cls.query))
 
     @final
-    def execute_all(self) -> Any:
-        return self.process(self.query())
+    def process_all(self) -> Any:
+        return self.process_pages(self.query())
 
     @abstractmethod
     def query(self) -> Iterable[Page]:
@@ -52,16 +69,32 @@ class IndividualAction(Action, metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def process(self, pages: Iterable[Page]) -> Any:
+    def process_pages(self, pages: Iterable[Page]) -> Any:
         pass
 
 
-class SequentialAction(IndividualAction, metaclass=ABCMeta):
+class SequentialAction(IndividualAction):
     @final
-    def process(self, pages: Iterable[Page]):
+    def process_pages(self, pages: Iterable[Page]) -> Any:
         for page in pages:
             self.process_page(page)
 
     @abstractmethod
     def process_page(self, page: Page) -> Any:
         pass
+
+
+@exclude_template
+def search_pages_by_last_edited_time(lower_bound: datetime, upper_bound: Optional[datetime] = None) -> Iterable[Page]:
+    """Note: Notion APIs' last_edited_time info is only with minutes resolution"""
+    # TODO: integrate with base function
+    lower_bound = lower_bound.replace(second=0, microsecond=0)
+    pages = []
+    for page in search_by_title('', 'page'):
+        if upper_bound is not None and page.data.last_edited_time > upper_bound:
+            continue
+        if page.data.last_edited_time < lower_bound:
+            break
+        pages.append(page)
+    logger.debug(pformat(pages, width=print_width))
+    return pages

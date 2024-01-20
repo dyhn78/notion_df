@@ -6,22 +6,20 @@ import traceback
 from datetime import timedelta, datetime
 from functools import wraps
 from pathlib import Path
-from pprint import pformat
-from typing import Optional, cast, Callable, ParamSpec, Iterable
+from typing import Optional, cast, Callable, ParamSpec
 from uuid import UUID
 
 import tenacity
 from loguru import logger
 
 from notion_df.core.serialization import deserialize_datetime
-from notion_df.entity import Page, Block, search_by_title
+from notion_df.entity import Page, Block
 from notion_df.object.data import ParagraphBlockValue, ToggleBlockValue, CodeBlockValue, DividerBlockValue
 from notion_df.object.rich_text import RichText, TextSpan, UserMention
-from notion_df.variable import my_tz, print_width
+from notion_df.variable import my_tz
 from workflow import log_dir
 from workflow.actions import get_actions
-from workflow.block_enum import exclude_template
-from workflow.core.action import IndividualAction
+from workflow.core.action import Action, search_pages_by_last_edited_time
 
 log_page_id = '6d16dc6747394fca95dc169c8c736e2d'
 log_page_block = Block(log_page_id)
@@ -131,32 +129,16 @@ def log_actions(func: Callable[P, bool]) -> Callable[P, bool]:
     return wrapper
 
 
-@exclude_template
-def search_pages_by_last_edited_time(lower_bound: datetime, upper_bound: Optional[datetime] = None) -> Iterable[Page]:
-    """Note: Notion APIs' last_edited_time info is only with minutes resolution"""
-    # TODO: integrate with base function
-    lower_bound = lower_bound.replace(second=0, microsecond=0)
-    pages = []
-    for page in search_by_title('', 'page'):
-        if upper_bound is not None and page.data.last_edited_time > upper_bound:
-            continue
-        if page.data.last_edited_time < lower_bound:
-            break
-        pages.append(page)
-    logger.debug(pformat(pages, width=print_width))
-    return pages
-
-
 @log_actions
-def execute_all(actions: list[IndividualAction]) -> bool:
+def execute_all(actions: list[Action]) -> bool:
     with WorkflowLog(update_last_success_time=False):
         for action in actions:
-            action.execute_all()
+            action.process_all()
     return True
 
 
 @log_actions
-def execute_by_last_edited_time(actions: list[IndividualAction], lower_bound: datetime,
+def execute_by_last_edited_time(actions: list[Action], lower_bound: datetime,
                                 upper_bound: Optional[datetime] = None) -> bool:
     # TODO: if no recent_pages, raise SkipException instead of returning False
     recent_pages = set(search_pages_by_last_edited_time(lower_bound, upper_bound))
@@ -165,12 +147,12 @@ def execute_by_last_edited_time(actions: list[IndividualAction], lower_bound: da
     if not recent_pages:
         return False
     for action in actions:
-        action.process(page for page in recent_pages)
+        action.process_pages(page for page in recent_pages)
     return True
 
 
 @log_actions
-def execute_from_last_edited_time_bound(actions: list[IndividualAction],
+def execute_from_last_edited_time_bound(actions: list[Action],
                                         timedelta_size: timedelta, update_last_success_time: bool) -> bool:
     # TODO: if the last result was RetryError, sleep for 10 mins
     with WorkflowLog(update_last_success_time=update_last_success_time) as wf_log:
@@ -179,11 +161,11 @@ def execute_from_last_edited_time_bound(actions: list[IndividualAction],
 
 
 @log_actions
-def execute_from_last_success(actions: list[IndividualAction], update_last_success_time: bool) -> bool:
+def execute_from_last_success(actions: list[Action], update_last_success_time: bool) -> bool:
     with WorkflowLog(update_last_success_time=update_last_success_time) as wf_log:
         if wf_log.last_success_time is None:
             for action in actions:
-                action.execute_all()
+                action.process_all()
             return True
         wf_log.enabled = execute_by_last_edited_time(actions, wf_log.last_success_time, None)
         return wf_log.enabled

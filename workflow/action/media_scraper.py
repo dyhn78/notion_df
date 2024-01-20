@@ -64,7 +64,7 @@ class MediaScraper(IndividualAction):
                      [EditStatusValue.default, EditStatusValue.metadata_overwrite,
                       EditStatusValue.location_overwrite, None]))
 
-    def process(self, readings: Iterable[Page]) -> Any:
+    def process_pages(self, readings: Iterable[Page]) -> Any:
         readings = (reading for reading in readings if self.filter(reading))
         reading_it = peek(readings)
         if reading_it is None:
@@ -209,4 +209,4 @@ class ReadingMediaScraperUnit:
 
 if __name__ == '__main__':
     _action = MediaScraper(create_window=False)
-    _action.process([Page('https://www.notion.so/dyhn/_-f5caa69f928b4dc1a87b76c3a4917b40?pvs=4')])
+    _action.process_pages([Page('https://www.notion.so/dyhn/_-f5caa69f928b4dc1a87b76c3a4917b40?pvs=4')])
