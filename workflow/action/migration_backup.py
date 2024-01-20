@@ -22,7 +22,7 @@ class MigrationBackupSaveAction(IterableAction):
     def query_all(self) -> Iterator[Page]:
         return iter([])
 
-    def _filter(self, page: Page) -> bool:
+    def filter(self, page: Page) -> bool:
         return isinstance(page.data.parent, Database)
 
     def process_page(self, page: Page) -> None:
@@ -48,7 +48,7 @@ class MigrationBackupLoadAction(IterableAction):
     def query_all(self) -> Iterator[Page]:
         return iter([])
 
-    def _filter(self, page: Page) -> bool:
+    def filter(self, page: Page) -> bool:
         return True
 
     def process_page(self, page: Page) -> None:

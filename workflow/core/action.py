@@ -2,31 +2,30 @@ from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
 from itertools import chain
-from typing import Iterable, Optional, Any, Iterator, TypeVar, final
+from typing import Iterable, Optional, Any, Iterator, TypeVar
 
 from notion_df.entity import Page
 from notion_df.util.misc import repr_object
-from workflow.block_enum import is_template
+from workflow.block_enum import exclude_template
 
 
 class Action(metaclass=ABCMeta):
     def __repr__(self):
         return repr_object(self)
 
+    def __init_subclass__(cls, **kwargs):
+        cls.query_all = exclude_template(cls.query_all)
+
     @abstractmethod
     def query_all(self) -> Iterable[Page]:
-        """query the database - the result will go through _filter()."""
+        """full-scan mode"""
         pass
 
     @abstractmethod
-    def _filter(self, page: Page) -> bool:
+    def filter(self, page: Page) -> bool:
         """from given retrieved pages regardless of `recent_pages` or `query_all()`,
         pick the ones which need to process."""
         pass
-
-    @final
-    def filter(self, page: Page) -> bool:
-        return self._filter(page) and not is_template(page)
 
     @abstractmethod
     def process(self, pages: Iterable[Page]) -> Any:

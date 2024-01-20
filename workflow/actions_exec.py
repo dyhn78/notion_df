@@ -7,7 +7,7 @@ from datetime import timedelta, datetime
 from functools import wraps
 from pathlib import Path
 from pprint import pformat
-from typing import Optional, cast, Callable, ParamSpec
+from typing import Optional, cast, Callable, ParamSpec, Iterable
 from uuid import UUID
 
 import tenacity
@@ -20,6 +20,7 @@ from notion_df.object.rich_text import RichText, TextSpan, UserMention
 from notion_df.variable import my_tz, print_width
 from workflow import log_dir
 from workflow.actions import get_actions
+from workflow.block_enum import exclude_template
 from workflow.core.action import Action
 
 log_page_id = '6d16dc6747394fca95dc169c8c736e2d'
@@ -130,7 +131,8 @@ def with_logger(func: Callable[P, bool]) -> Callable[P, bool]:
     return wrapper
 
 
-def search_pages_by_last_edited_time(lower_bound: datetime, upper_bound: Optional[datetime] = None) -> list[Page]:
+@exclude_template
+def search_pages_by_last_edited_time(lower_bound: datetime, upper_bound: Optional[datetime] = None) -> Iterable[Page]:
     """Note: Notion APIs' last_edited_time info is only with minutes resolution"""
     # TODO: integrate with base function
     lower_bound = lower_bound.replace(second=0, microsecond=0)
@@ -149,7 +151,7 @@ def search_pages_by_last_edited_time(lower_bound: datetime, upper_bound: Optiona
 def execute_all(actions: list[Action]) -> bool:
     with WorkflowLog(update_last_success_time=False):
         for action in actions:
-            action.process(page for page in action.query_all() if action.filter(page))
+            action.process(page for page in action.query_all())
     return True
 
 
@@ -159,10 +161,11 @@ def execute_by_last_edited_time(actions: list[Action], lower_bound: datetime,
     # TODO: if no recent_pages, raise SkipException instead of returning False
     recent_pages = set(search_pages_by_last_edited_time(lower_bound, upper_bound))
     recent_pages.discard(Page(log_page_id))
+    recent_pages = {page for page in recent_pages}
     if not recent_pages:
         return False
     for action in actions:
-        action.process(page for page in recent_pages if action.filter(page))
+        action.process(page for page in recent_pages)
     return True
 
 
