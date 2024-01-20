@@ -29,8 +29,8 @@ log_last_success_time_parent_block = Block('c66d852e27e84d92b6203dfdadfefad8')
 my_user_id = UUID('a007d150-bc67-422c-87db-030a71867dd9')
 
 
-class WorkflowLog:
-    # Note: the log_page is implemented as page with log blocks, not database with log pages,
+class WorkflowRecord:
+    # Note: the record page is implemented as page with log blocks, not database with log pages,
     #  since Notion API does not directly support permanently deleting pages,
     #  and third party solutions like `https://github.com/pocc/bulk_delete_notion_pages`
     #  needs additional works to integrate.
@@ -54,7 +54,7 @@ class WorkflowLog:
         else:
             self.last_success_time = deserialize_datetime(self.last_execution_time_str)
 
-    def __enter__(self) -> WorkflowLog:
+    def __enter__(self) -> WorkflowRecord:
         return self
 
     def format_time(self) -> str:
@@ -131,7 +131,7 @@ def log_actions(func: Callable[P, bool]) -> Callable[P, bool]:
 
 @log_actions
 def execute_all(actions: list[Action]) -> bool:
-    with WorkflowLog(update_last_success_time=False):
+    with WorkflowRecord(update_last_success_time=False):
         for action in actions:
             action.process_all()
     return True
@@ -155,20 +155,20 @@ def execute_by_last_edited_time(actions: list[Action], lower_bound: datetime,
 def execute_from_last_edited_time_bound(actions: list[Action],
                                         timedelta_size: timedelta, update_last_success_time: bool) -> bool:
     # TODO: if the last result was RetryError, sleep for 10 mins
-    with WorkflowLog(update_last_success_time=update_last_success_time) as wf_log:
-        wf_log.enabled = execute_by_last_edited_time(actions, wf_log.start_time - timedelta_size, wf_log.start_time)
-        return wf_log.enabled
+    with WorkflowRecord(update_last_success_time=update_last_success_time) as wf_rec:
+        wf_rec.enabled = execute_by_last_edited_time(actions, wf_rec.start_time - timedelta_size, wf_rec.start_time)
+        return wf_rec.enabled
 
 
 @log_actions
 def execute_from_last_success(actions: list[Action], update_last_success_time: bool) -> bool:
-    with WorkflowLog(update_last_success_time=update_last_success_time) as wf_log:
-        if wf_log.last_success_time is None:
+    with WorkflowRecord(update_last_success_time=update_last_success_time) as wf_rec:
+        if wf_rec.last_success_time is None:
             for action in actions:
                 action.process_all()
             return True
-        wf_log.enabled = execute_by_last_edited_time(actions, wf_log.last_success_time, None)
-        return wf_log.enabled
+        wf_rec.enabled = execute_by_last_edited_time(actions, wf_rec.last_success_time, None)
+        return wf_rec.enabled
 
 
 if __name__ == '__main__':
