@@ -1,4 +1,4 @@
-from workflow.routine.routine import WorkflowAction
+from workflow.routine.action import action
 
 if __name__ == '__main__':
-    WorkflowAction.run_from_last_success(update_last_success_time=True)
+    action.run_from_last_success(update_last_success_time=True)
