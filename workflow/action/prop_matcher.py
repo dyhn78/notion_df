@@ -76,7 +76,7 @@ class _MatchEventProgressForward(MatchSequentialAction):
         return self.event_db.query(filter=(event_to_reading_prop.filter.is_not_empty()
                                            & event_to_reading_prog_prop.filter.is_empty()))
 
-    def _process_page(self, event: Page) -> Any:
+    def process_page(self, event: Page) -> Any:
         if not (event.data.parent == self.event_db):
             return
         if event.data.properties[event_to_reading_prog_prop]:
@@ -105,7 +105,7 @@ class _MatchEventProgressBackward(MatchSequentialAction):
         return self.event_db.query(filter=(event_to_reading_prop.filter.is_not_empty()
                                            & event_to_reading_prog_prop.filter.is_empty()))
 
-    def _process_page(self, event: Page) -> Any:
+    def process_page(self, event: Page) -> Any:
         if not event.data.parent == self.event_db:
             return
 
@@ -131,7 +131,7 @@ class MatchDateByCreatedTime(MatchSequentialAction):
     def query(self) -> Paginator[Page]:
         return self.record_db.query(self.record_to_date.filter.is_empty())
 
-    def _process_page(self, record: Page) -> None:
+    def process_page(self, record: Page) -> None:
         if not (record.data.parent == self.record_db and not record.data.properties[self.record_to_date]):
             return
 
@@ -187,7 +187,7 @@ class MatchTimestr(MatchSequentialAction):
         record_date = record_date.data.properties[datei_date_prop].start
         return record.data.created_time.date() == record_date
 
-    def _process_page(self, record: Page) -> None:
+    def process_page(self, record: Page) -> None:
         if not self.filter(record):
             return
         timestr = record.data.created_time.strftime('%H:%M')
@@ -220,7 +220,7 @@ class MatchReadingsStartDate(MatchSequentialAction):
                 and (page.data.properties[reading_to_event_prop]
                      or page.data.properties[reading_match_date_by_created_time_prop]))
 
-    def _process_page(self, reading: Page):
+    def process_page(self, reading: Page):
         if not self.filter(reading):
             return
         date = self.find_datei(reading)
@@ -273,7 +273,7 @@ class MatchWeekByRefDate(MatchSequentialAction):
         return self.record_db.query(
             self.record_to_week.filter.is_empty() & self.record_to_date.filter.is_not_empty())
 
-    def _process_page(self, record: Page) -> None:
+    def process_page(self, record: Page) -> None:
         if not (record.data.parent == self.record_db and record.data.properties[self.record_to_date]):
             return
 
@@ -311,7 +311,7 @@ class MatchWeekByDateValue(MatchSequentialAction):
     def query(self) -> Paginator[Page]:
         return self.date_db.query(datei_to_week_prop.filter.is_empty())
 
-    def _process_page(self, datei: Page) -> None:
+    def process_page(self, datei: Page) -> None:
         if not (datei.data.parent == self.date_db and not datei.data.properties[datei_to_week_prop]):
             return
 
@@ -339,7 +339,7 @@ class DeprMatchTopic(MatchSequentialAction):
     def query(self) -> Iterable[Page]:
         return self.record_db.query(self.record_to_ref_prop.filter.is_not_empty())
 
-    def _process_page(self, record: Page) -> None:
+    def process_page(self, record: Page) -> None:
         if not (record.data.parent == self.record_db and record.data.properties[self.record_to_ref_prop]):
             return
 

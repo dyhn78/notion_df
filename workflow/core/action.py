@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
 from datetime import datetime, timedelta
-from functools import wraps
 from pprint import pformat
 from typing import Iterable, Any, final, Callable, TypeVar, Optional
 
@@ -20,18 +19,6 @@ Callable_T = TypeVar('Callable_T', bound=Callable)
 class Action(metaclass=ABCMeta):
     def __repr__(self) -> str:
         return repr_object(self)
-
-    def __init_subclass__(cls, **kwargs) -> None:
-        def wrap_process(process: Callable_T) -> Callable_T:
-            @wraps(process)
-            def wrapper(self: Action, *args, **_kwargs):
-                logger.info(self)
-                return process(self, *args, **kwargs)
-
-            return wrapper
-
-        setattr(cls, cls.process_all.__name__, wrap_process(cls.process_all))
-        setattr(cls, cls.process_pages.__name__, wrap_process(cls.process_pages))
 
     @abstractmethod
     def process_pages(self, pages: Iterable[Page]) -> Any:
@@ -92,10 +79,12 @@ class CompositeAction(Action):
         self.actions = actions
 
     def process_all(self) -> Any:
+        logger.info(self)
         for action in self.actions:
             action.process_all()
 
     def process_pages(self, pages: Iterable[Page]) -> Any:
+        logger.info(self)
         for action in self.actions:
             action.process_pages(pages)
 
@@ -103,23 +92,21 @@ class CompositeAction(Action):
 class IndividualAction(Action):
     @final
     def process_all(self) -> Any:
+        logger.info(self)
         return self.process_pages(page for page in self.query() if not is_template(page))
 
     @abstractmethod
     def query(self) -> Iterable[Page]:
         pass
 
-    @abstractmethod
-    def process_pages(self, pages: Iterable[Page]) -> Any:
-        pass
-
 
 class SequentialAction(IndividualAction):
     @final
     def process_pages(self, pages: Iterable[Page]) -> Any:
+        logger.info(self)
         for page in pages:
-            self._process_page(page)
+            self.process_page(page)
 
     @abstractmethod
-    def _process_page(self, page: Page) -> Any:
+    def process_page(self, page: Page) -> Any:
         pass

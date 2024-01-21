@@ -67,4 +67,5 @@ action = CompositeAction([
 if __name__ == '__main__':
     # action.run_by_last_edited_time(datetime(2024, 1, 7, 17, 0, 0, tzinfo=my_tz), None)
     # action.run_recent(interval=timedelta(hours=24))
-    action.run_from_last_success(update_last_success_time=True)
+    # action.run_from_last_success(update_last_success_time=True)
+    pass
