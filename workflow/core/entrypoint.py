@@ -10,6 +10,7 @@ from uuid import UUID
 
 import tenacity
 from loguru import logger
+from typing_extensions import Self
 
 from notion_df.core.serialization import deserialize_datetime
 from notion_df.entity import Block
@@ -65,18 +66,18 @@ class WorkflowRecord:
     date_group_format = '%Y-%m-%d'
 
     # Note: the record page is implemented as page with log blocks, not database with log pages,
-    #  since Notion API does not directly support permanently deleting pages,
-    #  and third party solutions like `https://github.com/pocc/bulk_delete_notion_pages`
-    #  needs additional works to integrate.
+    #  since 1. Notion API does not directly support permanently deleting pages,
+    #  2. third party solutions like `https://github.com/pocc/bulk_delete_notion_pages`
+    #  demands additional workload.
     def __init__(self, *, update_last_success_time: bool):
         self.update_last_success_time = update_last_success_time
         self.start_time = datetime.now().astimezone(my_tz)
-        self.start_time_str = self.start_time.strftime(WorkflowRecord.date_format)
-        self.start_time_group_str = self.start_time.strftime(WorkflowRecord.date_group_format)
+        self.start_time_str = self.start_time.strftime(self.date_format)
+        self.start_time_group_str = self.start_time.strftime(self.date_group_format)
         self.enabled = True
         self.processed_pages: Optional[int] = None
 
-        self.last_success_time_blocks = WorkflowRecord.last_success_time_parent_block.retrieve_children()
+        self.last_success_time_blocks = self.last_success_time_parent_block.retrieve_children()
         last_execution_time_block = self.last_success_time_blocks[0]
         self.last_execution_time_str = (cast(ParagraphBlockValue, last_execution_time_block.data.value)
                                         .rich_text.plain_text)
@@ -87,7 +88,7 @@ class WorkflowRecord:
         else:
             self.last_success_time = deserialize_datetime(self.last_execution_time_str)
 
-    def __enter__(self) -> WorkflowRecord:
+    def __enter__(self) -> Self:
         return self
 
     def format_time(self) -> str:
@@ -103,7 +104,7 @@ class WorkflowRecord:
             summary_text = f"success - {self.format_time()}"
             summary_block_value = ParagraphBlockValue(RichText([TextSpan(summary_text)]))
             if self.update_last_success_time:
-                WorkflowRecord.last_success_time_parent_block.append_children([
+                self.last_success_time_parent_block.append_children([
                     ParagraphBlockValue(RichText([TextSpan(self.start_time_str)]))])
                 for block in self.last_success_time_blocks:
                     block.delete()
@@ -114,16 +115,16 @@ class WorkflowRecord:
             # TODO: needs full print by redirecting print() stream to logger
             summary_text = f"error - {self.format_time()} - {exc_type.__name__} - {exc_val}"
             summary_block_value = ToggleBlockValue(
-                RichText([TextSpan(summary_text), UserMention(WorkflowRecord.user_id)]))
+                RichText([TextSpan(summary_text), UserMention(self.user_id)]))
             traceback_str = traceback.format_exc()
             child_block_values = []
             for i in range(0, len(traceback_str), 1000):
                 child_block_values.append(CodeBlockValue(RichText.from_plain_text(traceback_str[i:i + 1000])))
 
         log_group_block = None
-        for block in reversed(WorkflowRecord.page_block.retrieve_children()):
+        for block in reversed(self.page_block.retrieve_children()):
             if isinstance(block.data.value, DividerBlockValue):
-                log_group_block = WorkflowRecord.page_block.append_children([
+                log_group_block = self.page_block.append_children([
                     ToggleBlockValue(RichText([TextSpan(self.start_time_group_str)]))])[0]
                 break
             if cast(ToggleBlockValue, block.data.value).rich_text.plain_text == self.start_time_group_str:
