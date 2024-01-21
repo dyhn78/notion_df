@@ -5,7 +5,6 @@ import json
 import traceback
 from datetime import datetime, timedelta
 from functools import wraps
-from pprint import pformat
 from typing import Optional, Callable, ParamSpec, cast, TypeVar
 from uuid import UUID
 
@@ -13,62 +12,45 @@ import tenacity
 from loguru import logger
 
 from notion_df.core.serialization import deserialize_datetime
-from notion_df.entity import Page, search_by_title, Block
+from notion_df.entity import Block
 from notion_df.object.data import ParagraphBlockValue, ToggleBlockValue, CodeBlockValue, DividerBlockValue
 from notion_df.object.rich_text import RichText, TextSpan, UserMention
-from notion_df.variable import print_width, my_tz
+from notion_df.variable import my_tz
 from workflow import log_dir
-from workflow.block_enum import is_template
 
 
 class WorkflowSkipException(Exception):
     pass
 
 
-def search_pages_by_last_edited_time(lower_bound: datetime, upper_bound: Optional[datetime] = None) -> set[Page]:
-    """Note: Notion APIs' last_edited_time info is only with minutes resolution"""
-    lower_bound = lower_bound.replace(second=0, microsecond=0)
-    pages = set()
-    for page in search_by_title('', 'page'):
-        if upper_bound is not None and page.data.last_edited_time > upper_bound:
-            continue
-        if page.data.last_edited_time < lower_bound:
-            break
-        pages.add(page)
-    logger.debug(pformat(pages, width=print_width))
-    pages.discard(Page(WorkflowRecord.page_id))
-    pages = {page for page in pages if not is_template(page)}
-    logger.info(f'pages - {pages}')
-    if not pages:
-        raise WorkflowSkipException()
-    return pages
-
-
 P = ParamSpec('P')
 T = TypeVar('T')
 
 
-def log_action(func: Callable[P, T]) -> Callable[P, Optional[T]]:
+def entrypoint(func: Callable[P, T]) -> Callable[P, Optional[T]]:
+    """functions with this decorator can handle WorkflowSkipException,
+    therefore, it can be used as the program entrypoint."""
+
     # def get_latest_log_path() -> Optional[Path]:
     #     log_path_list = sorted(log_dir.iterdir())
     #     if not log_path_list:
     #         return None
     #     return log_path_list[-1]
 
+    def log_skip_exception(exc: BaseException) -> None:
+        logger.info(f'{"#" * 5} Skipped : {exc.args[0]}')
+
     @wraps(func)
     def wrapper(*args: P.args, **kwargs: P.kwargs) -> Optional[T]:
         logger.add(log_dir / '{time}.log',
                    # (get_latest_log_path() or (log_dir / '{time}.log')),
                    level='DEBUG', rotation='100 MB', retention=timedelta(weeks=2))
-        with logger.catch():
-            try:
-                logger.info(f'{"#" * 5} Start.')
+        logger.info(f'{"#" * 5} Start.')
+        with logger.catch(reraise=True):
+            with logger.catch(WorkflowSkipException, onerror=log_skip_exception):
                 ret = func(*args, **kwargs)
                 logger.info(f'{"#" * 5} Done.')
                 return ret
-            except WorkflowSkipException:
-                logger.info(f'{"#" * 5} No new record.')
-                return
 
     wrapper.__signature__ = inspect.signature(func)
     return wrapper
@@ -99,8 +81,7 @@ class WorkflowRecord:
         self.last_execution_time_str = (cast(ParagraphBlockValue, last_execution_time_block.data.value)
                                         .rich_text.plain_text)
         if self.last_execution_time_str == 'STOP':
-            logger.info("self.last_execution_time_str == 'STOP'")  # TODO refactor
-            exit(0)
+            raise WorkflowSkipException("last_execution_time_str == 'STOP'")
         if self.last_execution_time_str == 'ALL':
             self.last_success_time = None
         else:

@@ -72,7 +72,7 @@ class _MatchEventProgressForward(MatchSequentialAction):
     def __init__(self, base: MatchActionBase):
         super().__init__(base)
 
-    def _query(self) -> Iterable[Page]:
+    def query(self) -> Iterable[Page]:
         return self.event_db.query(filter=(event_to_reading_prop.filter.is_not_empty()
                                            & event_to_reading_prog_prop.filter.is_empty()))
 
@@ -101,7 +101,7 @@ class _MatchEventProgressBackward(MatchSequentialAction):
     def __init__(self, base: MatchActionBase):
         super().__init__(base)
 
-    def _query(self) -> Iterable[Page]:
+    def query(self) -> Iterable[Page]:
         return self.event_db.query(filter=(event_to_reading_prop.filter.is_not_empty()
                                            & event_to_reading_prog_prop.filter.is_empty()))
 
@@ -128,7 +128,7 @@ class MatchDateByCreatedTime(MatchSequentialAction):
         self.read_title = read_title
         self.write_title = write_title
 
-    def _query(self) -> Paginator[Page]:
+    def query(self) -> Paginator[Page]:
         return self.record_db.query(self.record_to_date.filter.is_empty())
 
     def _process_page(self, record: Page) -> None:
@@ -171,7 +171,7 @@ class MatchTimestr(MatchSequentialAction):
         self.record_db = Database(record.id)
         self.record_to_date = RelationProperty(DatabaseEnum.datei_db.prefix + record_to_date)
 
-    def _query(self) -> Iterable[Page]:
+    def query(self) -> Iterable[Page]:
         # since the benefits are concentrated on near present days,
         # we could easily limit query() with today without lamentations
         return self.record_db.query(record_timestr_prop.filter.is_empty()
@@ -205,7 +205,7 @@ class MatchReadingsStartDate(MatchSequentialAction):
         self.reading_db = DatabaseEnum.reading_db.entity
         self.event_db = DatabaseEnum.event_db.entity
 
-    def _query(self) -> Paginator[Page]:
+    def query(self) -> Paginator[Page]:
         return self.reading_db.query(
             reading_to_start_date_prop.filter.is_empty() & (
                     reading_to_event_prop.filter.is_not_empty()
@@ -269,7 +269,7 @@ class MatchWeekByRefDate(MatchSequentialAction):
                            record_to_week=self.record_to_week,
                            record_to_date=self.record_to_date)
 
-    def _query(self) -> Paginator[Page]:
+    def query(self) -> Paginator[Page]:
         return self.record_db.query(
             self.record_to_week.filter.is_empty() & self.record_to_date.filter.is_not_empty())
 
@@ -308,7 +308,7 @@ class MatchWeekByDateValue(MatchSequentialAction):
     def __repr__(self):
         return repr_object(self)
 
-    def _query(self) -> Paginator[Page]:
+    def query(self) -> Paginator[Page]:
         return self.date_db.query(datei_to_week_prop.filter.is_empty())
 
     def _process_page(self, datei: Page) -> None:
@@ -336,7 +336,7 @@ class DeprMatchTopic(MatchSequentialAction):
         self.record_to_topic_prop = RelationProperty(record_to_topic_prop_name)
         self.ref_to_topic_prop = RelationProperty(ref_to_topic_prop_name)
 
-    def _query(self) -> Iterable[Page]:
+    def query(self) -> Iterable[Page]:
         return self.record_db.query(self.record_to_ref_prop.filter.is_not_empty())
 
     def _process_page(self, record: Page) -> None:

@@ -19,7 +19,7 @@ class MigrationBackupSaveAction(SequentialAction):
     def __init__(self, backup_dir: Path):
         self.backup = ResponseBackupService(backup_dir)
 
-    def _query(self) -> Iterable[Page]:
+    def query(self) -> Iterable[Page]:
         return []
 
     def _process_page(self, page: Page) -> None:
@@ -44,7 +44,7 @@ class MigrationBackupLoadAction(SequentialAction):
     def __init__(self, backup_dir: Path):
         self.response_backup = ResponseBackupService(backup_dir)
 
-    def _query(self) -> Iterable[Page]:
+    def query(self) -> Iterable[Page]:
         return []
 
     def _process_page(self, page: Page) -> None:
@@ -170,6 +170,7 @@ class MigrationBackupLoadAction(SequentialAction):
         return candidate_props[0]
 
 
+# TODO: integrate to base package
 def iter_breadcrumb(page: Page) -> Iterator[Page]:
     page.get_data()
     yield page
@@ -177,6 +178,7 @@ def iter_breadcrumb(page: Page) -> Iterator[Page]:
         yield from iter_breadcrumb(page.data.parent)
 
 
+# TODO: integrate to base package
 def validate_page_existence(page: Page) -> bool:
     try:
         page.get_data()
