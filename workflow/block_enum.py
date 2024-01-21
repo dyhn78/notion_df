@@ -80,7 +80,4 @@ def is_template(page: Page) -> bool:
     database = page.data.parent
     if not database or not isinstance(database, Database):
         return False
-    # TODO: figure when isinstance(database.data.title.plain_text, str) wrongly set
-    # logger.critical(f'database.data.title - {database.data.title}')
-    # logger.critical(f'page.data.properties.title - {page.data.properties.title}')
     return bool(re.match(f'<{database.get_data().title.plain_text}> .*', page.data.properties.title.plain_text))
