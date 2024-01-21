@@ -37,9 +37,6 @@ def entrypoint(func: Callable[P, T]) -> Callable[P, Optional[T]]:
     #         return None
     #     return log_path_list[-1]
 
-    def log_skip_exception(exc: BaseException) -> None:
-        logger.info(f'{"#" * 5} Skipped : {exc.args[0]}')
-
     @wraps(func)
     def wrapper(*args: P.args, **kwargs: P.kwargs) -> Optional[T]:
         logger.add(log_dir / '{time}.log',
@@ -47,10 +44,13 @@ def entrypoint(func: Callable[P, T]) -> Callable[P, Optional[T]]:
                    level='DEBUG', rotation='100 MB', retention=timedelta(weeks=2))
         logger.info(f'{"#" * 5} Start.')
         with logger.catch(reraise=True):
-            with logger.catch(WorkflowSkipException, onerror=log_skip_exception):
+            try:
                 ret = func(*args, **kwargs)
                 logger.info(f'{"#" * 5} Done.')
                 return ret
+            except WorkflowSkipException as e:
+                logger.info(f'{"#" * 5} Skipped : {e.args[0]}')
+                return
 
     wrapper.__signature__ = inspect.signature(func)
     return wrapper
