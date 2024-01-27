@@ -75,7 +75,7 @@ class Entity(Generic[Data_T], Hashable, metaclass=ABCMeta):
     def get_data(self) -> Data_T:
         """get the local data, or retrieve if there is not."""
         if self.data is None or not self.data.timestamp:
-            self.retrieve()  # TODO: raise EntityNotExistError(ValueError), with validate_page_existence()
+            self.retrieve()  # TODO: raise EntityNotExistError(ValueError), with page_exists()
         return self.data
 
     def set_data(self, data: Data_T) -> Self:

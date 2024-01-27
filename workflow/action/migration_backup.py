@@ -48,6 +48,7 @@ class MigrationBackupLoadAction(SequentialAction):
         return []
 
     def process_page(self, page: Page) -> None:
+        # this_page: the global page, directly under one of the global dbs
         this_page = next((breadcrumb_page for breadcrumb_page in iter_breadcrumb(page)
                           if DatabaseEnum.from_entity(breadcrumb_page.data.parent) is not None), None)
         if this_page is None:
@@ -104,7 +105,7 @@ class MigrationBackupLoadAction(SequentialAction):
             if (e.code == 'object_not_found') or ('Unsaved transactions' in e.message):
                 for prop in this_new_properties:
                     this_new_properties[prop] = RelationProperty.page_value(
-                        page for page in this_new_properties[prop] if validate_page_existence(page))
+                        page for page in this_new_properties[prop] if page_exists(page))
                 this_page.update(this_new_properties)
                 return
             raise e
@@ -179,7 +180,7 @@ def iter_breadcrumb(page: Page) -> Iterator[Page]:
 
 
 # TODO: integrate to base package
-def validate_page_existence(page: Page) -> bool:
+def page_exists(page: Page) -> bool:
     try:
         page.get_data()
         return True
