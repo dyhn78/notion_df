@@ -24,6 +24,7 @@ record_timestr_prop = RichTextProperty(EmojiCode.CALENDAR + '시간')
 datei_to_week_prop = RelationProperty(DatabaseEnum.weeki_db.prefix_title)
 datei_date_prop = DateProperty(EmojiCode.CALENDAR + '날짜')
 weeki_date_range_prop = DateProperty(EmojiCode.BIG_CALENDAR + '날짜 범위')
+event_title_prop = TitleProperty(EmojiCode.ORANGE_BOOK + '제목')
 event_to_date_prop = RelationProperty(DatabaseEnum.datei_db.prefix_title)
 event_to_topic_prop = RelationProperty(DatabaseEnum.topic_db.prefix_title)
 event_to_issue_prop = RelationProperty(DatabaseEnum.issue_db.prefix_title)
@@ -206,7 +207,6 @@ class MatchEventProgress(MatchSequentialAction):
 
 
 class CreateProgressEvent(MatchSequentialAction):
-    event_title_prop = EmojiCode.ORANGE_BOOK + '제목'
     event_db = DatabaseEnum.event_db.entity
     target_to_datei_prop = RelationProperty(DatabaseEnum.datei_db.prefix_title)
     target_to_event_prog_prop = RelationProperty(DatabaseEnum.event_db.prefix + '진도')
@@ -234,7 +234,7 @@ class CreateProgressEvent(MatchSequentialAction):
             event = self.event_db.create_child_page(PageProperties({
                 self.event_to_target_prog_prop: self.event_to_target_prog_prop.page_value([target]),
                 event_to_date_prop: event_to_date_prop.page_value([datei]),
-                self.event_title_prop: self.date_namespace.strf_date(datei)
+                event_title_prop: event_title_prop.page_value.from_plain_text(self.date_namespace.strf_date(datei))
             }))
             logger.info(f'target = {target}, event = {event}')
 
