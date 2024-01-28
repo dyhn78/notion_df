@@ -56,51 +56,6 @@ class MatchSequentialAction(MatchAction, SequentialAction, metaclass=ABCMeta):
     pass
 
 
-class MatchEventProgress(MatchSequentialAction):
-    event_db = DatabaseEnum.event_db.entity
-
-    def __init__(self, base: MatchActionBase, target_db: DatabaseEnum):
-        super().__init__(base)
-        self.event_to_reading_prop = RelationProperty(target_db.prefix_title)
-        self.event_to_reading_prog_prop = RelationProperty(target_db.prefix + '진도')
-
-    def query(self) -> Iterable[Page]:
-        return self.event_db.query(filter=(self.event_to_reading_prop.filter.is_not_empty()
-                                           & self.event_to_reading_prog_prop.filter.is_empty()))
-
-    def process_page(self, event: Page) -> Any:
-        if not (event.data.parent == self.event_db):
-            return
-        self.process_page_forward(event)
-        self.process_page_backward(event)
-
-    def process_page_forward(self, event: Page) -> Any:
-        if event.data.properties[self.event_to_reading_prog_prop]:
-            logger.info(f'{event} : Skipped - {self.event_to_reading_prog_prop.name} not empty')
-            return
-
-        # TODO: more edge case handling
-        if not (len(reading_list := event.data.properties[self.event_to_reading_prop]) == 1
-                and not event.data.properties[event_to_issue_prop]
-                and not event.data.properties[event_to_topic_prop]):
-            logger.info(f'{event} : Skipped')
-            return
-        reading = reading_list[0]
-        event.update(properties=PageProperties({
-            self.event_to_reading_prog_prop: self.event_to_reading_prog_prop.page_value([reading])
-        }))
-
-    def process_page_backward(self, event: Page) -> Any:
-        event_readings = event.data.properties[self.event_to_reading_prop]
-        event_readings_new = event_readings + event.data.properties[self.event_to_reading_prog_prop]
-        if event_readings == event_readings_new:
-            logger.info(f'{event} : Skipped')
-            return
-        event.update(PageProperties({
-            self.event_to_reading_prop: event_readings_new
-        }))
-
-
 class MatchDateByCreatedTime(MatchSequentialAction):
     def __init__(self, base: MatchActionBase, record: DatabaseEnum, record_to_date: str, *,
                  read_title: bool = False, write_title: bool = False):
@@ -203,6 +158,85 @@ class MatchReadingsStartDate(MatchSequentialAction):
         if reading.data.properties[reading_match_date_by_created_time_prop]:
             reading_created_date = get_record_created_date(reading)
             return self.date_namespace.by_date(reading_created_date)
+
+
+class MatchEventProgress(MatchSequentialAction):
+    event_db = DatabaseEnum.event_db.entity
+
+    def __init__(self, base: MatchActionBase, target_db: DatabaseEnum):
+        super().__init__(base)
+        self.event_to_target_prop = RelationProperty(target_db.prefix_title)
+        self.event_to_target_prog_prop = RelationProperty(target_db.prefix + '진도')
+
+    def query(self) -> Iterable[Page]:
+        return self.event_db.query(filter=(self.event_to_target_prop.filter.is_not_empty()
+                                           & self.event_to_target_prog_prop.filter.is_empty()))
+
+    def process_page(self, event: Page) -> Any:
+        if not (event.data.parent == self.event_db):
+            return
+        self.process_page_forward(event)
+        self.process_page_backward(event)
+
+    def process_page_forward(self, event: Page) -> Any:
+        if event.data.properties[self.event_to_target_prog_prop]:
+            logger.info(f'{event} : Skipped - {self.event_to_target_prog_prop.name} not empty')
+            return
+
+        # TODO: more edge case handling
+        if not (len(reading_list := event.data.properties[self.event_to_target_prop]) == 1
+                and not event.data.properties[event_to_issue_prop]
+                and not event.data.properties[event_to_topic_prop]):
+            logger.info(f'{event} : Skipped')
+            return
+        reading = reading_list[0]
+        event.update(properties=PageProperties({
+            self.event_to_target_prog_prop: self.event_to_target_prog_prop.page_value([reading])
+        }))
+
+    def process_page_backward(self, event: Page) -> Any:
+        event_readings = event.data.properties[self.event_to_target_prop]
+        event_readings_new = event_readings + event.data.properties[self.event_to_target_prog_prop]
+        if event_readings == event_readings_new:
+            logger.info(f'{event} : Skipped')
+            return
+        event.update(PageProperties({
+            self.event_to_target_prop: event_readings_new
+        }))
+
+
+class CreateProgressEvent(MatchSequentialAction):
+    event_title_prop = EmojiCode.ORANGE_BOOK + '제목'
+    event_db = DatabaseEnum.event_db.entity
+    target_to_datei_prop = RelationProperty(DatabaseEnum.datei_db.prefix_title)
+    target_to_event_prog_prop = RelationProperty(DatabaseEnum.event_db.prefix + '진도')
+
+    def __init__(self, base: MatchActionBase, target_db: DatabaseEnum):
+        super().__init__(base)
+        self.target_db = target_db.entity
+        self.event_to_target_prog_prop = RelationProperty(target_db.prefix + '진도')
+
+    def query(self) -> Iterable[Page]:
+        return self.target_db.query(filter=self.target_to_datei_prop.filter.is_not_empty())
+
+    def process_page(self, target: Page) -> Any:
+        if not target.data.parent == self.target_db:
+            return
+        datei_list = target.data.properties[self.target_to_datei_prop]
+        event_prog_list = target.data.properties[self.target_to_event_prog_prop]
+        datei_with_event_prog_set: set[Page] = set()
+        for event in event_prog_list:
+            for datei in event.data.properties[event_to_date_prop]:
+                datei_with_event_prog_set.add(datei)
+        datei_without_event_prog_list = set(datei_list) - datei_with_event_prog_set
+        logger.info(f'target = {target}, datei_without_event_prog_list = {datei_without_event_prog_list}')
+        for datei in datei_without_event_prog_list:
+            event = self.event_db.create_child_page(PageProperties({
+                self.event_to_target_prog_prop: self.event_to_target_prog_prop.page_value([target]),
+                event_to_date_prop: event_to_date_prop.page_value([datei]),
+                self.event_title_prop: self.date_namespace.strf_date(datei)
+            }))
+            logger.info(f'target = {target}, event = {event}')
 
 
 class MatchTimestr(MatchSequentialAction):
@@ -368,6 +402,10 @@ class DatabaseNamespace(metaclass=ABCMeta):
 class DateINamespace(DatabaseNamespace):
     def __init__(self):
         super().__init__(DatabaseEnum.datei_db, EmojiCode.GREEN_BOOK + '제목')
+
+    @classmethod
+    def strf_date(cls, datei: Page) -> str:
+        return datei.data.properties[datei_date_prop].start.strftime("%y%m%d")
 
     def by_date(self, date: dt.date) -> Page:
         day_name = korean_weekday[date.weekday()] + '요일'

@@ -4,7 +4,7 @@ from workflow import backup_dir
 from workflow.action.media_scraper import MediaScraper
 from workflow.action.migration_backup import MigrationBackupLoadAction, MigrationBackupSaveAction
 from workflow.action.prop_matcher import MatchActionBase, MatchWeekByDateValue, MatchDateByCreatedTime, \
-    MatchWeekByRefDate, MatchTimestr, MatchReadingsStartDate, MatchEventProgress
+    MatchWeekByRefDate, MatchTimestr, MatchReadingsStartDate, MatchEventProgress, CreateProgressEvent
 from workflow.block_enum import DatabaseEnum
 from workflow.core.action import CompositeAction
 
@@ -21,28 +21,30 @@ action = CompositeAction([
     MatchTimestr(base, DatabaseEnum.event_db, '일간'),
     MatchEventProgress(base, DatabaseEnum.issue_db),
     MatchEventProgress(base, DatabaseEnum.reading_db),
+
     MatchDateByCreatedTime(base, DatabaseEnum.schedule_db, '정리'),
+    MatchWeekByRefDate(base, DatabaseEnum.schedule_db, '주간', '일간'),
 
     MatchDateByCreatedTime(base, DatabaseEnum.stage_db, '일간', read_title=True, write_title=True),
     MatchWeekByRefDate(base, DatabaseEnum.stage_db, '주간', '일간'),
+
     MatchDateByCreatedTime(base, DatabaseEnum.point_db, '일간'),
-    MatchWeekByRefDate(base, DatabaseEnum.event_db, '주간', '일간'),
+    MatchWeekByRefDate(base, DatabaseEnum.point_db, '주간', '일간'),
 
     MatchDateByCreatedTime(base, DatabaseEnum.issue_db, '생성'),
     MatchWeekByRefDate(base, DatabaseEnum.issue_db, '주간', '일간'),
+    CreateProgressEvent(base, DatabaseEnum.issue_db),
+
     MatchReadingsStartDate(base),
     MatchDateByCreatedTime(base, DatabaseEnum.reading_db, '생성'),
     MatchWeekByRefDate(base, DatabaseEnum.reading_db, '주간', '일간'),
     MatchWeekByRefDate(base, DatabaseEnum.reading_db, '시작', '시작'),  # TODO: can be deprecated
+    CreateProgressEvent(base, DatabaseEnum.reading_db),
 
     MatchWeekByRefDate(base, DatabaseEnum.topic_db, '주간', '일간'),
+
     MatchDateByCreatedTime(base, DatabaseEnum.gist_db, '일간'),
     MatchWeekByRefDate(base, DatabaseEnum.gist_db, '주간', '일간'),
-
-    MatchDateByCreatedTime(base, DatabaseEnum.schedule_db, '정리'),
-    MatchWeekByRefDate(base, DatabaseEnum.schedule_db, '주간', '일간'),
-    MatchDateByCreatedTime(base, DatabaseEnum.point_db, '일간'),
-    MatchWeekByRefDate(base, DatabaseEnum.point_db, '주간', '일간'),
 
     MediaScraper(create_window=False),
 
