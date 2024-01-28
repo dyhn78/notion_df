@@ -15,7 +15,7 @@ from notion_df.property import RelationProperty, TitleProperty, PageProperties, 
     DateProperty, CheckboxFormulaProperty, RichTextProperty, SelectProperty, RelationPagePropertyValue
 from notion_df.util.misc import repr_object
 from workflow.block_enum import DatabaseEnum
-from workflow.core.action import SequentialAction, Action, CompositeAction
+from workflow.core.action import SequentialAction, Action
 from workflow.emoji_code import EmojiCode
 
 korean_weekday = '월화수목금토일'
@@ -27,10 +27,6 @@ weeki_date_range_prop = DateProperty(EmojiCode.BIG_CALENDAR + '날짜 범위')
 event_to_date_prop = RelationProperty(DatabaseEnum.datei_db.prefix_title)
 event_to_topic_prop = RelationProperty(DatabaseEnum.topic_db.prefix_title)
 event_to_issue_prop = RelationProperty(DatabaseEnum.issue_db.prefix_title)
-event_to_reading_prop = RelationProperty(DatabaseEnum.reading_db.prefix_title)
-"""💛읽기"""
-event_to_reading_prog_prop = RelationProperty(DatabaseEnum.reading_db.prefix + '진도')
-"""💛진도"""
 topic_base_type_prop = SelectProperty("📕유형")
 topic_base_type_progress = "🌳진행"
 reading_to_main_date_prop = RelationProperty(DatabaseEnum.datei_db.prefix_title)
@@ -60,62 +56,48 @@ class MatchSequentialAction(MatchAction, SequentialAction, metaclass=ABCMeta):
     pass
 
 
-class MatchEventProgress(MatchAction, CompositeAction):
-    def __init__(self, base: MatchActionBase):
-        MatchAction.__init__(self, base)
-        CompositeAction.__init__(self, [_MatchEventProgressForward(base), _MatchEventProgressBackward(base)])
-
-
-class _MatchEventProgressForward(MatchSequentialAction):
+class MatchEventProgress(MatchSequentialAction):
     event_db = DatabaseEnum.event_db.entity
 
-    def __init__(self, base: MatchActionBase):
+    def __init__(self, base: MatchActionBase, target_db: DatabaseEnum):
         super().__init__(base)
+        self.event_to_reading_prop = RelationProperty(target_db.prefix_title)
+        self.event_to_reading_prog_prop = RelationProperty(target_db.prefix + '진도')
 
     def query(self) -> Iterable[Page]:
-        return self.event_db.query(filter=(event_to_reading_prop.filter.is_not_empty()
-                                           & event_to_reading_prog_prop.filter.is_empty()))
+        return self.event_db.query(filter=(self.event_to_reading_prop.filter.is_not_empty()
+                                           & self.event_to_reading_prog_prop.filter.is_empty()))
 
     def process_page(self, event: Page) -> Any:
         if not (event.data.parent == self.event_db):
             return
-        if event.data.properties[event_to_reading_prog_prop]:
-            logger.info(f'{event} : Skipped - {event_to_reading_prog_prop.name} not empty')
+        self.process_page_forward(event)
+        self.process_page_backward(event)
+
+    def process_page_forward(self, event: Page) -> Any:
+        if event.data.properties[self.event_to_reading_prog_prop]:
+            logger.info(f'{event} : Skipped - {self.event_to_reading_prog_prop.name} not empty')
             return
 
         # TODO: more edge case handling
-        if not (len(reading_list := event.data.properties[event_to_reading_prop]) == 1
+        if not (len(reading_list := event.data.properties[self.event_to_reading_prop]) == 1
                 and not event.data.properties[event_to_issue_prop]
                 and not event.data.properties[event_to_topic_prop]):
             logger.info(f'{event} : Skipped')
             return
         reading = reading_list[0]
         event.update(properties=PageProperties({
-            event_to_reading_prog_prop: event_to_reading_prog_prop.page_value([reading])
+            self.event_to_reading_prog_prop: self.event_to_reading_prog_prop.page_value([reading])
         }))
 
-
-class _MatchEventProgressBackward(MatchSequentialAction):
-    event_db = DatabaseEnum.event_db.entity
-
-    def __init__(self, base: MatchActionBase):
-        super().__init__(base)
-
-    def query(self) -> Iterable[Page]:
-        return self.event_db.query(filter=(event_to_reading_prop.filter.is_not_empty()
-                                           & event_to_reading_prog_prop.filter.is_empty()))
-
-    def process_page(self, event: Page) -> Any:
-        if not event.data.parent == self.event_db:
-            return
-
-        event_readings = event.data.properties[event_to_reading_prop]
-        event_readings_new = event_readings + event.data.properties[event_to_reading_prog_prop]
+    def process_page_backward(self, event: Page) -> Any:
+        event_readings = event.data.properties[self.event_to_reading_prop]
+        event_readings_new = event_readings + event.data.properties[self.event_to_reading_prog_prop]
         if event_readings == event_readings_new:
             logger.info(f'{event} : Skipped')
             return
         event.update(PageProperties({
-            event_to_reading_prop: event_readings_new
+            self.event_to_reading_prop: event_readings_new
         }))
 
 

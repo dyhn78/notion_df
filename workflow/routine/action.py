@@ -19,7 +19,8 @@ action = CompositeAction([
     MatchDateByCreatedTime(base, DatabaseEnum.event_db, '정리'),
     MatchWeekByRefDate(base, DatabaseEnum.event_db, '주간', '일간'),
     MatchTimestr(base, DatabaseEnum.event_db, '일간'),
-    MatchEventProgress(base),
+    MatchEventProgress(base, DatabaseEnum.issue_db),
+    MatchEventProgress(base, DatabaseEnum.reading_db),
     MatchDateByCreatedTime(base, DatabaseEnum.schedule_db, '정리'),
 
     MatchDateByCreatedTime(base, DatabaseEnum.stage_db, '일간', read_title=True, write_title=True),
