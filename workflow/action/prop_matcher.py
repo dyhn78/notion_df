@@ -147,40 +147,6 @@ class MatchDateByCreatedTime(MatchSequentialAction):
         return
 
 
-class MatchTimestr(MatchSequentialAction):
-    def __init__(self, base: MatchActionBase, record: DatabaseEnum, record_to_date: str):
-        super().__init__(base)
-        self.record_db = Database(record.id)
-        self.record_to_date = RelationProperty(DatabaseEnum.datei_db.prefix + record_to_date)
-
-    def query(self) -> Iterable[Page]:
-        # since the benefits are concentrated on near present days,
-        # we could easily limit query() with today without lamentations
-        return self.record_db.query(record_timestr_prop.filter.is_empty()
-                                    & created_time_filter.equals(dt.date.today()))
-
-    def filter(self, record: Page) -> bool:
-        if not (record.data.parent == self.record_db and not record.data.properties[record_timestr_prop]):
-            return False
-        try:
-            record_date = record.data.properties[self.record_to_date][0]
-        except IndexError:
-            return True
-        record_date = record_date.data.properties[datei_date_prop].start
-        return record.data.created_time.date() == record_date
-
-    def process_page(self, record: Page) -> None:
-        if not self.filter(record):
-            return
-        timestr = record.data.created_time.strftime('%H:%M')
-        if record.retrieve().data.properties[record_timestr_prop]:
-            logger.info(f'{record} : Skipped')
-            return
-        record.update(PageProperties({
-            record_timestr_prop: record_timestr_prop.page_value([TextSpan(timestr)])}))
-        logger.info(f'{record} : {timestr}')
-
-
 class MatchReadingsStartDate(MatchSequentialAction):
     def __init__(self, base: MatchActionBase):
         super().__init__(base)
@@ -217,6 +183,9 @@ class MatchReadingsStartDate(MatchSequentialAction):
         logger.info(f'{reading} : {date}')
 
     def find_datei(self, reading: Page) -> Optional[Page]:
+        if datei_by_title := self.date_namespace.by_record_title(reading.data.properties.title.plain_text):
+            return datei_by_title
+
         def get_reading_event_dates() -> Iterable[Page]:
             reading_events = reading.data.properties[reading_to_event_prop]
             # TODO: RollupPagePropertyValue 구현 후 이곳을 간소화
@@ -234,6 +203,40 @@ class MatchReadingsStartDate(MatchSequentialAction):
         if reading.data.properties[reading_match_date_by_created_time_prop]:
             reading_created_date = get_record_created_date(reading)
             return self.date_namespace.by_date(reading_created_date)
+
+
+class MatchTimestr(MatchSequentialAction):
+    def __init__(self, base: MatchActionBase, record: DatabaseEnum, record_to_date: str):
+        super().__init__(base)
+        self.record_db = Database(record.id)
+        self.record_to_date = RelationProperty(DatabaseEnum.datei_db.prefix + record_to_date)
+
+    def query(self) -> Iterable[Page]:
+        # since the benefits are concentrated on near present days,
+        # we could easily limit query() with today without lamentations
+        return self.record_db.query(record_timestr_prop.filter.is_empty()
+                                    & created_time_filter.equals(dt.date.today()))
+
+    def filter(self, record: Page) -> bool:
+        if not (record.data.parent == self.record_db and not record.data.properties[record_timestr_prop]):
+            return False
+        try:
+            record_date = record.data.properties[self.record_to_date][0]
+        except IndexError:
+            return True
+        record_date = record_date.data.properties[datei_date_prop].start
+        return record.data.created_time.date() == record_date
+
+    def process_page(self, record: Page) -> None:
+        if not self.filter(record):
+            return
+        timestr = record.data.created_time.strftime('%H:%M')
+        if record.retrieve().data.properties[record_timestr_prop]:
+            logger.info(f'{record} : Skipped')
+            return
+        record.update(PageProperties({
+            record_timestr_prop: record_timestr_prop.page_value([TextSpan(timestr)])}))
+        logger.info(f'{record} : {timestr}')
 
 
 class MatchWeekByRefDate(MatchSequentialAction):
