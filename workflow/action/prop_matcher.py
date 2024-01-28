@@ -122,20 +122,6 @@ class MatchReadingsStartDate(MatchSequentialAction):
         if not (reading.data.parent == self.reading_db
                 and not reading.data.properties[reading_to_start_date_prop]):
             return
-        if (self.date_namespace.by_record_title(reading.data.properties.title.plain_text)
-                and not reading.data.properties[reading_to_start_date_prop]
-                and not reading.data.properties[reading_to_main_date_prop]):
-            reading.retrieve()
-            if ((datei_by_title := self.date_namespace.by_record_title(reading.data.properties.title.plain_text))
-                    and not reading.data.properties[reading_to_start_date_prop]
-                    and not reading.data.properties[reading_to_main_date_prop]):
-                reading.update(PageProperties({
-                    reading_to_main_date_prop: reading_to_main_date_prop.page_value([datei_by_title]),
-                    reading_to_start_date_prop: reading_to_start_date_prop.page_value([datei_by_title])
-                }))
-                logger.info(f'{reading} - '
-                            f'{reading_to_main_date_prop.name}/{reading_to_start_date_prop.name} : {datei_by_title}')
-                return
 
         datei = self.find_datei(reading)
         if not datei:
