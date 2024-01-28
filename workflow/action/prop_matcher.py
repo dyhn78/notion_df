@@ -226,7 +226,7 @@ class CreateProgressEvent(MatchSequentialAction):
         event_prog_list = target.data.properties[self.target_to_event_prog_prop]
         datei_with_event_prog_set: set[Page] = set()
         for event in event_prog_list:
-            for datei in event.data.properties[event_to_date_prop]:
+            for datei in event.get_data().properties[event_to_date_prop]:
                 datei_with_event_prog_set.add(datei)
         datei_without_event_prog_list = set(datei_list) - datei_with_event_prog_set
         logger.info(f'target = {target}, datei_without_event_prog_list = {datei_without_event_prog_list}')
