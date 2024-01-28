@@ -118,30 +118,39 @@ class MatchReadingsStartDate(MatchSequentialAction):
             )
         )
 
-    def filter(self, page: Page) -> bool:
-        return (page.data.parent == self.reading_db
-                and not page.data.properties[reading_to_start_date_prop]
-                and (page.data.properties[reading_to_event_prop]
-                     or page.data.properties[reading_match_date_by_created_time_prop]))
-
-    def process_page(self, reading: Page):
-        if not self.filter(reading):
+    def process_page(self, reading: Page) -> None:
+        if not (reading.data.parent == self.reading_db
+                and not reading.data.properties[reading_to_start_date_prop]):
             return
-        date = self.find_datei(reading)
-        if not date:
+        if (self.date_namespace.by_record_title(reading.data.properties.title.plain_text)
+                and not reading.data.properties[reading_to_start_date_prop]
+                and not reading.data.properties[reading_to_main_date_prop]):
+            reading.retrieve()
+            if ((datei_by_title := self.date_namespace.by_record_title(reading.data.properties.title.plain_text))
+                    and not reading.data.properties[reading_to_start_date_prop]
+                    and not reading.data.properties[reading_to_main_date_prop]):
+                reading.update(PageProperties({
+                    reading_to_main_date_prop: reading_to_main_date_prop.page_value([datei_by_title]),
+                    reading_to_start_date_prop: reading_to_start_date_prop.page_value([datei_by_title])
+                }))
+                logger.info(f'{reading} - '
+                            f'{reading_to_main_date_prop.name}/{reading_to_start_date_prop.name} : {datei_by_title}')
+                return
+
+        datei = self.find_datei(reading)
+        if not datei:
             logger.info(f'{reading} : Skipped')
             return
         # final check if the property value is filled in the meantime
         if reading.retrieve().data.properties[reading_to_start_date_prop]:
             logger.info(f'{reading} : Skipped')
             return
-        reading.update(PageProperties({reading_to_start_date_prop: reading_to_start_date_prop.page_value([date])}))
-        logger.info(f'{reading} : {date}')
+        reading.update(PageProperties({
+            reading_to_start_date_prop: reading_to_start_date_prop.page_value([datei])
+        }))
+        logger.info(f'{reading} - {reading_to_main_date_prop.name} : {datei}')
 
     def find_datei(self, reading: Page) -> Optional[Page]:
-        if datei_by_title := self.date_namespace.by_record_title(reading.data.properties.title.plain_text):
-            return datei_by_title
-
         def get_reading_event_dates() -> Iterable[Page]:
             reading_events = reading.data.properties[reading_to_event_prop]
             # TODO: RollupPagePropertyValue 구현 후 이곳을 간소화
@@ -159,6 +168,111 @@ class MatchReadingsStartDate(MatchSequentialAction):
         if reading.data.properties[reading_match_date_by_created_time_prop]:
             reading_created_date = get_record_created_date(reading)
             return self.date_namespace.by_date(reading_created_date)
+
+
+class MatchTimestr(MatchSequentialAction):
+    def __init__(self, base: MatchActionBase, record: DatabaseEnum, record_to_date: str):
+        super().__init__(base)
+        self.record_db = Database(record.id)
+        self.record_to_date = RelationProperty(DatabaseEnum.datei_db.prefix + record_to_date)
+
+    def query(self) -> Iterable[Page]:
+        # since the benefits are concentrated on near present days,
+        # we could easily limit query() with today without lamentations
+        return self.record_db.query(record_timestr_prop.filter.is_empty()
+                                    & created_time_filter.equals(dt.date.today()))
+
+    def filter(self, record: Page) -> bool:
+        if not (record.data.parent == self.record_db and not record.data.properties[record_timestr_prop]):
+            return False
+        try:
+            record_date = record.data.properties[self.record_to_date][0]
+        except IndexError:
+            return True
+        record_date = record_date.data.properties[datei_date_prop].start
+        return record.data.created_time.date() == record_date
+
+    def process_page(self, record: Page) -> None:
+        if not self.filter(record):
+            return
+        timestr = record.data.created_time.strftime('%H:%M')
+        if record.retrieve().data.properties[record_timestr_prop]:
+            logger.info(f'{record} : Skipped')
+            return
+        record.update(PageProperties({
+            record_timestr_prop: record_timestr_prop.page_value([TextSpan(timestr)])}))
+        logger.info(f'{record} : {timestr}')
+
+
+class MatchWeekByRefDate(MatchSequentialAction):
+    def __init__(self, base: MatchActionBase, record_db_enum: DatabaseEnum,
+                 record_to_week: str, record_to_date: str):
+        super().__init__(base)
+        self.record_db = record_db_enum.entity
+        self.record_db_title = self.record_db.data.title = record_db_enum.title
+        self.record_to_week = RelationProperty(f'{DatabaseEnum.weeki_db.prefix}{record_to_week}')
+        self.record_to_date = RelationProperty(f'{DatabaseEnum.datei_db.prefix}{record_to_date}')
+
+    def __repr__(self):
+        return repr_object(self,
+                           record_db_title=self.record_db_title,
+                           record_to_week=self.record_to_week,
+                           record_to_date=self.record_to_date)
+
+    def query(self) -> Paginator[Page]:
+        return self.record_db.query(
+            self.record_to_week.filter.is_empty() & self.record_to_date.filter.is_not_empty())
+
+    def process_page(self, record: Page) -> None:
+        if not (record.data.parent == self.record_db and record.data.properties[self.record_to_date]):
+            return
+
+        new_record_weeks = self.record_to_week.page_value()
+        for record_date in record.data.properties[self.record_to_date]:
+            if not record_date.data:
+                record_date.retrieve()
+            new_record_weeks.append(record_date.data.properties[datei_to_week_prop][0])
+
+        # final check if the property value is filled or changed in the meantime
+        prev_record_weeks = record.data.properties[self.record_to_week]
+        if set(prev_record_weeks) == set(new_record_weeks):
+            logger.info(f'{record} : Skipped')
+            return
+
+        curr_record_weeks = record.retrieve().data.properties[self.record_to_week]
+        if ((set(prev_record_weeks) != set(curr_record_weeks))
+                or (set(curr_record_weeks) == set(new_record_weeks))):
+            logger.info(f'{record} : Skipped')
+            return
+        record.update(PageProperties({self.record_to_week: new_record_weeks}))
+        logger.info(f'{record} : {list(new_record_weeks)}')
+        return
+
+
+class MatchWeekByDateValue(MatchSequentialAction):
+    def __init__(self, base: MatchActionBase):
+        super().__init__(base)
+        self.date_db = DatabaseEnum.datei_db.entity
+
+    def __repr__(self):
+        return repr_object(self)
+
+    def query(self) -> Paginator[Page]:
+        return self.date_db.query(datei_to_week_prop.filter.is_empty())
+
+    def process_page(self, datei: Page) -> None:
+        if not (datei.data.parent == self.date_db and not datei.data.properties[datei_to_week_prop]):
+            return
+
+        date = datei.data.properties[datei_date_prop]
+        if not date:
+            logger.info(f'{datei} -> Skipped')
+            return
+        week = self.week_namespace.by_date(date.start)
+        if datei.retrieve().data.properties[datei_to_week_prop]:
+            return
+        datei.update(PageProperties({datei_to_week_prop: datei_to_week_prop.page_value([week])}))
+        logger.info(f'{datei} -> {week}')
 
 
 class MatchEventProgress(MatchSequentialAction):
@@ -237,112 +351,6 @@ class CreateProgressEvent(MatchSequentialAction):
                 event_title_prop: event_title_prop.page_value.from_plain_text(self.date_namespace.strf_date(datei))
             }))
             logger.info(f'target = {target}, event = {event}')
-
-
-class MatchTimestr(MatchSequentialAction):
-    def __init__(self, base: MatchActionBase, record: DatabaseEnum, record_to_date: str):
-        super().__init__(base)
-        self.record_db = Database(record.id)
-        self.record_to_date = RelationProperty(DatabaseEnum.datei_db.prefix + record_to_date)
-
-    def query(self) -> Iterable[Page]:
-        # since the benefits are concentrated on near present days,
-        # we could easily limit query() with today without lamentations
-        return self.record_db.query(record_timestr_prop.filter.is_empty()
-                                    & created_time_filter.equals(dt.date.today()))
-
-    def filter(self, record: Page) -> bool:
-        if not (record.data.parent == self.record_db and not record.data.properties[record_timestr_prop]):
-            return False
-        try:
-            record_date = record.data.properties[self.record_to_date][0]
-        except IndexError:
-            return True
-        record_date = record_date.data.properties[datei_date_prop].start
-        return record.data.created_time.date() == record_date
-
-    def process_page(self, record: Page) -> None:
-        if not self.filter(record):
-            return
-        timestr = record.data.created_time.strftime('%H:%M')
-        if record.retrieve().data.properties[record_timestr_prop]:
-            logger.info(f'{record} : Skipped')
-            return
-        record.update(PageProperties({
-            record_timestr_prop: record_timestr_prop.page_value([TextSpan(timestr)])}))
-        logger.info(f'{record} : {timestr}')
-
-
-class MatchWeekByRefDate(MatchSequentialAction):
-    def __init__(self, base: MatchActionBase, record_db_enum: DatabaseEnum,
-                 record_to_week: str, record_to_date: str):
-        super().__init__(base)
-        self.record_db = record_db_enum.entity
-        self.record_db_title = self.record_db.data.title = record_db_enum.title
-        self.record_to_week = RelationProperty(f'{DatabaseEnum.weeki_db.prefix}{record_to_week}')
-        self.record_to_date = RelationProperty(f'{DatabaseEnum.datei_db.prefix}{record_to_date}')
-
-    def __repr__(self):
-        return repr_object(self,
-                           record_db_title=self.record_db_title,
-                           record_to_week=self.record_to_week,
-                           record_to_date=self.record_to_date)
-
-    def query(self) -> Paginator[Page]:
-        return self.record_db.query(
-            self.record_to_week.filter.is_empty() & self.record_to_date.filter.is_not_empty())
-
-    def process_page(self, record: Page) -> None:
-        if not (record.data.parent == self.record_db and record.data.properties[self.record_to_date]):
-            return
-
-        def _process_page():
-            new_record_weeks = self.record_to_week.page_value()
-            for record_date in record.data.properties[self.record_to_date]:
-                if not record_date.data:
-                    record_date.retrieve()
-                new_record_weeks.append(record_date.data.properties[datei_to_week_prop][0])
-
-            # final check if the property value is filled or changed in the meantime
-            prev_record_weeks = record.data.properties[self.record_to_week]
-            if set(prev_record_weeks) == set(new_record_weeks):
-                return
-
-            curr_record_weeks = record.retrieve().data.properties[self.record_to_week]
-            if ((set(prev_record_weeks) != set(curr_record_weeks))
-                    or (set(curr_record_weeks) == set(new_record_weeks))):
-                return
-            record.update(PageProperties({self.record_to_week: new_record_weeks}))
-            return new_record_weeks
-
-        _weeks = _process_page()
-        logger.info(f'{record} : {list(_weeks) if _weeks else "Skipped"}')
-
-
-class MatchWeekByDateValue(MatchSequentialAction):
-    def __init__(self, base: MatchActionBase):
-        super().__init__(base)
-        self.date_db = DatabaseEnum.datei_db.entity
-
-    def __repr__(self):
-        return repr_object(self)
-
-    def query(self) -> Paginator[Page]:
-        return self.date_db.query(datei_to_week_prop.filter.is_empty())
-
-    def process_page(self, datei: Page) -> None:
-        if not (datei.data.parent == self.date_db and not datei.data.properties[datei_to_week_prop]):
-            return
-
-        date = datei.data.properties[datei_date_prop]
-        if not date:
-            logger.info(f'{datei} -> Skipped')
-            return
-        week = self.week_namespace.by_date(date.start)
-        if datei.retrieve().data.properties[datei_to_week_prop]:
-            return
-        datei.update(PageProperties({datei_to_week_prop: datei_to_week_prop.page_value([week])}))
-        logger.info(f'{datei} -> {week}')
 
 
 class DeprMatchTopic(MatchSequentialAction):
