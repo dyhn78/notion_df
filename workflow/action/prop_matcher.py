@@ -208,7 +208,7 @@ class MatchTimestr(MatchSequentialAction):
         logger.info(f'{record} : {timestr}')
 
 
-class MatchWeekByRefDate(MatchSequentialAction):
+class MatchWeekiByRefDate(MatchSequentialAction):
     def __init__(self, base: MatchActionBase, record_db_enum: DatabaseEnum,
                  record_to_week: str, record_to_date: str):
         super().__init__(base)
@@ -253,7 +253,7 @@ class MatchWeekByRefDate(MatchSequentialAction):
         return
 
 
-class MatchWeekByDateValue(MatchSequentialAction):
+class MatchWeekiByDateValue(MatchSequentialAction):
     def __init__(self, base: MatchActionBase):
         super().__init__(base)
         self.date_db = DatabaseEnum.datei_db.entity
@@ -479,7 +479,7 @@ def get_record_created_date(record: Page) -> dt.date:
     return (record.get_data().created_time + dt.timedelta(hours=-5)).date()
 
 
-def get_earliest_date(dateis: Iterable[Page]) -> Page:
+def get_earliest_date(datei_it: Iterable[Page]) -> Page:
     """only works for children of `DatabaseEnum.datei_db` or `weeki_db`"""
 
     def _get_start_date(datei: Page) -> dt.date:
@@ -492,4 +492,4 @@ def get_earliest_date(dateis: Iterable[Page]) -> Page:
             raise ValueError(datei)
         return datei.get_data().properties[prop].start
 
-    return min(dateis, key=_get_start_date)
+    return min(datei_it, key=_get_start_date)
