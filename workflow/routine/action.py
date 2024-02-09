@@ -3,8 +3,8 @@ from __future__ import annotations
 from workflow import backup_dir
 from workflow.action.media_scraper import MediaScraper
 from workflow.action.migration_backup import MigrationBackupLoadAction, MigrationBackupSaveAction
-from workflow.action.prop_matcher import MatchActionBase, MatchWeekByDateValue, MatchDateByCreatedTime, \
-    MatchWeekByRefDate, MatchTimestr, MatchReadingsStartDate, MatchEventProgress, CreateProgressEvent
+from workflow.action.prop_matcher import MatchActionBase, MatchWeekByDateValue, MatchDatei, \
+    MatchWeekByRefDate, MatchTimestr, MatchReadingDatei, MatchEventProgress, CreateProgressEvent
 from workflow.block_enum import DatabaseEnum
 from workflow.core.action import CompositeAction
 
@@ -15,35 +15,35 @@ action = CompositeAction([
 
     MatchWeekByDateValue(base),
 
-    MatchDateByCreatedTime(base, DatabaseEnum.event_db, '일간', read_title=True, write_title=True),
-    MatchDateByCreatedTime(base, DatabaseEnum.event_db, '정리'),
+    MatchDatei(base, DatabaseEnum.event_db, '일간', read_title=True, write_title=True),
+    MatchDatei(base, DatabaseEnum.event_db, '정리'),
     MatchWeekByRefDate(base, DatabaseEnum.event_db, '주간', '일간'),
     MatchTimestr(base, DatabaseEnum.event_db, '일간'),
     MatchEventProgress(base, DatabaseEnum.issue_db),
     MatchEventProgress(base, DatabaseEnum.reading_db),
 
-    MatchDateByCreatedTime(base, DatabaseEnum.schedule_db, '정리'),
+    MatchDatei(base, DatabaseEnum.schedule_db, '정리'),
     MatchWeekByRefDate(base, DatabaseEnum.schedule_db, '주간', '일간'),
 
-    MatchDateByCreatedTime(base, DatabaseEnum.stage_db, '일간', read_title=True, write_title=True),
+    MatchDatei(base, DatabaseEnum.stage_db, '일간', read_title=True, write_title=True),
     MatchWeekByRefDate(base, DatabaseEnum.stage_db, '주간', '일간'),
 
-    MatchDateByCreatedTime(base, DatabaseEnum.point_db, '일간'),
+    MatchDatei(base, DatabaseEnum.point_db, '일간'),
     MatchWeekByRefDate(base, DatabaseEnum.point_db, '주간', '일간'),
 
-    MatchDateByCreatedTime(base, DatabaseEnum.issue_db, '생성'),
+    MatchDatei(base, DatabaseEnum.issue_db, '생성'),
     MatchWeekByRefDate(base, DatabaseEnum.issue_db, '주간', '일간'),
     CreateProgressEvent(base, DatabaseEnum.issue_db),
 
-    MatchReadingsStartDate(base),
-    MatchDateByCreatedTime(base, DatabaseEnum.reading_db, '생성'),
+    MatchReadingDatei(base),
+    MatchDatei(base, DatabaseEnum.reading_db, '생성'),
     MatchWeekByRefDate(base, DatabaseEnum.reading_db, '주간', '일간'),
     MatchWeekByRefDate(base, DatabaseEnum.reading_db, '시작', '시작'),  # TODO: can be deprecated
     CreateProgressEvent(base, DatabaseEnum.reading_db),
 
     MatchWeekByRefDate(base, DatabaseEnum.topic_db, '주간', '일간'),
 
-    MatchDateByCreatedTime(base, DatabaseEnum.gist_db, '일간'),
+    MatchDatei(base, DatabaseEnum.gist_db, '일간'),
     MatchWeekByRefDate(base, DatabaseEnum.gist_db, '주간', '일간'),
 
     MediaScraper(create_window=False),
@@ -59,16 +59,18 @@ action = CompositeAction([
     # DeprMatchTopic(base, DatabaseEnum.schedule_db, DatabaseEnum.reading_db,
     #                DatabaseEnum.reading_db.prefix_title,
     #                DatabaseEnum.topic_db.prefix_title, DatabaseEnum.topic_db.prefix_title),
-    # MatchDateByCreatedTime(base, DatabaseEnum.depr_event_db, '일간'),
-    # MatchDateByCreatedTime(base, DatabaseEnum.depr_event_db, '생성'),
+    # MatchDatei(base, DatabaseEnum.depr_event_db, '일간'),
+    # MatchDatei(base, DatabaseEnum.depr_event_db, '생성'),
     # MatchWeekByRefDate(base, DatabaseEnum.depr_event_db, '주간', '일간'),
     # MatchTimestr(base, DatabaseEnum.depr_event_db, '일간'),
-    # MatchDateByCreatedTime(base, DatabaseEnum.depr_subject_db, '일간'),
+    # MatchDatei(base, DatabaseEnum.depr_subject_db, '일간'),
     # MatchWeekByRefDate(base, DatabaseEnum.depr_subject_db, '주간', '일간'),
 ])
 
 if __name__ == '__main__':
+    from datetime import timedelta
+
+    action.run_recent(interval=timedelta(hours=24))
     # action.run_by_last_edited_time(datetime(2024, 1, 7, 17, 0, 0, tzinfo=my_tz), None)
-    # action.run_recent(interval=timedelta(hours=24))
     # action.run_from_last_success(update_last_success_time=True)
     pass

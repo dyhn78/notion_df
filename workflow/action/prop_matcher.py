@@ -57,53 +57,71 @@ class MatchSequentialAction(MatchAction, SequentialAction, metaclass=ABCMeta):
     pass
 
 
-class MatchDateByCreatedTime(MatchSequentialAction):
-    def __init__(self, base: MatchActionBase, record: DatabaseEnum, record_to_date: str, *,
+class MatchDatei(MatchSequentialAction):
+    event_db = DatabaseEnum.event_db.entity
+
+    def __init__(self, base: MatchActionBase, record: DatabaseEnum, record_to_datei: str, *,
                  read_title: bool = False, write_title: bool = False):
         super().__init__(base)
         self.record_db = record.entity
-        self.record_to_date = RelationProperty(f'{DatabaseEnum.datei_db.prefix}{record_to_date}')
+        self.record_to_datei = RelationProperty(f'{DatabaseEnum.datei_db.prefix}{record_to_datei}')
         self.read_title = read_title
         self.write_title = write_title
 
+    def __repr__(self):
+        return repr_object(self,
+                           record_db=self.record_db,
+                           record_to_date=self.record_to_datei)
+
     def query(self) -> Paginator[Page]:
-        return self.record_db.query(self.record_to_date.filter.is_empty())
+        return self.record_db.query(self.record_to_datei.filter.is_empty())
 
     def process_page(self, record: Page) -> None:
-        if not (record.data.parent == self.record_db and not record.data.properties[self.record_to_date]):
+        if not (record.data.parent == self.record_db):
             return
 
-        record_created_date = get_record_created_date(record)
-        if self.read_title:
-            date = self.date_namespace.by_record_title(record.data.properties.title.plain_text)
-            if date is not None:
-                # final check if the property value is filled in the meantime
-                if record.retrieve().data.properties[self.record_to_date]:
-                    logger.info(f'{record} -> Skipped')
-                    return
-                record.update(PageProperties({
-                    self.record_to_date: self.record_to_date.page_value([date]),
+        if datei_list := record.data.properties[self.record_to_datei]:
+            datei = datei_list[0]
+            if (self.write_title
+                    and (title := self.date_namespace.format_record_title(
+                        record.data.properties.title.plain_text, datei))):
+                properties = PageProperties()
+                properties[record.data.properties.title_prop] = RichText.from_plain_text(title)
+                self._update_page(record, properties)
+        else:
+            if (self.read_title
+                    and (datei := self.date_namespace.by_record_title(
+                        record.data.properties.title.plain_text)) is not None):
+                self._update_page(record, PageProperties({
+                    self.record_to_datei: self.record_to_datei.page_value([datei]),
                 }))
-                logger.info(f'{record} -> {date}')
                 return
 
+            record_created_date = get_record_created_date(record)
+            datei = self.date_namespace.by_date(record_created_date)
+            properties: PageProperties[RelationPagePropertyValue | RichText] = PageProperties({
+                self.record_to_datei: self.record_to_datei.page_value([datei]),
+            })
+            if (self.write_title
+                    and (title := self.date_namespace.format_record_title(
+                        record.data.properties.title.plain_text, datei))):
+                properties[record.data.properties.title_prop] = RichText.from_plain_text(title)
+            self._update_page(record, properties)
+            return
+
+    def _update_page(self, record, record_properties: PageProperties) -> None:
         # final check if the property value is filled in the meantime
-        if record.retrieve().data.properties[self.record_to_date]:
+        if not record_properties:
+            return
+        if record.retrieve().data.properties[self.record_to_datei]:
             logger.info(f'{record} -> Skipped')
             return
-        date = self.date_namespace.by_date(record_created_date)
-        properties: PageProperties[RelationPagePropertyValue | RichText] = PageProperties({
-            self.record_to_date: self.record_to_date.page_value([date]),
-        })
-        if self.write_title:
-            title = self.date_namespace.format_record_title(record.data.properties.title.plain_text, date)
-            properties[record.data.properties.title_prop] = RichText.from_plain_text(title)
-        record.update(properties)
-        logger.info(f'{record} -> {date}')
+        record.update(record_properties)
+        logger.info(f'{record} -> {record_properties}')
         return
 
 
-class MatchReadingsStartDate(MatchSequentialAction):
+class MatchReadingDatei(MatchSequentialAction):
     def __init__(self, base: MatchActionBase):
         super().__init__(base)
         self.reading_db = DatabaseEnum.reading_db.entity

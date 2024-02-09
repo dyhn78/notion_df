@@ -35,6 +35,11 @@ PagePropertyValue_T = TypeVar('PagePropertyValue_T')
 FilterBuilder_T = TypeVar('FilterBuilder_T', bound=FilterBuilder)
 
 
+# TODO: PropertyMeta
+#  - __repr__(typ: PropertyMeta): return(cls_attributes)
+#  - cls_attributes
+#    - use_dataclass: bool = (inherit)
+# TODO: UnsupportedProperty
 class Property(Generic[DatabasePropertyValue_T, PagePropertyValue_T, FilterBuilder_T], metaclass=ABCMeta):
     # TODO: move base class and PropertyValue classes to notion_df.core.property
     typename: ClassVar[str] = ''
