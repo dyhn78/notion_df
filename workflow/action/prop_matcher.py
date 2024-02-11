@@ -89,7 +89,7 @@ class MatchDatei(MatchSequentialAction):
                 properties = PageProperties()
                 properties[record.data.properties.title_prop] = RichText.from_plain_text(title)
                 record.update(properties)
-                logger.info(f'{record} -> {record_properties}')
+                logger.info(f'{record} -> {properties}')
         else:
             if (self.read_title
                     and (datei := self.date_namespace.by_record_title(
