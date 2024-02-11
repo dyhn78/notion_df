@@ -82,12 +82,14 @@ class MatchDatei(MatchSequentialAction):
 
         if datei_list := record.data.properties[self.record_to_datei]:
             datei = datei_list[0]
+            datei.get_data()
             if (self.write_title
                     and (title := self.date_namespace.format_record_title(
                         record.data.properties.title.plain_text, datei))):
                 properties = PageProperties()
                 properties[record.data.properties.title_prop] = RichText.from_plain_text(title)
-                self._update_page(record, properties)
+                record.update(properties)
+                logger.info(f'{record} -> {record_properties}')
         else:
             if (self.read_title
                     and (datei := self.date_namespace.by_record_title(
