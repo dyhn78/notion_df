@@ -50,7 +50,9 @@ class Request:
             response.raise_for_status()
             return response
         except requests.HTTPError:
-            raise RequestError(self, response)
+            e = RequestError(self, response)
+            logger.debug(e)
+            raise e
 
 
 class RequestError(Exception):
