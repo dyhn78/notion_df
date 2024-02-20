@@ -451,7 +451,7 @@ class DatabaseNamespace(metaclass=ABCMeta):
 
 
 class DateINamespace(DatabaseNamespace):
-    pattern = re.compile(r'^(\d{2})(\d{2})(\d{2}).*')
+    pattern = re.compile(r'(\d{2})(\d{2})(\d{2}).*')
 
     def __init__(self):
         super().__init__(DatabaseEnum.datei_db, EmojiCode.GREEN_BOOK + '제목')
@@ -484,7 +484,6 @@ class DateINamespace(DatabaseNamespace):
     @classmethod
     def _get_date_from_record_title(cls, title_plain_text: str) -> Optional[dt.date]:
         match = cls.pattern.match(title_plain_text)
-
         if not match:
             return None
         year, month, day = (int(s) for s in match.groups())
