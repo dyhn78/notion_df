@@ -27,9 +27,13 @@ datei_to_week_prop = RelationProperty(DatabaseEnum.weeki_db.prefix_title)
 datei_date_prop = DateProperty(EmojiCode.CALENDAR + '날짜')
 weeki_date_range_prop = DateProperty(EmojiCode.BIG_CALENDAR + '날짜 범위')
 event_title_prop = TitleProperty(EmojiCode.ORANGE_BOOK + '제목')
-event_to_date_prop = RelationProperty(DatabaseEnum.datei_db.prefix_title)
-event_to_topic_prop = RelationProperty(DatabaseEnum.topic_db.prefix_title)
+event_to_datei_prop = RelationProperty(DatabaseEnum.datei_db.prefix_title)
+event_to_stage_prop = RelationProperty(DatabaseEnum.stage_db.prefix_title)
+event_to_point_prop = RelationProperty(DatabaseEnum.point_db.prefix_title)
 event_to_issue_prop = RelationProperty(DatabaseEnum.issue_db.prefix_title)
+event_to_reading_prop = RelationProperty(DatabaseEnum.reading_db.prefix_title)
+event_to_topic_prop = RelationProperty(DatabaseEnum.topic_db.prefix_title)
+event_to_gist_prop = RelationProperty(DatabaseEnum.gist_db.prefix_title)
 topic_base_type_prop = SelectProperty("📕유형")
 topic_base_type_progress = "🌳진행"
 reading_to_main_date_prop = RelationProperty(DatabaseEnum.datei_db.prefix_title)
@@ -171,7 +175,7 @@ class MatchReadingDatei(MatchSequentialAction):
             reading_events = reading.data.properties[reading_to_event_prop]
             # TODO: RollupPagePropertyValue 구현 후 이곳을 간소화
             for event in reading_events:
-                if not (date_list := event.get_data().properties[event_to_date_prop]):
+                if not (date_list := event.get_data().properties[event_to_datei_prop]):
                     continue
                 date = date_list[0]
                 if date.get_data().properties[datei_date_prop] is None:
@@ -314,7 +318,7 @@ class MatchEventProgress(MatchSequentialAction):
                     & self.event_to_target_prog_prop.filter.is_empty()))
 
     def process_page(self, event: Page) -> Any:
-        if not (event.data.parent == self.event_db):
+        if event.data.parent != self.event_db:
             return
         self.process_page_forward(event)
         self.process_page_backward(event)
@@ -326,16 +330,17 @@ class MatchEventProgress(MatchSequentialAction):
             return
 
         # TODO: more edge case handling
-        if not (len(reading_list := event.data.properties[
+        if not (len(target_list := event.data.properties[
             self.event_to_target_prop]) == 1
-                and not event.data.properties[event_to_issue_prop]
-                and not event.data.properties[event_to_topic_prop]):
+                and sum([len(event.data.properties[prop]) for prop in [
+                    event_to_topic_prop, event_to_gist_prop,
+                    event_to_issue_prop, event_to_reading_prop,
+                    event_to_stage_prop, event_to_point_prop
+                ]]) == 1):
             logger.info(f'{event} : Skipped')
             return
-        reading = reading_list[0]
         event.update(properties=PageProperties({
-            self.event_to_target_prog_prop: self.event_to_target_prog_prop.page_value(
-                [reading])
+            self.event_to_target_prog_prop: target_list
         }))
 
     def process_page_backward(self, event: Page) -> Any:
@@ -365,13 +370,13 @@ class CreateProgressEvent(MatchSequentialAction):
             filter=self.target_to_datei_prop.filter.is_not_empty())
 
     def process_page(self, target: Page) -> Any:
-        if not target.data.parent == self.target_db:
+        if target.data.parent != self.target_db:
             return
         datei_list = target.data.properties[self.target_to_datei_prop]
         event_prog_list = target.data.properties[self.target_to_event_prog_prop]
         datei_with_event_prog_set: set[Page] = set()
         for event in event_prog_list:
-            for datei in event.get_data().properties[event_to_date_prop]:
+            for datei in event.get_data().properties[event_to_datei_prop]:
                 datei_with_event_prog_set.add(datei)
         datei_without_event_prog_list = set(datei_list) - datei_with_event_prog_set
         logger.info(
@@ -380,7 +385,7 @@ class CreateProgressEvent(MatchSequentialAction):
             event = self.event_db.create_child_page(PageProperties({
                 self.event_to_target_prog_prop: self.event_to_target_prog_prop.page_value(
                     [target]),
-                event_to_date_prop: event_to_date_prop.page_value([datei]),
+                event_to_datei_prop: event_to_datei_prop.page_value([datei]),
                 event_title_prop: event_title_prop.page_value.from_plain_text(
                     self.date_namespace.strf_date(datei))
             }))
