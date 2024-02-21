@@ -5,6 +5,7 @@ import json
 import traceback
 from datetime import datetime, timedelta
 from functools import wraps
+from pathlib import Path
 from typing import Optional, Callable, ParamSpec, cast, TypeVar
 from uuid import UUID
 
@@ -32,17 +33,19 @@ def entrypoint(func: Callable[P, T]) -> Callable[P, Optional[T]]:
     """functions with this decorator can handle WorkflowSkipException,
     therefore, it can be used as the program entrypoint."""
 
-    # def get_latest_log_path() -> Optional[Path]:
-    #     log_path_list = sorted(log_dir.iterdir())
-    #     if not log_path_list:
-    #         return None
-    #     return log_path_list[-1]
+    def get_latest_log_path() -> Optional[Path]:
+        log_path_list = sorted(log_dir.iterdir())
+        if not log_path_list:
+            return None
+        return log_path_list[-1]
 
     @wraps(func)
     def wrapper(*args: P.args, **kwargs: P.kwargs) -> Optional[T]:
-        logger.add(log_dir / '{time}.log',
-                   # (get_latest_log_path() or (log_dir / '{time}.log')),
-                   level='DEBUG', rotation='100 MB', retention=timedelta(weeks=2))
+        logger.add(
+            (get_latest_log_path() or (log_dir / '{time}.log')),
+            # log_dir / '{time}.log',
+            level='DEBUG', rotation='100 MB', retention=timedelta(weeks=2)
+        )
         logger.info(f'{"#" * 5} Start.')
         with logger.catch(reraise=True):
             try:
