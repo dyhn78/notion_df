@@ -38,7 +38,7 @@ topic_base_type_prop = SelectProperty("📕유형")
 topic_base_type_progress = "🌳진행"
 reading_to_main_date_prop = RelationProperty(DatabaseEnum.datei_db.prefix_title)
 reading_to_start_date_prop = RelationProperty(DatabaseEnum.datei_db.prefix + '시작')
-reading_to_event_prop = RelationProperty(DatabaseEnum.event_db.prefix_title)
+reading_to_event_prog_prop = RelationProperty(DatabaseEnum.event_db.prefix + '진도')
 reading_match_date_by_created_time_prop = CheckboxFormulaProperty(
     EmojiCode.BLACK_NOTEBOOK + '시작일<-생성시간')
 
@@ -146,7 +146,7 @@ class MatchReadingDatei(MatchSequentialAction):
     def query(self) -> Paginator[Page]:
         return self.reading_db.query(
             reading_to_start_date_prop.filter.is_empty() & (
-                    reading_to_event_prop.filter.is_not_empty()
+                    reading_to_event_prog_prop.filter.is_not_empty()
                     | reading_to_main_date_prop.filter.is_not_empty()
                     | reading_match_date_by_created_time_prop.filter.is_not_empty()
             )
@@ -172,9 +172,9 @@ class MatchReadingDatei(MatchSequentialAction):
 
     def find_datei(self, reading: Page) -> Optional[Page]:
         def get_reading_event_dates() -> Iterable[Page]:
-            reading_events = reading.data.properties[reading_to_event_prop]
+            reading_event_progs = reading.data.properties[reading_to_event_prog_prop]
             # TODO: RollupPagePropertyValue 구현 후 이곳을 간소화
-            for event in reading_events:
+            for event in reading_event_progs:
                 if not (date_list := event.get_data().properties[event_to_datei_prop]):
                     continue
                 date = date_list[0]
