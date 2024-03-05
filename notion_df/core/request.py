@@ -34,9 +34,10 @@ class Request:
         if isinstance(exception, RequestError):
             status_code = exception.response.status_code
             return 500 <= status_code < 600 or status_code == 409  # conflict
-        return any(isinstance(exception, cls) for cls in [requests.exceptions.SSLError,
-                                                          requests.exceptions.ReadTimeout,
-                                                          requests.exceptions.ChunkedEncodingError])
+        return any(isinstance(exception, cls) for cls in [requests.exceptions.ReadTimeout,
+                                                          requests.exceptions.ChunkedEncodingError,
+                                                          # requests.exceptions.SSLError,
+                                                          ])
 
     @tenacity.retry(wait=tenacity.wait_none(),
                     stop=tenacity.stop_after_attempt(3),
