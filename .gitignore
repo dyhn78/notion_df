@@ -12,4 +12,4 @@ __pycache__
 
 *.ppk
 *.pem
-/generated
+/out
