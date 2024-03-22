@@ -22,8 +22,8 @@ action = CompositeAction([
     MatchEventProgress(base, DatabaseEnum.issue_db),
     MatchEventProgress(base, DatabaseEnum.reading_db),
 
-    MatchDatei(base, DatabaseEnum.schedule_db, '정리'),
-    MatchWeekiByRefDate(base, DatabaseEnum.schedule_db, '주간', '일간'),
+    MatchDatei(base, DatabaseEnum.journal_db, '정리'),
+    MatchWeekiByRefDate(base, DatabaseEnum.journal_db, '주간', '일간'),
 
     MatchDatei(base, DatabaseEnum.stage_db, '일간', read_title=True, write_title=True),
     MatchWeekiByRefDate(base, DatabaseEnum.stage_db, '주간', '일간'),
@@ -54,9 +54,9 @@ action = CompositeAction([
     #            DatabaseEnum.topic_db.prefix_title, DatabaseEnum.topic_db.prefix_title),
     # DeprMatchTopic(base, DatabaseEnum.event_db, DatabaseEnum.reading_db, DatabaseEnum.reading_db.prefix_title,
     #            DatabaseEnum.topic_db.prefix_title, DatabaseEnum.topic_db.prefix_title),
-    # DeprMatchTopic(base, DatabaseEnum.schedule_db, DatabaseEnum.issue_db, DatabaseEnum.issue_db.prefix_title,
+    # DeprMatchTopic(base, DatabaseEnum.journal_db, DatabaseEnum.issue_db, DatabaseEnum.issue_db.prefix_title,
     #                DatabaseEnum.topic_db.prefix_title, DatabaseEnum.topic_db.prefix_title),
-    # DeprMatchTopic(base, DatabaseEnum.schedule_db, DatabaseEnum.reading_db,
+    # DeprMatchTopic(base, DatabaseEnum.journal_db, DatabaseEnum.reading_db,
     #                DatabaseEnum.reading_db.prefix_title,
     #                DatabaseEnum.topic_db.prefix_title, DatabaseEnum.topic_db.prefix_title),
     # MatchDatei(base, DatabaseEnum.depr_event_db, '일간'),
