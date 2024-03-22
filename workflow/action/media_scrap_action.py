@@ -43,7 +43,7 @@ class EditStatusValue(StrEnum):
     confirm_manually = '👤결과 검정'
 
 
-class MediaScraper(IndividualAction):
+class MediaScrapAction(IndividualAction):
     def __init__(self, *, create_window: bool):
         self.reading_db = Database(DatabaseEnum.reading_db.id)
         self.driver_service = WebDriverService(create_window=create_window)
@@ -208,5 +208,5 @@ class ReadingMediaScraperUnit:
 
 
 if __name__ == '__main__':
-    _action = MediaScraper(create_window=False)
+    _action = MediaScrapAction(create_window=False)
     _action.process_pages([Page('https://www.notion.so/dyhn/_-f5caa69f928b4dc1a87b76c3a4917b40?pvs=4')])

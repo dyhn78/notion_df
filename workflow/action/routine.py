@@ -1,15 +1,15 @@
 from __future__ import annotations
 
 from workflow import backup_dir
-from workflow.action.media_scraper import MediaScraper
-from workflow.action.migration_backup import MigrationBackupLoadAction, MigrationBackupSaveAction
-from workflow.action.prop_matcher import MatchActionBase, MatchWeekiByDateValue, MatchDatei, \
+from workflow.action.match_action import MatchActionBase, MatchWeekiByDateValue, MatchDatei, \
     MatchWeekiByRefDate, MatchTimestr, MatchReadingDatei, MatchEventProgress, CreateProgressEvent
+from workflow.action.media_scrap_action import MediaScrapAction
+from workflow.action.migration_backup_action import MigrationBackupLoadAction, MigrationBackupSaveAction
 from workflow.block_enum import DatabaseEnum
 from workflow.core.action import CompositeAction
 
 base = MatchActionBase()
-routine = CompositeAction([
+routine_action = CompositeAction([
     MigrationBackupLoadAction(backup_dir),
     MigrationBackupSaveAction(backup_dir),
 
@@ -46,7 +46,7 @@ routine = CompositeAction([
     MatchDatei(base, DatabaseEnum.gist_db, '일간'),
     MatchWeekiByRefDate(base, DatabaseEnum.gist_db, '주간', '일간'),
 
-    MediaScraper(create_window=False),
+    MediaScrapAction(create_window=False),
 
     # DeprMatchTopic(base, DatabaseEnum.event_db, DatabaseEnum.issue_db, DatabaseEnum.issue_db.prefix_title,
     #            DatabaseEnum.topic_db.prefix_title, DatabaseEnum.topic_db.prefix_title),
@@ -70,7 +70,7 @@ routine = CompositeAction([
 if __name__ == '__main__':
     from datetime import timedelta
 
-    routine.run_recent(interval=timedelta(hours=1))
-    # routine.run_by_last_edited_time(datetime(2024, 1, 7, 17, 0, 0, tzinfo=my_tz), None)
-    # routine.run_from_last_success(update_last_success_time=True)
+    routine_action.run_recent(interval=timedelta(hours=1))
+    # routine_action.run_by_last_edited_time(datetime(2024, 1, 7, 17, 0, 0, tzinfo=my_tz), None)
+    # routine_action.run_from_last_success(update_last_success_time=True)
     pass
