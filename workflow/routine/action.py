@@ -9,7 +9,7 @@ from workflow.block_enum import DatabaseEnum
 from workflow.core.action import CompositeAction
 
 base = MatchActionBase()
-action = CompositeAction([
+routine = CompositeAction([
     MigrationBackupLoadAction(backup_dir),
     MigrationBackupSaveAction(backup_dir),
 
@@ -70,7 +70,7 @@ action = CompositeAction([
 if __name__ == '__main__':
     from datetime import timedelta
 
-    action.run_recent(interval=timedelta(hours=1))
-    # action.run_by_last_edited_time(datetime(2024, 1, 7, 17, 0, 0, tzinfo=my_tz), None)
-    # action.run_from_last_success(update_last_success_time=True)
+    routine.run_recent(interval=timedelta(hours=1))
+    # routine.run_by_last_edited_time(datetime(2024, 1, 7, 17, 0, 0, tzinfo=my_tz), None)
+    # routine.run_from_last_success(update_last_success_time=True)
     pass
