@@ -358,12 +358,14 @@ class MatchEventProgress(MatchSequentialAction):
 class CreateProgressEvent(MatchSequentialAction):
     event_db = DatabaseEnum.event_db.entity
     target_to_datei_prop = RelationProperty(DatabaseEnum.datei_db.prefix_title)
+    target_to_event_prop = RelationProperty(DatabaseEnum.event_db.prefix_title)
     target_to_event_prog_prop = RelationProperty(DatabaseEnum.event_db.prefix + '진도')
 
     def __init__(self, base: MatchActionBase, target_db: DatabaseEnum):
         super().__init__(base)
         self.target_db = target_db.entity
         self.event_to_target_prog_prop = RelationProperty(target_db.prefix + '진도')
+        self.event_to_target_prop = RelationProperty(target_db.prefix_title)
 
     def query(self) -> Iterable[Page]:
         return self.target_db.query(
@@ -373,23 +375,21 @@ class CreateProgressEvent(MatchSequentialAction):
         if target.data.parent != self.target_db:
             return
         datei_list = target.data.properties[self.target_to_datei_prop]
-        event_prog_list = target.data.properties[self.target_to_event_prog_prop]
-        datei_with_event_prog_set: set[Page] = set()
-        for event in event_prog_list:
+        datei_without_event_list = set(datei_list)
+        for event in target.data.properties[self.target_to_event_prop]:
             for datei in event.get_data().properties[event_to_datei_prop]:
-                datei_with_event_prog_set.add(datei)
-        datei_without_event_prog_list = set(datei_list) - datei_with_event_prog_set
-        logger.info(
-            f'target = {target}, datei_without_event_prog_list = {datei_without_event_prog_list}')
-        for datei in datei_without_event_prog_list:
+                datei_without_event_list.discard(datei)
+        logger.info(f'{target=}, {datei_without_event_list=}')
+
+        for datei in datei_without_event_list:
             event = self.event_db.create_child_page(PageProperties({
-                self.event_to_target_prog_prop: self.event_to_target_prog_prop.page_value(
-                    [target]),
+                self.event_to_target_prop: self.event_to_target_prop.page_value([target]),
+                self.event_to_target_prog_prop: self.event_to_target_prog_prop.page_value([target]),
                 event_to_datei_prop: event_to_datei_prop.page_value([datei]),
                 event_title_prop: event_title_prop.page_value.from_plain_text(
                     self.date_namespace.strf_date(datei))
             }))
-            logger.info(f'target = {target}, event = {event}')
+            logger.info(f'{target=}, {event=}')
 
 
 class DeprMatchTopic(MatchSequentialAction):
