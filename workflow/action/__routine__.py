@@ -31,7 +31,7 @@ routine_action = CompositeAction([
     MatchDatei(base, DatabaseEnum.point_db, '일간'),
     MatchWeekiByRefDate(base, DatabaseEnum.point_db, '주간', '일간'),
 
-    MatchDatei(base, DatabaseEnum.issue_db, '생성'),
+    MatchDatei(base, DatabaseEnum.issue_db, '생성'),  # Note: `read_title=False` set purposely here
     MatchWeekiByRefDate(base, DatabaseEnum.issue_db, '주간', '일간'),
     CreateProgressEvent(base, DatabaseEnum.issue_db),
 
