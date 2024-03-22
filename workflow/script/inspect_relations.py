@@ -4,10 +4,10 @@ from pathlib import Path
 
 from notion_df.entity import Database
 from notion_df.property import RelationProperty
-from workflow import data_dir
+from workflow import output_dir
 from workflow.block_enum import DatabaseEnum
 
-pickle_path: Path = data_dir / 'all_relation_properties'
+pickle_path: Path = output_dir / 'all_relation_properties'
 
 
 def init():
