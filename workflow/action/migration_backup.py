@@ -9,7 +9,7 @@ from notion_df.core.request import RequestError
 from notion_df.entity import Page, Database
 from notion_df.object.data import PageData
 from notion_df.property import RelationProperty, PageProperties
-from workflow.action.match_action import get_earliest_date
+from workflow.action.match import get_earliest_date
 from workflow.block_enum import DatabaseEnum
 from workflow.core.action import SequentialAction
 from workflow.service.backup_service import ResponseBackupService

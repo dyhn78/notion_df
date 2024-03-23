@@ -65,11 +65,13 @@ class MatchSequentialAction(MatchAction, SequentialAction, metaclass=ABCMeta):
 
 
 class MatchDatei(MatchSequentialAction):
-    event_db = DatabaseEnum.event_db.entity
-
     def __init__(self, base: MatchActionBase, record: DatabaseEnum,
                  record_to_datei: str, *,
                  read_title: bool = False, write_title: bool = False):
+        """
+        :arg read_title: can get the datei from the record title if the current value includes "YYMMDD"
+        :arg write_title: prepend the date string "YYMMDD" to the record title, unless its current value includes "YY"
+        """
         super().__init__(base)
         self.record_db = record.entity
         self.record_to_datei = RelationProperty(
@@ -107,7 +109,7 @@ class MatchDatei(MatchSequentialAction):
 
     def process_if_record_to_datei_empty(self, record: Page) -> None:
         if (self.read_title
-                and (datei := self.date_namespace.by_record_title(
+                and (datei := self.date_namespace.get_datei_by_record_title(
                     record.data.properties.title.plain_text)) is not None):
             self._update_page(record, PageProperties({
                 self.record_to_datei: self.record_to_datei.page_value([datei]),
@@ -115,7 +117,7 @@ class MatchDatei(MatchSequentialAction):
             return
 
         record_created_date = get_record_created_date(record)
-        datei = self.date_namespace.by_date(record_created_date)
+        datei = self.date_namespace.get_datei_by_date(record_created_date)
         properties: PageProperties[RelationPagePropertyValue | RichText] = \
             PageProperties({
                 self.record_to_datei: self.record_to_datei.page_value([datei]),
@@ -188,7 +190,7 @@ class MatchReadingDatei(MatchSequentialAction):
             return get_earliest_date(reading_event_and_main_dates)
         if reading.data.properties[reading_match_date_by_created_time_prop]:
             reading_created_date = get_record_created_date(reading)
-            return self.date_namespace.by_date(reading_created_date)
+            return self.date_namespace.get_datei_by_date(reading_created_date)
 
 
 class MatchTimestr(MatchSequentialAction):
@@ -456,8 +458,6 @@ class DatabaseNamespace(metaclass=ABCMeta):
 
 
 class DateINamespace(DatabaseNamespace):
-    pattern = re.compile(r'(\d{2})(\d{2})(\d{2}).*')
-
     def __init__(self):
         super().__init__(DatabaseEnum.datei_db, EmojiCode.GREEN_BOOK + '제목')
 
@@ -465,30 +465,22 @@ class DateINamespace(DatabaseNamespace):
     def strf_date(cls, datei: Page) -> str:
         return datei.data.properties[datei_date_prop].start.strftime("%y%m%d")
 
-    def by_date(self, date: dt.date) -> Page:
+    def get_datei_by_date(self, date: dt.date) -> Page:
         day_name = korean_weekday[date.weekday()] + '요일'
         title_plain_text = f'{date.strftime("%y%m%d")} {day_name}'
         return self.by_title(title_plain_text)
 
-    def by_record_title(self, title_plain_text: str) -> Optional[Page]:
+    def get_datei_by_record_title(self, title_plain_text: str) -> Optional[Page]:
         date = self._get_date_from_record_title(title_plain_text)
         if date is None:
             return
-        return self.by_date(date)
+        return self.get_datei_by_date(date)
 
-    @classmethod
-    def format_record_title(cls, title: RichText, datei: Page) -> RichText:
-        if cls.pattern.search(title.plain_text):
-            return RichText()
-        date = datei.data.properties[datei_date_prop].start
-        digit_pattern = re.compile(r'[\d. -]+')
-        return RichText([TextSpan(
-            f"{date.strftime('%y%m%d')}{'|' if digit_pattern.match(title.plain_text) else ''} "),
-            *title])
+    _getter_pattern = re.compile(r'(\d{2})(\d{2})(\d{2}).*')
 
     @classmethod
     def _get_date_from_record_title(cls, title_plain_text: str) -> Optional[dt.date]:
-        match = cls.pattern.match(title_plain_text)
+        match = cls._getter_pattern.match(title_plain_text)
         if not match:
             return None
         year, month, day = (int(s) for s in match.groups())
@@ -499,6 +491,18 @@ class DateINamespace(DatabaseNamespace):
         except ValueError:
             # In case the date is not valid (like '000229' for non-leap year)
             return None
+
+    _checker_pattern = re.compile(r'(\d{2}).*')
+
+    @classmethod
+    def format_record_title(cls, title: RichText, datei: Page) -> RichText:
+        if cls._checker_pattern.search(title.plain_text):
+            return RichText()
+        date = datei.data.properties[datei_date_prop].start
+        digit_pattern = re.compile(r'[\d. -]+')
+        return RichText([TextSpan(
+            f"{date.strftime('%y%m%d')}{'|' if digit_pattern.match(title.plain_text) else ''} "),
+            *title])
 
 
 class WeekINamespace(DatabaseNamespace):

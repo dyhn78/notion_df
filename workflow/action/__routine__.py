@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 from workflow import backup_dir
-from workflow.action.match_action import MatchActionBase, MatchWeekiByDateValue, MatchDatei, \
+from workflow.action.match import MatchActionBase, MatchWeekiByDateValue, MatchDatei, \
     MatchWeekiByRefDate, MatchTimestr, MatchReadingDatei, MatchEventProgress, CreateProgressEvent
-from workflow.action.media_scrap_action import MediaScrapAction
-from workflow.action.migration_backup_action import MigrationBackupLoadAction, MigrationBackupSaveAction
+from workflow.action.media_scrap import MediaScrapAction
+from workflow.action.migration_backup import MigrationBackupLoadAction, MigrationBackupSaveAction
 from workflow.block_enum import DatabaseEnum
 from workflow.core.action import CompositeAction
 
@@ -22,7 +22,7 @@ routine_action = CompositeAction([
     MatchEventProgress(base, DatabaseEnum.issue_db),
     MatchEventProgress(base, DatabaseEnum.reading_db),
 
-    MatchDatei(base, DatabaseEnum.journal_db, '정리'),
+    MatchDatei(base, DatabaseEnum.journal_db, '정리', read_title=True, write_title=True),
     MatchWeekiByRefDate(base, DatabaseEnum.journal_db, '주간', '일간'),
 
     MatchDatei(base, DatabaseEnum.stage_db, '일간', read_title=True, write_title=True),
