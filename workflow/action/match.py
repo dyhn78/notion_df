@@ -493,15 +493,16 @@ class DateINamespace(DatabaseNamespace):
             return None
 
     _checker_pattern = re.compile(r'(\d{2}).*')
+    _digit_pattern = re.compile(r'[\d. -]+')
 
     @classmethod
     def format_record_title(cls, title: RichText, datei: Page) -> RichText:
         if cls._checker_pattern.search(title.plain_text):
             return RichText()
         date = datei.data.properties[datei_date_prop].start
-        digit_pattern = re.compile(r'[\d. -]+')
+        needs_separator: bool = ('|' not in title.plain_text) and not cls._digit_pattern.match(title.plain_text)
         return RichText([TextSpan(
-            f"{date.strftime('%y%m%d')}{'|' if digit_pattern.match(title.plain_text) else ''} "),
+            f"{date.strftime('%y%m%d')}{'|' if needs_separator else ''} "),
             *title])
 
 
