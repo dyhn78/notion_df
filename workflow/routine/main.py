@@ -21,7 +21,7 @@ if __name__ == '__main__':
     for process in psutil.process_iter(['name', 'cmdline']):
         try:
             if process.cmdline()[:3] == [sys.executable, '-m', task_module_name]:
-                sys.stderr.write(f"{task_module_name} is already running.\n")
+                sys.stderr.write(f"Aborting: task module `{task_module_name}` is already running on another process.\n")
                 sys.exit(1)
         except (psutil.AccessDenied, psutil.NoSuchProcess):
             continue
