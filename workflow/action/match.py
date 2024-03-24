@@ -209,7 +209,7 @@ class MatchTimestr(MatchSequentialAction):
         return self.record_db.query(record_timestr_prop.filter.is_empty()
                                     & created_time_filter.equals(dt.date.today()))
 
-    def filter(self, record: Page) -> bool:
+    def will_process(self, record: Page) -> bool:
         if not (record.data.parent == self.record_db and not record.data.properties[
             record_timestr_prop]):
             return False
@@ -217,11 +217,14 @@ class MatchTimestr(MatchSequentialAction):
             record_date = record.data.properties[self.record_to_date][0]
         except IndexError:
             return True
+        record_date_range = record_date.data.properties[datei_date_prop]
+        if record_date_range is None:
+            return False
         record_date = record_date.data.properties[datei_date_prop].start
         return record.data.created_time.date() == record_date
 
     def process_page(self, record: Page) -> None:
-        if not self.filter(record):
+        if not self.will_process(record):
             return
         timestr = record.data.created_time.strftime('%H:%M')
         if record.retrieve().data.properties[record_timestr_prop]:
