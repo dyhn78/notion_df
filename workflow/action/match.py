@@ -262,7 +262,10 @@ class MatchWeekiByRefDate(MatchSequentialAction):
         for record_date in record.data.properties[self.record_to_date]:
             if not record_date.data:
                 record_date.retrieve()
-            new_record_weeks.append(record_date.data.properties[datei_to_week_prop][0])
+            try:
+                new_record_weeks.append(record_date.data.properties[datei_to_week_prop][0])
+            except IndexError:
+                pass  # TODO: add warning
 
         # final check if the property value is filled or changed in the meantime
         prev_record_weeks = record.data.properties[self.record_to_week]
