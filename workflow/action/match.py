@@ -188,10 +188,12 @@ class MatchReadingDatei(MatchSequentialAction):
                                             *reading.data.properties[
                                                 reading_to_main_date_prop]}:
             return get_earliest_date(reading_event_and_main_dates)
+        if (self.read_title
+                and (datei := self.date_namespace.get_datei_by_record_title(
+                    record.data.properties.title.plain_text)) is not None):
         if reading.data.properties[reading_match_date_by_created_time_prop]:
             reading_created_date = get_record_created_date(reading)
             return self.date_namespace.get_datei_by_date(reading_created_date)
-
 
 class MatchTimestr(MatchSequentialAction):
     def __init__(self, base: MatchActionBase, record: DatabaseEnum,
@@ -477,10 +479,11 @@ class DateINamespace(DatabaseNamespace):
         return self.get_datei_by_date(date)
 
     _getter_pattern = re.compile(r'(\d{2})(\d{2})(\d{2}).*')
+    _getter_pattern_2 = re.compile(r'(\d{2})(\d{2})(\d{2})|')
 
     @classmethod
     def _get_date_from_record_title(cls, title_plain_text: str) -> Optional[dt.date]:
-        match = cls._getter_pattern.match(title_plain_text)
+        match = cls._getter_pattern.match(title_plain_text) or cls._getter_pattern_2.search(title_plain_text) 
         if not match:
             return None
         year, month, day = (int(s) for s in match.groups())
