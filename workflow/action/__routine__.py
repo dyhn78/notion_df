@@ -22,7 +22,8 @@ routine_action = CompositeAction([
     MatchEventProgress(base, DatabaseEnum.issue_db),
     MatchEventProgress(base, DatabaseEnum.reading_db),
 
-    MatchDatei(base, DatabaseEnum.journal_db, '정리', read_title=True, write_title=True),
+    MatchDatei(base, DatabaseEnum.journal_db, '일간', read_title=True, write_title=True),
+    MatchDatei(base, DatabaseEnum.journal_db, '정리'),
     MatchWeekiByRefDate(base, DatabaseEnum.journal_db, '주간', '일간'),
 
     MatchDatei(base, DatabaseEnum.stage_db, '일간', read_title=True, write_title=True),
