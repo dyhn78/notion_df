@@ -450,18 +450,15 @@ class DatabaseNamespace(metaclass=ABCMeta):
         self.title_prop = TitleProperty(title_prop)
         self.pages_by_title_plain_text: dict[str, Page] = {}
 
-    def by_title(self, title_plain_text: str) -> Page:
-        if not (page := self.pages_by_title_plain_text.get(title_plain_text)):
-            date_list = self.database.query(
+    def get_page_by_title(self, title_plain_text: str) -> Page:
+        if page := self.pages_by_title_plain_text.get(title_plain_text):
+            return page
+        page_list = self.database.query(
                 self.title_prop.filter.equals(title_plain_text))
-            if date_list:
-                page = date_list[0]
-            else:
-                page = self.database.create_child_page(PageProperties({
-                    self.title_prop: self.title_prop.page_value.from_plain_text(
-                        title_plain_text)
-                }))
-            self.pages_by_title_plain_text[page.data.properties.title.plain_text] = page
+        if not page_list:
+            return
+        page = page_list[0]
+        self.pages_by_title_plain_text[page.data.properties.title.plain_text] = page
         return page
 
 
@@ -476,7 +473,7 @@ class DateINamespace(DatabaseNamespace):
     def get_datei_by_date(self, date: dt.date) -> Page:
         day_name = korean_weekday[date.weekday()] + '요일'
         title_plain_text = f'{date.strftime("%y%m%d")} {day_name}'
-        return self.by_title(title_plain_text)
+        return self.get_page_by_title(title_plain_text) or self.create_page(title_plain_text, date)
 
     def get_datei_by_record_title(self, title_plain_text: str) -> Optional[Page]:
         date = self._get_date_from_record_title(title_plain_text)
@@ -514,6 +511,15 @@ class DateINamespace(DatabaseNamespace):
             f"{date.strftime('%y%m%d')}{'|' if needs_separator else ''} "),
             *title])
 
+    def create_page(self, title_plain_text: str, date: dt.date) -> Page:
+        page = self.database.create_child_page(PageProperties({
+                    self.title_prop: self.title_prop.page_value.from_plain_text(
+                        title_plain_text),
+                    datei_date_prop: datei_date_prop.page_value(start=date, end=None)
+                }))
+        self.pages_by_title_plain_text[page.data.properties.title.plain_text] = page
+        return page
+
 
 class WeekINamespace(DatabaseNamespace):
     def __init__(self):
@@ -521,7 +527,16 @@ class WeekINamespace(DatabaseNamespace):
 
     def by_date(self, date: dt.date) -> Page:
         title_plain_text = self.get_first_day_of_week(date).strftime("%y/%U")
-        return self.by_title(title_plain_text)
+        return self.get_page_by_title(title_plain_text) or self.create_page(title_plain_text, date)
+
+    def create_page(self, title_plain_text: str, date: dt.date) -> Page:
+        page = self.database.create_child_page(PageProperties({
+                    self.title_prop: self.title_prop.page_value.from_plain_text(
+                        title_plain_text),
+                    weeki_date_range_prop: weeki_date_range_prop.page_value(start=self.get_first_day_of_week(date), end=self.get_last_day_of_week(date))
+                }))
+        self.pages_by_title_plain_text[page.data.properties.title.plain_text] = page
+        return page
 
     @classmethod
     def get_first_day_of_week(cls, date: dt.date) -> dt.date:
