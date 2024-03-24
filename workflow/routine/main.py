@@ -20,7 +20,8 @@ task_module_name = get_module_name(workflow.routine.task.__file__)
 if __name__ == '__main__':
     for process in psutil.process_iter(['name', 'cmdline']):
         try:
-            if process.cmdline()[:3] == [sys.executable, '-m', task_module_name]:
+            cmdline_args = process.cmdline()
+            if sys.executable in cmdline_args and task_module_name in cmdline_args:
                 sys.stderr.write(f"Aborting: task module `{task_module_name}` is already running on another process.\n")
                 sys.exit(1)
         except (psutil.AccessDenied, psutil.NoSuchProcess):
