@@ -479,7 +479,7 @@ class DateINamespace(DatabaseNamespace):
         return self.get_datei_by_date(date)
 
     _getter_pattern = re.compile(r'(\d{2})(\d{2})(\d{2}).*')
-    _getter_pattern_2 = re.compile(r'(\d{2})(\d{2})(\d{2})|')
+    _getter_pattern_2 = re.compile(r'(\d{2})(\d{2})(\d{2})[|]')
 
     @classmethod
     def _get_date_from_record_title(cls, title_plain_text: str) -> Optional[dt.date]:
