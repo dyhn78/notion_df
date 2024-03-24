@@ -188,9 +188,9 @@ class MatchReadingDatei(MatchSequentialAction):
                                             *reading.data.properties[
                                                 reading_to_main_date_prop]}:
             return get_earliest_date(reading_event_and_main_dates)
-        if (self.read_title
-                and (datei := self.date_namespace.get_datei_by_record_title(
-                    record.data.properties.title.plain_text)) is not None):
+        if (datei_by_title := self.date_namespace.get_datei_by_record_title(
+                    record.data.properties.title.plain_text)) is not None:
+            return datei_by_title
         if reading.data.properties[reading_match_date_by_created_time_prop]:
             reading_created_date = get_record_created_date(reading)
             return self.date_namespace.get_datei_by_date(reading_created_date)
