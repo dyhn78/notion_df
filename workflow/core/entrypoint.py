@@ -57,7 +57,7 @@ def entrypoint(func: Callable[P, T]) -> Callable[P, Optional[T]]:
                 return
 
     wrapper.__signature__ = inspect.signature(func)
-    return wrapper
+    return cast(Callable[P, Optional[T]], wrapper)
 
 
 class WorkflowRecord:
