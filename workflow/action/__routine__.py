@@ -15,18 +15,18 @@ routine_action = CompositeAction([
 
     MatchWeekiByDateValue(base),
 
-    MatchDatei(base, DatabaseEnum.event_db, '일간', read_title=True, write_title=True),
+    MatchDatei(base, DatabaseEnum.event_db, '일간', read_title=True, write_title='always'),
     MatchDatei(base, DatabaseEnum.event_db, '정리'),
     MatchWeekiByRefDate(base, DatabaseEnum.event_db, '주간', '일간'),
     MatchTimestr(base, DatabaseEnum.event_db, '일간'),
     MatchEventProgress(base, DatabaseEnum.issue_db),
     MatchEventProgress(base, DatabaseEnum.reading_db),
 
-    MatchDatei(base, DatabaseEnum.journal_db, '일간', read_title=True, write_title=True),
+    MatchDatei(base, DatabaseEnum.journal_db, '일간', read_title=True, write_title='if_separator_exists'),
     MatchDatei(base, DatabaseEnum.journal_db, '정리'),
     MatchWeekiByRefDate(base, DatabaseEnum.journal_db, '주간', '일간'),
 
-    MatchDatei(base, DatabaseEnum.stage_db, '일간', read_title=True, write_title=True),
+    MatchDatei(base, DatabaseEnum.stage_db, '일간', read_title=True, write_title='always'),
     MatchWeekiByRefDate(base, DatabaseEnum.stage_db, '주간', '일간'),
 
     MatchDatei(base, DatabaseEnum.point_db, '일간'),

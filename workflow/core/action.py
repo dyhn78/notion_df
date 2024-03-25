@@ -57,7 +57,7 @@ class Action(metaclass=ABCMeta):
 
     @entrypoint
     def run_all(self, update_last_success_time: bool = False) -> Any:
-        with WorkflowRecord(update_last_success_time=update_last_success_time) as wf_rec:
+        with WorkflowRecord(update_last_success_time=update_last_success_time):
             return self.process_all()
 
     @entrypoint

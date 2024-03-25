@@ -3,7 +3,7 @@ from __future__ import annotations
 import datetime as dt
 import re
 from abc import ABCMeta
-from typing import Iterable, Optional, Any
+from typing import Iterable, Optional, Any, Literal
 
 from loguru import logger
 
@@ -67,10 +67,11 @@ class MatchSequentialAction(MatchAction, SequentialAction, metaclass=ABCMeta):
 class MatchDatei(MatchSequentialAction):
     def __init__(self, base: MatchActionBase, record: DatabaseEnum,
                  record_to_datei: str, *,
-                 read_title: bool = False, write_title: bool = False):
+                 read_title: bool = False, write_title: Literal[
+                'always', 'if_separator_exists', 'never'] = 'never'):
         """
         :arg read_title: can get the datei from the record title if the current value includes "YYMMDD"
-        :arg write_title: prepend the date string "YYMMDD" to the record title, unless its current value includes "YY"
+        :arg write_title: prepend the date string "YYMMDD" to the record title
         """
         super().__init__(base)
         self.record_db = record.entity
@@ -99,9 +100,8 @@ class MatchDatei(MatchSequentialAction):
     def process_if_record_to_datei_not_empty(self, record: Page) -> None:
         datei = record.data.properties[self.record_to_datei][0]
         datei.get_data()
-        if (self.write_title
-                and (new_title := self.date_namespace.format_record_title(
-                    record.data.properties.title, datei))):
+        if (new_title := self.date_namespace.format_record_title(
+                record.data.properties.title, datei, self.write_title)):
             properties = PageProperties()
             properties[record.data.properties.title_prop] = new_title
             record.update(properties)
@@ -109,7 +109,7 @@ class MatchDatei(MatchSequentialAction):
 
     def process_if_record_to_datei_empty(self, record: Page) -> None:
         if (self.read_title
-                and (datei := self.date_namespace.get_datei_by_record_title(
+                and (datei := self.date_namespace.get_page_by_record_title(
                     record.data.properties.title.plain_text)) is not None):
             self._update_page(record, PageProperties({
                 self.record_to_datei: self.record_to_datei.page_value([datei]),
@@ -117,14 +117,13 @@ class MatchDatei(MatchSequentialAction):
             return
 
         record_created_date = get_record_created_date(record)
-        datei = self.date_namespace.get_datei_by_date(record_created_date)
+        datei = self.date_namespace.get_page_by_date(record_created_date)
         properties: PageProperties[RelationPagePropertyValue | RichText] = \
             PageProperties({
                 self.record_to_datei: self.record_to_datei.page_value([datei]),
             })
-        if (self.write_title
-                and (new_title := self.date_namespace.format_record_title(
-                    record.data.properties.title, datei))):
+        if (new_title := self.date_namespace.format_record_title(
+                record.data.properties.title, datei, self.write_title)):
             properties[record.data.properties.title_prop] = new_title
         self._update_page(record, properties)
 
@@ -188,12 +187,13 @@ class MatchReadingDatei(MatchSequentialAction):
                                             *reading.data.properties[
                                                 reading_to_main_date_prop]}:
             return get_earliest_date(reading_event_and_main_dates)
-        if (datei_by_title := self.date_namespace.get_datei_by_record_title(
-                    reading.data.properties.title.plain_text)) is not None:
+        if (datei_by_title := self.date_namespace.get_page_by_record_title(
+                reading.data.properties.title.plain_text)) is not None:
             return datei_by_title
         if reading.data.properties[reading_match_date_by_created_time_prop]:
             reading_created_date = get_record_created_date(reading)
-            return self.date_namespace.get_datei_by_date(reading_created_date)
+            return self.date_namespace.get_page_by_date(reading_created_date)
+
 
 class MatchTimestr(MatchSequentialAction):
     def __init__(self, base: MatchActionBase, record: DatabaseEnum,
@@ -266,7 +266,8 @@ class MatchWeekiByRefDate(MatchSequentialAction):
             if not record_date.data:
                 record_date.retrieve()
             try:
-                new_record_weeks.append(record_date.data.properties[datei_to_week_prop][0])
+                new_record_weeks.append(
+                    record_date.data.properties[datei_to_week_prop][0])
             except IndexError:
                 pass  # TODO: add warning
 
@@ -306,7 +307,7 @@ class MatchWeekiByDateValue(MatchSequentialAction):
         if not date:
             logger.info(f'{datei} -> Skipped')
             return
-        week = self.week_namespace.by_date(date.start)
+        week = self.week_namespace.get_page_by_date(date.start)
         if datei.retrieve().data.properties[datei_to_week_prop]:
             return
         datei.update(
@@ -393,8 +394,10 @@ class CreateProgressEvent(MatchSequentialAction):
 
         for datei in datei_without_event_list:
             event = self.event_db.create_child_page(PageProperties({
-                self.event_to_target_prop: self.event_to_target_prop.page_value([target]),
-                self.event_to_target_prog_prop: self.event_to_target_prog_prop.page_value([target]),
+                self.event_to_target_prop: self.event_to_target_prop.page_value(
+                    [target]),
+                self.event_to_target_prog_prop: self.event_to_target_prog_prop.page_value(
+                    [target]),
                 event_to_datei_prop: event_to_datei_prop.page_value([datei]),
                 event_title_prop: event_title_prop.page_value.from_plain_text(
                     self.date_namespace.strf_date(datei))
@@ -454,7 +457,7 @@ class DatabaseNamespace(metaclass=ABCMeta):
         if page := self.pages_by_title_plain_text.get(title_plain_text):
             return page
         page_list = self.database.query(
-                self.title_prop.filter.equals(title_plain_text))
+            self.title_prop.filter.equals(title_plain_text))
         if not page_list:
             return
         page = page_list[0]
@@ -470,83 +473,109 @@ class DateINamespace(DatabaseNamespace):
     def strf_date(cls, datei: Page) -> str:
         return datei.data.properties[datei_date_prop].start.strftime("%y%m%d")
 
-    def get_datei_by_date(self, date: dt.date) -> Page:
+    def get_page_by_date(self, date: dt.date) -> Page:
         day_name = korean_weekday[date.weekday()] + '요일'
         title_plain_text = f'{date.strftime("%y%m%d")} {day_name}'
-        return self.get_page_by_title(title_plain_text) or self.create_page(title_plain_text, date)
+        return self.get_page_by_title(title_plain_text) or self.create_page(
+            title_plain_text, date)
 
-    def get_datei_by_record_title(self, title_plain_text: str) -> Optional[Page]:
+    def get_page_by_record_title(self, title_plain_text: str) -> Optional[Page]:
         date = self._get_date_from_record_title(title_plain_text)
         if date is None:
             return
-        return self.get_datei_by_date(date)
+        return self.get_page_by_date(date)
+
+    @classmethod
+    def check_date_in_record_title(cls, title_plain_text: str,
+                                   mode: Literal['...']) -> bool:
+        ...
+
+    def create_page(self, title_plain_text: str, date: dt.date) -> Page:
+        page = self.database.create_child_page(PageProperties({
+            self.title_prop: self.title_prop.page_value.from_plain_text(
+                title_plain_text),
+            datei_date_prop: datei_date_prop.page_value(start=date, end=None)
+        }))
+        self.pages_by_title_plain_text[page.data.properties.title.plain_text] = page
+        return page
 
     _getter_pattern = re.compile(r'(\d{2})(\d{2})(\d{2}).*')
     _getter_pattern_2 = re.compile(r'(\d{2})(\d{2})(\d{2})[|]')
 
     @classmethod
     def _get_date_from_record_title(cls, title_plain_text: str) -> Optional[dt.date]:
-        match = cls._getter_pattern.match(title_plain_text) or cls._getter_pattern_2.search(title_plain_text) 
+        match = cls._getter_pattern.match(
+            title_plain_text) or cls._getter_pattern_2.search(title_plain_text)
         if not match:
             return None
         year, month, day = (int(s) for s in match.groups())
-        if year > 90:  # TODO
-            return None
+        full_year = (2000 if year < 90 else 1900) + year
         try:
-            return dt.date(2000 + year, month, day)
+            return dt.date(full_year, month, day)
         except ValueError:
             # In case the date is not valid (like '000229' for non-leap year)
             return None
 
-    _checker_pattern = re.compile(r'(\d{2}).*')
     _digit_pattern = re.compile(r'[\d. -]+')
 
     @classmethod
-    def format_record_title(cls, title: RichText, datei: Page) -> RichText:
-        if cls._checker_pattern.search(title.plain_text):
+    def format_record_title(
+            cls, title: RichText, datei: Page,
+            write_title: Literal['always', 'if_separator_exists', 'never']
+    ) -> RichText:
+        datei_date = datei.data.properties[datei_date_prop].start
+        if not cls._check_record_title(title.plain_text, datei_date, write_title):
             return RichText()
-        date = datei.data.properties[datei_date_prop].start
-        needs_separator: bool = ('|' not in title.plain_text) and not cls._digit_pattern.match(title.plain_text)
+
+        needs_separator: bool = (('|' not in title.plain_text)
+                                 and not cls._digit_pattern.match(title.plain_text))
         return RichText([TextSpan(
-            f"{date.strftime('%y%m%d')}{'|' if needs_separator else ''} "),
+            f"{datei_date.strftime('%y%m%d')}{'|' if needs_separator else ''} "),
             *title])
 
-    def create_page(self, title_plain_text: str, date: dt.date) -> Page:
-        page = self.database.create_child_page(PageProperties({
-                    self.title_prop: self.title_prop.page_value.from_plain_text(
-                        title_plain_text),
-                    datei_date_prop: datei_date_prop.page_value(start=date, end=None)
-                }))
-        self.pages_by_title_plain_text[page.data.properties.title.plain_text] = page
-        return page
+    @classmethod
+    def _check_record_title(
+            cls, title_plain_text: str, datei_date: dt.date,
+            write_title: Literal['always', 'if_separator_exists', 'never']
+    ) -> bool:
+        match write_title:
+            case 'always':
+                return cls._get_date_from_record_title(title_plain_text) == datei_date
+            case 'if_separator_exists':
+                return '|' in title_plain_text
+            case 'never':
+                return False
 
 
 class WeekINamespace(DatabaseNamespace):
     def __init__(self):
         super().__init__(DatabaseEnum.weeki_db, EmojiCode.GREEN_BOOK + '제목')
 
-    def by_date(self, date: dt.date) -> Page:
-        title_plain_text = self.get_first_day_of_week(date).strftime("%y/%U")
-        return self.get_page_by_title(title_plain_text) or self.create_page(title_plain_text, date)
+    def get_page_by_date(self, date: dt.date) -> Page:
+        title_plain_text = self._get_first_day_of_week(date).strftime("%y/%U")
+        return self.get_page_by_title(title_plain_text) or self.create_page(
+            title_plain_text, date)
 
     def create_page(self, title_plain_text: str, date: dt.date) -> Page:
         page = self.database.create_child_page(PageProperties({
-                    self.title_prop: self.title_prop.page_value.from_plain_text(
-                        title_plain_text),
-                    weeki_date_range_prop: weeki_date_range_prop.page_value(start=self.get_first_day_of_week(date), end=self.get_last_day_of_week(date))
-                }))
+            self.title_prop: self.title_prop.page_value.from_plain_text(
+                title_plain_text),
+            weeki_date_range_prop: weeki_date_range_prop.page_value(
+                start=self._get_first_day_of_week(date),
+                end=self._get_last_day_of_week(date))
+        }))
         self.pages_by_title_plain_text[page.data.properties.title.plain_text] = page
         return page
 
     @classmethod
-    def get_first_day_of_week(cls, date: dt.date) -> dt.date:
+    def _get_first_day_of_week(cls, date: dt.date) -> dt.date:
         # returns the first day (sunday) of the week.
         weekday = (date.weekday() + 1) % 7
         return date + dt.timedelta(days=-weekday)
 
     @classmethod
-    def get_last_day_of_week(cls, date: dt.date) -> dt.date:
-        return cls.get_first_day_of_week(date) + dt.timedelta(days=6)
+    def _get_last_day_of_week(cls, date: dt.date) -> dt.date:
+        return cls._get_first_day_of_week(date) + dt.timedelta(days=6)
 
 
 def get_record_created_date(record: Page) -> dt.date:
