@@ -524,7 +524,21 @@ class DateINamespace(DatabaseNamespace):
             write_title: Literal['always', 'if_separator_exists', 'never']
     ) -> RichText:
         datei_date = datei.data.properties[datei_date_prop].start
-        if not cls._check_record_title(title.plain_text, datei_date, write_title):
+
+        def check_date_in_record_title():
+            date_in_record_title = cls._get_date_from_record_title(title.plain_text)
+            logger.debug(f"{title.plain_text=}, {date_in_record_title=}")
+            return date_in_record_title != datei_date
+
+        match write_title:
+            case 'always':
+                needs_update = not check_date_in_record_title()
+            case 'if_separator_exists':
+                needs_update = '|' in title.plain_text and not check_date_in_record_title()
+            case _:
+                needs_update = False
+
+        if not needs_update:
             return RichText()
 
         needs_separator: bool = (('|' not in title.plain_text)
@@ -532,19 +546,6 @@ class DateINamespace(DatabaseNamespace):
         return RichText([TextSpan(
             f"{datei_date.strftime('%y%m%d')}{'|' if needs_separator else ''} "),
             *title])
-
-    @classmethod
-    def _check_record_title(
-            cls, title_plain_text: str, datei_date: dt.date,
-            write_title: Literal['always', 'if_separator_exists', 'never']
-    ) -> bool:
-        match write_title:
-            case 'always':
-                return cls._get_date_from_record_title(title_plain_text) is not None
-            case 'if_separator_exists':
-                return '|' in title_plain_text
-            case 'never':
-                return False
 
 
 class WeekINamespace(DatabaseNamespace):
