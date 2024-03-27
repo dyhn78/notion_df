@@ -540,7 +540,7 @@ class DateINamespace(DatabaseNamespace):
     ) -> bool:
         match write_title:
             case 'always':
-                return cls._get_date_from_record_title(title_plain_text) == datei_date
+                return cls._get_date_from_record_title(title_plain_text) is not None
             case 'if_separator_exists':
                 return '|' in title_plain_text
             case 'never':
