@@ -528,7 +528,7 @@ class DateINamespace(DatabaseNamespace):
         def check_date_in_record_title():
             date_in_record_title = cls._get_date_from_record_title(title.plain_text)
             logger.debug(f"{title.plain_text=}, {date_in_record_title=}")
-            return date_in_record_title != datei_date
+            return date_in_record_title == datei_date
 
         match write_title:
             case 'always':
