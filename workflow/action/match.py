@@ -102,7 +102,7 @@ class MatchDatei(MatchSequentialAction):
     def process_if_record_to_datei_not_empty(self, record: Page) -> None:
         datei = record.data.properties[self.record_to_datei][0]
         datei.get_data()
-        if (new_title := self.date_namespace.format_record_title(
+        if (new_title := self.date_namespace.prepend_date_in_record_title(
                 record.data.properties.title, datei, self.write_title)):
             properties = PageProperties()
             properties[record.data.properties.title_prop] = new_title
@@ -124,7 +124,7 @@ class MatchDatei(MatchSequentialAction):
             PageProperties({
                 self.record_to_datei: self.record_to_datei.page_value([datei]),
             })
-        if (new_title := self.date_namespace.format_record_title(
+        if (new_title := self.date_namespace.prepend_date_in_record_title(
                 record.data.properties.title, datei, self.write_title)):
             properties[record.data.properties.title_prop] = new_title
         self._update_page(record, properties)
@@ -500,11 +500,22 @@ class DateINamespace(DatabaseNamespace):
 
     _getter_pattern = re.compile(r'(\d{2})(\d{2})(\d{2}).*')
     _getter_pattern_2 = re.compile(r'(\d{2})(\d{2})(\d{2})[|]')
+    _checker_pattern = _getter_pattern
 
     @classmethod
     def _get_date_from_record_title(cls, title_plain_text: str) -> Optional[dt.date]:
         match = cls._getter_pattern.match(
             title_plain_text) or cls._getter_pattern_2.search(title_plain_text)
+        return cls._parse_date_match(match)
+
+    @classmethod
+    def _check_date_in_record_title(cls, title_plain_text: str, date: dt.date) -> bool:
+        match = cls._checker_pattern.search(title_plain_text)
+        date_in_record_title = cls._parse_date_match(match)
+        return date_in_record_title == date
+
+    @classmethod
+    def _parse_date_match(cls, match: Optional[re.Match[str]]) -> Optional[dt.date]:
         if not match:
             return None
         year, month, day = (int(s) for s in match.groups())
@@ -518,24 +529,19 @@ class DateINamespace(DatabaseNamespace):
     _digit_pattern = re.compile(r'[\d. -]+')
 
     @classmethod
-    def format_record_title(
+    def prepend_date_in_record_title(
             cls, title: RichText, datei: Page,
             write_title: Literal['always', 'if_separator_exists', 'never']
     ) -> RichText:
         datei_date = datei.data.properties[datei_date_prop].start
 
-        def check_date_in_record_title():
-            date_in_record_title = cls._get_date_from_record_title(title.plain_text)
-            logger.debug(f"{title.plain_text=}, {date_in_record_title=}")
-            return date_in_record_title == datei_date
-
         needs_update: bool
         match write_title:
             case 'always':
-                needs_update = not check_date_in_record_title()
+                needs_update = not cls._check_date_in_record_title(title.plain_text, datei_date)
             case 'if_separator_exists':
                 needs_update = ('|' in title.plain_text
-                                and not check_date_in_record_title())
+                                and cls._check_date_in_record_title(title.plain_text, datei_date))
             case _:
                 needs_update = False
         if not needs_update:
