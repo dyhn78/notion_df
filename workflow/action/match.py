@@ -41,6 +41,8 @@ reading_to_start_date_prop = RelationProperty(DatabaseEnum.datei_db.prefix + '�
 reading_to_event_prog_prop = RelationProperty(DatabaseEnum.event_db.prefix + '진도')
 reading_match_date_by_created_time_prop = CheckboxFormulaProperty(
     EmojiCode.BLACK_NOTEBOOK + '시작일<-생성시간')
+status_prop = SelectProperty("📘정리")
+status_auto_generated = "⚙️자동"
 
 
 # TODO
@@ -337,8 +339,12 @@ class MatchEventProgress(MatchSequentialAction):
     def process_page_forward(self, event: Page) -> Any:
         if event.data.properties[self.event_to_target_prog_prop]:
             logger.info(
-                f'{event} : Skipped - {self.event_to_target_prog_prop.name} not empty')
+                f'{event} : Forward Skipped - {self.event_to_target_prog_prop.name} not empty')
             return
+        if event.data.properties[status_prop] == status_auto_generated:
+            logger.info(
+                f'{event} : Forward Skipped - {status_prop.name} == {status_auto_generated}'
+            )
 
         # TODO: more edge case handling
         if not (len(target_list := event.data.properties[
@@ -348,7 +354,7 @@ class MatchEventProgress(MatchSequentialAction):
                     event_to_issue_prop, event_to_reading_prop,
                     event_to_stage_prop, event_to_point_prop
                 ]]) == 1):
-            logger.info(f'{event} : Skipped')
+            logger.info(f'{event} : Forward Skipped')
             return
         event.update(properties=PageProperties({
             self.event_to_target_prog_prop: target_list
@@ -359,18 +365,18 @@ class MatchEventProgress(MatchSequentialAction):
         event_readings_new = event_readings + event.data.properties[
             self.event_to_target_prog_prop]
         if event_readings == event_readings_new:
-            logger.info(f'{event} : Skipped')
+            logger.info(f'{event} : Backward Skipped')
             return
         event.update(PageProperties({
             self.event_to_target_prop: event_readings_new
         }))
 
 
-class CreateProgressEvent(MatchSequentialAction):
+class CreateDateEvent(MatchSequentialAction):
     event_db = DatabaseEnum.event_db.entity
     target_to_datei_prop = RelationProperty(DatabaseEnum.datei_db.prefix_title)
     target_to_event_prop = RelationProperty(DatabaseEnum.event_db.prefix_title)
-    target_to_event_prog_prop = RelationProperty(DatabaseEnum.event_db.prefix + '진도')
+    # target_to_event_prog_prop = RelationProperty(DatabaseEnum.event_db.prefix + '진도')
 
     def __init__(self, base: MatchActionBase, target_db: DatabaseEnum):
         super().__init__(base)
@@ -395,8 +401,6 @@ class CreateProgressEvent(MatchSequentialAction):
         for datei in datei_without_event_list:
             event = self.event_db.create_child_page(PageProperties({
                 self.event_to_target_prop: self.event_to_target_prop.page_value(
-                    [target]),
-                self.event_to_target_prog_prop: self.event_to_target_prog_prop.page_value(
                     [target]),
                 event_to_datei_prop: event_to_datei_prop.page_value([datei]),
                 event_title_prop: event_title_prop.page_value.from_plain_text(
@@ -453,7 +457,7 @@ class DatabaseNamespace(metaclass=ABCMeta):
         self.title_prop = TitleProperty(title_prop)
         self.pages_by_title_plain_text: dict[str, Page] = {}
 
-    def get_page_by_title(self, title_plain_text: str) -> Page:
+    def get_page_by_title(self, title_plain_text: str) -> Optional[Page]:
         if page := self.pages_by_title_plain_text.get(title_plain_text):
             return page
         page_list = self.database.query(
@@ -484,11 +488,6 @@ class DateINamespace(DatabaseNamespace):
         if date is None:
             return
         return self.get_page_by_date(date)
-
-    @classmethod
-    def check_date_in_record_title(cls, title_plain_text: str,
-                                   mode: Literal['...']) -> bool:
-        ...
 
     def create_page(self, title_plain_text: str, date: dt.date) -> Page:
         page = self.database.create_child_page(PageProperties({
@@ -530,14 +529,15 @@ class DateINamespace(DatabaseNamespace):
             logger.debug(f"{title.plain_text=}, {date_in_record_title=}")
             return date_in_record_title == datei_date
 
+        needs_update: bool
         match write_title:
             case 'always':
                 needs_update = not check_date_in_record_title()
             case 'if_separator_exists':
-                needs_update = '|' in title.plain_text and not check_date_in_record_title()
+                needs_update = ('|' in title.plain_text
+                                and not check_date_in_record_title())
             case _:
                 needs_update = False
-
         if not needs_update:
             return RichText()
 
