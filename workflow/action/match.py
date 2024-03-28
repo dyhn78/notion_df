@@ -85,7 +85,7 @@ class MatchDatei(MatchSequentialAction):
     def __repr__(self):
         return repr_object(self,
                            record_db=self.record_db,
-                           record_to_date=self.record_to_datei)
+                           record_to_datei=self.record_to_datei)
 
     def query(self) -> Paginator[Page]:
         return self.record_db.query(self.record_to_datei.filter.is_empty())
@@ -202,8 +202,13 @@ class MatchTimestr(MatchSequentialAction):
                  record_to_date: str):
         super().__init__(base)
         self.record_db = Database(record.id)
-        self.record_to_date = RelationProperty(
+        self.record_to_datei = RelationProperty(
             DatabaseEnum.datei_db.prefix + record_to_date)
+
+    def __repr__(self):
+        return repr_object(self,
+                           record_db=self.record_db,
+                           record_to_datei=self.record_to_datei)
 
     def query(self) -> Iterable[Page]:
         # since the benefits are concentrated on near present days,
@@ -216,7 +221,7 @@ class MatchTimestr(MatchSequentialAction):
             record_timestr_prop]):
             return False
         try:
-            record_date = record.data.properties[self.record_to_date][0]
+            record_date = record.data.properties[self.record_to_datei][0]
         except IndexError:
             return True
         record_date_range = record_date.data.properties[datei_date_prop]
@@ -243,28 +248,28 @@ class MatchWeekiByRefDate(MatchSequentialAction):
         super().__init__(base)
         self.record_db = record_db_enum.entity
         self.record_db_title = self.record_db.data.title = record_db_enum.title
-        self.record_to_week = RelationProperty(
+        self.record_to_weeki = RelationProperty(
             f'{DatabaseEnum.weeki_db.prefix}{record_to_week}')
-        self.record_to_date = RelationProperty(
+        self.record_to_datei = RelationProperty(
             f'{DatabaseEnum.datei_db.prefix}{record_to_date}')
 
     def __repr__(self):
         return repr_object(self,
                            record_db_title=self.record_db_title,
-                           record_to_week=self.record_to_week,
-                           record_to_date=self.record_to_date)
+                           record_to_weeki=self.record_to_weeki,
+                           record_to_datei=self.record_to_datei)
 
     def query(self) -> Paginator[Page]:
         return self.record_db.query(
-            self.record_to_week.filter.is_empty() & self.record_to_date.filter.is_not_empty())
+            self.record_to_weeki.filter.is_empty() & self.record_to_datei.filter.is_not_empty())
 
     def process_page(self, record: Page) -> None:
         if not (record.data.parent == self.record_db and record.data.properties[
-            self.record_to_date]):
+            self.record_to_datei]):
             return
 
-        new_record_weeks = self.record_to_week.page_value()
-        for record_date in record.data.properties[self.record_to_date]:
+        new_record_weeks = self.record_to_weeki.page_value()
+        for record_date in record.data.properties[self.record_to_datei]:
             if not record_date.data:
                 record_date.retrieve()
             try:
@@ -274,17 +279,17 @@ class MatchWeekiByRefDate(MatchSequentialAction):
                 pass  # TODO: add warning
 
         # final check if the property value is filled or changed in the meantime
-        prev_record_weeks = record.data.properties[self.record_to_week]
+        prev_record_weeks = record.data.properties[self.record_to_weeki]
         if set(prev_record_weeks) == set(new_record_weeks):
             logger.info(f'{record} : Skipped')
             return
 
-        curr_record_weeks = record.retrieve().data.properties[self.record_to_week]
+        curr_record_weeks = record.retrieve().data.properties[self.record_to_weeki]
         if ((set(prev_record_weeks) != set(curr_record_weeks))
                 or (set(curr_record_weeks) == set(new_record_weeks))):
             logger.info(f'{record} : Skipped')
             return
-        record.update(PageProperties({self.record_to_week: new_record_weeks}))
+        record.update(PageProperties({self.record_to_weeki: new_record_weeks}))
         logger.info(f'{record} : {list(new_record_weeks)}')
         return
 
@@ -322,8 +327,13 @@ class MatchEventProgress(MatchSequentialAction):
 
     def __init__(self, base: MatchActionBase, target_db: DatabaseEnum):
         super().__init__(base)
+        self.target_db = target_db
         self.event_to_target_prop = RelationProperty(target_db.prefix_title)
         self.event_to_target_prog_prop = RelationProperty(target_db.prefix + '진도')
+
+    def __repr__(self):
+        return repr_object(self,
+                           target_db=self.target_db)
 
     def query(self) -> Iterable[Page]:
         return self.event_db.query(
@@ -383,6 +393,10 @@ class DeprCreateDateEvent(MatchSequentialAction):
         self.target_db = target_db.entity
         self.event_to_target_prog_prop = RelationProperty(target_db.prefix + '진도')
         self.event_to_target_prop = RelationProperty(target_db.prefix_title)
+
+    def __repr__(self):
+        return repr_object(self,
+                           target_db=self.target_db)
 
     def query(self) -> Iterable[Page]:
         return self.target_db.query(
