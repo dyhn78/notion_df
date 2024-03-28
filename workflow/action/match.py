@@ -372,7 +372,7 @@ class MatchEventProgress(MatchSequentialAction):
         }))
 
 
-class CreateDateEvent(MatchSequentialAction):
+class DeprCreateDateEvent(MatchSequentialAction):
     event_db = DatabaseEnum.event_db.entity
     target_to_datei_prop = RelationProperty(DatabaseEnum.datei_db.prefix_title)
     target_to_event_prop = RelationProperty(DatabaseEnum.event_db.prefix_title)
