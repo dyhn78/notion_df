@@ -185,10 +185,9 @@ class MatchReadingDatei(MatchSequentialAction):
                     continue
                 yield date
 
-        if reading_event_and_main_dates := {*get_reading_event_dates(),
-                                            *reading.data.properties[
-                                                reading_to_main_date_prop]}:
-            return get_earliest_date(reading_event_and_main_dates)
+        # ignore reading_main_date := reading.data.properties[reading_to_main_date_prop]
+        if reading_event_dateis := {*get_reading_event_dates()}:
+            return get_earliest_date(reading_event_dateis)
         if (datei_by_title := self.date_namespace.get_page_by_record_title(
                 reading.data.properties.title.plain_text)) is not None:
             return datei_by_title
