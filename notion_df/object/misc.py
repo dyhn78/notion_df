@@ -151,7 +151,7 @@ class SelectOption(DualSerializable):
     def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
         return cls._deserialize_from_dict(raw)
 
-    def __eq__(self, other: SelectOption | str) -> bool:
+    def __eq__(self, other: Any) -> bool:
         """compare with str to match the name or id."""
         if isinstance(other, SelectOption):
             if self.id != other.id and self.id is not None and other.id is not None:
@@ -161,6 +161,7 @@ class SelectOption(DualSerializable):
             return self.name == other.name
         if isinstance(other, str):
             return self.name == other or self.id == other
+        return False
 
 
 class SelectOptions(list[SelectOption]):

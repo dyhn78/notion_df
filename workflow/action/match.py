@@ -41,6 +41,8 @@ reading_to_start_date_prop = RelationProperty(DatabaseEnum.datei_db.prefix + '�
 reading_to_event_prog_prop = RelationProperty(DatabaseEnum.event_db.prefix + '진도')
 reading_match_date_by_created_time_prop = CheckboxFormulaProperty(
     EmojiCode.BLACK_NOTEBOOK + '시작일<-생성시간')
+status_prop = SelectProperty("📘정리")
+status_auto_generated = "⚙️자동"
 
 
 # TODO
@@ -83,7 +85,7 @@ class MatchDatei(MatchSequentialAction):
     def __repr__(self):
         return repr_object(self,
                            record_db=self.record_db,
-                           record_to_date=self.record_to_datei)
+                           record_to_datei=self.record_to_datei)
 
     def query(self) -> Paginator[Page]:
         return self.record_db.query(self.record_to_datei.filter.is_empty())
@@ -100,7 +102,7 @@ class MatchDatei(MatchSequentialAction):
     def process_if_record_to_datei_not_empty(self, record: Page) -> None:
         datei = record.data.properties[self.record_to_datei][0]
         datei.get_data()
-        if (new_title := self.date_namespace.format_record_title(
+        if (new_title := self.date_namespace.prepend_date_in_record_title(
                 record.data.properties.title, datei, self.write_title)):
             properties = PageProperties()
             properties[record.data.properties.title_prop] = new_title
@@ -122,7 +124,7 @@ class MatchDatei(MatchSequentialAction):
             PageProperties({
                 self.record_to_datei: self.record_to_datei.page_value([datei]),
             })
-        if (new_title := self.date_namespace.format_record_title(
+        if (new_title := self.date_namespace.prepend_date_in_record_title(
                 record.data.properties.title, datei, self.write_title)):
             properties[record.data.properties.title_prop] = new_title
         self._update_page(record, properties)
@@ -200,8 +202,13 @@ class MatchTimestr(MatchSequentialAction):
                  record_to_date: str):
         super().__init__(base)
         self.record_db = Database(record.id)
-        self.record_to_date = RelationProperty(
+        self.record_to_datei = RelationProperty(
             DatabaseEnum.datei_db.prefix + record_to_date)
+
+    def __repr__(self):
+        return repr_object(self,
+                           record_db=self.record_db,
+                           record_to_datei=self.record_to_datei)
 
     def query(self) -> Iterable[Page]:
         # since the benefits are concentrated on near present days,
@@ -214,7 +221,7 @@ class MatchTimestr(MatchSequentialAction):
             record_timestr_prop]):
             return False
         try:
-            record_date = record.data.properties[self.record_to_date][0]
+            record_date = record.data.properties[self.record_to_datei][0]
         except IndexError:
             return True
         record_date_range = record_date.data.properties[datei_date_prop]
@@ -241,28 +248,28 @@ class MatchWeekiByRefDate(MatchSequentialAction):
         super().__init__(base)
         self.record_db = record_db_enum.entity
         self.record_db_title = self.record_db.data.title = record_db_enum.title
-        self.record_to_week = RelationProperty(
+        self.record_to_weeki = RelationProperty(
             f'{DatabaseEnum.weeki_db.prefix}{record_to_week}')
-        self.record_to_date = RelationProperty(
+        self.record_to_datei = RelationProperty(
             f'{DatabaseEnum.datei_db.prefix}{record_to_date}')
 
     def __repr__(self):
         return repr_object(self,
                            record_db_title=self.record_db_title,
-                           record_to_week=self.record_to_week,
-                           record_to_date=self.record_to_date)
+                           record_to_weeki=self.record_to_weeki,
+                           record_to_datei=self.record_to_datei)
 
     def query(self) -> Paginator[Page]:
         return self.record_db.query(
-            self.record_to_week.filter.is_empty() & self.record_to_date.filter.is_not_empty())
+            self.record_to_weeki.filter.is_empty() & self.record_to_datei.filter.is_not_empty())
 
     def process_page(self, record: Page) -> None:
         if not (record.data.parent == self.record_db and record.data.properties[
-            self.record_to_date]):
+            self.record_to_datei]):
             return
 
-        new_record_weeks = self.record_to_week.page_value()
-        for record_date in record.data.properties[self.record_to_date]:
+        new_record_weeks = self.record_to_weeki.page_value()
+        for record_date in record.data.properties[self.record_to_datei]:
             if not record_date.data:
                 record_date.retrieve()
             try:
@@ -272,17 +279,17 @@ class MatchWeekiByRefDate(MatchSequentialAction):
                 pass  # TODO: add warning
 
         # final check if the property value is filled or changed in the meantime
-        prev_record_weeks = record.data.properties[self.record_to_week]
+        prev_record_weeks = record.data.properties[self.record_to_weeki]
         if set(prev_record_weeks) == set(new_record_weeks):
             logger.info(f'{record} : Skipped')
             return
 
-        curr_record_weeks = record.retrieve().data.properties[self.record_to_week]
+        curr_record_weeks = record.retrieve().data.properties[self.record_to_weeki]
         if ((set(prev_record_weeks) != set(curr_record_weeks))
                 or (set(curr_record_weeks) == set(new_record_weeks))):
             logger.info(f'{record} : Skipped')
             return
-        record.update(PageProperties({self.record_to_week: new_record_weeks}))
+        record.update(PageProperties({self.record_to_weeki: new_record_weeks}))
         logger.info(f'{record} : {list(new_record_weeks)}')
         return
 
@@ -320,8 +327,13 @@ class MatchEventProgress(MatchSequentialAction):
 
     def __init__(self, base: MatchActionBase, target_db: DatabaseEnum):
         super().__init__(base)
+        self.target_db = target_db
         self.event_to_target_prop = RelationProperty(target_db.prefix_title)
         self.event_to_target_prog_prop = RelationProperty(target_db.prefix + '진도')
+
+    def __repr__(self):
+        return repr_object(self,
+                           target_db=self.target_db)
 
     def query(self) -> Iterable[Page]:
         return self.event_db.query(
@@ -337,8 +349,12 @@ class MatchEventProgress(MatchSequentialAction):
     def process_page_forward(self, event: Page) -> Any:
         if event.data.properties[self.event_to_target_prog_prop]:
             logger.info(
-                f'{event} : Skipped - {self.event_to_target_prog_prop.name} not empty')
+                f'{event} : Forward Skipped - {self.event_to_target_prog_prop.name} not empty')
             return
+        if event.data.properties[status_prop] == status_auto_generated:
+            logger.info(
+                f'{event} : Forward Skipped - {status_prop.name} == {status_auto_generated}'
+            )
 
         # TODO: more edge case handling
         if not (len(target_list := event.data.properties[
@@ -348,7 +364,7 @@ class MatchEventProgress(MatchSequentialAction):
                     event_to_issue_prop, event_to_reading_prop,
                     event_to_stage_prop, event_to_point_prop
                 ]]) == 1):
-            logger.info(f'{event} : Skipped')
+            logger.info(f'{event} : Forward Skipped')
             return
         event.update(properties=PageProperties({
             self.event_to_target_prog_prop: target_list
@@ -359,24 +375,28 @@ class MatchEventProgress(MatchSequentialAction):
         event_readings_new = event_readings + event.data.properties[
             self.event_to_target_prog_prop]
         if event_readings == event_readings_new:
-            logger.info(f'{event} : Skipped')
+            logger.info(f'{event} : Backward Skipped')
             return
         event.update(PageProperties({
             self.event_to_target_prop: event_readings_new
         }))
 
 
-class CreateProgressEvent(MatchSequentialAction):
+class DeprCreateDateEvent(MatchSequentialAction):
     event_db = DatabaseEnum.event_db.entity
     target_to_datei_prop = RelationProperty(DatabaseEnum.datei_db.prefix_title)
     target_to_event_prop = RelationProperty(DatabaseEnum.event_db.prefix_title)
-    target_to_event_prog_prop = RelationProperty(DatabaseEnum.event_db.prefix + '진도')
+    # target_to_event_prog_prop = RelationProperty(DatabaseEnum.event_db.prefix + '진도')
 
     def __init__(self, base: MatchActionBase, target_db: DatabaseEnum):
         super().__init__(base)
         self.target_db = target_db.entity
         self.event_to_target_prog_prop = RelationProperty(target_db.prefix + '진도')
         self.event_to_target_prop = RelationProperty(target_db.prefix_title)
+
+    def __repr__(self):
+        return repr_object(self,
+                           target_db=self.target_db)
 
     def query(self) -> Iterable[Page]:
         return self.target_db.query(
@@ -395,8 +415,6 @@ class CreateProgressEvent(MatchSequentialAction):
         for datei in datei_without_event_list:
             event = self.event_db.create_child_page(PageProperties({
                 self.event_to_target_prop: self.event_to_target_prop.page_value(
-                    [target]),
-                self.event_to_target_prog_prop: self.event_to_target_prog_prop.page_value(
                     [target]),
                 event_to_datei_prop: event_to_datei_prop.page_value([datei]),
                 event_title_prop: event_title_prop.page_value.from_plain_text(
@@ -453,7 +471,7 @@ class DatabaseNamespace(metaclass=ABCMeta):
         self.title_prop = TitleProperty(title_prop)
         self.pages_by_title_plain_text: dict[str, Page] = {}
 
-    def get_page_by_title(self, title_plain_text: str) -> Page:
+    def get_page_by_title(self, title_plain_text: str) -> Optional[Page]:
         if page := self.pages_by_title_plain_text.get(title_plain_text):
             return page
         page_list = self.database.query(
@@ -485,11 +503,6 @@ class DateINamespace(DatabaseNamespace):
             return
         return self.get_page_by_date(date)
 
-    @classmethod
-    def check_date_in_record_title(cls, title_plain_text: str,
-                                   mode: Literal['...']) -> bool:
-        ...
-
     def create_page(self, title_plain_text: str, date: dt.date) -> Page:
         page = self.database.create_child_page(PageProperties({
             self.title_prop: self.title_prop.page_value.from_plain_text(
@@ -501,11 +514,22 @@ class DateINamespace(DatabaseNamespace):
 
     _getter_pattern = re.compile(r'(\d{2})(\d{2})(\d{2}).*')
     _getter_pattern_2 = re.compile(r'(\d{2})(\d{2})(\d{2})[|]')
+    _checker_pattern = _getter_pattern
 
     @classmethod
     def _get_date_from_record_title(cls, title_plain_text: str) -> Optional[dt.date]:
         match = cls._getter_pattern.match(
             title_plain_text) or cls._getter_pattern_2.search(title_plain_text)
+        return cls._parse_date_match(match)
+
+    @classmethod
+    def _check_date_in_record_title(cls, title_plain_text: str, date: dt.date) -> bool:
+        match = cls._checker_pattern.search(title_plain_text)
+        date_in_record_title = cls._parse_date_match(match)
+        return date_in_record_title == date
+
+    @classmethod
+    def _parse_date_match(cls, match: Optional[re.Match[str]]) -> Optional[dt.date]:
         if not match:
             return None
         year, month, day = (int(s) for s in match.groups())
@@ -519,26 +543,21 @@ class DateINamespace(DatabaseNamespace):
     _digit_pattern = re.compile(r'[\d. -]+')
 
     @classmethod
-    def format_record_title(
+    def prepend_date_in_record_title(
             cls, title: RichText, datei: Page,
             write_title: Literal['always', 'if_separator_exists', 'never']
     ) -> RichText:
         datei_date = datei.data.properties[datei_date_prop].start
 
-        def check_date_in_record_title():
-            date_in_record_title = cls._get_date_from_record_title(title.plain_text)
-            logger.debug(f"{title.plain_text=}, {date_in_record_title=}")
-            return date_in_record_title == datei_date
-
+        needs_update: bool
         has_separator = '|' in title.plain_text
         match write_title:
             case 'always':
-                needs_update = not check_date_in_record_title()
+                needs_update = not cls._check_date_in_record_title(title.plain_text, datei_date)
             case 'if_separator_exists':
-                needs_update = has_separator and not check_date_in_record_title()
+                needs_update = (has_separator and cls._check_date_in_record_title(title.plain_text, datei_date))
             case _:
                 needs_update = False
-
         if not needs_update:
             return RichText()
 
