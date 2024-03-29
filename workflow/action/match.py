@@ -530,19 +530,19 @@ class DateINamespace(DatabaseNamespace):
             logger.debug(f"{title.plain_text=}, {date_in_record_title=}")
             return date_in_record_title == datei_date
 
+        has_separator = '|' in title.plain_text
         match write_title:
             case 'always':
                 needs_update = not check_date_in_record_title()
             case 'if_separator_exists':
-                needs_update = '|' in title.plain_text and not check_date_in_record_title()
+                needs_update = has_separator and not check_date_in_record_title()
             case _:
                 needs_update = False
 
         if not needs_update:
             return RichText()
 
-        needs_separator: bool = (('|' not in title.plain_text)
-                                 and not cls._digit_pattern.match(title.plain_text))
+        needs_separator: bool = (not has_separator and cls._digit_pattern.match(title.plain_text))
         return RichText([TextSpan(
             f"{datei_date.strftime('%y%m%d')}{'|' if needs_separator else ''} "),
             *title])
