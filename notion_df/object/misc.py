@@ -138,6 +138,8 @@ class DateRange(DualSerializable):
 
 @dataclass
 class SelectOption(DualSerializable):
+    """can be equalized with str to match the name or id."""
+
     name: str
     id: str = field(init=False, default=None)
     """Identifier of the option, which does not change if the name is changed. 
@@ -152,7 +154,6 @@ class SelectOption(DualSerializable):
         return cls._deserialize_from_dict(raw)
 
     def __eq__(self, other: Any) -> bool:
-        """compare with str to match the name or id."""
         if isinstance(other, SelectOption):
             if self.id != other.id and self.id is not None and other.id is not None:
                 return False
