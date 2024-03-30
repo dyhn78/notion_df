@@ -170,8 +170,8 @@ class ReadingMediaScraperUnit:
             else:
                 content_page = current_content_page.update(content_page_properties)
 
-            self.new_properties.update(
-                link_to_contents_prop=link_to_contents_prop.page_value([PageMention(content_page.id)]))
+            self.new_properties[link_to_contents_prop] = link_to_contents_prop.page_value(
+                [PageMention(content_page.id)])
             child_values = [get_block_value_of_contents_line(content_line) for content_line in result.get_contents()]
             content_page.as_block().append_children(child_values)
 
