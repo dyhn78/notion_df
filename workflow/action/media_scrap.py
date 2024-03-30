@@ -8,7 +8,7 @@ from notion_df.entity import Page, Database
 from notion_df.object.data import ChildPageBlockValue
 from notion_df.object.filter import CompoundFilter
 from notion_df.object.misc import SelectOption
-from notion_df.object.rich_text import TextSpan
+from notion_df.object.rich_text import TextSpan, PageMention
 from notion_df.property import SelectProperty, CheckboxFormulaProperty, TitleProperty, RichTextProperty, \
     URLProperty, NumberProperty, FilesProperty, CheckboxProperty, PageProperties
 from notion_df.util.collection import StrEnum, peek
@@ -150,24 +150,28 @@ class ReadingMediaScraperUnit:
 
         # postpone the edit of content page blocks AFTER the main page's properties
         def set_content_page():
-            def get_content_page() -> Optional[Page]:
+            def get_current_content_page() -> Optional[Page]:
                 for block in self.reading.as_block().retrieve_children():
                     if isinstance(block.data.value, ChildPageBlockValue):
                         block_title = block.data.value.title
                         if self.name_value in block_title or block_title.strip() in ['', '=', '>']:
                             _content_page = Page(block.id)
-                            _content_page.update(content_page_properties)
                             return _content_page
 
             content_page_properties = PageProperties({
                 TitleProperty('title'): TitleProperty.page_value.from_plain_text(f'>{self.title_value}')})
-            content_page = get_content_page()
-            if content_page and overwrite:
-                content_page.update(archived=True)
-                content_page = None
-            if not content_page:
-                content_page = self.reading.create_child_page(content_page_properties)
 
+            current_content_page = get_current_content_page()
+            if overwrite:
+                current_content_page.update(archived=True)
+                content_page = self.reading.create_child_page(content_page_properties)
+            elif current_content_page is None:
+                content_page = self.reading.create_child_page(content_page_properties)
+            else:
+                content_page = current_content_page.update(content_page_properties)
+
+            self.new_properties.update(
+                link_to_contents_prop=link_to_contents_prop.page_value([PageMention(content_page.id)]))
             child_values = [get_block_value_of_contents_line(content_line) for content_line in result.get_contents()]
             content_page.as_block().append_children(child_values)
 
