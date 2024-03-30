@@ -170,6 +170,7 @@ class Equation(Span):
 
 @dataclass
 class UserMention(Span):
+    # TODO: use User class
     user_id: UUID
     # ---
     annotations: Optional[Annotations] = None
