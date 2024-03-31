@@ -75,7 +75,7 @@ class UpdateBlock(SingleRequestBuilder[BlockData]):
     def get_body(self):
         return DictFilter.not_none({
             'block_id': str(self.id),
-            self.block_type.get_typename(): self.block_type,
+            self.block_type.get_typename(): self.block_type.serialize(),
             'archived': self.archived
         })
 

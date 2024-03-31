@@ -48,10 +48,10 @@ class CreateDatabase(SingleRequestBuilder[DatabaseData]):
                 "type": "page_id",
                 "page_id": str(self.parent_id)
             },
-            "icon": self.icon,
-            "cover": self.cover,
-            "title": self.title,
-            "properties": self.properties,
+            "icon": self.icon.serialize() if self.icon else None,
+            "cover": self.cover.serialize() if self.cover else None,
+            "title": self.title.serialize() if self.title else None,
+            "properties": self.properties.serialize() if self.properties else None,
         })
 
 
@@ -72,8 +72,8 @@ class UpdateDatabase(SingleRequestBuilder[DatabaseData]):
 
     def get_body(self) -> Any:
         return DictFilter.not_none({
-            'title': self.title,
-            'properties': self.properties,
+            'title': self.title.serialize() if self.title else None,
+            'properties': self.properties.serialize() if self.properties else None,
         })
 
 
@@ -81,8 +81,8 @@ class UpdateDatabase(SingleRequestBuilder[DatabaseData]):
 class QueryDatabase(PaginatedRequestBuilder[PageData]):
     data_element_type = PageData
     id: UUID
-    filter: Filter
-    sort: list[Sort]
+    filter: Filter = None
+    sort: list[Sort] = None
     page_size: int = None
 
     def get_settings(self) -> RequestSettings:
@@ -91,6 +91,6 @@ class QueryDatabase(PaginatedRequestBuilder[PageData]):
 
     def get_body(self) -> Any:
         return DictFilter.truthy({
-            'filter': self.filter,
-            'sorts': self.sort,
+            'filter': self.filter.serialize() if self.filter else None,
+            'sorts': [s.serialize() for s in self.sort] if self.sort else None,
         })

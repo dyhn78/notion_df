@@ -6,9 +6,9 @@ from uuid import UUID
 
 from notion_df.core.request import SingleRequestBuilder, RequestSettings, Version, Method, PaginatedRequestBuilder, \
     RequestBuilder
-from notion_df.object.misc import Icon, PartialParent
 from notion_df.object.data import BlockValue, serialize_block_value_list, PageData
 from notion_df.object.file import ExternalFile
+from notion_df.object.misc import Icon, PartialParent
 from notion_df.property import PageProperties, Property, property_registry, PagePropertyValue_T
 from notion_df.util.collection import DictFilter
 
@@ -43,10 +43,10 @@ class CreatePage(SingleRequestBuilder[PageData]):
 
     def get_body(self) -> dict[str, Any]:
         return DictFilter.not_none({
-            "parent": self.parent,
-            "icon": self.icon,
-            "cover": self.cover,
-            "properties": self.properties,
+            "parent": self.parent.serialize(),
+            "icon": self.icon.serialize() if self.icon else None,
+            "cover": self.cover.serialize() if self.cover else None,
+            "properties": self.properties.serialize() if self.properties else None,
             "children": serialize_block_value_list(self.children),
         })
 
@@ -69,9 +69,9 @@ class UpdatePage(SingleRequestBuilder[PageData]):
 
     def get_body(self) -> dict[str, Any]:
         return DictFilter.not_none({
-            "icon": self.icon,
-            "cover": self.cover,
-            "properties": self.properties,
+            "icon": self.icon.serialize() if self.icon else None,
+            "cover": self.cover.serialize() if self.cover else None,
+            "properties": self.properties.serialize() if self.properties else None,
             "archived": self.archived,
         })
 

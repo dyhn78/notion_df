@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 from typing import Any, Literal, Union
 
-from notion_df.core.request import RequestSettings, Version, Method, PaginatedRequestBuilder
 from notion_df.core.data import Data
+from notion_df.core.request import RequestSettings, Version, Method, PaginatedRequestBuilder
 from notion_df.object.data import DatabaseData, PageData
 from notion_df.object.sort import TimestampSort
 from notion_df.util.collection import DictFilter
@@ -27,5 +27,5 @@ class SearchByTitle(PaginatedRequestBuilder[Union[PageData, DatabaseData]]):
                            "value": self.entity,
                            "property": "object"
                        } if self.entity else None),
-            "sort": self.sort
+            "sort": self.sort.serialize()
         })
