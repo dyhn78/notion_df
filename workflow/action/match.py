@@ -100,10 +100,11 @@ class MatchDatei(MatchSequentialAction):
             self.process_if_record_to_datei_empty(record)
 
     def process_if_record_to_datei_not_empty(self, record: Page) -> None:
-        datei = record.data.properties[self.record_to_datei][0]
-        datei.get_data()
+        datei_list = record.data.properties[self.record_to_datei]
+        for datei in datei_list:
+            datei.get_data()
         if (new_title := self.date_namespace.prepend_date_in_record_title(
-                record.data.properties.title, datei, self.write_title)):
+                record.data.properties.title, datei_list, self.write_title)):
             properties = PageProperties()
             properties[record.data.properties.title_prop] = new_title
             record.update(properties)
@@ -125,7 +126,7 @@ class MatchDatei(MatchSequentialAction):
                 self.record_to_datei: self.record_to_datei.page_value([datei]),
             })
         if (new_title := self.date_namespace.prepend_date_in_record_title(
-                record.data.properties.title, datei, self.write_title)):
+                record.data.properties.title, [datei], self.write_title)):
             properties[record.data.properties.title_prop] = new_title
         self._update_page(record, properties)
 
@@ -522,10 +523,10 @@ class DateINamespace(DatabaseNamespace):
         return cls._parse_date_match(match)
 
     @classmethod
-    def _check_date_in_record_title(cls, title_plain_text: str, date: dt.date) -> bool:
+    def _check_date_in_record_title(cls, title_plain_text: str, dates: list[dt.date]) -> bool:
         match = cls._checker_pattern.search(title_plain_text)
         date_in_record_title = cls._parse_date_match(match)
-        return date_in_record_title == date
+        return date_in_record_title in dates
 
     @classmethod
     def _parse_date_match(cls, match: Optional[re.Match[str]]) -> Optional[dt.date]:
@@ -543,26 +544,27 @@ class DateINamespace(DatabaseNamespace):
 
     @classmethod
     def prepend_date_in_record_title(
-            cls, title: RichText, datei: Page,
+            cls, title: RichText, datei_list: Iterable[Page],
             write_title: Literal['always', 'if_separator_exists', 'never']
     ) -> RichText:
-        datei_date = datei.data.properties[datei_date_prop].start
+        datei_date_list = [datei.data.properties[datei_date_prop].start for datei in datei_list]
 
         needs_update: bool
         has_separator = '|' in title.plain_text
         match write_title:
             case 'always':
-                needs_update = not cls._check_date_in_record_title(title.plain_text, datei_date)
+                needs_update = not cls._check_date_in_record_title(title.plain_text, datei_date_list)
             case 'if_separator_exists':
-                needs_update = (has_separator and cls._check_date_in_record_title(title.plain_text, datei_date))
+                needs_update = (has_separator and cls._check_date_in_record_title(title.plain_text, datei_date_list))
             case _:
                 needs_update = False
         if not needs_update:
             return RichText()
 
+        earliest_datei_date = min(datei_date_list)
         needs_separator: bool = (not has_separator and cls._digit_pattern.match(title.plain_text))
         return RichText([TextSpan(
-            f"{datei_date.strftime('%y%m%d')}{'|' if needs_separator else ''} "),
+            f"{earliest_datei_date.strftime('%y%m%d')}{'|' if needs_separator else ''} "),
             *title])
 
 
