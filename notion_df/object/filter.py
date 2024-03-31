@@ -242,10 +242,10 @@ class RelationFilterBuilder(FilterBuilder):
         return 'relation'
 
     def contains(self, value: UUID) -> Filter:
-        return self._build({'contains': value})
+        return self._build({'contains': str(value)})
 
     def does_not_contain(self, value: UUID) -> Filter:
-        return self._build({'does_not_contain': value})
+        return self._build({'does_not_contain': str(value)})
 
     def is_empty(self) -> Filter:
         return self._build({'is_empty': True})

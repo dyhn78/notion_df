@@ -16,7 +16,7 @@ class PartialUser(DualSerializable):
     def serialize(self) -> dict[str, Any]:
         return {
             'object': 'user',
-            'id': self.id
+            'id': str(self.id)
         }
 
     @classmethod

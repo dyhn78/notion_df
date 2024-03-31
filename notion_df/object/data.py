@@ -404,7 +404,7 @@ class DuplicatedSyncedBlockType(SyncedBlockValue):
     block_id: UUID
 
     def serialize(self) -> dict[str, Any]:
-        return {'synced_from': {'block_id': self.block_id}}
+        return {'synced_from': {'block_id': str(self.block_id)}}
 
 
 @dataclass

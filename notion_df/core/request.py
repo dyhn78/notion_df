@@ -96,7 +96,7 @@ class RequestBuilder(metaclass=ABCMeta):
 
     @abstractmethod
     def get_body(self) -> Any:
-        """will be automatically serialized."""
+        """will not be automatically serialized."""
         pass
 
     @abstractmethod
@@ -146,7 +146,7 @@ class SingleRequestBuilder(Generic[Data_T], RequestBuilder, metaclass=ABCMeta):
     def execute(self) -> Data_T:
         settings = self.get_settings()
         response = Request(method=settings.method, url=settings.url, headers=self.headers, params=None,
-                           json=serialize(self.get_body())).execute()
+                           json=self.get_body()).execute()
         return self.parse_response_data(response.json())  # nomypy
 
     @classmethod
