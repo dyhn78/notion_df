@@ -14,21 +14,21 @@ def get_module_name(file_path: str) -> str:
     return '.'.join(Path(file_path).resolve().relative_to(project_dir).with_suffix('').parts)
 
 
-main_module_name = get_module_name(__file__)
-task_module_name = get_module_name(workflow.routine.task.__file__)
+main_module_argv = [sys.executable, '-m', get_module_name(__file__)]
+task_module_argv = [sys.executable, '-m', get_module_name(workflow.routine.task.__file__)]
 
 if __name__ == '__main__':
     for process in psutil.process_iter(['name', 'cmdline']):
         try:
             command = " ".join(process.cmdline())
-            if f"{sys.executable} -m {task_module_name}" in command:
-                sys.stderr.write(f"Aborting: task module `{task_module_name}` is already running on another process."
+            if command[:3] == task_module_argv:
+                sys.stderr.write(f"Aborting: task module is already running on another process."
                                  f" {command=}\n")
                 sys.exit(1)
         except (psutil.AccessDenied, psutil.NoSuchProcess):
             continue
 
-    proc = subprocess.run([sys.executable, '-m', task_module_name],
+    proc = subprocess.run(task_module_argv,
                           env={**os.environ},
                           cwd=project_dir,
                           check=False)
@@ -36,4 +36,4 @@ if __name__ == '__main__':
         sleep(600)
     else:
         sleep(5)
-    os.execv(sys.executable, [sys.executable, '-m', main_module_name])
+    os.execv(sys.executable, main_module_argv)
