@@ -219,7 +219,7 @@ class PageMention(Span):
             'type': 'mention',
             'mention': {
                 'type': 'page',
-                'page': str(self.page_id)
+                'page': {"id": str(self.page_id)}
             }
         }
 
@@ -229,7 +229,7 @@ class PageMention(Span):
 
     @classmethod
     def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
-        return cls(raw['mention']['page'])
+        return cls(raw['mention']['page']["id"])
 
 
 @dataclass
@@ -249,7 +249,7 @@ class DatabaseMention(Span):
             'type': 'mention',
             'mention': {
                 'type': 'database',
-                'database': str(self.database_id)
+                'database': {"id": str(self.database_id)}
             }
         }
 
@@ -259,7 +259,7 @@ class DatabaseMention(Span):
 
     @classmethod
     def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
-        return cls(raw['mention']['database'])
+        return cls(raw['mention']['database']["id"])
 
 
 @dataclass
