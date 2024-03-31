@@ -133,7 +133,7 @@ def serialize_block_value_list(block_value_list: Optional[list[BlockValue]]) -> 
     return [{
         "object": "block",
         "type": block_type.get_typename(),
-        block_type.get_typename(): block_type,
+        block_type.get_typename(): block_type.serialize(),
     } for block_type in block_value_list]
 
 
