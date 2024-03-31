@@ -21,7 +21,7 @@ if __name__ == '__main__':
     for process in psutil.process_iter(['name', 'cmdline']):
         try:
             command = " ".join(process.cmdline())
-            if command[:3] == task_module_argv:
+            if " ".join(task_module_argv) in command:
                 sys.stderr.write(f"Aborting: task module is already running on another process."
                                  f" {command=}\n")
                 sys.exit(1)
