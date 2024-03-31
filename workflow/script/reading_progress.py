@@ -1,5 +1,5 @@
 from notion_df.property import PageProperties
-from workflow.action.prop_matcher import event_to_reading_prop, event_to_reading_prog_prop
+from workflow.action.match import event_to_reading_prop, event_to_reading_prog_prop
 from workflow.block_enum import DatabaseEnum
 
 if __name__ == '__main__':

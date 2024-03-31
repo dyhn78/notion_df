@@ -10,7 +10,7 @@ urllib3<2  # urllib3>=2 throws error for legacy websites
 selenium==4.9.1
 tenacity==8.2.2
 types-requests<2.31.0.7
-typing-extensions==4.8.0
-webdriver_manager==3.8.6
+typing_extensions==4.10.0
+webdriver-manager==3.8.6
 psutil==5.9.6
 loguru==0.7.2

@@ -9,7 +9,7 @@ from notion_df.core.request import RequestError
 from notion_df.entity import Page, Database
 from notion_df.object.data import PageData
 from notion_df.property import RelationProperty, PageProperties
-from workflow.action.prop_matcher import get_earliest_date
+from workflow.action.match import get_earliest_date
 from workflow.block_enum import DatabaseEnum
 from workflow.core.action import SequentialAction
 from workflow.service.backup_service import ResponseBackupService
@@ -160,8 +160,9 @@ class MigrationBackupLoadAction(SequentialAction):
         if this_db_enum == DatabaseEnum.reading_db and linked_db_enum == DatabaseEnum.event_db:
             return pick('관계')
         if this_db_enum == DatabaseEnum.issue_db and linked_db_enum == DatabaseEnum.issue_db:
-            return pick('관계')
-        if this_db_enum == DatabaseEnum.topic_db and linked_db_enum == DatabaseEnum.topic_db:
+            if this_prev_db_enum == DatabaseEnum.summit_db:
+                return pick('요소')
+        if this_db_enum == DatabaseEnum.summit_db and linked_db_enum == DatabaseEnum.summit_db:
             return pick('관계')
 
         # default cases
