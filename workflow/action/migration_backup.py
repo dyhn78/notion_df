@@ -160,9 +160,9 @@ class MigrationBackupLoadAction(SequentialAction):
         if this_db_enum == DatabaseEnum.reading_db and linked_db_enum == DatabaseEnum.event_db:
             return pick('관계')
         if this_db_enum == DatabaseEnum.issue_db and linked_db_enum == DatabaseEnum.issue_db:
-            if this_prev_db_enum == DatabaseEnum.topic_db:
+            if this_prev_db_enum == DatabaseEnum.summit_db:
                 return pick('요소')
-        if this_db_enum == DatabaseEnum.topic_db and linked_db_enum == DatabaseEnum.topic_db:
+        if this_db_enum == DatabaseEnum.summit_db and linked_db_enum == DatabaseEnum.summit_db:
             return pick('관계')
 
         # default cases

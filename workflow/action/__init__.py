@@ -42,24 +42,24 @@ routine_action = CompositeAction([
     MatchWeekiByRefDate(base, DatabaseEnum.reading_db, '시작', '시작'),  # TODO: can be deprecated
     # DeprCreateDateEvent(base, DatabaseEnum.reading_db),
 
-    MatchWeekiByRefDate(base, DatabaseEnum.topic_db, '주간', '일간'),
+    MatchWeekiByRefDate(base, DatabaseEnum.summit_db, '주간', '일간'),
 
-    MatchDatei(base, DatabaseEnum.gist_db, '일간'),
-    MatchWeekiByRefDate(base, DatabaseEnum.gist_db, '주간', '일간'),
+    MatchDatei(base, DatabaseEnum.topic_db, '일간'),
+    MatchWeekiByRefDate(base, DatabaseEnum.topic_db, '주간', '일간'),
 
     MediaScrapAction(create_window=False),
 
     # DeprMatchTopic(base, DatabaseEnum.event_db, DatabaseEnum.issue_db, DatabaseEnum.issue_db.prefix_title,
-    #            DatabaseEnum.topic_db.prefix_title, DatabaseEnum.topic_db.prefix_title),
+    #            DatabaseEnum.summit_db.prefix_title, DatabaseEnum.summit_db.prefix_title),
     # DeprMatchTopic(base, DatabaseEnum.event_db, DatabaseEnum.event_db, DatabaseEnum.event_db.prefix_title,
-    #            DatabaseEnum.topic_db.prefix_title, DatabaseEnum.topic_db.prefix_title),
+    #            DatabaseEnum.summit_db.prefix_title, DatabaseEnum.summit_db.prefix_title),
     # DeprMatchTopic(base, DatabaseEnum.event_db, DatabaseEnum.reading_db, DatabaseEnum.reading_db.prefix_title,
-    #            DatabaseEnum.topic_db.prefix_title, DatabaseEnum.topic_db.prefix_title),
+    #            DatabaseEnum.summit_db.prefix_title, DatabaseEnum.summit_db.prefix_title),
     # DeprMatchTopic(base, DatabaseEnum.journal_db, DatabaseEnum.issue_db, DatabaseEnum.issue_db.prefix_title,
-    #                DatabaseEnum.topic_db.prefix_title, DatabaseEnum.topic_db.prefix_title),
+    #                DatabaseEnum.summit_db.prefix_title, DatabaseEnum.summit_db.prefix_title),
     # DeprMatchTopic(base, DatabaseEnum.journal_db, DatabaseEnum.reading_db,
     #                DatabaseEnum.reading_db.prefix_title,
-    #                DatabaseEnum.topic_db.prefix_title, DatabaseEnum.topic_db.prefix_title),
+    #                DatabaseEnum.summit_db.prefix_title, DatabaseEnum.summit_db.prefix_title),
     # MatchDatei(base, DatabaseEnum.depr_event_db, '일간'),
     # MatchDatei(base, DatabaseEnum.depr_event_db, '생성'),
     # MatchWeekiByRefDate(base, DatabaseEnum.depr_event_db, '주간', '일간'),
