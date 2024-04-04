@@ -26,8 +26,8 @@ routine_action = CompositeAction([
     MatchDatei(base, DatabaseEnum.journal_db, '정리'),
     MatchWeekiByRefDate(base, DatabaseEnum.journal_db, '주간', '일간'),
 
-    MatchDatei(base, DatabaseEnum.stage_db, '일간', read_title=True, write_title='always'),
-    MatchWeekiByRefDate(base, DatabaseEnum.stage_db, '주간', '일간'),
+    MatchDatei(base, DatabaseEnum.thread_db, '일간', read_title=True, write_title='always'),
+    MatchWeekiByRefDate(base, DatabaseEnum.thread_db, '주간', '일간'),
 
     MatchDatei(base, DatabaseEnum.point_db, '일간'),
     MatchWeekiByRefDate(base, DatabaseEnum.point_db, '주간', '일간'),
@@ -44,8 +44,8 @@ routine_action = CompositeAction([
 
     MatchWeekiByRefDate(base, DatabaseEnum.summit_db, '주간', '일간'),
 
-    MatchDatei(base, DatabaseEnum.topic_db, '일간'),
-    MatchWeekiByRefDate(base, DatabaseEnum.topic_db, '주간', '일간'),
+    MatchDatei(base, DatabaseEnum.fact_db, '일간'),
+    MatchWeekiByRefDate(base, DatabaseEnum.fact_db, '주간', '일간'),
 
     MediaScrapAction(create_window=False),
 
