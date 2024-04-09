@@ -555,7 +555,7 @@ class DateINamespace(DatabaseNamespace):
             case 'always':
                 needs_update = not cls._check_date_in_record_title(title.plain_text, datei_date_list)
             case 'if_separator_exists':
-                needs_update = (has_separator and cls._check_date_in_record_title(title.plain_text, datei_date_list))
+                needs_update = (has_separator and not cls._check_date_in_record_title(title.plain_text, datei_date_list))
             case _:
                 needs_update = False
         if not needs_update:
