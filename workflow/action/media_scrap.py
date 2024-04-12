@@ -162,10 +162,10 @@ class ReadingMediaScraperUnit:
                 TitleProperty('title'): TitleProperty.page_value.from_plain_text(f'>{self.title_value}')})
 
             current_content_page = get_current_content_page()
-            if overwrite:
-                current_content_page.update(archived=True)
+            if current_content_page is None:
                 content_page = self.reading.create_child_page(content_page_properties)
-            elif current_content_page is None:
+            elif overwrite:
+                current_content_page.update(archived=True)
                 content_page = self.reading.create_child_page(content_page_properties)
             else:
                 content_page = current_content_page.update(content_page_properties)
