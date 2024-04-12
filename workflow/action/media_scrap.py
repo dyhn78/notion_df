@@ -111,9 +111,9 @@ class ReadingMediaScraperUnit:
                 if self.process_lib_gy(True):
                     new_status_value = EditStatusValue.complete
         self.new_properties[edit_status_prop] = SelectOption(new_status_value)
-        self.reading.update(self.new_properties)
         for _callable in self.callables:
             _callable()
+        self.reading.update(self.new_properties)
 
     def process_yes24(self, overwrite: bool) -> bool:
         def get_url() -> Optional[str]:
