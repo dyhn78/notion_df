@@ -92,7 +92,7 @@ class BlockData(Data):
     @classmethod
     def _deserialize_this(cls, raw: dict[str, Any]):
         typename = raw['type']
-        block_value_cls = block_value_registry[typename]
+        block_value_cls = block_value_registry.get(typename, UnsupportedBlockValue)
         block_value = block_value_cls.deserialize(raw[typename])
         return cls._deserialize_from_dict(raw, parent=PartialParent.deserialize(raw['parent']).entity,
                                           value=block_value)
