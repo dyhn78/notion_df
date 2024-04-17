@@ -104,7 +104,7 @@ class MatchDatei(MatchSequentialAction):
         for datei in datei_list:
             datei.get_data()
         if (new_title := self.date_namespace.prepend_date_in_record_title(
-                record.data.properties.title, datei_list, self.write_title)):
+                record.retrieve().data.properties.title, datei_list, self.write_title)):
             properties = PageProperties()
             properties[record.data.properties.title_prop] = new_title
             record.update(properties)
@@ -126,7 +126,7 @@ class MatchDatei(MatchSequentialAction):
                 self.record_to_datei: self.record_to_datei.page_value([datei]),
             })
         if (new_title := self.date_namespace.prepend_date_in_record_title(
-                record.data.properties.title, [datei], self.write_title)):
+                record.retrieve().data.properties.title, [datei], self.write_title)):
             properties[record.data.properties.title_prop] = new_title
         self._update_page(record, properties)
 
@@ -218,7 +218,7 @@ class MatchTimestr(MatchSequentialAction):
 
     def will_process(self, record: Page) -> bool:
         if not (record.data.parent == self.record_db and not record.data.properties[
-            record_timestr_prop]):
+                record_timestr_prop]):
             return False
         try:
             record_date = record.data.properties[self.record_to_datei][0]
@@ -265,7 +265,7 @@ class MatchWeekiByRefDate(MatchSequentialAction):
 
     def process_page(self, record: Page) -> None:
         if not (record.data.parent == self.record_db and record.data.properties[
-            self.record_to_datei]):
+                self.record_to_datei]):
             return
 
         new_record_weeks = self.record_to_weeki.page_value()
@@ -566,7 +566,9 @@ class DateINamespace(DatabaseNamespace):
         needs_separator: bool = not has_separator  # and cls._digit_pattern.match(title.plain_text))
         starts_with_separator = title.plain_text.startswith('|')
         return RichText([TextSpan(
-            f"{earliest_datei_date.strftime('%y%m%d')}{'|' if needs_separator else ''}{'' if starts_with_separator else ' '}"),
+            f"{earliest_datei_date.strftime('%y%m%d')}{'|' if needs_separator else ''}"
+            f"{'' if starts_with_separator else ' '}"
+            f"{'✨' if not title.plain_text else ''}"),
             *title])
 
 
