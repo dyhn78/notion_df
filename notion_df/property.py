@@ -102,7 +102,10 @@ class Property(Generic[DatabasePropertyValue_T, PagePropertyValue_T, FilterBuild
         """allow proxy-deserialization of subclasses."""
         typename = prop_serialized['type']
         if cls == Property:
-            subclass = property_registry[typename]
+            try:
+                subclass = property_registry[typename]
+            except KeyError:  # TODO: UnsupportedProperty
+                return None
             return subclass._deserialize_page_value(prop_serialized)
         return deserialize(cls.page_value, prop_serialized[typename])
 
@@ -111,7 +114,10 @@ class Property(Generic[DatabasePropertyValue_T, PagePropertyValue_T, FilterBuild
         """allow proxy-deserialization of subclasses."""
         typename = prop_serialized['type']
         if cls == Property:
-            subclass = property_registry[typename]
+            try:
+                subclass = property_registry[typename]
+            except KeyError:
+                return None
             return subclass._deserialize_page_value(prop_serialized)
         return deserialize(cls.database_value, prop_serialized[typename])
 
