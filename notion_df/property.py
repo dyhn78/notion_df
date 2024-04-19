@@ -726,3 +726,8 @@ class URLProperty(Property[PlainDatabasePropertyValue, str, TextFilterBuilder]):
     database_value = PlainDatabasePropertyValue
     page_value = str
     _filter_cls = TextFilterBuilder
+
+class ButtonProperty(Property):  # TODO
+    typename = 'button'
+    database_value = None
+    page_value = None
