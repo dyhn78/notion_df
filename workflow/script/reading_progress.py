@@ -14,3 +14,4 @@ if __name__ == '__main__':
             summit_datei1_prop: summit_datei1_new,
             summit_datei2_prop: summit_datei2_prop.page_value()
         }))
+
