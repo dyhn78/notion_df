@@ -29,7 +29,7 @@ weeki_date_range_prop = DateProperty(EmojiCode.BIG_CALENDAR + '날짜 범위')
 event_title_prop = TitleProperty(EmojiCode.ORANGE_BOOK + '제목')
 event_to_datei_prop = RelationProperty(DatabaseEnum.datei_db.prefix_title)
 event_to_stage_prop = RelationProperty(DatabaseEnum.thread_db.prefix_title)
-event_to_point_prop = RelationProperty(DatabaseEnum.point_db.prefix_title)
+event_to_point_prop = RelationProperty(DatabaseEnum.idea_db.prefix_title)
 event_to_issue_prop = RelationProperty(DatabaseEnum.issue_db.prefix_title)
 event_to_reading_prop = RelationProperty(DatabaseEnum.reading_db.prefix_title)
 event_to_topic_prop = RelationProperty(DatabaseEnum.summit_db.prefix_title)
@@ -141,7 +141,7 @@ class MatchRecordDatei(MatchSequentialAction):
         logger.info(f'{record} -> {record_properties}')
 
 
-class MatchReadingDatei(MatchSequentialAction):
+class MatchReadingStartDatei(MatchSequentialAction):
     def __init__(self, base: MatchActionBase):
         super().__init__(base)
         self.reading_db = DatabaseEnum.reading_db.entity

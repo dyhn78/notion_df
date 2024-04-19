@@ -1,14 +1,15 @@
-from notion_df.property import PageProperties
-from workflow.action.match import event_to_reading_prop, event_to_reading_prog_prop
+from notion_df.property import PageProperties, RelationProperty
 from workflow.block_enum import DatabaseEnum
 
+summit_datei1_prop = RelationProperty("🟣일간")
+summit_datei2_prop = RelationProperty("🟣생성")
+
 if __name__ == '__main__':
-    for event in DatabaseEnum.event_db.entity.query(event_to_reading_prog_prop.filter.is_not_empty()):
-        event_readings = event.data.properties[event_to_reading_prop]
-        event_readings_new = event_readings + event.data.properties[event_to_reading_prog_prop]
-        if event_readings == event_readings_new:
+    for summit in DatabaseEnum.summit_db.entity.query(summit_datei2_prop.filter.is_not_empty()):
+        summit_datei1 = summit.data.properties[summit_datei1_prop]
+        summit_datei1_new = summit_datei1 + summit.data.properties[summit_datei2_prop]
+        if summit_datei1 == summit_datei1_new:
             continue
-        event.update(PageProperties({
-            event_to_reading_prop: (event.data.properties[event_to_reading_prop]
-                                    + event.data.properties[event_to_reading_prog_prop])
+        summit.update(PageProperties({
+            summit_datei1_prop: summit_datei1_new
         }))
