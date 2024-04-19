@@ -36,11 +36,10 @@ routine_action = CompositeAction([
     MatchRecordWeekiByDatei(base, DatabaseEnum.issue_db, '일과', '일과'),
     # DeprCreateDateEvent(base, DatabaseEnum.issue_db),
 
-    # TODO: '생성' spec out, '일과' spec in
-    MatchRecordDatei(base, DatabaseEnum.reading_db, '생성'),
+    MatchRecordDatei(base, DatabaseEnum.reading_db, '일간'),
     MatchRecordWeekiByDatei(base, DatabaseEnum.reading_db, '주간', '일간'),
     MatchReadingStartDatei(base),
-    MatchRecordWeekiByDatei(base, DatabaseEnum.reading_db, '시작', '시작'),  # TODO: can be deprecated
+    MatchRecordWeekiByDatei(base, DatabaseEnum.reading_db, '시작', '시작'),
     # DeprCreateDateEvent(base, DatabaseEnum.reading_db),
 
     MatchRecordDatei(base, DatabaseEnum.summit_db, '일간'),
