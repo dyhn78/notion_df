@@ -11,5 +11,6 @@ if __name__ == '__main__':
         if summit_datei1 == summit_datei1_new:
             continue
         summit.update(PageProperties({
-            summit_datei1_prop: summit_datei1_new
+            summit_datei1_prop: summit_datei1_new,
+            summit_datei2_prop: summit_datei2_prop.page_value()
         }))
