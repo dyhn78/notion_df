@@ -144,12 +144,12 @@ class MigrationBackupLoadAction(SequentialAction):
         if linked_db_enum == DatabaseEnum.datei_db:
             prefix = DatabaseEnum.datei_db.prefix
             prefix_title = DatabaseEnum.datei_db.prefix_title
-            if this_prev_prop.name in [prefix_title, f'{prefix}일과', f'{prefix}시작']:
+            if this_prev_prop.name in [prefix_title, f'{prefix}일정', f'{prefix}시작']:
                 return pick(this_prev_prop.name) or pick(prefix_title)
         if linked_db_enum == DatabaseEnum.weeki_db:
             prefix = DatabaseEnum.weeki_db.prefix
             prefix_title = DatabaseEnum.datei_db.prefix_title
-            if this_prev_prop.name in [prefix_title, f'{prefix}일과', f'{prefix}시작']:
+            if this_prev_prop.name in [prefix_title, f'{prefix}일정', f'{prefix}시작']:
                 return pick(this_prev_prop.name) or pick(prefix_title)
         if this_db_enum == linked_db_enum and this_prev_db_enum == linked_prev_db_enum:
             for prop_name_stem in ['구성', '공통', '요소', '관계']:

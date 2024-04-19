@@ -16,15 +16,15 @@ routine_action = CompositeAction([
     MatchDatei(base),
 
     MatchRecordDatei(base, DatabaseEnum.event_db, '일간'),
-    MatchRecordDatei(base, DatabaseEnum.event_db, '일과', read_title=True, write_title='always'),
-    MatchRecordWeekiByDatei(base, DatabaseEnum.event_db, '일과', '일과'),
-    MatchRecordTimestr(base, DatabaseEnum.event_db, '일과'),
+    MatchRecordDatei(base, DatabaseEnum.event_db, '일정', read_title=True, write_title='always'),
+    MatchRecordWeekiByDatei(base, DatabaseEnum.event_db, '일정', '일정'),
+    MatchRecordTimestr(base, DatabaseEnum.event_db, '일정'),
     MatchEventProgress(base, DatabaseEnum.issue_db),
     MatchEventProgress(base, DatabaseEnum.reading_db),
 
     MatchRecordDatei(base, DatabaseEnum.journal_db, '일간'),
-    MatchRecordDatei(base, DatabaseEnum.journal_db, '일과', read_title=True, write_title='if_separator_exists'),
-    MatchRecordWeekiByDatei(base, DatabaseEnum.journal_db, '일과', '일과'),
+    MatchRecordDatei(base, DatabaseEnum.journal_db, '일정', read_title=True, write_title='if_separator_exists'),
+    MatchRecordWeekiByDatei(base, DatabaseEnum.journal_db, '일정', '일정'),
 
     MatchRecordDatei(base, DatabaseEnum.thread_db, '일간', read_title=True, write_title='always'),
     MatchRecordWeekiByDatei(base, DatabaseEnum.thread_db, '주간', '일간'),
@@ -33,7 +33,7 @@ routine_action = CompositeAction([
     MatchRecordWeekiByDatei(base, DatabaseEnum.idea_db, '주간', '일간'),
 
     MatchRecordDatei(base, DatabaseEnum.issue_db, '일간'),  # Note: `read_title=False` set purposely here
-    MatchRecordWeekiByDatei(base, DatabaseEnum.issue_db, '일과', '일과'),
+    MatchRecordWeekiByDatei(base, DatabaseEnum.issue_db, '일정', '일정'),
     # DeprCreateDateEvent(base, DatabaseEnum.issue_db),
 
     MatchRecordDatei(base, DatabaseEnum.reading_db, '일간'),
