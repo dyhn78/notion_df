@@ -76,7 +76,7 @@ routine_action = CompositeAction([
 if __name__ == '__main__':
     from datetime import timedelta
 
-    routine_action.run_recent(interval=timedelta(minutes=120))
+    routine_action.run_recent(interval=timedelta(minutes=30))
     # routine_action.run_by_last_edited_time(datetime(2024, 1, 7, 17, 0, 0, tzinfo=my_tz), None)
     # routine_action.run_from_last_success(update_last_success_time=True)
     pass

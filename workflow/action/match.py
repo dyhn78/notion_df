@@ -84,7 +84,7 @@ class MatchRecordDatei(MatchSequentialAction):
 
     def __repr__(self):
         return repr_object(self,
-                           record_db=self.record_db,
+                           record_db_title=self.record_db.data.title,
                            record_to_datei=self.record_to_datei)
 
     def query(self) -> Paginator[Page]:
