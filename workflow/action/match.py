@@ -155,6 +155,8 @@ class MatchRecordDateiSchedule(MatchSequentialAction):
         return self.record_db.query(self.record_to_datei_sch_prop.filter.is_not_empty())
 
     def process_page(self, record: Page) -> Any:
+        if not (record.data.parent == self.record_db):
+            return
         record_datei = record.data.properties[self.record_to_datei_prop]
         record_datei_new = record_datei + record.data.properties[self.record_to_datei_sch_prop]
         if record_datei == record_datei_new:

@@ -25,7 +25,7 @@ routine_action = CompositeAction([
 
     MatchRecordDatei(base, DatabaseEnum.journal_db, DatabaseEnum.datei_db.title),
     MatchRecordDatei(base, DatabaseEnum.journal_db, SCHEDULE, read_title=True, write_title='if_separator_exists'),
-    MatchRecordDateiSchedule(base, DatabaseEnum.event_db),
+    MatchRecordDateiSchedule(base, DatabaseEnum.journal_db),
     MatchRecordWeekiByDatei(base, DatabaseEnum.journal_db, SCHEDULE, SCHEDULE),
 
     MatchRecordDatei(base, DatabaseEnum.thread_db, DatabaseEnum.datei_db.title, read_title=True, write_title='always'),
@@ -36,7 +36,7 @@ routine_action = CompositeAction([
 
     MatchRecordDatei(base, DatabaseEnum.issue_db, DatabaseEnum.datei_db.title),
     MatchRecordDatei(base, DatabaseEnum.issue_db, SCHEDULE, read_title=True, write_title='never'),
-    MatchRecordDateiSchedule(base, DatabaseEnum.event_db),
+    MatchRecordDateiSchedule(base, DatabaseEnum.issue_db),
     MatchRecordWeekiByDatei(base, DatabaseEnum.issue_db, SCHEDULE, SCHEDULE),
     # DeprCreateDateEvent(base, DatabaseEnum.issue_db),
 
