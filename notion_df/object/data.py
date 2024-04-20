@@ -382,15 +382,15 @@ class SyncedBlockValue(BlockValue, metaclass=ABCMeta):
 
         def get_subclass():
             if raw['synced_from']:
-                return DuplicatedSyncedBlockType
+                return DuplicatedSyncedBlockValue
             else:
-                return OriginalSyncedBlockType
+                return OriginalSyncedBlockValue
 
         return get_subclass().deserialize(raw)
 
 
 @dataclass
-class OriginalSyncedBlockType(SyncedBlockValue):
+class OriginalSyncedBlockValue(SyncedBlockValue):
     """cannot be changed (2023-04-02)"""
     children: list[BlockData] = field(init=False, default=None)
 
@@ -402,12 +402,16 @@ class OriginalSyncedBlockType(SyncedBlockValue):
 
 
 @dataclass
-class DuplicatedSyncedBlockType(SyncedBlockValue):
+class DuplicatedSyncedBlockValue(SyncedBlockValue):
     """cannot be changed (2023-04-02)"""
     block_id: UUID
 
     def serialize(self) -> dict[str, Any]:
         return {'synced_from': {'block_id': str(self.block_id)}}
+
+    @classmethod
+    def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
+        return cls(block_id=UUID(raw["synced_from"]["block_id"]))
 
 
 @dataclass
