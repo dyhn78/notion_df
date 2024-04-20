@@ -16,7 +16,7 @@ from notion_df.property import RelationProperty, TitleProperty, PageProperties, 
     DateProperty, CheckboxFormulaProperty, RichTextProperty, SelectProperty, \
     RelationPagePropertyValue
 from notion_df.util.misc import repr_object
-from workflow.block_enum import DatabaseEnum
+from workflow.block_enum import DatabaseEnum, SCHEDULE, START, PROGRESS
 from workflow.core.action import SequentialAction, Action
 from workflow.emoji_code import EmojiCode
 
@@ -37,8 +37,8 @@ event_to_gist_prop = RelationProperty(DatabaseEnum.gist_db.prefix_title)
 topic_base_type_prop = SelectProperty("📕유형")
 topic_base_type_progress = "🌳진행"
 reading_to_main_date_prop = RelationProperty(DatabaseEnum.datei_db.prefix_title)
-reading_to_start_date_prop = RelationProperty(DatabaseEnum.datei_db.prefix + '시작')
-reading_to_event_prog_prop = RelationProperty(DatabaseEnum.event_db.prefix + '진도')
+reading_to_start_date_prop = RelationProperty(DatabaseEnum.datei_db.prefix + START)
+reading_to_event_prog_prop = RelationProperty(DatabaseEnum.event_db.prefix + PROGRESS)
 reading_match_date_by_created_time_prop = CheckboxFormulaProperty(
     EmojiCode.BLACK_NOTEBOOK + '시작일<-생성시간')
 status_prop = SelectProperty("📘정리")
@@ -139,6 +139,30 @@ class MatchRecordDatei(MatchSequentialAction):
             return
         record.update(record_properties)
         logger.info(f'{record} -> {record_properties}')
+
+
+class MatchRecordDateiSchedule(MatchSequentialAction):
+    def __init__(self, base: MatchActionBase, record: DatabaseEnum):
+        super().__init__(base)
+        self.record_db = record.entity
+        self.record_to_datei_prop = RelationProperty(DatabaseEnum.datei_db.prefix_title)
+        self.record_to_datei_sch_prop = RelationProperty(f"{DatabaseEnum.datei_db.prefix}{SCHEDULE}")
+
+    def __repr__(self):
+        return repr_object(self, record_db=self.record_db)
+
+    def query(self) -> Iterable[Page]:
+        return self.record_db.query(self.record_to_datei_sch_prop.filter.is_not_empty())
+
+    def process_page(self, record: Page) -> Any:
+        record_datei = record.data.properties[self.record_to_datei_prop]
+        record_datei_new = record_datei + record.data.properties[self.record_to_datei_sch_prop]
+        if record_datei == record_datei_new:
+            logger.info(f'{record} : Skipped')
+            return
+        record.update(PageProperties({
+            self.record_to_datei_prop: record_datei_new
+        }))
 
 
 class MatchReadingStartDatei(MatchSequentialAction):
@@ -337,7 +361,7 @@ class MatchEventProgress(MatchSequentialAction):
         super().__init__(base)
         self.target_db = target_db
         self.event_to_target_prop = RelationProperty(target_db.prefix_title)
-        self.event_to_target_prog_prop = RelationProperty(target_db.prefix + '진도')
+        self.event_to_target_prog_prop = RelationProperty(target_db.prefix + PROGRESS)
 
     def __repr__(self):
         return repr_object(self,

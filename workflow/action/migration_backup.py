@@ -10,7 +10,7 @@ from notion_df.entity import Page, Database
 from notion_df.object.data import PageData
 from notion_df.property import RelationProperty, PageProperties
 from workflow.action.match import get_earliest_date
-from workflow.block_enum import DatabaseEnum
+from workflow.block_enum import DatabaseEnum, SCHEDULE, START
 from workflow.core.action import SequentialAction
 from workflow.service.backup_service import ResponseBackupService
 
@@ -93,7 +93,7 @@ class MigrationBackupLoadAction(SequentialAction):
                 this_new_properties.setdefault(new_prop, this_page.data.properties[new_prop])
                 this_new_properties[new_prop].append(linked_page)
         for this_new_prop in this_new_properties:
-            if any(stem in this_new_prop.name for stem in ['시작', '생성']):
+            if any(stem in this_new_prop.name for stem in [START, ]):
                 dates = cast(RelationProperty.page_value, this_new_properties[this_new_prop])
                 this_new_properties[this_new_prop] = RelationProperty.page_value([get_earliest_date(dates)])
         if not this_new_properties:
@@ -144,12 +144,12 @@ class MigrationBackupLoadAction(SequentialAction):
         if linked_db_enum == DatabaseEnum.datei_db:
             prefix = DatabaseEnum.datei_db.prefix
             prefix_title = DatabaseEnum.datei_db.prefix_title
-            if this_prev_prop.name in [prefix_title, f'{prefix}일정', f'{prefix}시작']:
+            if this_prev_prop.name in [prefix_title, f'{prefix}{SCHEDULE}', f'{prefix}{START}']:
                 return pick(this_prev_prop.name) or pick(prefix_title)
         if linked_db_enum == DatabaseEnum.weeki_db:
             prefix = DatabaseEnum.weeki_db.prefix
             prefix_title = DatabaseEnum.datei_db.prefix_title
-            if this_prev_prop.name in [prefix_title, f'{prefix}일정', f'{prefix}시작']:
+            if this_prev_prop.name in [prefix_title, f'{prefix}{SCHEDULE}', f'{prefix}{START}']:
                 return pick(this_prev_prop.name) or pick(prefix_title)
         if this_db_enum == linked_db_enum and this_prev_db_enum == linked_prev_db_enum:
             for prop_name_stem in ['구성', '공통', '요소', '관계']:

@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from workflow import backup_dir
 from workflow.action.match import MatchActionBase, MatchDatei, MatchRecordDatei, \
-    MatchRecordWeekiByDatei, MatchRecordTimestr, MatchReadingStartDatei, MatchEventProgress
+    MatchRecordWeekiByDatei, MatchRecordTimestr, MatchReadingStartDatei, MatchEventProgress, MatchRecordDateiSchedule
 from workflow.action.media_scrap import MediaScrapAction
 from workflow.action.migration_backup import MigrationBackupLoadAction, MigrationBackupSaveAction
-from workflow.block_enum import DatabaseEnum
+from workflow.block_enum import DatabaseEnum, SCHEDULE, START
 from workflow.core.action import CompositeAction
 
 base = MatchActionBase()
@@ -15,38 +15,42 @@ routine_action = CompositeAction([
 
     MatchDatei(base),
 
-    MatchRecordDatei(base, DatabaseEnum.event_db, '일간'),
-    MatchRecordDatei(base, DatabaseEnum.event_db, '일정', read_title=True, write_title='always'),
-    MatchRecordWeekiByDatei(base, DatabaseEnum.event_db, '일정', '일정'),
-    MatchRecordTimestr(base, DatabaseEnum.event_db, '일정'),
+    MatchRecordDatei(base, DatabaseEnum.event_db, DatabaseEnum.datei_db.title),
+    MatchRecordDatei(base, DatabaseEnum.event_db, SCHEDULE, read_title=True, write_title='always'),
+    MatchRecordDateiSchedule(base, DatabaseEnum.event_db),
+    MatchRecordWeekiByDatei(base, DatabaseEnum.event_db, SCHEDULE, SCHEDULE),
+    MatchRecordTimestr(base, DatabaseEnum.event_db, SCHEDULE),
     MatchEventProgress(base, DatabaseEnum.issue_db),
     MatchEventProgress(base, DatabaseEnum.reading_db),
 
-    MatchRecordDatei(base, DatabaseEnum.journal_db, '일간'),
-    MatchRecordDatei(base, DatabaseEnum.journal_db, '일정', read_title=True, write_title='if_separator_exists'),
-    MatchRecordWeekiByDatei(base, DatabaseEnum.journal_db, '일정', '일정'),
+    MatchRecordDatei(base, DatabaseEnum.journal_db, DatabaseEnum.datei_db.title),
+    MatchRecordDatei(base, DatabaseEnum.journal_db, SCHEDULE, read_title=True, write_title='if_separator_exists'),
+    MatchRecordDateiSchedule(base, DatabaseEnum.event_db),
+    MatchRecordWeekiByDatei(base, DatabaseEnum.journal_db, SCHEDULE, SCHEDULE),
 
-    MatchRecordDatei(base, DatabaseEnum.thread_db, '일간', read_title=True, write_title='always'),
-    MatchRecordWeekiByDatei(base, DatabaseEnum.thread_db, '주간', '일간'),
+    MatchRecordDatei(base, DatabaseEnum.thread_db, DatabaseEnum.datei_db.title, read_title=True, write_title='always'),
+    MatchRecordWeekiByDatei(base, DatabaseEnum.thread_db, DatabaseEnum.weeki_db.title, DatabaseEnum.datei_db.title),
 
-    MatchRecordDatei(base, DatabaseEnum.idea_db, '일간'),
-    MatchRecordWeekiByDatei(base, DatabaseEnum.idea_db, '주간', '일간'),
+    MatchRecordDatei(base, DatabaseEnum.idea_db, DatabaseEnum.datei_db.title),
+    MatchRecordWeekiByDatei(base, DatabaseEnum.idea_db, DatabaseEnum.weeki_db.title, DatabaseEnum.datei_db.title),
 
-    MatchRecordDatei(base, DatabaseEnum.issue_db, '일간'),  # Note: `read_title=False` set purposely here
-    MatchRecordWeekiByDatei(base, DatabaseEnum.issue_db, '일정', '일정'),
+    MatchRecordDatei(base, DatabaseEnum.issue_db, DatabaseEnum.datei_db.title),
+    MatchRecordDatei(base, DatabaseEnum.issue_db, SCHEDULE, read_title=True, write_title='never'),
+    MatchRecordDateiSchedule(base, DatabaseEnum.event_db),
+    MatchRecordWeekiByDatei(base, DatabaseEnum.issue_db, SCHEDULE, SCHEDULE),
     # DeprCreateDateEvent(base, DatabaseEnum.issue_db),
 
-    MatchRecordDatei(base, DatabaseEnum.reading_db, '일간'),
-    MatchRecordWeekiByDatei(base, DatabaseEnum.reading_db, '주간', '일간'),
+    MatchRecordDatei(base, DatabaseEnum.reading_db, DatabaseEnum.datei_db.title),
+    MatchRecordWeekiByDatei(base, DatabaseEnum.reading_db, DatabaseEnum.weeki_db.title, DatabaseEnum.datei_db.title),
     MatchReadingStartDatei(base),
-    MatchRecordWeekiByDatei(base, DatabaseEnum.reading_db, '시작', '시작'),
+    MatchRecordWeekiByDatei(base, DatabaseEnum.reading_db, START, START),
     # DeprCreateDateEvent(base, DatabaseEnum.reading_db),
 
-    MatchRecordDatei(base, DatabaseEnum.summit_db, '일간'),
-    MatchRecordWeekiByDatei(base, DatabaseEnum.summit_db, '주간', '일간'),
+    MatchRecordDatei(base, DatabaseEnum.summit_db, DatabaseEnum.datei_db.title),
+    MatchRecordWeekiByDatei(base, DatabaseEnum.summit_db, DatabaseEnum.weeki_db.title, DatabaseEnum.datei_db.title),
 
-    MatchRecordDatei(base, DatabaseEnum.gist_db, '일간'),
-    MatchRecordWeekiByDatei(base, DatabaseEnum.gist_db, '주간', '일간'),
+    MatchRecordDatei(base, DatabaseEnum.gist_db, DatabaseEnum.datei_db.title),
+    MatchRecordWeekiByDatei(base, DatabaseEnum.gist_db, DatabaseEnum.weeki_db.title, DatabaseEnum.datei_db.title),
 
     MediaScrapAction(create_window=False),
 

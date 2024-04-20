@@ -12,6 +12,10 @@ from notion_df.object.rich_text import RichText, TextSpan
 from notion_df.util.uuid_util import get_page_or_database_id, get_page_or_database_url
 from workflow.emoji_code import EmojiCode
 
+SCHEDULE = "일정"
+START = "시작"
+PROGRESS = "진도"
+
 _id_to_member = {}
 
 
