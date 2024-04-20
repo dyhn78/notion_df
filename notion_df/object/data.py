@@ -376,7 +376,7 @@ class SyncedBlockValue(BlockValue, metaclass=ABCMeta):
         return 'synced_block'
 
     @classmethod
-    def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
+    def deserialize(cls, raw: dict[str, Any]) -> Self:
         def get_subclass():
             if raw['synced_from']:
                 return DuplicatedSyncedBlockType
