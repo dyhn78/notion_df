@@ -77,6 +77,6 @@ ContentsT = TypeVar('ContentsT', bound=Contents)
 
 def coalesce(latest: Optional[ContentsT],
              default: Optional[ContentsT]) -> Optional[ContentsT]:
-    # TODO: coalesce each attributes of self.latest & self.default
+    # TODO: DefaultContents(default) should trigger retrieve() request on missing attributes
     contents = latest if latest is not None else default
     return contents
