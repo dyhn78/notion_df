@@ -47,12 +47,10 @@ class Entity(Generic[ContentsT], Hashable, metaclass=ABCMeta):
     def __init__(self, id_or_url: Union[UUID, str],
                  default: Optional[ContentsT] = None,
                  *, latest: Optional[Contents] = None):
-        if hasattr(self, '_initialized'):
-            return
-        self._initialized = True
-
-        self.id: Final[UUID] = self._get_id(id_or_url)
-        namespace[(type(self), self.id)] = self
+        if not hasattr(self, '_initialized'):
+            self._initialized = True
+            self.id: Final[UUID] = self._get_id(id_or_url)
+            namespace[(type(self), self.id)] = self
         self.latest = latest
         self.default = default
 
