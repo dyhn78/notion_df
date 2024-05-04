@@ -163,21 +163,20 @@ class Page(RetrievableEntity[PageContents]):
 
     def as_block(self) -> Block:
         block = Block(self.id)
-        if block.latest is None or self.latest.timestamp > block.latest.timestamp:
-            data = BlockContents(id=self.id,
-                                 parent=self.latest.parent,
-                                 created_time=self.latest.created_time,
-                                 last_edited_time=self.latest.last_edited_time,
-                                 created_by=self.latest.created_by,
-                                 last_edited_by=self.latest.last_edited_by,
-                                 has_children=(
-                                     block.latest.has_children if block.latest else None),
-                                 archived=self.latest.archived,
-                                 value=(
-                                     block.latest.value if block.latest else ChildPageBlockValue(
-                                         title='')))
-            data.timestamp = self.latest.timestamp
-            block.latest = data
+        latest = BlockContents(id=self.id,
+                               parent=self.latest.parent,
+                               created_time=self.latest.created_time,
+                               last_edited_time=self.latest.last_edited_time,
+                               created_by=self.latest.created_by,
+                               last_edited_by=self.latest.last_edited_by,
+                               has_children=(
+                                   block.latest.has_children if block.latest else None),
+                               archived=self.latest.archived,
+                               value=(
+                                   block.latest.value if block.latest
+                                   else ChildPageBlockValue(title='')))
+        latest.timestamp = self.latest.timestamp
+        block.latest = latest
         return block
 
     def retrieve(self) -> Self:

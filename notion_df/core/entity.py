@@ -24,7 +24,7 @@ class Entity(Generic[ContentsT], Hashable, metaclass=ABCMeta):
     Use `default` attribute to hardcode some fixed data.
     """
     id: UUID
-    _latest: Optional[ContentsT] = None
+    __latest: Optional[ContentsT] = None
     default: Optional[ContentsT] = None
     """custom local-only data."""
 
@@ -78,17 +78,17 @@ class Entity(Generic[ContentsT], Hashable, metaclass=ABCMeta):
     @property
     def latest(self) -> Optional[ContentsT]:
         """the latest contents from the server."""
-        return self._latest
+        return self.__latest
 
     @latest.setter
     def latest(self, contents: ContentsT) -> None:
         """set the contents as the more recent one between current one and new one."""
         if (self.latest is None) or (contents.timestamp > self.latest.timestamp):
-            self._latest = contents
+            self.__latest = contents
 
     @latest.deleter
     def latest(self) -> None:
-        self._latest = None
+        self.__latest = None
 
     @property
     def contents(self) -> Optional[ContentsT]:
