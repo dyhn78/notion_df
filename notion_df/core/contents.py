@@ -4,7 +4,7 @@ import functools
 from abc import ABCMeta
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, TypeVar, Optional, NoReturn
+from typing import Any, TypeVar, Optional, NoReturn, final
 
 from typing_extensions import Self
 
@@ -57,8 +57,12 @@ class Contents(Deserializable, metaclass=ABCMeta):
          or None if created by user."""
         return datetime.fromtimestamp(self.timestamp) if self.timestamp else None
 
+    @final
+    def cast(self, cls: type[ContentsT]) -> ContentsT:
+        return cls.cast_from(self)
+
     @classmethod
-    def from_base_class(cls, instance: Contents) -> Self:
+    def cast_from(cls, instance: Contents) -> Self:
         # the default classes (ex. BlockContents) should NOT override this
         # TODO: force that custom subclasses to override this
         return instance
@@ -71,8 +75,8 @@ class Contents(Deserializable, metaclass=ABCMeta):
 ContentsT = TypeVar('ContentsT', bound=Contents)
 
 
-def coalesce(current: Optional[ContentsT],
+def coalesce(latest: Optional[ContentsT],
              default: Optional[ContentsT]) -> Optional[ContentsT]:
-    # TODO: coalesce each attributes of self.current & self.default
-    contents = current if current is not None else default
+    # TODO: coalesce each attributes of self.latest & self.default
+    contents = latest if latest is not None else default
     return contents

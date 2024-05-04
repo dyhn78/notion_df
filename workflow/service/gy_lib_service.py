@@ -106,7 +106,7 @@ l.parentNode.removeChild(l);
         if self.driver.find_elements(By.CLASS_NAME, "noResultNote"):
             return
 
-        search_url = self.driver.current_url
+        search_url = self.driver.latest_url
         self.examine_result()
         self.result.search_url = search_url
         return self.result

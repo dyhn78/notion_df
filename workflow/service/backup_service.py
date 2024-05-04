@@ -37,6 +37,6 @@ class ResponseBackupService:
         else:
             logger.info(f'\t{entity}\n\t\t-> create')
         with path.open('w') as file:
-            raw_data = entity.current.raw
+            raw_data = entity.latest.raw
             assert raw_data is not None
             json.dump(raw_data, file, indent=2)

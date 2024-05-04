@@ -24,7 +24,7 @@ class Entity(Generic[ContentsT], Hashable, metaclass=ABCMeta):
     Use `default` attribute to hardcode some fixed data.
     """
     id: UUID
-    _current: Optional[ContentsT] = None
+    _latest: Optional[ContentsT] = None
     default: Optional[ContentsT] = None
     """custom local-only data."""
 
@@ -35,7 +35,7 @@ class Entity(Generic[ContentsT], Hashable, metaclass=ABCMeta):
 
     def __new__(cls, id_or_url: Union[UUID, str],
                 default: Optional[ContentsT] = None,
-                *, current: Optional[Contents] = None):
+                *, latest: Optional[Contents] = None):
         try:
             __id = cls._get_id(id_or_url)
             if (cls, __id) in namespace:
@@ -46,20 +46,20 @@ class Entity(Generic[ContentsT], Hashable, metaclass=ABCMeta):
 
     def __init__(self, id_or_url: Union[UUID, str],
                  default: Optional[ContentsT] = None,
-                 *, current: Optional[Contents] = None):
+                 *, latest: Optional[Contents] = None):
         if hasattr(self, '_initialized'):
             return
         self._initialized = True
 
         self.id: Final[UUID] = self._get_id(id_or_url)
         namespace[(type(self), self.id)] = self
-        self.current = current
+        self.latest = latest
         self.default = default
 
     def __del__(self):
         # TODO: consider using weakref instead.
         #  validate it with unit test which assert sys.getrefcount()
-        del self.current
+        del self.latest
         del namespace[(type(self), self.id)]
 
     def __getnewargs__(self):  # required for pickling
@@ -76,38 +76,28 @@ class Entity(Generic[ContentsT], Hashable, metaclass=ABCMeta):
         return repr_object(self, id=self.id, parent=self._repr_parent())
 
     @property
-    def current(self) -> Optional[ContentsT]:
+    def latest(self) -> Optional[ContentsT]:
         """the latest contents from the server."""
-        return self._current
+        return self._latest
 
-    @current.setter
-    def current(self, contents: ContentsT) -> None:
+    @latest.setter
+    def latest(self, contents: ContentsT) -> None:
         """set the contents as the more recent one between current one and new one."""
-        if (self.current is None) or (contents.timestamp > self.current.timestamp):
-            self._current = contents
+        if (self.latest is None) or (contents.timestamp > self.latest.timestamp):
+            self._latest = contents
 
-    @current.deleter
-    def current(self) -> None:
-        self._current = None
+    @latest.deleter
+    def latest(self) -> None:
+        self._latest = None
 
-    @overload
-    def get(self) -> Optional[ContentsT]:
-        ...
-
-    @overload
-    def get(self, cast: type[ContentsT2]) -> Optional[ContentsT2]:
-        ...
-
-    def get(self, cast: type[ContentsT2] = Contents) -> Optional[ContentsT2]:
+    @property
+    def contents(self) -> Optional[ContentsT]:
         """get the local contents."""
-        contents: ContentsT = coalesce(self.current, self.default)
-        if contents is None:
-            return None
-        return cast.from_base_class(contents)
+        return coalesce(self.latest, self.default)
 
     @final
     def _repr_parent(self) -> Optional[str]:
-        contents = Entity.get(self)  # prevents retrieve_if_empty
+        contents = self.contents  # prevents retrieve_if_empty
         if contents is None or not hasattr(contents, 'parent'):
             return undefined
         elif contents.parent is None:
@@ -125,33 +115,11 @@ class RetrievableEntity(Entity[ContentsT]):
         # TODO: raise EntityNotExistError(ValueError), with page_exists()
         pass
 
-    @overload
-    def get(self, retrieve_if_empty: Literal[True] = True) -> ContentsT:
-        ...
-
-    @overload
-    def get(self, retrieve_if_empty: Literal[False] = False) -> Optional[ContentsT]:
-        ...
-
-    # noinspection PyMethodOverriding
-    @overload
-    def get(self, cast: type[ContentsT2],
-            retrieve_if_empty: Literal[True] = True) -> ContentsT2:
-        ...
-
-    # noinspection PyMethodOverriding
-    @overload
-    def get(self, cast: type[ContentsT2],
-            retrieve_if_empty: Literal[False] = False) -> Optional[ContentsT2]:
-        ...
-
-    def get(self, cast: type[ContentsT2] = Contents,
-            retrieve_if_empty: bool = True) -> Optional[ContentsT2]:
-        """get the local contents, or retrieve."""
-        contents: ContentsT = coalesce(self.current, self.default)
-        if contents is None:
-            if not retrieve_if_empty:
-                return None
-            self.retrieve()
-            contents = self.current
-        return cast.from_base_class(contents)
+    @property
+    def contents(self) -> ContentsT:
+        """get the local contents, or auto-retrieve."""
+        contents = coalesce(self.latest, self.default)
+        if contents is not None:
+            return contents
+        self.retrieve()
+        return typing_cast(ContentsT, self.latest)

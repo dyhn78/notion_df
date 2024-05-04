@@ -54,7 +54,7 @@ class CreatePage(SingleRequestBuilder[PageContents]):
 @dataclass
 class UpdatePage(SingleRequestBuilder[PageContents]):
     """https://developers.notion.com/reference/patch-page"""
-    # TODO: inspect that UpdatePage.response immediately update the page.current status ? (b031c3a)
+    # TODO: inspect that UpdatePage.response immediately update the page.latest status ? (b031c3a)
     data_type = PageContents
     id: UUID
     properties: Optional[PageProperties] = None

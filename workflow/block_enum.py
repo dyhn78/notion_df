@@ -57,11 +57,11 @@ class DatabaseEnum(Enum):
     @property
     def entity(self) -> Database:
         db = Database(self.id)
-        if db.current is None:
+        if db.latest is None:
             title_span = TextSpan(self.title)
             title_span.plain_text = self.title
             # noinspection PyTypeChecker
-            db.current = DatabaseContents(id=self.id,
+            db.latest = DatabaseContents(id=self.id,
                                           parent=None,
                                           created_time=None,
                                           last_edited_time=None,
@@ -80,8 +80,7 @@ class DatabaseEnum(Enum):
 
 
 def is_template(page: Page) -> bool:
-    page.get()
-    database = page.current.parent
+    database = page.contents.parent
     if not database or not isinstance(database, Database):
         return False
-    return bool(re.match(f'<{database.get().title.plain_text}> .*', page.current.properties.title.plain_text))
+    return bool(re.match(f'<{database.contents.title.plain_text}> .*', page.contents.properties.title.plain_text))

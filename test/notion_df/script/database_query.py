@@ -11,7 +11,7 @@ if __name__ == '__main__':
     my_date_equals_20230101 = DateProperty('📆날짜').filter.equals(date(2023, 1, 1))
     pages = database.query(my_date_equals_20230101, page_size=10)
     pprint(pages)
-    page_properties = pages[0].current.properties
+    page_properties = pages[0].latest.properties
     url = page_properties[URLProperty('url')]
     url2 = page_properties['url']
     daterange = page_properties[DateProperty('date')]
