@@ -13,7 +13,7 @@ from notion_df.variable import print_width
 from workflow.block_enum import is_template
 from workflow.core.entrypoint import entrypoint, WorkflowRecord, WorkflowSkipException
 
-Callable_T = TypeVar('Callable_T', bound=Callable)
+CallableT = TypeVar('CallableT', bound=Callable)
 
 
 class Action(metaclass=ABCMeta):

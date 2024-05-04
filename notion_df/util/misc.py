@@ -24,7 +24,7 @@ def repr_object(obj, *attrs: Any, **kw_attrs: Any) -> str:
     return f"{type(obj).__name__}({', '.join(attr_items)})"
 
 
-Type_T = TypeVar('Type_T', bound=type)
+TypeT = TypeVar('TypeT', bound=type)
 
 
 def get_generic_args(cls: type[Generic]) -> Optional[tuple[type, ...]]:
@@ -34,7 +34,7 @@ def get_generic_args(cls: type[Generic]) -> Optional[tuple[type, ...]]:
             return args
 
 
-def get_generic_arg(cls: type[Generic], cast_type: Type_T) -> Type_T:
+def get_generic_arg(cls: type[Generic], cast_type: TypeT) -> TypeT:
     """ex) class A(list[int]) -> return: <class 'int'>"""
     try:
         arg = cast(type[cast_type], get_generic_args(cls)[0])

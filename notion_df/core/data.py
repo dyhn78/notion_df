@@ -56,4 +56,4 @@ class Data(Deserializable, metaclass=ABCMeta):
         return datetime.fromtimestamp(self.timestamp) if self.timestamp else None
 
 
-Data_T = TypeVar('Data_T', bound=Data)
+DataT = TypeVar('DataT', bound=Data)

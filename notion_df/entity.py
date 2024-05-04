@@ -15,7 +15,7 @@ from notion_df.object.filter import Filter
 from notion_df.object.misc import Icon, PartialParent
 from notion_df.object.rich_text import RichText
 from notion_df.object.sort import Sort, TimestampSort, Direction
-from notion_df.property import Property, PageProperties, DatabaseProperties, PagePropertyValue_T
+from notion_df.property import Property, PageProperties, DatabaseProperties, PagePropertyValueT
 from notion_df.request.block import AppendBlockChildren, RetrieveBlock, RetrieveBlockChildren, UpdateBlock, DeleteBlock
 from notion_df.request.database import CreateDatabase, UpdateDatabase, RetrieveDatabase, QueryDatabase
 from notion_df.request.page import CreatePage, UpdatePage, RetrievePage, RetrievePagePropertyItem
@@ -177,7 +177,7 @@ class Page(Entity[PageData]):
         return self.set_data(data)
 
     def retrieve_property_item(
-            self, property_id: str | Property[Any, PagePropertyValue_T, Any]) -> PagePropertyValue_T:
+            self, property_id: str | Property[Any, PagePropertyValueT, Any]) -> PagePropertyValueT:
         logger.info(f'Page.retrieve_property_item({self}, property_id="{property_id}")')
         if isinstance(prop := property_id, Property):
             property_id = prop.id
@@ -212,9 +212,9 @@ class Page(Entity[PageData]):
         return self.as_block().create_child_database(title, properties=properties, icon=icon, cover=cover)
 
 
-Block_T = TypeVar('Block_T', bound=Block)
-Database_T = TypeVar('Database_T', bound=Database)
-Page_T = TypeVar('Page_T', bound=Page)
+BlockT = TypeVar('BlockT', bound=Block)
+DatabaseT = TypeVar('DatabaseT', bound=Database)
+PageT = TypeVar('PageT', bound=Page)
 
 
 @overload

@@ -9,7 +9,7 @@ from notion_df.core.request import SingleRequestBuilder, RequestSettings, Versio
 from notion_df.object.data import BlockValue, serialize_block_value_list, PageData
 from notion_df.object.file import ExternalFile
 from notion_df.object.misc import Icon, PartialParent
-from notion_df.property import PageProperties, Property, property_registry, PagePropertyValue_T
+from notion_df.property import PageProperties, Property, property_registry, PagePropertyValueT
 from notion_df.util.collection import DictFilter
 
 
@@ -92,7 +92,7 @@ class RetrievePagePropertyItem(RequestBuilder):
 
     execute_once = PaginatedRequestBuilder.execute_once
 
-    def execute(self) -> tuple[Property[Any, PagePropertyValue_T, Any], PagePropertyValue_T]:
+    def execute(self) -> tuple[Property[Any, PagePropertyValueT, Any], PagePropertyValueT]:
         data = self.execute_once()
         if (prop_serialized := data)['object'] == 'property_item':
             # noinspection PyProtectedMember

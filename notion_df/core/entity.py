@@ -6,19 +6,18 @@ from uuid import UUID
 
 from typing_extensions import Self
 
-from notion_df.core.data import Data_T
+from notion_df.core.data import DataT
 from notion_df.util.misc import repr_object, undefined
 
 namespace: Final[dict[tuple[type[Entity], UUID], Entity]] = {}
 
 
-# TODO!!: merge with entity.data. support Entity.copy() whose return value is non-requestable object with current()
-class Entity(Generic[Data_T], Hashable, metaclass=ABCMeta):
+class Entity(Generic[DataT], Hashable, metaclass=ABCMeta):
     """The base class for blocks, users, and comments.
     There is only one instance with given subclass and id.
     You can compare two blocks directly `block_1 == block_2`, not having to compare id `block_1.id == block_2.id`"""
     id: UUID
-    data: Optional[Data_T] = None
+    data: Optional[DataT] = None
     """the latest local data of the entity."""
 
     @classmethod
@@ -72,13 +71,13 @@ class Entity(Generic[Data_T], Hashable, metaclass=ABCMeta):
     def _repr_as_parent(self) -> str:
         return repr_object(self, id=self.id)
 
-    def get_data(self) -> Data_T:
+    def get_data(self) -> DataT:
         """get the local data, or retrieve if there is not."""
         if self.data is None or not self.data.timestamp:
             self.retrieve()  # TODO: raise EntityNotExistError(ValueError), with page_exists()
         return self.data
 
-    def set_data(self, data: Data_T) -> Self:
+    def set_data(self, data: DataT) -> Self:
         """set the data as the more recent one between current one and new one."""
         if (self.data is None) or (data.timestamp > self.data.timestamp):
             self.data = data

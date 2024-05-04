@@ -13,12 +13,12 @@ from selenium.webdriver.support.wait import WebDriverWait
 from notion_df.util.collection import StrEnum
 from workflow.service.webdriver_service import WebDriverService
 
-SelectLib_T = Literal['all_libs', 'gajwa']
+LibKey = Literal['all_libs', 'gajwa']
 
 
 @dataclass
 class LibraryScrapResult:
-    lib_key: SelectLib_T
+    lib_key: LibKey
     lib_name: str
     priority: int
     book_code: str
@@ -69,7 +69,7 @@ var l = document.querySelector("{css_tag}");
 l.parentNode.removeChild(l);
         """)
 
-    def __init__(self, driver: WebDriver, title: str, lib_key: SelectLib_T):
+    def __init__(self, driver: WebDriver, title: str, lib_key: LibKey):
         self.driver = driver
         self.driver_wait = WebDriverWait(self.driver, 120)
         # self.driver.minimize_window()
@@ -162,7 +162,7 @@ l.parentNode.removeChild(l);
 
 
 class GoyangLibraryScrapBookAreaParser:
-    def __init__(self, book_area: WebElement, lib_key: SelectLib_T):
+    def __init__(self, book_area: WebElement, lib_key: LibKey):
         self.book_area = book_area
         self.lib_key = lib_key
         if self.lib_key == 'gajwa':

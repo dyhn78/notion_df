@@ -28,11 +28,11 @@ if TYPE_CHECKING:
     from notion_df.entity import Page, Database
 
 property_registry: FinalDict[str, type[Property]] = FinalDict()
-PropertyValue_T = TypeVar('PropertyValue_T')
-# TODO (low priority): fix that `DatabasePropertyValue_T.bound == DatabasePropertyValue` does not ruin the type hinting
-DatabasePropertyValue_T = TypeVar('DatabasePropertyValue_T')
-PagePropertyValue_T = TypeVar('PagePropertyValue_T')
-FilterBuilder_T = TypeVar('FilterBuilder_T', bound=FilterBuilder)
+PropertyValueT = TypeVar('PropertyValueT')
+# TODO (low priority): fix that `DatabasePropertyValueT.bound == DatabasePropertyValue` does not ruin the type hinting
+DatabasePropertyValueT = TypeVar('DatabasePropertyValueT')
+PagePropertyValueT = TypeVar('PagePropertyValueT')
+FilterBuilderT = TypeVar('FilterBuilderT', bound=FilterBuilder)
 
 
 # TODO: PropertyMeta
@@ -40,12 +40,12 @@ FilterBuilder_T = TypeVar('FilterBuilder_T', bound=FilterBuilder)
 #  - cls_attributes
 #    - use_dataclass: bool = (inherit)
 # TODO: UnsupportedProperty
-class Property(Generic[DatabasePropertyValue_T, PagePropertyValue_T, FilterBuilder_T], metaclass=ABCMeta):
+class Property(Generic[DatabasePropertyValueT, PagePropertyValueT, FilterBuilderT], metaclass=ABCMeta):
     # TODO: move base class and PropertyValue classes to notion_df.core.property
     typename: ClassVar[str] = ''
-    database_value: type[DatabasePropertyValue_T]
-    page_value: type[PagePropertyValue_T]
-    _filter_cls: type[FilterBuilder_T]
+    database_value: type[DatabasePropertyValueT]
+    page_value: type[PagePropertyValueT]
+    _filter_cls: type[FilterBuilderT]
 
     def __init__(self, name: Optional[str]):
         # TODO: consider signature `(self, *, name: Optional[str], id: Optional[str])`
@@ -79,7 +79,7 @@ class Property(Generic[DatabasePropertyValue_T, PagePropertyValue_T, FilterBuild
             property_registry[cls.typename] = cls
 
     @property
-    def filter(self) -> FilterBuilder_T:
+    def filter(self) -> FilterBuilderT:
         def build(filter_condition: dict[str, Any]):
             return PropertyFilter(self.name, self.typename, filter_condition)
 
@@ -92,13 +92,13 @@ class Property(Generic[DatabasePropertyValue_T, PagePropertyValue_T, FilterBuild
     #  - RetrievePagePropertyItem.execute() & Page.retrieve_property_item() should call this and return tuple
 
     # noinspection PyMethodMayBeStatic
-    def _serialize_page_value(self, prop_value: PagePropertyValue_T) -> dict[str, Any]:
+    def _serialize_page_value(self, prop_value: PagePropertyValueT) -> dict[str, Any]:
         # if type(prop_value) != self.page_value:
         #    prop_value = self.page_value(prop_value)
         return serialize(prop_value)
 
     @classmethod
-    def _deserialize_page_value(cls, prop_serialized: dict[str, Any]) -> PagePropertyValue_T:
+    def _deserialize_page_value(cls, prop_serialized: dict[str, Any]) -> PagePropertyValueT:
         """allow proxy-deserialization of subclasses."""
         typename = prop_serialized['type']
         if cls == Property:
@@ -107,7 +107,7 @@ class Property(Generic[DatabasePropertyValue_T, PagePropertyValue_T, FilterBuild
         return deserialize(cls.page_value, prop_serialized[typename])
 
     @classmethod
-    def _deserialize_database_value(cls, prop_serialized: dict[str, Any]) -> DatabasePropertyValue_T:
+    def _deserialize_database_value(cls, prop_serialized: dict[str, Any]) -> DatabasePropertyValueT:
         """allow proxy-deserialization of subclasses."""
         typename = prop_serialized['type']
         if cls == Property:
@@ -116,13 +116,13 @@ class Property(Generic[DatabasePropertyValue_T, PagePropertyValue_T, FilterBuild
         return deserialize(cls.database_value, prop_serialized[typename])
 
 
-class Properties(DualSerializable, MutableMapping[Property, PropertyValue_T], metaclass=ABCMeta):
+class Properties(DualSerializable, MutableMapping[Property, PropertyValueT], metaclass=ABCMeta):
     _prop_by_id: dict[str, Property]
     _prop_by_name: dict[str, Property]
-    _prop_value_by_name: dict[str, PropertyValue_T]
-    _prop_value_by_prop: dict[Property, PropertyValue_T]
+    _prop_value_by_name: dict[str, PropertyValueT]
+    _prop_value_by_prop: dict[Property, PropertyValueT]
 
-    def __init__(self, items: Optional[dict[Property, PropertyValue_T]] = None):
+    def __init__(self, items: Optional[dict[Property, PropertyValueT]] = None):
         self._prop_by_id = {}
         self._prop_by_name = {}
         self._prop_value_by_name = {}
@@ -159,17 +159,17 @@ class Properties(DualSerializable, MutableMapping[Property, PropertyValue_T], me
             return key
         raise NotionDfKeyError('bad key', {'key': key})
 
-    def __getitem__(self, prop: str | Property) -> PropertyValue_T:
+    def __getitem__(self, prop: str | Property) -> PropertyValueT:
         return self._prop_value_by_prop[self._get_prop(prop)]
 
-    def get(self, prop: str | Property, default: Optional[PropertyValue_T] = None) -> Optional[PropertyValue_T]:
+    def get(self, prop: str | Property, default: Optional[PropertyValueT] = None) -> Optional[PropertyValueT]:
         try:
             prop = self._get_prop(prop)
             return self[prop.name]
         except KeyError:
             return default
 
-    def __setitem__(self, prop: str | Property, value: PropertyValue_T) -> None:
+    def __setitem__(self, prop: str | Property, value: PropertyValueT) -> None:
         prop = self._get_prop(prop)
         self._prop_by_id[prop.id] = prop
         self._prop_by_name[prop.name] = prop
@@ -184,10 +184,10 @@ class Properties(DualSerializable, MutableMapping[Property, PropertyValue_T], me
 
 
 class DatabaseProperties(Properties,
-                         MutableMapping[Property[DatabasePropertyValue_T, Any, Any], DatabasePropertyValue_T]):
+                         MutableMapping[Property[DatabasePropertyValueT, Any, Any], DatabasePropertyValueT]):
     def __init__(
             self, properties: Optional[dict[
-                Property[DatabasePropertyValue_T, Any, Any], DatabasePropertyValue_T]] = None):
+                Property[DatabasePropertyValueT, Any, Any], DatabasePropertyValueT]] = None):
         super().__init__(properties)
 
     def serialize(self) -> dict[str, Any]:
@@ -209,20 +209,20 @@ class DatabaseProperties(Properties,
             self[prop] = prop_value
         return self
 
-    def __getitem__(self, prop: str | Property[DatabasePropertyValue_T, Any, Any]) -> DatabasePropertyValue_T:
+    def __getitem__(self, prop: str | Property[DatabasePropertyValueT, Any, Any]) -> DatabasePropertyValueT:
         return super().__getitem__(prop)
 
-    def __setitem__(self, prop: str | Property[DatabasePropertyValue_T, Any, Any],
-                    value: DatabasePropertyValue_T) -> None:
+    def __setitem__(self, prop: str | Property[DatabasePropertyValueT, Any, Any],
+                    value: DatabasePropertyValueT) -> None:
         return super().__setitem__(prop, value)
 
-    def __delitem__(self, prop: str | Property[DatabasePropertyValue_T, Any, Any]) -> None:
+    def __delitem__(self, prop: str | Property[DatabasePropertyValueT, Any, Any]) -> None:
         return super().__delitem__(prop)
 
 
-class PageProperties(Properties, MutableMapping[Property[Any, PagePropertyValue_T, Any], PagePropertyValue_T]):
+class PageProperties(Properties, MutableMapping[Property[Any, PagePropertyValueT, Any], PagePropertyValueT]):
     def __init__(
-            self, properties: Optional[dict[Property[Any, PagePropertyValue_T, Any], PagePropertyValue_T]] = None):
+            self, properties: Optional[dict[Property[Any, PagePropertyValueT, Any], PagePropertyValueT]] = None):
         super().__init__(properties)
         self._title_prop: Optional[TitleProperty] = None
 
@@ -249,15 +249,15 @@ class PageProperties(Properties, MutableMapping[Property[Any, PagePropertyValue_
                 self._title_prop = prop
         return self
 
-    def __getitem__(self, prop: str | Property[Any, PagePropertyValue_T, Any]) \
-            -> PagePropertyValue_T:
+    def __getitem__(self, prop: str | Property[Any, PagePropertyValueT, Any]) \
+            -> PagePropertyValueT:
         return super().__getitem__(prop)
 
-    def __setitem__(self, prop: str | Property[Any, PagePropertyValue_T, Any],
-                    value: PagePropertyValue_T) -> None:
+    def __setitem__(self, prop: str | Property[Any, PagePropertyValueT, Any],
+                    value: PagePropertyValueT) -> None:
         return super().__setitem__(prop, value)
 
-    def __delitem__(self, prop: str | Property[Any, PagePropertyValue_T, Any]) \
+    def __delitem__(self, prop: str | Property[Any, PagePropertyValueT, Any]) \
             -> None:
         return super().__delitem__(prop)
 
@@ -383,7 +383,7 @@ class DualRelationDatabasePropertyValue(RelationDatabasePropertyValue):
         return cls(database=Database(raw['database_id']), synced_property=synced_property)
 
 
-RelationDatabasePropertyValue_T = TypeVar('RelationDatabasePropertyValue_T', bound=RelationDatabasePropertyValue)
+RelationDatabasePropertyValueT = TypeVar('RelationDatabasePropertyValueT', bound=RelationDatabasePropertyValue)
 
 
 @dataclass
@@ -559,7 +559,7 @@ class FilesProperty(Property[PlainDatabasePropertyValue, Files, FilesFilterBuild
     _filter_cls = FilesFilterBuilder
 
 
-class FormulaProperty(Property[FormulaDatabasePropertyValue, PagePropertyValue_T, FilterBuilder_T]):
+class FormulaProperty(Property[FormulaDatabasePropertyValue, PagePropertyValueT, FilterBuilderT]):
     """cannot access page properties - use subclasses instead."""
     typename = 'formula'
     value_typename: ClassVar[str]
@@ -567,18 +567,18 @@ class FormulaProperty(Property[FormulaDatabasePropertyValue, PagePropertyValue_T
     page_value = Any
 
     @property
-    def filter(self) -> FilterBuilder_T:
+    def filter(self) -> FilterBuilderT:
         def build(filter_condition: dict[str, Any]):
             return FormulaPropertyFilter(self.name, self.typename, self._filter_cls.get_typename(), filter_condition)
 
         return self._filter_cls(build)
 
-    def _serialize_page_value(self, prop_value: PropertyValue_T) -> dict[str, Any]:
+    def _serialize_page_value(self, prop_value: PropertyValueT) -> dict[str, Any]:
         return {'type': self.value_typename,
                 self.value_typename: prop_value}
 
     @classmethod
-    def _deserialize_page_value(cls, prop_serialized: dict[str, Any]) -> PropertyValue_T:
+    def _deserialize_page_value(cls, prop_serialized: dict[str, Any]) -> PropertyValueT:
         typename = prop_serialized['type']
         value_typename = prop_serialized[typename]['type']
         if cls == FormulaProperty:
@@ -664,7 +664,7 @@ class PhoneNumberProperty(Property[PlainDatabasePropertyValue, str, TextFilterBu
     _filter_cls = TextFilterBuilder
 
 
-class RelationProperty(Property[RelationDatabasePropertyValue_T, RelationPagePropertyValue, RelationFilterBuilder]):
+class RelationProperty(Property[RelationDatabasePropertyValueT, RelationPagePropertyValue, RelationFilterBuilder]):
     """cannot access database properties - use subclasses instead."""
     typename = 'relation'
     database_value: type[RelationDatabasePropertyValue] = RelationDatabasePropertyValue
@@ -672,7 +672,7 @@ class RelationProperty(Property[RelationDatabasePropertyValue_T, RelationPagePro
     _filter_cls = RelationFilterBuilder
 
     @classmethod
-    def _deserialize_page_value(cls, prop_serialized: dict[str, Any]) -> PropertyValue_T:
+    def _deserialize_page_value(cls, prop_serialized: dict[str, Any]) -> PropertyValueT:
         prop_value = super()._deserialize_page_value(prop_serialized)
         prop_value.has_more = prop_serialized['has_more']
         return prop_value
