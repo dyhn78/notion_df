@@ -9,7 +9,7 @@ from uuid import UUID
 
 from typing_extensions import Self
 
-from notion_df.core.data import Data
+from notion_df.core.contents import Contents
 from notion_df.core.serialization import DualSerializable
 from notion_df.object.constant import BlockColor, CodeLanguage
 from notion_df.object.file import File
@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 
 
 @dataclass
-class DatabaseData(Data):
+class DatabaseContents(Contents):
     id: UUID
     parent: Union[Block, Page, None]
     created_time: datetime
@@ -51,7 +51,7 @@ class DatabaseData(Data):
 
 
 @dataclass
-class PageData(Data):
+class PageContents(Contents):
     id: UUID
     parent: Union[Block, Database, Page, None]
     created_time: datetime
@@ -77,7 +77,7 @@ class PageData(Data):
 
 
 @dataclass
-class BlockData(Data):
+class BlockContents(Contents):
     id: UUID
     parent: Union[Block, Page, None]
     created_time: datetime
@@ -158,7 +158,7 @@ class BreadcrumbBlockValue(BlockValue):
 class BulletedListItemBlockValue(BlockValue):
     rich_text: RichText
     color: BlockColor = BlockColor.DEFAULT
-    children: list[BlockData] = field(init=False, default=None)
+    children: list[BlockContents] = field(init=False, default=None)
 
     @classmethod
     def get_typename(cls) -> str:
@@ -170,7 +170,7 @@ class CalloutBlockValue(BlockValue):
     rich_text: RichText
     icon: Icon
     color: BlockColor = BlockColor.DEFAULT
-    children: list[BlockData] = field(init=False, default=None)
+    children: list[BlockContents] = field(init=False, default=None)
 
     @classmethod
     def get_typename(cls) -> str:
@@ -321,7 +321,7 @@ class ImageBlockValue(BlockValue):
 class NumberedListItemBlockValue(BlockValue):
     rich_text: RichText
     color: BlockColor = BlockColor.DEFAULT
-    children: list[BlockData] = field(init=False, default=None)
+    children: list[BlockContents] = field(init=False, default=None)
 
     @classmethod
     def get_typename(cls) -> str:
@@ -332,7 +332,7 @@ class NumberedListItemBlockValue(BlockValue):
 class ParagraphBlockValue(BlockValue):
     rich_text: RichText
     color: BlockColor = BlockColor.DEFAULT
-    children: list[BlockData] = field(init=False, default=None)
+    children: list[BlockContents] = field(init=False, default=None)
 
     @classmethod
     def get_typename(cls) -> str:
@@ -360,7 +360,7 @@ class PDFBlockValue(BlockValue):
 class QuoteBlockValue(BlockValue):
     rich_text: RichText
     color: BlockColor = BlockColor.DEFAULT
-    children: list[BlockData] = field(init=False, default=None)
+    children: list[BlockContents] = field(init=False, default=None)
 
     @classmethod
     def get_typename(cls) -> str:
@@ -392,7 +392,7 @@ class SyncedBlockValue(BlockValue, metaclass=ABCMeta):
 @dataclass
 class OriginalSyncedBlockValue(SyncedBlockValue):
     """cannot be changed (2023-04-02)"""
-    children: list[BlockData] = field(init=False, default=None)
+    children: list[BlockContents] = field(init=False, default=None)
 
     def serialize(self) -> dict[str, Any]:
         return {
@@ -450,7 +450,7 @@ class ToDoBlockValue(BlockValue):
     rich_text: RichText
     checked: bool
     color: BlockColor = BlockColor.DEFAULT
-    children: list[BlockData] = field(init=False, default=None)
+    children: list[BlockContents] = field(init=False, default=None)
 
     @classmethod
     def get_typename(cls) -> str:
@@ -461,7 +461,7 @@ class ToDoBlockValue(BlockValue):
 class ToggleBlockValue(BlockValue):
     rich_text: RichText
     color: BlockColor = BlockColor.DEFAULT
-    children: list[BlockData] = field(init=False, default=None)
+    children: list[BlockContents] = field(init=False, default=None)
 
     @classmethod
     def get_typename(cls) -> str:

@@ -4,7 +4,7 @@ import functools
 from abc import ABCMeta
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, TypeVar, Optional
+from typing import Any, TypeVar, Optional, NoReturn
 
 from typing_extensions import Self
 
@@ -12,10 +12,11 @@ from notion_df.core.serialization import Deserializable
 
 
 @dataclass
-class Data(Deserializable, metaclass=ABCMeta):
+class Contents(Deserializable, metaclass=ABCMeta):
     raw: dict[str, Any] = field(init=False, default_factory=dict)
     timestamp: int = field(init=False, default=0)
-    """the timestamp of deserialization if created with external raw data, or 0 if created by user."""
+    """the timestamp of deserialization if created with external raw data, 
+    or 0 if created by user."""
 
     def __del__(self):
         del self.raw
@@ -26,7 +27,7 @@ class Data(Deserializable, metaclass=ABCMeta):
 
         @functools.wraps(_deserialize_this)
         def _deserialize_this_wrapped(raw: dict[str, Any]) -> Self:
-            self: Data = _deserialize_this(raw)
+            self: Contents = _deserialize_this(raw)
             self.raw = raw
             self.timestamp = datetime.now().timestamp()
             return self
@@ -35,25 +36,35 @@ class Data(Deserializable, metaclass=ABCMeta):
 
     @classmethod
     def deserialize(cls, raw: Any) -> Self:
-        from notion_df.object.data import BlockData, DatabaseData, PageData
+        from notion_df.object.data import BlockContents, DatabaseContents, PageContents
 
-        if cls != Data:
+        if cls != Contents:
             return cls._deserialize_this(raw)
         match object_kind := raw['object']:
             case 'block':
-                subclass = BlockData
+                subclass = BlockContents
             case 'database':
-                subclass = DatabaseData
+                subclass = DatabaseContents
             case 'page':
-                subclass = PageData
+                subclass = PageContents
             case _:
                 raise ValueError(object_kind)
         return subclass.deserialize(raw)
 
     @property
     def time(self) -> Optional[datetime]:
-        """the time of deserialization if created with external raw data, or None if created by user."""
+        """the time of deserialization if created with external raw contents,
+         or None if created by user."""
         return datetime.fromtimestamp(self.timestamp) if self.timestamp else None
 
+    @classmethod
+    def from_base_class(cls, instance: Contents) -> Self:
+        # TODO: force that custom subclasses to override this
+        return instance
 
-DataT = TypeVar('DataT', bound=Data)
+    def __getitem__(self) -> NoReturn:
+        # TODO: call properties.__getitem__
+        raise NotImplementedError
+
+
+ContentsT = TypeVar('ContentsT', bound=Contents)

@@ -5,14 +5,14 @@ from typing import Any
 from uuid import UUID
 
 from notion_df.core.request import SingleRequestBuilder, RequestSettings, Version, Method, PaginatedRequestBuilder
-from notion_df.object.data import BlockValue, BlockData, serialize_block_value_list
+from notion_df.object.data import BlockValue, BlockContents, serialize_block_value_list
 from notion_df.util.collection import DictFilter
 
 
 @dataclass
-class AppendBlockChildren(SingleRequestBuilder[list[BlockData]]):
+class AppendBlockChildren(SingleRequestBuilder[list[BlockContents]]):
     """https://developers.notion.com/reference/patch-block-children"""
-    data_type = list[BlockData]
+    data_type = list[BlockContents]
     id: UUID
     children: list[BlockValue]
 
@@ -24,17 +24,17 @@ class AppendBlockChildren(SingleRequestBuilder[list[BlockData]]):
         return {'children': serialize_block_value_list(self.children)}
 
     @classmethod
-    def parse_response_data(cls, data: dict[str, Any]) -> list[BlockData]:
+    def parse_response_data(cls, data: dict[str, Any]) -> list[BlockContents]:
         data_element_list = []
         for data_element in data['results']:
-            data_element_list.append(BlockData.deserialize(data_element))
+            data_element_list.append(BlockContents.deserialize(data_element))
         return data_element_list
 
 
 @dataclass
-class RetrieveBlock(SingleRequestBuilder[BlockData]):
+class RetrieveBlock(SingleRequestBuilder[BlockContents]):
     """https://developers.notion.com/reference/retrieve-a-block"""
-    data_type = BlockData
+    data_type = BlockContents
     id: UUID
 
     def get_settings(self) -> RequestSettings:
@@ -46,9 +46,9 @@ class RetrieveBlock(SingleRequestBuilder[BlockData]):
 
 
 @dataclass
-class RetrieveBlockChildren(PaginatedRequestBuilder[BlockData]):
+class RetrieveBlockChildren(PaginatedRequestBuilder[BlockContents]):
     """https://developers.notion.com/reference/get-block-children"""
-    data_element_type = BlockData
+    data_element_type = BlockContents
     id: UUID
     page_size: int = None
 
@@ -61,9 +61,9 @@ class RetrieveBlockChildren(PaginatedRequestBuilder[BlockData]):
 
 
 @dataclass
-class UpdateBlock(SingleRequestBuilder[BlockData]):
+class UpdateBlock(SingleRequestBuilder[BlockContents]):
     """https://developers.notion.com/reference/update-a-block"""
-    data_type = BlockData
+    data_type = BlockContents
     id: UUID
     block_type: BlockValue = field(default=None)
     archived: bool = field(default=None)
@@ -81,9 +81,9 @@ class UpdateBlock(SingleRequestBuilder[BlockData]):
 
 
 @dataclass
-class DeleteBlock(SingleRequestBuilder[BlockData]):
+class DeleteBlock(SingleRequestBuilder[BlockContents]):
     """https://developers.notion.com/reference/delete-a-block"""
-    data_type = BlockData
+    data_type = BlockContents
     id: UUID
 
     def get_settings(self) -> RequestSettings:

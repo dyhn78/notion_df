@@ -6,7 +6,7 @@ from typing import Optional
 
 from notion_df.core.entity import Entity
 from notion_df.entity import Database, Page
-from notion_df.object.data import DatabaseData
+from notion_df.object.data import DatabaseContents
 from notion_df.object.misc import Emoji
 from notion_df.object.rich_text import RichText, TextSpan
 from notion_df.util.uuid_util import get_page_or_database_id, get_page_or_database_url
@@ -57,21 +57,21 @@ class DatabaseEnum(Enum):
     @property
     def entity(self) -> Database:
         db = Database(self.id)
-        if db.data is None:
+        if db.current is None:
             title_span = TextSpan(self.title)
             title_span.plain_text = self.title
             # noinspection PyTypeChecker
-            db.data = DatabaseData(id=self.id,
-                                   parent=None,
-                                   created_time=None,
-                                   last_edited_time=None,
-                                   icon=Emoji(self.prefix),
-                                   cover=None,
-                                   url=None,
-                                   title=RichText([title_span]),
-                                   properties=None,
-                                   archived=False,
-                                   is_inline=False)
+            db.current = DatabaseContents(id=self.id,
+                                          parent=None,
+                                          created_time=None,
+                                          last_edited_time=None,
+                                          icon=Emoji(self.prefix),
+                                          cover=None,
+                                          url=None,
+                                          title=RichText([title_span]),
+                                          properties=None,
+                                          archived=False,
+                                          is_inline=False)
         return db
 
     @classmethod
@@ -80,8 +80,8 @@ class DatabaseEnum(Enum):
 
 
 def is_template(page: Page) -> bool:
-    page.get_data()
-    database = page.data.parent
+    page.get()
+    database = page.current.parent
     if not database or not isinstance(database, Database):
         return False
-    return bool(re.match(f'<{database.get_data().title.plain_text}> .*', page.data.properties.title.plain_text))
+    return bool(re.match(f'<{database.get().title.plain_text}> .*', page.current.properties.title.plain_text))

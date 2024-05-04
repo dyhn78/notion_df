@@ -6,8 +6,8 @@ summit_datei2_prop = RelationProperty("🟣생성")
 
 if __name__ == '__main__':
     for summit in DatabaseEnum.summit_db.entity.query(summit_datei2_prop.filter.is_not_empty()):
-        summit_datei1 = summit.data.properties[summit_datei1_prop]
-        summit_datei1_new = summit_datei1 + summit.data.properties[summit_datei2_prop]
+        summit_datei1 = summit.current.properties[summit_datei1_prop]
+        summit_datei1_new = summit_datei1 + summit.current.properties[summit_datei2_prop]
         if summit_datei1 == summit_datei1_new:
             continue
         summit.update(PageProperties({

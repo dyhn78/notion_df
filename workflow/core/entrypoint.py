@@ -82,7 +82,7 @@ class WorkflowRecord:
 
         self.last_success_time_blocks = self.last_success_time_parent_block.retrieve_children()
         last_execution_time_block = self.last_success_time_blocks[0]
-        self.last_execution_time_str = (cast(ParagraphBlockValue, last_execution_time_block.data.value)
+        self.last_execution_time_str = (cast(ParagraphBlockValue, last_execution_time_block.current.value)
                                         .rich_text.plain_text)
         if self.last_execution_time_str == 'STOP':
             raise WorkflowSkipException("last_execution_time_str == 'STOP'")
@@ -127,14 +127,14 @@ class WorkflowRecord:
 
         log_group_block = None
         for block in reversed(self.page_block.retrieve_children()):
-            if isinstance(block.data.value, DividerBlockValue):
+            if isinstance(block.current.value, DividerBlockValue):
                 log_group_block = self.page_block.append_children([
                     ToggleBlockValue(RichText([TextSpan(self.start_time_group_str)]))])[0]
                 break
-            if cast(ToggleBlockValue, block.data.value).rich_text.plain_text == self.start_time_group_str:
+            if cast(ToggleBlockValue, block.current.value).rich_text.plain_text == self.start_time_group_str:
                 log_group_block = block
                 break
-            if self.start_time - block.data.created_time > timedelta(days=7):
+            if self.start_time - block.current.created_time > timedelta(days=7):
                 block.delete()
         assert isinstance(log_group_block, Block)
 

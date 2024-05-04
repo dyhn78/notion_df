@@ -38,9 +38,9 @@ class Action(metaclass=ABCMeta):
         lower_bound = lower_bound.replace(second=0, microsecond=0)
         pages = set()
         for page in search_by_title('', 'page'):
-            if upper_bound is not None and page.data.last_edited_time > upper_bound:
+            if upper_bound is not None and page.current.last_edited_time > upper_bound:
                 continue
-            if page.data.last_edited_time < lower_bound:
+            if page.current.last_edited_time < lower_bound:
                 break
             pages.add(page)
         logger.debug(f"Before filtered - {pformat(pages, width=print_width)}")
