@@ -21,7 +21,7 @@ class Entity(Generic[ContentsT], Hashable, metaclass=ABCMeta):
     You can identify two blocks directly `block_1 == block_2`,
     not need to `block_1.id == block_2.id`
 
-    Use `default` attribute to hardcode some fixed data.
+    Use `default` attribute to hardcode some data (which can reduce API calls)
     """
     id: UUID
     __latest: Optional[ContentsT] = None
