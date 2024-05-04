@@ -7,7 +7,7 @@ from loguru import logger
 
 from notion_df.core.request import RequestError
 from notion_df.entity import Page, Database
-from notion_df.object.data import PageContents
+from notion_df.object.contents import PageContents
 from notion_df.property import RelationProperty, PageProperties
 from workflow.action.match import get_earliest_date
 from workflow.block_enum import DatabaseEnum, SCHEDULE, START

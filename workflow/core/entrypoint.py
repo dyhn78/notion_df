@@ -15,7 +15,7 @@ from typing_extensions import Self
 
 from notion_df.core.serialization import deserialize_datetime
 from notion_df.entity import Block
-from notion_df.object.data import ParagraphBlockValue, ToggleBlockValue, CodeBlockValue, DividerBlockValue
+from notion_df.object.contents import ParagraphBlockValue, ToggleBlockValue, CodeBlockValue, DividerBlockValue
 from notion_df.object.rich_text import RichText, TextSpan, UserMention
 from notion_df.variable import my_tz
 from workflow import log_dir

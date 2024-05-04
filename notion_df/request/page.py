@@ -6,7 +6,7 @@ from uuid import UUID
 
 from notion_df.core.request import SingleRequestBuilder, RequestSettings, Version, Method, PaginatedRequestBuilder, \
     RequestBuilder
-from notion_df.object.data import BlockValue, serialize_block_value_list, PageContents
+from notion_df.object.contents import BlockValue, serialize_block_value_list, PageContents
 from notion_df.object.file import ExternalFile
 from notion_df.object.misc import Icon, PartialParent
 from notion_df.property import PageProperties, Property, property_registry, PagePropertyValueT

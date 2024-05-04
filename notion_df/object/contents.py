@@ -23,6 +23,16 @@ if TYPE_CHECKING:
     from notion_df.entity import Block, Database, Page
 
 
+def _get_type_hints(cls):
+    # TODO deduplicate
+    from notion_df.entity import Block, Database, Page
+    from notion_df.core.entity import Entity, RetrievableEntity
+    return get_type_hints(cls, {
+        **globals(), **{cls.__name__: cls for cls in (
+            Entity, RetrievableEntity, Block, Database, Page
+        )}})
+
+
 @dataclass
 class DatabaseContents(Contents):
     id: UUID
@@ -44,10 +54,7 @@ class DatabaseContents(Contents):
     @classmethod
     @cache
     def _get_type_hints(cls) -> dict[str, type]:
-        # TODO deduplicate
-        from notion_df.entity import Block, Database, Page
-        from notion_df.core.entity import Entity
-        return get_type_hints(cls, {**globals(), **{cls.__name__: cls for cls in (Entity, Block, Database, Page)}})
+        return _get_type_hints(cls)
 
 
 @dataclass
@@ -71,10 +78,7 @@ class PageContents(Contents):
     @classmethod
     @cache
     def _get_type_hints(cls) -> dict[str, type]:
-        from notion_df.entity import Block, Database, Page
-        from notion_df.core.entity import Entity
-        return get_type_hints(cls, {**globals(), **{cls.__name__: cls for cls in (Entity, Block, Database, Page)}})
-
+        return _get_type_hints(cls)
 
 @dataclass
 class BlockContents(Contents):
@@ -100,9 +104,7 @@ class BlockContents(Contents):
     @classmethod
     @cache
     def _get_type_hints(cls) -> dict[str, type]:
-        from notion_df.entity import Block, Database, Page
-        from notion_df.core.entity import Entity
-        return get_type_hints(cls, {**globals(), **{cls.__name__: cls for cls in (Entity, Block, Database, Page)}})
+        return _get_type_hints(cls)
 
 
 block_value_registry: FinalDict[str, type[BlockValue]] = FinalDict()

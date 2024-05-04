@@ -5,7 +5,7 @@ from selenium.webdriver.chrome.webdriver import WebDriver
 
 from notion_df.core.request import Paginator
 from notion_df.entity import Page, Database
-from notion_df.object.data import ChildPageBlockValue
+from notion_df.object.contents import ChildPageBlockValue
 from notion_df.object.filter import CompoundFilter
 from notion_df.object.misc import SelectOption
 from notion_df.object.rich_text import TextSpan, PageMention

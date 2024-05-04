@@ -5,7 +5,7 @@ from typing import Any, Optional
 from uuid import UUID
 
 from notion_df.core.request import SingleRequestBuilder, RequestSettings, Version, Method, PaginatedRequestBuilder
-from notion_df.object.data import DatabaseContents, PageContents
+from notion_df.object.contents import DatabaseContents, PageContents
 from notion_df.object.file import ExternalFile
 from notion_df.object.filter import Filter
 from notion_df.object.misc import Icon

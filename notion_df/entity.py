@@ -6,10 +6,10 @@ from uuid import UUID
 from loguru import logger
 from typing_extensions import Self
 
-from notion_df.core.entity import Entity
+from notion_df.core.entity import RetrievableEntity
 from notion_df.core.exception import NotionDfValueError, NotionDfKeyError
 from notion_df.core.request import Paginator
-from notion_df.object.data import BlockValue, BlockContents, ChildPageBlockValue, \
+from notion_df.object.contents import BlockValue, BlockContents, ChildPageBlockValue, \
     DatabaseContents, PageContents
 from notion_df.object.file import ExternalFile, File
 from notion_df.object.filter import Filter
@@ -30,7 +30,7 @@ from notion_df.util.uuid_util import get_page_or_database_id, get_block_id
 from notion_df.variable import token
 
 
-class Block(Entity[BlockContents]):
+class Block(RetrievableEntity[BlockContents]):
     @classmethod
     def _get_id(cls, id_or_url: Union[UUID, str]) -> UUID:
         return get_block_id(id_or_url)
@@ -39,8 +39,8 @@ class Block(Entity[BlockContents]):
     def _send_child_block_datas(block_datas: Iterable[BlockContents]) -> Paginator[
         Block]:
         def it():
-            for block_data in block_datas:
-                yield Block(block_data.id, current=block_data)
+            for block_contents in block_datas:
+                yield Block(block_contents.id, current=block_contents)
 
         return Paginator(Block, it())
 
@@ -80,7 +80,7 @@ class Block(Entity[BlockContents]):
         return Database(contents.id, current=contents)
 
 
-class Database(Entity[DatabaseContents]):
+class Database(RetrievableEntity[DatabaseContents]):
     @classmethod
     def _get_id(cls, id_or_url: Union[UUID, str]) -> UUID:
         return get_page_or_database_id(id_or_url)
@@ -103,11 +103,11 @@ class Database(Entity[DatabaseContents]):
             return repr_object(self, id=self.id)
 
     @staticmethod
-    def _send_child_page_contents(page_datas: Iterable[PageContents]) -> Paginator[
+    def _send_child_page_contents(page_contents_it: Iterable[PageContents]) -> Paginator[
         Page]:
         def it():
-            for page_data in page_datas:
-                yield Page(page_data.id, current=page_data)
+            for page_contents in page_contents_it:
+                yield Page(page_contents.id, current=page_contents)
 
         return Paginator(Page, it())
 
@@ -132,12 +132,12 @@ class Database(Entity[DatabaseContents]):
                           children: Optional[list[BlockValue]] = None,
                           icon: Optional[Icon] = None, cover: Optional[File] = None) -> Page:
         logger.info(f'Database.create_child_page({self})')
-        page_data = CreatePage(token, PartialParent('database_id', self.id),
+        page_contents = CreatePage(token, PartialParent('database_id', self.id),
                                properties, children, icon, cover).execute()
-        return Page(page_data.id, current=page_data)
+        return Page(page_contents.id, current=page_contents)
 
 
-class Page(Entity[PageContents]):
+class Page(RetrievableEntity[PageContents]):
     @classmethod
     def _get_id(cls, id_or_url: Union[UUID, str]) -> UUID:
         return get_page_or_database_id(id_or_url)
@@ -212,8 +212,8 @@ class Page(Entity[PageContents]):
                           children: Optional[list[BlockValue]] = None,
                           icon: Optional[Icon] = None, cover: Optional[File] = None) -> Page:
         logger.info(f'Page.create_child_page({self})')
-        page_data = CreatePage(token, PartialParent('page_id', self.id), properties, children, icon, cover).execute()
-        return Page(page_data.id, current=page_data)
+        page_contents = CreatePage(token, PartialParent('page_id', self.id), properties, children, icon, cover).execute()
+        return Page(page_contents.id, current=page_contents)
 
     def create_child_database(self, title: RichText, *,
                               properties: Optional[DatabaseProperties] = None,

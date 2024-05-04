@@ -3,7 +3,7 @@ from typing import Any, Literal, Union
 
 from notion_df.core.contents import Contents
 from notion_df.core.request import RequestSettings, Version, Method, PaginatedRequestBuilder
-from notion_df.object.data import DatabaseContents, PageContents
+from notion_df.object.contents import DatabaseContents, PageContents
 from notion_df.object.sort import TimestampSort
 from notion_df.util.collection import DictFilter
 

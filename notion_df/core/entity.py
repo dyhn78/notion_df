@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 from abc import abstractmethod, ABCMeta
-from typing import Final, Generic, Hashable, Union, Optional, final, TypeVar, overload, \
-    Literal, Any
+from typing import (Final, Generic, Hashable, Union, Optional, final, TypeVar, overload,
+                    Literal, Any, cast as typing_cast)
 from uuid import UUID
 
 from typing_extensions import Self
 
-from notion_df.core.contents import ContentsT, Contents
+from notion_df.core.contents import ContentsT, Contents, coalesce
 from notion_df.util.misc import repr_object, undefined
 
 namespace: Final[dict[tuple[type[Entity], UUID], Entity]] = {}
@@ -91,6 +91,41 @@ class Entity(Generic[ContentsT], Hashable, metaclass=ABCMeta):
         self._current = None
 
     @overload
+    def get(self) -> Optional[ContentsT]:
+        ...
+
+    @overload
+    def get(self, cast: type[ContentsT2]) -> Optional[ContentsT2]:
+        ...
+
+    def get(self, cast: type[ContentsT2] = Contents) -> Optional[ContentsT2]:
+        """get the local contents."""
+        contents: ContentsT = coalesce(self.current, self.default)
+        if contents is None:
+            return None
+        return cast.from_base_class(contents)
+
+    @final
+    def _repr_parent(self) -> Optional[str]:
+        contents = Entity.get(self)  # prevents retrieve_if_empty
+        if contents is None or not hasattr(contents, 'parent'):
+            return undefined
+        elif contents.parent is None:
+            return 'workspace'
+        else:  # TODO: fix that user and comments does not have parent
+            return typing_cast(Entity, contents.parent)._repr_as_parent()
+
+    def _repr_as_parent(self) -> str:
+        return repr_object(self, id=self.id)
+
+
+class RetrievableEntity(Entity[ContentsT]):
+    @abstractmethod
+    def retrieve(self) -> Self:
+        # TODO: raise EntityNotExistError(ValueError), with page_exists()
+        pass
+
+    @overload
     def get(self, retrieve_if_empty: Literal[True] = True) -> ContentsT:
         ...
 
@@ -98,40 +133,25 @@ class Entity(Generic[ContentsT], Hashable, metaclass=ABCMeta):
     def get(self, retrieve_if_empty: Literal[False] = False) -> Optional[ContentsT]:
         ...
 
+    # noinspection PyMethodOverriding
     @overload
-    def get(self, cast: type[ContentsT2] = Contents,
+    def get(self, cast: type[ContentsT2],
             retrieve_if_empty: Literal[True] = True) -> ContentsT2:
         ...
 
+    # noinspection PyMethodOverriding
     @overload
-    def get(self, cast: type[ContentsT2] = Contents,
+    def get(self, cast: type[ContentsT2],
             retrieve_if_empty: Literal[False] = False) -> Optional[ContentsT2]:
         ...
 
     def get(self, cast: type[ContentsT2] = Contents,
             retrieve_if_empty: bool = True) -> Optional[ContentsT2]:
         """get the local contents, or retrieve."""
-        # TODO: merge(self.current, self.default)
-        contents = self.current if self.current is not None else self.default
+        contents: ContentsT = coalesce(self.current, self.default)
         if contents is None:
             if not retrieve_if_empty:
                 return None
             self.retrieve()
+            contents = self.current
         return cast.from_base_class(contents)
-
-    @abstractmethod
-    def retrieve(self) -> Self:
-        # TODO: raise EntityNotExistError(ValueError), with page_exists()
-        pass
-
-    @final
-    def _repr_parent(self) -> Optional[str]:
-        if self.current is None:
-            return undefined
-        elif self.current.parent is None:
-            return 'workspace'
-        else:  # TODO: fix that user and comments does not have parent
-            return self.current.parent._repr_as_parent()
-
-    def _repr_as_parent(self) -> str:
-        return repr_object(self, id=self.id)

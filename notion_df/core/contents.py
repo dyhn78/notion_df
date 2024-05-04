@@ -36,7 +36,7 @@ class Contents(Deserializable, metaclass=ABCMeta):
 
     @classmethod
     def deserialize(cls, raw: Any) -> Self:
-        from notion_df.object.data import BlockContents, DatabaseContents, PageContents
+        from notion_df.object.contents import BlockContents, DatabaseContents, PageContents
 
         if cls != Contents:
             return cls._deserialize_this(raw)
@@ -59,6 +59,7 @@ class Contents(Deserializable, metaclass=ABCMeta):
 
     @classmethod
     def from_base_class(cls, instance: Contents) -> Self:
+        # the default classes (ex. BlockContents) should NOT override this
         # TODO: force that custom subclasses to override this
         return instance
 
@@ -68,3 +69,10 @@ class Contents(Deserializable, metaclass=ABCMeta):
 
 
 ContentsT = TypeVar('ContentsT', bound=Contents)
+
+
+def coalesce(current: Optional[ContentsT],
+             default: Optional[ContentsT]) -> Optional[ContentsT]:
+    # TODO: coalesce each attributes of self.current & self.default
+    contents = current if current is not None else default
+    return contents

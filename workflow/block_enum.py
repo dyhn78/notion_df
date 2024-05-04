@@ -6,7 +6,7 @@ from typing import Optional
 
 from notion_df.core.entity import Entity
 from notion_df.entity import Database, Page
-from notion_df.object.data import DatabaseContents
+from notion_df.object.contents import DatabaseContents
 from notion_df.object.misc import Emoji
 from notion_df.object.rich_text import RichText, TextSpan
 from notion_df.util.uuid_util import get_page_or_database_id, get_page_or_database_url
