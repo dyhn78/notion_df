@@ -88,7 +88,7 @@ class Block(RetrievableEntity[BlockData], HasParent):
 
     @property
     @retrieve_if_undefined
-    def value(self) -> BlockContents:
+    def contents(self) -> BlockContents:
         return self.data.contents
 
     def hardcode_data(
