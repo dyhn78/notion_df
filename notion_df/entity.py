@@ -10,7 +10,7 @@ from typing_extensions import Self
 from notion_df.core.entity import RetrievableEntity, retrieve_if_undefined, CanBeParent, HasParent
 from notion_df.core.exception import NotionDfValueError, NotionDfKeyError
 from notion_df.core.request import Paginator
-from notion_df.object.data import BlockValue, BlockData, ChildPageBlockValue, \
+from notion_df.object.data import BlockContents, BlockData, ChildPageBlockContents, \
     DatabaseData, PageData
 from notion_df.object.file import ExternalFile, File
 from notion_df.object.filter import Filter
@@ -88,8 +88,8 @@ class Block(RetrievableEntity[BlockData], HasParent):
 
     @property
     @retrieve_if_undefined
-    def value(self) -> BlockValue:
-        return self.data.value
+    def value(self) -> BlockContents:
+        return self.data.contents
 
     def hardcode_data(
             self,
@@ -100,10 +100,10 @@ class Block(RetrievableEntity[BlockData], HasParent):
             last_edited_by: PartialUser = undefined,
             has_children: bool = undefined,
             archived: bool = undefined,
-            value: BlockValue = undefined,
+            contents: BlockContents = undefined,
     ) -> None:
         BlockData(self.id, parent, created_time, last_edited_time, created_by, last_edited_by, has_children,
-                  archived, value, hardcoded=True)
+                  archived, contents, hardcoded=True)
 
     @staticmethod
     def _get_id(id_or_url: Union[UUID, str]) -> UUID:
@@ -122,7 +122,7 @@ class Block(RetrievableEntity[BlockData], HasParent):
         return Paginator(Block, (Block(block_data.id) for block_data in
                                  RetrieveBlockChildren(token, self.id).execute()))
 
-    def update(self, block_type: Optional[BlockValue], archived: Optional[bool]) -> Self:
+    def update(self, block_type: Optional[BlockContents], archived: Optional[bool]) -> Self:
         logger.info(f'Block.update({self})')
         UpdateBlock(token, self.id, block_type, archived).execute()
         return self
@@ -132,7 +132,7 @@ class Block(RetrievableEntity[BlockData], HasParent):
         DeleteBlock(token, self.id).execute()
         return self
 
-    def append_children(self, child_values: list[BlockValue]) -> list[Block]:
+    def append_children(self, child_values: list[BlockContents]) -> list[Block]:
         logger.info(f'Block.append_children({self})')
         if not child_values:
             return []
@@ -243,7 +243,7 @@ class Database(RetrievableEntity[DatabaseData], HasParent):
         return self
 
     def create_child_page(self, properties: Optional[PageProperties] = None,
-                          children: Optional[list[BlockValue]] = None,
+                          children: Optional[list[BlockContents]] = None,
                           icon: Optional[Icon] = None, cover: Optional[File] = None) -> Page:
         logger.info(f'Database.create_child_page({self})')
         return Page(CreatePage(token, PartialParent('database_id', self.id),
@@ -359,7 +359,7 @@ class Page(RetrievableEntity[PageData], HasParent):
             created_by=self.data.created_by,
             last_edited_by=self.data.last_edited_by,
             archived=self.data.archived,
-            value=(block.data.value if block.data else ChildPageBlockValue(title='')),
+            contents=(block.data.contents if block.data else ChildPageBlockContents(title='')),
         )
         return block
 
@@ -391,7 +391,7 @@ class Page(RetrievableEntity[PageData], HasParent):
         return self
 
     def create_child_page(self, properties: Optional[PageProperties] = None,
-                          children: Optional[list[BlockValue]] = None,
+                          children: Optional[list[BlockContents]] = None,
                           icon: Optional[Icon] = None, cover: Optional[File] = None) -> Page:
         logger.info(f'Page.create_child_page({self})')
         return Page(CreatePage(token, PartialParent('page_id', self.id), properties,

@@ -8,8 +8,9 @@ import requests
 import requests.packages
 from bs4 import BeautifulSoup
 
-from notion_df.object.data import Heading1BlockValue, ParagraphBlockValue, Heading2BlockValue, Heading3BlockValue, \
-    BlockValue
+from notion_df.object.data import Heading1BlockContents, ParagraphBlockContents, Heading2BlockContents, \
+    Heading3BlockContents, \
+    BlockContents
 from notion_df.object.rich_text import RichText
 
 # noinspection PyUnresolvedReferences
@@ -186,16 +187,16 @@ CHAPTER_ENG = re.compile(r"CHAPTER", re.IGNORECASE)
 PASSAGE = re.compile(r"\d+[.:] ")
 
 
-def get_block_value_of_contents_line(contents_line: str) -> BlockValue:
+def get_block_value_of_contents_line(contents_line: str) -> BlockContents:
     rich_text = RichText.from_plain_text(contents_line)
 
     if VOLUME_KOR.findall(contents_line) or VOLUME_ENG.findall(contents_line):
-        return Heading1BlockValue(rich_text, False)
+        return Heading1BlockContents(rich_text, False)
     if SECTION_KOR.findall(contents_line) or SECTION_ENG.findall(contents_line):
-        return Heading2BlockValue(rich_text, False)
+        return Heading2BlockContents(rich_text, False)
     elif CHAPTER_KOR.findall(contents_line) or CHAPTER_ENG.findall(contents_line):
-        return Heading3BlockValue(rich_text, False)
-    return ParagraphBlockValue(rich_text)
+        return Heading3BlockContents(rich_text, False)
+    return ParagraphBlockContents(rich_text)
 
 
 if __name__ == '__main__':

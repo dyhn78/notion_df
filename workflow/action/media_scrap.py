@@ -5,7 +5,7 @@ from selenium.webdriver.chrome.webdriver import WebDriver
 
 from notion_df.core.request import Paginator
 from notion_df.entity import Page, Database
-from notion_df.object.data import ChildPageBlockValue
+from notion_df.object.data import ChildPageBlockContents
 from notion_df.object.filter import CompoundFilter
 from notion_df.object.misc import SelectOption
 from notion_df.object.rich_text import TextSpan, PageMention
@@ -154,8 +154,8 @@ class ReadingMediaScraperUnit:
         def set_content_page():
             def get_current_content_page() -> Optional[Page]:
                 for block in self.reading.as_block().retrieve_children():
-                    if isinstance(block.data.value, ChildPageBlockValue):
-                        block_title = block.data.value.title
+                    if isinstance(block.data.contents, ChildPageBlockContents):
+                        block_title = block.data.contents.title
                         if self.name_value in block_title or block_title.strip() in ['', '=', '>']:
                             _content_page = Page(block.id)
                             return _content_page

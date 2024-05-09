@@ -5,7 +5,7 @@ from typing import Any
 from uuid import UUID
 
 from notion_df.core.request import SingleRequestBuilder, RequestSettings, Version, Method, PaginatedRequestBuilder
-from notion_df.object.data import BlockValue, BlockData, serialize_block_value_list
+from notion_df.object.data import BlockContents, BlockData, serialize_block_value_list
 from notion_df.util.collection import DictFilter
 
 
@@ -14,7 +14,7 @@ class AppendBlockChildren(SingleRequestBuilder[list[BlockData]]):
     """https://developers.notion.com/reference/patch-block-children"""
     data_type = list[BlockData]
     id: UUID
-    children: list[BlockValue]
+    children: list[BlockContents]
 
     def get_settings(self) -> RequestSettings:
         return RequestSettings(Version.v20220222, Method.PATCH,
@@ -65,7 +65,7 @@ class UpdateBlock(SingleRequestBuilder[BlockData]):
     """https://developers.notion.com/reference/update-a-block"""
     data_type = BlockData
     id: UUID
-    block_type: BlockValue = field(default=None)
+    block_type: BlockContents = field(default=None)
     archived: bool = field(default=None)
 
     def get_settings(self) -> RequestSettings:

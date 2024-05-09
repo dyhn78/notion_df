@@ -87,15 +87,15 @@ class BlockData(EntityData):
     last_edited_by: PartialUser
     has_children: bool
     archived: bool
-    value: BlockValue
+    contents: BlockContents
 
     @classmethod
     def _deserialize_this(cls, raw: dict[str, Any]):
         typename = raw['type']
-        block_value_cls = block_value_registry.get(typename, UnsupportedBlockValue)
-        block_value = block_value_cls.deserialize(raw[typename])
+        block_contents_cls = block_contents_registry.get(typename, UnsupportedBlockContents)
+        block_contents = block_contents_cls.deserialize(raw[typename])
         return cls._deserialize_from_dict(raw, parent=PartialParent.deserialize(raw['parent']).resolved,
-                                          value=block_value)
+                                          value=block_contents)
 
     @classmethod
     @cache
@@ -103,11 +103,11 @@ class BlockData(EntityData):
         return _get_type_hints(cls)
 
 
-block_value_registry: FinalDict[str, type[BlockValue]] = FinalDict()
+block_contents_registry: FinalDict[str, type[BlockContents]] = FinalDict()
 
 
 @dataclass
-class BlockValue(DualSerializable, metaclass=ABCMeta):
+class BlockContents(DualSerializable, metaclass=ABCMeta):
     @classmethod
     @abstractmethod
     def get_typename(cls) -> str:
@@ -115,7 +115,7 @@ class BlockValue(DualSerializable, metaclass=ABCMeta):
 
     def __init_subclass__(cls, **kwargs):
         if (typename := cls.get_typename()) and typename != cast(cls, super(cls, cls)).get_typename():
-            block_value_registry[typename] = cls
+            block_contents_registry[typename] = cls
 
     def serialize(self) -> dict[str, Any]:
         return self._serialize_as_dict()
@@ -125,18 +125,18 @@ class BlockValue(DualSerializable, metaclass=ABCMeta):
         return cls._deserialize_from_dict(raw)
 
 
-def serialize_block_value_list(block_value_list: Optional[list[BlockValue]]) -> Optional[list[dict[str, Any]]]:
-    if block_value_list is None:
+def serialize_block_contents_list(block_contents_list: Optional[list[BlockContents]]) -> Optional[list[dict[str, Any]]]:
+    if block_contents_list is None:
         return None
     return [{
         "object": "block",
         "type": block_type.get_typename(),
         block_type.get_typename(): block_type.serialize(),
-    } for block_type in block_value_list]
+    } for block_type in block_contents_list]
 
 
 @dataclass
-class BookmarkBlockValue(BlockValue):
+class BookmarkBlockContents(BlockContents):
     url: str
     caption: RichText = field(default_factory=RichText)
 
@@ -146,14 +146,14 @@ class BookmarkBlockValue(BlockValue):
 
 
 @dataclass
-class BreadcrumbBlockValue(BlockValue):
+class BreadcrumbBlockContents(BlockContents):
     @classmethod
     def get_typename(cls) -> str:
         return 'breadcrumb'
 
 
 @dataclass
-class BulletedListItemBlockValue(BlockValue):
+class BulletedListItemBlockContents(BlockContents):
     rich_text: RichText
     color: BlockColor = BlockColor.DEFAULT
     children: list[BlockData] = field(init=False, default=None)
@@ -164,7 +164,7 @@ class BulletedListItemBlockValue(BlockValue):
 
 
 @dataclass
-class CalloutBlockValue(BlockValue):
+class CalloutBlockContents(BlockContents):
     rich_text: RichText
     icon: Icon
     color: BlockColor = BlockColor.DEFAULT
@@ -176,7 +176,7 @@ class CalloutBlockValue(BlockValue):
 
 
 @dataclass
-class ChildDatabaseBlockValue(BlockValue):
+class ChildDatabaseBlockContents(BlockContents):
     title: str
 
     @classmethod
@@ -185,7 +185,7 @@ class ChildDatabaseBlockValue(BlockValue):
 
 
 @dataclass
-class ChildPageBlockValue(BlockValue):
+class ChildPageBlockContents(BlockContents):
     title: str
 
     @classmethod
@@ -194,7 +194,7 @@ class ChildPageBlockValue(BlockValue):
 
 
 @dataclass
-class CodeBlockValue(BlockValue):
+class CodeBlockContents(BlockContents):
     rich_text: RichText
     language: CodeLanguage = CodeLanguage.PLAIN_TEXT
     caption: RichText = field(default_factory=RichText)
@@ -205,28 +205,28 @@ class CodeBlockValue(BlockValue):
 
 
 @dataclass
-class ColumnListBlockValue(BlockValue):
+class ColumnListBlockContents(BlockContents):
     @classmethod
     def get_typename(cls) -> str:
         return 'column_list'
 
 
 @dataclass
-class ColumnBlockValue(BlockValue):
+class ColumnBlockContents(BlockContents):
     @classmethod
     def get_typename(cls) -> str:
         return 'column'
 
 
 @dataclass
-class DividerBlockValue(BlockValue):
+class DividerBlockContents(BlockContents):
     @classmethod
     def get_typename(cls) -> str:
         return 'divider'
 
 
 @dataclass
-class EmbedBlockValue(BlockValue):
+class EmbedBlockContents(BlockContents):
     url: str
 
     @classmethod
@@ -235,7 +235,7 @@ class EmbedBlockValue(BlockValue):
 
 
 @dataclass
-class EquationBlockValue(BlockValue):
+class EquationBlockContents(BlockContents):
     expression: str
     """a KaTeX compatible string."""
 
@@ -245,7 +245,7 @@ class EquationBlockValue(BlockValue):
 
 
 @dataclass
-class FileBlockValue(BlockValue):
+class FileBlockContents(BlockContents):
     file: File
     caption: RichText = field(default_factory=RichText)
 
@@ -262,7 +262,7 @@ class FileBlockValue(BlockValue):
 
 
 @dataclass
-class Heading1BlockValue(BlockValue):
+class Heading1BlockContents(BlockContents):
     rich_text: RichText
     is_toggleable: bool
     color: BlockColor = BlockColor.DEFAULT
@@ -273,7 +273,7 @@ class Heading1BlockValue(BlockValue):
 
 
 @dataclass
-class Heading2BlockValue(BlockValue):
+class Heading2BlockContents(BlockContents):
     rich_text: RichText
     is_toggleable: bool
     color: BlockColor = BlockColor.DEFAULT
@@ -284,7 +284,7 @@ class Heading2BlockValue(BlockValue):
 
 
 @dataclass
-class Heading3BlockValue(BlockValue):
+class Heading3BlockContents(BlockContents):
     rich_text: RichText
     is_toggleable: bool
     color: BlockColor = BlockColor.DEFAULT
@@ -295,7 +295,7 @@ class Heading3BlockValue(BlockValue):
 
 
 @dataclass
-class ImageBlockValue(BlockValue):
+class ImageBlockContents(BlockContents):
     """
     - The image must be directly hosted. In other words, the url cannot point to a service that retrieves the image.
     - supported image types (as of 2023-04-02): **.bmp .gif .heic .jpeg .jpg .png .svg .tif .tiff**
@@ -316,7 +316,7 @@ class ImageBlockValue(BlockValue):
 
 
 @dataclass
-class NumberedListItemBlockValue(BlockValue):
+class NumberedListItemBlockContents(BlockContents):
     rich_text: RichText
     color: BlockColor = BlockColor.DEFAULT
     children: list[BlockData] = field(init=False, default=None)
@@ -327,7 +327,7 @@ class NumberedListItemBlockValue(BlockValue):
 
 
 @dataclass
-class ParagraphBlockValue(BlockValue):
+class ParagraphBlockContents(BlockContents):
     rich_text: RichText
     color: BlockColor = BlockColor.DEFAULT
     children: list[BlockData] = field(init=False, default=None)
@@ -338,7 +338,7 @@ class ParagraphBlockValue(BlockValue):
 
 
 @dataclass
-class PDFBlockValue(BlockValue):
+class PDFBlockContents(BlockContents):
     file: File
     caption: RichText = field(default_factory=RichText)
 
@@ -355,7 +355,7 @@ class PDFBlockValue(BlockValue):
 
 
 @dataclass
-class QuoteBlockValue(BlockValue):
+class QuoteBlockContents(BlockContents):
     rich_text: RichText
     color: BlockColor = BlockColor.DEFAULT
     children: list[BlockData] = field(init=False, default=None)
@@ -366,7 +366,7 @@ class QuoteBlockValue(BlockValue):
 
 
 @dataclass
-class SyncedBlockValue(BlockValue, metaclass=ABCMeta):
+class SyncedBlockContents(BlockContents, metaclass=ABCMeta):
     """cannot be changed (2023-04-02)"""
 
     @classmethod
@@ -375,7 +375,7 @@ class SyncedBlockValue(BlockValue, metaclass=ABCMeta):
 
     @classmethod
     def deserialize(cls, raw: dict[str, Any]) -> Self:
-        if cls != SyncedBlockValue:
+        if cls != SyncedBlockContents:
             return cls._deserialize_this(raw)
 
         def get_subclass():
@@ -388,7 +388,7 @@ class SyncedBlockValue(BlockValue, metaclass=ABCMeta):
 
 
 @dataclass
-class OriginalSyncedBlockValue(SyncedBlockValue):
+class OriginalSyncedBlockValue(SyncedBlockContents):
     """cannot be changed (2023-04-02)"""
     children: list[BlockData] = field(init=False, default=None)
 
@@ -400,7 +400,7 @@ class OriginalSyncedBlockValue(SyncedBlockValue):
 
 
 @dataclass
-class DuplicatedSyncedBlockValue(SyncedBlockValue):
+class DuplicatedSyncedBlockValue(SyncedBlockContents):
     """cannot be changed (2023-04-02)"""
     block_id: UUID
 
@@ -413,7 +413,7 @@ class DuplicatedSyncedBlockValue(SyncedBlockValue):
 
 
 @dataclass
-class TableBlockValue(BlockValue):
+class TableBlockContents(BlockContents):
     table_width: int
     """cannot be changed."""
     has_column_header: bool
@@ -425,7 +425,7 @@ class TableBlockValue(BlockValue):
 
 
 @dataclass
-class TableRowBlockValue(BlockValue):
+class TableRowBlockContents(BlockContents):
     cells: list[list[Span]]
     """An array of cell data in horizontal display order. Each cell is an array of rich text objects."""
 
@@ -435,7 +435,7 @@ class TableRowBlockValue(BlockValue):
 
 
 @dataclass
-class TableOfContentsBlockValue(BlockValue):
+class TableOfContentsBlockContents(BlockContents):
     color: BlockColor = BlockColor.DEFAULT
 
     @classmethod
@@ -444,7 +444,7 @@ class TableOfContentsBlockValue(BlockValue):
 
 
 @dataclass
-class ToDoBlockValue(BlockValue):
+class ToDoBlockContents(BlockContents):
     rich_text: RichText
     checked: bool
     color: BlockColor = BlockColor.DEFAULT
@@ -456,7 +456,7 @@ class ToDoBlockValue(BlockValue):
 
 
 @dataclass
-class ToggleBlockValue(BlockValue):
+class ToggleBlockContents(BlockContents):
     rich_text: RichText
     color: BlockColor = BlockColor.DEFAULT
     children: list[BlockData] = field(init=False, default=None)
@@ -467,7 +467,7 @@ class ToggleBlockValue(BlockValue):
 
 
 @dataclass
-class VideoBlockValue(BlockValue):
+class VideoBlockContents(BlockContents):
     """
     supported video types (as 2023-04-02):
     **.amv .asf .avi .f4v .flv .gifv .mkv .mov .mpg .mpeg .mpv .mp4 .m4v .qt .wmv**
@@ -489,7 +489,7 @@ class VideoBlockValue(BlockValue):
 
 
 @dataclass
-class UnsupportedBlockValue(BlockValue):
+class UnsupportedBlockContents(BlockContents):
     @classmethod
     def get_typename(cls) -> str:
         return 'unsupported'
