@@ -4,9 +4,9 @@ from dataclasses import dataclass, field
 from typing import Any, Optional
 from uuid import UUID
 
+from notion_df.contents import BlockContents
 from notion_df.core.request import SingleRequestBuilder, RequestSettings, Version, Method, PaginatedRequestBuilder, \
     RequestBuilder
-from notion_df.object.contents import BlockContents
 from notion_df.object.data import serialize_block_value_list, PageData
 from notion_df.object.file import ExternalFile
 from notion_df.object.misc import Icon, PartialParent

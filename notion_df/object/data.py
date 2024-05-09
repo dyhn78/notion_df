@@ -7,8 +7,8 @@ from typing import Any, Optional, Union, TYPE_CHECKING, get_type_hints
 
 from typing_extensions import Self
 
+from notion_df.contents import block_contents_registry, BlockContents, UnsupportedBlockContents
 from notion_df.core.data import EntityData
-from notion_df.object.contents import block_contents_registry, BlockContents, UnsupportedBlockContents
 from notion_df.object.file import File
 from notion_df.object.misc import Icon, PartialParent
 from notion_df.object.rich_text import RichText

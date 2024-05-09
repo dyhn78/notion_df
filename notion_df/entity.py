@@ -7,10 +7,10 @@ from uuid import UUID
 from loguru import logger
 from typing_extensions import Self
 
+from notion_df.contents import BlockContents, ChildPageBlockContents
 from notion_df.core.entity import RetrievableEntity, retrieve_if_undefined, CanBeParent, HasParent
 from notion_df.core.exception import NotionDfValueError, NotionDfKeyError
 from notion_df.core.request import Paginator
-from notion_df.object.contents import BlockContents, ChildPageBlockContents
 from notion_df.object.data import BlockData, DatabaseData, PageData
 from notion_df.object.file import ExternalFile, File
 from notion_df.object.filter import Filter
