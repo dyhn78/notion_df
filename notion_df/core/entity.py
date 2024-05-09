@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from abc import abstractmethod, ABCMeta
 from inspect import isabstract
-from typing import (Final, Generic, Hashable, Union, Optional, final, TypeVar, Any, MutableMapping, Callable)
+from typing import (Final, Generic, Hashable, Union, Optional, final, TypeVar, Any, MutableMapping, Callable, ClassVar)
 from uuid import UUID
 from weakref import WeakValueDictionary
 
@@ -11,8 +11,8 @@ from typing_extensions import Self
 from notion_df.core.data import EntityDataT, EntityData
 from notion_df.util.misc import repr_object, undefined
 
-latest_data_dict: Final[MutableMapping[tuple[type[EntityData], UUID], EntityData]] = WeakValueDictionary()
-default_data_dict: Final[MutableMapping[tuple[type[EntityData], UUID], EntityData]] = {}
+_latest_data_dict: Final[MutableMapping[tuple[type[EntityData], UUID], EntityData]] = WeakValueDictionary()
+_default_data_dict: Final[MutableMapping[tuple[type[EntityData], UUID], EntityData]] = {}
 
 
 class Entity(Generic[EntityDataT], Hashable, metaclass=ABCMeta):
@@ -21,11 +21,10 @@ class Entity(Generic[EntityDataT], Hashable, metaclass=ABCMeta):
     There is only one instance with given subclass and id.
     You can identify two blocks directly `block_1 == block_2`,
     not need to `block_1.id == block_2.id`
-
-    Use `default` attribute to hardcode some data (which can reduce API calls)
     """
     id: UUID
-    data_cls: type[EntityDataT]
+    # noinspection PyClassVar
+    data_cls: ClassVar[type[EntityDataT]]
 
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
@@ -43,12 +42,15 @@ class Entity(Generic[EntityDataT], Hashable, metaclass=ABCMeta):
     def __getnewargs__(self):  # required for pickling
         return self.id,
 
+    @property
+    def _hash_key(self) -> tuple[type[EntityDataT], UUID]:
+        return self.data_cls, self.id
+
     def __hash__(self) -> int:
-        return hash((type(self), self.id))
+        return hash(self._hash_key)
 
     def __eq__(self, other: Any) -> bool:
-        return (isinstance(other, Entity)
-                and ((type(self), self.id) == (type(other), self.id)))
+        return isinstance(other, Entity) and self._hash_key == other._hash_key
 
     def __repr__(self) -> str:
         return repr_object(self, id=self.id)
@@ -61,13 +63,12 @@ class Entity(Generic[EntityDataT], Hashable, metaclass=ABCMeta):
     @final
     @property
     def local_data(self) -> Optional[EntityDataT]:
-        key = (self.data_cls, self.id)
-        return latest_data_dict.get(key, default_data_dict.get(key))
+        return _latest_data_dict.get(self._hash_key, _default_data_dict.get(self._hash_key))
 
     def set_data(self, data: EntityDataT) -> Self:
-        current_latest_data = latest_data_dict.get((self.data_cls, self.id))
+        current_latest_data = _latest_data_dict.get(self._hash_key)
         if current_latest_data is None or data.timestamp >= current_latest_data.timestamp:
-            latest_data_dict[self.data_cls, self.id] = data
+            _latest_data_dict[self._hash_key] = data
         return self
 
     @abstractmethod
@@ -77,11 +78,8 @@ class Entity(Generic[EntityDataT], Hashable, metaclass=ABCMeta):
         pass
 
     def _set_default_data(self, data: EntityDataT) -> Self:
-        default_data_dict[self.data_cls, self.id] = data
+        _default_data_dict[self._hash_key] = data
         return self
-
-
-CallableT = TypeVar("CallableT", bound=Callable)
 
 
 def retrieve_if_undefined(func: CallableT) -> CallableT:
@@ -108,6 +106,9 @@ class RetrievableEntity(Entity[EntityDataT]):
         return self.local_data
 
 
+CallableT = TypeVar("CallableT", bound=Callable[[RetrievableEntity, ...], Any])
+
+
 class CanBeParent(metaclass=ABCMeta):
     @abstractmethod
     def _repr_as_parent(self) -> str:
@@ -121,7 +122,7 @@ class HasParent(Entity, CanBeParent, metaclass=ABCMeta):
         pass
 
     @final
-    def _repr_parent(self) -> Optional[str]:
+    def _repr_parent(self) -> str:
         if not self.local_data:
             return undefined
         return self.parent._repr_as_parent()
