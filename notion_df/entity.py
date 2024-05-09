@@ -359,7 +359,7 @@ class Page(RetrievableEntity[PageData], HasParent):
             created_by=self.data.created_by,
             last_edited_by=self.data.last_edited_by,
             archived=self.data.archived,
-            contents=(block.data.contents if block.data else ChildPageBlockContents(title='')),
+            contents=ChildPageBlockContents(title=''),
         )
         return block
 
