@@ -21,7 +21,6 @@ from workflow.core.action import SequentialAction, Action
 from workflow.emoji_code import EmojiCode
 
 korean_weekday = '월화수목금토일'
-WriteTitleT = Literal['if_datei_empty', 'if_separator_exists', 'never']
 
 record_datetime_auto_prop = DateFormulaPropertyKey(EmojiCode.TIMER + '일시')
 record_timestr_prop = RichTextProperty(EmojiCode.CALENDAR + '시간')
@@ -47,7 +46,6 @@ status_prop = SelectProperty("📘정리")
 status_auto_generated = "⚙️자동"
 
 
-
 # TODO
 #  - 읽기 - 📕유형 <- 꼭지> 추가 (스펙 논의 필요)
 #  - 일간/주간 1년 앞서 자동생성
@@ -69,22 +67,26 @@ class MatchSequentialAction(MatchAction, SequentialAction, metaclass=ABCMeta):
     pass
 
 
+WriteTitleT = Literal['if_datei_empty', 'if_separator_exists', 'never']
+
+
 class MatchRecordDatei(MatchSequentialAction):
     def __init__(self, base: MatchActionBase, record: DatabaseEnum,
                  record_to_datei: str, *,
-                 read_title: bool = False,
-                 write_title_if_datei_empty: WriteTitleT = 'never'):
+                 only_if_separator_exists: bool = False,
+                 read_datei_from_title: bool = False,
+                 prepend_datei_on_title: bool = False):
         """
-        :arg read_title: can get the datei from the record title if the current value includes "YYMMDD"
-        :arg write_title_if_datei_empty: prepend the date string "YYMMDD" to the record title
+        :arg read_datei_from_title: can get the datei from the record title if the current value includes "YYMMDD"
+        :arg prepend_datei_on_title: prepend the date string "YYMMDD" to the record title
         """
         super().__init__(base)
         self.record_db = record.entity
         self.record_to_datei = RelationProperty(
             f'{DatabaseEnum.datei_db.prefix}{record_to_datei}')
-        self.read_title = read_title
-        self.write_title_if_datei_empty = write_title_if_datei_empty
-        self.write_title_if_datei_not_empty: WriteTitleT = 'if_datei_empty' if write_title_if_datei_empty != 'never' else 'never'
+        self.read_datei_from_title = read_datei_from_title
+        self.write_datei_only_if_separator_exists = only_if_separator_exists
+        self.prepend_datei_on_title = prepend_datei_on_title
 
     def __repr__(self):
         return repr_object(self,
@@ -97,7 +99,6 @@ class MatchRecordDatei(MatchSequentialAction):
     def process_page(self, record: Page) -> None:
         if record.data.parent != self.record_db:
             return
-
         if record.data.properties[self.record_to_datei]:
             self.process_if_record_to_datei_not_empty(record)
         else:
@@ -105,15 +106,20 @@ class MatchRecordDatei(MatchSequentialAction):
 
     def process_if_record_to_datei_not_empty(self, record: Page) -> None:
         datei_list = record.data.properties[self.record_to_datei]
-        if (new_title := self.date_namespace.prepend_date_in_record_title(
-                record.retrieve().data.properties.title, datei_list, self.write_title_if_datei_not_empty)):
+        if (self.prepend_datei_on_title
+                and (new_title := self.date_namespace.prepend_date_in_record_title(
+                record.retrieve().data.properties.title, datei_list))):
             properties = PageProperties()
             properties[record.data.properties.title_prop] = new_title
             record.update(properties)
             logger.info(f'{record} -> {properties}')
 
     def process_if_record_to_datei_empty(self, record: Page) -> None:
-        if (self.read_title
+        if (self.write_datei_only_if_separator_exists
+                and '|' not in record.data.properties.title.plain_text):
+            return
+
+        if (self.read_datei_from_title
                 and (datei := self.date_namespace.get_page_by_record_title(
                     record.data.properties.title.plain_text)) is not None):
             self._update_page(record, PageProperties({
@@ -127,9 +133,8 @@ class MatchRecordDatei(MatchSequentialAction):
             PageProperties({
                 self.record_to_datei: self.record_to_datei.page_value([datei]),
             })
-        if (new_title := self.date_namespace.prepend_date_in_record_title(
-                record.retrieve().data.properties.title, [datei],
-                self.write_title_if_datei_empty)):
+        if self.prepend_datei_on_title and (new_title := self.date_namespace.prepend_date_in_record_title(
+                record.retrieve().data.properties.title, [datei])):
             properties[record.data.properties.title_prop] = new_title
         self._update_page(record, properties)
 
@@ -247,7 +252,7 @@ class MatchRecordTimestr(MatchSequentialAction):
 
     def will_process(self, record: Page) -> bool:
         if not (record.data.parent == self.record_db and not record.data.properties[
-                record_timestr_prop]):
+            record_timestr_prop]):
             return False
         try:
             record_date = record.data.properties[self.record_to_datei][0]
@@ -294,7 +299,7 @@ class MatchRecordWeekiByDatei(MatchSequentialAction):
 
     def process_page(self, record: Page) -> None:
         if not (record.data.parent == self.record_db and record.data.properties[
-                self.record_to_datei]):
+            self.record_to_datei]):
             return
 
         new_record_weeks = self.record_to_weeki.page_value()
@@ -498,28 +503,17 @@ class DateINamespace(DatabaseNamespace):
 
     @classmethod
     def prepend_date_in_record_title(
-            cls, title: RichText, datei_list: Iterable[Page],
-            write_title: WriteTitleT
+            cls, title: RichText, datei_list: Iterable[Page]
     ) -> RichText:
         datei_date_list = [datei.data.properties[datei_date_prop].start
                            for datei in datei_list]
 
-        needs_update: bool
-        has_separator = '|' in title.plain_text
-
-        match write_title:
-            case 'if_datei_empty':
-                needs_update = not cls._check_date_in_record_title(title.plain_text, datei_date_list)
-            case 'if_separator_exists':
-                needs_update = (has_separator and not cls._check_date_in_record_title(title.plain_text, datei_date_list))
-            case 'never':
-                needs_update = False
-            case _:
-                raise ValueError(write_title)
+        needs_update = not cls._check_date_in_record_title(title.plain_text, datei_date_list)
         if not needs_update:
             return RichText()
 
         earliest_datei_date = min(datei_date_list)
+        has_separator = '|' in title.plain_text
         needs_separator: bool = not has_separator  # and cls._digit_pattern.match(title.plain_text))
         starts_with_separator = title.plain_text.startswith('|')
         return RichText([TextSpan(
