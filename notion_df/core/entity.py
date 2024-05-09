@@ -32,9 +32,9 @@ class Entity(Generic[EntityDataT], Hashable, metaclass=ABCMeta):
         if not isabstract(cls):
             assert cls.data_cls
 
-    @classmethod
+    @staticmethod
     @abstractmethod
-    def _get_id(cls, id_or_url: Union[UUID, str]) -> UUID:
+    def _get_id(id_or_url: Union[UUID, str]) -> UUID:
         pass
 
     def __init__(self, id_or_url: Union[UUID, str]):

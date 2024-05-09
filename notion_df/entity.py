@@ -104,8 +104,8 @@ class Block(RetrievableEntity[BlockData], HasParent):
             BlockData(self.id, parent, created_time, last_edited_time, created_by, last_edited_by, has_children,
                       archived, value))
 
-    @classmethod
-    def _get_id(cls, id_or_url: Union[UUID, str]) -> UUID:
+    @staticmethod
+    def _get_id(id_or_url: Union[UUID, str]) -> UUID:
         return get_block_id(id_or_url)
 
     def _repr_as_parent(self) -> str:
@@ -219,8 +219,8 @@ class Database(RetrievableEntity[DatabaseData], HasParent):
             DatabaseData(self.id, parent, created_time, last_edited_time, icon, cover, url, title, properties, archived,
                          is_inline))
 
-    @classmethod
-    def _get_id(cls, id_or_url: Union[UUID, str]) -> UUID:
+    @staticmethod
+    def _get_id(id_or_url: Union[UUID, str]) -> UUID:
         return get_page_or_database_id(id_or_url)
 
     def __repr__(self) -> str:
@@ -336,8 +336,8 @@ class Page(RetrievableEntity[PageData], HasParent):
             PageData(self.id, parent, created_time, last_edited_time, created_by, last_edited_by, icon, cover, url,
                      archived, properties))
 
-    @classmethod
-    def _get_id(cls, id_or_url: Union[UUID, str]) -> UUID:
+    @staticmethod
+    def _get_id(id_or_url: Union[UUID, str]) -> UUID:
         return get_page_or_database_id(id_or_url)
 
     def __repr__(self) -> str:
