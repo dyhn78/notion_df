@@ -8,9 +8,8 @@ import requests
 import requests.packages
 from bs4 import BeautifulSoup
 
-from notion_df.object.data import Heading1BlockContents, ParagraphBlockContents, Heading2BlockContents, \
-    Heading3BlockContents, \
-    BlockContents
+from notion_df.object.contents import BlockContents, Heading1BlockContents, Heading2BlockContents, \
+    Heading3BlockContents, ParagraphBlockContents
 from notion_df.object.rich_text import RichText
 
 # noinspection PyUnresolvedReferences
