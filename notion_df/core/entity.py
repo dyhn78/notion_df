@@ -2,15 +2,17 @@ from __future__ import annotations
 
 from abc import abstractmethod, ABCMeta
 from inspect import isabstract
-from typing import (Final, Generic, Hashable, Union, Optional, final, TypeVar, Any, cast)
+from typing import (Final, Generic, Hashable, Union, Optional, final, TypeVar, Any, cast, MutableMapping, Callable)
 from uuid import UUID
+from weakref import WeakValueDictionary
 
 from typing_extensions import Self
 
-from notion_df.core.data import EntityDataT, EntityData, latest_data_dict, default_data_dict
+from notion_df.core.data import EntityDataT, EntityData
 from notion_df.util.misc import repr_object, undefined
 
-EntityDataT2 = TypeVar("EntityDataT2", bound=EntityData)
+latest_data_dict: Final[MutableMapping[tuple[type[EntityData], UUID], EntityData]] = WeakValueDictionary()
+default_data_dict: Final[MutableMapping[tuple[type[EntityData], UUID], EntityData]] = {}
 
 
 class Entity(Generic[EntityDataT], Hashable, metaclass=ABCMeta):
@@ -54,26 +56,57 @@ class Entity(Generic[EntityDataT], Hashable, metaclass=ABCMeta):
     @property
     def data(self) -> Optional[EntityDataT]:
         """this always points at the latest data of the entity."""
-        # TODO: DefaultData should trigger retrieve() request on missing attributes
-        key = (self.data_cls, self.id)
-        return latest_data_dict.get(key, default_data_dict.get(key))
+        return self.local_data
 
     @final
     @property
-    def has_data(self) -> bool:
-        return (self.data_cls, self.id) in latest_data_dict
+    def local_data(self) -> Optional[EntityDataT]:
+        key = (self.data_cls, self.id)
+        return latest_data_dict.get(key, default_data_dict.get(key))
 
+    def set_data(self, data: EntityDataT) -> Self:
+        current_latest_data = latest_data_dict.get((self.data_cls, self.id))
+        if current_latest_data is None or data.timestamp >= current_latest_data.timestamp:
+            latest_data_dict[self.data_cls, self.id] = data
+        return self
+
+    @abstractmethod
+    def set_default_data(self, **kwargs: Any) -> Self:
+        """default data is always at the last priority of reading data and not garbage collected.
+        use it to hardcode invariant values (such as the root pages of your workspace)."""
+        pass
+
+    def _set_default_data(self, data: EntityDataT) -> Self:
+        default_data_dict[self.data_cls, self.id] = data
+        return self
+
+    # TODO: create HasParent, CanBeParent base class
     @final
     def _repr_parent(self) -> Optional[str]:
-        if not self.has_data or not hasattr(self.data, 'parent'):
+        if not self.local_data or not hasattr(self.local_data, 'parent'):
             return undefined
-        elif self.data.parent is None:
+        elif self.local_data.parent is None:
             return 'workspace'
         else:  # TODO: fix that user and comments does not have parent
-            return cast(Entity, self.data.parent)._repr_as_parent()
+            return cast(Entity, self.local_data.parent)._repr_as_parent()
 
     def _repr_as_parent(self) -> str:
         return repr_object(self, id=self.id)
+
+
+CallableT = TypeVar("CallableT", bound=Callable)
+
+
+def retrieve_if_undefined(func: CallableT) -> CallableT:
+    def wrapper(self: RetrievableEntity, *args, **kwargs):
+        if (result := func(*args, **kwargs)) is not undefined:
+            return result
+        self.retrieve()
+        if (result := func(*args, **kwargs)) is not undefined:
+            return result
+        raise RuntimeError(f"{type(self)}.retrieve() did not update latest data")
+
+    return wrapper
 
 
 class RetrievableEntity(Entity[EntityDataT]):
@@ -83,10 +116,6 @@ class RetrievableEntity(Entity[EntityDataT]):
         pass
 
     @property
+    @retrieve_if_undefined
     def data(self) -> EntityDataT:
-        if data := super().data:
-            return data
-        self.retrieve()
-        if data := super().data:
-            return data
-        raise RuntimeError(f"{type(self)}.retrieve() did not update latest data")
+        return self.local_data

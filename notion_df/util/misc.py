@@ -6,7 +6,6 @@ from typing import Any, Optional, TypeVar, get_args, cast, Generic, get_type_hin
 from notion_df.core.exception import NotionDfTypeError
 
 undefined = object()
-"""flag used on repr_object() to omit the attribute value."""
 
 
 def repr_object(obj, *attrs: Any, **kw_attrs: Any) -> str:

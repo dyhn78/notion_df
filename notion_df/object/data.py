@@ -34,6 +34,7 @@ def _get_type_hints(cls):
 
 @dataclass
 class DatabaseData(EntityData):
+    # TODO: workspace parent should be represented as Workspace()
     parent: Union[Block, Page, None]
     created_time: datetime
     last_edited_time: datetime
@@ -85,8 +86,7 @@ class BlockData(EntityData):
     last_edited_time: datetime
     created_by: PartialUser
     last_edited_by: PartialUser
-    has_children: Optional[bool]
-    """Note: the None value never occurs from direct server data. It only happens from Page.as_block()"""
+    has_children: bool
     archived: bool
     value: BlockValue
 

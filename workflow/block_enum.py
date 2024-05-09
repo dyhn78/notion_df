@@ -6,7 +6,6 @@ from typing import Optional
 
 from notion_df.core.entity import Entity
 from notion_df.entity import Database, Page
-from notion_df.object.data import DatabaseData
 from notion_df.object.misc import Emoji
 from notion_df.object.rich_text import RichText, TextSpan
 from notion_df.util.uuid_util import get_page_or_database_id, get_page_or_database_url
@@ -50,19 +49,13 @@ class DatabaseEnum(Enum):
 
         title_span = TextSpan(self.title)
         title_span.plain_text = self.title
-        # noinspection PyTypeChecker
-        DatabaseData(is_default=True,
-                     id=self.id,
-                     parent=None,
-                     created_time=None,
-                     last_edited_time=None,
-                     icon=Emoji(self.prefix),
-                     cover=None,
-                     url=None,
-                     title=RichText([title_span]),
-                     properties=None,
-                     archived=False,
-                     is_inline=False)
+        self.entity.set_default_data(
+            parent=None,
+            icon=Emoji(self.prefix),
+            title=RichText([title_span]),
+            archived=False,
+            is_inline=False,
+        )
 
     @property
     def prefix_title(self) -> str:
