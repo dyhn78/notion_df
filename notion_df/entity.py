@@ -224,20 +224,16 @@ class Database(RetrievableEntity[DatabaseData], HasParent):
         return get_page_or_database_id(id_or_url)
 
     def __repr__(self) -> str:
-        try:
-            if not self.data:
-                raise AttributeError
-            title = self.data.title.plain_text
-            url = self.data.url
-            return repr_object(self, title=title, url=url, parent=self._repr_parent())
-        except (NotionDfKeyError, AttributeError):
+        if self.local_data:
+            return repr_object(self, title=self.local_data.title.plain_text,
+                               url=self.local_data.url, parent=self._repr_parent())
+        else:
             return repr_object(self, id=self.id, parent=self._repr_parent())
 
     def _repr_as_parent(self) -> str:
-        try:
-            title = self.data.title.plain_text
-            return repr_object(self, title=title)
-        except (NotionDfKeyError, AttributeError):
+        if self.local_data:
+            return repr_object(self, title=self.local_data.title.plain_text)
+        else:
             return repr_object(self, id=self.id)
 
     @staticmethod
@@ -345,20 +341,21 @@ class Page(RetrievableEntity[PageData], HasParent):
         return get_page_or_database_id(id_or_url)
 
     def __repr__(self) -> str:
+        # TODO refactor
         try:
-            if not self.data:
+            if not self.local_data:
                 raise AttributeError
-            title = self.data.properties.title.plain_text
-            url = self.data.url
+            title = self.local_data.properties.title.plain_text
             _id = undefined
         except (NotionDfKeyError, AttributeError):
-            title = url = undefined
+            title = undefined
             _id = self.id
-        return repr_object(self, title=title, url=url, id=_id, parent=self._repr_parent())
+        return repr_object(self, title=title, url=self.local_data.url,
+                           id=_id, parent=self._repr_parent())
 
     def _repr_as_parent(self) -> str:
         try:
-            title = self.data.properties.title.plain_text
+            title = self.local_data.properties.title.plain_text
             return repr_object(self, title=title)
         except (NotionDfKeyError, AttributeError):
             return repr_object(self, id=self.id)
@@ -371,7 +368,6 @@ class Page(RetrievableEntity[PageData], HasParent):
             last_edited_time=self.data.last_edited_time,
             created_by=self.data.created_by,
             last_edited_by=self.data.last_edited_by,
-            has_children=(block.data.has_children if block.data else None),
             archived=self.data.archived,
             value=(block.data.value if block.data else ChildPageBlockValue(title='')),
         )
