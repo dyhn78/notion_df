@@ -26,6 +26,7 @@ class Entity(Generic[EntityDataT], Hashable, metaclass=ABCMeta):
     _DataT: type[EntityDataT]
 
     def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
         assert cls._DataT
 
     @classmethod
@@ -54,19 +55,19 @@ class Entity(Generic[EntityDataT], Hashable, metaclass=ABCMeta):
         """this always points at the latest data of the entity."""
         return latest_data_dict.get((self._DataT, self.id))
 
-    @data.deleter
-    def data(self) -> None:
-        del self.data
+    @final
+    @property
+    def has_data(self) -> bool:
+        return (self._DataT, self.id) in latest_data_dict
 
     @final
     def _repr_parent(self) -> Optional[str]:
-        contents = self.data  # prevents retrieve_if_empty
-        if contents is None or not hasattr(contents, 'parent'):
+        if not self.has_data or not hasattr(self.data, 'parent'):
             return undefined
-        elif contents.parent is None:
+        elif self.data.parent is None:
             return 'workspace'
         else:  # TODO: fix that user and comments does not have parent
-            return cast(Entity, contents.parent)._repr_as_parent()
+            return cast(Entity, self.data.parent)._repr_as_parent()
 
     def _repr_as_parent(self) -> str:
         return repr_object(self, id=self.id)
@@ -79,9 +80,10 @@ class RetrievableEntity(Entity[EntityDataT]):
         pass
 
     @property
-    def latest(self) -> EntityDataT:
-        """get the local data, or auto-retrieve."""
+    def data(self) -> EntityDataT:
         if data := super().data:
             return data
         self.retrieve()
-        return cast(EntityDataT, super().data)
+        if data := super().data:
+            return data
+        raise RuntimeError(f"{type(self)}.retrieve() did not update latest data")
