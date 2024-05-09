@@ -84,6 +84,7 @@ class MatchRecordDatei(MatchSequentialAction):
             f'{DatabaseEnum.datei_db.prefix}{record_to_datei}')
         self.read_title = read_title
         self.write_title_if_datei_empty = write_title_if_datei_empty
+        self.write_title_if_datei_not_empty: WriteTitleT = 'if_datei_empty' if write_title_if_datei_empty != 'never' else 'never'
 
     def __repr__(self):
         return repr_object(self,
@@ -105,7 +106,7 @@ class MatchRecordDatei(MatchSequentialAction):
     def process_if_record_to_datei_not_empty(self, record: Page) -> None:
         datei_list = record.data.properties[self.record_to_datei]
         if (new_title := self.date_namespace.prepend_date_in_record_title(
-                record.retrieve().data.properties.title, datei_list, 'if_datei_empty')):
+                record.retrieve().data.properties.title, datei_list, self.write_title_if_datei_not_empty)):
             properties = PageProperties()
             properties[record.data.properties.title_prop] = new_title
             record.update(properties)
