@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 from abc import abstractmethod, ABCMeta
+from inspect import isabstract
 from typing import (Final, Generic, Hashable, Union, Optional, final, TypeVar, Any, cast)
 from uuid import UUID
 
 from typing_extensions import Self
 
-from notion_df.core.data import EntityDataT, EntityData, latest_data_dict
+from notion_df.core.data import EntityDataT, EntityData, latest_data_dict, default_data_dict
 from notion_df.util.misc import repr_object, undefined
 
 EntityDataT2 = TypeVar("EntityDataT2", bound=EntityData)
@@ -22,12 +23,12 @@ class Entity(Generic[EntityDataT], Hashable, metaclass=ABCMeta):
     Use `default` attribute to hardcode some data (which can reduce API calls)
     """
     id: UUID
-    __latest: Optional[EntityDataT] = None
-    _DataT: type[EntityDataT]
+    data_cls: type[EntityDataT]
 
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
-        assert cls._DataT
+        if not isabstract(cls):
+            assert cls.data_cls
 
     @classmethod
     @abstractmethod
@@ -53,12 +54,14 @@ class Entity(Generic[EntityDataT], Hashable, metaclass=ABCMeta):
     @property
     def data(self) -> Optional[EntityDataT]:
         """this always points at the latest data of the entity."""
-        return latest_data_dict.get((self._DataT, self.id))
+        # TODO: DefaultData should trigger retrieve() request on missing attributes
+        key = (self.data_cls, self.id)
+        return latest_data_dict.get(key, default_data_dict.get(key))
 
     @final
     @property
     def has_data(self) -> bool:
-        return (self._DataT, self.id) in latest_data_dict
+        return (self.data_cls, self.id) in latest_data_dict
 
     @final
     def _repr_parent(self) -> Optional[str]:

@@ -51,7 +51,8 @@ class DatabaseEnum(Enum):
         title_span = TextSpan(self.title)
         title_span.plain_text = self.title
         # noinspection PyTypeChecker
-        DatabaseData(id=self.id,
+        DatabaseData(is_default=True,
+                     id=self.id,
                      parent=None,
                      created_time=None,
                      last_edited_time=None,
@@ -62,7 +63,6 @@ class DatabaseEnum(Enum):
                      properties=None,
                      archived=False,
                      is_inline=False)
-        self._entity = Database(self.id)
 
     @property
     def prefix_title(self) -> str:
@@ -70,7 +70,7 @@ class DatabaseEnum(Enum):
 
     @property
     def entity(self) -> Database:
-        return self._entity
+        return Database(self.id)
 
     @classmethod
     def from_entity(cls, entity: Entity) -> Optional[DatabaseEnum]:

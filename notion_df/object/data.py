@@ -24,7 +24,6 @@ if TYPE_CHECKING:
 
 
 def _get_type_hints(cls):
-    # TODO deduplicate
     from notion_df.entity import Block, Database, Page
     from notion_df.core.entity import Entity, RetrievableEntity
     return get_type_hints(cls, {
@@ -77,6 +76,7 @@ class PageData(EntityData):
     @cache
     def _get_type_hints(cls) -> dict[str, type]:
         return _get_type_hints(cls)
+
 
 @dataclass
 class BlockData(EntityData):
