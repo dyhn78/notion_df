@@ -172,6 +172,7 @@ class Deserializable(metaclass=ABCMeta):
     @classmethod
     @final
     def _deserialize_from_dict(cls, serialized: dict[str, Any], **overrides: Any) -> Self:
+        # TODO: separate from the class
         """this should only be called from dataclass.
 
         helper method to implement _deserialize_this().
