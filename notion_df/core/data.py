@@ -20,8 +20,7 @@ class EntityData(Deserializable, metaclass=ABCMeta):
     id: UUID
     raw: dict[str, Any] = field(init=False, default_factory=dict)
     timestamp: int = field(init=False)
-    """the timestamp of deserialization if created with external raw data, 
-    or 0 if created by user."""
+    """the timestamp of instance creation."""
     hardcoded: bool = field(kw_only=True, default=False)
 
     def __post_init__(self) -> None:
