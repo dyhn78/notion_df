@@ -33,7 +33,7 @@ class EntityData(Deserializable, metaclass=ABCMeta):
 
     def __init_subclass__(cls, **kwargs) -> None:
         super().__init_subclass__(**kwargs)
-        _latest_data_dict[(type(self), self.id)]deserialize_this = cls._deserialize_this
+        _deserialize_this = cls._deserialize_this
 
         @functools.wraps(_deserialize_this)
         def _deserialize_this_wrapped(raw: dict[str, Any]) -> Self:
