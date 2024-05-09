@@ -40,13 +40,13 @@ class Block(RetrievableEntity[BlockData]):
         Block]:
         def it():
             for block_contents in block_datas:
-                yield Block(block_contents.id, latest=block_contents)
+                yield Block(block_contents.id, data=block_contents)
 
         return Paginator(Block, it())
 
     def retrieve(self) -> Self:
         logger.info(f'Block.retrieve({self})')
-        self.latest = RetrieveBlock(token, self.id).execute()
+        self.data = RetrieveBlock(token, self.id).execute()
         return self
 
     def retrieve_children(self) -> Paginator[Block]:
@@ -56,12 +56,12 @@ class Block(RetrievableEntity[BlockData]):
 
     def update(self, block_type: Optional[BlockValue], archived: Optional[bool]) -> Self:
         logger.info(f'Block.update({self})')
-        self.latest = UpdateBlock(token, self.id, block_type, archived).execute()
+        self.data = UpdateBlock(token, self.id, block_type, archived).execute()
         return self
 
     def delete(self) -> Self:
         logger.info(f'Block.delete({self})')
-        self.latest = DeleteBlock(token, self.id).execute()
+        self.data = DeleteBlock(token, self.id).execute()
         return self
 
     def append_children(self, child_values: list[BlockValue]) -> list[Block]:
@@ -77,7 +77,7 @@ class Block(RetrievableEntity[BlockData]):
         logger.info(f'Block.create_child_database({self})')
         contents = CreateDatabase(token, self.id, title, properties, icon,
                                   cover).execute()
-        return Database(contents.id, latest=contents)
+        return Database(contents.id, data=contents)
 
 
 class Database(RetrievableEntity[DatabaseData]):
@@ -87,17 +87,17 @@ class Database(RetrievableEntity[DatabaseData]):
 
     def __repr__(self) -> str:
         try:
-            if not self.latest:
+            if not self.data:
                 raise AttributeError
-            title = self.latest.title.plain_text
-            url = self.latest.url
+            title = self.data.title.plain_text
+            url = self.data.url
             return repr_object(self, title=title, url=url, parent=self._repr_parent())
         except (NotionDfKeyError, AttributeError):
             return repr_object(self, id=self.id, parent=self._repr_parent())
 
     def _repr_as_parent(self) -> str:
         try:
-            title = self.latest.title.plain_text
+            title = self.data.title.plain_text
             return repr_object(self, title=title)
         except (NotionDfKeyError, AttributeError):
             return repr_object(self, id=self.id)
@@ -107,13 +107,13 @@ class Database(RetrievableEntity[DatabaseData]):
         Page]:
         def it():
             for page_contents in page_contents_it:
-                yield Page(page_contents.id, latest=page_contents)
+                yield Page(page_contents.id, data=page_contents)
 
         return Paginator(Page, it())
 
     def retrieve(self) -> Self:
         logger.info(f'Database.retrieve({self})')
-        self.latest = RetrieveDatabase(token, self.id).execute()
+        self.data = RetrieveDatabase(token, self.id).execute()
         return self
 
     # noinspection PyShadowingBuiltins
@@ -125,7 +125,7 @@ class Database(RetrievableEntity[DatabaseData]):
 
     def update(self, title: RichText, properties: DatabaseProperties) -> Database:
         logger.info(f'Database.update({self})')
-        self.latest = UpdateDatabase(token, self.id, title, properties).execute()
+        self.data = UpdateDatabase(token, self.id, title, properties).execute()
         return self
 
     def create_child_page(self, properties: Optional[PageProperties] = None,
@@ -134,7 +134,7 @@ class Database(RetrievableEntity[DatabaseData]):
         logger.info(f'Database.create_child_page({self})')
         page_contents = CreatePage(token, PartialParent('database_id', self.id),
                                properties, children, icon, cover).execute()
-        return Page(page_contents.id, latest=page_contents)
+        return Page(page_contents.id, data=page_contents)
 
 
 class Page(RetrievableEntity[PageData]):
@@ -144,10 +144,10 @@ class Page(RetrievableEntity[PageData]):
 
     def __repr__(self) -> str:
         try:
-            if not self.latest:
+            if not self.data:
                 raise AttributeError
-            title = self.latest.properties.title.plain_text
-            url = self.latest.url
+            title = self.data.properties.title.plain_text
+            url = self.data.url
             _id = undefined
         except (NotionDfKeyError, AttributeError):
             title = url = undefined
@@ -156,7 +156,7 @@ class Page(RetrievableEntity[PageData]):
 
     def _repr_as_parent(self) -> str:
         try:
-            title = self.latest.properties.title.plain_text
+            title = self.data.properties.title.plain_text
             return repr_object(self, title=title)
         except (NotionDfKeyError, AttributeError):
             return repr_object(self, id=self.id)
@@ -164,24 +164,24 @@ class Page(RetrievableEntity[PageData]):
     def as_block(self) -> Block:
         block = Block(self.id)
         latest = BlockData(id=self.id,
-                           parent=self.latest.parent,
-                           created_time=self.latest.created_time,
-                           last_edited_time=self.latest.last_edited_time,
-                           created_by=self.latest.created_by,
-                           last_edited_by=self.latest.last_edited_by,
+                           parent=self.data.parent,
+                           created_time=self.data.created_time,
+                           last_edited_time=self.data.last_edited_time,
+                           created_by=self.data.created_by,
+                           last_edited_by=self.data.last_edited_by,
                            has_children=(
-                                   block.latest.has_children if block.latest else None),
-                           archived=self.latest.archived,
+                               block.data.has_children if block.data else None),
+                           archived=self.data.archived,
                            value=(
-                                   block.latest.value if block.latest
+                               block.data.value if block.data
                                    else ChildPageBlockValue(title='')))
-        latest.timestamp = self.latest.timestamp
-        block.latest = latest
+        latest.timestamp = self.data.timestamp
+        block.data = latest
         return block
 
     def retrieve(self) -> Self:
         logger.info(f'Page.retrieve({self})')
-        self.latest = RetrievePage(token, self.id).execute()
+        self.data = RetrievePage(token, self.id).execute()
         return self
 
     def retrieve_property_item(
@@ -196,14 +196,14 @@ class Page(RetrievableEntity[PageData]):
             _, prop_value = RetrievePagePropertyItem(token, self.id, property_id).execute()
         else:
             prop, prop_value = RetrievePagePropertyItem(token, self.id, property_id).execute()
-        if self.latest:
-            self.latest.properties[prop] = prop_value
+        if self.data:
+            self.data.properties[prop] = prop_value
         return prop_value
 
     def update(self, properties: Optional[PageProperties] = None, icon: Optional[Icon] = None,
                cover: Optional[ExternalFile] = None, archived: Optional[bool] = None) -> Self:
         logger.info(f'Page.update({self})')
-        self.latest = UpdatePage(token, self.id, properties, icon, cover,
+        self.data = UpdatePage(token, self.id, properties, icon, cover,
                                   archived).execute()
         return self
 
@@ -212,7 +212,7 @@ class Page(RetrievableEntity[PageData]):
                           icon: Optional[Icon] = None, cover: Optional[File] = None) -> Page:
         logger.info(f'Page.create_child_page({self})')
         page_contents = CreatePage(token, PartialParent('page_id', self.id), properties, children, icon, cover).execute()
-        return Page(page_contents.id, latest=page_contents)
+        return Page(page_contents.id, data=page_contents)
 
     def create_child_database(self, title: RichText, *,
                               properties: Optional[DatabaseProperties] = None,
@@ -265,9 +265,9 @@ def search_by_title(query: str, entity: Literal['page', 'database', None] = None
     def it():
         for contents in contents_it:
             if isinstance(contents, DatabaseData):
-                yield Database(contents.id, latest=contents)
+                yield Database(contents.id, data=contents)
             elif isinstance(contents, PageData):
-                yield Page(contents.id, latest=contents)
+                yield Page(contents.id, data=contents)
             else:
                 raise NotionDfValueError('bad data', {'data': contents})
         return

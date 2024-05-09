@@ -60,9 +60,9 @@ class MediaScrapAction(IndividualAction):
             ]))
 
     def filter(self, page: Page) -> bool:
-        return (page.latest.parent == self.reading_db
-                and page.latest.properties[is_book_prop]
-                and (page.latest.properties[edit_status_prop] in
+        return (page.data.parent == self.reading_db
+                and page.data.properties[is_book_prop]
+                and (page.data.properties[edit_status_prop] in
                      [EditStatusValue.default, EditStatusValue.metadata_overwrite,
                       EditStatusValue.location_overwrite, None]))
 
@@ -85,9 +85,9 @@ class ReadingMediaScraperUnit:
         self.new_properties = PageProperties()
         self.callables: list[Callable[[], Any]] = []
 
-        self.title_value = self.reading.latest.properties[title_prop].plain_text
+        self.title_value = self.reading.data.properties[title_prop].plain_text
         self.name_value = self.extract_name(self.title_value)
-        self.true_name_value = self.reading.latest.properties[true_name_prop].plain_text
+        self.true_name_value = self.reading.data.properties[true_name_prop].plain_text
 
     def extract_name(self, title: str) -> str:
         if title.find('_ ') != -1:
@@ -102,7 +102,7 @@ class ReadingMediaScraperUnit:
 
     def execute(self) -> None:
         new_status_value = EditStatusValue.fill_manually
-        match getattr(self.reading.latest.properties[edit_status_prop], 'name', EditStatusValue.default):
+        match getattr(self.reading.data.properties[edit_status_prop], 'name', EditStatusValue.default):
             case EditStatusValue.default:
                 if self.process_yes24(False) and self.process_lib_gy(False):
                     new_status_value = EditStatusValue.confirm_manually
@@ -119,7 +119,7 @@ class ReadingMediaScraperUnit:
 
     def process_yes24(self, overwrite: bool) -> bool:
         def get_url() -> Optional[str]:
-            if url_value := self.reading.latest.properties[url_prop]:
+            if url_value := self.reading.data.properties[url_prop]:
                 return url_value
             if url_value := get_yes24_detail_page_url(self.true_name_value):
                 self.new_properties[url_prop] = url_value
@@ -154,8 +154,8 @@ class ReadingMediaScraperUnit:
         def set_content_page():
             def get_current_content_page() -> Optional[Page]:
                 for block in self.reading.as_block().retrieve_children():
-                    if isinstance(block.latest.value, ChildPageBlockValue):
-                        block_title = block.latest.value.title
+                    if isinstance(block.data.value, ChildPageBlockValue):
+                        block_title = block.data.value.title
                         if self.name_value in block_title or block_title.strip() in ['', '=', '>']:
                             _content_page = Page(block.id)
                             return _content_page

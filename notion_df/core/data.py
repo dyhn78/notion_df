@@ -4,11 +4,15 @@ import functools
 from abc import ABCMeta
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, TypeVar, Optional, NoReturn, final
+from typing import Any, TypeVar, Optional, NoReturn, final, Final, MutableMapping
+from uuid import UUID
+from weakref import WeakValueDictionary
 
 from typing_extensions import Self
 
 from notion_df.core.serialization import Deserializable
+
+latest_data_dict: Final[MutableMapping[tuple[type[EntityData], UUID], EntityData]] = WeakValueDictionary()
 
 
 @dataclass
@@ -17,8 +21,15 @@ class EntityData(Deserializable, metaclass=ABCMeta):
     timestamp: int = field(init=False, default=0)
     """the timestamp of deserialization if created with external raw data, 
     or 0 if created by user."""
+    id: UUID
 
-    def __del__(self):
+    def __post_init__(self) -> None:
+        current_latest_data = latest_data_dict.get((type(self), self.id))
+        if current_latest_data is None or self.timestamp >= current_latest_data.timestamp:
+            latest_data_dict[(type(self), self.id)] = self
+
+    def __del__(self) -> None:
+        del latest_data_dict[(type(self), self.id)]
         del self.raw
 
     def __init_subclass__(cls, **kwargs) -> None:
@@ -58,7 +69,7 @@ class EntityData(Deserializable, metaclass=ABCMeta):
         return datetime.fromtimestamp(self.timestamp) if self.timestamp else None
 
     @final
-    def cast(self, cls: type[DataT]) -> DataT:
+    def cast(self, cls: type[EntityDataT]) -> EntityDataT:
         return cls.cast_from(self)
 
     @classmethod
@@ -72,11 +83,11 @@ class EntityData(Deserializable, metaclass=ABCMeta):
         raise NotImplementedError
 
 
-DataT = TypeVar('DataT', bound=EntityData)
+EntityDataT = TypeVar('EntityDataT', bound=EntityData)
 
 
-def coalesce(latest: Optional[DataT],
-             default: Optional[DataT]) -> Optional[DataT]:
+def coalesce(latest: Optional[EntityDataT],
+             default: Optional[EntityDataT]) -> Optional[EntityDataT]:
     # TODO: DefaultContents(default) should trigger retrieve() request on missing attributes
     contents = latest if latest is not None else default
     return contents

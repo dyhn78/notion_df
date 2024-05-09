@@ -47,32 +47,30 @@ class DatabaseEnum(Enum):
         self.url = get_page_or_database_url(id_or_url, 'dyhn')
         self.prefix = prefix
         _id_to_member[Database(self.id)] = self
-        # noinspection PyStatementEffect
-        self.entity
+
+        title_span = TextSpan(self.title)
+        title_span.plain_text = self.title
+        # noinspection PyTypeChecker
+        DatabaseData(id=self.id,
+                     parent=None,
+                     created_time=None,
+                     last_edited_time=None,
+                     icon=Emoji(self.prefix),
+                     cover=None,
+                     url=None,
+                     title=RichText([title_span]),
+                     properties=None,
+                     archived=False,
+                     is_inline=False)
+        self._entity = Database(self.id)
 
     @property
-    def prefix_title(self):
+    def prefix_title(self) -> str:
         return self.prefix + self.title
 
     @property
     def entity(self) -> Database:
-        db = Database(self.id)
-        if db.latest is None:
-            title_span = TextSpan(self.title)
-            title_span.plain_text = self.title
-            # noinspection PyTypeChecker
-            db.latest = DatabaseData(id=self.id,
-                                     parent=None,
-                                     created_time=None,
-                                     last_edited_time=None,
-                                     icon=Emoji(self.prefix),
-                                     cover=None,
-                                     url=None,
-                                     title=RichText([title_span]),
-                                     properties=None,
-                                     archived=False,
-                                     is_inline=False)
-        return db
+        return self._entity
 
     @classmethod
     def from_entity(cls, entity: Entity) -> Optional[DatabaseEnum]:

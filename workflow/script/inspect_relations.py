@@ -31,9 +31,9 @@ def get_multiple():
     for (db, linked_db), prop_list in get_all_relation_properties().items():
         db: Database
         linked_db: Database
-        if len(prop_list) > 1 and db.latest.title.plain_text < linked_db.latest.title.plain_text and DatabaseEnum.from_entity(
+        if len(prop_list) > 1 and db.data.title.plain_text < linked_db.data.title.plain_text and DatabaseEnum.from_entity(
                 db) and DatabaseEnum.from_entity(db).name.find('depr') == -1:
-            print(db.latest.title.plain_text, linked_db.latest.title.plain_text, prop_list)
+            print(db.data.title.plain_text, linked_db.data.title.plain_text, prop_list)
 
 
 def get_date():

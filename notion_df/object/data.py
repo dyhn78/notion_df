@@ -35,7 +35,6 @@ def _get_type_hints(cls):
 
 @dataclass
 class DatabaseData(EntityData):
-    id: UUID
     parent: Union[Block, Page, None]
     created_time: datetime
     last_edited_time: datetime
@@ -59,7 +58,6 @@ class DatabaseData(EntityData):
 
 @dataclass
 class PageData(EntityData):
-    id: UUID
     parent: Union[Block, Database, Page, None]
     created_time: datetime
     last_edited_time: datetime
@@ -82,7 +80,6 @@ class PageData(EntityData):
 
 @dataclass
 class BlockData(EntityData):
-    id: UUID
     parent: Union[Block, Page, None]
     created_time: datetime
     last_edited_time: datetime

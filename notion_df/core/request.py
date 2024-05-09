@@ -10,7 +10,7 @@ import requests
 import tenacity
 from loguru import logger
 
-from notion_df.core.data import DataT
+from notion_df.core.data import EntityDataT
 from notion_df.core.exception import NotionDfValueError, NotionDfIndexError, NotionDfTypeError
 from notion_df.core.serialization import deserialize, serialize
 from notion_df.util.collection import PlainStrEnum
@@ -89,7 +89,7 @@ class RequestBuilder(metaclass=ABCMeta):
     #  page_create_request: Request = Request.build()
     #  database_query_request: PaginatedRequest = PaginatedRequest.build()
     """base request form made of various Resources.
-    all non-abstract subclasses must provide class type argument `DataT`.
+    all non-abstract subclasses must provide class type argument `EntityDataT`.
     get token from https://www.notion.so/my-integrations"""
     token: str
 
@@ -138,22 +138,22 @@ class Version(PlainStrEnum):
     v20220628 = '2022-06-28'
 
 
-class SingleRequestBuilder(Generic[DataT], RequestBuilder, metaclass=ABCMeta):
-    data_type: type[DataT]
+class SingleRequestBuilder(Generic[EntityDataT], RequestBuilder, metaclass=ABCMeta):
+    data_type: type[EntityDataT]
 
     def __init_subclass__(cls, **kwargs):
         if not inspect.isabstract(cls):
             assert cls.data_type
 
     @final
-    def execute(self) -> DataT:
+    def execute(self) -> EntityDataT:
         settings = self.get_settings()
         response = Request(method=settings.method, url=settings.url, headers=self.headers, params=None,
                            json=self.get_body()).execute()
         return self.parse_response_data(response.json())  # nomypy
 
     @classmethod
-    def parse_response_data(cls, data: dict[str, Any]) -> DataT:
+    def parse_response_data(cls, data: dict[str, Any]) -> EntityDataT:
         return cls.data_type.deserialize(data)
 
 
