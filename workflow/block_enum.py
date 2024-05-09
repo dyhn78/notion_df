@@ -83,4 +83,4 @@ def is_template(page: Page) -> bool:
     database = page.contents.parent
     if not database or not isinstance(database, Database):
         return False
-    return bool(re.match(f'<{database.contents.title.plain_text}> .*', page.contents.properties.title.plain_text))
+    return bool(re.match(f'<{database.contents.title.plain_text}>.*', page.contents.properties.title.plain_text))

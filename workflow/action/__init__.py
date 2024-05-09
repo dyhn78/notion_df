@@ -16,7 +16,8 @@ routine_action = CompositeAction([
     MatchDatei(base),
 
     MatchRecordDatei(base, DatabaseEnum.event_db, DatabaseEnum.datei_db.title),
-    MatchRecordDatei(base, DatabaseEnum.event_db, SCHEDULE, read_title=True, write_title='always'),
+    MatchRecordDatei(base, DatabaseEnum.event_db, SCHEDULE, read_title=True,
+                     write_title_if_datei_empty='if_datei_empty'),
     MatchRecordDateiSchedule(base, DatabaseEnum.event_db),
     MatchRecordWeekiByDatei(base, DatabaseEnum.event_db, SCHEDULE, SCHEDULE),
     MatchRecordTimestr(base, DatabaseEnum.event_db, SCHEDULE),
@@ -24,18 +25,21 @@ routine_action = CompositeAction([
     MatchEventProgress(base, DatabaseEnum.reading_db),
 
     MatchRecordDatei(base, DatabaseEnum.journal_db, DatabaseEnum.datei_db.title),
-    MatchRecordDatei(base, DatabaseEnum.journal_db, SCHEDULE, read_title=True, write_title='if_separator_exists'),
+    MatchRecordDatei(base, DatabaseEnum.journal_db, SCHEDULE, read_title=True,
+                     write_title_if_datei_empty='if_separator_exists'),
     MatchRecordDateiSchedule(base, DatabaseEnum.journal_db),
     MatchRecordWeekiByDatei(base, DatabaseEnum.journal_db, SCHEDULE, SCHEDULE),
 
-    MatchRecordDatei(base, DatabaseEnum.thread_db, DatabaseEnum.datei_db.title, read_title=True, write_title='always'),
+    MatchRecordDatei(base, DatabaseEnum.thread_db, DatabaseEnum.datei_db.title,
+                     read_title=True, write_title_if_datei_empty='if_datei_empty'),
     MatchRecordWeekiByDatei(base, DatabaseEnum.thread_db, DatabaseEnum.weeki_db.title, DatabaseEnum.datei_db.title),
 
     MatchRecordDatei(base, DatabaseEnum.idea_db, DatabaseEnum.datei_db.title),
     MatchRecordWeekiByDatei(base, DatabaseEnum.idea_db, DatabaseEnum.weeki_db.title, DatabaseEnum.datei_db.title),
 
     MatchRecordDatei(base, DatabaseEnum.issue_db, DatabaseEnum.datei_db.title),
-    MatchRecordDatei(base, DatabaseEnum.issue_db, SCHEDULE, read_title=True, write_title='never'),
+    MatchRecordDatei(base, DatabaseEnum.issue_db, SCHEDULE, read_title=True,
+                     write_title_if_datei_empty='never'),
     MatchRecordDateiSchedule(base, DatabaseEnum.issue_db),
     MatchRecordWeekiByDatei(base, DatabaseEnum.issue_db, SCHEDULE, SCHEDULE),
     # DeprCreateDateEvent(base, DatabaseEnum.issue_db),

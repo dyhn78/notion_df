@@ -21,6 +21,8 @@ from workflow.core.action import SequentialAction, Action
 from workflow.emoji_code import EmojiCode
 
 korean_weekday = '월화수목금토일'
+WriteTitleT = Literal['if_datei_empty', 'if_separator_exists', 'never']
+
 record_datetime_auto_prop = DateFormulaPropertyKey(EmojiCode.TIMER + '일시')
 record_timestr_prop = RichTextProperty(EmojiCode.CALENDAR + '시간')
 datei_to_weeki_prop = RelationProperty(DatabaseEnum.weeki_db.prefix_title)
@@ -43,6 +45,7 @@ reading_match_date_by_created_time_prop = CheckboxFormulaProperty(
     EmojiCode.BLACK_NOTEBOOK + '시작일<-생성시간')
 status_prop = SelectProperty("📘정리")
 status_auto_generated = "⚙️자동"
+
 
 
 # TODO
@@ -69,18 +72,18 @@ class MatchSequentialAction(MatchAction, SequentialAction, metaclass=ABCMeta):
 class MatchRecordDatei(MatchSequentialAction):
     def __init__(self, base: MatchActionBase, record: DatabaseEnum,
                  record_to_datei: str, *,
-                 read_title: bool = False, write_title: Literal[
-                'always', 'if_separator_exists', 'never'] = 'never'):
+                 read_title: bool = False,
+                 write_title_if_datei_empty: WriteTitleT = 'never'):
         """
         :arg read_title: can get the datei from the record title if the current value includes "YYMMDD"
-        :arg write_title: prepend the date string "YYMMDD" to the record title
+        :arg write_title_if_datei_empty: prepend the date string "YYMMDD" to the record title
         """
         super().__init__(base)
         self.record_db = record.entity
         self.record_to_datei = RelationProperty(
             f'{DatabaseEnum.datei_db.prefix}{record_to_datei}')
         self.read_title = read_title
-        self.write_title = write_title
+        self.write_title_if_datei_empty = write_title_if_datei_empty
 
     def __repr__(self):
         return repr_object(self,
@@ -102,7 +105,7 @@ class MatchRecordDatei(MatchSequentialAction):
     def process_if_record_to_datei_not_empty(self, record: Page) -> None:
         datei_list = record.contents.properties[self.record_to_datei]
         if (new_title := self.date_namespace.prepend_date_in_record_title(
-                record.retrieve().contents.properties.title, datei_list, self.write_title)):
+                record.retrieve().contents.properties.title, datei_list, 'if_datei_empty')):
             properties = PageProperties()
             properties[record.contents.properties.title_prop] = new_title
             record.update(properties)
@@ -124,7 +127,8 @@ class MatchRecordDatei(MatchSequentialAction):
                 self.record_to_datei: self.record_to_datei.page_value([datei]),
             })
         if (new_title := self.date_namespace.prepend_date_in_record_title(
-                record.retrieve().contents.properties.title, [datei], self.write_title)):
+                record.retrieve().contents.properties.title, [datei],
+                self.write_title_if_datei_empty)):
             properties[record.contents.properties.title_prop] = new_title
         self._update_page(record, properties)
 
@@ -494,9 +498,9 @@ class DateINamespace(DatabaseNamespace):
     @classmethod
     def prepend_date_in_record_title(
             cls, title: RichText, datei_list: Iterable[Page],
-            write_title: Literal['always', 'if_separator_exists', 'never']
+            write_title: WriteTitleT
     ) -> RichText:
-        datei_date_list = [datei.contents.properties[datei_date_prop].start 
+        datei_date_list = [datei.contents.properties[datei_date_prop].start
                            for datei in datei_list]
 
         needs_update: bool
