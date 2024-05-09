@@ -9,7 +9,7 @@ from uuid import UUID
 
 from typing_extensions import Self
 
-from notion_df.core.data import Data
+from notion_df.core.data import EntityData
 from notion_df.core.serialization import DualSerializable
 from notion_df.object.constant import BlockColor, CodeLanguage
 from notion_df.object.file import File
@@ -34,7 +34,7 @@ def _get_type_hints(cls):
 
 
 @dataclass
-class DatabaseData(Data):
+class DatabaseData(EntityData):
     id: UUID
     parent: Union[Block, Page, None]
     created_time: datetime
@@ -58,7 +58,7 @@ class DatabaseData(Data):
 
 
 @dataclass
-class PageData(Data):
+class PageData(EntityData):
     id: UUID
     parent: Union[Block, Database, Page, None]
     created_time: datetime
@@ -81,7 +81,7 @@ class PageData(Data):
         return _get_type_hints(cls)
 
 @dataclass
-class BlockData(Data):
+class BlockData(EntityData):
     id: UUID
     parent: Union[Block, Page, None]
     created_time: datetime

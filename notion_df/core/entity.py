@@ -1,20 +1,19 @@
 from __future__ import annotations
 
 from abc import abstractmethod, ABCMeta
-from typing import (Final, Generic, Hashable, Union, Optional, final, TypeVar, overload,
-                    Literal, Any, cast as typing_cast)
+from typing import (Final, Generic, Hashable, Union, Optional, final, TypeVar, Any, cast as typing_cast)
 from uuid import UUID
 
 from typing_extensions import Self
 
-from notion_df.core.data import ContentsT, Data, coalesce
+from notion_df.core.data import DataT, EntityData, coalesce
 from notion_df.util.misc import repr_object, undefined
 
 namespace: Final[dict[tuple[type[Entity], UUID], Entity]] = {}
-ContentsT2 = TypeVar("ContentsT2", bound=Data)
+DataT2 = TypeVar("DataT2", bound=EntityData)
 
 
-class Entity(Generic[ContentsT], Hashable, metaclass=ABCMeta):
+class Entity(Generic[DataT], Hashable, metaclass=ABCMeta):
     """The base class for blocks, users, and comments.
 
     There is only one instance with given subclass and id.
@@ -24,8 +23,8 @@ class Entity(Generic[ContentsT], Hashable, metaclass=ABCMeta):
     Use `default` attribute to hardcode some data (which can reduce API calls)
     """
     id: UUID
-    __latest: Optional[ContentsT] = None
-    default: Optional[ContentsT] = None
+    __latest: Optional[DataT] = None
+    default: Optional[DataT] = None
     """custom local-only data."""
 
     @classmethod
@@ -34,8 +33,8 @@ class Entity(Generic[ContentsT], Hashable, metaclass=ABCMeta):
         pass
 
     def __new__(cls, id_or_url: Union[UUID, str],
-                default: Optional[ContentsT] = None,
-                *, latest: Optional[Data] = None):
+                default: Optional[DataT] = None,
+                *, latest: Optional[EntityData] = None):
         try:
             __id = cls._get_id(id_or_url)
             if (cls, __id) in namespace:
@@ -45,8 +44,8 @@ class Entity(Generic[ContentsT], Hashable, metaclass=ABCMeta):
             del __id
 
     def __init__(self, id_or_url: Union[UUID, str],
-                 default: Optional[ContentsT] = None,
-                 *, latest: Optional[Data] = None):
+                 default: Optional[DataT] = None,
+                 *, latest: Optional[EntityData] = None):
         if not hasattr(self, '_initialized'):
             self._initialized = True
             self.id: Final[UUID] = self._get_id(id_or_url)
@@ -74,12 +73,12 @@ class Entity(Generic[ContentsT], Hashable, metaclass=ABCMeta):
         return repr_object(self, id=self.id, parent=self._repr_parent())
 
     @property
-    def latest(self) -> Optional[ContentsT]:
+    def latest(self) -> Optional[DataT]:
         """the latest data from the server."""
         return self.__latest
 
     @latest.setter
-    def latest(self, contents: ContentsT) -> None:
+    def latest(self, contents: DataT) -> None:
         """set the data as the more recent one between current one and new one."""
         if (self.latest is None) or (contents.timestamp > self.latest.timestamp):
             self.__latest = contents
@@ -89,7 +88,7 @@ class Entity(Generic[ContentsT], Hashable, metaclass=ABCMeta):
         self.__latest = None
 
     @property
-    def data(self) -> Optional[ContentsT]:
+    def data(self) -> Optional[DataT]:
         """get the local data."""
         return coalesce(self.latest, self.default)
 
@@ -107,17 +106,17 @@ class Entity(Generic[ContentsT], Hashable, metaclass=ABCMeta):
         return repr_object(self, id=self.id)
 
 
-class RetrievableEntity(Entity[ContentsT]):
+class RetrievableEntity(Entity[DataT]):
     @abstractmethod
     def retrieve(self) -> Self:
         # TODO: raise EntityNotExistError(ValueError), with page_exists()
         pass
 
     @property
-    def data(self) -> ContentsT:
+    def data(self) -> DataT:
         """get the local data, or auto-retrieve."""
         contents = coalesce(self.latest, self.default)
         if contents is not None:
             return contents
         self.retrieve()
-        return typing_cast(ContentsT, self.latest)
+        return typing_cast(DataT, self.latest)

@@ -12,7 +12,7 @@ from notion_df.core.serialization import Deserializable
 
 
 @dataclass
-class Data(Deserializable, metaclass=ABCMeta):
+class EntityData(Deserializable, metaclass=ABCMeta):
     raw: dict[str, Any] = field(init=False, default_factory=dict)
     timestamp: int = field(init=False, default=0)
     """the timestamp of deserialization if created with external raw data, 
@@ -27,7 +27,7 @@ class Data(Deserializable, metaclass=ABCMeta):
 
         @functools.wraps(_deserialize_this)
         def _deserialize_this_wrapped(raw: dict[str, Any]) -> Self:
-            self: Data = _deserialize_this(raw)
+            self: EntityData = _deserialize_this(raw)
             self.raw = raw
             self.timestamp = datetime.now().timestamp()
             return self
@@ -38,7 +38,7 @@ class Data(Deserializable, metaclass=ABCMeta):
     def deserialize(cls, raw: Any) -> Self:
         from notion_df.object.data import BlockData, DatabaseData, PageData
 
-        if cls != Data:
+        if cls != EntityData:
             return cls._deserialize_this(raw)
         match object_kind := raw['object']:
             case 'block':
@@ -58,11 +58,11 @@ class Data(Deserializable, metaclass=ABCMeta):
         return datetime.fromtimestamp(self.timestamp) if self.timestamp else None
 
     @final
-    def cast(self, cls: type[ContentsT]) -> ContentsT:
+    def cast(self, cls: type[DataT]) -> DataT:
         return cls.cast_from(self)
 
     @classmethod
-    def cast_from(cls, instance: Data) -> Self:
+    def cast_from(cls, instance: EntityData) -> Self:
         # the default classes (ex. BlockData) should NOT override this
         # TODO: force that custom subclasses to override this
         return instance
@@ -72,11 +72,11 @@ class Data(Deserializable, metaclass=ABCMeta):
         raise NotImplementedError
 
 
-ContentsT = TypeVar('ContentsT', bound=Data)
+DataT = TypeVar('DataT', bound=EntityData)
 
 
-def coalesce(latest: Optional[ContentsT],
-             default: Optional[ContentsT]) -> Optional[ContentsT]:
+def coalesce(latest: Optional[DataT],
+             default: Optional[DataT]) -> Optional[DataT]:
     # TODO: DefaultContents(default) should trigger retrieve() request on missing attributes
     contents = latest if latest is not None else default
     return contents
