@@ -7,7 +7,7 @@ from uuid import UUID
 from loguru import logger
 from typing_extensions import Self
 
-from notion_df.core.entity import RetrievableEntity, retrieve_if_undefined
+from notion_df.core.entity import RetrievableEntity, retrieve_if_undefined, CanBeParent, HasParent
 from notion_df.core.exception import NotionDfValueError, NotionDfKeyError
 from notion_df.core.request import Paginator
 from notion_df.object.data import BlockValue, BlockData, ChildPageBlockValue, \
@@ -32,12 +32,25 @@ from notion_df.util.uuid_util import get_page_or_database_id, get_block_id
 from notion_df.variable import token
 
 
-class Block(RetrievableEntity[BlockData]):
+class Workspace(CanBeParent):
+    __instance: Optional[Self] = None
+
+    def __new__(cls):
+        return cls.__instance or super().__new__()
+
+    def __repr__(self) -> str:
+        return repr_object(self)
+
+    def _repr_as_parent(self) -> str:
+        return repr(self)
+
+
+class Block(RetrievableEntity[BlockData], HasParent):
     data_cls = BlockData
 
     @property
     @retrieve_if_undefined
-    def parent(self) -> Union[Block, Page, None]:
+    def parent(self) -> Union[Block, Page, Workspace]:
         return self.data.parent
 
     @property
@@ -95,6 +108,9 @@ class Block(RetrievableEntity[BlockData]):
     def _get_id(cls, id_or_url: Union[UUID, str]) -> UUID:
         return get_block_id(id_or_url)
 
+    def _repr_as_parent(self) -> str:
+        return repr_object(self, id=self.id)
+
     @staticmethod
     def _set_child_block_datas(block_datas: Iterable[BlockData]) -> Paginator[Block]:
         def it():
@@ -133,12 +149,12 @@ class Block(RetrievableEntity[BlockData]):
         return Database(data.id).set_data(data)
 
 
-class Database(RetrievableEntity[DatabaseData]):
+class Database(RetrievableEntity[DatabaseData], HasParent):
     data_cls = DatabaseData
 
     @property
     @retrieve_if_undefined
-    def parent(self) -> Union[Block, Page, None]:
+    def parent(self) -> Union[Block, Page, Workspace]:
         return self.data.parent
 
     @property
@@ -255,12 +271,12 @@ class Database(RetrievableEntity[DatabaseData]):
         return Page(page_data.id).set_data(page_data)
 
 
-class Page(RetrievableEntity[PageData]):
+class Page(RetrievableEntity[PageData], HasParent):
     data_cls = PageData
 
     @property
     @retrieve_if_undefined
-    def parent(self) -> Union[Block, Database, Page, None]:
+    def parent(self) -> Union[Block, Database, Page, Workspace]:
         return self.data.parent
 
     @property

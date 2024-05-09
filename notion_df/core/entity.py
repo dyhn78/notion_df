@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from abc import abstractmethod, ABCMeta
 from inspect import isabstract
-from typing import (Final, Generic, Hashable, Union, Optional, final, TypeVar, Any, cast, MutableMapping, Callable)
+from typing import (Final, Generic, Hashable, Union, Optional, final, TypeVar, Any, MutableMapping, Callable)
 from uuid import UUID
 from weakref import WeakValueDictionary
 
@@ -51,7 +51,7 @@ class Entity(Generic[EntityDataT], Hashable, metaclass=ABCMeta):
                 and ((type(self), self.id) == (type(other), self.id)))
 
     def __repr__(self) -> str:
-        return repr_object(self, id=self.id, parent=self._repr_parent())
+        return repr_object(self, id=self.id)
 
     @property
     def data(self) -> Optional[EntityDataT]:
@@ -80,19 +80,6 @@ class Entity(Generic[EntityDataT], Hashable, metaclass=ABCMeta):
         default_data_dict[self.data_cls, self.id] = data
         return self
 
-    # TODO: create HasParent, CanBeParent base class
-    @final
-    def _repr_parent(self) -> Optional[str]:
-        if not self.local_data or not hasattr(self.local_data, 'parent'):
-            return undefined
-        elif self.local_data.parent is None:
-            return 'workspace'
-        else:  # TODO: fix that user and comments does not have parent
-            return cast(Entity, self.local_data.parent)._repr_as_parent()
-
-    def _repr_as_parent(self) -> str:
-        return repr_object(self, id=self.id)
-
 
 CallableT = TypeVar("CallableT", bound=Callable)
 
@@ -119,3 +106,25 @@ class RetrievableEntity(Entity[EntityDataT]):
     @retrieve_if_undefined
     def data(self) -> EntityDataT:
         return self.local_data
+
+
+class CanBeParent(metaclass=ABCMeta):
+    @abstractmethod
+    def _repr_as_parent(self) -> str:
+        pass
+
+
+class HasParent(Entity, CanBeParent, metaclass=ABCMeta):
+    @property
+    @abstractmethod
+    def parent(self) -> CanBeParent:
+        pass
+
+    @final
+    def _repr_parent(self) -> Optional[str]:
+        if not self.local_data:
+            return undefined
+        return self.parent._repr_as_parent()
+
+    def __repr__(self) -> str:
+        return repr_object(self, id=self.id, parent=self._repr_parent())

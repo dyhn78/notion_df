@@ -20,22 +20,21 @@ from notion_df.property import DatabaseProperties, PageProperties
 from notion_df.util.collection import FinalDict
 
 if TYPE_CHECKING:
-    from notion_df.entity import Block, Database, Page
+    from notion_df.entity import Block, Database, Page, Workspace
 
 
 def _get_type_hints(cls):
-    from notion_df.entity import Block, Database, Page
+    from notion_df.entity import Block, Database, Page, Workspace
     from notion_df.core.entity import Entity, RetrievableEntity
     return get_type_hints(cls, {
         **globals(), **{cls.__name__: cls for cls in (
-            Entity, RetrievableEntity, Block, Database, Page
+            Entity, RetrievableEntity, Block, Database, Page, Workspace
         )}})
 
 
 @dataclass
 class DatabaseData(EntityData):
-    # TODO: workspace parent should be represented as Workspace()
-    parent: Union[Block, Page, None]
+    parent: Union[Block, Page, Workspace]
     created_time: datetime
     last_edited_time: datetime
     icon: Optional[Icon]
@@ -48,7 +47,7 @@ class DatabaseData(EntityData):
 
     @classmethod
     def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
-        return cls._deserialize_from_dict(raw, parent=PartialParent.deserialize(raw['parent']).entity)
+        return cls._deserialize_from_dict(raw, parent=PartialParent.deserialize(raw['parent']).resolved)
 
     @classmethod
     @cache
@@ -58,7 +57,7 @@ class DatabaseData(EntityData):
 
 @dataclass
 class PageData(EntityData):
-    parent: Union[Block, Database, Page, None]
+    parent: Union[Block, Database, Page, Workspace]
     created_time: datetime
     last_edited_time: datetime
     created_by: PartialUser
@@ -71,7 +70,7 @@ class PageData(EntityData):
 
     @classmethod
     def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
-        return cls._deserialize_from_dict(raw, parent=PartialParent.deserialize(raw['parent']).entity)
+        return cls._deserialize_from_dict(raw, parent=PartialParent.deserialize(raw['parent']).resolved)
 
     @classmethod
     @cache
@@ -81,7 +80,7 @@ class PageData(EntityData):
 
 @dataclass
 class BlockData(EntityData):
-    parent: Union[Block, Page, None]
+    parent: Union[Block, Page, Workspace]
     created_time: datetime
     last_edited_time: datetime
     created_by: PartialUser
@@ -95,7 +94,7 @@ class BlockData(EntityData):
         typename = raw['type']
         block_value_cls = block_value_registry.get(typename, UnsupportedBlockValue)
         block_value = block_value_cls.deserialize(raw[typename])
-        return cls._deserialize_from_dict(raw, parent=PartialParent.deserialize(raw['parent']).entity,
+        return cls._deserialize_from_dict(raw, parent=PartialParent.deserialize(raw['parent']).resolved,
                                           value=block_value)
 
     @classmethod

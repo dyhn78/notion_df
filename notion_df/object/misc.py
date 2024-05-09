@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime, date
-from typing import Any, Literal, Optional, TYPE_CHECKING, Iterator
+from typing import Any, Literal, Optional, TYPE_CHECKING, Iterator, Union
 from uuid import UUID
 
 from typing_extensions import Self
@@ -12,13 +12,13 @@ from notion_df.core.serialization import DualSerializable
 from notion_df.object.constant import BlockColor, OptionColor
 
 if TYPE_CHECKING:
-    from notion_df.core.entity import Entity
+    from notion_df.entity import Block, Database, Page, Workspace
 
 
 @dataclass
 class PartialParent(DualSerializable):
     # https://developers.notion.com/reference/parent-object
-    typename: Literal['database_id', 'page_id', 'block_id', 'workspace']
+    typename: Literal['block_id', 'database_id', 'page_id', 'workspace']
     id: Optional[UUID]
 
     def serialize(self) -> dict[str, Any]:
@@ -36,8 +36,8 @@ class PartialParent(DualSerializable):
         return cls(typename, parent_id)
 
     @property
-    def entity(self) -> Optional[Entity]:
-        from notion_df.entity import Block, Database, Page
+    def resolved(self) -> Union[Block, Database, Page, Workspace]:
+        from notion_df.entity import Block, Database, Page, Workspace
 
         match self.typename:
             case 'block_id':
@@ -47,7 +47,7 @@ class PartialParent(DualSerializable):
             case 'page_id':
                 return Page(self.id)
             case 'workspace':
-                return None
+                return Workspace()
 
 
 @dataclass
