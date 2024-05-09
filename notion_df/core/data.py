@@ -4,7 +4,7 @@ import functools
 from abc import ABCMeta
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, TypeVar, Optional, NoReturn, final, MutableMapping, Final
+from typing import Any, TypeVar, MutableMapping, Final
 from uuid import UUID
 
 from typing_extensions import Self
@@ -67,24 +67,9 @@ class EntityData(Deserializable, metaclass=ABCMeta):
         return subclass.deserialize(raw)
 
     @property
-    def time(self) -> Optional[datetime]:
-        """the time of deserialization if created with external raw data,
-         or None if created by user."""
-        return datetime.fromtimestamp(self.timestamp) if self.timestamp else None
-
-    @final
-    def cast(self, cls: type[EntityDataT]) -> EntityDataT:
-        return cls.cast_from(self)
-
-    @classmethod
-    def cast_from(cls, instance: EntityData) -> Self:
-        # the default classes (ex. BlockData) should NOT override this
-        # TODO: force that custom subclasses to override this
-        return instance
-
-    def __getitem__(self) -> NoReturn:
-        # TODO: call properties.__getitem__
-        raise NotImplementedError
+    def time(self) -> datetime:
+        """the created time of the instance."""
+        return datetime.fromtimestamp(self.timestamp)
 
 
 EntityDataT = TypeVar('EntityDataT', bound=EntityData)
