@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Optional, TypeVar, Union, Any, Literal, overload, Iterable
 from uuid import UUID
 
@@ -16,6 +17,7 @@ from notion_df.object.filter import Filter
 from notion_df.object.misc import Icon, PartialParent
 from notion_df.object.rich_text import RichText
 from notion_df.object.sort import Sort, TimestampSort, Direction
+from notion_df.object.user import PartialUser
 from notion_df.property import Property, PageProperties, DatabaseProperties, \
     PagePropertyValueT
 from notion_df.request.block import AppendBlockChildren, RetrieveBlock, \
@@ -32,6 +34,39 @@ from notion_df.variable import token
 
 class Block(RetrievableEntity[BlockData]):
     data_cls = BlockData
+
+    @property
+    def parent(self) -> Union[Block, Page, None]:
+        return self.data.parent
+
+    @property
+    def created_time(self) -> datetime:
+        return self.data.created_time
+
+    @property
+    def last_edited_time(self) -> datetime:
+        return self.data.last_edited_time
+
+    @property
+    def created_by(self) -> PartialUser:
+        return self.data.created_by
+
+    @property
+    def last_edited_by(self) -> PartialUser:
+        return self.data.last_edited_by
+
+    @property
+    def has_children(self) -> Optional[bool]:
+        """Note: the None value never occurs from direct server data. It only happens from Page.as_block()"""
+        return self.data.has_children
+
+    @property
+    def archived(self) -> bool:
+        return self.data.archived
+
+    @property
+    def value(self) -> BlockValue:
+        return self.data.value
 
     @classmethod
     def _get_id(cls, id_or_url: Union[UUID, str]) -> UUID:
@@ -83,6 +118,46 @@ class Block(RetrievableEntity[BlockData]):
 
 class Database(RetrievableEntity[DatabaseData]):
     data_cls = DatabaseData
+
+    @property
+    def parent(self) -> Union[Block, Page, None]:
+        return self.data.parent
+
+    @property
+    def created_time(self) -> datetime:
+        return self.data.created_time
+
+    @property
+    def last_edited_time(self) -> datetime:
+        return self.data.last_edited_time
+
+    @property
+    def icon(self) -> Optional[Icon]:
+        return self.data.icon
+
+    @property
+    def cover(self) -> Optional[File]:
+        return self.data.cover
+
+    @property
+    def url(self) -> str:
+        return self.data.url
+
+    @property
+    def title(self) -> RichText:
+        return self.data.title
+
+    @property
+    def properties(self) -> DatabaseProperties:
+        return self.data.properties
+
+    @property
+    def archived(self) -> bool:
+        return self.data.archived
+
+    @property
+    def is_inline(self) -> bool:
+        return self.data.is_inline
 
     @classmethod
     def _get_id(cls, id_or_url: Union[UUID, str]) -> UUID:
@@ -141,6 +216,46 @@ class Database(RetrievableEntity[DatabaseData]):
 
 class Page(RetrievableEntity[PageData]):
     data_cls = PageData
+
+    @property
+    def parent(self) -> Union[Block, Database, Page, None]:
+        return self.data.parent
+
+    @property
+    def created_time(self) -> datetime:
+        return self.data.created_time
+
+    @property
+    def last_edited_time(self) -> datetime:
+        return self.data.last_edited_time
+
+    @property
+    def created_by(self) -> PartialUser:
+        return self.data.created_by
+
+    @property
+    def last_edited_by(self) -> PartialUser:
+        return self.data.last_edited_by
+
+    @property
+    def icon(self) -> Optional[Icon]:
+        return self.data.icon
+
+    @property
+    def cover(self) -> Optional[File]:
+        return self.data.cover
+
+    @property
+    def url(self) -> str:
+        return self.data.url
+
+    @property
+    def archived(self) -> bool:
+        return self.data.archived
+
+    @property
+    def properties(self) -> PageProperties:
+        return self.data.properties
 
     @classmethod
     def _get_id(cls, id_or_url: Union[UUID, str]) -> UUID:

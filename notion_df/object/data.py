@@ -62,10 +62,10 @@ class PageData(EntityData):
     last_edited_time: datetime
     created_by: PartialUser
     last_edited_by: PartialUser
-    archived: bool
     icon: Optional[Icon]
     cover: Optional[File]
     url: str
+    archived: bool
     properties: PageProperties
 
     @classmethod
