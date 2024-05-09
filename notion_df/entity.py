@@ -9,8 +9,8 @@ from typing_extensions import Self
 from notion_df.core.entity import RetrievableEntity
 from notion_df.core.exception import NotionDfValueError, NotionDfKeyError
 from notion_df.core.request import Paginator
-from notion_df.object.contents import BlockValue, BlockContents, ChildPageBlockValue, \
-    DatabaseContents, PageContents
+from notion_df.object.data import BlockValue, BlockData, ChildPageBlockValue, \
+    DatabaseData, PageData
 from notion_df.object.file import ExternalFile, File
 from notion_df.object.filter import Filter
 from notion_df.object.misc import Icon, PartialParent
@@ -30,13 +30,13 @@ from notion_df.util.uuid_util import get_page_or_database_id, get_block_id
 from notion_df.variable import token
 
 
-class Block(RetrievableEntity[BlockContents]):
+class Block(RetrievableEntity[BlockData]):
     @classmethod
     def _get_id(cls, id_or_url: Union[UUID, str]) -> UUID:
         return get_block_id(id_or_url)
 
     @staticmethod
-    def _send_child_block_datas(block_datas: Iterable[BlockContents]) -> Paginator[
+    def _send_child_block_datas(block_datas: Iterable[BlockData]) -> Paginator[
         Block]:
         def it():
             for block_contents in block_datas:
@@ -80,7 +80,7 @@ class Block(RetrievableEntity[BlockContents]):
         return Database(contents.id, latest=contents)
 
 
-class Database(RetrievableEntity[DatabaseContents]):
+class Database(RetrievableEntity[DatabaseData]):
     @classmethod
     def _get_id(cls, id_or_url: Union[UUID, str]) -> UUID:
         return get_page_or_database_id(id_or_url)
@@ -103,7 +103,7 @@ class Database(RetrievableEntity[DatabaseContents]):
             return repr_object(self, id=self.id)
 
     @staticmethod
-    def _send_child_page_contents(page_contents_it: Iterable[PageContents]) -> Paginator[
+    def _send_child_page_contents(page_contents_it: Iterable[PageData]) -> Paginator[
         Page]:
         def it():
             for page_contents in page_contents_it:
@@ -137,7 +137,7 @@ class Database(RetrievableEntity[DatabaseContents]):
         return Page(page_contents.id, latest=page_contents)
 
 
-class Page(RetrievableEntity[PageContents]):
+class Page(RetrievableEntity[PageData]):
     @classmethod
     def _get_id(cls, id_or_url: Union[UUID, str]) -> UUID:
         return get_page_or_database_id(id_or_url)
@@ -163,16 +163,16 @@ class Page(RetrievableEntity[PageContents]):
 
     def as_block(self) -> Block:
         block = Block(self.id)
-        latest = BlockContents(id=self.id,
-                               parent=self.latest.parent,
-                               created_time=self.latest.created_time,
-                               last_edited_time=self.latest.last_edited_time,
-                               created_by=self.latest.created_by,
-                               last_edited_by=self.latest.last_edited_by,
-                               has_children=(
+        latest = BlockData(id=self.id,
+                           parent=self.latest.parent,
+                           created_time=self.latest.created_time,
+                           last_edited_time=self.latest.last_edited_time,
+                           created_by=self.latest.created_by,
+                           last_edited_by=self.latest.last_edited_by,
+                           has_children=(
                                    block.latest.has_children if block.latest else None),
-                               archived=self.latest.archived,
-                               value=(
+                           archived=self.latest.archived,
+                           value=(
                                    block.latest.value if block.latest
                                    else ChildPageBlockValue(title='')))
         latest.timestamp = self.latest.timestamp
@@ -264,12 +264,12 @@ def search_by_title(query: str, entity: Literal['page', 'database', None] = None
 
     def it():
         for contents in contents_it:
-            if isinstance(contents, DatabaseContents):
+            if isinstance(contents, DatabaseData):
                 yield Database(contents.id, latest=contents)
-            elif isinstance(contents, PageContents):
+            elif isinstance(contents, PageData):
                 yield Page(contents.id, latest=contents)
             else:
-                raise NotionDfValueError('bad data', {'contents': contents})
+                raise NotionDfValueError('bad data', {'data': contents})
         return
 
     it()

@@ -5,7 +5,7 @@ from typing import Optional
 from loguru import logger
 
 from notion_df.core.entity import Entity
-from notion_df.core.contents import ContentsT
+from notion_df.core.data import ContentsT
 from notion_df.core.serialization import SerializationError
 from notion_df.util.misc import get_generic_arg
 

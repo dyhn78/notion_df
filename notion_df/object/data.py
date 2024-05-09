@@ -9,7 +9,7 @@ from uuid import UUID
 
 from typing_extensions import Self
 
-from notion_df.core.contents import Contents
+from notion_df.core.data import Data
 from notion_df.core.serialization import DualSerializable
 from notion_df.object.constant import BlockColor, CodeLanguage
 from notion_df.object.file import File
@@ -34,7 +34,7 @@ def _get_type_hints(cls):
 
 
 @dataclass
-class DatabaseContents(Contents):
+class DatabaseData(Data):
     id: UUID
     parent: Union[Block, Page, None]
     created_time: datetime
@@ -58,7 +58,7 @@ class DatabaseContents(Contents):
 
 
 @dataclass
-class PageContents(Contents):
+class PageData(Data):
     id: UUID
     parent: Union[Block, Database, Page, None]
     created_time: datetime
@@ -81,7 +81,7 @@ class PageContents(Contents):
         return _get_type_hints(cls)
 
 @dataclass
-class BlockContents(Contents):
+class BlockData(Data):
     id: UUID
     parent: Union[Block, Page, None]
     created_time: datetime
@@ -160,7 +160,7 @@ class BreadcrumbBlockValue(BlockValue):
 class BulletedListItemBlockValue(BlockValue):
     rich_text: RichText
     color: BlockColor = BlockColor.DEFAULT
-    children: list[BlockContents] = field(init=False, default=None)
+    children: list[BlockData] = field(init=False, default=None)
 
     @classmethod
     def get_typename(cls) -> str:
@@ -172,7 +172,7 @@ class CalloutBlockValue(BlockValue):
     rich_text: RichText
     icon: Icon
     color: BlockColor = BlockColor.DEFAULT
-    children: list[BlockContents] = field(init=False, default=None)
+    children: list[BlockData] = field(init=False, default=None)
 
     @classmethod
     def get_typename(cls) -> str:
@@ -323,7 +323,7 @@ class ImageBlockValue(BlockValue):
 class NumberedListItemBlockValue(BlockValue):
     rich_text: RichText
     color: BlockColor = BlockColor.DEFAULT
-    children: list[BlockContents] = field(init=False, default=None)
+    children: list[BlockData] = field(init=False, default=None)
 
     @classmethod
     def get_typename(cls) -> str:
@@ -334,7 +334,7 @@ class NumberedListItemBlockValue(BlockValue):
 class ParagraphBlockValue(BlockValue):
     rich_text: RichText
     color: BlockColor = BlockColor.DEFAULT
-    children: list[BlockContents] = field(init=False, default=None)
+    children: list[BlockData] = field(init=False, default=None)
 
     @classmethod
     def get_typename(cls) -> str:
@@ -362,7 +362,7 @@ class PDFBlockValue(BlockValue):
 class QuoteBlockValue(BlockValue):
     rich_text: RichText
     color: BlockColor = BlockColor.DEFAULT
-    children: list[BlockContents] = field(init=False, default=None)
+    children: list[BlockData] = field(init=False, default=None)
 
     @classmethod
     def get_typename(cls) -> str:
@@ -394,7 +394,7 @@ class SyncedBlockValue(BlockValue, metaclass=ABCMeta):
 @dataclass
 class OriginalSyncedBlockValue(SyncedBlockValue):
     """cannot be changed (2023-04-02)"""
-    children: list[BlockContents] = field(init=False, default=None)
+    children: list[BlockData] = field(init=False, default=None)
 
     def serialize(self) -> dict[str, Any]:
         return {
@@ -431,7 +431,7 @@ class TableBlockValue(BlockValue):
 @dataclass
 class TableRowBlockValue(BlockValue):
     cells: list[list[Span]]
-    """An array of cell contents in horizontal display order. Each cell is an array of rich text objects."""
+    """An array of cell data in horizontal display order. Each cell is an array of rich text objects."""
 
     @classmethod
     def get_typename(cls) -> str:
@@ -452,7 +452,7 @@ class ToDoBlockValue(BlockValue):
     rich_text: RichText
     checked: bool
     color: BlockColor = BlockColor.DEFAULT
-    children: list[BlockContents] = field(init=False, default=None)
+    children: list[BlockData] = field(init=False, default=None)
 
     @classmethod
     def get_typename(cls) -> str:
@@ -463,7 +463,7 @@ class ToDoBlockValue(BlockValue):
 class ToggleBlockValue(BlockValue):
     rich_text: RichText
     color: BlockColor = BlockColor.DEFAULT
-    children: list[BlockContents] = field(init=False, default=None)
+    children: list[BlockData] = field(init=False, default=None)
 
     @classmethod
     def get_typename(cls) -> str:

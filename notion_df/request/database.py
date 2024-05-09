@@ -5,7 +5,7 @@ from typing import Any, Optional
 from uuid import UUID
 
 from notion_df.core.request import SingleRequestBuilder, RequestSettings, Version, Method, PaginatedRequestBuilder
-from notion_df.object.contents import DatabaseContents, PageContents
+from notion_df.object.data import DatabaseData, PageData
 from notion_df.object.file import ExternalFile
 from notion_df.object.filter import Filter
 from notion_df.object.misc import Icon
@@ -16,8 +16,8 @@ from notion_df.util.collection import DictFilter
 
 
 @dataclass
-class RetrieveDatabase(SingleRequestBuilder[DatabaseContents]):
-    data_type = DatabaseContents
+class RetrieveDatabase(SingleRequestBuilder[DatabaseData]):
+    data_type = DatabaseData
     id: UUID
 
     def get_settings(self) -> RequestSettings:
@@ -29,9 +29,9 @@ class RetrieveDatabase(SingleRequestBuilder[DatabaseContents]):
 
 
 @dataclass
-class CreateDatabase(SingleRequestBuilder[DatabaseContents]):
+class CreateDatabase(SingleRequestBuilder[DatabaseData]):
     """https://developers.notion.com/reference/create-a-database"""
-    data_type = DatabaseContents
+    data_type = DatabaseData
     parent_id: UUID
     title: RichText
     properties: Optional[DatabaseProperties] = field(default_factory=DatabaseProperties)
@@ -56,8 +56,8 @@ class CreateDatabase(SingleRequestBuilder[DatabaseContents]):
 
 
 @dataclass
-class UpdateDatabase(SingleRequestBuilder[DatabaseContents]):
-    data_type = DatabaseContents
+class UpdateDatabase(SingleRequestBuilder[DatabaseData]):
+    data_type = DatabaseData
     id: UUID
     title: RichText
     properties: Optional[DatabaseProperties] = None
@@ -78,8 +78,8 @@ class UpdateDatabase(SingleRequestBuilder[DatabaseContents]):
 
 
 @dataclass
-class QueryDatabase(PaginatedRequestBuilder[PageContents]):
-    data_element_type = PageContents
+class QueryDatabase(PaginatedRequestBuilder[PageData]):
+    data_element_type = PageData
     id: UUID
     filter: Filter = None
     sort: list[Sort] = None

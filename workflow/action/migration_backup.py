@@ -7,7 +7,7 @@ from loguru import logger
 
 from notion_df.core.request import RequestError
 from notion_df.entity import Page, Database
-from notion_df.object.contents import PageContents
+from notion_df.object.data import PageData
 from notion_df.property import RelationProperty, PageProperties
 from workflow.action.match import get_earliest_date
 from workflow.block_enum import DatabaseEnum, SCHEDULE, START
@@ -55,7 +55,7 @@ class MigrationBackupLoadAction(SequentialAction):
             logger.info(f'\t{page}: Moved outside DatabaseEnum')
 
         this_db: Database = this_page.latest.parent
-        this_prev_data: Optional[PageContents] = self.response_backup.read(page)
+        this_prev_data: Optional[PageData] = self.response_backup.read(page)
         if not this_prev_data:
             logger.info(f'\t{page}: No previous response backup')
             return
@@ -70,7 +70,7 @@ class MigrationBackupLoadAction(SequentialAction):
                 continue
             for linked_page in cast(Iterable[Page], this_prev_prop_value):
 
-                linked_prev_data: PageContents = self.response_backup.read(linked_page)
+                linked_prev_data: PageData = self.response_backup.read(linked_page)
                 if linked_page.latest:
                     linked_db = linked_page.latest.parent
                     if linked_prev_data:
@@ -116,7 +116,7 @@ class MigrationBackupLoadAction(SequentialAction):
     @cache
     def get_candidate_props(cls, this_db: Database, linked_db: Database) -> list[RelationProperty]:
         candidate_props: list[RelationProperty] = []
-        for prop in this_db.contents.properties:
+        for prop in this_db.data.properties:
             if not isinstance(prop, RelationProperty):
                 continue
             if this_db.latest.properties[prop].database == linked_db:
@@ -174,7 +174,7 @@ class MigrationBackupLoadAction(SequentialAction):
 
 # TODO: integrate to base package
 def iter_breadcrumb(page: Page) -> Iterator[Page]:
-    page.contents
+    page.data
     yield page
     if page.latest.parent is not None:
         yield from iter_breadcrumb(page.latest.parent)
@@ -183,7 +183,7 @@ def iter_breadcrumb(page: Page) -> Iterator[Page]:
 # TODO: integrate to base package
 def page_exists(page: Page) -> bool:
     try:
-        page.contents
+        page.data
         return True
     except RequestError:
         return False

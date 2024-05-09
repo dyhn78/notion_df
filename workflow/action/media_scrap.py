@@ -5,18 +5,20 @@ from selenium.webdriver.chrome.webdriver import WebDriver
 
 from notion_df.core.request import Paginator
 from notion_df.entity import Page, Database
-from notion_df.object.contents import ChildPageBlockValue
+from notion_df.object.data import ChildPageBlockValue
 from notion_df.object.filter import CompoundFilter
 from notion_df.object.misc import SelectOption
 from notion_df.object.rich_text import TextSpan, PageMention
-from notion_df.property import SelectProperty, CheckboxFormulaProperty, TitleProperty, RichTextProperty, \
+from notion_df.property import SelectProperty, CheckboxFormulaProperty, TitleProperty, \
+    RichTextProperty, \
     URLProperty, NumberProperty, FilesProperty, CheckboxProperty, PageProperties
 from notion_df.util.collection import StrEnum, peek
 from workflow.block_enum import DatabaseEnum
 from workflow.core.action import IndividualAction
 from workflow.service.gy_lib_service import GYLibraryScraper, LibraryScrapResult
 from workflow.service.webdriver_service import WebDriverService
-from workflow.service.yes24_service import get_yes24_detail_page_url, Yes24ScrapResult, get_block_value_of_contents_line
+from workflow.service.yes24_service import get_yes24_detail_page_url, Yes24ScrapResult, \
+    get_block_value_of_contents_line
 
 edit_status_prop = SelectProperty('🔰준비')
 media_type_prop = SelectProperty('📘유형')
@@ -209,9 +211,8 @@ class ReadingMediaScraperUnit:
         return True
 
     def filter_not_overwrite(self, new_properties: PageProperties):
-        entity = self.reading.latest.properties
         return PageProperties({prop: prop_value for prop, prop_value in new_properties.items()
-                               if not entity.contents})
+                               if not self.reading.data.properties.get(prop)})
 
 
 if __name__ == '__main__':

@@ -10,7 +10,7 @@ import requests
 import tenacity
 from loguru import logger
 
-from notion_df.core.contents import ContentsT
+from notion_df.core.data import ContentsT
 from notion_df.core.exception import NotionDfValueError, NotionDfIndexError, NotionDfTypeError
 from notion_df.core.serialization import deserialize, serialize
 from notion_df.util.collection import PlainStrEnum

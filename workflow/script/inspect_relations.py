@@ -14,10 +14,10 @@ def init():
     _all_relation_properties: dict[tuple[Database, Database], list[RelationProperty]] = defaultdict(list)
     for db_enum in DatabaseEnum:
         db = db_enum.entity
-        for prop in db.contents.properties:
+        for prop in db.data.properties:
             if isinstance(prop, RelationProperty):
                 from typing import cast
-                linked_db = cast(prop.database_value, db.contents.properties[prop]).database
+                linked_db = cast(prop.database_value, db.data.properties[prop]).database
                 _all_relation_properties[(db, linked_db)].append(prop)
     pickle.dump(_all_relation_properties, pickle_path.open('wb'))
 

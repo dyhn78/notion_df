@@ -87,34 +87,34 @@ class MatchRecordDatei(MatchSequentialAction):
 
     def __repr__(self):
         return repr_object(self,
-                           record_db_title=self.record_db.contents.title,
+                           record_db_title=self.record_db.data.title,
                            record_to_datei=self.record_to_datei)
 
     def query(self) -> Paginator[Page]:
         return self.record_db.query(self.record_to_datei.filter.is_empty())
 
     def process_page(self, record: Page) -> None:
-        if record.contents.parent != self.record_db:
+        if record.data.parent != self.record_db:
             return
 
-        if record.contents.properties[self.record_to_datei]:
+        if record.data.properties[self.record_to_datei]:
             self.process_if_record_to_datei_not_empty(record)
         else:
             self.process_if_record_to_datei_empty(record)
 
     def process_if_record_to_datei_not_empty(self, record: Page) -> None:
-        datei_list = record.contents.properties[self.record_to_datei]
+        datei_list = record.data.properties[self.record_to_datei]
         if (new_title := self.date_namespace.prepend_date_in_record_title(
-                record.retrieve().contents.properties.title, datei_list, 'if_datei_empty')):
+                record.retrieve().data.properties.title, datei_list, 'if_datei_empty')):
             properties = PageProperties()
-            properties[record.contents.properties.title_prop] = new_title
+            properties[record.data.properties.title_prop] = new_title
             record.update(properties)
             logger.info(f'{record} -> {properties}')
 
     def process_if_record_to_datei_empty(self, record: Page) -> None:
         if (self.read_title
                 and (datei := self.date_namespace.get_page_by_record_title(
-                    record.contents.properties.title.plain_text)) is not None):
+                    record.data.properties.title.plain_text)) is not None):
             self._update_page(record, PageProperties({
                 self.record_to_datei: self.record_to_datei.page_value([datei]),
             }))
@@ -127,16 +127,16 @@ class MatchRecordDatei(MatchSequentialAction):
                 self.record_to_datei: self.record_to_datei.page_value([datei]),
             })
         if (new_title := self.date_namespace.prepend_date_in_record_title(
-                record.retrieve().contents.properties.title, [datei],
+                record.retrieve().data.properties.title, [datei],
                 self.write_title_if_datei_empty)):
-            properties[record.contents.properties.title_prop] = new_title
+            properties[record.data.properties.title_prop] = new_title
         self._update_page(record, properties)
 
     def _update_page(self, record, record_properties: PageProperties) -> None:
         if not record_properties:
             return
         # final check if the property value is filled in the meantime
-        if record.retrieve().contents.properties[self.record_to_datei]:
+        if record.retrieve().data.properties[self.record_to_datei]:
             logger.info(f'{record} -> Skipped')
             return
         record.update(record_properties)
@@ -157,10 +157,10 @@ class MatchRecordDateiSchedule(MatchSequentialAction):
         return self.record_db.query(self.record_to_datei_sch_prop.filter.is_not_empty())
 
     def process_page(self, record: Page) -> Any:
-        if not (record.contents.parent == self.record_db):
+        if not (record.data.parent == self.record_db):
             return
-        record_datei = record.contents.properties[self.record_to_datei_prop]
-        record_datei_new = record_datei + record.contents.properties[self.record_to_datei_sch_prop]
+        record_datei = record.data.properties[self.record_to_datei_prop]
+        record_datei_new = record_datei + record.data.properties[self.record_to_datei_sch_prop]
         if record_datei == record_datei_new:
             logger.info(f'{record} : Skipped')
             return
@@ -185,8 +185,8 @@ class MatchReadingStartDatei(MatchSequentialAction):
         )
 
     def process_page(self, reading: Page) -> None:
-        if not (reading.contents.parent == self.reading_db
-                and not reading.contents.properties[reading_to_start_date_prop]):
+        if not (reading.data.parent == self.reading_db
+                and not reading.data.properties[reading_to_start_date_prop]):
             return
 
         datei = self.find_datei(reading)
@@ -194,7 +194,7 @@ class MatchReadingStartDatei(MatchSequentialAction):
             logger.info(f'{reading} : Skipped')
             return
         # final check if the property value is filled in the meantime
-        if reading.retrieve().contents.properties[reading_to_start_date_prop]:
+        if reading.retrieve().data.properties[reading_to_start_date_prop]:
             logger.info(f'{reading} : Skipped')
             return
         reading.update(PageProperties({
@@ -204,23 +204,23 @@ class MatchReadingStartDatei(MatchSequentialAction):
 
     def find_datei(self, reading: Page) -> Optional[Page]:
         def get_reading_event_dates() -> Iterable[Page]:
-            reading_event_progs = reading.contents.properties[reading_to_event_prog_prop]
+            reading_event_progs = reading.data.properties[reading_to_event_prog_prop]
             # TODO: RollupPagePropertyValue 구현 후 이곳을 간소화
             for event in reading_event_progs:
-                if not (date_list := event.contents.properties[event_to_datei_prop]):
+                if not (date_list := event.data.properties[event_to_datei_prop]):
                     continue
                 date = date_list[0]
-                if date.contents.properties[datei_date_prop] is None:
+                if date.data.properties[datei_date_prop] is None:
                     continue
                 yield date
 
-        # ignore reading_main_date := reading.contents.properties[reading_to_main_date_prop]
+        # ignore reading_main_date := reading.data.properties[reading_to_main_date_prop]
         if reading_event_dateis := {*get_reading_event_dates()}:
             return get_earliest_date(reading_event_dateis)
         if (datei_by_title := self.date_namespace.get_page_by_record_title(
-                reading.contents.properties.title.plain_text)) is not None:
+                reading.data.properties.title.plain_text)) is not None:
             return datei_by_title
-        if reading.contents.properties[reading_match_date_by_created_time_prop]:
+        if reading.data.properties[reading_match_date_by_created_time_prop]:
             reading_created_date = get_record_created_date(reading)
             return self.date_namespace.get_page_by_date(reading_created_date)
 
@@ -245,24 +245,24 @@ class MatchRecordTimestr(MatchSequentialAction):
                                     & created_time_filter.equals(dt.date.today()))
 
     def will_process(self, record: Page) -> bool:
-        if not (record.contents.parent == self.record_db and not record.contents.properties[
+        if not (record.data.parent == self.record_db and not record.data.properties[
                 record_timestr_prop]):
             return False
         try:
-            record_date = record.contents.properties[self.record_to_datei][0]
+            record_date = record.data.properties[self.record_to_datei][0]
         except IndexError:
             return True
-        record_date_range = record_date.contents.properties[datei_date_prop]
+        record_date_range = record_date.data.properties[datei_date_prop]
         if record_date_range is None:
             return False
-        record_date = record_date.contents.properties[datei_date_prop].start
-        return record.contents.created_time.date() == record_date
+        record_date = record_date.data.properties[datei_date_prop].start
+        return record.data.created_time.date() == record_date
 
     def process_page(self, record: Page) -> None:
         if not self.will_process(record):
             return
-        timestr = record.contents.created_time.strftime('%H:%M')
-        if record.retrieve().contents.properties[record_timestr_prop]:
+        timestr = record.data.created_time.strftime('%H:%M')
+        if record.retrieve().data.properties[record_timestr_prop]:
             logger.info(f'{record} : Skipped')
             return
         record.update(PageProperties({
@@ -275,7 +275,7 @@ class MatchRecordWeekiByDatei(MatchSequentialAction):
                  record_to_week: str, record_to_date: str):
         super().__init__(base)
         self.record_db = record_db_enum.entity
-        self.record_db_title = self.record_db.contents.title = record_db_enum.title
+        self.record_db_title = self.record_db.data.title = record_db_enum.title
         self.record_to_weeki = RelationProperty(
             f'{DatabaseEnum.weeki_db.prefix}{record_to_week}')
         self.record_to_datei = RelationProperty(
@@ -292,27 +292,27 @@ class MatchRecordWeekiByDatei(MatchSequentialAction):
             self.record_to_weeki.filter.is_empty() & self.record_to_datei.filter.is_not_empty())
 
     def process_page(self, record: Page) -> None:
-        if not (record.contents.parent == self.record_db and record.contents.properties[
+        if not (record.data.parent == self.record_db and record.data.properties[
                 self.record_to_datei]):
             return
 
         new_record_weeks = self.record_to_weeki.page_value()
-        for record_date in record.contents.properties[self.record_to_datei]:
-            if not record_date.contents:
+        for record_date in record.data.properties[self.record_to_datei]:
+            if not record_date.data:
                 record_date.retrieve()
             try:
                 new_record_weeks.append(
-                    record_date.contents.properties[datei_to_weeki_prop][0])
+                    record_date.data.properties[datei_to_weeki_prop][0])
             except IndexError:
                 pass  # TODO: add warning
 
         # final check if the property value is filled or changed in the meantime
-        prev_record_weeks = record.contents.properties[self.record_to_weeki]
+        prev_record_weeks = record.data.properties[self.record_to_weeki]
         if set(prev_record_weeks) == set(new_record_weeks):
             logger.info(f'{record} : Skipped')
             return
 
-        curr_record_weeks = record.retrieve().contents.properties[self.record_to_weeki]
+        curr_record_weeks = record.retrieve().data.properties[self.record_to_weeki]
         if ((set(prev_record_weeks) != set(curr_record_weeks))
                 or (set(curr_record_weeks) == set(new_record_weeks))):
             logger.info(f'{record} : Skipped')
@@ -335,23 +335,23 @@ class MatchDatei(MatchSequentialAction):
                                   or datei_to_weeki_prop.filter.is_empty())
 
     def process_page(self, datei: Page) -> None:
-        if not (datei.contents.parent == self.date_db):
+        if not (datei.data.parent == self.date_db):
             return
-        if not datei.contents.properties[datei_date_prop]:
+        if not datei.data.properties[datei_date_prop]:
             self.match_date(datei)
-        if not datei.contents.properties[datei_to_weeki_prop]:
+        if not datei.data.properties[datei_to_weeki_prop]:
             self.match_weeki(datei)
 
     def match_date(self, datei: Page) -> None:
         date = self.date_namespace.get_date_of_title(
-            datei.contents.properties.title.plain_text)
+            datei.data.properties.title.plain_text)
         datei.update(PageProperties({datei_date_prop: datei_date_prop.page_value(start=date, end=None)}))
         logger.info(f'{datei} -> {date}')
 
     def match_weeki(self, datei: Page) -> None:
-        date = datei.contents.properties[datei_date_prop].start
+        date = datei.data.properties[datei_date_prop].start
         weeki = self.week_namespace.get_page_by_date(date)
-        if datei.retrieve().contents.properties[datei_to_weeki_prop]:
+        if datei.retrieve().data.properties[datei_to_weeki_prop]:
             return
         datei.update(
             PageProperties({datei_to_weeki_prop: datei_to_weeki_prop.page_value([weeki])}))
@@ -377,25 +377,25 @@ class MatchEventProgress(MatchSequentialAction):
                     & self.event_to_target_prog_prop.filter.is_empty()))
 
     def process_page(self, event: Page) -> Any:
-        if event.contents.parent != self.event_db:
+        if event.data.parent != self.event_db:
             return
         self.process_page_forward(event)
         self.process_page_backward(event)
 
     def process_page_forward(self, event: Page) -> Any:
-        if event.contents.properties[self.event_to_target_prog_prop]:
+        if event.data.properties[self.event_to_target_prog_prop]:
             logger.info(
                 f'{event} : Forward Skipped - {self.event_to_target_prog_prop.name} not empty')
             return
-        if event.contents.properties[status_prop] == status_auto_generated:
+        if event.data.properties[status_prop] == status_auto_generated:
             logger.info(
                 f'{event} : Forward Skipped - {status_prop.name} == {status_auto_generated}'
             )
 
         # TODO: more edge case handling
-        if not (len(target_list := event.contents.properties[
+        if not (len(target_list := event.data.properties[
             self.event_to_target_prop]) == 1
-                and sum([len(event.contents.properties[prop]) for prop in [
+                and sum([len(event.data.properties[prop]) for prop in [
                     event_to_topic_prop, event_to_gist_prop,
                     event_to_issue_prop, event_to_reading_prop,
                     event_to_stage_prop, event_to_point_prop
@@ -407,8 +407,8 @@ class MatchEventProgress(MatchSequentialAction):
         }))
 
     def process_page_backward(self, event: Page) -> Any:
-        event_readings = event.contents.properties[self.event_to_target_prop]
-        event_readings_new = event_readings + event.contents.properties[
+        event_readings = event.data.properties[self.event_to_target_prop]
+        event_readings_new = event_readings + event.data.properties[
             self.event_to_target_prog_prop]
         if event_readings == event_readings_new:
             logger.info(f'{event} : Backward Skipped')
@@ -432,7 +432,7 @@ class DatabaseNamespace(metaclass=ABCMeta):
         if not page_list:
             return
         page = page_list[0]
-        self.pages_by_title_plain_text[page.contents.properties.title.plain_text] = page
+        self.pages_by_title_plain_text[page.data.properties.title.plain_text] = page
         return page
 
 
@@ -458,7 +458,7 @@ class DateINamespace(DatabaseNamespace):
                 title_plain_text),
             datei_date_prop: datei_date_prop.page_value(start=date, end=None)
         }))
-        self.pages_by_title_plain_text[page.contents.properties.title.plain_text] = page
+        self.pages_by_title_plain_text[page.data.properties.title.plain_text] = page
         return page
 
     _getter_pattern = re.compile(r'(\d{2})(\d{2})(\d{2}).*')
@@ -467,7 +467,7 @@ class DateINamespace(DatabaseNamespace):
 
     @classmethod
     def strf_date(cls, datei: Page) -> str:
-        return datei.contents.properties[datei_date_prop].start.strftime("%y%m%d")
+        return datei.data.properties[datei_date_prop].start.strftime("%y%m%d")
 
     @classmethod
     def get_date_of_title(cls, title_plain_text: str) -> Optional[dt.date]:
@@ -500,7 +500,7 @@ class DateINamespace(DatabaseNamespace):
             cls, title: RichText, datei_list: Iterable[Page],
             write_title: WriteTitleT
     ) -> RichText:
-        datei_date_list = [datei.contents.properties[datei_date_prop].start
+        datei_date_list = [datei.data.properties[datei_date_prop].start
                            for datei in datei_list]
 
         needs_update: bool
@@ -543,7 +543,7 @@ class WeekINamespace(DatabaseNamespace):
                 start=self._get_first_day_of_week(date),
                 end=self._get_last_day_of_week(date))
         }))
-        self.pages_by_title_plain_text[page.contents.properties.title.plain_text] = page
+        self.pages_by_title_plain_text[page.data.properties.title.plain_text] = page
         return page
 
     @classmethod
@@ -559,20 +559,20 @@ class WeekINamespace(DatabaseNamespace):
 
 def get_record_created_date(record: Page) -> dt.date:
     # TODO: '📆일시' parsing 지원
-    return (record.contents.created_time + dt.timedelta(hours=-5)).date()
+    return (record.data.created_time + dt.timedelta(hours=-5)).date()
 
 
 def get_earliest_date(datei_it: Iterable[Page]) -> Page:
     """only works for children of `DatabaseEnum.datei_db` or `weeki_db`"""
 
     def _get_start_date(datei: Page) -> dt.date:
-        parent_db = DatabaseEnum.from_entity(datei.contents.parent)
+        parent_db = DatabaseEnum.from_entity(datei.data.parent)
         if parent_db == DatabaseEnum.datei_db:
             prop = datei_date_prop
         elif parent_db == DatabaseEnum.weeki_db:
             prop = weeki_date_range_prop
         else:
             raise ValueError(datei)
-        return datei.contents.properties[prop].start
+        return datei.data.properties[prop].start
 
     return min(datei_it, key=_get_start_date)

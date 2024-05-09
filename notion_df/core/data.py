@@ -12,7 +12,7 @@ from notion_df.core.serialization import Deserializable
 
 
 @dataclass
-class Contents(Deserializable, metaclass=ABCMeta):
+class Data(Deserializable, metaclass=ABCMeta):
     raw: dict[str, Any] = field(init=False, default_factory=dict)
     timestamp: int = field(init=False, default=0)
     """the timestamp of deserialization if created with external raw data, 
@@ -27,7 +27,7 @@ class Contents(Deserializable, metaclass=ABCMeta):
 
         @functools.wraps(_deserialize_this)
         def _deserialize_this_wrapped(raw: dict[str, Any]) -> Self:
-            self: Contents = _deserialize_this(raw)
+            self: Data = _deserialize_this(raw)
             self.raw = raw
             self.timestamp = datetime.now().timestamp()
             return self
@@ -36,24 +36,24 @@ class Contents(Deserializable, metaclass=ABCMeta):
 
     @classmethod
     def deserialize(cls, raw: Any) -> Self:
-        from notion_df.object.contents import BlockContents, DatabaseContents, PageContents
+        from notion_df.object.data import BlockData, DatabaseData, PageData
 
-        if cls != Contents:
+        if cls != Data:
             return cls._deserialize_this(raw)
         match object_kind := raw['object']:
             case 'block':
-                subclass = BlockContents
+                subclass = BlockData
             case 'database':
-                subclass = DatabaseContents
+                subclass = DatabaseData
             case 'page':
-                subclass = PageContents
+                subclass = PageData
             case _:
                 raise ValueError(object_kind)
         return subclass.deserialize(raw)
 
     @property
     def time(self) -> Optional[datetime]:
-        """the time of deserialization if created with external raw contents,
+        """the time of deserialization if created with external raw data,
          or None if created by user."""
         return datetime.fromtimestamp(self.timestamp) if self.timestamp else None
 
@@ -62,8 +62,8 @@ class Contents(Deserializable, metaclass=ABCMeta):
         return cls.cast_from(self)
 
     @classmethod
-    def cast_from(cls, instance: Contents) -> Self:
-        # the default classes (ex. BlockContents) should NOT override this
+    def cast_from(cls, instance: Data) -> Self:
+        # the default classes (ex. BlockData) should NOT override this
         # TODO: force that custom subclasses to override this
         return instance
 
@@ -72,7 +72,7 @@ class Contents(Deserializable, metaclass=ABCMeta):
         raise NotImplementedError
 
 
-ContentsT = TypeVar('ContentsT', bound=Contents)
+ContentsT = TypeVar('ContentsT', bound=Data)
 
 
 def coalesce(latest: Optional[ContentsT],

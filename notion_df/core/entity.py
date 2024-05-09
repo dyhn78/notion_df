@@ -7,11 +7,11 @@ from uuid import UUID
 
 from typing_extensions import Self
 
-from notion_df.core.contents import ContentsT, Contents, coalesce
+from notion_df.core.data import ContentsT, Data, coalesce
 from notion_df.util.misc import repr_object, undefined
 
 namespace: Final[dict[tuple[type[Entity], UUID], Entity]] = {}
-ContentsT2 = TypeVar("ContentsT2", bound=Contents)
+ContentsT2 = TypeVar("ContentsT2", bound=Data)
 
 
 class Entity(Generic[ContentsT], Hashable, metaclass=ABCMeta):
@@ -35,7 +35,7 @@ class Entity(Generic[ContentsT], Hashable, metaclass=ABCMeta):
 
     def __new__(cls, id_or_url: Union[UUID, str],
                 default: Optional[ContentsT] = None,
-                *, latest: Optional[Contents] = None):
+                *, latest: Optional[Data] = None):
         try:
             __id = cls._get_id(id_or_url)
             if (cls, __id) in namespace:
@@ -46,7 +46,7 @@ class Entity(Generic[ContentsT], Hashable, metaclass=ABCMeta):
 
     def __init__(self, id_or_url: Union[UUID, str],
                  default: Optional[ContentsT] = None,
-                 *, latest: Optional[Contents] = None):
+                 *, latest: Optional[Data] = None):
         if not hasattr(self, '_initialized'):
             self._initialized = True
             self.id: Final[UUID] = self._get_id(id_or_url)
@@ -75,12 +75,12 @@ class Entity(Generic[ContentsT], Hashable, metaclass=ABCMeta):
 
     @property
     def latest(self) -> Optional[ContentsT]:
-        """the latest contents from the server."""
+        """the latest data from the server."""
         return self.__latest
 
     @latest.setter
     def latest(self, contents: ContentsT) -> None:
-        """set the contents as the more recent one between current one and new one."""
+        """set the data as the more recent one between current one and new one."""
         if (self.latest is None) or (contents.timestamp > self.latest.timestamp):
             self.__latest = contents
 
@@ -89,13 +89,13 @@ class Entity(Generic[ContentsT], Hashable, metaclass=ABCMeta):
         self.__latest = None
 
     @property
-    def contents(self) -> Optional[ContentsT]:
-        """get the local contents."""
+    def data(self) -> Optional[ContentsT]:
+        """get the local data."""
         return coalesce(self.latest, self.default)
 
     @final
     def _repr_parent(self) -> Optional[str]:
-        contents = self.contents  # prevents retrieve_if_empty
+        contents = self.data  # prevents retrieve_if_empty
         if contents is None or not hasattr(contents, 'parent'):
             return undefined
         elif contents.parent is None:
@@ -114,8 +114,8 @@ class RetrievableEntity(Entity[ContentsT]):
         pass
 
     @property
-    def contents(self) -> ContentsT:
-        """get the local contents, or auto-retrieve."""
+    def data(self) -> ContentsT:
+        """get the local data, or auto-retrieve."""
         contents = coalesce(self.latest, self.default)
         if contents is not None:
             return contents

@@ -8,7 +8,7 @@ import requests
 import requests.packages
 from bs4 import BeautifulSoup
 
-from notion_df.object.contents import Heading1BlockValue, ParagraphBlockValue, Heading2BlockValue, Heading3BlockValue, \
+from notion_df.object.data import Heading1BlockValue, ParagraphBlockValue, Heading2BlockValue, Heading3BlockValue, \
     BlockValue
 from notion_df.object.rich_text import RichText
 
