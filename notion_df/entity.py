@@ -7,7 +7,7 @@ from uuid import UUID
 from loguru import logger
 from typing_extensions import Self
 
-from notion_df.contents import BlockContents, ChildPageBlockContents
+from notion_df.contents import BlockContents
 from notion_df.core.entity import RetrievableEntity, retrieve_if_undefined, CanBeParent, HasParent
 from notion_df.core.exception import NotionDfValueError, NotionDfKeyError
 from notion_df.core.request import Paginator
@@ -359,7 +359,6 @@ class Page(RetrievableEntity[PageData], HasParent):
             created_by=self.data.created_by,
             last_edited_by=self.data.last_edited_by,
             archived=self.data.archived,
-            contents=ChildPageBlockContents(title=''),
         )
         return block
 
