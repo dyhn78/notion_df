@@ -28,6 +28,7 @@ class EntityData(Deserializable, metaclass=ABCMeta):
         self.timestamp = int(datetime.now().timestamp())
         hash_key = type(self), self.id
         if self.hardcoded:
+            # TODO: merge with current hardcoded data
             hardcoded_data_dict[hash_key] = self
         else:
             current_latest_data = latest_data_dict.get(hash_key)
