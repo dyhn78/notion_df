@@ -5,7 +5,7 @@ from enum import Enum
 from typing import Optional
 
 from notion_df.core.entity import Entity
-from notion_df.entity import Database, Page
+from notion_df.entity import Database, Page, Workspace
 from notion_df.object.misc import Emoji
 from notion_df.object.rich_text import RichText, TextSpan
 from notion_df.util.uuid_util import get_page_or_database_id, get_page_or_database_url
@@ -49,8 +49,8 @@ class DatabaseEnum(Enum):
 
         title_span = TextSpan(self.title)
         title_span.plain_text = self.title
-        self.entity.set_default_data(
-            parent=None,
+        self.entity.hardcode_data(
+            parent=Workspace(),
             icon=Emoji(self.prefix),
             title=RichText([title_span]),
             archived=False,

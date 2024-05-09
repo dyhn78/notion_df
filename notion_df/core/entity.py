@@ -2,16 +2,13 @@ from __future__ import annotations
 
 from abc import abstractmethod, ABCMeta
 from inspect import isabstract
-from typing import (Final, Generic, Hashable, Union, Optional, final, TypeVar, Any, MutableMapping, Callable, ClassVar)
+from typing import (Final, Generic, Hashable, Union, Optional, final, TypeVar, Any, Callable, ClassVar)
 from uuid import UUID
 
 from typing_extensions import Self
 
-from notion_df.core.data import EntityDataT, EntityData
+from notion_df.core.data import EntityDataT, latest_data_dict, hardcoded_data_dict
 from notion_df.util.misc import repr_object, undefined
-
-_latest_data_dict: Final[MutableMapping[tuple[type[EntityData], UUID], EntityData]] = {}
-_default_data_dict: Final[MutableMapping[tuple[type[EntityData], UUID], EntityData]] = {}
 
 
 class Entity(Generic[EntityDataT], Hashable, metaclass=ABCMeta):
@@ -62,23 +59,13 @@ class Entity(Generic[EntityDataT], Hashable, metaclass=ABCMeta):
     @final
     @property
     def local_data(self) -> Optional[EntityDataT]:
-        return _latest_data_dict.get(self._hash_key, _default_data_dict.get(self._hash_key))
-
-    def set_data(self, data: EntityDataT) -> Self:
-        current_latest_data = _latest_data_dict.get(self._hash_key)
-        if current_latest_data is None or data.timestamp >= current_latest_data.timestamp:
-            _latest_data_dict[self._hash_key] = data
-        return self
+        return latest_data_dict.get(self._hash_key, hardcoded_data_dict.get(self._hash_key))
 
     @abstractmethod
-    def set_default_data(self, **kwargs: Any) -> Self:
-        """default data is always at the last priority of reading data and not garbage collected.
-        use it to hardcode invariant values (such as the root pages of your workspace)."""
+    def hardcode_data(self, **kwargs: Any) -> None:
+        """hardcode data is always at the last priority of reading data and not garbage collected.
+        You can save API calls by hardcode invariant values (such as the root pages of your workspace)."""
         pass
-
-    def _set_default_data(self, data: EntityDataT) -> Self:
-        _default_data_dict[self._hash_key] = data
-        return self
 
 
 def retrieve_if_undefined(func: CallableT) -> CallableT:

@@ -133,7 +133,7 @@ class MatchRecordDatei(MatchSequentialAction):
             properties[record.data.properties.title_prop] = new_title
         self._update_page(record, properties)
 
-    def _update_page(self, record, record_properties: PageProperties) -> None:
+    def _update_page(self, record: Page, record_properties: PageProperties) -> None:
         if not record_properties:
             return
         # final check if the property value is filled in the meantime

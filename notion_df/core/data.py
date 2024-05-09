@@ -4,12 +4,15 @@ import functools
 from abc import ABCMeta
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, TypeVar, Optional, NoReturn, final
+from typing import Any, TypeVar, Optional, NoReturn, final, MutableMapping, Final
 from uuid import UUID
 
 from typing_extensions import Self
 
 from notion_df.core.serialization import Deserializable
+
+latest_data_dict: Final[MutableMapping[tuple[type[EntityData], UUID], EntityData]] = {}
+hardcoded_data_dict: Final[MutableMapping[tuple[type[EntityData], UUID], EntityData]] = {}
 
 
 @dataclass
@@ -19,9 +22,17 @@ class EntityData(Deserializable, metaclass=ABCMeta):
     timestamp: int = field(init=False)
     """the timestamp of deserialization if created with external raw data, 
     or 0 if created by user."""
+    hardcoded: bool = field(kw_only=True, default=False)
 
     def __post_init__(self) -> None:
         self.timestamp = int(datetime.now().timestamp())
+        hash_key = type(self), self.id
+        if self.hardcoded:
+            hardcoded_data_dict[hash_key] = self
+        else:
+            current_latest_data = latest_data_dict.get(hash_key)
+            if current_latest_data is None or self.timestamp >= current_latest_data.timestamp:
+                latest_data_dict[hash_key] = self
 
     def __del__(self) -> None:
         del self.raw

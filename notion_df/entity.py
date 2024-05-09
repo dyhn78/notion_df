@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Optional, TypeVar, Union, Any, Literal, overload, Iterable
+from typing import Optional, TypeVar, Union, Any, Literal, overload
 from uuid import UUID
 
 from loguru import logger
@@ -33,9 +33,11 @@ from notion_df.variable import token
 
 
 class Workspace(CanBeParent):
+    # TODO: allow multiple workspace, corresponding to multiple tokens
+    """the singleton representing the workspace root."""
     __instance: Optional[Self] = None
 
-    def __new__(cls):
+    def __new__(cls) -> Workspace:
         return cls.__instance or super().__new__()
 
     def __repr__(self) -> str:
@@ -89,9 +91,9 @@ class Block(RetrievableEntity[BlockData], HasParent):
     def value(self) -> BlockValue:
         return self.data.value
 
-    def set_default_data(
+    def hardcode_data(
             self,
-            parent: Union[Block, Page, None] = undefined,
+            parent: Union[Block, Page, Workspace] = undefined,
             created_time: datetime = undefined,
             last_edited_time: datetime = undefined,
             created_by: PartialUser = undefined,
@@ -99,10 +101,9 @@ class Block(RetrievableEntity[BlockData], HasParent):
             has_children: bool = undefined,
             archived: bool = undefined,
             value: BlockValue = undefined,
-    ) -> Self:
-        return self._set_default_data(
-            BlockData(self.id, parent, created_time, last_edited_time, created_by, last_edited_by, has_children,
-                      archived, value))
+    ) -> None:
+        BlockData(self.id, parent, created_time, last_edited_time, created_by, last_edited_by, has_children,
+                  archived, value, hardcoded=True)
 
     @staticmethod
     def _get_id(id_or_url: Union[UUID, str]) -> UUID:
@@ -111,42 +112,38 @@ class Block(RetrievableEntity[BlockData], HasParent):
     def _repr_as_parent(self) -> str:
         return repr_object(self, id=self.id)
 
-    @staticmethod
-    def _set_child_block_datas(block_datas: Iterable[BlockData]) -> Paginator[Block]:
-        def it():
-            for block_data in block_datas:
-                yield Block(block_data.id).set_data(block_data)
-
-        return Paginator(Block, it())
-
     def retrieve(self) -> Self:
         logger.info(f'Block.retrieve({self})')
-        return self.set_data(RetrieveBlock(token, self.id).execute())
+        RetrieveBlock(token, self.id).execute()
+        return self
 
     def retrieve_children(self) -> Paginator[Block]:
         logger.info(f'Block.retrieve_children({self})')
-        return self._set_child_block_datas(RetrieveBlockChildren(token, self.id).execute())
+        return Paginator(Block, (Block(block_data.id) for block_data in
+                                 RetrieveBlockChildren(token, self.id).execute()))
 
     def update(self, block_type: Optional[BlockValue], archived: Optional[bool]) -> Self:
         logger.info(f'Block.update({self})')
-        return self.set_data(UpdateBlock(token, self.id, block_type, archived).execute())
+        UpdateBlock(token, self.id, block_type, archived).execute()
+        return self
 
     def delete(self) -> Self:
         logger.info(f'Block.delete({self})')
-        return self.set_data(DeleteBlock(token, self.id).execute())
+        DeleteBlock(token, self.id).execute()
+        return self
 
     def append_children(self, child_values: list[BlockValue]) -> list[Block]:
         logger.info(f'Block.append_children({self})')
         if not child_values:
             return []
-        return list(self._set_child_block_datas(AppendBlockChildren(token, self.id, child_values).execute()))
+        return [Block(block_data.id) for block_data in
+                AppendBlockChildren(token, self.id, child_values).execute()]
 
     def create_child_database(self, title: RichText, *,
                               properties: Optional[DatabaseProperties] = None,
                               icon: Optional[Icon] = None, cover: Optional[File] = None) -> Database:
         logger.info(f'Block.create_child_database({self})')
-        data = CreateDatabase(token, self.id, title, properties, icon, cover).execute()
-        return Database(data.id).set_data(data)
+        return Database(CreateDatabase(token, self.id, title, properties, icon, cover).execute().id)
 
 
 class Database(RetrievableEntity[DatabaseData], HasParent):
@@ -202,9 +199,9 @@ class Database(RetrievableEntity[DatabaseData], HasParent):
     def is_inline(self) -> bool:
         return self.data.is_inline
 
-    def set_default_data(
+    def hardcode_data(
             self,
-            parent: Union[Block, Page, None] = undefined,
+            parent: Union[Block, Page, Workspace] = undefined,
             created_time: datetime = undefined,
             last_edited_time: datetime = undefined,
             icon: Optional[Icon] = undefined,
@@ -214,10 +211,9 @@ class Database(RetrievableEntity[DatabaseData], HasParent):
             properties: DatabaseProperties = undefined,
             archived: bool = undefined,
             is_inline: bool = undefined,
-    ) -> Self:
-        return self._set_default_data(
-            DatabaseData(self.id, parent, created_time, last_edited_time, icon, cover, url, title, properties, archived,
-                         is_inline))
+    ) -> None:
+        DatabaseData(self.id, parent, created_time, last_edited_time, icon, cover, url, title, properties, archived,
+                     is_inline, hardcoded=True)
 
     @staticmethod
     def _get_id(id_or_url: Union[UUID, str]) -> UUID:
@@ -236,35 +232,29 @@ class Database(RetrievableEntity[DatabaseData], HasParent):
         else:
             return repr_object(self, id=self.id)
 
-    @staticmethod
-    def _set_child_page_data(page_data_it: Iterable[PageData]) -> Paginator[Page]:
-        def it():
-            for page_data in page_data_it:
-                yield Page(page_data.id).set_data(page_data)
-
-        return Paginator(Page, it())
-
     def retrieve(self) -> Self:
         logger.info(f'Database.retrieve({self})')
-        return self.set_data(RetrieveDatabase(token, self.id).execute())
-
-    # noinspection PyShadowingBuiltins
-    def query(self, filter: Optional[Filter] = None, sort: Optional[list[Sort]] = None,
-              page_size: Optional[int] = None) -> Paginator[Page]:
-        logger.info(f'Database.query({self})')
-        return self._set_child_page_data(QueryDatabase(token, self.id, filter, sort, page_size).execute())
+        RetrieveDatabase(token, self.id).execute()
+        return self
 
     def update(self, title: RichText, properties: DatabaseProperties) -> Database:
         logger.info(f'Database.update({self})')
-        return self.set_data(UpdateDatabase(token, self.id, title, properties).execute())
+        UpdateDatabase(token, self.id, title, properties).execute()
+        return self
 
     def create_child_page(self, properties: Optional[PageProperties] = None,
                           children: Optional[list[BlockValue]] = None,
                           icon: Optional[Icon] = None, cover: Optional[File] = None) -> Page:
         logger.info(f'Database.create_child_page({self})')
-        page_data = CreatePage(token, PartialParent('database_id', self.id),
-                               properties, children, icon, cover).execute()
-        return Page(page_data.id).set_data(page_data)
+        return Page(CreatePage(token, PartialParent('database_id', self.id),
+                               properties, children, icon, cover).execute().id)
+
+    # noinspection PyShadowingBuiltins
+    def query(self, filter: Optional[Filter] = None, sort: Optional[list[Sort]] = None,
+              page_size: Optional[int] = None) -> Paginator[Page]:
+        logger.info(f'Database.query({self})')
+        return Paginator(Page, (Page(page_data.id) for page_data in
+                                QueryDatabase(token, self.id, filter, sort, page_size).execute()))
 
 
 class Page(RetrievableEntity[PageData], HasParent):
@@ -320,21 +310,21 @@ class Page(RetrievableEntity[PageData], HasParent):
     def properties(self) -> PageProperties:
         return self.data.properties
 
-    def set_default_data(self,
-                         parent: Union[Block, Database, Page, None] = undefined,
-                         created_time: datetime = undefined,
-                         last_edited_time: datetime = undefined,
-                         created_by: PartialUser = undefined,
-                         last_edited_by: PartialUser = undefined,
-                         icon: Optional[Icon] = undefined,
-                         cover: Optional[File] = undefined,
-                         url: str = undefined,
-                         archived: bool = undefined,
-                         properties: PageProperties = undefined,
-                         ) -> Self:
-        return self._set_default_data(
-            PageData(self.id, parent, created_time, last_edited_time, created_by, last_edited_by, icon, cover, url,
-                     archived, properties))
+    def hardcode_data(
+            self,
+            parent: Union[Block, Database, Page, Workspace] = undefined,
+            created_time: datetime = undefined,
+            last_edited_time: datetime = undefined,
+            created_by: PartialUser = undefined,
+            last_edited_by: PartialUser = undefined,
+            icon: Optional[Icon] = undefined,
+            cover: Optional[File] = undefined,
+            url: str = undefined,
+            archived: bool = undefined,
+            properties: PageProperties = undefined,
+    ) -> None:
+        PageData(self.id, parent, created_time, last_edited_time, created_by, last_edited_by, icon, cover, url,
+                 archived, properties, hardcoded=True)
 
     @staticmethod
     def _get_id(id_or_url: Union[UUID, str]) -> UUID:
@@ -362,7 +352,7 @@ class Page(RetrievableEntity[PageData], HasParent):
 
     def as_block(self) -> Block:
         block = Block(self.id)
-        block.set_default_data(
+        block.hardcode_data(
             parent=self.data.parent,
             created_time=self.data.created_time,
             last_edited_time=self.data.last_edited_time,
@@ -375,7 +365,8 @@ class Page(RetrievableEntity[PageData], HasParent):
 
     def retrieve(self) -> Self:
         logger.info(f'Page.retrieve({self})')
-        return self.set_data(RetrievePage(token, self.id).execute())
+        RetrievePage(token, self.id).execute()
+        return self
 
     def retrieve_property_item(
             self, property_id: str | Property[Any, PagePropertyValueT, Any]) -> PagePropertyValueT:
@@ -396,14 +387,15 @@ class Page(RetrievableEntity[PageData], HasParent):
     def update(self, properties: Optional[PageProperties] = None, icon: Optional[Icon] = None,
                cover: Optional[ExternalFile] = None, archived: Optional[bool] = None) -> Self:
         logger.info(f'Page.update({self})')
-        return self.set_data(UpdatePage(token, self.id, properties, icon, cover, archived).execute())
+        UpdatePage(token, self.id, properties, icon, cover, archived).execute()
+        return self
 
     def create_child_page(self, properties: Optional[PageProperties] = None,
                           children: Optional[list[BlockValue]] = None,
                           icon: Optional[Icon] = None, cover: Optional[File] = None) -> Page:
         logger.info(f'Page.create_child_page({self})')
-        page_data = CreatePage(token, PartialParent('page_id', self.id), properties, children, icon, cover).execute()
-        return Page(page_data.id).set_data(page_data)
+        return Page(CreatePage(token, PartialParent('page_id', self.id), properties,
+                               children, icon, cover).execute().id)
 
     def create_child_database(self, title: RichText, *,
                               properties: Optional[DatabaseProperties] = None,
@@ -455,12 +447,13 @@ def search_by_title(query: str, entity: Literal['page', 'database', None] = None
 
     def it():
         for data in contents_it:
-            if isinstance(data, DatabaseData):
-                yield Database(data.id).set_data(data)
-            elif isinstance(data, PageData):
-                yield Page(data.id).set_data(data)
-            else:
-                raise RuntimeError(f"invalid class. {data=}")
+            match data:
+                case DatabaseData():
+                    yield Database(data.id)
+                case PageData():
+                    yield Page(data.id)
+                case _:
+                    raise RuntimeError(f"invalid class. {data=}")
         return
 
     return Paginator(element_type, it())
