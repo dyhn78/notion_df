@@ -4,14 +4,13 @@ from abc import abstractmethod, ABCMeta
 from inspect import isabstract
 from typing import (Final, Generic, Hashable, Union, Optional, final, TypeVar, Any, MutableMapping, Callable, ClassVar)
 from uuid import UUID
-from weakref import WeakValueDictionary
 
 from typing_extensions import Self
 
 from notion_df.core.data import EntityDataT, EntityData
 from notion_df.util.misc import repr_object, undefined
 
-_latest_data_dict: Final[MutableMapping[tuple[type[EntityData], UUID], EntityData]] = WeakValueDictionary()
+_latest_data_dict: Final[MutableMapping[tuple[type[EntityData], UUID], EntityData]] = {}
 _default_data_dict: Final[MutableMapping[tuple[type[EntityData], UUID], EntityData]] = {}
 
 
@@ -84,10 +83,10 @@ class Entity(Generic[EntityDataT], Hashable, metaclass=ABCMeta):
 
 def retrieve_if_undefined(func: CallableT) -> CallableT:
     def wrapper(self: RetrievableEntity, *args, **kwargs):
-        if (result := func(*args, **kwargs)) is not undefined:
+        if (result := func(self, *args, **kwargs)) is not undefined:
             return result
         self.retrieve()
-        if (result := func(*args, **kwargs)) is not undefined:
+        if (result := func(self, *args, **kwargs)) is not undefined:
             return result
         raise RuntimeError(f"{type(self)}.retrieve() did not update latest data")
 

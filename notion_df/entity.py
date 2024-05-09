@@ -456,9 +456,9 @@ def search_by_title(query: str, entity: Literal['page', 'database', None] = None
     def it():
         for data in contents_it:
             if isinstance(data, DatabaseData):
-                yield Database(data.id)
+                yield Database(data.id).set_data(data)
             elif isinstance(data, PageData):
-                yield Page(data.id)
+                yield Page(data.id).set_data(data)
             else:
                 raise RuntimeError(f"invalid class. {data=}")
         return
