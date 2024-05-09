@@ -507,12 +507,14 @@ class DateINamespace(DatabaseNamespace):
         has_separator = '|' in title.plain_text
 
         match write_title:
-            case 'always':
+            case 'if_datei_empty':
                 needs_update = not cls._check_date_in_record_title(title.plain_text, datei_date_list)
             case 'if_separator_exists':
                 needs_update = (has_separator and not cls._check_date_in_record_title(title.plain_text, datei_date_list))
-            case _:
+            case 'never':
                 needs_update = False
+            case _:
+                raise ValueError(write_title)
         if not needs_update:
             return RichText()
 
