@@ -45,7 +45,7 @@ class BlockData(EntityData):
         block_contents_cls = block_contents_registry.get(typename, UnsupportedBlockContents)
         block_contents = block_contents_cls.deserialize(raw[typename])
         return cls._deserialize_from_dict(raw, parent=PartialParent.deserialize(raw['parent']).resolved,
-                                          value=block_contents)
+                                          contents=block_contents)
 
     @classmethod
     @cache
