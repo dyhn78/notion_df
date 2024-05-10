@@ -22,7 +22,7 @@ from notion_df.variable import my_tz
 
 
 class SerializationError(NotionDfException):
-    ...
+    ...  # TODO: add nested path of error
 
 
 def serialize(obj: Any):
