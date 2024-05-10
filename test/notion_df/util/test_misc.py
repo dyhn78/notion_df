@@ -2,7 +2,7 @@ import uuid
 
 import pytest
 
-from notion_df.util.uuid_util import get_page_or_database_id
+from notion_df.core.uuid_parser import get_page_or_database_id
 
 block_uuid = uuid.uuid4()
 block_uuid_dash = str(block_uuid)

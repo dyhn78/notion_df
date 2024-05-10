@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Literal, Union
 
-from notion_df.util.collection import PlainStrEnum
+from notion_df.core.collection import PlainStrEnum
 
 TimestampName = Literal['created_time', 'last_edited_time']
 Number = Union[int, float]

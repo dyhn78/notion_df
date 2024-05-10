@@ -12,7 +12,7 @@ from notion_df.object.misc import Icon
 from notion_df.object.rich_text import RichText
 from notion_df.object.sort import Sort
 from notion_df.property import DatabaseProperties
-from notion_df.util.collection import DictFilter
+from notion_df.core.collection import DictFilter
 
 
 @dataclass

@@ -4,7 +4,7 @@ import inspect
 import pprint
 from abc import abstractmethod, ABCMeta
 from dataclasses import dataclass
-from typing import TypeVar, Generic, Any, final, Optional, Iterator, Sequence, overload
+from typing import TypeVar, Generic, Any, final, Optional, Iterator
 
 import requests.exceptions
 import tenacity
@@ -12,10 +12,10 @@ from loguru import logger
 from requests import Response
 
 from notion_df.core.data import EntityDataT
-from notion_df.core.exception import NotionDfValueError, NotionDfIndexError, NotionDfTypeError
+from notion_df.core.exception import NotionDfValueError
 from notion_df.core.serialization import deserialize, serialize
-from notion_df.util.collection import PlainStrEnum
-from notion_df.util.misc import repr_object
+from notion_df.core.collection import PlainStrEnum
+from notion_df.core.definition import repr_object
 from notion_df.variable import print_width
 
 MAX_PAGE_SIZE = 100
@@ -230,68 +230,3 @@ class PaginatedRequestBuilder(Generic[DataElementT], RequestBuilder, metaclass=A
     def parse_response_data(cls, data: dict[str, Any]) -> Iterator[DataElementT]:
         for data_element in data['results']:
             yield deserialize(cls.data_element_type, data_element)
-
-
-T = TypeVar('T')
-
-
-class Paginator(Sequence[T]):
-    def __init__(self, element_type: type[T], it: Iterator[T]):
-        self.element_type: type[T] = element_type
-        """used on repr()"""
-        self._it: Iterator[T] = it
-        self._values: list[T] = []
-
-    def __repr__(self):
-        return repr_object(self, element_type=self.element_type)
-
-    def _fetch_until(self, index: int) -> None:
-        """fetch until self._values[index] is possible"""
-        while len(self._values) <= index:
-            try:
-                self._values.append(next(self._it))
-            except StopIteration:
-                raise NotionDfIndexError("Index out of range", {'self': self, 'index': index})
-
-    def _fetch_all(self) -> None:
-        for element in self._it:
-            self._values.append(element)
-
-    def __len__(self):
-        self._fetch_all()
-        return len(self._values)
-
-    @overload
-    def __getitem__(self, index_or_id: int) -> T:
-        ...
-
-    @overload
-    def __getitem__(self, index_or_id: slice) -> list[T]:
-        ...
-
-    def __getitem__(self, index: int | slice) -> T | list[T]:
-        if isinstance(index, int):
-            if index >= 0:
-                self._fetch_until(index)
-            else:
-                self._fetch_all()
-            return self._values[index]
-        if isinstance(index, slice):
-            step = index.step if index.step is not None else 1
-
-            if ((index.start is not None and index.start < 0)
-                    or (index.stop is not None and index.stop < 0)
-                    or (index.stop is None and step > 0)
-                    or (index.start is None and step < 0)):
-                self._fetch_all()
-                return self._values[index]
-
-            start = index.start if index.start is not None else 0
-            stop = index.stop if index.stop is not None else 0
-            try:
-                self._fetch_until(max(start, stop))
-            except NotionDfIndexError:
-                pass
-            return [self._values[start:stop:step]]
-        else:
-            raise NotionDfTypeError("bad argument - expected int or slice", {'self': self, 'index': index})

@@ -8,7 +8,7 @@ from notion_df.core.entity import Entity
 from notion_df.entity import Database, Page, Workspace
 from notion_df.object.misc import Emoji
 from notion_df.object.rich_text import RichText, TextSpan
-from notion_df.util.uuid_util import get_page_or_database_id, get_page_or_database_url
+from notion_df.core.uuid_parser import get_page_or_database_id, get_page_or_database_url
 from workflow.emoji_code import EmojiCode
 
 SCHEDULE = "일정"

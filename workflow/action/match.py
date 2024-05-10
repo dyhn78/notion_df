@@ -7,7 +7,7 @@ from typing import Iterable, Optional, Any, Literal
 
 from loguru import logger
 
-from notion_df.core.request import Paginator
+from notion_df.core.collection import Paginator
 from notion_df.entity import Page, Database
 from notion_df.object.filter import created_time_filter
 from notion_df.object.rich_text import TextSpan, RichText
@@ -15,7 +15,7 @@ from notion_df.property import RelationProperty, TitleProperty, PageProperties, 
     DateFormulaPropertyKey, \
     DateProperty, CheckboxFormulaProperty, RichTextProperty, SelectProperty, \
     RelationPagePropertyValue
-from notion_df.util.misc import repr_object
+from notion_df.core.definition import repr_object
 from workflow.block_enum import DatabaseEnum, SCHEDULE, START, PROGRESS
 from workflow.core.action import SequentialAction, Action
 from workflow.emoji_code import EmojiCode

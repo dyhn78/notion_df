@@ -5,7 +5,7 @@ from notion_df.core.data import EntityData
 from notion_df.core.request import RequestSettings, Version, Method, PaginatedRequestBuilder
 from notion_df.object.data import DatabaseData, PageData
 from notion_df.object.sort import TimestampSort
-from notion_df.util.collection import DictFilter
+from notion_df.core.collection import DictFilter
 
 
 @dataclass

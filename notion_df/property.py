@@ -21,8 +21,8 @@ from notion_df.object.filter import PropertyFilter, CheckboxFilterBuilder, Peopl
 from notion_df.object.misc import StatusGroups, SelectOption, DateRange
 from notion_df.object.rich_text import RichText
 from notion_df.object.user import PartialUser, User
-from notion_df.util.collection import FinalDict
-from notion_df.util.misc import repr_object
+from notion_df.core.collection import FinalDict
+from notion_df.core.definition import repr_object
 
 if TYPE_CHECKING:
     from notion_df.entity import Page, Database

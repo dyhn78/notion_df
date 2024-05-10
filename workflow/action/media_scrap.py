@@ -4,7 +4,6 @@ from loguru import logger
 from selenium.webdriver.chrome.webdriver import WebDriver
 
 from notion_df.contents import ChildPageBlockContents
-from notion_df.core.request import Paginator
 from notion_df.entity import Page, Database
 from notion_df.object.filter import CompoundFilter
 from notion_df.object.misc import SelectOption
@@ -12,7 +11,7 @@ from notion_df.object.rich_text import TextSpan, PageMention
 from notion_df.property import SelectProperty, CheckboxFormulaProperty, TitleProperty, \
     RichTextProperty, \
     URLProperty, NumberProperty, FilesProperty, CheckboxProperty, PageProperties
-from notion_df.util.collection import StrEnum, peek
+from notion_df.core.collection import StrEnum, peek, Paginator
 from workflow.block_enum import DatabaseEnum
 from workflow.core.action import IndividualAction
 from workflow.service.gy_lib_service import GYLibraryScraper, LibraryScrapResult

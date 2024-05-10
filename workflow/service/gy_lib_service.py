@@ -10,7 +10,7 @@ from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 
-from notion_df.util.collection import StrEnum
+from notion_df.core.collection import StrEnum
 from workflow.service.webdriver_service import WebDriverService
 
 LibKey = Literal['all_libs', 'gajwa']

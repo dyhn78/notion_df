@@ -8,7 +8,7 @@ from uuid import UUID
 from typing_extensions import Self
 
 from notion_df.core.data import EntityDataT, latest_data_dict, hardcoded_data_dict
-from notion_df.util.misc import repr_object, undefined
+from notion_df.core.definition import undefined, repr_object
 
 
 class Entity(Generic[EntityDataT], Hashable, metaclass=ABCMeta):

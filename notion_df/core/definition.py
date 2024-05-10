@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import inspect
-from typing import Any, Optional, TypeVar, get_args, cast, Generic, get_type_hints
+from typing import TypeVar, Generic, Optional, get_args, cast, get_type_hints, Any
 
 from notion_df.core.exception import NotionDfTypeError
 

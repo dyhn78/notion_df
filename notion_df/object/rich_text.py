@@ -10,7 +10,7 @@ from typing_extensions import Self
 
 from notion_df.core.serialization import DualSerializable, deserialize, serialize
 from notion_df.object.misc import DateRange, Annotations
-from notion_df.util.collection import FinalDict
+from notion_df.core.collection import FinalDict
 
 span_registry: FinalDict[tuple[str, ...], type[Span]] = FinalDict()
 

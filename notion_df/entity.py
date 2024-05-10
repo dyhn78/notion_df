@@ -10,7 +10,7 @@ from typing_extensions import Self
 from notion_df.contents import BlockContents
 from notion_df.core.entity import RetrievableEntity, retrieve_if_undefined, CanBeParent, HasParent
 from notion_df.core.exception import NotionDfValueError, NotionDfKeyError
-from notion_df.core.request import Paginator
+from notion_df.core.collection import Paginator
 from notion_df.object.data import BlockData, DatabaseData, PageData
 from notion_df.object.file import ExternalFile, File
 from notion_df.object.filter import Filter
@@ -27,8 +27,8 @@ from notion_df.request.database import CreateDatabase, UpdateDatabase, RetrieveD
 from notion_df.request.page import CreatePage, UpdatePage, RetrievePage, \
     RetrievePagePropertyItem
 from notion_df.request.search import SearchByTitle
-from notion_df.util.misc import repr_object, undefined
-from notion_df.util.uuid_util import get_page_or_database_id, get_block_id
+from notion_df.core.definition import undefined, repr_object
+from notion_df.core.uuid_parser import get_page_or_database_id, get_block_id
 from notion_df.variable import token
 
 
