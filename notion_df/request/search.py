@@ -18,7 +18,7 @@ class SearchByTitle(PaginatedRequestBuilder[Union[PageData, DatabaseData]]):
 
     def get_settings(self) -> RequestSettings:
         return RequestSettings(Version.v20220628, Method.POST,
-                               f'https://api.notion.com/v1/search')
+                               f'search')
 
     def get_body(self) -> Any:
         return DictFilter.not_none({

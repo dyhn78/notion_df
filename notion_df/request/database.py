@@ -22,7 +22,7 @@ class RetrieveDatabase(SingleRequestBuilder[DatabaseData]):
 
     def get_settings(self) -> RequestSettings:
         return RequestSettings(Version.v20220628, Method.GET,
-                               f'https://api.notion.com/v1/databases/{self.id}')
+                               f'databases/{self.id}')
 
     def get_body(self) -> Any:
         return
@@ -40,7 +40,7 @@ class CreateDatabase(SingleRequestBuilder[DatabaseData]):
 
     def get_settings(self) -> RequestSettings:
         return RequestSettings(Version.v20220628, Method.POST,
-                               'https://api.notion.com/v1/databases/')
+                               'databases/')
 
     def get_body(self) -> dict:
         return DictFilter.not_none({
@@ -65,10 +65,10 @@ class UpdateDatabase(SingleRequestBuilder[DatabaseData]):
 
     def get_settings(self) -> RequestSettings:
         return RequestSettings(Version.v20220628, Method.PATCH,
-                               f'https://api.notion.com/v1/databases/{self.id}')
+                               f'databases/{self.id}')
 
     def get_url(self) -> str:
-        return f'https://api.notion.com/v1/databases/{self.id}'
+        return f'databases/{self.id}'
 
     def get_body(self) -> Any:
         return DictFilter.not_none({
@@ -87,7 +87,7 @@ class QueryDatabase(PaginatedRequestBuilder[PageData]):
 
     def get_settings(self) -> RequestSettings:
         return RequestSettings(Version.v20220628, Method.POST,
-                               f'https://api.notion.com/v1/databases/{self.id}/query')
+                               f'databases/{self.id}/query')
 
     def get_body(self) -> Any:
         return DictFilter.truthy({

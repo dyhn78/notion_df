@@ -4,10 +4,10 @@ from dataclasses import dataclass, field
 from typing import Any, Optional
 from uuid import UUID
 
-from notion_df.contents import BlockContents
+from notion_df.contents import BlockContents, serialize_block_contents_list
 from notion_df.core.request import SingleRequestBuilder, RequestSettings, Version, Method, PaginatedRequestBuilder, \
     RequestBuilder
-from notion_df.object.data import serialize_block_value_list, PageData
+from notion_df.object.data import PageData
 from notion_df.object.file import ExternalFile
 from notion_df.object.misc import Icon, PartialParent
 from notion_df.property import PageProperties, Property, property_registry, PagePropertyValueT
@@ -22,7 +22,7 @@ class RetrievePage(SingleRequestBuilder[PageData]):
 
     def get_settings(self) -> RequestSettings:
         return RequestSettings(Version.v20220628, Method.GET,
-                               f'https://api.notion.com/v1/pages/{self.id}')
+                               f'pages/{self.id}')
 
     def get_body(self) -> None:
         return
@@ -40,7 +40,7 @@ class CreatePage(SingleRequestBuilder[PageData]):
 
     def get_settings(self) -> RequestSettings:
         return RequestSettings(Version.v20220628, Method.POST,
-                               f'https://api.notion.com/v1/pages')
+                               f'pages')
 
     def get_body(self) -> dict[str, Any]:
         return DictFilter.not_none({
@@ -48,7 +48,7 @@ class CreatePage(SingleRequestBuilder[PageData]):
             "icon": self.icon.serialize() if self.icon else None,
             "cover": self.cover.serialize() if self.cover else None,
             "properties": self.properties.serialize() if self.properties else None,
-            "children": serialize_block_value_list(self.children),
+            "children": serialize_block_contents_list(self.children),
         })
 
 
@@ -66,7 +66,7 @@ class UpdatePage(SingleRequestBuilder[PageData]):
 
     def get_settings(self) -> RequestSettings:
         return RequestSettings(Version.v20220628, Method.PATCH,
-                               f'https://api.notion.com/v1/pages/{self.id}')
+                               f'pages/{self.id}')
 
     def get_body(self) -> dict[str, Any]:
         return DictFilter.not_none({
@@ -86,7 +86,7 @@ class RetrievePagePropertyItem(RequestBuilder):
 
     def get_settings(self) -> RequestSettings:
         return RequestSettings(Version.v20220628, Method.GET,
-                               f'https://api.notion.com/v1/pages/{self.page_id}/properties/{self.property_id}')
+                               f'pages/{self.page_id}/properties/{self.property_id}')
 
     def get_body(self) -> None:
         return

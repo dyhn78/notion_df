@@ -21,15 +21,28 @@ from notion_df.variable import print_width
 MAX_PAGE_SIZE = 100
 
 
-@dataclass
+def is_server_error(exception: BaseException) -> bool:
+    if isinstance(exception, RequestError):
+        status_code = exception.response.status_code
+        return 500 <= status_code < 600 or status_code == 409  # conflict
+    if isinstance(exception, requests.exceptions.RequestException):
+        return any(isinstance(exception, cls) for cls in [
+            requests.exceptions.ReadTimeout,
+            requests.exceptions.ChunkedEncodingError,
+            # requests.exceptions.SSLError,
+        ])
+    return False
+
+
+@dataclass(frozen=True)
 class Request:
     """request builder tailored to Notion API."""
     # TODO: rename to RequestBuilder
     # TODO: async with throttling  https://chat.openai.com/c/adcf80cd-d800-4fef-bfa9-56c548e0058a
     token: str
     method: Method
-    url: str
     version: Version
+    path: str
     params: Any
     json: Any
 
@@ -40,18 +53,9 @@ class Request:
             'Notion-Version': self.version.value,
         }
 
-    @staticmethod
-    def is_server_error(exception: BaseException) -> bool:
-        if isinstance(exception, RequestError):
-            status_code = exception.response.status_code
-            return 500 <= status_code < 600 or status_code == 409  # conflict
-        if isinstance(exception, requests.exceptions.RequestException):
-            return any(isinstance(exception, cls) for cls in [
-                requests.exceptions.ReadTimeout,
-                requests.exceptions.ChunkedEncodingError,
-                # requests.exceptions.SSLError,
-            ])
-        return False
+    @property
+    def url(self) -> str:
+        return f"{self.version.base_url.rstrip('/')}/{self.path.lstrip('/')}"
 
     @tenacity.retry(wait=tenacity.wait_none(),
                     stop=tenacity.stop_after_attempt(3),
@@ -63,7 +67,7 @@ class Request:
         logger.trace(pprint.pformat(response.text, width=print_width))
         try:
             response.raise_for_status()
-            return response
+            return response.json()
         except requests.HTTPError:
             e = RequestError(self, response)
             logger.debug(e)
@@ -76,9 +80,9 @@ class RequestError(Exception):
     raw_data: Any
     """ex) {'object': 'error', 'status': 400, 'code': 'validation_error', 
     'message': 'Unsaved transactions: Invalid value for property with limit'}"""
-    code: str
+    code: str = ''
     """ex) 'validation_error'"""
-    message: str
+    message: str = ''
     """ex) 'Unsaved transactions: Invalid value for property with limit'"""
 
     def __init__(self, request: Request, response: Response):
@@ -90,7 +94,6 @@ class RequestError(Exception):
             self.message = self.raw_data['message']
         except requests.JSONDecodeError:
             self.raw_data = self.response.text
-            self.code = self.message = ''
         except KeyError as e:  # unexpected error format
             raise RuntimeError("Unexpected error format.", *e.args, self.raw_data)
 
@@ -112,12 +115,19 @@ class Version(PlainStrEnum):
     v20220222 = '2022-02-22'
     v20220628 = '2022-06-28'
 
+    def __str__(self):
+        return repr_object(self, self.value)
+
+    @property
+    def base_url(self) -> str:
+        return 'https://api.notion.com/v1'
+
 
 @dataclass
 class RequestSettings:
     version: Version
     method: Method
-    url: str
+    path: str
 
 
 @dataclass
@@ -155,7 +165,7 @@ class SingleRequestBuilder(Generic[EntityDataT], RequestBuilder, metaclass=ABCMe
     @final
     def execute(self) -> EntityDataT:
         settings = self.get_settings()
-        response = Request(token=self.token, method=settings.method, url=settings.url, version=settings.version,
+        response = Request(token=self.token, method=settings.method, path=settings.path, version=settings.version,
                            params=None, json=self.get_body()).execute()
         return self.parse_response_data(response.json())  # nomypy
 
@@ -196,7 +206,7 @@ class PaginatedRequestBuilder(Generic[DataElementT], RequestBuilder, metaclass=A
         else:
             raise NotionDfValueError('bad method', {'method': settings.method})
 
-        response = Request(token=self.token, method=settings.method, url=settings.url, version=settings.version,
+        response = Request(token=self.token, method=settings.method, path=settings.path, version=settings.version,
                            params=params, json=serialize(body)).execute()
         return response.json()
 
