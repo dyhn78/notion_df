@@ -7,7 +7,7 @@ from typing import Any
 
 from typing_extensions import Self
 
-from notion_df.core.exception import NotionDfValueError
+from notion_df.core.exception import ImplementationError
 from notion_df.core.serialization import serialize, deserialize, DualSerializable
 from notion_df.object.misc import Icon
 
@@ -26,8 +26,7 @@ class File(Icon, metaclass=ABCMeta):
             case 'external':
                 subclass = ExternalFile
             case _:
-                raise NotionDfValueError('invalid relation_type',
-                                         {'type': raw['type'], 'serialized': raw})
+                raise ImplementationError(f"invalid relation_type, {raw['type']=}, {raw=}")
         return subclass.deserialize(raw)
 
 

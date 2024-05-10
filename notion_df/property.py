@@ -11,7 +11,9 @@ from typing import ClassVar, TypeVar, Generic, Any, Iterator, Optional, Literal,
 
 from typing_extensions import Self
 
-from notion_df.core.exception import NotionDfKeyError, NotionDfValueError
+from notion_df.core.collection import FinalDict
+from notion_df.core.definition import repr_object
+from notion_df.core.exception import ImplementationError
 from notion_df.core.serialization import DualSerializable, deserialize, serialize
 from notion_df.object.constant import RollupFunction, NumberFormat, Number
 from notion_df.object.file import Files
@@ -21,8 +23,6 @@ from notion_df.object.filter import PropertyFilter, CheckboxFilterBuilder, Peopl
 from notion_df.object.misc import StatusGroups, SelectOption, DateRange
 from notion_df.object.rich_text import RichText
 from notion_df.object.user import PartialUser, User
-from notion_df.core.collection import FinalDict
-from notion_df.core.definition import repr_object
 
 if TYPE_CHECKING:
     from notion_df.entity import Page, Database
@@ -157,7 +157,7 @@ class Properties(DualSerializable, MutableMapping[Property, PropertyValueT], met
             # TODO: add frozen key options (if user copied only keys from another properties instance)
             #  this will check `key in self._prop_by_name()`
             return key
-        raise NotionDfKeyError('bad key', {'key': key})
+        raise KeyError(f'property key not found, {key=}')
 
     def __getitem__(self, prop: str | Property) -> PropertyValueT:
         return self._prop_value_by_prop[self._get_prop(prop)]
@@ -263,12 +263,14 @@ class PageProperties(Properties, MutableMapping[Property[Any, PagePropertyValueT
 
     @property
     def title_prop(self) -> TitleProperty:
+        """raise KeyError on lookup failure."""
         if self._title_prop is None:
-            raise NotionDfKeyError('title prop is missing')
+            raise KeyError('title prop is missing')
         return self._title_prop
 
     @property
     def title(self) -> RichText:
+        """raise KeyError on lookup failure."""
         return self[self.title_prop]
 
     @title.setter
@@ -334,8 +336,8 @@ class RelationDatabasePropertyValue(DatabasePropertyValue, metaclass=ABCMeta):
             case 'dual_property':
                 subclass = DualRelationDatabasePropertyValue
             case _:
-                raise NotionDfValueError('invalid relation_type',
-                                         {'relation_type': relation_type, 'serialized': raw})
+                raise ImplementationError('invalid relation_type',
+                                          {'relation_type': relation_type, 'serialized': raw})
         return subclass.deserialize(raw)
 
     @classmethod
@@ -592,8 +594,8 @@ class FormulaProperty(Property[FormulaDatabasePropertyValue, PagePropertyValueT,
                 case 'string':
                     subclass = StringFormulaPropertyKey
                 case _:
-                    raise NotionDfValueError('invalid value_typename.',
-                                             {'prop_serialized': prop_serialized, 'value_typename': value_typename})
+                    raise ImplementationError('invalid value_typename.',
+                                              {'prop_serialized': prop_serialized, 'value_typename': value_typename})
             return subclass._deserialize_page_value(prop_serialized)
         return deserialize(cls.page_value, prop_serialized[typename][value_typename])
 

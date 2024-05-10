@@ -4,7 +4,7 @@ import inspect
 import re
 import types
 from abc import ABCMeta, abstractmethod
-from dataclasses import fields, InitVar, Field
+from dataclasses import fields, InitVar, Field, field, dataclass
 from datetime import datetime, date
 from decimal import Decimal
 from enum import Enum
@@ -17,12 +17,31 @@ from uuid import UUID
 import dateutil.parser
 from typing_extensions import Self
 
-from notion_df.core.exception import NotionDfTypeError, NotionDfException
+from notion_df.core.exception import NotionDfException
 from notion_df.variable import my_tz
 
 
+@dataclass
 class SerializationError(NotionDfException):
-    ...
+    description: str = field(default='')
+    """instance-specific description"""
+    vars: dict[str, Any] = field(default_factory=dict)
+    """dumped variables in error log"""
+    linebreak: bool = field(default=True, kw_only=True)
+    """whether or not to print one variable at a line"""
+
+    def __post_init__(self) -> None:
+        self.args: tuple[str, ...] = ()
+        if self.description:
+            self.args += self.description,
+        if not self.vars:
+            return
+        var_items_list = [f'{k} = {v}' for k, v in self.vars.items()]
+        if self.linebreak:
+            var_items_str = '[[\n' + '\n'.join(var_items_list) + '\n]]'
+        else:
+            var_items_str = '[[ ' + ', '.join(var_items_list) + ' ]]'
+        self.args += var_items_str,
 
 
 def serialize(obj: Any):
@@ -79,14 +98,14 @@ def deserialize(typ: type, serialized: Any):
     if typ_origin == Literal:
         if serialized in typ_args:
             return serialized
-        raise SerializationError('serialized value does not equal to any of Literal values', err_vars, linebreak=True)
+        raise SerializationError('serialized value does not equal to any of Literal values', err_vars)
     if isinstance(typ, types.UnionType) or typ_origin == Union:  # also can handle Optional
         for typ_arg in typ_args:
             try:
                 return deserialize(typ_arg, serialized)
             except SerializationError:
                 pass
-        raise SerializationError('cannot deserialize to any of the UnionType', err_vars, linebreak=True)
+        raise SerializationError('cannot deserialize to any of the UnionType', err_vars)
     if isinstance(typ, types.GenericAlias) or isinstance(typ, _GenericAlias):
         err_vars.update({'typ.origin': typ_origin, 'typ.args': typ_args})
         try:
@@ -96,17 +115,17 @@ def deserialize(typ: type, serialized: Any):
             element_type = typ_args[0]
         except IndexError:
             raise SerializationError('cannot deserialize: GenericAlias type with invalid args',
-                                     err_vars, linebreak=True)
+                                     err_vars)
         if issubclass(typ_origin, list):
             return [deserialize(element_type, e) for e in serialized]
         if issubclass(typ_origin, set):
             return {deserialize(element_type, e) for e in serialized}
         raise SerializationError('cannot deserialize: GenericAlias type with invalid origin',
-                                 err_vars, linebreak=True)
+                                 err_vars)
 
     # 2. class types
     if not inspect.isclass(typ):
-        raise SerializationError('cannot deserialize: not supported type', err_vars, linebreak=True)
+        raise SerializationError('cannot deserialize: not supported type', err_vars)
     if issubclass(typ, Deserializable):
         if isinstance(serialized, Deserializable):
             return serialized
@@ -116,7 +135,7 @@ def deserialize(typ: type, serialized: Any):
             return typ(serialized)
         except (ValueError, TypeError) as e:
             err_vars.update(exception=e)
-            raise SerializationError('cannot deserialize', err_vars, linebreak=True)
+            raise SerializationError('cannot deserialize', err_vars)
     if typ == UUID:
         if isinstance(serialized, UUID):
             return serialized
@@ -126,8 +145,8 @@ def deserialize(typ: type, serialized: Any):
             return deserialize_datetime(serialized)
         except (ValueError, TypeError) as e:
             err_vars.update(exception=e)
-            raise SerializationError('cannot deserialize', err_vars, linebreak=True)
-    raise SerializationError('cannot deserialize: not supported class', err_vars, linebreak=True)
+            raise SerializationError('cannot deserialize', err_vars)
+    raise SerializationError('cannot deserialize: not supported class', err_vars)
 
 
 class Serializable(metaclass=ABCMeta):
@@ -178,7 +197,7 @@ class Deserializable(metaclass=ABCMeta):
         helper method to implement _deserialize_this().
         Note: this collects post-init fields as well."""
         if inspect.isabstract(cls):
-            raise NotionDfTypeError('cannot instantiate abstract class', {'cls': cls, 'serialized': serialized})
+            raise TypeError('cannot instantiate abstract class', {'cls': cls, 'serialized': serialized})
 
         _undefined = object()
 

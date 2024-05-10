@@ -4,8 +4,8 @@ from enum import Enum
 from itertools import chain
 from typing import TypeVar, NewType, Iterable, Optional, Iterator, Sequence, overload
 
-from notion_df.core.exception import NotionDfKeyError, NotionDfIndexError, NotionDfTypeError
 from notion_df.core.definition import repr_object
+from notion_df.core.exception import ImplementationError
 
 
 class StrEnum(str, Enum):  # TODO: use builtin StrEnum after py3.11
@@ -33,8 +33,8 @@ class FinalDict(dict[KT, VT]):
 
     def __setitem__(self, k: KT, v: VT) -> None:
         if cv := self.get(k):
-            raise NotionDfKeyError('cannot overwrite FinalDict',
-                                   {'key': k, 'new_value': v, 'current_value': cv})
+            raise ImplementationError('cannot overwrite FinalDict',
+                                      {'key': k, 'new_value': v, 'current_value': cv})
         super().__setitem__(k, v)
 
 
@@ -76,7 +76,7 @@ class Paginator(Sequence[T]):
             try:
                 self._values.append(next(self._it))
             except StopIteration:
-                raise NotionDfIndexError("Index out of range", {'self': self, 'index': index})
+                return
 
     def _fetch_all(self) -> None:
         for element in self._it:
@@ -113,10 +113,7 @@ class Paginator(Sequence[T]):
 
             start = index.start if index.start is not None else 0
             stop = index.stop if index.stop is not None else 0
-            try:
-                self._fetch_until(max(start, stop))
-            except NotionDfIndexError:
-                pass
+            self._fetch_until(max(start, stop))
             return [self._values[start:stop:step]]
         else:
-            raise NotionDfTypeError("bad argument - expected int or slice", {'self': self, 'index': index})
+            raise TypeError(f"Expected int or slice, {self=}, {index=}")

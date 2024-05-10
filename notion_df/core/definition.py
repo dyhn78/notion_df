@@ -3,8 +3,6 @@ from __future__ import annotations
 import inspect
 from typing import TypeVar, Generic, Optional, get_args, cast, get_type_hints, Any
 
-from notion_df.core.exception import NotionDfTypeError
-
 undefined = object()
 
 
@@ -38,9 +36,9 @@ def get_generic_arg(cls: type[Generic], cast_type: TypeT) -> TypeT:
     try:
         arg = cast(type[cast_type], get_generic_args(cls)[0])
     except IndexError:
-        raise NotionDfTypeError(f'{cls.__name__} should be explicitly subscribed')
+        raise TypeError(f'{cls.__name__} should be explicitly subscribed')
     if not inspect.isabstract(cls) and not inspect.isclass(arg):
-        raise NotionDfTypeError(
+        raise TypeError(
             f'since {cls.__name__} is not abstract, it should be subscribed with class arguments (not TypeVar)')
     return arg
 
@@ -53,5 +51,4 @@ def check_classvars_are_defined(cls):
         if hasattr(super(cls), attr_name) and not hasattr(cls, attr_name):
             attr_names.append(attr_name)
     if attr_names:
-        raise NotionDfTypeError('all class attributes must be filled',
-                                {'cls': cls, 'undefined_attr_names': attr_names})
+        raise TypeError('all class attributes must be filled', {'cls': cls, 'undefined_attr_names': attr_names})

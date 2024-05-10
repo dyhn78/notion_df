@@ -8,9 +8,11 @@ from loguru import logger
 from typing_extensions import Self
 
 from notion_df.contents import BlockContents
-from notion_df.core.entity import RetrievableEntity, retrieve_if_undefined, CanBeParent, HasParent
-from notion_df.core.exception import NotionDfValueError, NotionDfKeyError
 from notion_df.core.collection import Paginator
+from notion_df.core.definition import undefined, repr_object
+from notion_df.core.entity import RetrievableEntity, retrieve_if_undefined, CanBeParent, HasParent
+from notion_df.core.exception import ImplementationError
+from notion_df.core.uuid_parser import get_page_or_database_id, get_block_id
 from notion_df.object.data import BlockData, DatabaseData, PageData
 from notion_df.object.file import ExternalFile, File
 from notion_df.object.filter import Filter
@@ -27,8 +29,6 @@ from notion_df.request.database import CreateDatabase, UpdateDatabase, RetrieveD
 from notion_df.request.page import CreatePage, UpdatePage, RetrievePage, \
     RetrievePagePropertyItem
 from notion_df.request.search import SearchByTitle
-from notion_df.core.definition import undefined, repr_object
-from notion_df.core.uuid_parser import get_page_or_database_id, get_block_id
 from notion_df.variable import token
 
 
@@ -337,7 +337,7 @@ class Page(RetrievableEntity[PageData], HasParent):
                 raise AttributeError
             title = self.local_data.properties.title.plain_text
             _id = undefined
-        except (NotionDfKeyError, AttributeError):
+        except (KeyError, AttributeError):
             title = undefined
             _id = self.id
         return repr_object(self, title=title, url=self.local_data.url,
@@ -347,7 +347,7 @@ class Page(RetrievableEntity[PageData], HasParent):
         try:
             title = self.local_data.properties.title.plain_text
             return repr_object(self, title=title)
-        except (NotionDfKeyError, AttributeError):
+        except (KeyError, AttributeError):
             return repr_object(self, id=self.id)
 
     def as_block(self) -> Block:
@@ -373,7 +373,7 @@ class Page(RetrievableEntity[PageData], HasParent):
         if isinstance(prop := property_id, Property):
             property_id = prop.id
             if property_id is None:
-                raise NotionDfValueError(
+                raise ImplementationError(
                     "property.id is None. if you do not know the property id, retrieve the parent database first.",
                     {"self": self})
             _, prop_value = RetrievePagePropertyItem(token, self.id, property_id).execute()

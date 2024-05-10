@@ -11,11 +11,11 @@ import tenacity
 from loguru import logger
 from requests import Response
 
-from notion_df.core.data import EntityDataT
-from notion_df.core.exception import NotionDfValueError
-from notion_df.core.serialization import deserialize, serialize
 from notion_df.core.collection import PlainStrEnum
+from notion_df.core.data import EntityDataT
 from notion_df.core.definition import repr_object
+from notion_df.core.exception import ImplementationError, NotionDfException
+from notion_df.core.serialization import deserialize, serialize
 from notion_df.variable import print_width
 
 MAX_PAGE_SIZE = 100
@@ -74,7 +74,7 @@ class Request:
             raise e
 
 
-class RequestError(Exception):
+class RequestError(NotionDfException):
     request: Request
     response: Response
     raw_data: Any
@@ -196,15 +196,16 @@ class PaginatedRequestBuilder(Generic[DataElementT], RequestBuilder, metaclass=A
         if start_cursor:
             pagination_params.update({'start_cursor': start_cursor})
 
-        if settings.method.value == Method.GET:
-            params = pagination_params
-        elif settings.method.value == Method.POST:
-            params = None
-            if body is None:
-                body = {}
-            body.update(pagination_params)
-        else:
-            raise NotionDfValueError('bad method', {'method': settings.method})
+        match settings.method:
+            case Method.GET:
+                params = pagination_params
+            case Method.POST:
+                params = None
+                if body is None:
+                    body = {}
+                body.update(pagination_params)
+            case _:
+                raise ImplementationError(f'Invalid method. {type(self)=}')
 
         response = Request(token=self.token, method=settings.method, path=settings.path, version=settings.version,
                            params=params, json=serialize(body)).execute()
