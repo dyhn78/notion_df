@@ -6,9 +6,10 @@ from abc import abstractmethod, ABCMeta
 from dataclasses import dataclass
 from typing import TypeVar, Generic, Any, final, Optional, Iterator, Sequence, overload
 
-import requests
+import requests.exceptions
 import tenacity
 from loguru import logger
+from requests import Response
 
 from notion_df.core.data import EntityDataT
 from notion_df.core.exception import NotionDfValueError, NotionDfIndexError, NotionDfTypeError
@@ -42,7 +43,7 @@ class Request:
     @tenacity.retry(wait=tenacity.wait_none(),
                     stop=tenacity.stop_after_attempt(3),
                     retry=tenacity.retry_if_exception(is_server_error))  # TODO: add request info on TimeoutError
-    def execute(self) -> requests.Response:
+    def execute(self) -> Response:
         logger.debug(self)
         response = requests.request(method=self.method.value, url=self.url, headers=self.headers,
                                     params=self.params, json=self.json, timeout=80)  # TODO: relate with tenacity
@@ -58,7 +59,7 @@ class Request:
 
 class RequestError(Exception):
     request: Request
-    response: requests.Response
+    response: Response
     raw_data: Any
     """ex) {'object': 'error', 'status': 400, 'code': 'validation_error', 
     'message': 'Unsaved transactions: Invalid value for property with limit'}"""
@@ -67,7 +68,7 @@ class RequestError(Exception):
     message: str = ''
     """ex) 'Unsaved transactions: Invalid value for property with limit'"""
 
-    def __init__(self, request: Request, response: requests.Response):
+    def __init__(self, request: Request, response: Response):
         self.response = response
         self.request = request
         try:
