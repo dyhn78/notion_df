@@ -23,6 +23,7 @@ from notion_df.variable import my_tz
 
 @dataclass
 class SerializationError(NotionDfException):
+    # TODO: provide nested path of error
     description: str = field(default='')
     """instance-specific description"""
     vars: dict[str, Any] = field(default_factory=dict)
