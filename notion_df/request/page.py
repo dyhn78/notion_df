@@ -5,13 +5,12 @@ from typing import Any, Optional
 from uuid import UUID
 
 from notion_df.contents import BlockContents, serialize_block_contents_list
-from notion_df.core.request import SingleRequestBuilder, RequestSettings, Version, Method, PaginatedRequestBuilder, \
-    RequestBuilder
+from notion_df.core.collection import DictFilter
+from notion_df.core.request import SingleRequestBuilder, RequestSettings, Version, Method, RequestBuilder, request_page
 from notion_df.object.data import PageData
 from notion_df.object.file import ExternalFile
 from notion_df.object.misc import Icon, PartialParent
 from notion_df.property import PageProperties, Property, property_registry, PagePropertyValueT
-from notion_df.core.collection import DictFilter
 
 
 @dataclass
@@ -91,10 +90,8 @@ class RetrievePagePropertyItem(RequestBuilder):
     def get_body(self) -> None:
         return
 
-    execute_once = PaginatedRequestBuilder.execute_once
-
     def execute(self) -> tuple[Property[Any, PagePropertyValueT, Any], PagePropertyValueT]:
-        data = self.execute_once()
+        data = request_page(self)
         if (prop_serialized := data)['object'] == 'property_item':
             # noinspection PyProtectedMember
             return Property._deserialize_page_value(prop_serialized)
@@ -102,7 +99,7 @@ class RetrievePagePropertyItem(RequestBuilder):
         data_list = [data]
         while data['has_more']:
             start_cursor = data['next_cursor']
-            data = self.execute_once(start_cursor=start_cursor)
+            data = request_page(self, start_cursor=start_cursor)
             data_list.append(data)
 
         typename = data_list[0]['property_item']['type']

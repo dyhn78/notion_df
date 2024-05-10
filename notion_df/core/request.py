@@ -179,55 +179,50 @@ DataElementT = TypeVar('DataElementT')
 
 class PaginatedRequestBuilder(Generic[DataElementT], RequestBuilder, metaclass=ABCMeta):
     data_element_type: type[DataElementT]
-    page_size: int = None  # TODO - AS-IS: total size of all pages summed, TO-BE: each request size
+    page_size: int  # TODO - AS-IS: total size of all pages summed, TO-BE: each request size
 
     def __init_subclass__(cls, **kwargs):
         if not inspect.isabstract(cls):
             assert cls.data_element_type
 
     @final
-    def execute_once(self, page_size: int = MAX_PAGE_SIZE, start_cursor: Optional[str] = None) -> dict[str, Any]:
-        settings = self.get_settings()
-        body = self.get_body()
-
-        pagination_params = {}
-        if page_size != MAX_PAGE_SIZE:
-            pagination_params.update({'page_size': page_size})
-        if start_cursor:
-            pagination_params.update({'start_cursor': start_cursor})
-
-        match settings.method:
-            case Method.GET:
-                params = pagination_params
-            case Method.POST:
-                params = None
-                if body is None:
-                    body = {}
-                body.update(pagination_params)
-            case _:
-                raise ImplementationError(f'Invalid method. {type(self)=}')
-
-        response = Request(token=self.token, method=settings.method, path=settings.path, version=settings.version,
-                           params=params, json=serialize(body)).execute()
-        return response.json()
-
-    @final
     def execute(self) -> Iterator[DataElementT]:
-        page_size_total = self.page_size if self.page_size is not None else float('inf')
-        page_size_retrieved = 0
-
         start_cursor = None
-        while page_size_retrieved < page_size_total:
-            page_size = min(MAX_PAGE_SIZE, page_size_total - page_size_retrieved)
-            page_size_retrieved += page_size
-            data = self.execute_once(page_size, start_cursor)
+        while True:
+            data = request_page(self, self.page_size, start_cursor)
             yield from self.parse_response_data(data)
             if not data['has_more']:
                 return
             start_cursor = data['next_cursor']
-        return
 
     @classmethod
     def parse_response_data(cls, data: dict[str, Any]) -> Iterator[DataElementT]:
         for data_element in data['results']:
             yield deserialize(cls.data_element_type, data_element)
+
+
+def request_page(self: RequestBuilder, page_size: int = MAX_PAGE_SIZE,
+                 start_cursor: Optional[str] = None) -> dict[str, Any]:
+    settings = self.get_settings()
+    body = self.get_body()
+
+    pagination_params = {}
+    if page_size != MAX_PAGE_SIZE:
+        pagination_params.update({'page_size': page_size})
+    if start_cursor:
+        pagination_params.update({'start_cursor': start_cursor})
+
+    match settings.method:
+        case Method.GET:
+            params = pagination_params
+        case Method.POST:
+            params = None
+            if body is None:
+                body = {}
+            body.update(pagination_params)
+        case _:
+            raise ImplementationError(f'Invalid method. {type(self)=}')
+
+    response = Request(token=self.token, method=settings.method, path=settings.path, version=settings.version,
+                       params=params, json=serialize(body)).execute()
+    return response.json()
