@@ -152,7 +152,7 @@ class MigrationBackupLoadAction(SequentialAction):
             if this_prev_prop.name in [prefix_title, f'{prefix}{SCHEDULE}', f'{prefix}{START}']:
                 return pick(this_prev_prop.name) or pick(prefix_title)
         if this_db_enum == linked_db_enum and this_prev_db_enum == linked_prev_db_enum:
-            for prop_name_stem in ['구성', '공통', '요소', '관계']:
+            for prop_name_stem in ['공통', '요소', '관계']:
                 if (prop_name_stem in this_prev_prop.name) and (prop_name := pick(prop_name_stem)):
                     return prop_name
         if this_db_enum == DatabaseEnum.issue_db and linked_db_enum == DatabaseEnum.issue_db:
