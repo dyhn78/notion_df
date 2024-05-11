@@ -15,6 +15,9 @@ from workflow.emoji_code import EmojiCode
 schedule = "일정"
 start = "시작"
 progress = "진도"
+common = '공통'
+elements = '요소'
+related = '관계'
 
 _id_to_member = {}
 

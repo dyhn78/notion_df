@@ -10,7 +10,7 @@ from notion_df.entity import Page, Database
 from notion_df.object.data import PageData
 from notion_df.property import RelationProperty, PageProperties
 from workflow.action.match import get_earliest_date
-from workflow.block_enum import DatabaseEnum, schedule, start
+from workflow.block_enum import DatabaseEnum, schedule, start, common, elements, related
 from workflow.core.action import SequentialAction
 from workflow.service.backup_service import ResponseBackupService
 
@@ -152,16 +152,16 @@ class MigrationBackupLoadAction(SequentialAction):
             if this_prev_prop.name in [prefix_title, f'{prefix}{schedule}', f'{prefix}{start}']:
                 return pick(this_prev_prop.name) or pick(prefix_title)
         if this_db_enum == linked_db_enum and this_prev_db_enum == linked_prev_db_enum:
-            for prop_name_stem in ['공통', '요소', '관계']:
+            for prop_name_stem in [common, elements, related]:
                 if (prop_name_stem in this_prev_prop.name) and (prop_name := pick(prop_name_stem)):
                     return prop_name
         if this_db_enum == DatabaseEnum.issue_db and linked_db_enum == DatabaseEnum.issue_db:
             if this_prev_db_enum == DatabaseEnum.summit_db:
-                return pick('요소')
+                return pick(elements)
         if this_db_enum == DatabaseEnum.summit_db and linked_db_enum == DatabaseEnum.summit_db:
             if this_prev_db_enum == DatabaseEnum.idea_db:
-                return pick('요소')
-            return pick('공통')
+                return pick(elements)
+            return pick(common)
 
         # default cases
         if linked_db_enum:
