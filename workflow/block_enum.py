@@ -27,7 +27,7 @@ class DatabaseEnum(Enum):
     journal_db = ('바탕', 'addc94642ee74825bd31109f4fd1c9ee', EmojiCode.BLUE_HEART)
     thread_db = ('줄기', 'fa7d93f6fbd341f089b185745c834811', EmojiCode.GREEN_CIRCLE)
     idea_db = ('꼭지', '52d387ea0aaa470cb69332708c61b34d', EmojiCode.GREEN_HEART)
-    issue_db = ('실행', 'e8782fe4e1a34c9d846d57b01a370327', EmojiCode.YELLOW_CIRCLE)
+    issue_db = ('수행', 'e8782fe4e1a34c9d846d57b01a370327', EmojiCode.YELLOW_CIRCLE)
     reading_db = ('읽기', 'c326f77425a0446a8aa309478767c85b', EmojiCode.YELLOW_HEART)
     summit_db = ('분야', 'eb2f09a1de41412e8b2357bc04f26e74', EmojiCode.RED_CIRCLE)
     gist_db = ('요점', '2c5411ba6a0f43a0a8aa06295751e37a', EmojiCode.RED_HEART)
