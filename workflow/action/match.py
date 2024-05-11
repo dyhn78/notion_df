@@ -16,7 +16,7 @@ from notion_df.property import RelationProperty, TitleProperty, PageProperties, 
     DateProperty, CheckboxFormulaProperty, RichTextProperty, SelectProperty, \
     RelationPagePropertyValue
 from notion_df.util.misc import repr_object
-from workflow.block_enum import DatabaseEnum, SCHEDULE, START, PROGRESS
+from workflow.block_enum import DatabaseEnum, schedule, start, progress
 from workflow.core.action import SequentialAction, Action
 from workflow.emoji_code import EmojiCode
 
@@ -38,8 +38,8 @@ event_to_gist_prop = RelationProperty(DatabaseEnum.gist_db.prefix_title)
 record_kind_prop = SelectProperty("📕유형")
 record_kind_progress = "🌳진행"
 reading_to_main_date_prop = RelationProperty(DatabaseEnum.datei_db.prefix_title)
-reading_to_start_date_prop = RelationProperty(DatabaseEnum.datei_db.prefix + START)
-reading_to_event_prog_prop = RelationProperty(DatabaseEnum.event_db.prefix + PROGRESS)
+reading_to_start_date_prop = RelationProperty(DatabaseEnum.datei_db.prefix + start)
+reading_to_event_prog_prop = RelationProperty(DatabaseEnum.event_db.prefix + progress)
 reading_match_date_by_created_time_prop = CheckboxFormulaProperty(
     EmojiCode.BLACK_NOTEBOOK + '시작일<-생성시간')
 status_prop = SelectProperty("📘정리")
@@ -157,7 +157,7 @@ class MatchRecordDateiSchedule(MatchSequentialAction):
         super().__init__(base)
         self.record_db = record.entity
         self.record_to_datei_prop = RelationProperty(DatabaseEnum.datei_db.prefix_title)
-        self.record_to_datei_sch_prop = RelationProperty(f"{DatabaseEnum.datei_db.prefix}{SCHEDULE}")
+        self.record_to_datei_sch_prop = RelationProperty(f"{DatabaseEnum.datei_db.prefix}{schedule}")
 
     def __repr__(self):
         return repr_object(self, record_db=self.record_db)
@@ -374,7 +374,7 @@ class MatchEventProgress(MatchSequentialAction):
         super().__init__(base)
         self.target_db = target_db
         self.event_to_target_prop = RelationProperty(target_db.prefix_title)
-        self.event_to_target_prog_prop = RelationProperty(target_db.prefix + PROGRESS)
+        self.event_to_target_prog_prop = RelationProperty(target_db.prefix + progress)
 
     def __repr__(self):
         return repr_object(self,
