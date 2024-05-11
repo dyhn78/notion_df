@@ -35,8 +35,8 @@ event_to_issue_prop = RelationProperty(DatabaseEnum.issue_db.prefix_title)
 event_to_reading_prop = RelationProperty(DatabaseEnum.reading_db.prefix_title)
 event_to_topic_prop = RelationProperty(DatabaseEnum.summit_db.prefix_title)
 event_to_gist_prop = RelationProperty(DatabaseEnum.gist_db.prefix_title)
-topic_base_type_prop = SelectProperty("📕유형")
-topic_base_type_progress = "🌳진행"
+record_kind_prop = SelectProperty("📕유형")
+record_kind_progress = "🌳진행"
 reading_to_main_date_prop = RelationProperty(DatabaseEnum.datei_db.prefix_title)
 reading_to_start_date_prop = RelationProperty(DatabaseEnum.datei_db.prefix + START)
 reading_to_event_prog_prop = RelationProperty(DatabaseEnum.event_db.prefix + PROGRESS)
@@ -73,9 +73,10 @@ WriteTitleT = Literal['if_datei_empty', 'if_separator_exists', 'never']
 class MatchRecordDatei(MatchSequentialAction):
     def __init__(self, base: MatchActionBase, record: DatabaseEnum,
                  record_to_datei: str, *,
-                 only_if_separator_exists: bool = False,
                  read_datei_from_title: bool = False,
-                 prepend_datei_on_title: bool = False):
+                 prepend_datei_on_title: bool = False,
+                 only_if_separator_exists: bool = False,
+                 ):
         """
         :arg read_datei_from_title: can get the datei from the record title if the current value includes "YYMMDD"
         :arg prepend_datei_on_title: prepend the date string "YYMMDD" to the record title
@@ -85,8 +86,8 @@ class MatchRecordDatei(MatchSequentialAction):
         self.record_to_datei = RelationProperty(
             f'{DatabaseEnum.datei_db.prefix}{record_to_datei}')
         self.read_datei_from_title = read_datei_from_title
-        self.write_datei_only_if_separator_exists = only_if_separator_exists
         self.prepend_datei_on_title = prepend_datei_on_title
+        self.only_if_separator_exists = only_if_separator_exists
 
     def __repr__(self):
         return repr_object(self,
@@ -115,9 +116,10 @@ class MatchRecordDatei(MatchSequentialAction):
             logger.info(f'{record} -> {properties}')
 
     def process_if_record_to_datei_empty(self, record: Page) -> None:
-        if (self.write_datei_only_if_separator_exists
-                and '|' not in record.data.properties.title.plain_text):
-            return
+        if self.only_if_separator_exists:
+            title_plain_text = record.data.properties.title.plain_text
+            if title_plain_text and '|' not in title_plain_text:
+                return
 
         if (self.read_datei_from_title
                 and (datei := self.date_namespace.get_page_by_record_title(
