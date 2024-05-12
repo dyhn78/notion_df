@@ -35,8 +35,9 @@ event_to_issue_prop = RelationProperty(DatabaseEnum.issue_db.prefix_title)
 event_to_reading_prop = RelationProperty(DatabaseEnum.reading_db.prefix_title)
 event_to_topic_prop = RelationProperty(DatabaseEnum.summit_db.prefix_title)
 event_to_gist_prop = RelationProperty(DatabaseEnum.gist_db.prefix_title)
-record_kind_prop = SelectProperty("📕유형")
+journal_kind_prop = record_kind_prop = SelectProperty("📕유형")
 record_kind_progress = "🌳진행"
+journal_kind_non_datei_list = ["🫐계획", "🍈결산"]
 reading_to_main_date_prop = RelationProperty(DatabaseEnum.datei_db.prefix_title)
 reading_to_start_date_prop = RelationProperty(DatabaseEnum.datei_db.prefix + start)
 reading_to_event_prog_prop = RelationProperty(DatabaseEnum.event_db.prefix + progress)
@@ -75,7 +76,7 @@ class MatchRecordDatei(MatchSequentialAction):
                  record_to_datei: str, *,
                  read_datei_from_title: bool = False,
                  prepend_datei_on_title: bool = False,
-                 only_if_separator_exists: bool = False,
+                 is_journal: bool = False,
                  ):
         """
         :arg read_datei_from_title: can get the datei from the record title if the current value includes "YYMMDD"
@@ -87,7 +88,7 @@ class MatchRecordDatei(MatchSequentialAction):
             f'{DatabaseEnum.datei_db.prefix}{record_to_datei}')
         self.read_datei_from_title = read_datei_from_title
         self.prepend_datei_on_title = prepend_datei_on_title
-        self.only_if_separator_exists = only_if_separator_exists
+        self.is_journal = is_journal
 
     def __repr__(self):
         return repr_object(self,
@@ -117,9 +118,10 @@ class MatchRecordDatei(MatchSequentialAction):
             logger.info(f'{record} -> {properties}')
 
     def process_if_record_to_datei_empty(self, record: Page) -> None:
-        if self.only_if_separator_exists:
+        if self.is_journal:
             title_plain_text = record.data.properties.title.plain_text
-            if title_plain_text and '|' not in title_plain_text:
+            if (record.data.properties[journal_kind_prop] in journal_kind_non_datei_list
+                    and title_plain_text and '|' not in title_plain_text):
                 return
 
         if (self.read_datei_from_title

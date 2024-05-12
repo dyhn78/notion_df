@@ -25,7 +25,7 @@ routine_action = CompositeAction([
 
     MatchRecordDatei(base, DatabaseEnum.journal_db, DatabaseEnum.datei_db.title),
     MatchRecordDatei(base, DatabaseEnum.journal_db, schedule, read_datei_from_title=True, prepend_datei_on_title=True,
-                     only_if_separator_exists=True),
+                     is_journal=True),
     MatchRecordDateiSchedule(base, DatabaseEnum.journal_db),
     MatchRecordWeekiByDatei(base, DatabaseEnum.journal_db, schedule, schedule),
 
