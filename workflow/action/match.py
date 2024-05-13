@@ -74,6 +74,7 @@ WriteTitleT = Literal['if_datei_empty', 'if_separator_exists', 'never']
 class MatchRecordDatei(MatchSequentialAction):
     def __init__(self, base: MatchActionBase, record: DatabaseEnum,
                  record_to_datei: str, *,
+                 read_datei_from_created_time: bool = True,
                  read_datei_from_title: bool = False,
                  prepend_datei_on_title: bool = False,
                  is_journal: bool = False,
@@ -86,6 +87,7 @@ class MatchRecordDatei(MatchSequentialAction):
         self.record_db = record.entity
         self.record_to_datei = RelationProperty(
             f'{DatabaseEnum.datei_db.prefix}{record_to_datei}')
+        self.read_datei_from_created_time = read_datei_from_created_time
         self.read_datei_from_title = read_datei_from_title
         self.prepend_datei_on_title = prepend_datei_on_title
         self.is_journal = is_journal
@@ -132,6 +134,8 @@ class MatchRecordDatei(MatchSequentialAction):
             }))
             return
 
+        if not self.read_datei_from_created_time:
+            return
         record_created_date = get_record_created_date(record)
         datei = self.date_namespace.get_page_by_date(record_created_date)
         properties: PageProperties[RelationPagePropertyValue | RichText] = \
