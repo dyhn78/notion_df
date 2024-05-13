@@ -33,7 +33,7 @@ event_to_stage_prop = RelationProperty(DatabaseEnum.thread_db.prefix_title)
 event_to_point_prop = RelationProperty(DatabaseEnum.idea_db.prefix_title)
 event_to_issue_prop = RelationProperty(DatabaseEnum.issue_db.prefix_title)
 event_to_reading_prop = RelationProperty(DatabaseEnum.reading_db.prefix_title)
-event_to_topic_prop = RelationProperty(DatabaseEnum.summit_db.prefix_title)
+event_to_topic_prop = RelationProperty(DatabaseEnum.topic_db.prefix_title)
 event_to_gist_prop = RelationProperty(DatabaseEnum.gist_db.prefix_title)
 journal_kind_prop = record_kind_prop = SelectProperty("📕유형")
 record_kind_progress = "🌳진행"
