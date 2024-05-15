@@ -226,7 +226,7 @@ class Deserializable(metaclass=ABCMeta):
             if _fd.name in serialized:
                 if _fd.name not in cls._get_type_hints():
                     raise SerializationError(
-                        f'field "{_fd.name}" should have explicit type hint or provided as "overrides"')
+                        description=f'field "{_fd.name}" should have explicit type hint or provided as "overrides"')
                 return deserialize(cls._get_type_hints()[_fd.name], serialized[_fd.name])
             return _undefined
             # TODO: post-init fields should be explicitly set inside each _deserialize_this()

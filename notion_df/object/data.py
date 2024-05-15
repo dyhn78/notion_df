@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from functools import cache
 from typing import Any, Optional, Union, TYPE_CHECKING, get_type_hints
+from uuid import UUID
 
 from typing_extensions import Self
 
@@ -24,7 +25,8 @@ def _get_type_hints(cls):
     from notion_df.core.entity import Entity, RetrievableEntity
     return get_type_hints(cls, {
         **globals(), **{cls.__name__: cls for cls in (
-            Entity, RetrievableEntity, Block, Database, Page, Workspace
+            # TODO: UUID should be fetched from superclass definition instead
+            Entity, RetrievableEntity, Block, Database, Page, Workspace, UUID
         )}})
 
 

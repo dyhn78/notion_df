@@ -3,7 +3,13 @@ from __future__ import annotations
 import inspect
 from typing import TypeVar, Generic, Optional, get_args, cast, get_type_hints, Any
 
-undefined = object()
+
+class _Undefined:
+    def __repr__(self) -> str:
+        return "Undefined"
+
+
+undefined = _Undefined()
 
 
 def repr_object(obj, *attrs: Any, **kw_attrs: Any) -> str:

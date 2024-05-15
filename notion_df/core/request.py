@@ -67,7 +67,7 @@ class Request:
         logger.trace(pprint.pformat(response.text, width=print_width))
         try:
             response.raise_for_status()
-            return response.json()
+            return response
         except requests.HTTPError:
             e = RequestError(self, response)
             logger.debug(e)

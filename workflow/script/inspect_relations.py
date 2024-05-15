@@ -14,7 +14,7 @@ def init():
     _all_relation_properties: dict[tuple[Database, Database], list[RelationProperty]] = defaultdict(list)
     for db_enum in DatabaseEnum:
         db = db_enum.entity
-        for prop in db.data.properties:
+        for prop in db.properties:
             if isinstance(prop, RelationProperty):
                 from typing import cast
                 linked_db = cast(prop.database_value, db.data.properties[prop]).database

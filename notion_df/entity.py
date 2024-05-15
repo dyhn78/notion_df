@@ -38,7 +38,7 @@ class Workspace(CanBeParent):
     __instance: Optional[Self] = None
 
     def __new__(cls) -> Workspace:
-        return cls.__instance or super().__new__()
+        return cls.__instance or super().__new__(cls)
 
     def __repr__(self) -> str:
         return repr_object(self)
