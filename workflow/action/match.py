@@ -122,8 +122,7 @@ class MatchRecordDatei(MatchSequentialAction):
     def process_if_record_to_datei_empty(self, record: Page) -> None:
         if self.is_journal:
             title_plain_text = record.data.properties.title.plain_text
-            if (record.data.properties[journal_kind_prop] in journal_kind_non_datei_list
-                    and title_plain_text and '|' not in title_plain_text):
+            if (record.data.properties[journal_kind_prop] in journal_kind_non_datei_list):
                 return
 
         if (self.read_datei_from_title
