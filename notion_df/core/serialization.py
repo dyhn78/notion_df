@@ -21,28 +21,30 @@ from notion_df.core.exception import NotionDfException
 from notion_df.variable import my_tz
 
 
-@dataclass
+@dataclass(kw_only=True)
 class SerializationError(NotionDfException):
-    # TODO: provide nested path of error
     description: str = field(default='')
     """instance-specific description"""
-    vars: dict[str, Any] = field(default_factory=dict)
+    err_vars: dict[str, Any] = field(default_factory=dict)
     """dumped variables in error log"""
-    linebreak: bool = field(default=True, kw_only=True)
+    inverted_path: list[str | int] = field(default_factory=list)
+    """inverted path to indicate nested location of error"""
+    linebreak: bool = field(default=True)
     """whether or not to print one variable at a line"""
 
     def __post_init__(self) -> None:
         self.args: tuple[str, ...] = ()
         if self.description:
             self.args += self.description,
-        if not self.vars:
-            return
-        var_items_list = [f'{k} = {v}' for k, v in self.vars.items()]
-        if self.linebreak:
-            var_items_str = '[[\n' + '\n'.join(var_items_list) + '\n]]'
-        else:
-            var_items_str = '[[ ' + ', '.join(var_items_list) + ' ]]'
-        self.args += var_items_str,
+        if self.inverted_path:
+            self.args += self.inverted_path,
+        if self.err_vars:
+            var_items_list = [f'{k} = {v}' for k, v in self.err_vars.items()]
+            if self.linebreak:
+                var_items_str = '[[\n' + '\n'.join(var_items_list) + '\n]]'
+            else:
+                var_items_str = '[[ ' + ', '.join(var_items_list) + ' ]]'
+            self.args += var_items_str,
 
 
 def serialize(obj: Any):
@@ -64,7 +66,7 @@ def serialize(obj: Any):
         return serialize_datetime(obj)
     if isinstance(obj, UUID):
         return str(obj)
-    raise SerializationError('cannot serialize', {'obj': obj})
+    raise SerializationError(description='Cannot serialize', err_vars={'obj': obj})
 
 
 T = TypeVar('T')
@@ -76,11 +78,11 @@ def deserialize(typ: type[T], serialized: Any) -> T:
 
 
 @overload
-def deserialize(typ: type, serialized: Any):
+def deserialize(typ: type, serialized: Any) -> Any:
     ...
 
 
-def deserialize(typ: type, serialized: Any):
+def deserialize(typ: type, serialized: Any) -> Any:
     """unified deserializer for both Deserializable and external classes."""
     err_vars = {'typ': typ, 'serialized': serialized}
     typ_origin: type = get_origin(typ)
@@ -91,42 +93,58 @@ def deserialize(typ: type, serialized: Any):
         return serialized
 
     # 1. Non-class types
-    if type(typ) == NewType:
-        typ_origin = cast(NewType, typ).__supertype__
-        return typ(deserialize(typ_origin, serialized))
-    if isinstance(typ, InitVar):  # TODO: is this really needed?
+    if isinstance(typ, NewType):  # type: ignore
+        plain_type = cast(NewType, typ).__supertype__
+        return typ(deserialize(plain_type, serialized))
+    if isinstance(typ, InitVar):
         return deserialize(typ.type, serialized)
     if typ_origin == Literal:
         if serialized in typ_args:
             return serialized
-        raise SerializationError('serialized value does not equal to any of Literal values', err_vars)
+        raise SerializationError(description='Serialized value does not match any of Literal types', err_vars=err_vars)
     if isinstance(typ, types.UnionType) or typ_origin == Union:  # also can handle Optional
         for typ_arg in typ_args:
             try:
                 return deserialize(typ_arg, serialized)
-            except SerializationError:
-                pass
-        raise SerializationError('cannot deserialize to any of the UnionType', err_vars)
+            except SerializationError as e:
+                err_vars.setdefault("exception_list", [])
+                err_vars["exception_list"].append(e)
+        raise SerializationError(description='Cannot deserialize to any of the UnionType', err_vars=err_vars)
     if isinstance(typ, types.GenericAlias) or isinstance(typ, _GenericAlias):
         err_vars.update({'typ.origin': typ_origin, 'typ.args': typ_args})
-        try:
-            if issubclass(typ_origin, dict):
+        collection_type_error = SerializationError(description='Collection types require value type to be defined',
+                                                   err_vars=err_vars)
+        if issubclass(typ_origin, dict):
+            try:
                 value_type = typ_args[1]
-                return {k: deserialize(value_type, v) for k, v in serialized.items()}
-            element_type = typ_args[0]
-        except IndexError:
-            raise SerializationError('cannot deserialize: GenericAlias type with invalid args',
-                                     err_vars)
-        if issubclass(typ_origin, list):
-            return [deserialize(element_type, e) for e in serialized]
-        if issubclass(typ_origin, set):
-            return {deserialize(element_type, e) for e in serialized}
-        raise SerializationError('cannot deserialize: GenericAlias type with invalid origin',
-                                 err_vars)
+            except IndexError:
+                raise collection_type_error
+            result = {}
+            for key, value in cast(dict, serialized).items():
+                try:
+                    result[key] = deserialize(value_type, value)
+                except SerializationError as e:
+                    e.inverted_path.append(key)
+                    raise e
+                return typ_origin(result)
+        if issubclass(typ_origin, list) or issubclass(typ_origin, set):
+            try:
+                value_type = typ_args[0]
+            except IndexError:
+                raise collection_type_error
+            result = []
+            for i, value in enumerate(cast(list, serialized)):
+                try:
+                    result.append(deserialize(value_type, value))
+                except SerializationError as e:
+                    e.inverted_path.append(i)
+                    raise e
+            return typ_origin(result)
+        raise SerializationError(description='GenericAlias with invalid origin', err_vars=err_vars)
+    if not inspect.isclass(typ):
+        raise SerializationError(description='Unsupported non-class type', err_vars=err_vars)
 
     # 2. class types
-    if not inspect.isclass(typ):
-        raise SerializationError('cannot deserialize: not supported type', err_vars)
     if issubclass(typ, Deserializable):
         if isinstance(serialized, Deserializable):
             return serialized
@@ -135,8 +153,8 @@ def deserialize(typ: type, serialized: Any):
         try:
             return typ(serialized)
         except (ValueError, TypeError) as e:
-            err_vars.update(exception=e)
-            raise SerializationError('cannot deserialize', err_vars)
+            err_vars["exception"] = e
+            raise SerializationError(err_vars=err_vars)
     if typ == UUID:
         if isinstance(serialized, UUID):
             return serialized
@@ -145,9 +163,9 @@ def deserialize(typ: type, serialized: Any):
         try:
             return deserialize_datetime(serialized)
         except (ValueError, TypeError) as e:
-            err_vars.update(exception=e)
-            raise SerializationError('cannot deserialize', err_vars)
-    raise SerializationError('cannot deserialize: not supported class', err_vars)
+            err_vars["exception"] = e
+            raise SerializationError(err_vars=err_vars)
+    raise SerializationError(description='Unsupported class', err_vars=err_vars)
 
 
 class Serializable(metaclass=ABCMeta):
