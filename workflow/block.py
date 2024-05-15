@@ -124,6 +124,7 @@ class PageWithTitleIndex(Page, metaclass=ABCMeta):
 
 
 class PageWithDatePageIndex(Page, metaclass=ABCMeta):
+    # TODO: move into MatchDatei
     getter_pattern = re.compile(r'(\d{2})(\d{2})(\d{2}).*')
     getter_pattern_2 = re.compile(r'(\d{2})(\d{2})(\d{2})[|]')
     checker_pattern = getter_pattern
@@ -158,6 +159,7 @@ class PageWithDatePageIndex(Page, metaclass=ABCMeta):
 
 
 class DatePage(PageWithTitleIndex):
+    # TODO: Datei
     database = DatabaseEnum.datei_db.entity
     title_prop = TitleProperty(EmojiCode.GREEN_BOOK + '제목')
     date_prop = DateProperty(EmojiCode.CALENDAR + '날짜')
@@ -199,6 +201,7 @@ class DatePage(PageWithTitleIndex):
 
 
 class WeekPage(PageWithTitleIndex):
+    # TODO: Weeki
     database = DatabaseEnum.weeki_db.entity
     title_prop = TitleProperty(EmojiCode.GREEN_BOOK + '제목')
     date_range_prop = DateProperty(EmojiCode.BIG_CALENDAR + '날짜 범위')
