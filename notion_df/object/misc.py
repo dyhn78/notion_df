@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime, date
-from typing import Any, Literal, Optional, TYPE_CHECKING, Iterator, Union
+from typing import Any, Literal, Optional, TYPE_CHECKING, Iterator, Union, overload
 from uuid import UUID
 
 from typing_extensions import Self
@@ -121,9 +121,21 @@ class Emoji(Icon):
 
 @dataclass
 class DateRange(DualSerializable):
-    # timezone option is disabled. you should handle timezone inside 'start' and 'end'.
-    start: date | datetime
-    end: date | datetime
+    """timezone option is disabled. you should handle timezone inside 'start' and 'end'."""
+    start: date | datetime | None
+    end: date | datetime | None
+
+    @overload
+    def __init__(self, start: date | datetime | None):
+        ...
+
+    @overload
+    def __init__(self, start: date | datetime, end: date | datetime | None):
+        ...
+
+    def __init__(self, start: date | datetime | None = None, end: date | datetime | None = None):
+        self.start = start
+        self.end = end
 
     def __iter__(self) -> Iterator[date | datetime]:
         return iter([self.start, self.end])

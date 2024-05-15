@@ -32,7 +32,7 @@ class Entity(Generic[EntityDataT], Hashable, metaclass=ABCMeta):
     def _get_id(id_or_url: Union[UUID, str]) -> UUID:
         pass
 
-    def __init__(self, id_or_url: Union[UUID, str]):
+    def __init__(self, id_or_url: UUID | str):
         self.id: Final[UUID] = self._get_id(id_or_url)
 
     def __getnewargs__(self):  # required for pickling
@@ -80,7 +80,7 @@ def retrieve_if_undefined(func: CallableT) -> CallableT:
     return wrapper
 
 
-class RetrievableEntity(Entity[EntityDataT]):
+class RetrievableEntity(Entity[EntityDataT], Generic[EntityDataT]):
     @abstractmethod
     def retrieve(self) -> Self:
         # TODO: raise EntityNotExistError(ValueError), with page_exists()

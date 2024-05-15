@@ -211,9 +211,10 @@ class Database(RetrievableEntity[DatabaseData], HasParent):
             properties: DatabaseProperties = undefined,
             archived: bool = undefined,
             is_inline: bool = undefined,
-    ) -> None:
+    ) -> Self:
         DatabaseData(self.id, parent, created_time, last_edited_time, icon, cover, url, title, properties, archived,
                      is_inline, hardcoded=True)
+        return self
 
     @staticmethod
     def _get_id(id_or_url: Union[UUID, str]) -> UUID:
@@ -309,6 +310,10 @@ class Page(RetrievableEntity[PageData], HasParent):
     @retrieve_if_undefined
     def properties(self) -> PageProperties:
         return self.data.properties
+
+    @property
+    def title(self) -> RichText:
+        return self.properties.title
 
     def hardcode_data(
             self,

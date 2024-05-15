@@ -4,15 +4,15 @@ from loguru import logger
 from selenium.webdriver.chrome.webdriver import WebDriver
 
 from notion_df.contents import ChildPageBlockContents
-from notion_df.entity import Page, Database
+from notion_df.core.collection import StrEnum, peek, Paginator
+from notion_df.entity import Page
 from notion_df.object.filter import CompoundFilter
 from notion_df.object.misc import SelectOption
 from notion_df.object.rich_text import TextSpan, PageMention
 from notion_df.property import SelectProperty, CheckboxFormulaProperty, TitleProperty, \
     RichTextProperty, \
     URLProperty, NumberProperty, FilesProperty, CheckboxProperty, PageProperties
-from notion_df.core.collection import StrEnum, peek, Paginator
-from workflow.block_enum import DatabaseEnum
+from workflow.block import DatabaseEnum
 from workflow.core.action import IndividualAction
 from workflow.service.gy_lib_service import GYLibraryScraper, LibraryScrapResult
 from workflow.service.webdriver_service import WebDriverService
@@ -46,7 +46,7 @@ class EditStatusValue(StrEnum):
 
 class MediaScrapAction(IndividualAction):
     def __init__(self, *, create_window: bool):
-        self.reading_db = Database(DatabaseEnum.reading_db.id)
+        self.reading_db = DatabaseEnum.reading_db.entity
         self.driver_service = WebDriverService(create_window=create_window)
 
     def query(self) -> Paginator[Page]:
