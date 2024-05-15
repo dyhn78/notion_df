@@ -5,7 +5,7 @@ from workflow.action.match import MatchActionBase, MatchDatei, MatchRecordDatei,
     MatchRecordWeekiByDatei, MatchRecordTimestr, MatchReadingStartDatei, MatchEventProgress, MatchRecordDateiSchedule
 from workflow.action.media_scrap import MediaScrapAction
 from workflow.action.migration_backup import MigrationBackupLoadAction, MigrationBackupSaveAction
-from workflow.block_enum import DatabaseEnum, SCHEDULE, START
+from workflow.block_enum import DatabaseEnum, schedule, start
 from workflow.core.action import CompositeAction
 
 base = MatchActionBase()
@@ -16,40 +16,40 @@ routine_action = CompositeAction([
     MatchDatei(base),
 
     MatchRecordDatei(base, DatabaseEnum.event_db, DatabaseEnum.datei_db.title),
-    MatchRecordDatei(base, DatabaseEnum.event_db, SCHEDULE, read_datei_from_title=True, prepend_datei_on_title=True),
+    MatchRecordDatei(base, DatabaseEnum.event_db, schedule, read_datei_from_title=True, prepend_datei_on_title=True),
     MatchRecordDateiSchedule(base, DatabaseEnum.event_db),
-    MatchRecordWeekiByDatei(base, DatabaseEnum.event_db, SCHEDULE, SCHEDULE),
-    MatchRecordTimestr(base, DatabaseEnum.event_db, SCHEDULE),
+    MatchRecordWeekiByDatei(base, DatabaseEnum.event_db, schedule, schedule),
+    MatchRecordTimestr(base, DatabaseEnum.event_db, schedule),
     MatchEventProgress(base, DatabaseEnum.issue_db),
     MatchEventProgress(base, DatabaseEnum.reading_db),
 
     MatchRecordDatei(base, DatabaseEnum.journal_db, DatabaseEnum.datei_db.title),
-    MatchRecordDatei(base, DatabaseEnum.journal_db, SCHEDULE, read_datei_from_title=True, prepend_datei_on_title=True,
-                     only_if_separator_exists=True),
+    MatchRecordDatei(base, DatabaseEnum.journal_db, schedule, read_datei_from_title=True, prepend_datei_on_title=True,
+                     is_journal=True),
     MatchRecordDateiSchedule(base, DatabaseEnum.journal_db),
-    MatchRecordWeekiByDatei(base, DatabaseEnum.journal_db, SCHEDULE, SCHEDULE),
+    MatchRecordWeekiByDatei(base, DatabaseEnum.journal_db, schedule, schedule),
 
-    MatchRecordDatei(base, DatabaseEnum.thread_db, DatabaseEnum.datei_db.title, read_datei_from_title=True,
+    MatchRecordDatei(base, DatabaseEnum.stage_db, DatabaseEnum.datei_db.title, read_datei_from_title=True,
                      prepend_datei_on_title=True),
-    MatchRecordWeekiByDatei(base, DatabaseEnum.thread_db, DatabaseEnum.weeki_db.title, DatabaseEnum.datei_db.title),
+    MatchRecordWeekiByDatei(base, DatabaseEnum.stage_db, DatabaseEnum.weeki_db.title, DatabaseEnum.datei_db.title),
 
     MatchRecordDatei(base, DatabaseEnum.idea_db, DatabaseEnum.datei_db.title),
     MatchRecordWeekiByDatei(base, DatabaseEnum.idea_db, DatabaseEnum.weeki_db.title, DatabaseEnum.datei_db.title),
 
     MatchRecordDatei(base, DatabaseEnum.issue_db, DatabaseEnum.datei_db.title),
-    MatchRecordDatei(base, DatabaseEnum.issue_db, SCHEDULE, read_datei_from_title=True),
+    MatchRecordDatei(base, DatabaseEnum.issue_db, schedule, read_datei_from_created_time=False, read_datei_from_title=True),
     MatchRecordDateiSchedule(base, DatabaseEnum.issue_db),
-    MatchRecordWeekiByDatei(base, DatabaseEnum.issue_db, SCHEDULE, SCHEDULE),
+    MatchRecordWeekiByDatei(base, DatabaseEnum.issue_db, schedule, schedule),
     # DeprCreateDateEvent(base, DatabaseEnum.issue_db),
 
     MatchRecordDatei(base, DatabaseEnum.reading_db, DatabaseEnum.datei_db.title),
     MatchRecordWeekiByDatei(base, DatabaseEnum.reading_db, DatabaseEnum.weeki_db.title, DatabaseEnum.datei_db.title),
     MatchReadingStartDatei(base),
-    MatchRecordWeekiByDatei(base, DatabaseEnum.reading_db, START, START),
+    MatchRecordWeekiByDatei(base, DatabaseEnum.reading_db, start, start),
     # DeprCreateDateEvent(base, DatabaseEnum.reading_db),
 
-    MatchRecordDatei(base, DatabaseEnum.summit_db, DatabaseEnum.datei_db.title),
-    MatchRecordWeekiByDatei(base, DatabaseEnum.summit_db, DatabaseEnum.weeki_db.title, DatabaseEnum.datei_db.title),
+    MatchRecordDatei(base, DatabaseEnum.area_db, DatabaseEnum.datei_db.title),
+    MatchRecordWeekiByDatei(base, DatabaseEnum.area_db, DatabaseEnum.weeki_db.title, DatabaseEnum.datei_db.title),
 
     MatchRecordDatei(base, DatabaseEnum.gist_db, DatabaseEnum.datei_db.title),
     MatchRecordWeekiByDatei(base, DatabaseEnum.gist_db, DatabaseEnum.weeki_db.title, DatabaseEnum.datei_db.title),
@@ -57,16 +57,16 @@ routine_action = CompositeAction([
     MediaScrapAction(create_window=False),
 
     # DeprMatchRecordTopic(base, DatabaseEnum.event_db, DatabaseEnum.issue_db, DatabaseEnum.issue_db.prefix_title,
-    #            DatabaseEnum.summit_db.prefix_title, DatabaseEnum.summit_db.prefix_title),
+    #            DatabaseEnum.area_db.prefix_title, DatabaseEnum.area_db.prefix_title),
     # DeprMatchRecordTopic(base, DatabaseEnum.event_db, DatabaseEnum.event_db, DatabaseEnum.event_db.prefix_title,
-    #            DatabaseEnum.summit_db.prefix_title, DatabaseEnum.summit_db.prefix_title),
+    #            DatabaseEnum.area_db.prefix_title, DatabaseEnum.area_db.prefix_title),
     # DeprMatchRecordTopic(base, DatabaseEnum.event_db, DatabaseEnum.reading_db, DatabaseEnum.reading_db.prefix_title,
-    #            DatabaseEnum.summit_db.prefix_title, DatabaseEnum.summit_db.prefix_title),
+    #            DatabaseEnum.area_db.prefix_title, DatabaseEnum.area_db.prefix_title),
     # DeprMatchRecordTopic(base, DatabaseEnum.journal_db, DatabaseEnum.issue_db, DatabaseEnum.issue_db.prefix_title,
-    #                DatabaseEnum.summit_db.prefix_title, DatabaseEnum.summit_db.prefix_title),
+    #                DatabaseEnum.area_db.prefix_title, DatabaseEnum.area_db.prefix_title),
     # DeprMatchRecordTopic(base, DatabaseEnum.journal_db, DatabaseEnum.reading_db,
     #                DatabaseEnum.reading_db.prefix_title,
-    #                DatabaseEnum.summit_db.prefix_title, DatabaseEnum.summit_db.prefix_title),
+    #                DatabaseEnum.area_db.prefix_title, DatabaseEnum.area_db.prefix_title),
     # MatchRecordDatei(base, DatabaseEnum.depr_event_db, '일간'),
     # MatchRecordDatei(base, DatabaseEnum.depr_event_db, '생성'),
     # MatchRecordWeekiByDatei(base, DatabaseEnum.depr_event_db, '주간', '일간'),
