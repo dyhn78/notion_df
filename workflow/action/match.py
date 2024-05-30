@@ -378,7 +378,7 @@ class MatchEventProgress(MatchSequentialAction):
     def __init__(self, base: MatchActionBase, target_db: DatabaseEnum):
         super().__init__(base)
         self.target_db = target_db
-        self.event_to_target_prop = RelationProperty(target_db.prefix_title)
+        self.datei_to_target_prop = self.event_to_target_prop = RelationProperty(target_db.prefix_title)
         self.event_to_target_prog_prop = RelationProperty(target_db.prefix + progress)
 
     def __repr__(self):
@@ -387,14 +387,26 @@ class MatchEventProgress(MatchSequentialAction):
 
     def query(self) -> Iterable[Page]:
         return self.event_db.query(
-            filter=(self.event_to_target_prop.filter.is_not_empty()
-                    & self.event_to_target_prog_prop.filter.is_empty()))
+            filter=((self.event_to_target_prop.filter.is_not_empty()
+                     & self.event_to_target_prog_prop.filter.is_empty())
+                    | (self.event_to_target_prop.filter.is_empty()
+                       & self.event_to_target_prog_prop.filter.is_not_empty())))
 
     def process_page(self, event: Page) -> Any:
         if event.data.parent != self.event_db:
             return
         self.process_page_forward(event)
         self.process_page_backward(event)
+        event_to_target_prog_list = event.data.properties[self.event_to_target_prop]
+        datei = self.date_namespace.get_page_by_record_title(event.data.properties.title.plain_text)
+        datei_to_target_list_prev = datei.data.properties[self.datei_to_target_prop]
+        datei_to_target_list_new = datei_to_target_list_prev + event_to_target_prog_list
+        if datei_to_target_list_new == datei_to_target_list_prev:
+            logger.info(f'{event} : Datei Skipped')
+            return
+        datei.update(properties=PageProperties({
+            self.datei_to_target_prop: datei_to_target_list_new
+        }))
 
     def process_page_forward(self, event: Page) -> Any:
         if event.data.properties[self.event_to_target_prog_prop]:
@@ -421,14 +433,14 @@ class MatchEventProgress(MatchSequentialAction):
         }))
 
     def process_page_backward(self, event: Page) -> Any:
-        event_readings = event.data.properties[self.event_to_target_prop]
-        event_readings_new = event_readings + event.data.properties[
+        event_target_list = event.data.properties[self.event_to_target_prop]
+        event_target_list_new = event_target_list + event.data.properties[
             self.event_to_target_prog_prop]
-        if event_readings == event_readings_new:
+        if event_target_list == event_target_list_new:
             logger.info(f'{event} : Backward Skipped')
             return
         event.update(PageProperties({
-            self.event_to_target_prop: event_readings_new
+            self.event_to_target_prop: event_target_list_new
         }))
 
 
