@@ -120,11 +120,6 @@ class MatchRecordDatei(MatchSequentialAction):
             logger.info(f'{record} -> {properties}')
 
     def process_if_record_to_datei_empty(self, record: Page) -> None:
-        if self.is_journal:
-            title_plain_text = record.data.properties.title.plain_text
-            if (record.data.properties[journal_kind_prop] in journal_kind_non_datei_list):
-                return
-
         if (self.read_datei_from_title
                 and (datei := self.date_namespace.get_page_by_record_title(
                     record.data.properties.title.plain_text)) is not None):
@@ -135,6 +130,10 @@ class MatchRecordDatei(MatchSequentialAction):
 
         if not self.read_datei_from_created_time:
             return
+        if self.is_journal:
+            title_plain_text = record.data.properties.title.plain_text
+            if (record.data.properties[journal_kind_prop] in journal_kind_non_datei_list):
+                return
         record_created_date = get_record_created_date(record)
         datei = self.date_namespace.get_page_by_date(record_created_date)
         properties: PageProperties[RelationPagePropertyValue | RichText] = \
