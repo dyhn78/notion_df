@@ -397,7 +397,10 @@ class MatchEventProgress(MatchSequentialAction):
         self.process_page_forward(event)
         self.process_page_backward(event)
         event_to_target_prog_list = event.data.properties[self.event_to_target_prop]
-        datei = self.date_namespace.get_page_by_record_title(event.data.properties.title.plain_text)
+        datei_list = event.data.properties[f'{DatabaseEnum.datei_db.prefix}{schedule}']
+        if not datei_list:
+            return
+        datei = datei_list[0]
         datei_to_target_list_prev = datei.data.properties[self.datei_to_target_prop]
         datei_to_target_list_new = datei_to_target_list_prev + event_to_target_prog_list
         if datei_to_target_list_new == datei_to_target_list_prev:
