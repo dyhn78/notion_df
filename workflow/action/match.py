@@ -38,6 +38,7 @@ event_to_gist_prop = RelationProperty(DatabaseEnum.gist_db.prefix_title)
 journal_kind_prop = record_kind_prop = SelectProperty("📕유형")
 record_kind_progress = "🌳진행"
 journal_kind_non_datei_list = ["🫐계획", "🍈결산"]
+journal_kind_needs_separator_list = ["🍊상태"]
 reading_to_main_date_prop = RelationProperty(DatabaseEnum.datei_db.prefix_title)
 reading_to_start_date_prop = RelationProperty(DatabaseEnum.datei_db.prefix + start)
 reading_to_event_prog_prop = RelationProperty(DatabaseEnum.event_db.prefix + progress)
@@ -128,7 +129,7 @@ class MatchRecordDatei(MatchSequentialAction):
 
         if not self.read_datei_from_created_time:
             return
-        if record.data.parent == DatabaseEnum.journal_db:
+        if record.data.parent == DatabaseEnum.journal_db.entity:
             if record.data.properties[journal_kind_prop] in journal_kind_non_datei_list:
                 return
         record_created_date = get_record_created_date(record)
@@ -153,7 +154,7 @@ class MatchRecordDatei(MatchSequentialAction):
                 record.data.properties[DatabaseEnum.issue_db.prefix + progress]
             ])
         if record.data.parent == DatabaseEnum.journal_db.entity:
-            return False
+            return record.data.properties[journal_kind_prop] in journal_kind_needs_separator_list
         if record.data.parent == DatabaseEnum.stage_db.entity:
             return True
         raise ValueError(f"get_needs_separator() - {record}")
