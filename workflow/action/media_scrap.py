@@ -3,8 +3,9 @@ from typing import Optional, Callable, Any, Iterable
 from loguru import logger
 from selenium.webdriver.chrome.webdriver import WebDriver
 
-from notion_df.contents import ChildPageBlockContents
-from notion_df.core.collection import StrEnum, peek, Paginator
+from notion_df.contents import ChildPageBlockContents, BlockContents, \
+    TableOfContentsBlockContents
+from notion_df.core.collection import StrEnum, peek
 from notion_df.entity import Page
 from notion_df.object.filter import CompoundFilter
 from notion_df.object.misc import SelectOption
@@ -175,8 +176,12 @@ class ReadingMediaScraperUnit:
                 link_to_contents_prop:
                     link_to_contents_prop.page_value([PageMention(content_page.id)])
             }))
-            child_values = [get_block_value_of_contents_line(content_line) for content_line in result.get_contents()]
-            content_page.as_block().append_children(child_values)
+            child_contents: list[BlockContents] = [
+                TableOfContentsBlockContents(),
+                *(get_block_value_of_contents_line(content_line) for content_line in
+                result.get_contents())
+            ]
+            content_page.as_block().append_children(child_contents)
 
         self.callables.append(set_content_page)
         return True
