@@ -549,7 +549,7 @@ class WeekINamespace(DatabaseNamespace):
         super().__init__(DatabaseEnum.weeki_db, EmojiCode.GREEN_BOOK + '제목')
 
     def get_page_by_date(self, date: dt.date) -> Page:
-        title_plain_text = self._get_first_day_of_week(date).strftime("%y/%U")
+        title_plain_text = self._get_first_day_of_week(date).strftime("%y_%U")
         return self.get_page_by_title(title_plain_text) or self.create_page(
             title_plain_text, date)
 
