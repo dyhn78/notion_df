@@ -24,8 +24,7 @@ routine_action = CompositeAction([
     MatchEventProgress(base, DatabaseEnum.reading_db),
 
     MatchRecordDatei(base, DatabaseEnum.journal_db, DatabaseEnum.datei_db.title),
-    MatchRecordDatei(base, DatabaseEnum.journal_db, schedule, read_datei_from_title=True, prepend_datei_on_title=True,
-                     is_journal=True),
+    MatchRecordDatei(base, DatabaseEnum.journal_db, schedule, read_datei_from_title=True, prepend_datei_on_title=True),
     MatchRecordDateiSchedule(base, DatabaseEnum.journal_db),
     MatchRecordWeekiByDatei(base, DatabaseEnum.journal_db, schedule, schedule),
 
