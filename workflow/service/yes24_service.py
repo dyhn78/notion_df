@@ -191,7 +191,7 @@ PASSAGE = re.compile(r"\d+[.:] ")
 
 def get_block_value_of_contents_line(contents_line: str) -> BlockValue:
     rich_text = RichText([
-        TextSpan(contents_line, annotations=Annotations(color=BlockColor.BROWN))
+        TextSpan(contents_line, annotations=Annotations(color=BlockColor.GRAY))
     ])
     if VOLUME_KOR.findall(contents_line) or VOLUME_ENG.findall(contents_line):
         return Heading1BlockValue(rich_text, False)
