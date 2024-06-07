@@ -76,9 +76,7 @@ class MatchRecordDatei(MatchSequentialAction):
                  record_to_datei: str, *,
                  read_datei_from_created_time: bool = True,
                  read_datei_from_title: bool = False,
-                 prepend_datei_on_title: bool = False,
-                 is_journal: bool = False,
-                 ):
+                 prepend_datei_on_title: bool = False):
         """
         :arg read_datei_from_title: can get the datei from the record title if the current value includes "YYMMDD"
         :arg prepend_datei_on_title: prepend the date string "YYMMDD" to the record title
@@ -90,7 +88,6 @@ class MatchRecordDatei(MatchSequentialAction):
         self.read_datei_from_created_time = read_datei_from_created_time
         self.read_datei_from_title = read_datei_from_title
         self.prepend_datei_on_title = prepend_datei_on_title
-        self.is_journal = is_journal
 
     def __repr__(self):
         return repr_object(self,
