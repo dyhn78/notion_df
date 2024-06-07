@@ -154,7 +154,7 @@ class MatchRecordDatei(MatchSequentialAction):
                 and any([record.data.properties[DatabaseEnum.reading_db.prefix + progress],
                          record.data.properties[DatabaseEnum.issue_db.prefix + progress]]))
 
-    def _update_page(self, record, record_properties: PageProperties) -> None:
+    def _update_page(self, record: Page, record_properties: PageProperties) -> None:
         if not record_properties:
             return
         # final check if the property value is filled in the meantime
