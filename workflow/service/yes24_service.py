@@ -8,9 +8,12 @@ import requests
 import requests.packages
 from bs4 import BeautifulSoup
 
-from notion_df.object.data import Heading1BlockValue, ParagraphBlockValue, Heading2BlockValue, Heading3BlockValue, \
+from notion_df.object.constant import BlockColor
+from notion_df.object.data import Heading1BlockValue, ParagraphBlockValue, \
+    Heading2BlockValue, Heading3BlockValue, \
     BlockValue
-from notion_df.object.rich_text import RichText
+from notion_df.object.misc import Annotations
+from notion_df.object.rich_text import RichText, TextSpan
 
 # noinspection PyUnresolvedReferences
 # disable SSLError(1, '[SSL: DH_KEY_TOO_SMALL] dh key too small (_ssl.c:997)') error for yes24.com
@@ -187,8 +190,9 @@ PASSAGE = re.compile(r"\d+[.:] ")
 
 
 def get_block_value_of_contents_line(contents_line: str) -> BlockValue:
-    rich_text = RichText.from_plain_text(contents_line)
-
+    rich_text = RichText([
+        TextSpan(contents_line, annotations=Annotations(color=BlockColor.BROWN))
+    ])
     if VOLUME_KOR.findall(contents_line) or VOLUME_ENG.findall(contents_line):
         return Heading1BlockValue(rich_text, False)
     if SECTION_KOR.findall(contents_line) or SECTION_ENG.findall(contents_line):
