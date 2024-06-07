@@ -137,19 +137,26 @@ class MatchRecordDatei(MatchSequentialAction):
             PageProperties({
                 self.record_to_datei: self.record_to_datei.page_value([datei]),
             })
-        if self.prepend_datei_on_title and (new_title := self.date_namespace.prepend_date_in_record_title(
+        if self.prepend_datei_on_title and (
+                new_title := self.date_namespace.prepend_date_in_record_title(
                 record.retrieve().data.properties.title, [datei],
-                self.get_needs_separator(record))):
+                    self.get_needs_separator(record))
+        ):
             properties[record.data.properties.title_prop] = new_title
         self._update_page(record, properties)
 
     @staticmethod
     def get_needs_separator(record: Page) -> bool:
-        if record.data.parent != DatabaseEnum.event_db.entity:
+        if record.data.parent == DatabaseEnum.event_db.entity:
+            return any([
+                record.data.properties[DatabaseEnum.reading_db.prefix + progress],
+                record.data.properties[DatabaseEnum.issue_db.prefix + progress]
+            ])
+        if record.data.parent == DatabaseEnum.journal_db.entity:
             return False
-        return ('|' not in record.data.properties.title.plain_text
-                and any([record.data.properties[DatabaseEnum.reading_db.prefix + progress],
-                         record.data.properties[DatabaseEnum.issue_db.prefix + progress]]))
+        if record.data.parent == DatabaseEnum.stage_db.entity:
+            return True
+        raise ValueError(f"get_needs_separator() - {record}")
 
     def _update_page(self, record: Page, record_properties: PageProperties) -> None:
         if not record_properties:
@@ -540,9 +547,10 @@ class DateINamespace(DatabaseNamespace):
             return RichText()
 
         earliest_datei_date = min(datei_date_list)
+        add_separator = needs_separator and ('|' not in title.plain_text)
         starts_with_separator = title.plain_text.startswith('|')
         return RichText([TextSpan(
-            f"{earliest_datei_date.strftime('%y%m%d')}{'|' if needs_separator else ''}"
+            f"{earliest_datei_date.strftime('%y%m%d')}{'|' if add_separator else ''}"
             f"{'' if starts_with_separator else ' '}"
             f"{'✨' if not title.plain_text else ''}"),
             *title])
