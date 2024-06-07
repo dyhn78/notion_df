@@ -95,10 +95,6 @@ class MatchRecordDatei(MatchSequentialAction):
             logger.info(f'{record} -> {properties}')
 
     def process_if_record_to_datei_empty(self, record: Page) -> None:
-        if self.is_journal:
-            if record.data.properties[journal_kind_prop] in journal_kind_non_datei_list:
-                return
-
         if (self.read_datei_from_title
                 and (datei := self.date_namespace.get_page_by_record_title(
                     record.data.properties.title.plain_text)) is not None):
@@ -109,6 +105,10 @@ class MatchRecordDatei(MatchSequentialAction):
 
         if not self.read_datei_from_created_time:
             return
+        if self.is_journal:
+            title_plain_text = record.data.properties.title.plain_text
+            if (record.data.properties[journal_kind_prop] in journal_kind_non_datei_list):
+                return
         record_created_date = get_record_created_date(record)
         datei = self.date_namespace.get_page_by_date(record_created_date)
         properties: PageProperties[RelationPagePropertyValue | RichText] = \
@@ -352,7 +352,7 @@ class MatchEventProgress(MatchSequentialAction):
     def __init__(self, base: MatchActionBase, target_db: DatabaseEnum):
         super().__init__(base)
         self.target_db = target_db
-        self.event_to_target_prop = RelationProperty(target_db.prefix_title)
+        self.datei_to_target_prop = self.event_to_target_prop = RelationProperty(target_db.prefix_title)
         self.event_to_target_prog_prop = RelationProperty(target_db.prefix + progress)
 
     def __repr__(self):
@@ -361,14 +361,29 @@ class MatchEventProgress(MatchSequentialAction):
 
     def query(self) -> Iterable[Page]:
         return self.event_db.query(
-            filter=(self.event_to_target_prop.filter.is_not_empty()
-                    & self.event_to_target_prog_prop.filter.is_empty()))
+            filter=((self.event_to_target_prop.filter.is_not_empty()
+                     & self.event_to_target_prog_prop.filter.is_empty())
+                    | (self.event_to_target_prop.filter.is_empty()
+                       & self.event_to_target_prog_prop.filter.is_not_empty())))
 
     def process_page(self, event: Page) -> Any:
         if event.data.parent != self.event_db:
             return
         self.process_page_forward(event)
         self.process_page_backward(event)
+        event_to_target_prog_list = event.data.properties[self.event_to_target_prop]
+        datei_list = event.data.properties[f'{DatabaseEnum.datei_db.prefix}{schedule}']
+        if not datei_list:
+            return
+        datei = datei_list[0]
+        datei_to_target_list_prev = datei.data.properties[self.datei_to_target_prop]
+        datei_to_target_list_new = datei_to_target_list_prev + event_to_target_prog_list
+        if datei_to_target_list_new == datei_to_target_list_prev:
+            logger.info(f'{event} : Datei Skipped')
+            return
+        datei.update(properties=PageProperties({
+            self.datei_to_target_prop: datei_to_target_list_new
+        }))
 
     def process_page_forward(self, event: Page) -> Any:
         if event.data.properties[self.event_to_target_prog_prop]:
@@ -395,14 +410,14 @@ class MatchEventProgress(MatchSequentialAction):
         }))
 
     def process_page_backward(self, event: Page) -> Any:
-        event_readings = event.data.properties[self.event_to_target_prop]
-        event_readings_new = event_readings + event.data.properties[
+        event_target_list = event.data.properties[self.event_to_target_prop]
+        event_target_list_new = event_target_list + event.data.properties[
             self.event_to_target_prog_prop]
-        if event_readings == event_readings_new:
+        if event_target_list == event_target_list_new:
             logger.info(f'{event} : Backward Skipped')
             return
         event.update(PageProperties({
-            self.event_to_target_prop: event_readings_new
+            self.event_to_target_prop: event_target_list_new
         }))
 
 
@@ -510,7 +525,7 @@ class WeekINamespace(DatabaseNamespace):
         super().__init__(DatabaseEnum.weeki_db, EmojiCode.GREEN_BOOK + '제목')
 
     def get_page_by_date(self, date: dt.date) -> Page:
-        title_plain_text = self._get_first_day_of_week(date).strftime("%y/%U")
+        title_plain_text = self._get_first_day_of_week(date).strftime("%y_%U")
         return self.get_page_by_title(title_plain_text) or self.create_page(
             title_plain_text, date)
 
