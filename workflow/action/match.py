@@ -113,7 +113,8 @@ class MatchRecordDatei(MatchSequentialAction):
         for datei in datei_list:
             datei.get_data()
         if self.prepend_datei_on_title and (new_title := self.date_namespace.prepend_date_in_record_title(
-                record.retrieve().data.properties.title, datei_list)):
+                record.retrieve().data.properties.title, datei_list,
+                self.get_needs_separator(record))):
             properties = PageProperties()
             properties[record.data.properties.title_prop] = new_title
             record.update(properties)
@@ -130,9 +131,8 @@ class MatchRecordDatei(MatchSequentialAction):
 
         if not self.read_datei_from_created_time:
             return
-        if self.is_journal:
-            title_plain_text = record.data.properties.title.plain_text
-            if (record.data.properties[journal_kind_prop] in journal_kind_non_datei_list):
+        if record.data.parent == DatabaseEnum.journal_db:
+            if record.data.properties[journal_kind_prop] in journal_kind_non_datei_list:
                 return
         record_created_date = get_record_created_date(record)
         datei = self.date_namespace.get_page_by_date(record_created_date)
@@ -141,9 +141,18 @@ class MatchRecordDatei(MatchSequentialAction):
                 self.record_to_datei: self.record_to_datei.page_value([datei]),
             })
         if self.prepend_datei_on_title and (new_title := self.date_namespace.prepend_date_in_record_title(
-                record.retrieve().data.properties.title, [datei])):
+                record.retrieve().data.properties.title, [datei],
+                self.get_needs_separator(record))):
             properties[record.data.properties.title_prop] = new_title
         self._update_page(record, properties)
+
+    @staticmethod
+    def get_needs_separator(record: Page) -> bool:
+        if record.data.parent != DatabaseEnum.event_db.entity:
+            return False
+        return ('|' not in record.data.properties.title.plain_text
+                and any([record.data.properties[DatabaseEnum.reading_db.prefix + progress],
+                         record.data.properties[DatabaseEnum.issue_db.prefix + progress]]))
 
     def _update_page(self, record, record_properties: PageProperties) -> None:
         if not record_properties:
@@ -525,7 +534,7 @@ class DateINamespace(DatabaseNamespace):
 
     @classmethod
     def prepend_date_in_record_title(
-            cls, title: RichText, datei_list: Iterable[Page]
+            cls, title: RichText, datei_list: Iterable[Page], needs_separator: bool
     ) -> RichText:
         datei_date_list = [datei.data.properties[datei_date_prop].start for datei in datei_list]
 
@@ -534,8 +543,6 @@ class DateINamespace(DatabaseNamespace):
             return RichText()
 
         earliest_datei_date = min(datei_date_list)
-        has_separator = '|' in title.plain_text
-        needs_separator: bool = not has_separator  # and cls._digit_pattern.match(title.plain_text))
         starts_with_separator = title.plain_text.startswith('|')
         return RichText([TextSpan(
             f"{earliest_datei_date.strftime('%y%m%d')}{'|' if needs_separator else ''}"
