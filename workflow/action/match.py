@@ -3,7 +3,7 @@ from __future__ import annotations
 import datetime as dt
 import re
 from abc import ABCMeta
-from typing import Iterable, Optional, Any, Literal
+from typing import Iterable, Optional, Any, Literal, cast
 
 from loguru import logger
 
@@ -575,7 +575,7 @@ class DateINamespace(DatabaseNamespace):
         return RichText([TextSpan(
             f"{earliest_datei_date.strftime('%y%m%d')}{'|' if add_separator else ''}"
             f"{'' if starts_with_separator else ' '}"
-            f"{record.data.parent.data.title.plain_text if not title.plain_text else ''}"),
+            f"{cast(Database, record.data.parent).data.title.plain_text if not title.plain_text else ''}"),
             *title])
 
 
