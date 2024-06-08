@@ -111,7 +111,7 @@ class MatchRecordDatei(MatchSequentialAction):
         for datei in datei_list:
             datei.get_data()
         if self.prepend_datei_on_title and (new_title := self.date_namespace.prepend_date_in_record_title(
-                record.retrieve().data.properties.title, datei_list,
+                record.retrieve(), datei_list,
                 self.get_needs_separator(record))):
             properties = PageProperties()
             properties[record.data.properties.title_prop] = new_title
@@ -140,7 +140,7 @@ class MatchRecordDatei(MatchSequentialAction):
             })
         if self.prepend_datei_on_title and (
                 new_title := self.date_namespace.prepend_date_in_record_title(
-                record.retrieve().data.properties.title, [datei],
+                record.retrieve(), [datei],
                     self.get_needs_separator(record))
         ):
             properties[record.data.properties.title_prop] = new_title
@@ -558,8 +558,9 @@ class DateINamespace(DatabaseNamespace):
 
     @classmethod
     def prepend_date_in_record_title(
-            cls, title: RichText, datei_list: Iterable[Page], needs_separator: bool
+            cls, record: Page, datei_list: Iterable[Page], needs_separator: bool
     ) -> RichText:
+        title = record.data.properties.title
         datei_date_list = [datei.data.properties[datei_date_prop].start for datei in datei_list]
 
         needs_update = not cls._check_date_in_record_title(title.plain_text, datei_date_list)
@@ -569,12 +570,12 @@ class DateINamespace(DatabaseNamespace):
         earliest_datei_date = min(datei_date_list)
         add_separator = needs_separator and ('|' not in title.plain_text)
         starts_with_separator = title.plain_text.startswith('|')
-        if title.plain_text == "#":
-            return RichText([TextSpan(f"#{earliest_datei_date.strftime('%y%m%d')}"])
+        # if title.plain_text == "#":
+        #     return RichText([TextSpan(f"#{earliest_datei_date.strftime('%y%m%d')}"])
         return RichText([TextSpan(
             f"{earliest_datei_date.strftime('%y%m%d')}{'|' if add_separator else ''}"
             f"{'' if starts_with_separator else ' '}"
-            f"{'✨' if not title.plain_text else ''}"),
+            f"{record.data.parent.data.title.plain_text if not title.plain_text else ''}"),
             *title])
 
 
