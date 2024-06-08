@@ -569,6 +569,8 @@ class DateINamespace(DatabaseNamespace):
         earliest_datei_date = min(datei_date_list)
         add_separator = needs_separator and ('|' not in title.plain_text)
         starts_with_separator = title.plain_text.startswith('|')
+        if title.plain_text == "#":
+            return RichText([TextSpan(f"#{earliest_datei_date.strftime('%y%m%d')}"])
         return RichText([TextSpan(
             f"{earliest_datei_date.strftime('%y%m%d')}{'|' if add_separator else ''}"
             f"{'' if starts_with_separator else ' '}"
