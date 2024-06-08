@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from workflow import backup_dir
 from workflow.action.match import MatchActionBase, MatchDatei, MatchRecordDatei, \
-    MatchRecordWeekiByDatei, MatchRecordTimestr, MatchReadingStartDatei, MatchEventProgress, MatchRecordDateiSchedule
+    MatchRecordWeekiByDatei, MatchRecordTimestr, MatchReadingStartDatei, MatchEventProgress, MatchRecordDateiSchedule, \
+    MatchEventProgressDatei
 from workflow.action.media_scrap import MediaScrapAction
 from workflow.action.migration_backup import MigrationBackupLoadAction, MigrationBackupSaveAction
 from workflow.block import DatabaseEnum, schedule, start
@@ -15,13 +16,15 @@ routine_action = CompositeAction([
 
     MatchDatei(base),
 
+    MatchEventProgress(base, DatabaseEnum.issue_db),
+    MatchEventProgress(base, DatabaseEnum.reading_db),
     MatchRecordDatei(base, DatabaseEnum.event_db, DatabaseEnum.datei_db.title),
     MatchRecordDatei(base, DatabaseEnum.event_db, schedule, read_datei_from_title=True, prepend_datei_on_title=True),
     MatchRecordDateiSchedule(base, DatabaseEnum.event_db),
     MatchRecordWeekiByDatei(base, DatabaseEnum.event_db, schedule, schedule),
     MatchRecordTimestr(base, DatabaseEnum.event_db, schedule),
-    MatchEventProgress(base, DatabaseEnum.issue_db),
-    MatchEventProgress(base, DatabaseEnum.reading_db),
+    MatchEventProgressDatei(base, DatabaseEnum.issue_db),
+    MatchEventProgressDatei(base, DatabaseEnum.reading_db),
 
     MatchRecordDatei(base, DatabaseEnum.journal_db, DatabaseEnum.datei_db.title),
     MatchRecordDatei(base, DatabaseEnum.journal_db, schedule, read_datei_from_title=True, prepend_datei_on_title=True),
@@ -43,6 +46,8 @@ routine_action = CompositeAction([
 
     MatchRecordDatei(base, DatabaseEnum.reading_db, DatabaseEnum.datei_db.title),
     MatchRecordWeekiByDatei(base, DatabaseEnum.reading_db, DatabaseEnum.weeki_db.title, DatabaseEnum.datei_db.title),
+    MatchRecordDatei(base, DatabaseEnum.reading_db, schedule, read_datei_from_created_time=False,
+                     read_datei_from_title=True),
     MatchReadingStartDatei(base),
     MatchRecordWeekiByDatei(base, DatabaseEnum.reading_db, start, start),
     # DeprCreateDateEvent(base, DatabaseEnum.reading_db),

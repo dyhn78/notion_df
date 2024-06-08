@@ -3,13 +3,13 @@ from __future__ import annotations
 import datetime as dt
 import re
 from abc import ABCMeta
-from typing import Iterable, Optional, Any, Literal
+from typing import Iterable, Optional, Any, Literal, cast
 
 from loguru import logger
 
 from notion_df.core.collection import Paginator
 from notion_df.core.definition import repr_object
-from notion_df.entity import Page
+from notion_df.entity import Page, Database
 from notion_df.object.filter import created_time_filter
 from notion_df.object.rich_text import TextSpan, RichText
 from notion_df.property import RelationProperty, TitleProperty, PageProperties, \
@@ -18,7 +18,8 @@ from workflow.block import DatabaseEnum, schedule, progress, record_timestr_prop
     datepage_date_prop, weekpage_date_range_prop, event_to_datei_prop, event_to_stage_prop, event_to_idea_prop, \
     event_to_issue_prop, event_to_reading_prop, event_to_area_prop, event_to_gist_prop, journal_kind_non_datei_list, \
     reading_to_main_date_prop, reading_to_start_date_prop, reading_to_event_prog_prop, \
-    reading_match_date_by_created_time_prop, status_prop, status_auto_generated, korean_weekday, journal_kind_prop
+    reading_match_date_by_created_time_prop, status_prop, status_auto_generated, korean_weekday, journal_kind_prop, \
+    journal_kind_needs_separator_list
 from workflow.core.action import SequentialAction, Action
 from workflow.emoji_code import EmojiCode
 
@@ -84,7 +85,7 @@ class MatchRecordDatei(MatchSequentialAction):
     def process_if_record_to_datei_not_empty(self, record: Page) -> None:
         datei_list = record.data.properties[self.record_to_datei]
         if self.prepend_datei_on_title and (new_title := self.date_namespace.prepend_date_in_record_title(
-                record.retrieve().data.properties.title, datei_list,
+                record.retrieve(), datei_list,
                 self.get_needs_separator(record))):
             properties = PageProperties()
             properties[record.data.properties.title_prop] = new_title
@@ -102,7 +103,7 @@ class MatchRecordDatei(MatchSequentialAction):
 
         if not self.read_datei_from_created_time:
             return
-        if record.data.parent == DatabaseEnum.journal_db:
+        if record.data.parent == DatabaseEnum.journal_db.entity:
             if record.data.properties[journal_kind_prop] in journal_kind_non_datei_list:
                 return
         record_created_date = get_record_created_date(record)
@@ -113,7 +114,7 @@ class MatchRecordDatei(MatchSequentialAction):
             })
         if self.prepend_datei_on_title and (
                 new_title := self.date_namespace.prepend_date_in_record_title(
-                record.retrieve().data.properties.title, [datei],
+                    record.retrieve(), [datei],
                     self.get_needs_separator(record))
         ):
             properties[record.data.properties.title_prop] = new_title
@@ -127,7 +128,7 @@ class MatchRecordDatei(MatchSequentialAction):
                 record.data.properties[DatabaseEnum.issue_db.prefix + progress]
             ])
         if record.data.parent == DatabaseEnum.journal_db.entity:
-            return False
+            return record.data.properties[journal_kind_prop] in journal_kind_needs_separator_list
         if record.data.parent == DatabaseEnum.stage_db.entity:
             return True
         raise ValueError(f"get_needs_separator() - {record}")
@@ -368,8 +369,7 @@ class MatchEventProgress(MatchSequentialAction):
         self.event_to_target_prog_prop = RelationProperty(target_db.prefix + progress)
 
     def __repr__(self):
-        return repr_object(self,
-                           target_db=self.target_db)
+        return repr_object(self, target_db=self.target_db)
 
     def query(self) -> Iterable[Page]:
         return self.event_db.query(
@@ -383,19 +383,6 @@ class MatchEventProgress(MatchSequentialAction):
             return
         self.process_page_forward(event)
         self.process_page_backward(event)
-        event_to_target_prog_list = event.data.properties[self.event_to_target_prop]
-        datei_list = event.data.properties[f'{DatabaseEnum.datei_db.prefix}{schedule}']
-        if not datei_list:
-            return
-        datei = datei_list[0]
-        datei_to_target_list_prev = datei.data.properties[self.datei_to_target_prop]
-        datei_to_target_list_new = datei_to_target_list_prev + event_to_target_prog_list
-        if datei_to_target_list_new == datei_to_target_list_prev:
-            logger.info(f'{event} : Datei Skipped')
-            return
-        datei.update(properties=PageProperties({
-            self.datei_to_target_prop: datei_to_target_list_new
-        }))
 
     def process_page_forward(self, event: Page) -> Any:
         if event.data.properties[self.event_to_target_prog_prop]:
@@ -430,6 +417,39 @@ class MatchEventProgress(MatchSequentialAction):
             return
         event.update(PageProperties({
             self.event_to_target_prop: event_target_list_new
+        }))
+
+
+class MatchEventProgressDatei(MatchSequentialAction):
+    event_db = DatabaseEnum.event_db.entity
+
+    def __init__(self, base: MatchActionBase, target_db: DatabaseEnum):
+        super().__init__(base)
+        self.target_db = target_db
+        self.datei_to_target_prop = self.event_to_target_prop = RelationProperty(target_db.prefix_title)
+        self.event_to_target_prog_prop = RelationProperty(target_db.prefix + progress)
+
+    def __repr__(self):
+        return repr_object(self, target_db=self.target_db)
+
+    def query(self) -> Iterable[Page]:
+        return self.event_db.query(filter=self.event_to_target_prog_prop.filter.is_not_empty())
+
+    def process_page(self, event: Page) -> Any:
+        if event.data.parent != self.event_db:
+            return
+        event_to_target_prog_list = event.data.properties[self.event_to_target_prop]
+        datei_list = event.data.properties[f'{DatabaseEnum.datei_db.prefix}{schedule}']
+        if not datei_list:
+            return
+        datei = datei_list[0]
+        datei_to_target_list_prev = datei.data.properties[self.datei_to_target_prop]
+        datei_to_target_list_new = datei_to_target_list_prev + event_to_target_prog_list
+        if datei_to_target_list_new == datei_to_target_list_prev:
+            logger.info(f'{event} : Datei Skipped')
+            return
+        datei.update(properties=PageProperties({
+            self.datei_to_target_prop: datei_to_target_list_new
         }))
 
 
@@ -512,8 +532,9 @@ class DateINamespace(DatabaseNamespace):
 
     @classmethod
     def prepend_date_in_record_title(
-            cls, title: RichText, datei_list: Iterable[Page], needs_separator: bool
+            cls, record: Page, datei_list: Iterable[Page], needs_separator: bool
     ) -> RichText:
+        title = record.data.properties.title
         datei_date_list = [datei.data.properties[datepage_date_prop].start
                            for datei in datei_list]
 
@@ -524,10 +545,12 @@ class DateINamespace(DatabaseNamespace):
         earliest_datei_date = min(datei_date_list)
         add_separator = needs_separator and ('|' not in title.plain_text)
         starts_with_separator = title.plain_text.startswith('|')
+        # if title.plain_text == "#":
+        #     return RichText([TextSpan(f"#{earliest_datei_date.strftime('%y%m%d')}"])
         return RichText([TextSpan(
             f"{earliest_datei_date.strftime('%y%m%d')}{'|' if add_separator else ''}"
             f"{'' if starts_with_separator else ' '}"
-            f"{'✨' if not title.plain_text else ''}"),
+            f"{cast(Database, record.data.parent).data.title.plain_text if not title.plain_text else ''}"),
             *title])
 
 
