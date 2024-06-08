@@ -136,11 +136,12 @@ class PageWithDatePageIndex(Page, metaclass=ABCMeta):
         date = parse_date_title_match(match)
         if date is None:
             return
-        return DatePage.get_page_by_date(date)
+        return Datei.get_page_by_date(date)
 
-    def prepend_date_on_title(self, candidate_date_pages: Iterable[DatePage]) -> RichText:
+    def prepend_date_on_title(self, candidate_date_pages: Iterable[Datei]) -> RichText:
         """return new title value (update() must be called outside)"""
-        candidate_date_list = [cast(DatePage, date_page).date for date_page in candidate_date_pages]
+        # TODO: reflect the latest changes on main
+        candidate_date_list = [cast(Datei, date_page).date for date_page in candidate_date_pages]
         match = DateTitleMatch(self.checker_pattern.search(self.title.plain_text))
         date_in_title = parse_date_title_match(match)
         needs_update = date_in_title not in candidate_date_list
@@ -158,8 +159,7 @@ class PageWithDatePageIndex(Page, metaclass=ABCMeta):
             *self.title])
 
 
-class DatePage(PageWithTitleIndex):
-    # TODO: Datei
+class Datei(PageWithTitleIndex):
     database = DatabaseEnum.datei_db.entity
     title_prop = TitleProperty(EmojiCode.GREEN_BOOK + '제목')
     date_prop = DateProperty(EmojiCode.CALENDAR + '날짜')
@@ -180,17 +180,17 @@ class DatePage(PageWithTitleIndex):
         match = self.getter_pattern.match(self.title.plain_text)
         date = parse_date_title_match(match)
         if date is None:
-            raise RuntimeError(f"Invalid DatePage title. {self=}")
+            raise RuntimeError(f"Invalid Datei title. {self=}")
         return date
 
     @classmethod
-    def get_page_by_date(cls, date: dt.date) -> DatePage:
+    def get_page_by_date(cls, date: dt.date) -> Datei:
         if page_list := cls.database.query(cls.date_prop.filter.equals(date)):
             return cls(page_list[0].id)
         return cls.create_page(date)
 
     @classmethod
-    def create_page(cls, date: dt.date) -> DatePage:
+    def create_page(cls, date: dt.date) -> Datei:
         day_name = korean_weekday[date.weekday()] + '요일'
         title_plain_text = f'{date.strftime("%y%m%d")} {day_name}'
         plain_page = cls.database.create_child_page(PageProperties({
@@ -200,8 +200,7 @@ class DatePage(PageWithTitleIndex):
         return cls(plain_page.id)
 
 
-class WeekPage(PageWithTitleIndex):
-    # TODO: Weeki
+class Weeki(PageWithTitleIndex):
     database = DatabaseEnum.weeki_db.entity
     title_prop = TitleProperty(EmojiCode.GREEN_BOOK + '제목')
     date_range_prop = DateProperty(EmojiCode.BIG_CALENDAR + '날짜 범위')
@@ -246,8 +245,8 @@ class EventPage(PageWithDatePageIndex):
 record_datetime_auto_prop = DateFormulaPropertyKey(EmojiCode.TIMER + '일시')
 record_timestr_prop = RichTextProperty(EmojiCode.CALENDAR + '시간')
 datepage_to_weeki_prop = RelationProperty(DatabaseEnum.weeki_db.prefix_title)
-datepage_date_prop = DatePage.date_prop
-weekpage_date_range_prop = WeekPage.date_range_prop
+datepage_date_prop = Datei.date_prop
+weekpage_date_range_prop = Weeki.date_range_prop
 event_title_prop = TitleProperty(EmojiCode.ORANGE_BOOK + '제목')
 event_to_datei_prop = RelationProperty(DatabaseEnum.datei_db.prefix_title)
 event_to_stage_prop = RelationProperty(DatabaseEnum.stage_db.prefix_title)
