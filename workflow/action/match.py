@@ -395,8 +395,7 @@ class MatchEventProgress(MatchSequentialAction):
         self.event_to_target_prog_prop = RelationProperty(target_db.prefix + progress)
 
     def __repr__(self):
-        return repr_object(self,
-                           target_db=self.target_db)
+        return repr_object(self, target_db=self.target_db)
 
     def query(self) -> Iterable[Page]:
         return self.event_db.query(
@@ -410,19 +409,6 @@ class MatchEventProgress(MatchSequentialAction):
             return
         self.process_page_forward(event)
         self.process_page_backward(event)
-        event_to_target_prog_list = event.data.properties[self.event_to_target_prop]
-        datei_list = event.data.properties[f'{DatabaseEnum.datei_db.prefix}{schedule}']
-        if not datei_list:
-            return
-        datei = datei_list[0]
-        datei_to_target_list_prev = datei.data.properties[self.datei_to_target_prop]
-        datei_to_target_list_new = datei_to_target_list_prev + event_to_target_prog_list
-        if datei_to_target_list_new == datei_to_target_list_prev:
-            logger.info(f'{event} : Datei Skipped')
-            return
-        datei.update(properties=PageProperties({
-            self.datei_to_target_prop: datei_to_target_list_new
-        }))
 
     def process_page_forward(self, event: Page) -> Any:
         if event.data.properties[self.event_to_target_prog_prop]:
@@ -457,6 +443,37 @@ class MatchEventProgress(MatchSequentialAction):
             return
         event.update(PageProperties({
             self.event_to_target_prop: event_target_list_new
+        }))
+
+
+class MatchEventProgressDatei(MatchSequentialAction):
+    event_db = DatabaseEnum.event_db.entity
+
+    def __init__(self, base: MatchActionBase, target_db: DatabaseEnum):
+        super().__init__(base)
+        self.target_db = target_db
+        self.datei_to_target_prop = self.event_to_target_prop = RelationProperty(target_db.prefix_title)
+        self.event_to_target_prog_prop = RelationProperty(target_db.prefix + progress)
+
+    def __repr__(self):
+        return repr_object(self, target_db=self.target_db)
+
+    def query(self) -> Iterable[Page]:
+        return self.event_db.query(filter=self.event_to_target_prog_prop.filter.is_not_empty())
+
+    def process_page(self, event: Page) -> Any:
+        event_to_target_prog_list = event.data.properties[self.event_to_target_prop]
+        datei_list = event.data.properties[f'{DatabaseEnum.datei_db.prefix}{schedule}']
+        if not datei_list:
+            return
+        datei = datei_list[0]
+        datei_to_target_list_prev = datei.data.properties[self.datei_to_target_prop]
+        datei_to_target_list_new = datei_to_target_list_prev + event_to_target_prog_list
+        if datei_to_target_list_new == datei_to_target_list_prev:
+            logger.info(f'{event} : Datei Skipped')
+            return
+        datei.update(properties=PageProperties({
+            self.datei_to_target_prop: datei_to_target_list_new
         }))
 
 
