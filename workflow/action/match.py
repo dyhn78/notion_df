@@ -462,6 +462,8 @@ class MatchEventProgressDatei(MatchSequentialAction):
         return self.event_db.query(filter=self.event_to_target_prog_prop.filter.is_not_empty())
 
     def process_page(self, event: Page) -> Any:
+        if event.data.parent != self.event_db:
+            return
         event_to_target_prog_list = event.data.properties[self.event_to_target_prop]
         datei_list = event.data.properties[f'{DatabaseEnum.datei_db.prefix}{schedule}']
         if not datei_list:
