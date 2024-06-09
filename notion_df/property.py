@@ -115,6 +115,12 @@ class Property(Generic[DatabasePropertyValueT, PagePropertyValueT, FilterBuilder
             return subclass._deserialize_page_value(prop_serialized)
         return deserialize(cls.database_value, prop_serialized[typename])
 
+    def __get__(self, instance, owner):
+        # TODO !!! : implement
+        #  it should be overridden on all subclasses with no function changes
+        #  because of pycharm type inference does not work with TypeVar
+        ...
+
 
 class Properties(DualSerializable, MutableMapping[Property, PropertyValueT], metaclass=ABCMeta):
     _prop_by_id: dict[str, Property]
