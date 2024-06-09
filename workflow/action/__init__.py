@@ -6,7 +6,7 @@ from workflow.action.match import MatchActionBase, MatchDatei, MatchRecordDatei,
     MatchEventProgressDatei
 from workflow.action.media_scrap import MediaScrapAction
 from workflow.action.migration_backup import MigrationBackupLoadAction, MigrationBackupSaveAction
-from workflow.block_enum import DatabaseEnum, schedule, start
+from workflow.block import DatabaseEnum, schedule, start
 from workflow.core.action import CompositeAction
 
 base = MatchActionBase()

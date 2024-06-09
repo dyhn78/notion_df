@@ -10,7 +10,7 @@ from loguru import logger
 from notion_df.entity import Page, search_by_title
 from notion_df.util.misc import repr_object
 from notion_df.variable import print_width
-from workflow.block_enum import is_template
+from workflow.block import is_template
 from workflow.core.entrypoint import entrypoint, WorkflowRecord, WorkflowSkipException
 
 Callable_T = TypeVar('Callable_T', bound=Callable)
