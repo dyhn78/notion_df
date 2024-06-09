@@ -3,7 +3,7 @@ from itertools import chain
 from notion_df.entity import search_by_title
 from workflow import backup_dir
 from workflow.action.migration_backup import MigrationBackupSaveAction
-from workflow.block import DatabaseEnum
+from workflow.block_enum import DatabaseEnum
 
 if __name__ == '__main__':
     action = MigrationBackupSaveAction(backup_dir)

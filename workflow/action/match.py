@@ -16,7 +16,7 @@ from notion_df.property import RelationProperty, TitleProperty, PageProperties, 
     DateProperty, CheckboxFormulaProperty, RichTextProperty, SelectProperty, \
     RelationPagePropertyValue
 from notion_df.util.misc import repr_object
-from workflow.block import DatabaseEnum, schedule, start, progress
+from workflow.block_enum import DatabaseEnum, schedule, start, progress
 from workflow.core.action import SequentialAction, Action
 from workflow.emoji_code import EmojiCode
 
