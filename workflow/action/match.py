@@ -496,7 +496,8 @@ class DateINamespace(DatabaseNamespace):
 
     _getter_pattern = re.compile(r'(\d{2})(\d{2})(\d{2}).*')
     _getter_pattern_2 = re.compile(r'(\d{2})(\d{2})(\d{2})[|]')
-    _checker_pattern = _getter_pattern
+    _checker_pattern_1 = _getter_pattern
+    _checker_pattern_2 = re.compile(r'(\d{2})(\d{2})\d{2}-(\d{2})')
 
     def get_page_by_record_title(self, title_plain_text: str) -> Optional[Page]:
         date = self.get_date_of_title(title_plain_text)
@@ -511,10 +512,14 @@ class DateINamespace(DatabaseNamespace):
         return cls._parse_date_match(match)
 
     @classmethod
-    def _check_date_in_record_title(cls, title_plain_text: str, dates: list[dt.date]) -> bool:
-        match = cls._checker_pattern.search(title_plain_text)
-        date_in_record_title = cls._parse_date_match(match)
-        return date_in_record_title in dates
+    def _check_date_in_record_title(cls, title_plain_text: str, date_candidates: list[dt.date]) -> bool:
+        dates_in_record_title = []
+        match_1 = cls._checker_pattern_1.search(title_plain_text)
+        dates_in_record_title.append(cls._parse_date_match(match_1))
+        match_2 = cls._checker_pattern_2.search(title_plain_text)
+        dates_in_record_title.append(cls._parse_date_match(match_2))
+        return any((date_in_record_title is not None and date_in_record_title in date_candidates)
+                   for date_in_record_title in dates_in_record_title)
 
     @classmethod
     def _parse_date_match(cls, match: Optional[re.Match[str]]) -> Optional[dt.date]:
