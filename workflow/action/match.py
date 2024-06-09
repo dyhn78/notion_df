@@ -37,7 +37,7 @@ event_to_topic_prop = RelationProperty(DatabaseEnum.area_db.prefix_title)
 event_to_gist_prop = RelationProperty(DatabaseEnum.gist_db.prefix_title)
 journal_kind_prop = record_kind_prop = SelectProperty("📕유형")
 record_kind_progress = "🌳진행"
-journal_kind_non_datei_list = ["🫐과제", "🍓계획", "🍈결산"]
+journal_kind_non_datei_list = ["🫐작업", "🍓계획", "🍈결산"]
 journal_kind_needs_separator_list = ["🍊상태"]
 reading_to_main_date_prop = RelationProperty(DatabaseEnum.datei_db.prefix_title)
 reading_to_start_date_prop = RelationProperty(DatabaseEnum.datei_db.prefix + start)
