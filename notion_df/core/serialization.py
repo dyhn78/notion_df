@@ -213,20 +213,21 @@ class Deserializable(metaclass=ABCMeta):
         cls._deserialize_subclass = deserialize_subclass_new
 
     @classmethod
-    def _deserialize_subclass(cls, raw: Any) -> Self:
-        """override this to use this base class
-         as an entrypoint to deserialize subclasses."""
-        raise NotImplementedError
-
-    @classmethod
     def deserialize(cls, raw: Any) -> Self:
         """override this to allow proxy-deserialize of subclasses."""
+        # TODO
         return cls._deserialize_this(raw)
 
     @classmethod
     @abstractmethod
     def _deserialize_this(cls, raw: Any) -> Self:
         """override this to modify deserialization of itself."""
+        raise NotImplementedError
+
+    @classmethod
+    def _deserialize_subclass(cls, raw: Any) -> Self:
+        """override this to use this base class
+         as an entrypoint to deserialize subclasses."""
         raise NotImplementedError
 
     @classmethod
