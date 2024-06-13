@@ -4,7 +4,7 @@ import inspect
 import re
 import types
 from abc import ABCMeta, abstractmethod
-from dataclasses import fields, InitVar, Field, field, dataclass
+from dataclasses import fields, InitVar, Field, field, dataclass, is_dataclass
 from datetime import datetime, date
 from decimal import Decimal
 from enum import Enum
@@ -182,6 +182,7 @@ class Serializable(metaclass=ABCMeta):
 
         helper method to implement serialize().
         Note: this drops post-init fields."""
+        assert is_dataclass(self)
         serialized = {}
         # noinspection PyDataclass
         for fd in fields(self):
@@ -195,6 +196,27 @@ class Serializable(metaclass=ABCMeta):
 class Deserializable(metaclass=ABCMeta):
     """representation of the resources defined in Notion REST API.
     can be loaded from JSON object."""
+
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__()
+        deserialize_subclass_old = cls._deserialize_subclass
+
+        # noinspection PyDecorator
+        @classmethod
+        def deserialize_subclass_new(_cls: type[Self], raw: Any) -> Self:
+            # cls: the base class _deserialize_subclass is defined
+            # _cls: the subclass _deserialize_subclass is called
+            if _cls == cls:
+                return deserialize_subclass_old(raw)
+            raise NotImplementedError
+
+        cls._deserialize_subclass = deserialize_subclass_new
+
+    @classmethod
+    def _deserialize_subclass(cls, raw: Any) -> Self:
+        """override this to use this base class
+         as an entrypoint to deserialize subclasses."""
+        raise NotImplementedError
 
     @classmethod
     def deserialize(cls, raw: Any) -> Self:
@@ -210,11 +232,11 @@ class Deserializable(metaclass=ABCMeta):
     @classmethod
     @final
     def _deserialize_from_dict(cls, serialized: dict[str, Any], **overrides: Any) -> Self:
-        # TODO: separate from the class
         """this should only be called from dataclass.
 
         helper method to implement _deserialize_this().
         Note: this collects post-init fields as well."""
+        assert is_dataclass(cls)
         if inspect.isabstract(cls):
             raise TypeError('cannot instantiate abstract class', {'cls': cls, 'serialized': serialized})
 
@@ -263,6 +285,8 @@ class Deserializable(metaclass=ABCMeta):
     def _repr_non_default_fields(self):
         """this can only be called from a dataclass.
         helper method to implement __repr__()."""
+        # noinspection PyDataclass
+        assert is_dataclass(self)
         # noinspection PyDataclass
         return (f'{type(self).__name__}('
                 + ','.join(f'{fd.name}={getattr(self, fd.name)}'
