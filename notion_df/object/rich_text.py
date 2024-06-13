@@ -44,6 +44,7 @@ class Span(DualSerializable, metaclass=ABCMeta):
         def _serialize_wrapped(self: Span):
             raw = _serialize(self)
             if self.annotations is not None:
+                # noinspection PyTestUnpassedFixture
                 raw['annotations'] = self.annotations.serialize()
             return raw
 

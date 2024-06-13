@@ -5,8 +5,10 @@ import inspect
 import re
 from abc import ABCMeta
 from enum import Enum
-from typing import Optional, Self, ClassVar, cast, NewType, Iterable
+from typing import Optional, ClassVar, cast, NewType, Iterable
 from uuid import UUID
+
+from typing_extensions import Self
 
 from notion_df.core.entity import Entity
 from notion_df.core.uuid_parser import get_page_or_database_url
