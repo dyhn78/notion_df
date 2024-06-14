@@ -333,9 +333,7 @@ class RelationDatabasePropertyValue(DatabasePropertyValue, metaclass=ABCMeta):
     database: Database
 
     @classmethod
-    def deserialize(cls, raw: dict[str, Any]) -> Self:
-        if cls != RelationDatabasePropertyValue:
-            return cls._deserialize_this(raw)
+    def _deserialize_subclass(cls, raw: dict[str, Any]) -> Self:
         match (relation_type := raw['type']):
             case 'single_property':
                 subclass = SingleRelationDatabasePropertyValue

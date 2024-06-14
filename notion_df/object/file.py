@@ -17,9 +17,7 @@ class File(Icon, metaclass=ABCMeta):
     """https://developers.notion.com/reference/file-object"""
 
     @classmethod
-    def deserialize(cls, raw: dict[str, Any]) -> Self:
-        if cls != File:
-            return cls._deserialize_this(raw)
+    def _deserialize_subclass(cls, raw: dict[str, Any]) -> Self:
         match raw['type']:
             case 'file':
                 subclass = InternalFile

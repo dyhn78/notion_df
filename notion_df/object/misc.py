@@ -86,9 +86,7 @@ class Icon(DualSerializable, metaclass=ABCMeta):
         pass
 
     @classmethod
-    def deserialize(cls, raw: dict[str, Any]) -> Self:
-        if cls != Icon:
-            return cls._deserialize_this(raw)
+    def _deserialize_subclass(cls, raw: dict[str, Any]) -> Self:
         subclass = icon_registry[raw['type']]
         return subclass.deserialize(raw)
 

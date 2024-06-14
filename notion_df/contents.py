@@ -288,10 +288,7 @@ class SyncedBlockContents(BlockContents, metaclass=ABCMeta):
         return 'synced_block'
 
     @classmethod
-    def deserialize(cls, raw: dict[str, Any]) -> Self:
-        if cls != SyncedBlockContents:
-            return cls._deserialize_this(raw)
-
+    def _deserialize_subclass(cls, raw: dict[str, Any]) -> Self:
         def get_subclass():
             if raw['synced_from']:
                 return DuplicatedSyncedBlockValue

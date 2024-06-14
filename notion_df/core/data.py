@@ -50,11 +50,9 @@ class EntityData(Deserializable, metaclass=ABCMeta):
         setattr(cls, '_deserialize_this', _deserialize_this_wrapped)
 
     @classmethod
-    def deserialize(cls, raw: Any) -> Self:
+    def _deserialize_subclass(cls, raw: Any) -> Self:
         from notion_df.object.data import BlockData, DatabaseData, PageData
 
-        if cls != EntityData:
-            return cls._deserialize_this(raw)
         match object_kind := raw['object']:
             case 'block':
                 subclass = BlockData

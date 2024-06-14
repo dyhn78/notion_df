@@ -65,11 +65,7 @@ class Span(DualSerializable, metaclass=ABCMeta):
         return ()
 
     @classmethod
-    @final
-    def deserialize(cls, raw: dict[str, Any]) -> Self:
-        if cls != Span:
-            return cls._deserialize_this(raw)
-
+    def _deserialize_subclass(cls, raw: dict[str, Any]) -> Self:
         def get_typename(_raw: dict[str, Any]) -> tuple[str, ...]:
             if 'type' in _raw:
                 typename = _raw['type']

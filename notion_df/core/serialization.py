@@ -10,14 +10,15 @@ from decimal import Decimal
 from enum import Enum
 from functools import cache
 # noinspection PyUnresolvedReferences
-from typing import Any, get_origin, get_args, final, NewType, cast, get_type_hints, _GenericAlias, Union, Literal, \
+from typing import Any, get_origin, get_args, final, NewType, cast, get_type_hints, \
+    _GenericAlias, Union, Literal, \
     TypeVar, overload
 from uuid import UUID
 
 import dateutil.parser
 from typing_extensions import Self
 
-from notion_df.core.exception import NotionDfException
+from notion_df.core.exception import NotionDfException, ImplementationError
 from notion_df.variable import my_tz
 
 
@@ -195,10 +196,21 @@ class Serializable(metaclass=ABCMeta):
 
 class Deserializable(metaclass=ABCMeta):
     """representation of the resources defined in Notion REST API.
-    can be loaded from JSON object."""
+    can be loaded from JSON object.
+    Concrete classes should implement _deserialize_this();
+    Abstract classes can implement _deserialize_this() and _deserialize_subclass()."""
 
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__()
+        if not inspect.isabstract(cls):
+            # noinspection PyBroadException
+            try:
+                cls._deserialize_subclass(None)
+            except NotImplementedError:
+                pass
+            except:  # noqa: E722
+                raise ImplementationError(
+                    "_deserialize_subclass() should not be defined on concrete classes")
         deserialize_subclass_old = cls._deserialize_subclass
 
         # noinspection PyDecorator
@@ -206,28 +218,32 @@ class Deserializable(metaclass=ABCMeta):
         def deserialize_subclass_new(_cls: type[Self], raw: Any) -> Self:
             # cls: the base class _deserialize_subclass is defined
             # _cls: the subclass _deserialize_subclass is called
-            if _cls == cls:
-                return deserialize_subclass_old(raw)
-            raise NotImplementedError
+            if _cls != cls:
+                raise NotImplementedError
+            return deserialize_subclass_old(raw)
 
         cls._deserialize_subclass = deserialize_subclass_new
 
     @classmethod
+    @final
     def deserialize(cls, raw: Any) -> Self:
-        """override this to allow proxy-deserialize of subclasses."""
-        # TODO
-        return cls._deserialize_this(raw)
+        try:
+            return cls._deserialize_subclass(raw)
+        except NotImplementedError:
+            return cls._deserialize_this(raw)
 
     @classmethod
     @abstractmethod
     def _deserialize_this(cls, raw: Any) -> Self:
-        """override this to modify deserialization of itself."""
+        """Override this to deserialize itself and its subclasses."""
         raise NotImplementedError
 
     @classmethod
     def _deserialize_subclass(cls, raw: Any) -> Self:
-        """override this to use this base class
-         as an entrypoint to deserialize subclasses."""
+        """Override this to deserialize its subclasses.
+         only reachable from the defined class itself.
+         prioritized over _deserialize_this().
+         should NOT be defined on concrete classes."""
         raise NotImplementedError
 
     @classmethod
