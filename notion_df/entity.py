@@ -21,7 +21,7 @@ from notion_df.object.rich_text import RichText
 from notion_df.object.sort import Sort, TimestampSort, Direction
 from notion_df.object.user import PartialUser
 from notion_df.property import Property, PageProperties, DatabaseProperties, \
-    PPVT
+    PVT
 from notion_df.request.block import AppendBlockChildren, RetrieveBlock, \
     RetrieveBlockChildren, UpdateBlock, DeleteBlock
 from notion_df.request.database import CreateDatabase, UpdateDatabase, RetrieveDatabase, \
@@ -373,7 +373,7 @@ class Page(RetrievableEntity[PageData], HasParent):
         return self
 
     def retrieve_property_item(
-            self, property_id: str | Property[Any, PPVT, Any]) -> PPVT:
+            self, property_id: str | Property[Any, PVT, Any]) -> PVT:
         logger.info(f'Page.retrieve_property_item({self}, property_id="{property_id}")')
         if isinstance(prop := property_id, Property):
             property_id = prop.id
