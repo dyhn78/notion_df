@@ -106,9 +106,10 @@ class PageWithTitleIndex(Page, metaclass=ABCMeta):
     pages_by_title_plain_text: ClassVar[dict[str, Self]] = {}
 
     def __init_subclass__(cls, **kwargs):
-        if not inspect.isabstract(cls):
-            assert cls.database
-            assert cls.title_prop
+        pass
+        # if not inspect.isabstract(cls):
+        #     assert cls.database
+        #     assert cls.title_prop
 
     def __init__(self, id_or_url: UUID | str):
         super().__init__(id_or_url)

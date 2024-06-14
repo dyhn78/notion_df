@@ -201,13 +201,13 @@ class PaginatedRequestBuilder(Generic[DataElementT], RequestBuilder, metaclass=A
             yield deserialize(cls.data_element_type, data_element)
 
 
-def request_page(self: RequestBuilder, page_size: int = MAX_PAGE_SIZE,
+def request_page(self: RequestBuilder, page_size: Optional[int] = MAX_PAGE_SIZE,
                  start_cursor: Optional[str] = None) -> dict[str, Any]:
     settings = self.get_settings()
     body = self.get_body()
 
     pagination_params = {}
-    if page_size != MAX_PAGE_SIZE:
+    if page_size not in {MAX_PAGE_SIZE, None}:
         pagination_params.update({'page_size': page_size})
     if start_cursor:
         pagination_params.update({'start_cursor': start_cursor})

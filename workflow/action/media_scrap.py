@@ -5,7 +5,7 @@ from selenium.webdriver.chrome.webdriver import WebDriver
 
 from notion_df.contents import ChildPageBlockContents, BlockContents, \
     TableOfContentsBlockContents
-from notion_df.core.collection import StrEnum, peek
+from notion_df.core.collection import StrEnum, peek, Paginator
 from notion_df.entity import Page
 from notion_df.object.filter import CompoundFilter
 from notion_df.object.misc import SelectOption
