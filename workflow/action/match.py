@@ -575,12 +575,18 @@ class DateINamespace(DatabaseNamespace):
         earliest_datei_date = min(datei_date_list)
         add_separator = needs_separator and ('|' not in title.plain_text)
         starts_with_separator = title.plain_text.startswith('|')
+        default_title = ""
+        if not title.plain_text:
+            if record_kind := record.data.get(record_kind_prop):
+                default_title = record_kind.value
+            else:
+                default_title = cast(Database, record.data.parent).data.title.plain_text
         # if title.plain_text == "#":
         #     return RichText([TextSpan(f"#{earliest_datei_date.strftime('%y%m%d')}"])
         return RichText([TextSpan(
             f"{earliest_datei_date.strftime('%y%m%d')}{'|' if add_separator else ''}"
             f"{'' if starts_with_separator else ' '}"
-            f"{cast(Database, record.data.parent).data.title.plain_text if not title.plain_text else ''}"),
+            f"{default_title}"),
             *title])
 
 
