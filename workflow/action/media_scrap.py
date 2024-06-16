@@ -95,8 +95,8 @@ class ReadingMediaScraperUnit:
             name = title.split('_ ')[1]
         elif title.find(' _') != -1:
             name, author_value = title.split(' _', maxsplit=1)
-            self.new_properties[title_prop] = \
-                RichTextProperty.page_value.from_plain_text(f'{author_value}_ {name}')
+            # self.new_properties[title_prop] = \
+            #    RichTextProperty.page_value.from_plain_text(f'{author_value}_ {name}')
         else:
             name = title
         return name.split('(')[0]
