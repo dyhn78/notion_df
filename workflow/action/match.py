@@ -577,7 +577,7 @@ class DateINamespace(DatabaseNamespace):
         starts_with_separator = title.plain_text.startswith('|')
         default_title = ""
         if not title.plain_text:
-            if record_kind := record.data.get(record_kind_prop):
+            if record_kind := record.data.properties.get(record_kind_prop):
                 default_title = record_kind.value
             else:
                 default_title = cast(Database, record.data.parent).data.title.plain_text
