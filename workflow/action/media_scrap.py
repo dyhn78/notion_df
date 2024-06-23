@@ -10,6 +10,7 @@ from notion_df.object.data import ChildPageBlockValue, TableOfContentsBlockValue
 from notion_df.object.filter import CompoundFilter
 from notion_df.object.misc import SelectOption
 from notion_df.object.rich_text import TextSpan, PageMention
+from notion_df.object.constant import BlockColor
 from notion_df.property import SelectProperty, CheckboxFormulaProperty, TitleProperty, \
     RichTextProperty, \
     URLProperty, NumberProperty, FilesProperty, CheckboxProperty, PageProperties
@@ -178,7 +179,7 @@ class ReadingMediaScraperUnit:
                     link_to_contents_prop.page_value([PageMention(content_page.id)])
             }))
             child_values: list[BlockValue] = [
-                TableOfContentsBlockValue(),
+                TableOfContentsBlockValue(BlockColor.GRAY),
                 *(get_block_value_of_contents_line(content_line) for content_line in
                 result.get_contents())
             ]
