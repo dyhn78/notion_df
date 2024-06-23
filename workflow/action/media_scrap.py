@@ -103,6 +103,7 @@ class ReadingMediaScraperUnit:
         return name.split('(')[0]
 
     def execute(self) -> None:
+        # TODO: separate content_page title setter as different module
         new_status_value = EditStatusValue.fill_manually
         match getattr(self.reading.data.properties[edit_status_prop], 'name', EditStatusValue.default):
             case EditStatusValue.default:
