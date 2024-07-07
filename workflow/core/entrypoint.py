@@ -112,7 +112,8 @@ class WorkflowRecord:
                     ParagraphBlockValue(RichText([TextSpan(self.start_time_str)]))])
                 for block in self.last_success_time_blocks:
                     block.delete()
-        elif exc_type in [KeyboardInterrupt, json.JSONDecodeError, tenacity.RetryError]:
+        elif (exc_type in [KeyboardInterrupt, json.JSONDecodeError, tenacity.RetryError]
+              or "Can't edit block that is archived." in str(exc_val)):
             summary_text = f"failure - {self.format_time()}: {exc_val}"
             summary_block_value = ParagraphBlockValue(RichText([TextSpan(summary_text)]))
         else:
