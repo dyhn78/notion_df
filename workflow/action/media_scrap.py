@@ -184,7 +184,10 @@ class ReadingMediaScraperUnit:
                 *(get_block_value_of_contents_line(content_line) for content_line in
                 result.get_contents())
             ]
-            content_page.as_block().append_children(child_values)
+            length = 100
+            child_values_splited_list = [child_values[i:i + length] for i in range(0, len(input_list), length)]
+            for child_values_splited in child_values_splited_list:
+                content_page.as_block().append_children(child_values_splited)
 
         self.callables.append(set_content_page)
         return True
