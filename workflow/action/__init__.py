@@ -26,17 +26,18 @@ routine_action = CompositeAction([
     MatchEventProgressDatei(base, DatabaseEnum.issue_db),
     MatchEventProgressDatei(base, DatabaseEnum.reading_db),
 
-    MatchRecordDatei(base, DatabaseEnum.journal_db, DatabaseEnum.datei_db.title),
-    MatchRecordDatei(base, DatabaseEnum.journal_db, schedule, read_datei_from_title=True, prepend_datei_on_title=True),
-    MatchRecordDateiSchedule(base, DatabaseEnum.journal_db),
-    MatchRecordWeekiByDatei(base, DatabaseEnum.journal_db, schedule, schedule),
-
-    MatchRecordDatei(base, DatabaseEnum.stage_db, DatabaseEnum.datei_db.title, read_datei_from_title=True,
-                     prepend_datei_on_title=True),
+    MatchRecordDatei(base, DatabaseEnum.stage_db, DatabaseEnum.datei_db.title, 
+                     read_datei_from_title=True, prepend_datei_on_title=True),
     MatchRecordWeekiByDatei(base, DatabaseEnum.stage_db, DatabaseEnum.weeki_db.title, DatabaseEnum.datei_db.title),
 
     MatchRecordDatei(base, DatabaseEnum.idea_db, DatabaseEnum.datei_db.title),
     MatchRecordWeekiByDatei(base, DatabaseEnum.idea_db, DatabaseEnum.weeki_db.title, DatabaseEnum.datei_db.title),
+
+    MatchRecordDatei(base, DatabaseEnum.journal_db, DatabaseEnum.datei_db.title),
+    MatchRecordDatei(base, DatabaseEnum.journal_db, schedule, 
+                     read_datei_from_title=True, prepend_datei_on_title=True),
+    MatchRecordDateiSchedule(base, DatabaseEnum.journal_db),
+    MatchRecordWeekiByDatei(base, DatabaseEnum.journal_db, schedule, schedule),
 
     MatchRecordDatei(base, DatabaseEnum.issue_db, DatabaseEnum.datei_db.title),
     MatchRecordDatei(base, DatabaseEnum.issue_db, schedule, read_datei_from_created_time=False, read_datei_from_title=True),
