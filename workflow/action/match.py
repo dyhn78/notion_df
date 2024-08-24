@@ -426,7 +426,7 @@ class MatchEventProgress(MatchSequentialAction):
                 and sum([len(event.data.properties[prop]) for prop in [
                     event_to_topic_prop, event_to_gist_prop,
                     event_to_issue_prop, event_to_reading_prop,
-                    event_to_stage_prop, event_to_point_prop
+                    # event_to_stage_prop, event_to_point_prop
                 ]]) == 1):
             logger.info(f'{event} : Forward Skipped')
             return
