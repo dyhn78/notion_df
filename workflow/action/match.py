@@ -34,7 +34,7 @@ event_to_idea_prop = RelationProperty(DatabaseEnum.idea_db.prefix_title)
 event_to_issue_prop = RelationProperty(DatabaseEnum.issue_db.prefix_title)
 event_to_reading_prop = RelationProperty(DatabaseEnum.reading_db.prefix_title)
 event_to_area_prop = RelationProperty(DatabaseEnum.area_db.prefix_title)
-event_to_gist_prop = RelationProperty(DatabaseEnum.gist_db.prefix_title)
+event_to_resource_prop = RelationProperty(DatabaseEnum.resource_db.prefix_title)
 journal_kind_prop = record_kind_prop = SelectProperty("📕유형")
 record_kind_progress = "🌳진행"
 journal_needs_datei_prop = CheckboxFormulaProperty("🛠일정")
@@ -424,7 +424,7 @@ class MatchEventProgress(MatchSequentialAction):
         if not (len(target_list := event.data.properties[
             self.event_to_target_prop]) == 1
                 and sum([len(event.data.properties[prop]) for prop in [
-                    event_to_area_prop, event_to_gist_prop,
+                    event_to_area_prop, event_to_resource_prop,
                     event_to_issue_prop, event_to_reading_prop,
                     # event_to_journal_prop, event_to_idea_prop
                 ]]) == 1):

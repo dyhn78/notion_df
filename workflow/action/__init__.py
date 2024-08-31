@@ -55,28 +55,10 @@ routine_action = CompositeAction([
     MatchRecordDatei(base, DatabaseEnum.area_db, DatabaseEnum.datei_db.title),
     MatchRecordWeekiByDatei(base, DatabaseEnum.area_db, DatabaseEnum.weeki_db.title, DatabaseEnum.datei_db.title),
 
-    MatchRecordDatei(base, DatabaseEnum.gist_db, DatabaseEnum.datei_db.title),
-    MatchRecordWeekiByDatei(base, DatabaseEnum.gist_db, DatabaseEnum.weeki_db.title, DatabaseEnum.datei_db.title),
+    MatchRecordDatei(base, DatabaseEnum.resource_db, DatabaseEnum.datei_db.title),
+    MatchRecordWeekiByDatei(base, DatabaseEnum.resource_db, DatabaseEnum.weeki_db.title, DatabaseEnum.datei_db.title),
 
     MediaScrapAction(create_window=False),
-
-    # DeprMatchRecordTopic(base, DatabaseEnum.event_db, DatabaseEnum.issue_db, DatabaseEnum.issue_db.prefix_title,
-    #            DatabaseEnum.area_db.prefix_title, DatabaseEnum.area_db.prefix_title),
-    # DeprMatchRecordTopic(base, DatabaseEnum.event_db, DatabaseEnum.event_db, DatabaseEnum.event_db.prefix_title,
-    #            DatabaseEnum.area_db.prefix_title, DatabaseEnum.area_db.prefix_title),
-    # DeprMatchRecordTopic(base, DatabaseEnum.event_db, DatabaseEnum.reading_db, DatabaseEnum.reading_db.prefix_title,
-    #            DatabaseEnum.area_db.prefix_title, DatabaseEnum.area_db.prefix_title),
-    # DeprMatchRecordTopic(base, DatabaseEnum.stage_db, DatabaseEnum.issue_db, DatabaseEnum.issue_db.prefix_title,
-    #                DatabaseEnum.area_db.prefix_title, DatabaseEnum.area_db.prefix_title),
-    # DeprMatchRecordTopic(base, DatabaseEnum.stage_db, DatabaseEnum.reading_db,
-    #                DatabaseEnum.reading_db.prefix_title,
-    #                DatabaseEnum.area_db.prefix_title, DatabaseEnum.area_db.prefix_title),
-    # MatchRecordDatei(base, DatabaseEnum.depr_event_db, '일간'),
-    # MatchRecordDatei(base, DatabaseEnum.depr_event_db, '생성'),
-    # MatchRecordWeekiByDatei(base, DatabaseEnum.depr_event_db, '주간', '일간'),
-    # MatchRecordTimestr(base, DatabaseEnum.depr_event_db, '일간'),
-    # MatchRecordDatei(base, DatabaseEnum.depr_subject_db, '일간'),
-    # MatchRecordWeekiByDatei(base, DatabaseEnum.depr_subject_db, '주간', '일간'),
 ])
 
 if __name__ == '__main__':
