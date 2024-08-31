@@ -23,17 +23,17 @@ from workflow.emoji_code import EmojiCode
 korean_weekday = '월화수목금토일'
 
 record_datetime_auto_prop = DateFormulaPropertyKey(EmojiCode.TIMER + '일시')
-record_timestr_prop = RichTextProperty(EmojiCode.CALENDAR + '시간')
+record_timestr_prop = RichTextProperty(EmojiCode.CALENDAR + '일지')
 datei_to_weeki_prop = RelationProperty(DatabaseEnum.weeki_db.prefix_title)
 datei_date_prop = DateProperty(EmojiCode.CALENDAR + '날짜')
 weeki_date_range_prop = DateProperty(EmojiCode.BIG_CALENDAR + '날짜 범위')
 event_title_prop = TitleProperty(EmojiCode.ORANGE_BOOK + '제목')
 event_to_datei_prop = RelationProperty(DatabaseEnum.datei_db.prefix_title)
-event_to_stage_prop = RelationProperty(DatabaseEnum.stage_db.prefix_title)
-event_to_point_prop = RelationProperty(DatabaseEnum.idea_db.prefix_title)
+event_to_journal_prop = RelationProperty(DatabaseEnum.journal_db.prefix_title)
+event_to_idea_prop = RelationProperty(DatabaseEnum.idea_db.prefix_title)
 event_to_issue_prop = RelationProperty(DatabaseEnum.issue_db.prefix_title)
 event_to_reading_prop = RelationProperty(DatabaseEnum.reading_db.prefix_title)
-event_to_topic_prop = RelationProperty(DatabaseEnum.area_db.prefix_title)
+event_to_area_prop = RelationProperty(DatabaseEnum.area_db.prefix_title)
 event_to_gist_prop = RelationProperty(DatabaseEnum.gist_db.prefix_title)
 journal_kind_prop = record_kind_prop = SelectProperty("📕유형")
 record_kind_progress = "🌳진행"
@@ -129,7 +129,7 @@ class MatchRecordDatei(MatchSequentialAction):
 
         if not self.read_datei_from_created_time:
             return
-        if record.data.parent == DatabaseEnum.journal_db.entity:
+        if record.data.parent == DatabaseEnum.stage_db.entity:
             if not record.data.properties[journal_needs_datei_prop]:
                 return
         record_created_date = get_record_created_date(record)
@@ -153,9 +153,9 @@ class MatchRecordDatei(MatchSequentialAction):
                 record.data.properties[DatabaseEnum.reading_db.prefix + progress],
                 record.data.properties[DatabaseEnum.issue_db.prefix + progress]
             ])
-        if record.data.parent == DatabaseEnum.journal_db.entity:
-            return record.data.properties[journal_needs_datei_prop]
         if record.data.parent == DatabaseEnum.stage_db.entity:
+            return record.data.properties[journal_needs_datei_prop]
+        if record.data.parent == DatabaseEnum.journal_db.entity:
             return True
         raise ValueError(f"get_needs_separator() - {record}")
 
@@ -424,9 +424,9 @@ class MatchEventProgress(MatchSequentialAction):
         if not (len(target_list := event.data.properties[
             self.event_to_target_prop]) == 1
                 and sum([len(event.data.properties[prop]) for prop in [
-                    event_to_topic_prop, event_to_gist_prop,
+                    event_to_area_prop, event_to_gist_prop,
                     event_to_issue_prop, event_to_reading_prop,
-                    # event_to_stage_prop, event_to_point_prop
+                    # event_to_journal_prop, event_to_idea_prop
                 ]]) == 1):
             logger.info(f'{event} : Forward Skipped')
             return
@@ -621,7 +621,7 @@ class WeekINamespace(DatabaseNamespace):
 
 
 def get_record_created_date(record: Page) -> dt.date:
-    # TODO: '📆일시' parsing 지원
+    # TODO: '📆일지' parsing 지원
     return (record.get_data().created_time + dt.timedelta(hours=-5)).date()
 
 
