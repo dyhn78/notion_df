@@ -92,6 +92,7 @@ class MigrationBackupLoadAction(SequentialAction):
                     continue
                 this_new_properties.setdefault(new_prop, this_page.data.properties[new_prop])
                 this_new_properties[new_prop].append(linked_page)
+        # TODO: manually remove relation to itself
         for this_new_prop in this_new_properties:
             if any(stem in this_new_prop.name for stem in [start, ]):
                 dates = cast(RelationProperty.page_value, this_new_properties[this_new_prop])
