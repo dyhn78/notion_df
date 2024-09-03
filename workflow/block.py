@@ -23,10 +23,10 @@ _id_to_member = {}
 
 
 class DatabaseEnum(Enum):
-    event_db = ('일과', 'c8d46c01d6c941a9bf8df5d115a05f03', EmojiCode.GREEN_CIRCLE)
-    journal_db = ('바탕', 'fa7d93f6fbd341f089b185745c834811', EmojiCode.GREEN_HEART)
-    idea_db = ('꼭지', '52d387ea0aaa470cb69332708c61b34d', EmojiCode.BLUE_CIRCLE)
-    stage_db = ('줄기', 'addc94642ee74825bd31109f4fd1c9ee', EmojiCode.BLUE_HEART)
+    event_db = ('일과', 'c8d46c01d6c941a9bf8df5d115a05f03', EmojiCode.BLUE_CIRCLE)
+    journal_db = ('바탕', 'fa7d93f6fbd341f089b185745c834811', EmojiCode.BLUE_HEART)
+    idea_db = ('꼭지', '52d387ea0aaa470cb69332708c61b34d', EmojiCode.GREEN_CIRCLE)
+    stage_db = ('줄기', 'addc94642ee74825bd31109f4fd1c9ee', EmojiCode.GREEN_HEART)
     issue_db = ('수행', 'e8782fe4e1a34c9d846d57b01a370327', EmojiCode.YELLOW_CIRCLE)
     reading_db = ('읽기', 'c326f77425a0446a8aa309478767c85b', EmojiCode.YELLOW_HEART)
     area_db = ('주제', 'eb2f09a1de41412e8b2357bc04f26e74', EmojiCode.RED_CIRCLE)
