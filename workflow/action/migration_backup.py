@@ -121,7 +121,7 @@ class MigrationBackupLoadAction(SequentialAction):
                         this_new_properties[prop] = prop.page_value(this_new_properties[prop][:100])
                         excess_page_dict[prop] = this_new_properties[prop][100:]
                 this_page.update(this_new_properties)
-                for prop, excess_pages in excess_page_dict:
+                for prop, excess_pages in excess_page_dict.values():
                     db_prop_value: RelationDatabasePropertyValue = \
                     cast(Database, this_page.data.parent).get_data().properties[prop]
                     if not isinstance(db_prop_value, DualRelationDatabasePropertyValue):
