@@ -8,7 +8,8 @@ from loguru import logger
 from notion_df.core.request import RequestError
 from notion_df.entity import Page, Database
 from notion_df.object.data import PageData
-from notion_df.property import RelationProperty, PageProperties
+from notion_df.property import RelationProperty, PageProperties, RelationDatabasePropertyValue, \
+    DualRelationDatabasePropertyValue
 from workflow.action.match import get_earliest_date
 from workflow.block_enum import DatabaseEnum, schedule, start, common, elements, related
 from workflow.core.action import SequentialAction
@@ -48,21 +49,21 @@ class MigrationBackupLoadAction(SequentialAction):
     def query(self) -> Iterable[Page]:
         return []
 
-    def process_page(self, page: Page) -> None:
+    def process_page(self, end_page: Page) -> None:
         # this_page: the global page, directly under one of the global dbs
-        this_page = next((breadcrumb_page for breadcrumb_page in iter_breadcrumb(page)
+        this_page = next((breadcrumb_page for breadcrumb_page in iter_breadcrumb(end_page)
                           if DatabaseEnum.from_entity(breadcrumb_page.data.parent) is not None), None)
         if this_page is None:
-            logger.info(f'\t{page}: Moved outside DatabaseEnum')
+            logger.info(f'\t{end_page}: Moved outside DatabaseEnum')
 
         this_db: Database = this_page.data.parent
-        this_prev_data: Optional[PageData] = self.response_backup.read(page)
+        this_prev_data: Optional[PageData] = self.response_backup.read(end_page)
         if not this_prev_data:
-            logger.info(f'\t{page}: No previous response backup')
+            logger.info(f'\t{end_page}: No previous response backup')
             return
         this_prev_db = this_prev_data.parent
-        if page == this_page and this_prev_db == this_db:
-            logger.info(f'\t{page}: Did not change the parent database')
+        if end_page == this_page and this_prev_db == this_db:
+            logger.info(f'\t{end_page}: Did not change the parent database')
             return
 
         this_new_properties = PageProperties()
@@ -111,6 +112,24 @@ class MigrationBackupLoadAction(SequentialAction):
                 for prop in this_new_properties:
                     this_new_properties[prop] = RelationProperty.page_value(
                         page for page in this_new_properties[prop] if page_exists(page))
+                this_page.update(this_new_properties)
+                return
+            if 'relation.length should be ≤ `100`' in e.message:
+                for prop in this_new_properties:
+                    prop: RelationProperty
+                    excess_pages: list[Page] = this_new_properties[prop][100:]
+                    if not excess_pages:
+                        continue
+                    db_prop_value: RelationDatabasePropertyValue = \
+                    cast(Database, this_page.data.parent).get_data().properties[prop]
+                    if not isinstance(db_prop_value, DualRelationDatabasePropertyValue):
+                        raise e
+                    synced_prop = db_prop_value.synced_property
+                    for that_page in excess_pages:
+                        that_page.update(PageProperties({synced_prop: synced_prop.page_value(
+                            that_page.get_data().properties[synced_prop] + [this_page]
+                        )}))
+                    this_new_properties[prop] = prop.page_value(this_new_properties[prop][:100])
                 this_page.update(this_new_properties)
                 return
             raise e
