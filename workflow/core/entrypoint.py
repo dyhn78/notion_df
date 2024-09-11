@@ -123,6 +123,7 @@ class WorkflowRecord:
                 RichText([TextSpan(summary_text), UserMention(self.user_id)]))
             traceback_str = traceback.format_exc()
             child_block_values = []
+            # TODO: should be splitting incrementally denser (1000->500->250->...)
             for i in range(0, len(traceback_str), 1000):
                 child_block_values.append(CodeBlockValue(RichText.from_plain_text(traceback_str[i:i + 1000])))
 

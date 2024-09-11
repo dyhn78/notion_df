@@ -82,7 +82,8 @@ class MigrationBackupLoadAction(SequentialAction):
                 elif linked_prev_data:
                     linked_db = linked_prev_db = linked_prev_data.parent
                 else:
-                    linked_db = linked_prev_db = linked_page.retrieve().data.parent
+                    logger.info(f"Retrieve because initial data missing - {linked_page=}")
+                    linked_db = linked_prev_db = linked_page.get_data().parent
                 candidate_props = self.get_candidate_props(this_db, linked_db)
                 if not candidate_props:
                     continue
@@ -134,6 +135,7 @@ class MigrationBackupLoadAction(SequentialAction):
             else:
                 raise e
         finally:
+            # TODO: fix this_new_properties is cropped to 100
             logger.info(f'\t{this_page}: {this_new_properties}')
 
     @classmethod
