@@ -113,13 +113,15 @@ class MigrationBackupLoadAction(SequentialAction):
                     this_new_properties[prop] = RelationProperty.page_value(
                         page for page in this_new_properties[prop] if page_exists(page))
                 this_page.update(this_new_properties)
-                return
-            if 'relation.length should be ≤ `100`' in e.message:
+            elif 'relation.length should be ≤ `100`' in e.message:
+                excess_page_dict = {}
                 for prop in this_new_properties:
                     prop: RelationProperty
-                    excess_pages: list[Page] = this_new_properties[prop][100:]
-                    if not excess_pages:
-                        continue
+                    if len(this_new_properties[prop]) > 100:
+                        this_new_properties[prop] = prop.page_value(this_new_properties[prop][:100])
+                        excess_page_dict[prop] = this_new_properties[prop][100:]
+                this_page.update(this_new_properties)
+                for prop, excess_pages in excess_page_dict:
                     db_prop_value: RelationDatabasePropertyValue = \
                     cast(Database, this_page.data.parent).get_data().properties[prop]
                     if not isinstance(db_prop_value, DualRelationDatabasePropertyValue):
@@ -129,10 +131,8 @@ class MigrationBackupLoadAction(SequentialAction):
                         that_page.update(PageProperties({synced_prop: synced_prop.page_value(
                             that_page.get_data().properties[synced_prop] + [this_page]
                         )}))
-                    this_new_properties[prop] = prop.page_value(this_new_properties[prop][:100])
-                this_page.update(this_new_properties)
-                return
-            raise e
+            else:
+                raise e
         finally:
             logger.info(f'\t{this_page}: {this_new_properties}')
 
