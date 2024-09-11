@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Optional, TypeVar, Union, Any, Literal, overload, Iterable
+from typing import Optional, TypeVar, Union, Any, Literal, overload, Iterable, cast
 from uuid import UUID
 
 from loguru import logger
@@ -185,11 +185,12 @@ class Page(Entity[PageData]):
                 raise NotionDfValueError(
                     "property.id is None. if you do not know the property id, retrieve the parent database first.",
                     {"self": self})
-            _, prop_value = RetrievePagePropertyItem(token, self.id, property_id).execute()
+            _, prop_value, prop_serialized = RetrievePagePropertyItem(token, self.id, property_id).execute()
         else:
-            prop, prop_value = RetrievePagePropertyItem(token, self.id, property_id).execute()
+            prop, prop_value, prop_serialized = RetrievePagePropertyItem(token, self.id, property_id).execute()
         if self.data:
             self.data.properties[prop] = prop_value
+            cast(dict[str, Any], self.data.raw["properties"][prop.name]).update(prop_serialized)
         return prop_value
 
     def update(self, properties: Optional[PageProperties] = None, icon: Optional[Icon] = None,

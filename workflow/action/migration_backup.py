@@ -109,7 +109,6 @@ class MigrationBackupLoadAction(SequentialAction):
                     this_new_properties[prop] = RelationProperty.page_value(
                         page for page in this_new_properties[prop] if page_exists(page))
                 this_page.update(this_new_properties)
-                raise e
                 return
             raise e
         finally:

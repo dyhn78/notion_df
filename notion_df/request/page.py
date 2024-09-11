@@ -92,7 +92,7 @@ class RetrievePagePropertyItem(RequestBuilder):
 
     execute_once = PaginatedRequestBuilder.execute_once
 
-    def execute(self) -> tuple[Property[Any, PagePropertyValue_T, Any], PagePropertyValue_T]:
+    def execute(self) -> tuple[Property[Any, PagePropertyValue_T, Any], PagePropertyValue_T, dict[str, Any]]:
         data = self.execute_once()
         if (prop_serialized := data)['object'] == 'property_item':
             # noinspection PyProtectedMember
@@ -105,11 +105,11 @@ class RetrievePagePropertyItem(RequestBuilder):
             data_list.append(data)
 
         typename = data_list[0]['property_item']['type']
-        value_list = []
+        raw_value_list = []
         for data in data_list:
             for result in data['results']:
-                value_list.append(result[typename])
-        prop_serialized = {'type': typename, typename: value_list, 'has_more': False}
+                raw_value_list.append(result[typename])
+        prop_serialized = {'type': typename, typename: raw_value_list, 'has_more': False}
 
         # TODO deduplicate with PageProperties._deserialize_this()
         property_key_cls = property_registry[typename]
@@ -117,4 +117,4 @@ class RetrievePagePropertyItem(RequestBuilder):
         property_key.id = self.property_id
         # noinspection PyProtectedMember
         property_value = property_key_cls._deserialize_page_value(prop_serialized)
-        return property_key, property_value
+        return property_key, property_value, prop_serialized
