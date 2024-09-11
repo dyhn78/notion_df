@@ -33,7 +33,7 @@ class MigrationBackupSaveAction(SequentialAction):
             #  https://notiondevs.slack.com/archives/C01CZTMG85C/p1701409539104549
             if prop_value.has_more:
                 try:
-                    page.retrieve_property_item(prop.id)
+                    page.retrieve_property_item(prop)
                 except tenacity.RetryError:
                     logger.error(f'failed Page.retrieve_property_item({page}, prop={prop.name})')
                     raise Exception(f'failed Page.retrieve_property_item({page}, prop={prop.name})')
