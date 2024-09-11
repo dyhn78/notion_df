@@ -91,7 +91,10 @@ class MigrationBackupLoadAction(SequentialAction):
                                                                              linked_prev_db, this_prev_prop)
                 if not new_prop:
                     continue
-                this_new_properties.setdefault(new_prop, this_page.data.properties[new_prop])
+                if new_prop not in this_new_properties:
+                    if this_page.data.properties[new_prop].has_more:
+                        this_page.retrieve_property_item(new_prop)
+                    this_new_properties[new_prop] = this_page.data.properties[new_prop]
                 this_new_properties[new_prop].append(linked_page)
         # TODO: manually remove relation to itself
         for this_new_prop in this_new_properties:
