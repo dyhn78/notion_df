@@ -189,6 +189,9 @@ class Page(Entity[PageData]):
         else:
             prop, prop_value, prop_serialized = RetrievePagePropertyItem(token, self.id, property_id).execute()
         if self.data:
+            if not prop.name:
+                # noinspection PyProtectedMember
+                prop = self.data.properties._prop_by_id[prop.id]
             self.data.properties[prop] = prop_value
             cast(dict[str, Any], self.data.raw["properties"][prop.name]).update(prop_serialized)
         return prop_value
