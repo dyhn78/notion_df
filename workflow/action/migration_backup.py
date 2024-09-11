@@ -36,6 +36,7 @@ class MigrationBackupSaveAction(SequentialAction):
                     page.retrieve_property_item(prop.id)
                 except tenacity.RetryError:
                     logger.error(f'failed Page.retrieve_property_item({page}, prop={prop.name})')
+                    raise Exception(f'failed Page.retrieve_property_item({page}, prop={prop.name})')
                     pass               
         self.backup.write(page)
 
@@ -92,6 +93,7 @@ class MigrationBackupLoadAction(SequentialAction):
                     continue
                 this_new_properties.setdefault(new_prop, this_page.data.properties[new_prop])
                 this_new_properties[new_prop].append(linked_page)
+        # TODO: manually remove relation to itself
         for this_new_prop in this_new_properties:
             if any(stem in this_new_prop.name for stem in [start, ]):
                 dates = cast(RelationProperty.page_value, this_new_properties[this_new_prop])
@@ -107,6 +109,7 @@ class MigrationBackupLoadAction(SequentialAction):
                     this_new_properties[prop] = RelationProperty.page_value(
                         page for page in this_new_properties[prop] if page_exists(page))
                 this_page.update(this_new_properties)
+                raise e
                 return
             raise e
         finally:

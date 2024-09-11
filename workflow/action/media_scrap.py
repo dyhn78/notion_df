@@ -10,6 +10,7 @@ from notion_df.object.data import ChildPageBlockValue, TableOfContentsBlockValue
 from notion_df.object.filter import CompoundFilter
 from notion_df.object.misc import SelectOption
 from notion_df.object.rich_text import TextSpan, PageMention
+from notion_df.object.constant import BlockColor
 from notion_df.property import SelectProperty, CheckboxFormulaProperty, TitleProperty, \
     RichTextProperty, \
     URLProperty, NumberProperty, FilesProperty, CheckboxProperty, PageProperties
@@ -21,7 +22,7 @@ from workflow.service.webdriver_service import WebDriverService
 from workflow.service.yes24_service import get_yes24_detail_page_url, Yes24ScrapResult, \
     get_block_value_of_contents_line
 
-edit_status_prop = SelectProperty('🔰준비')
+edit_status_prop = SelectProperty('📘준비')
 media_type_prop = SelectProperty('📘유형')
 is_book_prop = CheckboxFormulaProperty('📔도서류')
 title_prop = TitleProperty('📙제목')
@@ -95,13 +96,14 @@ class ReadingMediaScraperUnit:
             name = title.split('_ ')[1]
         elif title.find(' _') != -1:
             name, author_value = title.split(' _', maxsplit=1)
-            self.new_properties[title_prop] = \
-                RichTextProperty.page_value.from_plain_text(f'{author_value}_ {name}')
+            # self.new_properties[title_prop] = \
+            #    RichTextProperty.page_value.from_plain_text(f'{author_value}_ {name}')
         else:
             name = title
         return name.split('(')[0]
 
     def execute(self) -> None:
+        # TODO: separate content_page title setter as different module
         new_status_value = EditStatusValue.fill_manually
         match getattr(self.reading.data.properties[edit_status_prop], 'name', EditStatusValue.default):
             case EditStatusValue.default:
@@ -178,11 +180,14 @@ class ReadingMediaScraperUnit:
                     link_to_contents_prop.page_value([PageMention(content_page.id)])
             }))
             child_values: list[BlockValue] = [
-                TableOfContentsBlockValue(),
+                TableOfContentsBlockValue(BlockColor.GRAY),
                 *(get_block_value_of_contents_line(content_line) for content_line in
                 result.get_contents())
             ]
-            content_page.as_block().append_children(child_values)
+            length = 100
+            child_values_splited_list = [child_values[i:i + length] for i in range(0, len(child_values), length)]
+            for child_values_splited in child_values_splited_list:
+                content_page.as_block().append_children(child_values_splited)
 
         self.callables.append(set_content_page)
         return True
