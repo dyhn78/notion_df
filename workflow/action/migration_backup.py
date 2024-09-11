@@ -106,6 +106,7 @@ class MigrationBackupLoadAction(SequentialAction):
         if not this_new_properties:
             return
         try:
+            logger.info(f'\t{this_page}: {this_new_properties}')
             this_page.update(this_new_properties)
             return
         except RequestError as e:
@@ -114,6 +115,7 @@ class MigrationBackupLoadAction(SequentialAction):
                     this_new_properties[prop] = RelationProperty.page_value(
                         page for page in this_new_properties[prop] if page_exists(page))
                 this_page.update(this_new_properties)
+                logger.info(f'\tRETRY {this_page}: {this_new_properties}')
             elif 'relation.length should be ≤ `100`' in e.message:
                 excess_page_dict = {}
                 for prop in this_new_properties:
@@ -133,10 +135,8 @@ class MigrationBackupLoadAction(SequentialAction):
                             that_page.get_data().properties[synced_prop] + [this_page]
                         )}))
             else:
+                logger.error(f'\tFAILED {this_page}: {this_new_properties}')
                 raise e
-        finally:
-            # TODO: fix this_new_properties is cropped to 100
-            logger.info(f'\t{this_page}: {this_new_properties}')
 
     @classmethod
     @cache
