@@ -108,15 +108,16 @@ class MatchRecordDatei(MatchSequentialAction):
 
     def process_if_record_to_datei_not_empty(self, record: Page) -> None:
         datei_list = record.data.properties[self.record_to_datei]
-        for datei in datei_list:
-            datei.get_data()
-        if self.prepend_datei_on_title and (new_title := self.date_namespace.prepend_date_in_record_title(
-                record.retrieve(), datei_list,
-                self.get_needs_separator(record))):
-            properties = PageProperties()
-            properties[record.data.properties.title_prop] = new_title
-            record.update(properties)
-            logger.info(f'{record} -> {properties}')
+        if self.prepend_datei_on_title:
+            for datei in datei_list:
+                datei.get_data()
+            if (new_title := self.date_namespace.prepend_date_in_record_title(
+                    record.retrieve(), datei_list,
+                    self.get_needs_separator(record))):
+                properties = PageProperties()
+                properties[record.data.properties.title_prop] = new_title
+                record.update(properties)
+                logger.info(f'{record} -> {properties}')
 
     def process_if_record_to_datei_empty(self, record: Page) -> None:
         if (self.read_datei_from_title
