@@ -131,7 +131,7 @@ class MatchRecordDatei(MatchSequentialAction):
         if not self.read_datei_from_created_time:
             return
         if record.data.parent == DatabaseEnum.stage_db.entity:
-            if self.record_to_datei == schedule and not record.data.properties[journal_needs_datei_prop]:
+            if schedule in self.record_to_datei.name and not record.data.properties[journal_needs_datei_prop]:
                 return
         record_created_date = get_record_created_date(record)
         datei = self.date_namespace.get_page_by_date(record_created_date)
