@@ -13,6 +13,7 @@ from notion_df.core.definition import undefined, repr_object
 from notion_df.core.entity_base import RetrievableEntity, retrieve_on_demand, CanBeParent, \
     HasParent
 from notion_df.core.exception import ImplementationError
+from notion_df.core.request_base import RequestError
 from notion_df.core.uuid_parser import get_page_or_database_id, get_block_id
 from notion_df.core.variable import token
 from notion_df.data import BlockData, DatabaseData, PageData
@@ -123,7 +124,7 @@ class Block(RetrievableEntity[BlockData], HasParent, Generic[BlockT]):
         RetrieveBlock(token, self.id).execute()
         return self
 
-    def retrieve_children(self) -> Paginator[BlockT]:
+    def retrieve_children(self) -> Paginator[Block]:
         logger.info(f'Block.retrieve_children({self})')
         return Paginator(Block, (Block(block_data.id) for block_data in
                                  RetrieveBlockChildren(token, self.id).execute()))
@@ -134,9 +135,15 @@ class Block(RetrievableEntity[BlockData], HasParent, Generic[BlockT]):
         UpdateBlock(token, self.id, block_type, archived).execute()
         return self
 
-    def delete(self) -> Self:
+    def delete(self, ignore_archived: bool = False) -> Self:
         logger.info(f'Block.delete({self})')
-        DeleteBlock(token, self.id).execute()
+        try:
+            DeleteBlock(token, self.id).execute()
+        except RequestError as e:
+            if ignore_archived and "Can't edit block that is archived." in e.message:
+                logger.info(f'ignore already archived block {self}')
+            else:
+                raise e
         return self
 
     def append_children(self, child_values: list[BlockContents]) -> list[Block]:

@@ -13,12 +13,13 @@ import tenacity
 from loguru import logger
 from typing_extensions import Self
 
-from notion_df.contents import CodeBlockContents, DividerBlockContents, ParagraphBlockContents, \
+from notion_df.contents import CodeBlockContents, DividerBlockContents, \
+    ParagraphBlockContents, \
     ToggleBlockContents
 from notion_df.core.serialization import deserialize_datetime
+from notion_df.core.variable import my_tz
 from notion_df.entity import Block
 from notion_df.rich_text import RichText, TextSpan, UserMention
-from notion_df.core.variable import my_tz
 from workflow import log_dir
 
 
@@ -112,7 +113,7 @@ class WorkflowRecord:
                 self.last_success_time_parent_block.append_children([
                     ParagraphBlockContents(RichText([TextSpan(self.start_time_str)]))])
                 for block in self.last_success_time_blocks:
-                    block.delete()
+                    block.delete(ignore_archived=True)
         elif (exc_type in [KeyboardInterrupt, json.JSONDecodeError, tenacity.RetryError]
               or "Can't edit block that is archived." in str(exc_val)):
             summary_text = f"failure - {self.format_time()}: {exc_val}"
@@ -138,7 +139,7 @@ class WorkflowRecord:
                 log_group_block = block
                 break
             if self.start_time - block.data.created_time > timedelta(days=7):
-                block.delete()
+                block.delete(ignore_archived=True)
         assert isinstance(log_group_block, Block)
 
         summary_block = log_group_block.append_children([summary_block_value])[0]
