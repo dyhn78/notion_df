@@ -14,12 +14,14 @@ from notion_df.object.filter import created_time_filter
 from notion_df.object.rich_text import TextSpan, RichText
 from notion_df.property import RelationProperty, TitleProperty, PageProperties, \
     RelationPagePropertyValue
-from workflow.block_enum import DatabaseEnum, schedule, progress, record_timestr_prop, datepage_to_weeki_prop, \
-    datepage_date_prop, weekpage_date_range_prop, event_to_datei_prop, event_to_stage_prop, event_to_idea_prop, \
-    event_to_issue_prop, event_to_reading_prop, event_to_area_prop, event_to_gist_prop, journal_kind_non_datei_list, \
+from workflow.block import DatabaseEnum, schedule, progress, record_timestr_prop, \
+    weeki_date_range_prop, datei_to_weeki_prop, event_to_datei_prop, \
+    event_to_issue_prop, event_to_reading_prop, event_to_area_prop, \
+    event_to_resource_prop, \
     reading_to_main_date_prop, reading_to_start_date_prop, reading_to_event_prog_prop, \
-    reading_match_date_by_created_time_prop, status_prop, status_auto_generated, korean_weekday, journal_kind_prop, \
-    journal_kind_needs_separator_list
+    reading_match_date_by_created_time_prop, status_prop, status_auto_generated, \
+    korean_weekday, record_kind_prop, \
+    datei_date_prop, journal_needs_datei_prop
 from workflow.core.action import SequentialAction, Action
 from workflow.emoji_code import EmojiCode
 
@@ -84,9 +86,10 @@ class MatchRecordDatei(MatchSequentialAction):
 
     def process_if_record_to_datei_not_empty(self, record: Page) -> None:
         datei_list = record.data.properties[self.record_to_datei]
-        if self.prepend_datei_on_title and (new_title := self.date_namespace.prepend_date_in_record_title(
-                record.retrieve(), datei_list,
-                self.get_needs_separator(record))):
+        if self.prepend_datei_on_title and (
+                new_title := self.date_namespace.prepend_date_in_record_title(
+                    record.retrieve(), datei_list,
+                    self.get_needs_separator(record))):
             properties = PageProperties()
             properties[record.data.properties.title_prop] = new_title
             record.update(properties)
@@ -103,8 +106,9 @@ class MatchRecordDatei(MatchSequentialAction):
 
         if not self.read_datei_from_created_time:
             return
-        if record.data.parent == DatabaseEnum.journal_db.entity:
-            if record.data.properties[journal_kind_prop] in journal_kind_non_datei_list:
+        if record.data.parent == DatabaseEnum.stage_db.entity:
+            if schedule in self.record_to_datei.name and not record.data.properties[
+                journal_needs_datei_prop]:
                 return
         record_created_date = get_record_created_date(record)
         datei = self.date_namespace.get_page_by_date(record_created_date)
@@ -127,9 +131,9 @@ class MatchRecordDatei(MatchSequentialAction):
                 record.data.properties[DatabaseEnum.reading_db.prefix + progress],
                 record.data.properties[DatabaseEnum.issue_db.prefix + progress]
             ])
-        if record.data.parent == DatabaseEnum.journal_db.entity:
-            return record.data.properties[journal_kind_prop] in journal_kind_needs_separator_list
         if record.data.parent == DatabaseEnum.stage_db.entity:
+            return record.data.properties[journal_needs_datei_prop]
+        if record.data.parent == DatabaseEnum.journal_db.entity:
             return True
         raise ValueError(f"get_needs_separator() - {record}")
 
@@ -149,7 +153,8 @@ class MatchRecordDateiSchedule(MatchSequentialAction):
         super().__init__(base)
         self.record_db = record.entity
         self.record_to_datei_prop = RelationProperty(DatabaseEnum.datei_db.prefix_title)
-        self.record_to_datei_sch_prop = RelationProperty(f"{DatabaseEnum.datei_db.prefix}{schedule}")
+        self.record_to_datei_sch_prop = RelationProperty(
+            f"{DatabaseEnum.datei_db.prefix}{schedule}")
 
     def __repr__(self):
         return repr_object(self, record_db=self.record_db)
@@ -161,7 +166,8 @@ class MatchRecordDateiSchedule(MatchSequentialAction):
         if not (record.data.parent == self.record_db):
             return
         record_datei = record.data.properties[self.record_to_datei_prop]
-        record_datei_new = record_datei + record.data.properties[self.record_to_datei_sch_prop]
+        record_datei_new = record_datei + record.data.properties[
+            self.record_to_datei_sch_prop]
         if record_datei == record_datei_new:
             logger.info(f'{record} : Skipped')
             return
@@ -211,7 +217,7 @@ class MatchReadingStartDatei(MatchSequentialAction):
                 if not (date_list := event.data.properties[event_to_datei_prop]):
                     continue
                 date = date_list[0]
-                if date.data.properties[datepage_date_prop] is None:
+                if date.data.properties[datei_date_prop] is None:
                     continue
                 yield date
 
@@ -253,10 +259,10 @@ class MatchRecordTimestr(MatchSequentialAction):
             record_date = record.data.properties[self.record_to_datei][0]
         except IndexError:
             return True
-        record_date_range = record_date.data.properties[datepage_date_prop]
+        record_date_range = record_date.data.properties[datei_date_prop]
         if record_date_range is None:
             return False
-        record_date = record_date.data.properties[datepage_date_prop].start
+        record_date = record_date.data.properties[datei_date_prop].start
         return record.data.created_time.date() == record_date
 
     def process_page(self, record: Page) -> None:
@@ -303,7 +309,7 @@ class MatchRecordWeekiByDatei(MatchSequentialAction):
                 record_date.retrieve()
             try:
                 new_record_weeks.append(
-                    record_date.data.properties[datepage_to_weeki_prop][0])
+                    record_date.data.properties[datei_to_weeki_prop][0])
             except IndexError:
                 pass  # TODO: add warning
 
@@ -332,30 +338,32 @@ class MatchDatei(MatchSequentialAction):
         return repr_object(self)
 
     def query(self) -> Paginator[Page]:
-        return self.date_db.query(datepage_date_prop.filter.is_empty()
-                                  or datepage_to_weeki_prop.filter.is_empty())
+        return self.date_db.query(datei_date_prop.filter.is_empty()
+                                  or datei_to_weeki_prop.filter.is_empty())
 
     def process_page(self, datei: Page) -> None:
         if not (datei.data.parent == self.date_db):
             return
-        if not datei.data.properties[datepage_date_prop]:
+        if not datei.data.properties[datei_date_prop]:
             self.match_date(datei)
-        if not datei.data.properties[datepage_to_weeki_prop]:
+        if not datei.data.properties[datei_to_weeki_prop]:
             self.match_weeki(datei)
 
     def match_date(self, datei: Page) -> None:
         date = self.date_namespace.get_date_of_title(
             datei.data.properties.title.plain_text)
-        datei.update(PageProperties({datepage_date_prop: datepage_date_prop.page_value(start=date, end=None)}))
+        datei.update(PageProperties(
+            {datei_date_prop: datei_date_prop.page_value(start=date, end=None)}))
         logger.info(f'{datei} -> {date}')
 
     def match_weeki(self, datei: Page) -> None:
-        date = datei.data.properties[datepage_date_prop].start
+        date = datei.data.properties[datei_date_prop].start
         weeki = self.week_namespace.get_page_by_date(date)
-        if datei.retrieve().data.properties[datepage_to_weeki_prop]:
+        if datei.retrieve().data.properties[datei_to_weeki_prop]:
             return
         datei.update(
-            PageProperties({datepage_to_weeki_prop: datepage_to_weeki_prop.page_value([weeki])}))
+            PageProperties(
+                {datei_to_weeki_prop: datei_to_weeki_prop.page_value([weeki])}))
         logger.info(f'{datei} -> {weeki}')
 
 
@@ -365,7 +373,8 @@ class MatchEventProgress(MatchSequentialAction):
     def __init__(self, base: MatchActionBase, target_db: DatabaseEnum):
         super().__init__(base)
         self.target_db = target_db
-        self.datei_to_target_prop = self.event_to_target_prop = RelationProperty(target_db.prefix_title)
+        self.datei_to_target_prop = self.event_to_target_prop = RelationProperty(
+            target_db.prefix_title)
         self.event_to_target_prog_prop = RelationProperty(target_db.prefix + progress)
 
     def __repr__(self):
@@ -398,9 +407,8 @@ class MatchEventProgress(MatchSequentialAction):
         if not (len(target_list := event.data.properties[
             self.event_to_target_prop]) == 1
                 and sum([len(event.data.properties[prop]) for prop in [
-                    event_to_area_prop, event_to_gist_prop,
+                    event_to_area_prop, event_to_resource_prop,
                     event_to_issue_prop, event_to_reading_prop,
-                    event_to_stage_prop, event_to_idea_prop
                 ]]) == 1):
             logger.info(f'{event} : Forward Skipped')
             return
@@ -426,14 +434,16 @@ class MatchEventProgressDatei(MatchSequentialAction):
     def __init__(self, base: MatchActionBase, target_db: DatabaseEnum):
         super().__init__(base)
         self.target_db = target_db
-        self.datei_to_target_prop = self.event_to_target_prop = RelationProperty(target_db.prefix_title)
+        self.datei_to_target_prop = self.event_to_target_prop = RelationProperty(
+            target_db.prefix_title)
         self.event_to_target_prog_prop = RelationProperty(target_db.prefix + progress)
 
     def __repr__(self):
         return repr_object(self, target_db=self.target_db)
 
     def query(self) -> Iterable[Page]:
-        return self.event_db.query(filter=self.event_to_target_prog_prop.filter.is_not_empty())
+        return self.event_db.query(
+            filter=self.event_to_target_prog_prop.filter.is_not_empty())
 
     def process_page(self, event: Page) -> Any:
         if event.data.parent != self.event_db:
@@ -485,14 +495,14 @@ class DateINamespace(DatabaseNamespace):
         page = self.database.create_child_page(PageProperties({
             self.title_prop: self.title_prop.page_value.from_plain_text(
                 title_plain_text),
-            datepage_date_prop: datepage_date_prop.page_value(start=date, end=None)
+            datei_date_prop: datei_date_prop.page_value(start=date, end=None)
         }))
         self.pages_by_title_plain_text[page.data.properties.title.plain_text] = page
         return page
 
     @classmethod
     def strf_date(cls, datei: Page) -> str:
-        return datei.data.properties[datepage_date_prop].start.strftime("%y%m%d")
+        return datei.data.properties[datei_date_prop].start.strftime("%y%m%d")
 
     _getter_pattern = re.compile(r'(\d{2})(\d{2})(\d{2}).*')
     _getter_pattern_2 = re.compile(r'(\d{2})(\d{2})(\d{2})[|]')
@@ -512,13 +522,15 @@ class DateINamespace(DatabaseNamespace):
         return cls._parse_date_match(match)
 
     @classmethod
-    def _check_date_in_record_title(cls, title_plain_text: str, date_candidates: list[dt.date]) -> bool:
+    def _check_date_in_record_title(cls, title_plain_text: str,
+                                    date_candidates: list[dt.date]) -> bool:
         dates_in_record_title = []
         match_1 = cls._checker_pattern_1.search(title_plain_text)
         dates_in_record_title.append(cls._parse_date_match(match_1))
         match_2 = cls._checker_pattern_2.search(title_plain_text)
         dates_in_record_title.append(cls._parse_date_match(match_2))
-        return any((date_in_record_title is not None and date_in_record_title in date_candidates)
+        return any((
+                           date_in_record_title is not None and date_in_record_title in date_candidates)
                    for date_in_record_title in dates_in_record_title)
 
     @classmethod
@@ -540,22 +552,28 @@ class DateINamespace(DatabaseNamespace):
             cls, record: Page, datei_list: Iterable[Page], needs_separator: bool
     ) -> RichText:
         title = record.data.properties.title
-        datei_date_list = [datei.data.properties[datepage_date_prop].start
+        datei_date_list = [datei.data.properties[datei_date_prop].start
                            for datei in datei_list]
 
-        needs_update = not cls._check_date_in_record_title(title.plain_text, datei_date_list)
+        needs_update = not cls._check_date_in_record_title(title.plain_text,
+                                                           datei_date_list)
         if not needs_update:
             return RichText()
 
         earliest_datei_date = min(datei_date_list)
         add_separator = needs_separator and ('|' not in title.plain_text)
         starts_with_separator = title.plain_text.startswith('|')
-        # if title.plain_text == "#":
-        #     return RichText([TextSpan(f"#{earliest_datei_date.strftime('%y%m%d')}"])
+        default_title = ""
+        if not title.plain_text:
+            add_separator = False
+            if record_kind := record.data.properties.get(record_kind_prop):
+                default_title = record_kind.name[-2:]
+            else:
+                default_title = cast(Database, record.data.parent).data.title.plain_text
         return RichText([TextSpan(
             f"{earliest_datei_date.strftime('%y%m%d')}{'|' if add_separator else ''}"
             f"{'' if starts_with_separator else ' '}"
-            f"{cast(Database, record.data.parent).data.title.plain_text if not title.plain_text else ''}"),
+            f"{default_title}"),
             *title])
 
 
@@ -572,7 +590,7 @@ class WeekINamespace(DatabaseNamespace):
         page = self.database.create_child_page(PageProperties({
             self.title_prop: self.title_prop.page_value.from_plain_text(
                 title_plain_text),
-            weekpage_date_range_prop: weekpage_date_range_prop.page_value(
+            weeki_date_range_prop: weeki_date_range_prop.page_value(
                 start=self._get_first_day_of_week(date),
                 end=self._get_last_day_of_week(date))
         }))
@@ -591,7 +609,7 @@ class WeekINamespace(DatabaseNamespace):
 
 
 def get_record_created_date(record: Page) -> dt.date:
-    # TODO: '📆일시' parsing 지원
+    # TODO: '📆일지' parsing 지원
     return (record.data.created_time + dt.timedelta(hours=-5)).date()
 
 
@@ -601,9 +619,9 @@ def get_earliest_date(datei_it: Iterable[Page]) -> Page:
     def _get_start_date(datei: Page) -> dt.date:
         parent_db = DatabaseEnum.from_entity(datei.data.parent)
         if parent_db == DatabaseEnum.datei_db:
-            prop = datepage_date_prop
+            prop = datei_date_prop
         elif parent_db == DatabaseEnum.weeki_db:
-            prop = weekpage_date_range_prop
+            prop = weeki_date_range_prop
         else:
             raise ValueError(datei)
         return datei.data.properties[prop].start

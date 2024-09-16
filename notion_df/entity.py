@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Optional, TypeVar, Union, Any, Literal, overload
+from typing import Optional, TypeVar, Union, Any, Literal, overload, cast
 from uuid import UUID
 
 from loguru import logger
@@ -381,11 +381,15 @@ class Page(RetrievableEntity[PageData], HasParent):
                 raise ImplementationError(
                     "property.id is None. if you do not know the property id, retrieve the parent database first.",
                     {"self": self})
-            _, prop_value = RetrievePagePropertyItem(token, self.id, property_id).execute()
+            _, prop_value, prop_serialized = RetrievePagePropertyItem(token, self.id, property_id).execute()
         else:
-            prop, prop_value = RetrievePagePropertyItem(token, self.id, property_id).execute()
+            prop, prop_value, prop_serialized = RetrievePagePropertyItem(token, self.id, property_id).execute()
         if self.data:
+            if not prop.name:
+                # noinspection PyProtectedMember
+                prop = self.data.properties._prop_by_id[prop.id]
             self.data.properties[prop] = prop_value
+            cast(dict[str, Any], self.data.raw["properties"][prop.name]).update(prop_serialized)
         return prop_value
 
     def update(self, properties: Optional[PageProperties] = None, icon: Optional[Icon] = None,

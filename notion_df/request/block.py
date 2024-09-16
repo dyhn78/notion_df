@@ -16,6 +16,7 @@ class AppendBlockChildren(SingleRequestBuilder[list[BlockData]]):
     data_type = list[BlockData]
     id: UUID
     children: list[BlockContents]
+    # TODO: split to multiple requests when len(children) > 100
 
     def get_settings(self) -> RequestSettings:
         return RequestSettings(Version.v20220222, Method.PATCH,

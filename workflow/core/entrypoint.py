@@ -113,7 +113,8 @@ class WorkflowRecord:
                     ParagraphBlockContents(RichText([TextSpan(self.start_time_str)]))])
                 for block in self.last_success_time_blocks:
                     block.delete()
-        elif exc_type in [KeyboardInterrupt, json.JSONDecodeError, tenacity.RetryError]:
+        elif (exc_type in [KeyboardInterrupt, json.JSONDecodeError, tenacity.RetryError]
+              or "Can't edit block that is archived." in str(exc_val)):
             summary_text = f"failure - {self.format_time()}: {exc_val}"
             summary_block_value = ParagraphBlockContents(RichText([TextSpan(summary_text)]))
         else:
@@ -123,6 +124,7 @@ class WorkflowRecord:
                 RichText([TextSpan(summary_text), UserMention(self.user_id)]))
             traceback_str = traceback.format_exc()
             child_block_values = []
+            # TODO: should be splitting incrementally denser (1000->500->250->...)
             for i in range(0, len(traceback_str), 1000):
                 child_block_values.append(CodeBlockContents(RichText.from_plain_text(traceback_str[i:i + 1000])))
 

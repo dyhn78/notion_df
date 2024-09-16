@@ -6,7 +6,8 @@ from uuid import UUID
 
 from notion_df.contents import BlockContents, serialize_block_contents_list
 from notion_df.core.collection import DictFilter
-from notion_df.core.request import SingleRequestBuilder, RequestSettings, Version, Method, RequestBuilder, request_page
+from notion_df.core.request import SingleRequestBuilder, RequestSettings, Version, \
+    Method, RequestBuilder, request_page
 from notion_df.object.data import PageData
 from notion_df.object.file import ExternalFile
 from notion_df.object.misc import Icon, PartialParent
@@ -90,7 +91,7 @@ class RetrievePagePropertyItem(RequestBuilder):
     def get_body(self) -> None:
         return
 
-    def execute(self) -> tuple[Property[Any, PVT, Any], PVT]:
+    def execute(self) -> tuple[Property[Any, PVT, Any], PVT, dict[str, Any]]:
         data = request_page(self)
         if (prop_serialized := data)['object'] == 'property_item':
             # noinspection PyProtectedMember
@@ -103,11 +104,11 @@ class RetrievePagePropertyItem(RequestBuilder):
             data_list.append(data)
 
         typename = data_list[0]['property_item']['type']
-        value_list = []
+        raw_value_list = []
         for data in data_list:
             for result in data['results']:
-                value_list.append(result[typename])
-        prop_serialized = {'type': typename, typename: value_list, 'has_more': False}
+                raw_value_list.append(result[typename])
+        prop_serialized = {'type': typename, typename: raw_value_list, 'has_more': False}
 
         # TODO deduplicate with PageProperties._deserialize_this()
         property_key_cls = property_registry[typename]
@@ -115,4 +116,4 @@ class RetrievePagePropertyItem(RequestBuilder):
         property_key.id = self.property_id
         # noinspection PyProtectedMember
         property_value = property_key_cls._deserialize_page_value(prop_serialized)
-        return property_key, property_value
+        return property_key, property_value, prop_serialized
