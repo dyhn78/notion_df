@@ -115,7 +115,7 @@ class Paginator(Sequence[T]):
             start = index.start if index.start is not None else 0
             stop = index.stop if index.stop is not None else 0
             self._fetch_until(max(start, stop))
-            return [self._values[start:stop:step]]
+            return self._values[start:stop:step]
         else:
             raise TypeError(f"Expected int or slice, {self=}, {index=}")
 
