@@ -2,14 +2,15 @@ from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, field
-from typing import cast, Any, Optional, TYPE_CHECKING
+from functools import cache
+from typing import cast, Any, Optional, TYPE_CHECKING, get_type_hints
 from uuid import UUID
 
 from typing_extensions import Self
 
+from notion_df.constant import BlockColor, CodeLanguage
 from notion_df.core.collection import FinalDict
 from notion_df.core.serialization import DualSerializable
-from notion_df.constant import BlockColor, CodeLanguage
 from notion_df.file import File
 from notion_df.misc import Icon
 from notion_df.rich_text import RichText, Span
@@ -20,6 +21,15 @@ if TYPE_CHECKING:
 block_contents_registry: FinalDict[str, type[BlockContents]] = FinalDict()
 
 
+@cache
+def _get_type_hints(cls) -> dict[str, type]:
+    from notion_df.data import BlockData
+
+    return get_type_hints(cls, {
+        **globals(), **{cls.__name__: cls for cls in (BlockData,)}
+    })
+
+
 @dataclass
 class BlockContents(DualSerializable, metaclass=ABCMeta):
     @classmethod
@@ -28,7 +38,8 @@ class BlockContents(DualSerializable, metaclass=ABCMeta):
         return ''
 
     def __init_subclass__(cls, **kwargs):
-        if (typename := cls.get_typename()) and typename != cast(cls, super(cls, cls)).get_typename():
+        if (typename := cls.get_typename()) and typename != cast(cls, super(cls,
+                                                                            cls)).get_typename():
             block_contents_registry[typename] = cls
 
     def serialize(self) -> dict[str, Any]:
@@ -38,8 +49,13 @@ class BlockContents(DualSerializable, metaclass=ABCMeta):
     def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
         return cls._deserialize_from_dict(raw)
 
+    @classmethod
+    def _get_type_hints(cls) -> dict[str, type]:
+        return _get_type_hints(cls)
 
-def serialize_block_contents_list(block_contents_list: Optional[list[BlockContents]]) -> Optional[list[dict[str, Any]]]:
+
+def serialize_block_contents_list(block_contents_list: Optional[list[BlockContents]]) -> \
+Optional[list[dict[str, Any]]]:
     if block_contents_list is None:
         return None
     return [{
