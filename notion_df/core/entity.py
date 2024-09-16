@@ -7,7 +7,7 @@ from uuid import UUID
 
 from typing_extensions import Self
 
-from notion_df.core.data import EntityDataT, latest_data_dict, hardcoded_data_dict
+from notion_df.core.data import EntityDataT, latest_data_dict, mock_data_dict
 from notion_df.core.definition import undefined, repr_object
 
 
@@ -53,18 +53,24 @@ class Entity(Generic[EntityDataT], Hashable, metaclass=ABCMeta):
 
     @property
     def data(self) -> Optional[EntityDataT]:
-        """this always points at the latest data of the entity."""
+        """
+        Return the latest data of the entity.
+        
+        if the data is retrievable, this will trigger on-demand retrieval and thus never be None.
+        """
         return self.local_data
 
     @final
     @property
     def local_data(self) -> Optional[EntityDataT]:
-        return latest_data_dict.get(self._hash_key, hardcoded_data_dict.get(self._hash_key))
+        return latest_data_dict.get(self._hash_key, mock_data_dict.get(self._hash_key))
 
     @abstractmethod
-    def hardcode_data(self, **kwargs: Any) -> None:
-        """hardcode data is always at the last priority of reading data and not garbage collected.
-        You can save API calls by hardcode invariant values (such as the root pages of your workspace)."""
+    def set_mock_data(self, **kwargs: Any) -> None:
+        """
+        To save API calls, Set some invariant values(such as the root pages of your workspace) as mock data.
+        Mock data is always at the last priority of reading data and not garbage collected.
+        """
         pass
 
 

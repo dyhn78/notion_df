@@ -91,7 +91,7 @@ class Block(RetrievableEntity[BlockData], HasParent):
     def contents(self) -> BlockContents:
         return self.data.contents
 
-    def hardcode_data(
+    def set_mock_data(
             self,
             parent: Union[Block, Page, Workspace] = undefined,
             created_time: datetime = undefined,
@@ -103,7 +103,7 @@ class Block(RetrievableEntity[BlockData], HasParent):
             contents: BlockContents = undefined,
     ) -> None:
         BlockData(self.id, parent, created_time, last_edited_time, created_by, last_edited_by, has_children,
-                  archived, contents, hardcoded=True)
+                  archived, contents, mock=True)
 
     @staticmethod
     def _get_id(id_or_url: Union[UUID, str]) -> UUID:
@@ -199,7 +199,7 @@ class Database(RetrievableEntity[DatabaseData], HasParent):
     def is_inline(self) -> bool:
         return self.data.is_inline
 
-    def hardcode_data(
+    def set_mock_data(
             self,
             parent: Union[Block, Page, Workspace] = undefined,
             created_time: datetime = undefined,
@@ -213,7 +213,7 @@ class Database(RetrievableEntity[DatabaseData], HasParent):
             is_inline: bool = undefined,
     ) -> Self:
         DatabaseData(self.id, parent, created_time, last_edited_time, icon, cover, url, title, properties, archived,
-                     is_inline, hardcoded=True)
+                     is_inline, mock=True)
         return self
 
     @staticmethod
@@ -315,7 +315,7 @@ class Page(RetrievableEntity[PageData], HasParent):
     def title(self) -> RichText:
         return self.properties.title
 
-    def hardcode_data(
+    def set_mock_data(
             self,
             parent: Union[Block, Database, Page, Workspace] = undefined,
             created_time: datetime = undefined,
@@ -329,7 +329,7 @@ class Page(RetrievableEntity[PageData], HasParent):
             properties: PageProperties = undefined,
     ) -> None:
         PageData(self.id, parent, created_time, last_edited_time, created_by, last_edited_by, icon, cover, url,
-                 archived, properties, hardcoded=True)
+                 archived, properties, mock=True)
 
     @staticmethod
     def _get_id(id_or_url: Union[UUID, str]) -> UUID:
@@ -357,7 +357,7 @@ class Page(RetrievableEntity[PageData], HasParent):
 
     def as_block(self) -> Block:
         block = Block(self.id)
-        block.hardcode_data(
+        block.set_mock_data(
             parent=self.data.parent,
             created_time=self.data.created_time,
             last_edited_time=self.data.last_edited_time,

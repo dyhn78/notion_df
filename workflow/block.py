@@ -58,7 +58,7 @@ class DatabaseEnum(Enum):
 
         title_span = TextSpan(self.title)
         title_span.plain_text = self.title
-        self.entity.hardcode_data(
+        self.entity.set_mock_data(
             parent=Workspace(),
             url=get_page_or_database_url(id_or_url, 'dyhn'),
             icon=Emoji(self.prefix),

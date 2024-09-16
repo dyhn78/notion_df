@@ -3,6 +3,7 @@ from __future__ import annotations
 from enum import Enum
 from itertools import chain
 from typing import TypeVar, NewType, Iterable, Optional, Iterator, Sequence, overload
+from dataclasses import dataclass, fields
 
 from notion_df.core.definition import repr_object
 from notion_df.core.exception import ImplementationError
@@ -117,3 +118,12 @@ class Paginator(Sequence[T]):
             return [self._values[start:stop:step]]
         else:
             raise TypeError(f"Expected int or slice, {self=}, {index=}")
+
+
+def coalesce_dataclass(target: T, source: T) -> None:
+    """Modify the target, by filling None fields from source."""
+    if type(target) != type(source):
+        raise ValueError("Both instances must be of the same dataclass type.")
+    for field in fields(target):
+        if getattr(target, field.name) is None:
+            setattr(target, field.name, getattr(source, field.name))

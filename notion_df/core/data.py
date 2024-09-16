@@ -9,10 +9,11 @@ from uuid import UUID
 
 from typing_extensions import Self
 
+from notion_df.core.collection import coalesce_dataclass
 from notion_df.core.serialization import Deserializable
 
 latest_data_dict: Final[MutableMapping[tuple[type[EntityData], UUID], EntityData]] = {}
-hardcoded_data_dict: Final[MutableMapping[tuple[type[EntityData], UUID], EntityData]] = {}
+mock_data_dict: Final[MutableMapping[tuple[type[EntityData], UUID], EntityData]] = {}
 
 
 @dataclass
@@ -21,14 +22,15 @@ class EntityData(Deserializable, metaclass=ABCMeta):
     raw: dict[str, Any] = field(init=False, default_factory=dict)
     timestamp: int = field(init=False)
     """the timestamp of instance creation."""
-    hardcoded: bool = field(kw_only=True, default=False)
+    mock: bool = field(kw_only=True, default=False)
 
     def __post_init__(self) -> None:
         self.timestamp = int(datetime.now().timestamp())
         hash_key = type(self), self.id
-        if self.hardcoded:
-            # TODO: merge with current hardcoded data
-            hardcoded_data_dict[hash_key] = self
+        if self.mock:
+            if past_self := mock_data_dict.get(hash_key):
+                coalesce_dataclass(self, past_self)
+            mock_data_dict[hash_key] = self
         else:
             current_latest_data = latest_data_dict.get(hash_key)
             if current_latest_data is None or self.timestamp >= current_latest_data.timestamp:
@@ -52,8 +54,8 @@ class EntityData(Deserializable, metaclass=ABCMeta):
     @classmethod
     def _deserialize_subclass(cls, raw: Any) -> Self:
         from notion_df.data import BlockData, DatabaseData, PageData
-
-        match object_kind := raw['object']:
+        object_kind = raw['object']
+        match object_kind:
             case 'block':
                 subclass = BlockData
             case 'database':
