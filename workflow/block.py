@@ -216,7 +216,6 @@ event_to_resource_prop = RelationProperty(DatabaseEnum.resource_db.prefix_title)
 journal_kind_prop = record_kind_prop = SelectProperty("📕유형")
 record_kind_progress = "🌳진행"
 journal_needs_datei_prop = CheckboxFormulaProperty("🛠일정")
-journal_kind_needs_separator_list = ["🍊상태"]
 reading_to_main_date_prop = RelationProperty(DatabaseEnum.datei_db.prefix_title)
 reading_to_start_date_prop = RelationProperty(DatabaseEnum.datei_db.prefix + start)
 reading_to_event_prog_prop = RelationProperty(DatabaseEnum.event_db.prefix + progress)
