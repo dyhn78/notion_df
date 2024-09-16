@@ -208,7 +208,7 @@ class Deserializable(metaclass=ABCMeta):
                 cls._deserialize_subclass(None)
             except NotImplementedError:
                 pass
-            except:  # noqa: E722
+            except:  # NOSONAR noqa: E722
                 raise ImplementationError(
                     "_deserialize_subclass() should not be defined on concrete classes")
         deserialize_subclass_old = cls._deserialize_subclass
