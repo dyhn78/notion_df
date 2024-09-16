@@ -69,6 +69,6 @@ if __name__ == '__main__':
     # logger.remove()
     # logger.add(sys.stderr, level="TRACE")
 
-    routine_action.run_recent(interval=timedelta(minutes=240))
+    # routine_action.run_recent(interval=timedelta(minutes=240))
     # routine_action.run_by_last_edited_time(datetime(2024, 1, 7, 17, 0, 0, tzinfo=my_tz), None)
-    # routine_action.run_from_last_success(update_last_success_time=True)
+    routine_action.run_from_last_success(update_last_success_time=True)

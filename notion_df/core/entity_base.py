@@ -64,9 +64,7 @@ class Entity(Hashable, Generic[EntityDataT], metaclass=ABCMeta):
 
     @property
     def local_data(self) -> Union[EntityDataT, Undefined]:
-        return latest_data_dict.get(self._hash_key, undefined)
-        # TODO revert into:
-        # return latest_data_dict.get(self._hash_key, mock_data_dict.get(self._hash_key, undefined))
+        return latest_data_dict.get(self._hash_key, mock_data_dict.get(self._hash_key, undefined))
 
     @property
     def _latest_data(self) -> Optional[EntityDataT]:
