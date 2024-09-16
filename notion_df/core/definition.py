@@ -4,12 +4,15 @@ import inspect
 from typing import TypeVar, Generic, Optional, get_args, cast, get_type_hints, Any
 
 
-class _Undefined:
+class Undefined:
     def __repr__(self) -> str:
         return "Undefined"
 
+    def __bool__(self) -> bool:
+        return False
 
-undefined = _Undefined()
+
+undefined = Undefined()
 
 
 def repr_object(obj, *attrs: Any, **kw_attrs: Any) -> str:

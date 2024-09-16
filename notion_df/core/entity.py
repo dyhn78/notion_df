@@ -5,14 +5,15 @@ from inspect import isabstract
 from typing import (Final, Generic, Hashable, Union, Optional, final, TypeVar, Any, Callable, ClassVar)
 from uuid import UUID
 
+from loguru import logger
 from typing_extensions import Self
 
 from notion_df.core.data import EntityDataT, latest_data_dict, mock_data_dict
-from notion_df.core.definition import undefined, repr_object
+from notion_df.core.definition import undefined, repr_object, Undefined
 from notion_df.core.exception import ImplementationError
 
 
-class Entity(Generic[EntityDataT], Hashable, metaclass=ABCMeta):
+class Entity(Hashable, Generic[EntityDataT], metaclass=ABCMeta):
     """The base class for blocks, users, and comments.
 
     There is only one instance with given subclass and id.
@@ -53,7 +54,7 @@ class Entity(Generic[EntityDataT], Hashable, metaclass=ABCMeta):
         return repr_object(self, id=self.id)
 
     @property
-    def data(self) -> Optional[EntityDataT]:
+    def data(self) -> Union[EntityDataT, Undefined]:
         """
         Return the latest data of the entity.
         
@@ -61,10 +62,9 @@ class Entity(Generic[EntityDataT], Hashable, metaclass=ABCMeta):
         """
         return self.local_data
 
-    @final
     @property
-    def local_data(self) -> Optional[EntityDataT]:
-        return latest_data_dict.get(self._hash_key, mock_data_dict.get(self._hash_key))
+    def local_data(self) -> Union[EntityDataT, Undefined]:
+        return latest_data_dict.get(self._hash_key, mock_data_dict.get(self._hash_key, undefined))
 
     @abstractmethod
     def set_mock_data(self, **kwargs: Any) -> None:
@@ -95,10 +95,16 @@ class RetrievableEntity(Entity[EntityDataT], Generic[EntityDataT]):
         # TODO: raise EntityNotExistError(ValueError), with page_exists()
         pass
 
+    @final
     @property
     @retrieve_if_undefined
     def data(self) -> EntityDataT:
         return self.local_data
+
+    @final
+    @property
+    def local_data(self) -> Union[EntityDataT, Undefined]:
+        return super().local_data
 
 
 CallableT = TypeVar("CallableT", bound=Callable[[RetrievableEntity, ...], Any])
