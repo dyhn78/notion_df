@@ -21,7 +21,7 @@ from workflow.block import DatabaseEnum, schedule, progress, record_timestr_prop
     reading_to_main_date_prop, reading_to_start_date_prop, reading_to_event_prog_prop, \
     reading_match_date_by_created_time_prop, status_prop, status_auto_generated, \
     korean_weekday, record_kind_prop, \
-    datei_date_prop, journal_needs_datei_prop
+    datei_date_prop, journal_needs_datei_prop, parse_date_title_match
 from workflow.core.action import SequentialAction, Action
 from workflow.emoji_code import EmojiCode
 
@@ -519,41 +519,29 @@ class DateINamespace(DatabaseNamespace):
     def get_date_of_title(cls, title_plain_text: str) -> Optional[dt.date]:
         match = cls._getter_pattern.match(
             title_plain_text) or cls._getter_pattern_2.search(title_plain_text)
-        return cls._parse_date_match(match)
+        return parse_date_title_match(match)
 
     @classmethod
     def _check_date_in_record_title(cls, title_plain_text: str,
                                     date_candidates: list[dt.date]) -> bool:
         dates_in_record_title = []
         match_1 = cls._checker_pattern_1.search(title_plain_text)
-        dates_in_record_title.append(cls._parse_date_match(match_1))
+        dates_in_record_title.append(parse_date_title_match(match_1))
         match_2 = cls._checker_pattern_2.search(title_plain_text)
-        dates_in_record_title.append(cls._parse_date_match(match_2))
+        dates_in_record_title.append(parse_date_title_match(match_2))
         return any((
                            date_in_record_title is not None and date_in_record_title in date_candidates)
                    for date_in_record_title in dates_in_record_title)
-
-    @classmethod
-    def _parse_date_match(cls, match: Optional[re.Match[str]]) -> Optional[dt.date]:
-        if not match:
-            return None
-        year, month, day = (int(s) for s in match.groups())
-        full_year = (2000 if year < 90 else 1900) + year
-        try:
-            return dt.date(full_year, month, day)
-        except ValueError:
-            # In case the date is not valid (like '000229' for non-leap year)
-            return None
 
     _digit_pattern = re.compile(r'[\d. -]+')
 
     @classmethod
     def prepend_date_in_record_title(
-            cls, record: Page, datei_list: Iterable[Page], needs_separator: bool
+            cls, record: Page, candidate_datei_list: Iterable[Page], needs_separator: bool
     ) -> RichText:
         title = record.data.properties.title
         datei_date_list = [datei.data.properties[datei_date_prop].start
-                           for datei in datei_list]
+                           for datei in candidate_datei_list]
 
         needs_update = not cls._check_date_in_record_title(title.plain_text,
                                                            datei_date_list)

@@ -4,7 +4,7 @@ import datetime as dt
 import re
 from abc import ABCMeta
 from enum import Enum
-from typing import Optional, ClassVar, cast, NewType, Iterable
+from typing import Optional, ClassVar, NewType
 from uuid import UUID
 
 from typing_extensions import Self
@@ -13,9 +13,10 @@ from notion_df.core.entity import Entity
 from notion_df.core.uuid_parser import get_page_or_database_url
 from notion_df.entity import Database, Page, Workspace
 from notion_df.misc import Emoji
-from notion_df.rich_text import RichText, TextSpan
-from notion_df.property import TitleProperty, DateFormulaPropertyKey, RichTextProperty, RelationProperty, \
+from notion_df.property import TitleProperty, DateFormulaPropertyKey, RichTextProperty, \
+    RelationProperty, \
     DateProperty, CheckboxFormulaProperty, SelectProperty, PageProperties
+from notion_df.rich_text import RichText, TextSpan
 from workflow.emoji_code import EmojiCode
 
 schedule = "일정"
@@ -104,18 +105,12 @@ class TitleIndexedPage(Page, metaclass=ABCMeta):
     title_prop: ClassVar[TitleProperty]
     pages_by_title_plain_text: ClassVar[dict[str, Self]] = {}
 
-    def __init_subclass__(cls, **kwargs):
-        pass
-        # if not inspect.isabstract(cls):
-        #     assert cls.db
-        #     assert cls.title_prop
-
     def __init__(self, id_or_url: UUID | str):
         super().__init__(id_or_url)
         self.pages_by_title_plain_text[self.title.plain_text] = self
 
     @classmethod
-    def get_page_by_title(cls, title_plain_text: str) -> Optional[Self]:
+    def get_by_title(cls, title_plain_text: str) -> Optional[Self]:
         if page := cls.pages_by_title_plain_text.get(title_plain_text):
             return page
         plain_page_list = cls.db.query(cls.title_prop.filter.equals(title_plain_text))
@@ -123,42 +118,6 @@ class TitleIndexedPage(Page, metaclass=ABCMeta):
             return
         page = cls(plain_page_list[0].id)
         return page
-
-
-class PageWithDatePageIndex(Page, metaclass=ABCMeta):
-    # TODO: move into MatchDatei
-    getter_pattern = re.compile(r'(\d{2})(\d{2})(\d{2}).*')
-    getter_pattern_2 = re.compile(r'(\d{2})(\d{2})(\d{2})[|]')
-    checker_pattern = getter_pattern
-    _digit_pattern = re.compile(r'[\d. -]+')
-
-    def get_date_page_in_title(self) -> Optional[Page]:
-        match = DateTitleMatch(self.getter_pattern.match(self.title.plain_text)
-                               or self.getter_pattern_2.search(self.title.plain_text))
-        date = parse_date_title_match(match)
-        if date is None:
-            return
-        return Datei.get_page_by_date(date)
-
-    def prepend_date_on_title(self, candidate_date_pages: Iterable[Datei]) -> RichText:
-        """return new title value (update() must be called outside)"""
-        # TODO: reflect the latest changes on main
-        candidate_date_list = [cast(Datei, date_page).date for date_page in candidate_date_pages]
-        match = DateTitleMatch(self.checker_pattern.search(self.title.plain_text))
-        date_in_title = parse_date_title_match(match)
-        needs_update = date_in_title not in candidate_date_list
-        if not needs_update:
-            return RichText()
-
-        earliest_datei_date = min(candidate_date_list)
-        has_separator = '|' in self.title.plain_text
-        needs_separator: bool = not has_separator  # and cls._digit_pattern.match(self.title.plain_text))
-        starts_with_separator = self.title.plain_text.startswith('|')
-        return RichText([TextSpan(
-            f"{earliest_datei_date.strftime('%y%m%d')}{'|' if needs_separator else ''}"
-            f"{'' if starts_with_separator else ' '}"
-            f"{'✨' if not self.title.plain_text else ''}"),
-            *self.title])
 
 
 class Datei(TitleIndexedPage):
@@ -186,13 +145,13 @@ class Datei(TitleIndexedPage):
         return date
 
     @classmethod
-    def get_page_by_date(cls, date: dt.date) -> Datei:
+    def get_or_create(cls, date: dt.date) -> Datei:
         if page_list := cls.db.query(cls.date_prop.filter.equals(date)):
             return cls(page_list[0].id)
-        return cls.create_page(date)
+        return cls.create(date)
 
     @classmethod
-    def create_page(cls, date: dt.date) -> Datei:
+    def create(cls, date: dt.date) -> Datei:
         day_name = korean_weekday[date.weekday()] + '요일'
         title_plain_text = f'{date.strftime("%y%m%d")} {day_name}'
         plain_page = cls.db.create_child_page(PageProperties({
@@ -212,13 +171,13 @@ class Weeki(TitleIndexedPage):
         return self.properties[self.date_range_prop].start
 
     @classmethod
-    def get_page_by_date(cls, date: dt.date) -> Page:
+    def get_or_create(cls, date: dt.date) -> Page:
         title_plain_text = cls._get_first_day_of_week(date).strftime("%y/%U")
-        return (cls.get_page_by_title(title_plain_text)
-                or cls.create_page(date))
+        return (cls.get_by_title(title_plain_text)
+                or cls.create(date))
 
     @classmethod
-    def create_page(cls, date: dt.date) -> Page:
+    def create(cls, date: dt.date) -> Page:
         title_plain_text = cls._get_first_day_of_week(date).strftime("%y/%U")
         page = cls.db.create_child_page(PageProperties({
             cls.title_prop: cls.title_prop.page_value.from_plain_text(
@@ -238,10 +197,6 @@ class Weeki(TitleIndexedPage):
     @classmethod
     def _get_last_day_of_week(cls, date: dt.date) -> dt.date:
         return cls._get_first_day_of_week(date) + dt.timedelta(days=6)
-
-
-class EventPage(PageWithDatePageIndex):
-    ...
 
 
 record_datetime_auto_prop = DateFormulaPropertyKey(EmojiCode.TIMER + '일시')
