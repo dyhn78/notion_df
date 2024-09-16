@@ -43,7 +43,6 @@ routine_action = CompositeAction([
     MatchRecordDatei(base, DatabaseEnum.issue_db, schedule, read_datei_from_created_time=False, read_datei_from_title=True),
     MatchRecordDateiSchedule(base, DatabaseEnum.issue_db),
     MatchRecordWeekiByDatei(base, DatabaseEnum.issue_db, schedule, schedule),
-    # DeprCreateDateEvent(base, DatabaseEnum.issue_db),
 
     MatchRecordDatei(base, DatabaseEnum.reading_db, DatabaseEnum.datei_db.title),
     MatchRecordWeekiByDatei(base, DatabaseEnum.reading_db, DatabaseEnum.weeki_db.title, DatabaseEnum.datei_db.title),
@@ -51,7 +50,6 @@ routine_action = CompositeAction([
     MatchReadingStartDatei(base),
     MatchRecordDateiSchedule(base, DatabaseEnum.reading_db),
     MatchRecordWeekiByDatei(base, DatabaseEnum.reading_db, start, start),
-    # DeprCreateDateEvent(base, DatabaseEnum.reading_db),
 
     MatchRecordDatei(base, DatabaseEnum.area_db, DatabaseEnum.datei_db.title),
     MatchRecordWeekiByDatei(base, DatabaseEnum.area_db, DatabaseEnum.weeki_db.title, DatabaseEnum.datei_db.title),
