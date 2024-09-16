@@ -7,7 +7,7 @@ from loguru import logger
 
 from notion_df.core.request import RequestError
 from notion_df.entity import Page, Database
-from notion_df.data import PageData
+from notion_df.object.data import PageData
 from notion_df.property import RelationProperty, PageProperties, RelationDatabasePropertyValue, \
     DualRelationDatabasePropertyValue
 from workflow.action.match import get_earliest_date
@@ -142,7 +142,7 @@ class MigrationBackupLoadAction(SequentialAction):
     @cache
     def get_candidate_props(cls, this_db: Database, linked_db: Database) -> list[RelationProperty]:
         candidate_props: list[RelationProperty] = []
-        for prop in this_db.data.properties:
+        for prop in this_db.get_data().properties:
             if not isinstance(prop, RelationProperty):
                 continue
             if this_db.data.properties[prop].database == linked_db:
@@ -198,7 +198,7 @@ class MigrationBackupLoadAction(SequentialAction):
 
 # TODO: integrate to base package
 def iter_breadcrumb(page: Page) -> Iterator[Page]:
-    page.data
+    page.get_data()
     yield page
     if page.data.parent is not None:
         yield from iter_breadcrumb(page.data.parent)
@@ -207,7 +207,7 @@ def iter_breadcrumb(page: Page) -> Iterator[Page]:
 # TODO: integrate to base package
 def page_exists(page: Page) -> bool:
     try:
-        page.data
+        page.get_data()
         return True
     except RequestError:
         return False

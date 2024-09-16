@@ -10,15 +10,15 @@ from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 
-from notion_df.core.collection import StrEnum
+from notion_df.util.collection import StrEnum
 from workflow.service.webdriver_service import WebDriverService
 
-LibKey = Literal['all_libs', 'gajwa']
+SelectLib_T = Literal['all_libs', 'gajwa']
 
 
 @dataclass
 class LibraryScrapResult:
-    lib_key: LibKey
+    lib_key: SelectLib_T
     lib_name: str
     priority: int
     book_code: str
@@ -69,7 +69,7 @@ var l = document.querySelector("{css_tag}");
 l.parentNode.removeChild(l);
         """)
 
-    def __init__(self, driver: WebDriver, title: str, lib_key: LibKey):
+    def __init__(self, driver: WebDriver, title: str, lib_key: SelectLib_T):
         self.driver = driver
         self.driver_wait = WebDriverWait(self.driver, 120)
         # self.driver.minimize_window()
@@ -106,7 +106,7 @@ l.parentNode.removeChild(l);
         if self.driver.find_elements(By.CLASS_NAME, "noResultNote"):
             return
 
-        search_url = self.driver.data_url
+        search_url = self.driver.current_url
         self.examine_result()
         self.result.search_url = search_url
         return self.result
@@ -162,7 +162,7 @@ l.parentNode.removeChild(l);
 
 
 class GoyangLibraryScrapBookAreaParser:
-    def __init__(self, book_area: WebElement, lib_key: LibKey):
+    def __init__(self, book_area: WebElement, lib_key: SelectLib_T):
         self.book_area = book_area
         self.lib_key = lib_key
         if self.lib_key == 'gajwa':
