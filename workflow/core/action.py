@@ -37,7 +37,7 @@ class Action(metaclass=ABCMeta):
         logger.info(f"{self}.process_by_last_edited_time(): lower_bound - {lower_bound}, upper_bound - {upper_bound}")
         lower_bound = lower_bound.replace(second=0, microsecond=0)
         pages = set()
-        for page in search_by_title('', 'page'):
+        for page in search_by_title('', 'page', page_size=30):
             if upper_bound is not None and page.data.last_edited_time > upper_bound:
                 continue
             if page.data.last_edited_time < lower_bound:
