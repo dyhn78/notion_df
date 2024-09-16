@@ -1,6 +1,13 @@
 from dataclasses import dataclass
 
-from notion_df.core.collection import coalesce_dataclass
+from notion_df.core.collection import coalesce_dataclass, Paginator
+
+
+def test_paginator():
+    p = Paginator(int, iter(range(3)))
+    assert p._values == []
+    p._fetch_until(1)
+    assert p._values == [0, 1]
 
 
 def test_coalesce_dataclass():

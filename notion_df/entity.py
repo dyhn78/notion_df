@@ -231,7 +231,7 @@ class Database(RetrievableEntity[DatabaseData], HasParent, Generic[PageT]):
 
     def __repr__(self) -> str:
         if self.local_data:
-            return repr_object(self, title=self.local_data.title,
+            return repr_object(self, title=self.local_data.title.plain_text,
                                url=self.local_data.url, parent=self._repr_parent())
         else:
             return repr_object(self, id=self.id, parent=self._repr_parent())
@@ -351,7 +351,7 @@ class Page(RetrievableEntity[PageData], HasParent):
 
     def __repr__(self) -> str:
         if self.local_data and self.local_data.properties.title is not None:
-            return repr_object(self, title=self.local_data.properties.title,
+            return repr_object(self, title=self.local_data.properties.title.plain_text,
                                url=self.local_data.url, parent=self._repr_parent())
         else:
             return repr_object(self, id=self.id, parent=self._repr_parent())
@@ -430,21 +430,21 @@ class Page(RetrievableEntity[PageData], HasParent):
 @overload
 def search_by_title(query: str, entity: Literal['page'],
                     sort_by_last_edited_time: Direction = 'descending',
-                    page_size: int = None) -> list[Page]:
+                    page_size: int = None) -> Paginator[Page]:
     ...
 
 
 @overload
 def search_by_title(query: str, entity: Literal['database'],
                     sort_by_last_edited_time: Direction = 'descending',
-                    page_size: int = None) -> list[Database]:
+                    page_size: int = None) -> Paginator[Database]:
     ...
 
 
 @overload
 def search_by_title(query: str, entity: Literal[None],
                     sort_by_last_edited_time: Direction = 'descending',
-                    page_size: int = None) -> list[Union[Page, Database]]:
+                    page_size: int = None) -> Paginator[Union[Page, Database]]:
     ...
 
 
