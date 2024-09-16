@@ -9,6 +9,7 @@ from typing_extensions import Self
 
 from notion_df.core.data import EntityDataT, latest_data_dict, mock_data_dict
 from notion_df.core.definition import undefined, repr_object
+from notion_df.core.exception import ImplementationError
 
 
 class Entity(Generic[EntityDataT], Hashable, metaclass=ABCMeta):
@@ -74,14 +75,16 @@ class Entity(Generic[EntityDataT], Hashable, metaclass=ABCMeta):
         pass
 
 
+# TODO: rename to on-demand
 def retrieve_if_undefined(func: CallableT) -> CallableT:
     def wrapper(self: RetrievableEntity, *args, **kwargs):
         if (result := func(self, *args, **kwargs)) is not undefined:
             return result
+        logger.debug("retrieve on-demand, {self=}")
         self.retrieve()
         if (result := func(self, *args, **kwargs)) is not undefined:
             return result
-        raise RuntimeError(f"{type(self)}.retrieve() did not update latest data")
+        raise ImplementationError(f"{type(self)}.retrieve() did not update latest data")
 
     return wrapper
 
