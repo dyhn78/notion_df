@@ -4,9 +4,10 @@ from dataclasses import dataclass, field
 from typing import Any
 from uuid import UUID
 
+from notion_df.contents import BlockContents, serialize_block_contents_list
 from notion_df.core.request import SingleRequestBuilder, RequestSettings, Version, Method, PaginatedRequestBuilder
-from notion_df.object.data import BlockValue, BlockData, serialize_block_value_list
-from notion_df.util.collection import DictFilter
+from notion_df.data import BlockData
+from notion_df.core.collection import DictFilter
 
 
 @dataclass
@@ -14,15 +15,15 @@ class AppendBlockChildren(SingleRequestBuilder[list[BlockData]]):
     """https://developers.notion.com/reference/patch-block-children"""
     data_type = list[BlockData]
     id: UUID
-    children: list[BlockValue]
+    children: list[BlockContents]
     # TODO: split to multiple requests when len(children) > 100
 
     def get_settings(self) -> RequestSettings:
         return RequestSettings(Version.v20220222, Method.PATCH,
-                               f'https://api.notion.com/v1/blocks/{self.id}/children')
+                               f'blocks/{self.id}/children')
 
     def get_body(self) -> Any:
-        return {'children': serialize_block_value_list(self.children)}
+        return {'children': serialize_block_contents_list(self.children)}
 
     @classmethod
     def parse_response_data(cls, data: dict[str, Any]) -> list[BlockData]:
@@ -40,7 +41,7 @@ class RetrieveBlock(SingleRequestBuilder[BlockData]):
 
     def get_settings(self) -> RequestSettings:
         return RequestSettings(Version.v20220222, Method.GET,
-                               f'https://api.notion.com/v1/blocks/{self.id}')
+                               f'blocks/{self.id}')
 
     def get_body(self) -> Any:
         return
@@ -55,7 +56,7 @@ class RetrieveBlockChildren(PaginatedRequestBuilder[BlockData]):
 
     def get_settings(self) -> RequestSettings:
         return RequestSettings(Version.v20220222, Method.GET,
-                               f'https://api.notion.com/v1/blocks/{self.id}/children')
+                               f'blocks/{self.id}/children')
 
     def get_body(self) -> Any:
         pass
@@ -66,12 +67,12 @@ class UpdateBlock(SingleRequestBuilder[BlockData]):
     """https://developers.notion.com/reference/update-a-block"""
     data_type = BlockData
     id: UUID
-    block_type: BlockValue = field(default=None)
+    block_type: BlockContents = field(default=None)
     archived: bool = field(default=None)
 
     def get_settings(self) -> RequestSettings:
         return RequestSettings(Version.v20220222, Method.PATCH,
-                               f'https://api.notion.com/v1/blocks/{self.id}')
+                               f'blocks/{self.id}')
 
     def get_body(self):
         return DictFilter.not_none({
@@ -89,7 +90,7 @@ class DeleteBlock(SingleRequestBuilder[BlockData]):
 
     def get_settings(self) -> RequestSettings:
         return RequestSettings(Version.v20220222, Method.DELETE,
-                               f'https://api.notion.com/v1/blocks/{self.id}')
+                               f'blocks/{self.id}')
 
     def get_body(self) -> Any:
         return

@@ -3,22 +3,22 @@ from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime, date
-from typing import Any, Literal, Optional, TYPE_CHECKING, Iterator
+from typing import Any, Literal, Optional, TYPE_CHECKING, Iterator, Union, overload
 from uuid import UUID
 
 from typing_extensions import Self
 
 from notion_df.core.serialization import DualSerializable
-from notion_df.object.constant import BlockColor, OptionColor
+from notion_df.constant import BlockColor, OptionColor
 
 if TYPE_CHECKING:
-    from notion_df.core.entity import Entity
+    from notion_df.entity import Block, Database, Page, Workspace
 
 
 @dataclass
 class PartialParent(DualSerializable):
     # https://developers.notion.com/reference/parent-object
-    typename: Literal['database_id', 'page_id', 'block_id', 'workspace']
+    typename: Literal['block_id', 'database_id', 'page_id', 'workspace']
     id: Optional[UUID]
 
     def serialize(self) -> dict[str, Any]:
@@ -36,8 +36,8 @@ class PartialParent(DualSerializable):
         return cls(typename, parent_id)
 
     @property
-    def entity(self) -> Optional[Entity]:
-        from notion_df.entity import Block, Database, Page
+    def resolved(self) -> Union[Block, Database, Page, Workspace]:
+        from notion_df.entity import Block, Database, Page, Workspace
 
         match self.typename:
             case 'block_id':
@@ -47,7 +47,7 @@ class PartialParent(DualSerializable):
             case 'page_id':
                 return Page(self.id)
             case 'workspace':
-                return None
+                return Workspace()
 
 
 @dataclass
@@ -86,9 +86,7 @@ class Icon(DualSerializable, metaclass=ABCMeta):
         pass
 
     @classmethod
-    def deserialize(cls, raw: dict[str, Any]) -> Self:
-        if cls != Icon:
-            return cls._deserialize_this(raw)
+    def _deserialize_subclass(cls, raw: dict[str, Any]) -> Self:
         subclass = icon_registry[raw['type']]
         return subclass.deserialize(raw)
 
@@ -121,9 +119,21 @@ class Emoji(Icon):
 
 @dataclass
 class DateRange(DualSerializable):
-    # timezone option is disabled. you should handle timezone inside 'start' and 'end'.
-    start: date | datetime
-    end: date | datetime
+    """timezone option is disabled. you should handle timezone inside 'start' and 'end'."""
+    start: date | datetime | None
+    end: date | datetime | None
+
+    @overload
+    def __init__(self, start: date | datetime | None):
+        ...
+
+    @overload
+    def __init__(self, start: date | datetime, end: date | datetime | None):
+        ...
+
+    def __init__(self, start: date | datetime | None = None, end: date | datetime | None = None):
+        self.start = start
+        self.end = end
 
     def __iter__(self) -> Iterator[date | datetime]:
         return iter([self.start, self.end])

@@ -7,9 +7,9 @@ from typing import Any
 
 from typing_extensions import Self
 
-from notion_df.core.exception import NotionDfValueError
+from notion_df.core.exception import ImplementationError
 from notion_df.core.serialization import serialize, deserialize, DualSerializable
-from notion_df.object.misc import Icon
+from notion_df.misc import Icon
 
 
 @dataclass
@@ -17,17 +17,14 @@ class File(Icon, metaclass=ABCMeta):
     """https://developers.notion.com/reference/file-object"""
 
     @classmethod
-    def deserialize(cls, raw: dict[str, Any]) -> Self:
-        if cls != File:
-            return cls._deserialize_this(raw)
+    def _deserialize_subclass(cls, raw: dict[str, Any]) -> Self:
         match raw['type']:
             case 'file':
                 subclass = InternalFile
             case 'external':
                 subclass = ExternalFile
             case _:
-                raise NotionDfValueError('invalid relation_type',
-                                         {'type': raw['type'], 'serialized': raw})
+                raise ImplementationError(f"invalid relation_type, {raw['type']=}, {raw=}")
         return subclass.deserialize(raw)
 
 

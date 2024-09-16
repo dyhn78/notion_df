@@ -3,14 +3,14 @@ from __future__ import annotations as _
 import functools
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, field
-from typing import Optional, Any, Literal, final, Iterable, cast
+from typing import Optional, Any, Literal, Iterable, cast
 from uuid import UUID
 
 from typing_extensions import Self
 
 from notion_df.core.serialization import DualSerializable, deserialize, serialize
-from notion_df.object.misc import DateRange, Annotations
-from notion_df.util.collection import FinalDict
+from notion_df.misc import DateRange, Annotations
+from notion_df.core.collection import FinalDict
 
 span_registry: FinalDict[tuple[str, ...], type[Span]] = FinalDict()
 
@@ -44,6 +44,7 @@ class Span(DualSerializable, metaclass=ABCMeta):
         def _serialize_wrapped(self: Span):
             raw = _serialize(self)
             if self.annotations is not None:
+                # noinspection PyTestUnpassedFixture
                 raw['annotations'] = self.annotations.serialize()
             return raw
 
@@ -64,11 +65,7 @@ class Span(DualSerializable, metaclass=ABCMeta):
         return ()
 
     @classmethod
-    @final
-    def deserialize(cls, raw: dict[str, Any]) -> Self:
-        if cls != Span:
-            return cls._deserialize_this(raw)
-
+    def _deserialize_subclass(cls, raw: dict[str, Any]) -> Self:
         def get_typename(_raw: dict[str, Any]) -> tuple[str, ...]:
             if 'type' in _raw:
                 typename = _raw['type']

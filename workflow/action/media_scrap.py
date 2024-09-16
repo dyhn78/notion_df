@@ -3,18 +3,17 @@ from typing import Optional, Callable, Any, Iterable
 from loguru import logger
 from selenium.webdriver.chrome.webdriver import WebDriver
 
-from notion_df.core.request import Paginator
-from notion_df.entity import Page, Database
-from notion_df.object.data import ChildPageBlockValue, TableOfContentsBlockValue, \
-    BlockValue
-from notion_df.object.filter import CompoundFilter
-from notion_df.object.misc import SelectOption
-from notion_df.object.rich_text import TextSpan, PageMention
-from notion_df.object.constant import BlockColor
+from notion_df.contents import ChildPageBlockContents, BlockContents, \
+    TableOfContentsBlockContents
+from notion_df.core.collection import StrEnum, peek, Paginator
+from notion_df.entity import Page
+from notion_df.filter import CompoundFilter
+from notion_df.misc import SelectOption
+from notion_df.rich_text import TextSpan, PageMention
+from notion_df.constant import BlockColor
 from notion_df.property import SelectProperty, CheckboxFormulaProperty, TitleProperty, \
     RichTextProperty, \
     URLProperty, NumberProperty, FilesProperty, CheckboxProperty, PageProperties
-from notion_df.util.collection import StrEnum, peek
 from workflow.block import DatabaseEnum
 from workflow.core.action import IndividualAction
 from workflow.service.gy_lib_service import GYLibraryScraper, LibraryScrapResult
@@ -49,7 +48,7 @@ class EditStatusValue(StrEnum):
 
 class MediaScrapAction(IndividualAction):
     def __init__(self, *, create_window: bool):
-        self.reading_db = Database(DatabaseEnum.reading_db.id)
+        self.reading_db = DatabaseEnum.reading_db.entity
         self.driver_service = WebDriverService(create_window=create_window)
 
     def query(self) -> Paginator[Page]:
@@ -157,8 +156,8 @@ class ReadingMediaScraperUnit:
         def set_content_page():
             def get_current_content_page() -> Optional[Page]:
                 for block in self.reading.as_block().retrieve_children():
-                    if isinstance(block.data.value, ChildPageBlockValue):
-                        block_title = block.data.value.title
+                    if isinstance(block.data.contents, ChildPageBlockContents):
+                        block_title = block.data.contents.title
                         if self.name_value in block_title or block_title.strip() in ['', '=', '>']:
                             _content_page = Page(block.id)
                             return _content_page
@@ -179,15 +178,15 @@ class ReadingMediaScraperUnit:
                 link_to_contents_prop:
                     link_to_contents_prop.page_value([PageMention(content_page.id)])
             }))
-            child_values: list[BlockValue] = [
-                TableOfContentsBlockValue(BlockColor.GRAY),
+            child_contents: list[BlockContents] = [
+                TableOfContentsBlockContents(BlockColor.GRAY),
                 *(get_block_value_of_contents_line(content_line) for content_line in
                 result.get_contents())
             ]
             length = 100
-            child_values_splited_list = [child_values[i:i + length] for i in range(0, len(child_values), length)]
-            for child_values_splited in child_values_splited_list:
-                content_page.as_block().append_children(child_values_splited)
+            child_contents_splited_list = [child_contents[i:i + length] for i in range(0, len(child_contents), length)]
+            for child_contents_splited in child_contents_splited_list:
+                content_page.as_block().append_children(child_contents_splited)
 
         self.callables.append(set_content_page)
         return True
@@ -222,7 +221,7 @@ class ReadingMediaScraperUnit:
 
     def filter_not_overwrite(self, new_properties: PageProperties):
         return PageProperties({prop: prop_value for prop, prop_value in new_properties.items()
-                                             if not self.reading.data.properties.get(prop)})
+                               if not self.reading.data.properties.get(prop)})
 
 
 if __name__ == '__main__':
