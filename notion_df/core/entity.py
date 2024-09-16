@@ -74,10 +74,12 @@ class Entity(Generic[EntityDataT], Hashable, metaclass=ABCMeta):
         pass
 
 
+# TODO: rename to on-demand
 def retrieve_if_undefined(func: CallableT) -> CallableT:
     def wrapper(self: RetrievableEntity, *args, **kwargs):
         if (result := func(self, *args, **kwargs)) is not undefined:
             return result
+        logger.debug("retrieve on-demand, {self=}")
         self.retrieve()
         if (result := func(self, *args, **kwargs)) is not undefined:
             return result
