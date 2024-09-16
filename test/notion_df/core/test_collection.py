@@ -20,6 +20,5 @@ def test_coalesce_dataclass():
 
     instance1 = ExampleDataClass(field1=1, field2=None, field3=2.5)
     instance2 = ExampleDataClass(field1=None, field2="Hello", field3=None)
-    merged_instance = coalesce_dataclass(instance1, instance2)
-
-    assert merged_instance == ExampleDataClass(field1=1, field2='Hello', field3=2.5)
+    coalesce_dataclass(instance1, instance2)
+    assert instance1 == ExampleDataClass(field1=1, field2='Hello', field3=2.5)
