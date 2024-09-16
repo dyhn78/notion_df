@@ -262,19 +262,16 @@ class PageProperties(Properties, MutableMapping[Property[Any, PVT, Any], PVT]):
         return super().__delitem__(prop)
 
     @property
-    def title_prop(self) -> TitleProperty:
-        """raise KeyError on lookup failure."""
-        if self._title_prop is None:
-            raise KeyError('title prop is missing')
+    def title_prop(self) -> TitleProperty | None:
         return self._title_prop
 
     @property
-    def title(self) -> RichText:
-        """raise KeyError on lookup failure."""
-        return self[self.title_prop]
+    def title(self) -> RichText | None:
+        return self.get(self.title_prop)
 
     @title.setter
     def title(self, value: RichText) -> None:
+        # TODO raise error if title_prop = None
         self[self.title_prop] = value
 
 

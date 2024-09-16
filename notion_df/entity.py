@@ -10,16 +10,15 @@ from typing_extensions import Self
 from notion_df.contents import BlockContents
 from notion_df.core.collection import Paginator
 from notion_df.core.definition import undefined, repr_object
-from notion_df.core.entity import RetrievableEntity, retrieve_if_undefined, CanBeParent, HasParent
+from notion_df.core.entity import RetrievableEntity, retrieve_if_undefined, CanBeParent, \
+    HasParent
 from notion_df.core.exception import ImplementationError
 from notion_df.core.uuid_parser import get_page_or_database_id, get_block_id
+from notion_df.core.variable import token
 from notion_df.data import BlockData, DatabaseData, PageData
 from notion_df.file import ExternalFile, File
 from notion_df.filter import Filter
 from notion_df.misc import Icon, PartialParent
-from notion_df.rich_text import RichText
-from notion_df.sort import Sort, TimestampSort, Direction
-from notion_df.user import PartialUser
 from notion_df.property import Property, PageProperties, DatabaseProperties, \
     PVT
 from notion_df.request.block import AppendBlockChildren, RetrieveBlock, \
@@ -29,8 +28,9 @@ from notion_df.request.database import CreateDatabase, UpdateDatabase, RetrieveD
 from notion_df.request.page import CreatePage, UpdatePage, RetrievePage, \
     RetrievePagePropertyItem
 from notion_df.request.search import SearchByTitle
-from notion_df.core.variable import token
-
+from notion_df.rich_text import RichText
+from notion_df.sort import Sort, TimestampSort, Direction
+from notion_df.user import PartialUser
 
 BlockT = TypeVar('BlockT', bound='Block')
 DatabaseT = TypeVar('DatabaseT', bound='Database')
@@ -227,14 +227,15 @@ class Database(RetrievableEntity[DatabaseData], HasParent, Generic[PageT]):
 
     def __repr__(self) -> str:
         if self.local_data:
-            return repr_object(self, title=self.local_data.title.plain_text,
+            return repr_object(self, title=self.local_data.title,
                                url=self.local_data.url, parent=self._repr_parent())
         else:
             return repr_object(self, id=self.id, parent=self._repr_parent())
 
     def _repr_as_parent(self) -> str:
         if self.local_data:
-            return repr_object(self, title=self.local_data.title.plain_text)
+            # TODO: revert to self.local_data.title.plain_text
+            return repr_object(self, title=self.local_data.title)
         else:
             return repr_object(self, id=self.id)
 
@@ -318,7 +319,9 @@ class Page(RetrievableEntity[PageData], HasParent):
 
     @property
     def title(self) -> RichText:
-        return self.properties.title
+        if ret := self.properties.title:
+            return ret
+        return self.retrieve().properties.title
 
     def set_mock_data(
             self,
@@ -341,21 +344,16 @@ class Page(RetrievableEntity[PageData], HasParent):
         return get_page_or_database_id(id_or_url)
 
     def __repr__(self) -> str:
-        # TODO refactor
-        try:
-            if not self.local_data:
-                raise AttributeError
-            title = self.local_data.properties.title.plain_text
-            _id = undefined
-        except (KeyError, AttributeError):
-            title = undefined
-            _id = self.id
-        return repr_object(self, title=title, url=self.local_data.url,
-                           id=_id, parent=self._repr_parent())
+        if self.local_data and self.local_data.properties.title is not None:
+            return repr_object(self, title=self.local_data.properties.title,
+                               url=self.local_data.url, parent=self._repr_parent())
+        else:
+            return repr_object(self, id=self.id, parent=self._repr_parent())
 
     def _repr_as_parent(self) -> str:
         try:
-            title = self.local_data.properties.title.plain_text
+            # TODO: revert to self.local_data.title.plain_text
+            title = self.local_data.properties.title
             return repr_object(self, title=title)
         except (KeyError, AttributeError):
             return repr_object(self, id=self.id)
