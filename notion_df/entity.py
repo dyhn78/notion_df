@@ -10,7 +10,7 @@ from typing_extensions import Self
 from notion_df.contents import BlockContents
 from notion_df.core.collection import Paginator
 from notion_df.core.definition import undefined, repr_object
-from notion_df.core.entity import RetrievableEntity, retrieve_if_undefined, CanBeParent, \
+from notion_df.core.entity_base import RetrievableEntity, retrieve_if_undefined, CanBeParent, \
     HasParent
 from notion_df.core.exception import ImplementationError
 from notion_df.core.uuid_parser import get_page_or_database_id, get_block_id

@@ -9,7 +9,7 @@ from uuid import UUID
 
 from typing_extensions import Self
 
-from notion_df.core.entity import Entity
+from notion_df.core.entity_base import Entity
 from notion_df.core.uuid_parser import get_page_or_database_url
 from notion_df.entity import Database, Page, Workspace
 from notion_df.misc import Emoji

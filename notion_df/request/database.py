@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from typing import Any, Optional
 from uuid import UUID
 
-from notion_df.core.request import SingleRequestBuilder, RequestSettings, Version, Method, PaginatedRequestBuilder
+from notion_df.core.request_base import SingleRequestBuilder, RequestSettings, Version, Method, PaginatedRequestBuilder
 from notion_df.data import DatabaseData, PageData
 from notion_df.file import ExternalFile
 from notion_df.filter import Filter

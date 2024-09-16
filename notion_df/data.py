@@ -10,7 +10,7 @@ from typing_extensions import Self
 
 from notion_df.contents import block_contents_registry, BlockContents, \
     UnsupportedBlockContents
-from notion_df.core.data import EntityData
+from notion_df.core.data_base import EntityData
 from notion_df.file import File
 from notion_df.misc import Icon, PartialParent
 from notion_df.property import DatabaseProperties, PageProperties
@@ -23,7 +23,7 @@ if TYPE_CHECKING:
 
 @cache
 def _get_type_hints(cls) -> dict[str, type]:
-    from notion_df.core.entity import Entity, RetrievableEntity
+    from notion_df.core.entity_base import Entity, RetrievableEntity
     from notion_df.entity import Block, Database, Page, Workspace
     return get_type_hints(cls, {
         **globals(), **{cls.__name__: cls for cls in (

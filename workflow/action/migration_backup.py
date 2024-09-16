@@ -5,7 +5,7 @@ from typing import Optional, cast, Iterator, Iterable
 import tenacity
 from loguru import logger
 
-from notion_df.core.request import RequestError
+from notion_df.core.request_base import RequestError
 from notion_df.entity import Page, Database
 from notion_df.data import PageData
 from notion_df.property import RelationProperty, PageProperties, RelationDatabasePropertyValue, \

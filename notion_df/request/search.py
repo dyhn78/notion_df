@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 from typing import Any, Literal, Union
 
-from notion_df.core.data import EntityData
-from notion_df.core.request import RequestSettings, Version, Method, PaginatedRequestBuilder
+from notion_df.core.data_base import EntityData
+from notion_df.core.request_base import RequestSettings, Version, Method, PaginatedRequestBuilder
 from notion_df.data import DatabaseData, PageData
 from notion_df.sort import TimestampSort
 from notion_df.core.collection import DictFilter
