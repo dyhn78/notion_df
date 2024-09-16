@@ -325,6 +325,11 @@ class RelationDatabasePropertyValue(DatabasePropertyValue, metaclass=ABCMeta):
     database: Database
 
     @classmethod
+    @abstractmethod
+    def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
+        raise NotImplementedError
+
+    @classmethod
     def _deserialize_subclass(cls, raw: dict[str, Any]) -> Self:
         match (relation_type := raw['type']):
             case 'single_property':
