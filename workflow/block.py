@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import datetime as dt
-import inspect
 import re
 from abc import ABCMeta
 from enum import Enum
@@ -13,8 +12,8 @@ from typing_extensions import Self
 from notion_df.core.entity import Entity
 from notion_df.core.uuid_parser import get_page_or_database_url
 from notion_df.entity import Database, Page, Workspace
-from notion_df.object.misc import Emoji
-from notion_df.object.rich_text import RichText, TextSpan
+from notion_df.misc import Emoji
+from notion_df.rich_text import RichText, TextSpan
 from notion_df.property import TitleProperty, DateFormulaPropertyKey, RichTextProperty, RelationProperty, \
     DateProperty, CheckboxFormulaProperty, SelectProperty, PageProperties
 from workflow.emoji_code import EmojiCode
@@ -100,15 +99,15 @@ def parse_date_title_match(match: Optional[DateTitleMatch]) -> Optional[dt.date]
         return None
 
 
-class PageWithTitleIndex(Page, metaclass=ABCMeta):
-    database: ClassVar[Database]
+class TitleIndexedPage(Page, metaclass=ABCMeta):
+    db: ClassVar[Database]
     title_prop: ClassVar[TitleProperty]
     pages_by_title_plain_text: ClassVar[dict[str, Self]] = {}
 
     def __init_subclass__(cls, **kwargs):
         pass
         # if not inspect.isabstract(cls):
-        #     assert cls.database
+        #     assert cls.db
         #     assert cls.title_prop
 
     def __init__(self, id_or_url: UUID | str):
@@ -119,7 +118,7 @@ class PageWithTitleIndex(Page, metaclass=ABCMeta):
     def get_page_by_title(cls, title_plain_text: str) -> Optional[Self]:
         if page := cls.pages_by_title_plain_text.get(title_plain_text):
             return page
-        plain_page_list = cls.database.query(cls.title_prop.filter.equals(title_plain_text))
+        plain_page_list = cls.db.query(cls.title_prop.filter.equals(title_plain_text))
         if not plain_page_list:
             return
         page = cls(plain_page_list[0].id)
@@ -162,8 +161,8 @@ class PageWithDatePageIndex(Page, metaclass=ABCMeta):
             *self.title])
 
 
-class Datei(PageWithTitleIndex):
-    database = DatabaseEnum.datei_db.entity
+class Datei(TitleIndexedPage):
+    db = DatabaseEnum.datei_db.entity
     title_prop = TitleProperty(EmojiCode.GREEN_BOOK + '제목')
     date_prop = DateProperty(EmojiCode.CALENDAR + '날짜')
     page_by_date_dict: ClassVar[dict[dt.date, Self]] = {}
@@ -188,7 +187,7 @@ class Datei(PageWithTitleIndex):
 
     @classmethod
     def get_page_by_date(cls, date: dt.date) -> Datei:
-        if page_list := cls.database.query(cls.date_prop.filter.equals(date)):
+        if page_list := cls.db.query(cls.date_prop.filter.equals(date)):
             return cls(page_list[0].id)
         return cls.create_page(date)
 
@@ -196,15 +195,15 @@ class Datei(PageWithTitleIndex):
     def create_page(cls, date: dt.date) -> Datei:
         day_name = korean_weekday[date.weekday()] + '요일'
         title_plain_text = f'{date.strftime("%y%m%d")} {day_name}'
-        plain_page = cls.database.create_child_page(PageProperties({
+        plain_page = cls.db.create_child_page(PageProperties({
             cls.title_prop: cls.title_prop.page_value.from_plain_text(title_plain_text),
             cls.date_prop: cls.date_prop.page_value(start=date)
         }))
         return cls(plain_page.id)
 
 
-class Weeki(PageWithTitleIndex):
-    database = DatabaseEnum.weeki_db.entity
+class Weeki(TitleIndexedPage):
+    db = DatabaseEnum.weeki_db.entity
     title_prop = TitleProperty(EmojiCode.GREEN_BOOK + '제목')
     date_range_prop = DateProperty(EmojiCode.BIG_CALENDAR + '날짜 범위')
 
@@ -221,7 +220,7 @@ class Weeki(PageWithTitleIndex):
     @classmethod
     def create_page(cls, date: dt.date) -> Page:
         title_plain_text = cls._get_first_day_of_week(date).strftime("%y/%U")
-        page = cls.database.create_child_page(PageProperties({
+        page = cls.db.create_child_page(PageProperties({
             cls.title_prop: cls.title_prop.page_value.from_plain_text(
                 title_plain_text),
             cls.date_range_prop: cls.date_range_prop.page_value(

@@ -5,12 +5,12 @@ from typing import Any, Optional
 from uuid import UUID
 
 from notion_df.core.request import SingleRequestBuilder, RequestSettings, Version, Method, PaginatedRequestBuilder
-from notion_df.object.data import DatabaseData, PageData
-from notion_df.object.file import ExternalFile
-from notion_df.object.filter import Filter
-from notion_df.object.misc import Icon
-from notion_df.object.rich_text import RichText
-from notion_df.object.sort import Sort
+from notion_df.data import DatabaseData, PageData
+from notion_df.file import ExternalFile
+from notion_df.filter import Filter
+from notion_df.misc import Icon
+from notion_df.rich_text import RichText
+from notion_df.sort import Sort
 from notion_df.property import DatabaseProperties
 from notion_df.core.collection import DictFilter
 

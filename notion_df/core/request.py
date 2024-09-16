@@ -16,7 +16,7 @@ from notion_df.core.data import EntityDataT
 from notion_df.core.definition import repr_object
 from notion_df.core.exception import ImplementationError, NotionDfException
 from notion_df.core.serialization import deserialize, serialize
-from notion_df.variable import print_width
+from notion_df.core.variable import print_width
 
 MAX_PAGE_SIZE = 100
 

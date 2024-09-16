@@ -10,8 +10,8 @@ from loguru import logger
 from notion_df.core.collection import Paginator
 from notion_df.core.definition import repr_object
 from notion_df.entity import Page, Database
-from notion_df.object.filter import created_time_filter
-from notion_df.object.rich_text import TextSpan, RichText
+from notion_df.filter import created_time_filter
+from notion_df.rich_text import TextSpan, RichText
 from notion_df.property import RelationProperty, TitleProperty, PageProperties, \
     RelationPagePropertyValue
 from workflow.block import DatabaseEnum, schedule, progress, record_timestr_prop, \

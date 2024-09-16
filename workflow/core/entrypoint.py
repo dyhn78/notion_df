@@ -17,8 +17,8 @@ from notion_df.contents import CodeBlockContents, DividerBlockContents, Paragrap
     ToggleBlockContents
 from notion_df.core.serialization import deserialize_datetime
 from notion_df.entity import Block
-from notion_df.object.rich_text import RichText, TextSpan, UserMention
-from notion_df.variable import my_tz
+from notion_df.rich_text import RichText, TextSpan, UserMention
+from notion_df.core.variable import my_tz
 from workflow import log_dir
 
 

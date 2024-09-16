@@ -13,13 +13,13 @@ from notion_df.core.definition import undefined, repr_object
 from notion_df.core.entity import RetrievableEntity, retrieve_if_undefined, CanBeParent, HasParent
 from notion_df.core.exception import ImplementationError
 from notion_df.core.uuid_parser import get_page_or_database_id, get_block_id
-from notion_df.object.data import BlockData, DatabaseData, PageData
-from notion_df.object.file import ExternalFile, File
-from notion_df.object.filter import Filter
-from notion_df.object.misc import Icon, PartialParent
-from notion_df.object.rich_text import RichText
-from notion_df.object.sort import Sort, TimestampSort, Direction
-from notion_df.object.user import PartialUser
+from notion_df.data import BlockData, DatabaseData, PageData
+from notion_df.file import ExternalFile, File
+from notion_df.filter import Filter
+from notion_df.misc import Icon, PartialParent
+from notion_df.rich_text import RichText
+from notion_df.sort import Sort, TimestampSort, Direction
+from notion_df.user import PartialUser
 from notion_df.property import Property, PageProperties, DatabaseProperties, \
     PVT
 from notion_df.request.block import AppendBlockChildren, RetrieveBlock, \
@@ -29,7 +29,7 @@ from notion_df.request.database import CreateDatabase, UpdateDatabase, RetrieveD
 from notion_df.request.page import CreatePage, UpdatePage, RetrievePage, \
     RetrievePagePropertyItem
 from notion_df.request.search import SearchByTitle
-from notion_df.variable import token
+from notion_df.core.variable import token
 
 
 class Workspace(CanBeParent):
@@ -462,6 +462,5 @@ def search_by_title(query: str, entity: Literal['page', 'database', None] = None
                     yield Page(data.id)
                 case _:
                     raise RuntimeError(f"invalid class. {data=}")
-        return
 
     return Paginator(element_type, it())

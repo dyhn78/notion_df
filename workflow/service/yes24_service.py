@@ -11,9 +11,9 @@ from bs4 import BeautifulSoup
 from notion_df.contents import BlockContents, Heading1BlockContents, \
     Heading2BlockContents, \
     Heading3BlockContents, ParagraphBlockContents
-from notion_df.object.constant import BlockColor
-from notion_df.object.misc import Annotations
-from notion_df.object.rich_text import RichText, TextSpan
+from notion_df.constant import BlockColor
+from notion_df.misc import Annotations
+from notion_df.rich_text import RichText, TextSpan
 
 # noinspection PyUnresolvedReferences
 # disable SSLError(1, '[SSL: DH_KEY_TOO_SMALL] dh key too small (_ssl.c:997)') error for yes24.com

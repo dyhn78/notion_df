@@ -9,13 +9,13 @@ from typing_extensions import Self
 
 from notion_df.core.collection import FinalDict
 from notion_df.core.serialization import DualSerializable
-from notion_df.object.constant import BlockColor, CodeLanguage
-from notion_df.object.file import File
-from notion_df.object.misc import Icon
-from notion_df.object.rich_text import RichText, Span
+from notion_df.constant import BlockColor, CodeLanguage
+from notion_df.file import File
+from notion_df.misc import Icon
+from notion_df.rich_text import RichText, Span
 
 if TYPE_CHECKING:
-    from notion_df.object.data import BlockData
+    from notion_df.data import BlockData
 
 block_contents_registry: FinalDict[str, type[BlockContents]] = FinalDict()
 

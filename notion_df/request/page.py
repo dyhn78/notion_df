@@ -8,9 +8,9 @@ from notion_df.contents import BlockContents, serialize_block_contents_list
 from notion_df.core.collection import DictFilter
 from notion_df.core.request import SingleRequestBuilder, RequestSettings, Version, \
     Method, RequestBuilder, request_page
-from notion_df.object.data import PageData
-from notion_df.object.file import ExternalFile
-from notion_df.object.misc import Icon, PartialParent
+from notion_df.data import PageData
+from notion_df.file import ExternalFile
+from notion_df.misc import Icon, PartialParent
 from notion_df.property import PageProperties, Property, property_registry, PVT
 
 

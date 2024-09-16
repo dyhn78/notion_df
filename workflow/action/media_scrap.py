@@ -7,10 +7,10 @@ from notion_df.contents import ChildPageBlockContents, BlockContents, \
     TableOfContentsBlockContents
 from notion_df.core.collection import StrEnum, peek, Paginator
 from notion_df.entity import Page
-from notion_df.object.filter import CompoundFilter
-from notion_df.object.misc import SelectOption
-from notion_df.object.rich_text import TextSpan, PageMention
-from notion_df.object.constant import BlockColor
+from notion_df.filter import CompoundFilter
+from notion_df.misc import SelectOption
+from notion_df.rich_text import TextSpan, PageMention
+from notion_df.constant import BlockColor
 from notion_df.property import SelectProperty, CheckboxFormulaProperty, TitleProperty, \
     RichTextProperty, \
     URLProperty, NumberProperty, FilesProperty, CheckboxProperty, PageProperties

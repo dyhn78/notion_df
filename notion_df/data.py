@@ -10,10 +10,10 @@ from typing_extensions import Self
 
 from notion_df.contents import block_contents_registry, BlockContents, UnsupportedBlockContents
 from notion_df.core.data import EntityData
-from notion_df.object.file import File
-from notion_df.object.misc import Icon, PartialParent
-from notion_df.object.rich_text import RichText
-from notion_df.object.user import PartialUser
+from notion_df.file import File
+from notion_df.misc import Icon, PartialParent
+from notion_df.rich_text import RichText
+from notion_df.user import PartialUser
 from notion_df.property import DatabaseProperties, PageProperties
 
 if TYPE_CHECKING:

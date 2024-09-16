@@ -51,7 +51,7 @@ class EntityData(Deserializable, metaclass=ABCMeta):
 
     @classmethod
     def _deserialize_subclass(cls, raw: Any) -> Self:
-        from notion_df.object.data import BlockData, DatabaseData, PageData
+        from notion_df.data import BlockData, DatabaseData, PageData
 
         match object_kind := raw['object']:
             case 'block':

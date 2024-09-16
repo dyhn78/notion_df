@@ -19,7 +19,7 @@ import dateutil.parser
 from typing_extensions import Self
 
 from notion_df.core.exception import NotionDfException, ImplementationError
-from notion_df.variable import my_tz
+from notion_df.core.variable import my_tz
 
 
 @dataclass(kw_only=True)

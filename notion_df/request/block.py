@@ -6,7 +6,7 @@ from uuid import UUID
 
 from notion_df.contents import BlockContents, serialize_block_contents_list
 from notion_df.core.request import SingleRequestBuilder, RequestSettings, Version, Method, PaginatedRequestBuilder
-from notion_df.object.data import BlockData
+from notion_df.data import BlockData
 from notion_df.core.collection import DictFilter
 
 

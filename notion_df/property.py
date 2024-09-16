@@ -15,14 +15,14 @@ from notion_df.core.collection import FinalDict
 from notion_df.core.definition import repr_object
 from notion_df.core.exception import ImplementationError
 from notion_df.core.serialization import DualSerializable, deserialize, serialize
-from notion_df.object.constant import RollupFunction, NumberFormat, Number
-from notion_df.object.file import Files
-from notion_df.object.filter import PropertyFilter, CheckboxFilterBuilder, PeopleFilterBuilder, \
+from notion_df.constant import RollupFunction, NumberFormat, Number
+from notion_df.file import Files
+from notion_df.filter import PropertyFilter, CheckboxFilterBuilder, PeopleFilterBuilder, \
     DateFilterBuilder, TextFilterBuilder, FilesFilterBuilder, NumberFilterBuilder, MultiSelectFilterBuilder, \
     RelationFilterBuilder, SelectFilterBuilder, FilterBuilder, FormulaPropertyFilter
-from notion_df.object.misc import StatusGroups, SelectOption, DateRange
-from notion_df.object.rich_text import RichText
-from notion_df.object.user import PartialUser, User
+from notion_df.misc import StatusGroups, SelectOption, DateRange
+from notion_df.rich_text import RichText
+from notion_df.user import PartialUser, User
 
 if TYPE_CHECKING:
     from notion_df.entity import Page, Database
