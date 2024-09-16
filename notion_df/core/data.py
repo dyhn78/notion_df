@@ -7,6 +7,7 @@ from datetime import datetime
 from typing import Any, TypeVar, MutableMapping, Final
 from uuid import UUID
 
+from loguru import logger
 from typing_extensions import Self
 
 from notion_df.core.collection import coalesce_dataclass
@@ -27,6 +28,7 @@ class EntityData(Deserializable, metaclass=ABCMeta):
     def __post_init__(self) -> None:
         self.timestamp = int(datetime.now().timestamp())
         hash_key = type(self), self.id
+        logger.trace(self)
         if self.mock:
             if past_self := mock_data_dict.get(hash_key):
                 coalesce_dataclass(self, past_self)
