@@ -2,26 +2,114 @@ from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, field
-from typing import cast, Any, Optional, TYPE_CHECKING
+from datetime import datetime
+from functools import cache
+from typing import Any, Optional, Union, TYPE_CHECKING, get_type_hints, cast
 from uuid import UUID
 
 from typing_extensions import Self
 
-from notion_df.core.collection import FinalDict
+from notion_df.core.data import Data
 from notion_df.core.serialization import DualSerializable
-from notion_df.constant import BlockColor, CodeLanguage
-from notion_df.file import File
-from notion_df.misc import Icon
-from notion_df.rich_text import RichText, Span
+from notion_df.object.constant import BlockColor, CodeLanguage
+from notion_df.object.file import File
+from notion_df.object.misc import Icon, PartialParent
+from notion_df.object.rich_text import Span, RichText
+from notion_df.object.user import PartialUser
+from notion_df.property import DatabaseProperties, PageProperties
+from notion_df.util.collection import FinalDict
 
 if TYPE_CHECKING:
-    from notion_df.data import BlockData
-
-block_contents_registry: FinalDict[str, type[BlockContents]] = FinalDict()
+    from notion_df.entity import Block, Database, Page
 
 
 @dataclass
-class BlockContents(DualSerializable, metaclass=ABCMeta):
+class DatabaseData(Data):
+    id: UUID
+    parent: Union[Block, Page, None]
+    created_time: datetime
+    last_edited_time: datetime
+    icon: Optional[Icon]
+    cover: Optional[File]
+    url: str
+    title: RichText
+    properties: DatabaseProperties
+    archived: bool
+    is_inline: bool
+
+    @classmethod
+    def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
+        return cls._deserialize_from_dict(raw, parent=PartialParent.deserialize(raw['parent']).entity)
+
+    @classmethod
+    @cache
+    def _get_type_hints(cls) -> dict[str, type]:
+        # TODO deduplicate
+        from notion_df.entity import Block, Database, Page
+        from notion_df.core.entity import Entity
+        return get_type_hints(cls, {**globals(), **{cls.__name__: cls for cls in (Entity, Block, Database, Page)}})
+
+
+@dataclass
+class PageData(Data):
+    id: UUID
+    parent: Union[Block, Database, Page, None]
+    created_time: datetime
+    last_edited_time: datetime
+    created_by: PartialUser
+    last_edited_by: PartialUser
+    archived: bool
+    icon: Optional[Icon]
+    cover: Optional[File]
+    url: str
+    properties: PageProperties
+
+    @classmethod
+    def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
+        return cls._deserialize_from_dict(raw, parent=PartialParent.deserialize(raw['parent']).entity)
+
+    @classmethod
+    @cache
+    def _get_type_hints(cls) -> dict[str, type]:
+        from notion_df.entity import Block, Database, Page
+        from notion_df.core.entity import Entity
+        return get_type_hints(cls, {**globals(), **{cls.__name__: cls for cls in (Entity, Block, Database, Page)}})
+
+
+@dataclass
+class BlockData(Data):
+    id: UUID
+    parent: Union[Block, Page, None]
+    created_time: datetime
+    last_edited_time: datetime
+    created_by: PartialUser
+    last_edited_by: PartialUser
+    has_children: Optional[bool]
+    """Note: the None value never occurs from direct server data. It only happens from Page.as_block()"""
+    archived: bool
+    value: BlockValue
+
+    @classmethod
+    def _deserialize_this(cls, raw: dict[str, Any]):
+        typename = raw['type']
+        block_value_cls = block_value_registry.get(typename, UnsupportedBlockValue)
+        block_value = block_value_cls.deserialize(raw[typename])
+        return cls._deserialize_from_dict(raw, parent=PartialParent.deserialize(raw['parent']).entity,
+                                          value=block_value)
+
+    @classmethod
+    @cache
+    def _get_type_hints(cls) -> dict[str, type]:
+        from notion_df.entity import Block, Database, Page
+        from notion_df.core.entity import Entity
+        return get_type_hints(cls, {**globals(), **{cls.__name__: cls for cls in (Entity, Block, Database, Page)}})
+
+
+block_value_registry: FinalDict[str, type[BlockValue]] = FinalDict()
+
+
+@dataclass
+class BlockValue(DualSerializable, metaclass=ABCMeta):
     @classmethod
     @abstractmethod
     def get_typename(cls) -> str:
@@ -29,7 +117,7 @@ class BlockContents(DualSerializable, metaclass=ABCMeta):
 
     def __init_subclass__(cls, **kwargs):
         if (typename := cls.get_typename()) and typename != cast(cls, super(cls, cls)).get_typename():
-            block_contents_registry[typename] = cls
+            block_value_registry[typename] = cls
 
     def serialize(self) -> dict[str, Any]:
         return self._serialize_as_dict()
@@ -39,18 +127,18 @@ class BlockContents(DualSerializable, metaclass=ABCMeta):
         return cls._deserialize_from_dict(raw)
 
 
-def serialize_block_contents_list(block_contents_list: Optional[list[BlockContents]]) -> Optional[list[dict[str, Any]]]:
-    if block_contents_list is None:
+def serialize_block_value_list(block_value_list: Optional[list[BlockValue]]) -> Optional[list[dict[str, Any]]]:
+    if block_value_list is None:
         return None
     return [{
         "object": "block",
         "type": block_type.get_typename(),
         block_type.get_typename(): block_type.serialize(),
-    } for block_type in block_contents_list]
+    } for block_type in block_value_list]
 
 
 @dataclass
-class BookmarkBlockContents(BlockContents):
+class BookmarkBlockValue(BlockValue):
     url: str
     caption: RichText = field(default_factory=RichText)
 
@@ -60,14 +148,14 @@ class BookmarkBlockContents(BlockContents):
 
 
 @dataclass
-class BreadcrumbBlockContents(BlockContents):
+class BreadcrumbBlockValue(BlockValue):
     @classmethod
     def get_typename(cls) -> str:
         return 'breadcrumb'
 
 
 @dataclass
-class BulletedListItemBlockContents(BlockContents):
+class BulletedListItemBlockValue(BlockValue):
     rich_text: RichText
     color: BlockColor = BlockColor.DEFAULT
     children: list[BlockData] = field(init=False, default=None)
@@ -78,7 +166,7 @@ class BulletedListItemBlockContents(BlockContents):
 
 
 @dataclass
-class CalloutBlockContents(BlockContents):
+class CalloutBlockValue(BlockValue):
     rich_text: RichText
     icon: Icon
     color: BlockColor = BlockColor.DEFAULT
@@ -90,7 +178,7 @@ class CalloutBlockContents(BlockContents):
 
 
 @dataclass
-class ChildDatabaseBlockContents(BlockContents):
+class ChildDatabaseBlockValue(BlockValue):
     title: str
 
     @classmethod
@@ -99,7 +187,7 @@ class ChildDatabaseBlockContents(BlockContents):
 
 
 @dataclass
-class ChildPageBlockContents(BlockContents):
+class ChildPageBlockValue(BlockValue):
     title: str
 
     @classmethod
@@ -108,7 +196,7 @@ class ChildPageBlockContents(BlockContents):
 
 
 @dataclass
-class CodeBlockContents(BlockContents):
+class CodeBlockValue(BlockValue):
     rich_text: RichText
     language: CodeLanguage = CodeLanguage.PLAIN_TEXT
     caption: RichText = field(default_factory=RichText)
@@ -119,28 +207,28 @@ class CodeBlockContents(BlockContents):
 
 
 @dataclass
-class ColumnListBlockContents(BlockContents):
+class ColumnListBlockValue(BlockValue):
     @classmethod
     def get_typename(cls) -> str:
         return 'column_list'
 
 
 @dataclass
-class ColumnBlockContents(BlockContents):
+class ColumnBlockValue(BlockValue):
     @classmethod
     def get_typename(cls) -> str:
         return 'column'
 
 
 @dataclass
-class DividerBlockContents(BlockContents):
+class DividerBlockValue(BlockValue):
     @classmethod
     def get_typename(cls) -> str:
         return 'divider'
 
 
 @dataclass
-class EmbedBlockContents(BlockContents):
+class EmbedBlockValue(BlockValue):
     url: str
 
     @classmethod
@@ -149,7 +237,7 @@ class EmbedBlockContents(BlockContents):
 
 
 @dataclass
-class EquationBlockContents(BlockContents):
+class EquationBlockValue(BlockValue):
     expression: str
     """a KaTeX compatible string."""
 
@@ -159,7 +247,7 @@ class EquationBlockContents(BlockContents):
 
 
 @dataclass
-class FileBlockContents(BlockContents):
+class FileBlockValue(BlockValue):
     file: File
     caption: RichText = field(default_factory=RichText)
 
@@ -176,7 +264,7 @@ class FileBlockContents(BlockContents):
 
 
 @dataclass
-class Heading1BlockContents(BlockContents):
+class Heading1BlockValue(BlockValue):
     rich_text: RichText
     is_toggleable: bool
     color: BlockColor = BlockColor.DEFAULT
@@ -187,7 +275,7 @@ class Heading1BlockContents(BlockContents):
 
 
 @dataclass
-class Heading2BlockContents(BlockContents):
+class Heading2BlockValue(BlockValue):
     rich_text: RichText
     is_toggleable: bool
     color: BlockColor = BlockColor.DEFAULT
@@ -198,7 +286,7 @@ class Heading2BlockContents(BlockContents):
 
 
 @dataclass
-class Heading3BlockContents(BlockContents):
+class Heading3BlockValue(BlockValue):
     rich_text: RichText
     is_toggleable: bool
     color: BlockColor = BlockColor.DEFAULT
@@ -209,7 +297,7 @@ class Heading3BlockContents(BlockContents):
 
 
 @dataclass
-class ImageBlockContents(BlockContents):
+class ImageBlockValue(BlockValue):
     """
     - The image must be directly hosted. In other words, the url cannot point to a service that retrieves the image.
     - supported image types (as of 2023-04-02): **.bmp .gif .heic .jpeg .jpg .png .svg .tif .tiff**
@@ -230,7 +318,7 @@ class ImageBlockContents(BlockContents):
 
 
 @dataclass
-class NumberedListItemBlockContents(BlockContents):
+class NumberedListItemBlockValue(BlockValue):
     rich_text: RichText
     color: BlockColor = BlockColor.DEFAULT
     children: list[BlockData] = field(init=False, default=None)
@@ -241,7 +329,7 @@ class NumberedListItemBlockContents(BlockContents):
 
 
 @dataclass
-class ParagraphBlockContents(BlockContents):
+class ParagraphBlockValue(BlockValue):
     rich_text: RichText
     color: BlockColor = BlockColor.DEFAULT
     children: list[BlockData] = field(init=False, default=None)
@@ -252,7 +340,7 @@ class ParagraphBlockContents(BlockContents):
 
 
 @dataclass
-class PDFBlockContents(BlockContents):
+class PDFBlockValue(BlockValue):
     file: File
     caption: RichText = field(default_factory=RichText)
 
@@ -269,7 +357,7 @@ class PDFBlockContents(BlockContents):
 
 
 @dataclass
-class QuoteBlockContents(BlockContents):
+class QuoteBlockValue(BlockValue):
     rich_text: RichText
     color: BlockColor = BlockColor.DEFAULT
     children: list[BlockData] = field(init=False, default=None)
@@ -280,7 +368,7 @@ class QuoteBlockContents(BlockContents):
 
 
 @dataclass
-class SyncedBlockContents(BlockContents, metaclass=ABCMeta):
+class SyncedBlockValue(BlockValue, metaclass=ABCMeta):
     """cannot be changed (2023-04-02)"""
 
     @classmethod
@@ -288,7 +376,10 @@ class SyncedBlockContents(BlockContents, metaclass=ABCMeta):
         return 'synced_block'
 
     @classmethod
-    def _deserialize_subclass(cls, raw: dict[str, Any]) -> Self:
+    def deserialize(cls, raw: dict[str, Any]) -> Self:
+        if cls != SyncedBlockValue:
+            return cls._deserialize_this(raw)
+
         def get_subclass():
             if raw['synced_from']:
                 return DuplicatedSyncedBlockValue
@@ -299,7 +390,7 @@ class SyncedBlockContents(BlockContents, metaclass=ABCMeta):
 
 
 @dataclass
-class OriginalSyncedBlockValue(SyncedBlockContents):
+class OriginalSyncedBlockValue(SyncedBlockValue):
     """cannot be changed (2023-04-02)"""
     children: list[BlockData] = field(init=False, default=None)
 
@@ -311,7 +402,7 @@ class OriginalSyncedBlockValue(SyncedBlockContents):
 
 
 @dataclass
-class DuplicatedSyncedBlockValue(SyncedBlockContents):
+class DuplicatedSyncedBlockValue(SyncedBlockValue):
     """cannot be changed (2023-04-02)"""
     block_id: UUID
 
@@ -324,7 +415,7 @@ class DuplicatedSyncedBlockValue(SyncedBlockContents):
 
 
 @dataclass
-class TableBlockContents(BlockContents):
+class TableBlockValue(BlockValue):
     table_width: int
     """cannot be changed."""
     has_column_header: bool
@@ -336,9 +427,9 @@ class TableBlockContents(BlockContents):
 
 
 @dataclass
-class TableRowBlockContents(BlockContents):
+class TableRowBlockValue(BlockValue):
     cells: list[list[Span]]
-    """An array of cell data in horizontal display order. Each cell is an array of rich text objects."""
+    """An array of cell contents in horizontal display order. Each cell is an array of rich text objects."""
 
     @classmethod
     def get_typename(cls) -> str:
@@ -346,7 +437,7 @@ class TableRowBlockContents(BlockContents):
 
 
 @dataclass
-class TableOfContentsBlockContents(BlockContents):
+class TableOfContentsBlockValue(BlockValue):
     color: BlockColor = BlockColor.DEFAULT
 
     @classmethod
@@ -355,7 +446,7 @@ class TableOfContentsBlockContents(BlockContents):
 
 
 @dataclass
-class ToDoBlockContents(BlockContents):
+class ToDoBlockValue(BlockValue):
     rich_text: RichText
     checked: bool
     color: BlockColor = BlockColor.DEFAULT
@@ -367,7 +458,7 @@ class ToDoBlockContents(BlockContents):
 
 
 @dataclass
-class ToggleBlockContents(BlockContents):
+class ToggleBlockValue(BlockValue):
     rich_text: RichText
     color: BlockColor = BlockColor.DEFAULT
     children: list[BlockData] = field(init=False, default=None)
@@ -378,7 +469,7 @@ class ToggleBlockContents(BlockContents):
 
 
 @dataclass
-class VideoBlockContents(BlockContents):
+class VideoBlockValue(BlockValue):
     """
     supported video types (as 2023-04-02):
     **.amv .asf .avi .f4v .flv .gifv .mkv .mov .mpg .mpeg .mpv .mp4 .m4v .qt .wmv**
@@ -400,7 +491,7 @@ class VideoBlockContents(BlockContents):
 
 
 @dataclass
-class UnsupportedBlockContents(BlockContents):
+class UnsupportedBlockValue(BlockValue):
     @classmethod
     def get_typename(cls) -> str:
         return 'unsupported'

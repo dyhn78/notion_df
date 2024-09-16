@@ -4,41 +4,20 @@ import functools
 from abc import ABCMeta
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, TypeVar, MutableMapping, Final
-from uuid import UUID
+from typing import Any, TypeVar, Optional
 
-from loguru import logger
 from typing_extensions import Self
 
-from notion_df.core.collection import coalesce_dataclass
 from notion_df.core.serialization import Deserializable
-
-latest_data_dict: Final[MutableMapping[tuple[type[EntityData], UUID], EntityData]] = {}
-mock_data_dict: Final[MutableMapping[tuple[type[EntityData], UUID], EntityData]] = {}
 
 
 @dataclass
-class EntityData(Deserializable, metaclass=ABCMeta):
-    id: UUID
+class Data(Deserializable, metaclass=ABCMeta):
     raw: dict[str, Any] = field(init=False, default_factory=dict)
-    timestamp: int = field(init=False)
-    """the timestamp of instance creation."""
-    mock: bool = field(kw_only=True, default=False)
+    timestamp: int = field(init=False, default=0)
+    """the timestamp of deserialization if created with external raw data, or 0 if created by user."""
 
-    def __post_init__(self) -> None:
-        self.timestamp = int(datetime.now().timestamp())
-        hash_key = type(self), self.id
-        logger.trace(self)
-        if self.mock:
-            if past_self := mock_data_dict.get(hash_key):
-                coalesce_dataclass(self, past_self)
-            mock_data_dict[hash_key] = self
-        else:
-            current_latest_data = latest_data_dict.get(hash_key)
-            if current_latest_data is None or self.timestamp >= current_latest_data.timestamp:
-                latest_data_dict[hash_key] = self
-
-    def __del__(self) -> None:
+    def __del__(self):
         del self.raw
 
     def __init_subclass__(cls, **kwargs) -> None:
@@ -47,17 +26,20 @@ class EntityData(Deserializable, metaclass=ABCMeta):
 
         @functools.wraps(_deserialize_this)
         def _deserialize_this_wrapped(raw: dict[str, Any]) -> Self:
-            self: EntityData = _deserialize_this(raw)
+            self: Data = _deserialize_this(raw)
             self.raw = raw
+            self.timestamp = datetime.now().timestamp()
             return self
 
         setattr(cls, '_deserialize_this', _deserialize_this_wrapped)
 
     @classmethod
-    def _deserialize_subclass(cls, raw: Any) -> Self:
-        from notion_df.data import BlockData, DatabaseData, PageData
-        object_kind = raw['object']
-        match object_kind:
+    def deserialize(cls, raw: Any) -> Self:
+        from notion_df.object.data import BlockData, DatabaseData, PageData
+
+        if cls != Data:
+            return cls._deserialize_this(raw)
+        match object_kind := raw['object']:
             case 'block':
                 subclass = BlockData
             case 'database':
@@ -69,9 +51,9 @@ class EntityData(Deserializable, metaclass=ABCMeta):
         return subclass.deserialize(raw)
 
     @property
-    def time(self) -> datetime:
-        """the created time of the instance."""
-        return datetime.fromtimestamp(self.timestamp)
+    def time(self) -> Optional[datetime]:
+        """the time of deserialization if created with external raw data, or None if created by user."""
+        return datetime.fromtimestamp(self.timestamp) if self.timestamp else None
 
 
-EntityDataT = TypeVar('EntityDataT', bound=EntityData)
+Data_T = TypeVar('Data_T', bound=Data)

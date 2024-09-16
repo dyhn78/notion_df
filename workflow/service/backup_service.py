@@ -4,10 +4,10 @@ from typing import Optional
 
 from loguru import logger
 
-from notion_df.core.data import EntityDataT
 from notion_df.core.entity import Entity
+from notion_df.core.data import Data_T
 from notion_df.core.serialization import SerializationError
-from notion_df.core.definition import get_generic_arg
+from notion_df.util.misc import get_generic_arg
 
 
 class ResponseBackupService:
@@ -17,19 +17,19 @@ class ResponseBackupService:
     def _get_path(self, entity: Entity) -> Path:
         return self.root / f"{str(entity.id).replace('-', '')}.json"
 
-    def read(self, entity: Entity[EntityDataT]) -> Optional[EntityDataT]:
+    def read(self, entity: Entity[Data_T]) -> Optional[Data_T]:
         path = self._get_path(entity)
         if not path.is_file():
             return
         with path.open('r') as file:
             response_raw_data = json.load(file)
-        response_cls = get_generic_arg(type(entity), EntityDataT)
+        response_cls = get_generic_arg(type(entity), Data_T)
         try:
             return response_cls.deserialize(response_raw_data)
         except SerializationError:
             logger.warning(f'Skip invalid response_raw_data: entity - {entity}, response_raw_data - {response_raw_data}')
 
-    def write(self, entity: Entity[EntityDataT]) -> None:
+    def write(self, entity: Entity[Data_T]) -> None:
         path = self._get_path(entity)
         path.parent.mkdir(parents=True, exist_ok=True)
         if path.is_file():

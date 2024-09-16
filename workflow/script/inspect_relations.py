@@ -14,7 +14,8 @@ def init():
     _all_relation_properties: dict[tuple[Database, Database], list[RelationProperty]] = defaultdict(list)
     for db_enum in DatabaseEnum:
         db = db_enum.entity
-        for prop in db.properties:
+        db.retrieve()
+        for prop in db.data.properties:
             if isinstance(prop, RelationProperty):
                 from typing import cast
                 linked_db = cast(prop.database_value, db.data.properties[prop]).database
@@ -29,8 +30,6 @@ def get_all_relation_properties():
 
 def get_multiple():
     for (db, linked_db), prop_list in get_all_relation_properties().items():
-        db: Database
-        linked_db: Database
         if len(prop_list) > 1 and db.data.title.plain_text < linked_db.data.title.plain_text and DatabaseEnum.from_entity(
                 db) and DatabaseEnum.from_entity(db).name.find('depr') == -1:
             print(db.data.title.plain_text, linked_db.data.title.plain_text, prop_list)

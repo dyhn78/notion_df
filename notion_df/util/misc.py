@@ -1,15 +1,12 @@
 from __future__ import annotations
 
 import inspect
-from typing import TypeVar, Generic, Optional, get_args, cast, get_type_hints, Any
+from typing import Any, Optional, TypeVar, get_args, cast, Generic, get_type_hints
 
+from notion_df.core.exception import NotionDfTypeError
 
-class _Undefined:
-    def __repr__(self) -> str:
-        return "Undefined"
-
-
-undefined = _Undefined()
+undefined = object()
+"""flag used on repr_object() to omit the attribute value."""
 
 
 def repr_object(obj, *attrs: Any, **kw_attrs: Any) -> str:
@@ -27,7 +24,7 @@ def repr_object(obj, *attrs: Any, **kw_attrs: Any) -> str:
     return f"{type(obj).__name__}({', '.join(attr_items)})"
 
 
-TypeT = TypeVar('TypeT', bound=type)
+Type_T = TypeVar('Type_T', bound=type)
 
 
 def get_generic_args(cls: type[Generic]) -> Optional[tuple[type, ...]]:
@@ -37,14 +34,14 @@ def get_generic_args(cls: type[Generic]) -> Optional[tuple[type, ...]]:
             return args
 
 
-def get_generic_arg(cls: type[Generic], cast_type: TypeT) -> TypeT:
+def get_generic_arg(cls: type[Generic], cast_type: Type_T) -> Type_T:
     """ex) class A(list[int]) -> return: <class 'int'>"""
     try:
         arg = cast(type[cast_type], get_generic_args(cls)[0])
     except IndexError:
-        raise TypeError(f'{cls.__name__} should be explicitly subscribed')
+        raise NotionDfTypeError(f'{cls.__name__} should be explicitly subscribed')
     if not inspect.isabstract(cls) and not inspect.isclass(arg):
-        raise TypeError(
+        raise NotionDfTypeError(
             f'since {cls.__name__} is not abstract, it should be subscribed with class arguments (not TypeVar)')
     return arg
 
@@ -57,4 +54,5 @@ def check_classvars_are_defined(cls):
         if hasattr(super(cls), attr_name) and not hasattr(cls, attr_name):
             attr_names.append(attr_name)
     if attr_names:
-        raise TypeError('all class attributes must be filled', {'cls': cls, 'undefined_attr_names': attr_names})
+        raise NotionDfTypeError('all class attributes must be filled',
+                                {'cls': cls, 'undefined_attr_names': attr_names})

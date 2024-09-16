@@ -1,16 +1,16 @@
 from dataclasses import dataclass
 from typing import Any, Literal, Union
 
-from notion_df.core.data import EntityData
+from notion_df.core.data import Data
 from notion_df.core.request import RequestSettings, Version, Method, PaginatedRequestBuilder
-from notion_df.data import DatabaseData, PageData
-from notion_df.sort import TimestampSort
-from notion_df.core.collection import DictFilter
+from notion_df.object.data import DatabaseData, PageData
+from notion_df.object.sort import TimestampSort
+from notion_df.util.collection import DictFilter
 
 
 @dataclass
 class SearchByTitle(PaginatedRequestBuilder[Union[PageData, DatabaseData]]):
-    data_element_type = EntityData
+    data_element_type = Data
     query: str
     entity: Literal['page', 'database', None] = None
     sort: TimestampSort = TimestampSort('last_edited_time', 'descending')
@@ -18,7 +18,7 @@ class SearchByTitle(PaginatedRequestBuilder[Union[PageData, DatabaseData]]):
 
     def get_settings(self) -> RequestSettings:
         return RequestSettings(Version.v20220628, Method.POST,
-                               f'search')
+                               f'https://api.notion.com/v1/search')
 
     def get_body(self) -> Any:
         return DictFilter.not_none({

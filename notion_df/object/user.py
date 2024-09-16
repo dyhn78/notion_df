@@ -45,7 +45,7 @@ class User(DualSerializable, metaclass=ABCMeta):
 
     @classmethod
     @final
-    def _deserialize_subclass(cls, raw: dict[str, Any]) -> Self:
+    def deserialize(cls, raw: dict[str, Any]) -> Self:
         def get_subclass() -> type[User]:
             typename = raw['type']
             if typename == 'person':
