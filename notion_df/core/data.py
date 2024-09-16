@@ -37,6 +37,13 @@ class EntityData(Deserializable, metaclass=ABCMeta):
             current_latest_data = latest_data_dict.get(hash_key)
             if current_latest_data is None or self.timestamp >= current_latest_data.timestamp:
                 latest_data_dict[hash_key] = self
+        self.finalized = True
+
+    def __setattr__(self, key: str, value: Any) -> None:
+        # TODO: use frozen=True
+        if getattr(self, "finalized", None) and key != "raw":
+            raise AttributeError(key, value)
+        super().__setattr__(key, value)
 
     def __del__(self) -> None:
         del self.raw

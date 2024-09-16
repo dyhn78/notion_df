@@ -64,7 +64,6 @@ class Request:
         logger.debug(self)
         response = requests.request(method=self.method.value, url=self.url, headers=self.headers,
                                     params=self.params, json=self.json, timeout=80)  # TODO: relate with tenacity
-        logger.trace(pprint.pformat(response.text, width=print_width))
         try:
             response.raise_for_status()
             return response

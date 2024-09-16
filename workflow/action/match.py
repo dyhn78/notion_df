@@ -282,7 +282,7 @@ class MatchRecordWeekiByDatei(MatchSequentialAction):
                  record_to_week: str, record_to_date: str):
         super().__init__(base)
         self.record_db = record_db_enum.entity
-        self.record_db_title = self.record_db.data.title = record_db_enum.title
+        self.record_db_title = record_db_enum.title
         self.record_to_weeki = RelationProperty(
             f'{DatabaseEnum.weeki_db.prefix}{record_to_week}')
         self.record_to_datei = RelationProperty(

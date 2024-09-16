@@ -115,6 +115,11 @@ class TextSpan(Span):
     * set `Annotations()` to remove the annotations and make a plain text.
     """
 
+    def __post_init__(self) -> None:
+        super().__post_init__()
+        if not self.plain_text:
+            self.plain_text = self.content
+
     def serialize(self) -> dict[str, Any]:
         return {
             'type': 'text',

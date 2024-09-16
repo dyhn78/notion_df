@@ -64,10 +64,20 @@ class Entity(Hashable, Generic[EntityDataT], metaclass=ABCMeta):
 
     @property
     def local_data(self) -> Union[EntityDataT, Undefined]:
-        return latest_data_dict.get(self._hash_key, mock_data_dict.get(self._hash_key, undefined))
+        return latest_data_dict.get(self._hash_key, undefined)
+        # TODO revert into:
+        # return latest_data_dict.get(self._hash_key, mock_data_dict.get(self._hash_key, undefined))
+
+    @property
+    def _latest_data(self) -> Optional[EntityDataT]:
+        return latest_data_dict.get(self._hash_key)
+
+    @property
+    def _mock_data(self) -> Optional[EntityDataT]:
+        return mock_data_dict.get(self._hash_key)
 
     @abstractmethod
-    def set_mock_data(self, **kwargs: Any) -> None:
+    def set_mock_data(self, **kwargs: Any) -> EntityDataT:
         """
         To save API calls, Set some invariant values(such as the root pages of your workspace) as mock data.
         Mock data is always at the last priority of reading data and not garbage collected.
@@ -80,7 +90,7 @@ def retrieve_if_undefined(func: CallableT) -> CallableT:
     def wrapper(self: RetrievableEntity, *args, **kwargs):
         if (result := func(self, *args, **kwargs)) is not undefined:
             return result
-        logger.debug("retrieve on-demand, {self=}")
+        logger.debug(f"retrieve on-demand, {self=}")
         self.retrieve()
         if (result := func(self, *args, **kwargs)) is not undefined:
             return result

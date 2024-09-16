@@ -106,9 +106,10 @@ class Block(RetrievableEntity[BlockData], HasParent, Generic[BlockT]):
             has_children: bool = undefined,
             archived: bool = undefined,
             contents: BlockContents = undefined,
-    ) -> None:
-        BlockData(self.id, parent, created_time, last_edited_time, created_by, last_edited_by, has_children,
-                  archived, contents, mock=True)
+    ) -> BlockData:
+        return BlockData(self.id, parent, created_time, last_edited_time, created_by,
+                         last_edited_by, has_children,
+                         archived, contents, mock=True)
 
     @staticmethod
     def _get_id(id_or_url: Union[UUID, str]) -> UUID:
@@ -127,7 +128,8 @@ class Block(RetrievableEntity[BlockData], HasParent, Generic[BlockT]):
         return Paginator(Block, (Block(block_data.id) for block_data in
                                  RetrieveBlockChildren(token, self.id).execute()))
 
-    def update(self, block_type: Optional[BlockContents], archived: Optional[bool]) -> Self:
+    def update(self, block_type: Optional[BlockContents],
+               archived: Optional[bool]) -> Self:
         logger.info(f'Block.update({self})')
         UpdateBlock(token, self.id, block_type, archived).execute()
         return self
@@ -146,9 +148,11 @@ class Block(RetrievableEntity[BlockData], HasParent, Generic[BlockT]):
 
     def create_child_database(self, title: RichText, *,
                               properties: Optional[DatabaseProperties] = None,
-                              icon: Optional[Icon] = None, cover: Optional[File] = None) -> Database:
+                              icon: Optional[Icon] = None,
+                              cover: Optional[File] = None) -> Database:
         logger.info(f'Block.create_child_database({self})')
-        return Database(CreateDatabase(token, self.id, title, properties, icon, cover).execute().id)
+        return Database(
+            CreateDatabase(token, self.id, title, properties, icon, cover).execute().id)
 
 
 class Database(RetrievableEntity[DatabaseData], HasParent, Generic[PageT]):
@@ -216,10 +220,10 @@ class Database(RetrievableEntity[DatabaseData], HasParent, Generic[PageT]):
             properties: DatabaseProperties = undefined,
             archived: bool = undefined,
             is_inline: bool = undefined,
-    ) -> Self:
-        DatabaseData(self.id, parent, created_time, last_edited_time, icon, cover, url, title, properties, archived,
-                     is_inline, mock=True)
-        return self
+    ) -> DatabaseData:
+        return DatabaseData(self.id, parent, created_time, last_edited_time, icon,
+                            cover, url, title, properties, archived,
+                            is_inline, mock=True)
 
     @staticmethod
     def _get_id(id_or_url: Union[UUID, str]) -> UUID:
@@ -234,8 +238,7 @@ class Database(RetrievableEntity[DatabaseData], HasParent, Generic[PageT]):
 
     def _repr_as_parent(self) -> str:
         if self.local_data:
-            # TODO: revert to self.local_data.title.plain_text
-            return repr_object(self, title=self.local_data.title)
+            return repr_object(self, title=self.local_data.title.plain_text)
         else:
             return repr_object(self, id=self.id)
 
@@ -251,7 +254,8 @@ class Database(RetrievableEntity[DatabaseData], HasParent, Generic[PageT]):
 
     def create_child_page(self, properties: Optional[PageProperties] = None,
                           children: Optional[list[BlockContents]] = None,
-                          icon: Optional[Icon] = None, cover: Optional[File] = None) -> Page:
+                          icon: Optional[Icon] = None,
+                          cover: Optional[File] = None) -> Page:
         logger.info(f'Database.create_child_page({self})')
         return Page(CreatePage(token, PartialParent('database_id', self.id),
                                properties, children, icon, cover).execute().id)
@@ -261,7 +265,8 @@ class Database(RetrievableEntity[DatabaseData], HasParent, Generic[PageT]):
               page_size: Optional[int] = None) -> Paginator[PageT]:
         logger.info(f'Database.query({self})')
         return Paginator(Page, (Page(page_data.id) for page_data in
-                                QueryDatabase(token, self.id, filter, sort, page_size).execute()))
+                                QueryDatabase(token, self.id, filter, sort,
+                                              page_size).execute()))
 
 
 class Page(RetrievableEntity[PageData], HasParent):
@@ -335,9 +340,10 @@ class Page(RetrievableEntity[PageData], HasParent):
             url: str = undefined,
             archived: bool = undefined,
             properties: PageProperties = undefined,
-    ) -> None:
-        PageData(self.id, parent, created_time, last_edited_time, created_by, last_edited_by, icon, cover, url,
-                 archived, properties, mock=True)
+    ) -> PageData:
+        return PageData(self.id, parent, created_time, last_edited_time, created_by,
+                        last_edited_by, icon, cover, url,
+                        archived, properties, mock=True)
 
     @staticmethod
     def _get_id(id_or_url: Union[UUID, str]) -> UUID:
@@ -352,9 +358,7 @@ class Page(RetrievableEntity[PageData], HasParent):
 
     def _repr_as_parent(self) -> str:
         try:
-            # TODO: revert to self.local_data.title.plain_text
-            title = self.local_data.properties.title
-            return repr_object(self, title=title)
+            return repr_object(self, title=self.local_data.properties.title.plain_text)
         except (KeyError, AttributeError):
             return repr_object(self, id=self.id)
 
@@ -384,35 +388,43 @@ class Page(RetrievableEntity[PageData], HasParent):
                 raise ImplementationError(
                     "property.id is None. if you do not know the property id, retrieve the parent database first.",
                     {"self": self})
-            _, prop_value, prop_serialized = RetrievePagePropertyItem(token, self.id, property_id).execute()
+            _, prop_value, prop_serialized = RetrievePagePropertyItem(token, self.id,
+                                                                      property_id).execute()
         else:
-            prop, prop_value, prop_serialized = RetrievePagePropertyItem(token, self.id, property_id).execute()
+            prop, prop_value, prop_serialized = RetrievePagePropertyItem(token, self.id,
+                                                                         property_id).execute()
         if self.data:
             if not prop.name:
                 # noinspection PyProtectedMember
                 prop = self.data.properties._prop_by_id[prop.id]
             self.data.properties[prop] = prop_value
-            cast(dict[str, Any], self.data.raw["properties"][prop.name]).update(prop_serialized)
+            cast(dict[str, Any], self.data.raw["properties"][prop.name]).update(
+                prop_serialized)
         return prop_value
 
-    def update(self, properties: Optional[PageProperties] = None, icon: Optional[Icon] = None,
-               cover: Optional[ExternalFile] = None, archived: Optional[bool] = None) -> Self:
+    def update(self, properties: Optional[PageProperties] = None,
+               icon: Optional[Icon] = None,
+               cover: Optional[ExternalFile] = None,
+               archived: Optional[bool] = None) -> Self:
         logger.info(f'Page.update({self})')
         UpdatePage(token, self.id, properties, icon, cover, archived).execute()
         return self
 
     def create_child_page(self, properties: Optional[PageProperties] = None,
                           children: Optional[list[BlockContents]] = None,
-                          icon: Optional[Icon] = None, cover: Optional[File] = None) -> Page:
+                          icon: Optional[Icon] = None,
+                          cover: Optional[File] = None) -> Page:
         logger.info(f'Page.create_child_page({self})')
         return Page(CreatePage(token, PartialParent('page_id', self.id), properties,
                                children, icon, cover).execute().id)
 
     def create_child_database(self, title: RichText, *,
                               properties: Optional[DatabaseProperties] = None,
-                              icon: Optional[Icon] = None, cover: Optional[File] = None) -> Database:
+                              icon: Optional[Icon] = None,
+                              cover: Optional[File] = None) -> Database:
         logger.info(f'Page.create_child_database({self})')
-        return self.as_block().create_child_database(title, properties=properties, icon=icon, cover=cover)
+        return self.as_block().create_child_database(title, properties=properties,
+                                                     icon=icon, cover=cover)
 
 
 @overload
