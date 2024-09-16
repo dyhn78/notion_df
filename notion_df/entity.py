@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Optional, TypeVar, Union, Any, Literal, overload, cast
+from typing import Optional, TypeVar, Union, Any, Literal, overload, cast, Generic
 from uuid import UUID
 
 from loguru import logger
@@ -32,6 +32,11 @@ from notion_df.request.search import SearchByTitle
 from notion_df.core.variable import token
 
 
+BlockT = TypeVar('BlockT', bound='Block')
+DatabaseT = TypeVar('DatabaseT', bound='Database')
+PageT = TypeVar('PageT', bound='Page')
+
+
 class Workspace(CanBeParent):
     # TODO: allow multiple workspace, corresponding to multiple tokens
     """the singleton representing the workspace root."""
@@ -47,7 +52,7 @@ class Workspace(CanBeParent):
         return repr(self)
 
 
-class Block(RetrievableEntity[BlockData], HasParent):
+class Block(RetrievableEntity[BlockData], HasParent, Generic[BlockT]):
     data_cls = BlockData
 
     @property
@@ -117,7 +122,7 @@ class Block(RetrievableEntity[BlockData], HasParent):
         RetrieveBlock(token, self.id).execute()
         return self
 
-    def retrieve_children(self) -> Paginator[Block]:
+    def retrieve_children(self) -> Paginator[BlockT]:
         logger.info(f'Block.retrieve_children({self})')
         return Paginator(Block, (Block(block_data.id) for block_data in
                                  RetrieveBlockChildren(token, self.id).execute()))
@@ -146,7 +151,7 @@ class Block(RetrievableEntity[BlockData], HasParent):
         return Database(CreateDatabase(token, self.id, title, properties, icon, cover).execute().id)
 
 
-class Database(RetrievableEntity[DatabaseData], HasParent):
+class Database(RetrievableEntity[DatabaseData], HasParent, Generic[PageT]):
     data_cls = DatabaseData
 
     @property
@@ -252,7 +257,7 @@ class Database(RetrievableEntity[DatabaseData], HasParent):
 
     # noinspection PyShadowingBuiltins
     def query(self, filter: Optional[Filter] = None, sort: Optional[list[Sort]] = None,
-              page_size: Optional[int] = None) -> Paginator[Page]:
+              page_size: Optional[int] = None) -> Paginator[PageT]:
         logger.info(f'Database.query({self})')
         return Paginator(Page, (Page(page_data.id) for page_data in
                                 QueryDatabase(token, self.id, filter, sort, page_size).execute()))
@@ -410,11 +415,6 @@ class Page(RetrievableEntity[PageData], HasParent):
                               icon: Optional[Icon] = None, cover: Optional[File] = None) -> Database:
         logger.info(f'Page.create_child_database({self})')
         return self.as_block().create_child_database(title, properties=properties, icon=icon, cover=cover)
-
-
-BlockT = TypeVar('BlockT', bound=Block)
-DatabaseT = TypeVar('DatabaseT', bound=Database)
-PageT = TypeVar('PageT', bound=Page)
 
 
 @overload
