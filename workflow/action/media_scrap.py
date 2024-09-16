@@ -13,7 +13,7 @@ from notion_df.object.rich_text import TextSpan, PageMention
 from notion_df.property import SelectProperty, CheckboxFormulaProperty, TitleProperty, \
     RichTextProperty, \
     URLProperty, NumberProperty, FilesProperty, CheckboxProperty, PageProperties
-from workflow.block import DatabaseEnum
+from workflow.block_enum import DatabaseEnum
 from workflow.core.action import IndividualAction
 from workflow.service.gy_lib_service import GYLibraryScraper, LibraryScrapResult
 from workflow.service.webdriver_service import WebDriverService

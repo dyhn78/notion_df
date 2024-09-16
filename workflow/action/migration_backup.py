@@ -10,7 +10,7 @@ from notion_df.entity import Page, Database
 from notion_df.object.data import PageData
 from notion_df.property import RelationProperty, PageProperties
 from workflow.action.match import get_earliest_date
-from workflow.block import DatabaseEnum, schedule, start, common, elements, related
+from workflow.block_enum import DatabaseEnum, schedule, start, common, elements, related
 from workflow.core.action import SequentialAction
 from workflow.service.backup_service import ResponseBackupService
 

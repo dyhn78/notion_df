@@ -14,7 +14,7 @@ from notion_df.object.filter import created_time_filter
 from notion_df.object.rich_text import TextSpan, RichText
 from notion_df.property import RelationProperty, TitleProperty, PageProperties, \
     RelationPagePropertyValue
-from workflow.block import DatabaseEnum, schedule, progress, record_timestr_prop, datepage_to_weeki_prop, \
+from workflow.block_enum import DatabaseEnum, schedule, progress, record_timestr_prop, datepage_to_weeki_prop, \
     datepage_date_prop, weekpage_date_range_prop, event_to_datei_prop, event_to_stage_prop, event_to_idea_prop, \
     event_to_issue_prop, event_to_reading_prop, event_to_area_prop, event_to_gist_prop, journal_kind_non_datei_list, \
     reading_to_main_date_prop, reading_to_start_date_prop, reading_to_event_prog_prop, \
