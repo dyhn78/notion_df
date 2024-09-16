@@ -37,8 +37,7 @@ class MigrationBackupSaveAction(SequentialAction):
                     page.retrieve_property_item(prop)
                 except tenacity.RetryError:
                     logger.error(f'failed Page.retrieve_property_item({page}, prop={prop.name})')
-                    raise Exception(f'failed Page.retrieve_property_item({page}, prop={prop.name})')
-                    pass               
+                    raise RuntimeError(f'failed Page.retrieve_property_item({page}, prop={prop.name})')
         self.backup.write(page)
 
 
