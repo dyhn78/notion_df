@@ -85,8 +85,7 @@ class Entity(Hashable, Generic[EntityDataT], metaclass=ABCMeta):
         pass
 
 
-# TODO: rename to on-demand
-def retrieve_if_undefined(func: CallableT) -> CallableT:
+def retrieve_on_demand(func: CallableT) -> CallableT:
     def wrapper(self: RetrievableEntity, *args, **kwargs):
         if (result := func(self, *args, **kwargs)) is not undefined:
             return result
@@ -107,7 +106,7 @@ class RetrievableEntity(Entity[EntityDataT], Generic[EntityDataT]):
 
     @final
     @property
-    @retrieve_if_undefined
+    @retrieve_on_demand
     def data(self) -> EntityDataT:
         return self.local_data
 

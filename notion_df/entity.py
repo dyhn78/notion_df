@@ -10,7 +10,7 @@ from typing_extensions import Self
 from notion_df.contents import BlockContents
 from notion_df.core.collection import Paginator
 from notion_df.core.definition import undefined, repr_object
-from notion_df.core.entity_base import RetrievableEntity, retrieve_if_undefined, CanBeParent, \
+from notion_df.core.entity_base import RetrievableEntity, retrieve_on_demand, CanBeParent, \
     HasParent
 from notion_df.core.exception import ImplementationError
 from notion_df.core.uuid_parser import get_page_or_database_id, get_block_id
@@ -56,43 +56,43 @@ class Block(RetrievableEntity[BlockData], HasParent, Generic[BlockT]):
     data_cls = BlockData
 
     @property
-    @retrieve_if_undefined
+    @retrieve_on_demand
     def parent(self) -> Union[Block, Page, Workspace]:
         return self.data.parent
 
     @property
-    @retrieve_if_undefined
+    @retrieve_on_demand
     def created_time(self) -> datetime:
         return self.data.created_time
 
     @property
-    @retrieve_if_undefined
+    @retrieve_on_demand
     def last_edited_time(self) -> datetime:
         return self.data.last_edited_time
 
     @property
-    @retrieve_if_undefined
+    @retrieve_on_demand
     def created_by(self) -> PartialUser:
         return self.data.created_by
 
     @property
-    @retrieve_if_undefined
+    @retrieve_on_demand
     def last_edited_by(self) -> PartialUser:
         return self.data.last_edited_by
 
     @property
-    @retrieve_if_undefined
+    @retrieve_on_demand
     def has_children(self) -> Optional[bool]:
         """Note: the None value never occurs from direct server data. It only happens from Page.as_block()"""
         return self.data.has_children
 
     @property
-    @retrieve_if_undefined
+    @retrieve_on_demand
     def archived(self) -> bool:
         return self.data.archived
 
     @property
-    @retrieve_if_undefined
+    @retrieve_on_demand
     def contents(self) -> BlockContents:
         return self.data.contents
 
@@ -159,52 +159,52 @@ class Database(RetrievableEntity[DatabaseData], HasParent, Generic[PageT]):
     data_cls = DatabaseData
 
     @property
-    @retrieve_if_undefined
+    @retrieve_on_demand
     def parent(self) -> Union[Block, Page, Workspace]:
         return self.data.parent
 
     @property
-    @retrieve_if_undefined
+    @retrieve_on_demand
     def created_time(self) -> datetime:
         return self.data.created_time
 
     @property
-    @retrieve_if_undefined
+    @retrieve_on_demand
     def last_edited_time(self) -> datetime:
         return self.data.last_edited_time
 
     @property
-    @retrieve_if_undefined
+    @retrieve_on_demand
     def icon(self) -> Optional[Icon]:
         return self.data.icon
 
     @property
-    @retrieve_if_undefined
+    @retrieve_on_demand
     def cover(self) -> Optional[File]:
         return self.data.cover
 
     @property
-    @retrieve_if_undefined
+    @retrieve_on_demand
     def url(self) -> str:
         return self.data.url
 
     @property
-    @retrieve_if_undefined
+    @retrieve_on_demand
     def title(self) -> RichText:
         return self.data.title
 
     @property
-    @retrieve_if_undefined
+    @retrieve_on_demand
     def properties(self) -> DatabaseProperties:
         return self.data.properties
 
     @property
-    @retrieve_if_undefined
+    @retrieve_on_demand
     def archived(self) -> bool:
         return self.data.archived
 
     @property
-    @retrieve_if_undefined
+    @retrieve_on_demand
     def is_inline(self) -> bool:
         return self.data.is_inline
 
@@ -273,52 +273,52 @@ class Page(RetrievableEntity[PageData], HasParent):
     data_cls = PageData
 
     @property
-    @retrieve_if_undefined
+    @retrieve_on_demand
     def parent(self) -> Union[Block, Database, Page, Workspace]:
         return self.data.parent
 
     @property
-    @retrieve_if_undefined
+    @retrieve_on_demand
     def created_time(self) -> datetime:
         return self.data.created_time
 
     @property
-    @retrieve_if_undefined
+    @retrieve_on_demand
     def last_edited_time(self) -> datetime:
         return self.data.last_edited_time
 
     @property
-    @retrieve_if_undefined
+    @retrieve_on_demand
     def created_by(self) -> PartialUser:
         return self.data.created_by
 
     @property
-    @retrieve_if_undefined
+    @retrieve_on_demand
     def last_edited_by(self) -> PartialUser:
         return self.data.last_edited_by
 
     @property
-    @retrieve_if_undefined
+    @retrieve_on_demand
     def icon(self) -> Optional[Icon]:
         return self.data.icon
 
     @property
-    @retrieve_if_undefined
+    @retrieve_on_demand
     def cover(self) -> Optional[File]:
         return self.data.cover
 
     @property
-    @retrieve_if_undefined
+    @retrieve_on_demand
     def url(self) -> str:
         return self.data.url
 
     @property
-    @retrieve_if_undefined
+    @retrieve_on_demand
     def archived(self) -> bool:
         return self.data.archived
 
     @property
-    @retrieve_if_undefined
+    @retrieve_on_demand
     def properties(self) -> PageProperties:
         return self.data.properties
 
