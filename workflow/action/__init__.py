@@ -46,7 +46,8 @@ routine_action = CompositeAction([
 
     MatchRecordDatei(base, DatabaseEnum.reading_db, DatabaseEnum.datei_db.title),
     MatchRecordWeekiByDatei(base, DatabaseEnum.reading_db, DatabaseEnum.weeki_db.title, DatabaseEnum.datei_db.title),
-    MatchRecordDatei(base, DatabaseEnum.reading_db, schedule, read_datei_from_created_time=False, read_datei_from_title=True),
+    MatchRecordDatei(base, DatabaseEnum.reading_db, schedule, read_datei_from_created_time=False,
+                     read_datei_from_title=True),
     MatchReadingStartDatei(base),
     MatchRecordDateiSchedule(base, DatabaseEnum.reading_db),
     MatchRecordWeekiByDatei(base, DatabaseEnum.reading_db, start, start),
@@ -63,7 +64,6 @@ routine_action = CompositeAction([
 if __name__ == '__main__':
     from datetime import timedelta
 
-    routine_action.run_recent(interval=timedelta(minutes=30))
+    routine_action.run_recent(interval=timedelta(minutes=180))
     # routine_action.run_by_last_edited_time(datetime(2024, 1, 7, 17, 0, 0, tzinfo=my_tz), None)
     # routine_action.run_from_last_success(update_last_success_time=True)
-    pass
