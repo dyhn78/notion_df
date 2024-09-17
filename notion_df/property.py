@@ -163,10 +163,14 @@ class Properties(DualSerializable, MutableMapping[Property, VT], metaclass=ABCMe
             # TODO: add frozen key options (if user copied only keys from another properties instance)
             #  this will check `key in self._prop_by_name()`
             return key
-        raise KeyError(f'property key not found, {key=}')
+        raise KeyError(f'property key failed to resolve, {key=}')
 
     def __getitem__(self, prop: str | Property) -> VT:
-        return self._prop_value_by_prop[self._get_prop(prop)]
+        prop_resolved = self._get_prop(prop)
+        try:
+            return self._prop_value_by_prop[self._get_prop(prop)]
+        except KeyError as e:
+            raise KeyError(*e.args, self)
 
     def get(self, prop: str | Property, default: Optional[VT] = None) -> Optional[VT]:
         try:
