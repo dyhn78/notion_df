@@ -14,11 +14,11 @@ class SearchByTitle(PaginatedRequestBuilder[Union[PageData, DatabaseData]]):
     query: str
     entity: Literal['page', 'database', None] = None
     sort: TimestampSort = TimestampSort('last_edited_time', 'descending')
-    page_size: int = None
+    page_size: int | None = None
 
     def get_settings(self) -> RequestSettings:
         return RequestSettings(Version.v20220628, Method.POST,
-                               f'search')
+                               'search')
 
     def get_body(self) -> Any:
         return DictFilter.not_none({

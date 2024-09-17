@@ -12,7 +12,7 @@ from loguru import logger
 from requests import Response
 
 from notion_df.core.collection import PlainStrEnum
-from notion_df.core.data_base import EntityDataT
+from notion_df.core.data_base import EntityDataT, EntityData
 from notion_df.core.definition import repr_object
 from notion_df.core.exception import ImplementationError, NotionDfException
 from notion_df.core.serialization import deserialize, serialize
@@ -106,8 +106,6 @@ class Method(PlainStrEnum):
     PUT = 'PUT'
     PATCH = 'PATCH'
     DELETE = 'DELETE'
-    # HEAD = 'HEAD'
-    # OPTIONS = 'OPTIONS'
 
 
 class Version(PlainStrEnum):
@@ -170,14 +168,11 @@ class SingleRequestBuilder(Generic[EntityDataT], RequestBuilder, metaclass=ABCMe
 
     @classmethod
     def parse_response_data(cls, data: dict[str, Any]) -> EntityDataT:
-        return cls.data_type.deserialize(data)
+        return cls.data_type.deserialize(data).set_latest()
 
 
-DataElementT = TypeVar('DataElementT')
-
-
-class PaginatedRequestBuilder(Generic[DataElementT], RequestBuilder, metaclass=ABCMeta):
-    data_element_type: type[DataElementT]
+class PaginatedRequestBuilder(Generic[EntityDataT], RequestBuilder, metaclass=ABCMeta):
+    data_element_type: type[EntityDataT]
     page_size: int  # TODO - AS-IS: total size of all pages summed, TO-BE: each request size
 
     def __init_subclass__(cls, **kwargs):
@@ -185,7 +180,7 @@ class PaginatedRequestBuilder(Generic[DataElementT], RequestBuilder, metaclass=A
             assert cls.data_element_type
 
     @final
-    def execute(self) -> Iterator[DataElementT]:
+    def execute(self) -> Iterator[EntityDataT]:
         start_cursor = None
         while True:
             data = request_page(self, self.page_size, start_cursor)
@@ -195,9 +190,9 @@ class PaginatedRequestBuilder(Generic[DataElementT], RequestBuilder, metaclass=A
             start_cursor = data['next_cursor']
 
     @classmethod
-    def parse_response_data(cls, data: dict[str, Any]) -> Iterator[DataElementT]:
+    def parse_response_data(cls, data: dict[str, Any]) -> Iterator[EntityDataT]:
         for data_element in data['results']:
-            yield deserialize(cls.data_element_type, data_element)
+            yield cls.data_element_type.deserialize(data_element).set_latest()
 
 
 def request_page(self: RequestBuilder, page_size: Optional[int] = MAX_PAGE_SIZE,

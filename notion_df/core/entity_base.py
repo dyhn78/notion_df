@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import warnings
 from abc import abstractmethod, ABCMeta
 from inspect import isabstract
 from typing import (Final, Generic, Hashable, Union, Optional, final, TypeVar, Any, Callable, ClassVar)
@@ -8,7 +9,7 @@ from uuid import UUID
 from loguru import logger
 from typing_extensions import Self
 
-from notion_df.core.data_base import EntityDataT, latest_data_dict, mock_data_dict
+from notion_df.core.data_base import EntityDataT, latest_data_dict, preview_data_dict
 from notion_df.core.definition import undefined, repr_object, Undefined
 from notion_df.core.exception import ImplementationError
 
@@ -64,23 +65,23 @@ class Entity(Hashable, Generic[EntityDataT], metaclass=ABCMeta):
 
     @property
     def local_data(self) -> Union[EntityDataT, Undefined]:
-        return latest_data_dict.get(self._hash_key, mock_data_dict.get(self._hash_key, undefined))
+        return latest_data_dict.get(self._hash_key, preview_data_dict.get(self._hash_key, undefined))
 
     @property
     def _latest_data(self) -> Optional[EntityDataT]:
         return latest_data_dict.get(self._hash_key)
 
     @property
-    def _mock_data(self) -> Optional[EntityDataT]:
-        return mock_data_dict.get(self._hash_key)
+    def _preview_data(self) -> Optional[EntityDataT]:
+        return preview_data_dict.get(self._hash_key)
 
     @abstractmethod
-    def set_mock_data(self, **kwargs: Any) -> EntityDataT:
+    def set_preview_data(self, **kwargs: Any) -> EntityDataT:
         """
-        To save API calls, Set some invariant values(such as the root pages of your workspace) as mock data.
-        Mock data is always at the last priority of reading data and not garbage collected.
+        To save API calls, Set some invariant values(such as the root pages of your workspace) as "preview data".
+        Preview data is always at the last priority of reading data and not garbage collected.
         """
-        pass
+        pass  # TODO remove
 
 
 def retrieve_on_demand(func: CallableT) -> CallableT:

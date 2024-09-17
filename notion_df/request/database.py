@@ -81,9 +81,9 @@ class UpdateDatabase(SingleRequestBuilder[DatabaseData]):
 class QueryDatabase(PaginatedRequestBuilder[PageData]):
     data_element_type = PageData
     id: UUID
-    filter: Filter = None
-    sort: list[Sort] = None
-    page_size: int = None
+    filter: Filter | None = None
+    sort: list[Sort] | None = None
+    page_size: int | None = None
 
     def get_settings(self) -> RequestSettings:
         return RequestSettings(Version.v20220628, Method.POST,

@@ -52,14 +52,14 @@ class RetrieveBlockChildren(PaginatedRequestBuilder[BlockData]):
     """https://developers.notion.com/reference/get-block-children"""
     data_element_type = BlockData
     id: UUID
-    page_size: int = None
+    page_size: int | None = None
 
     def get_settings(self) -> RequestSettings:
         return RequestSettings(Version.v20220222, Method.GET,
                                f'blocks/{self.id}/children')
 
-    def get_body(self) -> Any:
-        pass
+    def get_body(self) -> None:
+        return
 
 
 @dataclass

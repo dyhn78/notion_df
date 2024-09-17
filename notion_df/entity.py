@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import warnings
 from datetime import datetime
 from typing import Optional, TypeVar, Union, Any, Literal, overload, cast, Generic
 from uuid import UUID
@@ -97,7 +98,7 @@ class Block(RetrievableEntity[BlockData], HasParent, Generic[BlockT]):
     def contents(self) -> BlockContents:
         return self.data.contents
 
-    def set_mock_data(
+    def set_preview_data(
             self,
             parent: Union[Block, Page, Workspace] = undefined,
             created_time: datetime = undefined,
@@ -108,9 +109,10 @@ class Block(RetrievableEntity[BlockData], HasParent, Generic[BlockT]):
             archived: bool = undefined,
             contents: BlockContents = undefined,
     ) -> BlockData:
+        warnings.warn("use EntityData.set_preview()", DeprecationWarning)
         return BlockData(self.id, parent, created_time, last_edited_time, created_by,
                          last_edited_by, has_children,
-                         archived, contents, mock=True)
+                         archived, contents, preview=True).set_preview()
 
     @staticmethod
     def _get_id(id_or_url: Union[UUID, str]) -> UUID:
@@ -215,7 +217,7 @@ class Database(RetrievableEntity[DatabaseData], HasParent, Generic[PageT]):
     def is_inline(self) -> bool:
         return self.data.is_inline
 
-    def set_mock_data(
+    def set_preview_data(
             self,
             parent: Union[Block, Page, Workspace] = undefined,
             created_time: datetime = undefined,
@@ -228,9 +230,10 @@ class Database(RetrievableEntity[DatabaseData], HasParent, Generic[PageT]):
             archived: bool = undefined,
             is_inline: bool = undefined,
     ) -> DatabaseData:
+        warnings.warn("use EntityData.set_preview()", DeprecationWarning)
         return DatabaseData(self.id, parent, created_time, last_edited_time, icon,
                             cover, url, title, properties, archived,
-                            is_inline, mock=True)
+                            is_inline, preview=True).set_preview()
 
     @staticmethod
     def _get_id(id_or_url: Union[UUID, str]) -> UUID:
@@ -335,7 +338,7 @@ class Page(RetrievableEntity[PageData], HasParent):
             return ret
         return self.retrieve().properties.title
 
-    def set_mock_data(
+    def set_preview_data(
             self,
             parent: Union[Block, Database, Page, Workspace] = undefined,
             created_time: datetime = undefined,
@@ -348,9 +351,10 @@ class Page(RetrievableEntity[PageData], HasParent):
             archived: bool = undefined,
             properties: PageProperties = undefined,
     ) -> PageData:
+        warnings.warn("use EntityData.set_preview()", DeprecationWarning)
         return PageData(self.id, parent, created_time, last_edited_time, created_by,
                         last_edited_by, icon, cover, url,
-                        archived, properties, mock=True)
+                        archived, properties, preview=True).set_preview()
 
     @staticmethod
     def _get_id(id_or_url: Union[UUID, str]) -> UUID:
@@ -371,7 +375,7 @@ class Page(RetrievableEntity[PageData], HasParent):
 
     def as_block(self) -> Block:
         block = Block(self.id)
-        block.set_mock_data(
+        block.set_preview_data(
             parent=self.data.parent,
             created_time=self.data.created_time,
             last_edited_time=self.data.last_edited_time,

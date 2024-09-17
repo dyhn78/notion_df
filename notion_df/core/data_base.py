@@ -4,7 +4,7 @@ import functools
 from abc import ABCMeta
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, TypeVar, MutableMapping, Final
+from typing import Any, TypeVar, MutableMapping, Final, Tuple, Type
 from uuid import UUID
 
 from loguru import logger
@@ -14,30 +14,46 @@ from notion_df.core.collection import coalesce_dataclass
 from notion_df.core.serialization import Deserializable
 
 latest_data_dict: Final[MutableMapping[tuple[type[EntityData], UUID], EntityData]] = {}
-mock_data_dict: Final[MutableMapping[tuple[type[EntityData], UUID], EntityData]] = {}
+preview_data_dict: Final[MutableMapping[tuple[type[EntityData], UUID], EntityData]] = {}
 
 
 @dataclass
 class EntityData(Deserializable, metaclass=ABCMeta):
     id: UUID
     raw: dict[str, Any] = field(init=False, default_factory=dict)
-    timestamp: int = field(init=False)
+    timestamp: int = field(init=False, default_factory=lambda: int(datetime.now().timestamp()))
     """the timestamp of instance creation."""
-    mock: bool = field(kw_only=True, default=False)
+    preview: bool = field(kw_only=True, default=False)  # TODO remove
 
     def __post_init__(self) -> None:
-        self.timestamp = int(datetime.now().timestamp())
-        hash_key = type(self), self.id
         logger.trace(self)
-        if self.mock:
-            if past_self := mock_data_dict.get(hash_key):
-                coalesce_dataclass(self, past_self)
-            mock_data_dict[hash_key] = self
-        else:
-            current_latest_data = latest_data_dict.get(hash_key)
-            if current_latest_data is None or self.timestamp >= current_latest_data.timestamp:
-                latest_data_dict[hash_key] = self
         self.finalized = True
+
+    @property
+    def _pk(self) -> tuple[type[EntityData], UUID]:
+        return type(self), self.id
+
+    def set_latest(self) -> Self:
+        current_latest_data = latest_data_dict.get(self._pk)
+        if current_latest_data is None or self.timestamp >= current_latest_data.timestamp:
+            latest_data_dict[self._pk] = self
+        return self
+
+    def unset_latest(self) -> Self:
+        if latest_data_dict.get(self._pk) is self:
+            del latest_data_dict[self._pk]
+        return self
+
+    def set_preview(self) -> Self:
+        if past_self := preview_data_dict.get(self._pk):
+            coalesce_dataclass(self, past_self)
+        preview_data_dict[self._pk] = self
+        return self
+
+    def unset_preview(self) -> Self:
+        if preview_data_dict.get(self._pk) is self:
+            del preview_data_dict[self._pk]
+        return self
 
     def __setattr__(self, key: str, value: Any) -> None:
         # TODO: use frozen=True
