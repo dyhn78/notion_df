@@ -8,6 +8,7 @@ from uuid import UUID
 from loguru import logger
 from typing_extensions import Self
 
+from notion_df.core.collection import coalesce_dataclass
 from notion_df.core.data_base import EntityDataT, latest_data_dict, mock_data_dict
 from notion_df.core.definition import undefined, repr_object, Undefined
 from notion_df.core.exception import ImplementationError
@@ -41,14 +42,14 @@ class Entity(Hashable, Generic[EntityDataT], metaclass=ABCMeta):
         return self.id,
 
     @property
-    def _hash_key(self) -> tuple[type[EntityDataT], UUID]:
+    def _pk(self) -> tuple[type[EntityDataT], UUID]:
         return self.data_cls, self.id
 
     def __hash__(self) -> int:
-        return hash(self._hash_key)
+        return hash(self._pk)
 
     def __eq__(self, other: Any) -> bool:
-        return isinstance(other, Entity) and self._hash_key == other._hash_key
+        return isinstance(other, Entity) and self._pk == other._pk
 
     def __repr__(self) -> str:
         return repr_object(self, id=self.id)
@@ -64,15 +65,15 @@ class Entity(Hashable, Generic[EntityDataT], metaclass=ABCMeta):
 
     @property
     def local_data(self) -> Union[EntityDataT, Undefined]:
-        return latest_data_dict.get(self._hash_key, mock_data_dict.get(self._hash_key, undefined))
+        return latest_data_dict.get(self._pk, mock_data_dict.get(self._pk, undefined))
 
     @property
     def _latest_data(self) -> Optional[EntityDataT]:
-        return latest_data_dict.get(self._hash_key)
+        return latest_data_dict.get(self._pk)
 
     @property
     def _mock_data(self) -> Optional[EntityDataT]:
-        return mock_data_dict.get(self._hash_key)
+        return mock_data_dict.get(self._pk)
 
     @abstractmethod
     def set_mock_data(self, **kwargs: Any) -> EntityDataT:
@@ -112,6 +113,20 @@ class RetrievableEntity(Entity[EntityDataT], Generic[EntityDataT]):
     @property
     def local_data(self) -> Union[EntityDataT, Undefined]:
         return super().local_data
+
+    def set_latest_data(self, data: EntityDataT) -> EntityDataT:
+        past_latest_data = latest_data_dict.get(self._pk)
+        if past_latest_data is None or data.timestamp >= past_latest_data.timestamp:
+            latest_data_dict[self._pk] = data
+            return data
+        else:
+            return past_latest_data
+
+    def _set_mock_data(self, data: EntityDataT) -> EntityDataT:
+        if past_mock_data := mock_data_dict.get(self._pk):
+            coalesce_dataclass(data, past_mock_data)
+        mock_data_dict[self._pk] = data
+        return data
 
 
 CallableT = TypeVar("CallableT", bound=Callable[[RetrievableEntity, ...], Any])
