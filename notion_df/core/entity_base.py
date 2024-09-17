@@ -2,16 +2,20 @@ from __future__ import annotations
 
 from abc import abstractmethod, ABCMeta
 from inspect import isabstract
-from typing import (Final, Generic, Hashable, Union, Optional, final, TypeVar, Any, Callable, ClassVar)
+from typing import (Final, Generic, Hashable, Union, Optional, final, TypeVar, Any,
+                    Callable, ClassVar, MutableMapping)
 from uuid import UUID
 
 from loguru import logger
 from typing_extensions import Self
 
 from notion_df.core.collection import coalesce_dataclass
-from notion_df.core.data_base import EntityDataT
+from notion_df.core.data_base import EntityDataT, EntityData
 from notion_df.core.definition import undefined, repr_object, Undefined
 from notion_df.core.exception import ImplementationError
+
+latest_data_dict: Final[MutableMapping[tuple[type[Entity], UUID], EntityData]] = {}
+mock_data_dict: Final[MutableMapping[tuple[type[Entity], UUID], EntityData]] = {}
 
 
 class Entity(Hashable, Generic[EntityDataT], metaclass=ABCMeta):
