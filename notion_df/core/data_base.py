@@ -51,7 +51,7 @@ class EntityData(Deserializable, metaclass=ABCMeta):
             del latest_data_dict[self._pk]
         return self
 
-    def set_preview(self) -> Self:
+    def set_preview(self) -> Self:  # TODO rename add_preview()
         if past_self := preview_data_dict.get(self._pk):
             self.finalized = False
             coalesce_dataclass(self, past_self)
@@ -59,7 +59,7 @@ class EntityData(Deserializable, metaclass=ABCMeta):
         preview_data_dict[self._pk] = self
         return self
 
-    def unset_preview(self) -> Self:
+    def unset_preview(self) -> Self:  # TODO rename clear_preview()
         if preview_data_dict.get(self._pk) is self:
             del preview_data_dict[self._pk]
         return self
