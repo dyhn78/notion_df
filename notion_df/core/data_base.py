@@ -13,23 +13,35 @@ from typing_extensions import Self
 from notion_df.core.collection import coalesce_dataclass
 from notion_df.core.serialization import Deserializable
 
+latest_data_dict: Final[MutableMapping[tuple[type[EntityData], UUID], EntityData]] = {}
+mock_data_dict: Final[MutableMapping[tuple[type[EntityData], UUID], EntityData]] = {}
+
 
 @dataclass
 class EntityData(Deserializable, metaclass=ABCMeta):
     id: UUID
     raw: dict[str, Any] = field(init=False, default_factory=dict)
-    timestamp: int = field(init=False, default_factory=lambda: int(datetime.now().timestamp()))
+    timestamp: int = field(init=False)
     """the timestamp of instance creation."""
     mock: bool = field(kw_only=True, default=False)
-    _finalized: bool = field(init=False, default=False)
 
     def __post_init__(self) -> None:
+        self.timestamp = int(datetime.now().timestamp())
+        hash_key = type(self), self.id
         logger.trace(self)
-        self._finalized = True
+        if self.mock:
+            if past_self := mock_data_dict.get(hash_key):
+                coalesce_dataclass(self, past_self)
+            mock_data_dict[hash_key] = self
+        else:
+            current_latest_data = latest_data_dict.get(hash_key)
+            if current_latest_data is None or self.timestamp >= current_latest_data.timestamp:
+                latest_data_dict[hash_key] = self
+        self.finalized = True
 
     def __setattr__(self, key: str, value: Any) -> None:
         # TODO: use frozen=True
-        if self._finalized and key != "_finalized":
+        if getattr(self, "finalized", None) and key != "raw":
             raise AttributeError(key, value)
         super().__setattr__(key, value)
 
@@ -43,9 +55,7 @@ class EntityData(Deserializable, metaclass=ABCMeta):
         @functools.wraps(_deserialize_this)
         def _deserialize_this_wrapped(raw: dict[str, Any]) -> Self:
             self: EntityData = _deserialize_this(raw)
-            self._finalized = False
             self.raw = raw
-            self._finalized = True
             return self
 
         setattr(cls, '_deserialize_this', _deserialize_this_wrapped)
