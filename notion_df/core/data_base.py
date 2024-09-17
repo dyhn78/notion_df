@@ -24,10 +24,17 @@ class EntityData(Deserializable, metaclass=ABCMeta):
     timestamp: int = field(init=False, default_factory=lambda: int(datetime.now().timestamp()))
     """the timestamp of instance creation."""
     preview: bool = field(kw_only=True, default=False)  # TODO remove
+    finalized: bool = field(init=False, default=False)  # TODO use frozen=True
 
     def __post_init__(self) -> None:
         logger.trace(self)
         self.finalized = True
+
+    def __setattr__(self, key: str, value: Any) -> None:
+        # TODO: use frozen=True
+        if getattr(self, "finalized", None) and key != "raw":
+            raise AttributeError(key, value)
+        super().__setattr__(key, value)
 
     @property
     def _pk(self) -> tuple[type[EntityData], UUID]:
@@ -46,7 +53,9 @@ class EntityData(Deserializable, metaclass=ABCMeta):
 
     def set_preview(self) -> Self:
         if past_self := preview_data_dict.get(self._pk):
+            self.finalized = False
             coalesce_dataclass(self, past_self)
+            self.finalized = True
         preview_data_dict[self._pk] = self
         return self
 
@@ -54,12 +63,6 @@ class EntityData(Deserializable, metaclass=ABCMeta):
         if preview_data_dict.get(self._pk) is self:
             del preview_data_dict[self._pk]
         return self
-
-    def __setattr__(self, key: str, value: Any) -> None:
-        # TODO: use frozen=True
-        if getattr(self, "finalized", None) and key != "raw":
-            raise AttributeError(key, value)
-        super().__setattr__(key, value)
 
     def __del__(self) -> None:
         del self.raw
