@@ -21,10 +21,11 @@ class EntityData(Deserializable, metaclass=ABCMeta):
     timestamp: int = field(init=False, default_factory=lambda: int(datetime.now().timestamp()))
     """the timestamp of instance creation."""
     mock: bool = field(kw_only=True, default=False)
-    _finalized: bool = field(init=False, default=True)
+    _finalized: bool = field(init=False, default=False)
 
     def __post_init__(self) -> None:
         logger.trace(self)
+        self._finalized = True
 
     def __setattr__(self, key: str, value: Any) -> None:
         # TODO: use frozen=True
