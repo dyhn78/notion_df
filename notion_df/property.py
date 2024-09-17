@@ -167,10 +167,7 @@ class Properties(DualSerializable, MutableMapping[Property, VT], metaclass=ABCMe
 
     def __getitem__(self, prop: str | Property) -> VT:
         prop_resolved = self._get_prop(prop)
-        try:
-            return self._prop_value_by_prop[self._get_prop(prop)]
-        except KeyError as e:
-            raise KeyError(*e.args, self)
+        return self._prop_value_by_prop[prop_resolved]
 
     def get(self, prop: str | Property, default: Optional[VT] = None) -> Optional[VT]:
         try:
