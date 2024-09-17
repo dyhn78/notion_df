@@ -9,7 +9,7 @@ from loguru import logger
 from typing_extensions import Self
 
 from notion_df.core.collection import coalesce_dataclass
-from notion_df.core.data_base import EntityDataT, latest_data_dict, mock_data_dict
+from notion_df.core.data_base import EntityDataT
 from notion_df.core.definition import undefined, repr_object, Undefined
 from notion_df.core.exception import ImplementationError
 
