@@ -1,5 +1,5 @@
 from __future__ import annotations
-# TODO: rename data.py
+# TODO: merge this file with ../data.py
 import functools
 from abc import ABCMeta
 from dataclasses import dataclass, field
