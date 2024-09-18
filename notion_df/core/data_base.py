@@ -1,5 +1,5 @@
 from __future__ import annotations
-
+# TODO: rename data.py
 import functools
 from abc import ABCMeta
 from dataclasses import dataclass, field
@@ -13,7 +13,7 @@ from typing_extensions import Self
 from notion_df.core.collection import coalesce_dataclass
 from notion_df.core.serialization import Deserializable
 
-latest_data_dict: Final[MutableMapping[tuple[type[EntityData], UUID], EntityData]] = {}
+latest_data_dict: Final[MutableMapping[tuple[type[EntityData], UUID], EntityData]] = {}  # TODO: set real_data
 preview_data_dict: Final[MutableMapping[tuple[type[EntityData], UUID], EntityData]] = {}
 
 
@@ -40,7 +40,7 @@ class EntityData(Deserializable, metaclass=ABCMeta):
     def _pk(self) -> tuple[type[EntityData], UUID]:
         return type(self), self.id
 
-    def set_latest(self) -> Self:
+    def set_latest(self) -> Self:  # TODO: rename set_real()
         current_latest_data = latest_data_dict.get(self._pk)
         if current_latest_data is None or self.timestamp >= current_latest_data.timestamp:
             latest_data_dict[self._pk] = self
