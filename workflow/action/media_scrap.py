@@ -61,9 +61,9 @@ class MediaScrapAction(IndividualAction):
             ]))
 
     def filter(self, page: Page) -> bool:
-        return (page.data.parent == self.reading_db
-                and page.data.properties[is_book_prop]
-                and (page.data.properties[edit_status_prop] in
+        return (page.parent == self.reading_db
+                and page.properties[is_book_prop]
+                and (page.properties[edit_status_prop] in
                      [EditStatusValue.default, EditStatusValue.metadata_overwrite,
                       EditStatusValue.location_overwrite, None]))
 
@@ -86,9 +86,9 @@ class ReadingMediaScraperUnit:
         self.new_properties = PageProperties()
         self.callables: list[Callable[[], Any]] = []
 
-        self.title_value = self.reading.data.properties[title_prop].plain_text
+        self.title_value = self.reading.properties[title_prop].plain_text
         self.name_value = self.extract_name(self.title_value)
-        self.true_name_value = self.reading.data.properties[true_name_prop].plain_text
+        self.true_name_value = self.reading.properties[true_name_prop].plain_text
 
     def extract_name(self, title: str) -> str:
         if title.find('_ ') != -1:
@@ -104,7 +104,7 @@ class ReadingMediaScraperUnit:
     def execute(self) -> None:
         # TODO: separate content_page title setter as different module
         new_status_value = EditStatusValue.fill_manually
-        match getattr(self.reading.data.properties[edit_status_prop], 'name', EditStatusValue.default):
+        match getattr(self.reading.properties[edit_status_prop], 'name', EditStatusValue.default):
             case EditStatusValue.default:
                 if self.process_yes24(False) and self.process_lib_gy(False):
                     new_status_value = EditStatusValue.confirm_manually
@@ -121,7 +121,7 @@ class ReadingMediaScraperUnit:
 
     def process_yes24(self, overwrite: bool) -> bool:
         def get_url() -> Optional[str]:
-            if url_value := self.reading.data.properties[url_prop]:
+            if url_value := self.reading.properties[url_prop]:
                 return url_value
             if url_value := get_yes24_detail_page_url(self.true_name_value):
                 self.new_properties[url_prop] = url_value
@@ -156,8 +156,8 @@ class ReadingMediaScraperUnit:
         def set_content_page():
             def get_current_content_page() -> Optional[Page]:
                 for block in self.reading.as_block().retrieve_children():
-                    if isinstance(block.data.contents, ChildPageBlockContents):
-                        block_title = block.data.contents.title
+                    if isinstance(block.contents, ChildPageBlockContents):
+                        block_title = block.contents.title
                         if self.name_value in block_title or block_title.strip() in ['', '=', '>']:
                             _content_page = Page(block.id)
                             return _content_page
@@ -184,9 +184,9 @@ class ReadingMediaScraperUnit:
                 result.get_contents())
             ]
             length = 100
-            child_contents_splited_list = [child_contents[i:i + length] for i in range(0, len(child_contents), length)]
-            for child_contents_splited in child_contents_splited_list:
-                content_page.as_block().append_children(child_contents_splited)
+            child_contents_split_list = [child_contents[i:i + length] for i in range(0, len(child_contents), length)]
+            for child_contents_split in child_contents_split_list:
+                content_page.as_block().append_children(child_contents_split)
 
         self.callables.append(set_content_page)
         return True
@@ -221,7 +221,7 @@ class ReadingMediaScraperUnit:
 
     def filter_not_overwrite(self, new_properties: PageProperties):
         return PageProperties({prop: prop_value for prop, prop_value in new_properties.items()
-                               if not self.reading.data.properties.get(prop)})
+                               if not self.reading.properties.get(prop)})
 
 
 if __name__ == '__main__':
