@@ -3,19 +3,19 @@ from typing import Optional, Callable, Any, Iterable
 from loguru import logger
 from selenium.webdriver.chrome.webdriver import WebDriver
 
+from notion_df.constant import BlockColor
 from notion_df.contents import ChildPageBlockContents, BlockContents, \
     TableOfContentsBlockContents
 from notion_df.core.collection import StrEnum, peek, Paginator
 from notion_df.entity import Page
 from notion_df.filter import CompoundFilter
 from notion_df.misc import SelectOption
-from notion_df.rich_text import TextSpan, PageMention
-from notion_df.constant import BlockColor
 from notion_df.property import SelectProperty, CheckboxFormulaProperty, TitleProperty, \
     RichTextProperty, \
     URLProperty, NumberProperty, FilesProperty, CheckboxProperty, PageProperties
-from workflow.block import DatabaseEnum
+from notion_df.rich_text import TextSpan, PageMention
 from workflow.core.action import IndividualAction
+from workflow.my_block import DatabaseEnum
 from workflow.service.gy_lib_service import GYLibraryScraper, LibraryScrapResult
 from workflow.service.webdriver_service import WebDriverService
 from workflow.service.yes24_service import get_yes24_detail_page_url, Yes24ScrapResult, \
