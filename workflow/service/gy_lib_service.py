@@ -54,6 +54,17 @@ class GYLibraryCSSTag(StrEnum):
 
 
 class GYLibraryScraper:
+    driver: WebDriver
+
+    def __init__(self, driver: WebDriver, title: str, lib_key: LibKey):
+        self.driver = driver
+        self.driver_wait = WebDriverWait(self.driver, 120)
+        # self.driver.minimize_window()
+        self.lib_key = lib_key
+        self.title = title
+        self.now_page_num = 1
+        self.result: Optional[LibraryScrapResult] = None
+
     def find_element(self, css_tag: GYLibraryCSSTag):
         return self.driver.find_element(By.CSS_SELECTOR, css_tag)
 
@@ -68,15 +79,6 @@ class GYLibraryScraper:
 var l = document.querySelector("{css_tag}");
 l.parentNode.removeChild(l);
         """)
-
-    def __init__(self, driver: WebDriver, title: str, lib_key: LibKey):
-        self.driver = driver
-        self.driver_wait = WebDriverWait(self.driver, 120)
-        # self.driver.minimize_window()
-        self.lib_key = lib_key
-        self.title = title
-        self.now_page_num = 1
-        self.result: Optional[LibraryScrapResult] = None
 
     def execute(self) -> Optional[LibraryScrapResult]:
         if not self.title:
