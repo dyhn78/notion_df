@@ -1,3 +1,4 @@
+import re
 from typing import Optional, Callable, Any, Iterable, cast
 
 from loguru import logger
@@ -7,19 +8,19 @@ from app.core.action import IndividualAction
 from app.my_block import DatabaseEnum
 from app.service.gy_lib_service import GYLibraryScraper, LibraryScrapResult
 from app.service.webdriver_service import WebDriverService
-from app.service.yes24_service import get_yes24_detail_page_url, Yes24ScrapResult, \
-    get_block_value_of_contents_line
+from app.service.yes24_service import get_yes24_detail_page_url, Yes24ScrapResult
 from notion_df.constant import BlockColor
-from notion_df.contents import ChildPageBlockContents, BlockContents, \
-    TableOfContentsBlockContents
+from notion_df.contents import BlockContents, Heading1BlockContents, \
+    Heading2BlockContents, Heading3BlockContents, ParagraphBlockContents
+from notion_df.contents import ChildPageBlockContents, TableOfContentsBlockContents
 from notion_df.core.collection import StrEnum, peek, Paginator
 from notion_df.entity import Page
 from notion_df.filter import CompoundFilter
-from notion_df.misc import SelectOption
+from notion_df.misc import Annotations, SelectOption
 from notion_df.property import SelectProperty, CheckboxFormulaProperty, TitleProperty, \
     RichTextProperty, \
     URLProperty, NumberProperty, FilesProperty, CheckboxProperty, PageProperties
-from notion_df.rich_text import TextSpan, PageMention
+from notion_df.rich_text import PageMention, RichText, TextSpan
 
 edit_status_prop = SelectProperty('📘준비')
 media_type_prop = SelectProperty('📘유형')
@@ -222,6 +223,31 @@ class ReadingMediaScraperUnit:
     def filter_not_overwrite(self, new_properties: PageProperties):
         return PageProperties({prop: prop_value for prop, prop_value in new_properties.items()
                                if not self.reading.properties.get(prop)})
+
+
+VOLUME_KOR = re.compile(r"\d+권[.:]? ")
+VOLUME_ENG = re.compile(r"VOLUME", re.IGNORECASE)
+
+SECTION_KOR = re.compile(r"\d+부[.:]? ")
+SECTION_ENG = re.compile(r"PART", re.IGNORECASE)
+
+CHAPTER_KOR = re.compile(r"\d+장[.:]? ")
+CHAPTER_ENG = re.compile(r"CHAPTER", re.IGNORECASE)
+
+PASSAGE = re.compile(r"\d+[.:] ")
+
+
+def get_block_value_of_contents_line(contents_line: str) -> BlockContents:
+    rich_text = RichText([
+        TextSpan(contents_line, annotations=Annotations(color=BlockColor.GRAY))
+    ])
+    if VOLUME_KOR.findall(contents_line) or VOLUME_ENG.findall(contents_line):
+        return Heading1BlockContents(rich_text, False)
+    if SECTION_KOR.findall(contents_line) or SECTION_ENG.findall(contents_line):
+        return Heading2BlockContents(rich_text, False)
+    elif CHAPTER_KOR.findall(contents_line) or CHAPTER_ENG.findall(contents_line):
+        return Heading3BlockContents(rich_text, False)
+    return ParagraphBlockContents(rich_text)
 
 
 if __name__ == '__main__':

@@ -1,19 +1,11 @@
 from __future__ import annotations
 
-import re
 from typing import Optional
 from urllib import parse
 
 import requests
 import requests.packages
 from bs4 import BeautifulSoup
-
-from notion_df.constant import BlockColor
-from notion_df.contents import BlockContents, Heading1BlockContents, \
-    Heading2BlockContents, \
-    Heading3BlockContents, ParagraphBlockContents
-from notion_df.misc import Annotations
-from notion_df.rich_text import RichText, TextSpan
 
 # noinspection PyUnresolvedReferences
 # disable SSLError(1, '[SSL: DH_KEY_TOO_SMALL] dh key too small (_ssl.c:997)') error for yes24.com
@@ -175,31 +167,6 @@ def parse_contents(contents_html: str):
                       range(0, len(line), MAX_LINE_LENGTH)]
         sliced.extend(line_frags)
     return sliced
-
-
-VOLUME_KOR = re.compile(r"\d+권[.:]? ")
-VOLUME_ENG = re.compile(r"VOLUME", re.IGNORECASE)
-
-SECTION_KOR = re.compile(r"\d+부[.:]? ")
-SECTION_ENG = re.compile(r"PART", re.IGNORECASE)
-
-CHAPTER_KOR = re.compile(r"\d+장[.:]? ")
-CHAPTER_ENG = re.compile(r"CHAPTER", re.IGNORECASE)
-
-PASSAGE = re.compile(r"\d+[.:] ")
-
-
-def get_block_value_of_contents_line(contents_line: str) -> BlockContents:
-    rich_text = RichText([
-        TextSpan(contents_line, annotations=Annotations(color=BlockColor.GRAY))
-    ])
-    if VOLUME_KOR.findall(contents_line) or VOLUME_ENG.findall(contents_line):
-        return Heading1BlockContents(rich_text, False)
-    if SECTION_KOR.findall(contents_line) or SECTION_ENG.findall(contents_line):
-        return Heading2BlockContents(rich_text, False)
-    elif CHAPTER_KOR.findall(contents_line) or CHAPTER_ENG.findall(contents_line):
-        return Heading3BlockContents(rich_text, False)
-    return ParagraphBlockContents(rich_text)
 
 
 if __name__ == '__main__':
