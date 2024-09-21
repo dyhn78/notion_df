@@ -181,7 +181,7 @@ class ReadingMediaScraperUnit:
             child_contents: list[BlockContents] = [
                 TableOfContentsBlockContents(BlockColor.GRAY),
                 *(get_block_value_of_contents_line(content_line) for content_line in
-                result.get_contents())
+                  result.get_contents())
             ]
             length = 100
             child_contents_split_list = [child_contents[i:i + length] for i in range(0, len(child_contents), length)]
