@@ -157,7 +157,7 @@ class ReadingMediaScraperUnit:
             def get_current_content_page() -> Optional[Page]:
                 for block in self.reading.as_block().retrieve_children():
                     if isinstance(block.contents, ChildPageBlockContents):
-                        block_title = cast(block.contents, ChildPageBlockContents).title
+                        block_title = cast(ChildPageBlockContents, block.contents).title
                         if self.name_value in block_title or block_title.strip() in ['', '=', '>']:
                             _content_page = Page(block.id)
                             return _content_page
