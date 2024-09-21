@@ -2,10 +2,10 @@ import pickle
 from collections import defaultdict
 from pathlib import Path
 
+from app import etc_dir
+from app.my_block import DatabaseEnum
 from notion_df.entity import Database
 from notion_df.property import RelationProperty
-from workflow import etc_dir
-from workflow.my_block import DatabaseEnum
 
 pickle_path: Path = etc_dir / 'all_relation_properties'
 

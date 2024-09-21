@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-from workflow import backup_dir
-from workflow.action.match import MatchActionBase, MatchDatei, MatchRecordDatei, \
+from app import backup_dir
+from app.action.match import MatchActionBase, MatchDatei, MatchRecordDatei, \
     MatchRecordWeekiByDatei, MatchRecordTimestr, MatchReadingStartDatei, MatchEventProgress, MatchRecordDateiSchedule, \
     MatchEventProgressDatei
-from workflow.action.media_scrap import MediaScrapAction
-from workflow.action.migration_backup import MigrationBackupLoadAction, MigrationBackupSaveAction
-from workflow.core.action import CompositeAction
-from workflow.my_block import DatabaseEnum, schedule, start
+from app.action.media_scrap import MediaScrapAction
+from app.action.migration_backup import MigrationBackupLoadAction, MigrationBackupSaveAction
+from app.core.action import CompositeAction
+from app.my_block import DatabaseEnum, schedule, start
 
 base = MatchActionBase()
 routine_action = CompositeAction([

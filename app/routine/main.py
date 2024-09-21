@@ -6,8 +6,8 @@ from time import sleep
 
 import psutil
 
-import workflow.routine.task
-from workflow import project_dir
+import app.routine.task
+from app import project_dir
 
 
 def get_module_name(file_path: str) -> str:
@@ -15,7 +15,7 @@ def get_module_name(file_path: str) -> str:
 
 
 main_module_argv = [sys.executable, '-m', get_module_name(__file__)]
-task_module_argv = [sys.executable, '-m', get_module_name(workflow.routine.task.__file__)]
+task_module_argv = [sys.executable, '-m', get_module_name(app.routine.task.__file__)]
 
 if __name__ == '__main__':
     for process in psutil.process_iter(['name', 'cmdline']):

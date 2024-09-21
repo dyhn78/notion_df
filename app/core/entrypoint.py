@@ -13,6 +13,7 @@ import tenacity
 from loguru import logger
 from typing_extensions import Self
 
+from app import log_dir
 from notion_df.contents import CodeBlockContents, DividerBlockContents, \
     ParagraphBlockContents, \
     ToggleBlockContents
@@ -20,7 +21,6 @@ from notion_df.core.serialization import deserialize_datetime
 from notion_df.core.variable import my_tz
 from notion_df.entity import Block
 from notion_df.rich_text import RichText, TextSpan, UserMention
-from workflow import log_dir
 
 
 class WorkflowSkipException(Exception):

@@ -1,8 +1,14 @@
-from typing import Optional, Callable, Any, Iterable
+from typing import Optional, Callable, Any, Iterable, cast
 
 from loguru import logger
 from selenium.webdriver.chrome.webdriver import WebDriver
 
+from app.core.action import IndividualAction
+from app.my_block import DatabaseEnum
+from app.service.gy_lib_service import GYLibraryScraper, LibraryScrapResult
+from app.service.webdriver_service import WebDriverService
+from app.service.yes24_service import get_yes24_detail_page_url, Yes24ScrapResult, \
+    get_block_value_of_contents_line
 from notion_df.constant import BlockColor
 from notion_df.contents import ChildPageBlockContents, BlockContents, \
     TableOfContentsBlockContents
@@ -14,12 +20,6 @@ from notion_df.property import SelectProperty, CheckboxFormulaProperty, TitlePro
     RichTextProperty, \
     URLProperty, NumberProperty, FilesProperty, CheckboxProperty, PageProperties
 from notion_df.rich_text import TextSpan, PageMention
-from workflow.core.action import IndividualAction
-from workflow.my_block import DatabaseEnum
-from workflow.service.gy_lib_service import GYLibraryScraper, LibraryScrapResult
-from workflow.service.webdriver_service import WebDriverService
-from workflow.service.yes24_service import get_yes24_detail_page_url, Yes24ScrapResult, \
-    get_block_value_of_contents_line
 
 edit_status_prop = SelectProperty('📘준비')
 media_type_prop = SelectProperty('📘유형')
@@ -157,7 +157,7 @@ class ReadingMediaScraperUnit:
             def get_current_content_page() -> Optional[Page]:
                 for block in self.reading.as_block().retrieve_children():
                     if isinstance(block.contents, ChildPageBlockContents):
-                        block_title = block.contents.title
+                        block_title = cast(block.contents, ChildPageBlockContents).title
                         if self.name_value in block_title or block_title.strip() in ['', '=', '>']:
                             _content_page = Page(block.id)
                             return _content_page

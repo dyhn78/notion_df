@@ -1,5 +1,5 @@
+from app.my_block import DatabaseEnum
 from notion_df.property import PageProperties, RelationProperty
-from workflow.my_block import DatabaseEnum
 
 summit_datei1_prop = RelationProperty("🟣일간")
 summit_datei2_prop = RelationProperty("🟣생성")

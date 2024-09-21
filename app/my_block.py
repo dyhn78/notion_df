@@ -9,6 +9,7 @@ from uuid import UUID
 
 from typing_extensions import Self
 
+from app.emoji_code import EmojiCode
 from notion_df.core.entity_core import Entity
 from notion_df.core.struct import undefined
 from notion_df.core.uuid_parser import get_page_or_database_url
@@ -19,7 +20,6 @@ from notion_df.property import TitleProperty, DateFormulaPropertyKey, RichTextPr
     RelationProperty, \
     DateProperty, CheckboxFormulaProperty, SelectProperty, PageProperties
 from notion_df.rich_text import RichText
-from workflow.emoji_code import EmojiCode
 
 schedule = "일정"
 start = "시작"

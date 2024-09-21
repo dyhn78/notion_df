@@ -8,10 +8,10 @@ import requests
 import requests.packages
 from bs4 import BeautifulSoup
 
+from notion_df.constant import BlockColor
 from notion_df.contents import BlockContents, Heading1BlockContents, \
     Heading2BlockContents, \
     Heading3BlockContents, ParagraphBlockContents
-from notion_df.constant import BlockColor
 from notion_df.misc import Annotations
 from notion_df.rich_text import RichText, TextSpan
 

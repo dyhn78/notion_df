@@ -1,6 +1,6 @@
 from pprint import pprint
 
-from workflow.service.yes24_service import parse_contents
+from app.service.yes24_service import parse_contents
 
 
 def test_parse_contents():

@@ -7,11 +7,11 @@ from typing import Iterable, Any, final, Callable, TypeVar, Optional
 
 from loguru import logger
 
+from app.core.entrypoint import entrypoint, WorkflowRecord, WorkflowSkipException
+from app.my_block import is_template
 from notion_df.core.struct import repr_object
 from notion_df.core.variable import print_width
 from notion_df.entity import Page, search_by_title
-from workflow.core.entrypoint import entrypoint, WorkflowRecord, WorkflowSkipException
-from workflow.my_block import is_template
 
 CallableT = TypeVar('CallableT', bound=Callable)
 
