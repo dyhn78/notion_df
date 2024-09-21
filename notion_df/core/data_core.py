@@ -33,7 +33,7 @@ class EntityData(Deserializable, metaclass=ABCMeta):
 
     def __setattr__(self, key: str, value: Any) -> None:
         # TODO: use frozen=True
-        if getattr(self, "finalized", None) and key != "raw":
+        if getattr(self, "finalized", None) and key != "finalized":
             raise AttributeError(key, value)
         super().__setattr__(key, value)
 
@@ -75,7 +75,9 @@ class EntityData(Deserializable, metaclass=ABCMeta):
         @functools.wraps(_deserialize_this)
         def _deserialize_this_wrapped(raw: dict[str, Any]) -> Self:
             self: EntityData = _deserialize_this(raw)
+            self.finalized = False
             self.raw = raw
+            self.finalized = True
             return self
 
         setattr(cls, '_deserialize_this', _deserialize_this_wrapped)
