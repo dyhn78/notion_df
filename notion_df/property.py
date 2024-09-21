@@ -11,11 +11,11 @@ from typing import ClassVar, TypeVar, Generic, Any, Iterator, Optional, Literal,
 
 from typing_extensions import Self
 
+from notion_df.constant import RollupFunction, NumberFormat, Number
 from notion_df.core.collection import FinalDict
 from notion_df.core.definition import repr_object
 from notion_df.core.exception import ImplementationError
 from notion_df.core.serialization import DualSerializable, deserialize, serialize
-from notion_df.constant import RollupFunction, NumberFormat, Number
 from notion_df.file import Files
 from notion_df.filter import PropertyFilter, CheckboxFilterBuilder, PeopleFilterBuilder, \
     DateFilterBuilder, TextFilterBuilder, FilesFilterBuilder, NumberFilterBuilder, MultiSelectFilterBuilder, \
@@ -28,23 +28,26 @@ if TYPE_CHECKING:
     from notion_df.entity import Page, Database
 
 property_registry: FinalDict[str, type[Property]] = FinalDict()
-VT = TypeVar('VT')
-# TODO (low priority): fix that `DVT.bound == DatabasePropertyValue` does not ruin the type hinting
-DVT = TypeVar('DVT')
 PVT = TypeVar('PVT')
+"""PagePropertyValueT"""
+# TODO (low priority): fix that `DPVT.bound == DatabasePropertyValue` does not ruin the type hinting
+DPVT = TypeVar('DPVT')
+"""DatabasePagePropertyValueT"""
+PPVT = TypeVar('PPVT')
+"""PagePagePropertyValueT"""
 FBT = TypeVar('FBT', bound=FilterBuilder)
-
+"""FilterBuilderType"""
 
 # TODO: PropertyMeta
 #  - __repr__(typ: PropertyMeta): return(cls_attributes)
 #  - cls_attributes
 #    - use_dataclass: bool = (inherit)
 # TODO: UnsupportedProperty
-class Property(Generic[DVT, PVT, FBT], metaclass=ABCMeta):
+class Property(Generic[DPVT, PPVT, FBT], metaclass=ABCMeta):
     # TODO: move base class and PropertyValue classes to notion_df.core.property
     typename: ClassVar[str] = ''
-    database_value: type[DVT]
-    page_value: type[PVT]
+    database_value: type[DPVT]
+    page_value: type[PPVT]
     _filter_cls: type[FBT]
 
     def __init__(self, name: Optional[str]):
@@ -92,13 +95,13 @@ class Property(Generic[DVT, PVT, FBT], metaclass=ABCMeta):
     #  - RetrievePagePropertyItem.execute() & Page.retrieve_property_item() should call this and return tuple
 
     # noinspection PyMethodMayBeStatic
-    def _serialize_page_value(self, prop_value: PVT) -> dict[str, Any]:
+    def _serialize_page_value(self, prop_value: PPVT) -> dict[str, Any]:
         # if type(prop_value) != self.page_value:
         #    prop_value = self.page_value(prop_value)
         return serialize(prop_value)
 
     @classmethod
-    def _deserialize_page_value(cls, prop_serialized: dict[str, Any]) -> PVT:
+    def _deserialize_page_value(cls, prop_serialized: dict[str, Any]) -> PPVT:
         """allow proxy-deserialization of subclasses."""
         typename = prop_serialized['type']
         if cls == Property:
@@ -107,7 +110,7 @@ class Property(Generic[DVT, PVT, FBT], metaclass=ABCMeta):
         return deserialize(cls.page_value, prop_serialized[typename])
 
     @classmethod
-    def _deserialize_database_value(cls, prop_serialized: dict[str, Any]) -> DVT:
+    def _deserialize_database_value(cls, prop_serialized: dict[str, Any]) -> DPVT:
         """allow proxy-deserialization of subclasses."""
         typename = prop_serialized['type']
         if cls == Property:
@@ -122,13 +125,13 @@ class Property(Generic[DVT, PVT, FBT], metaclass=ABCMeta):
         ...
 
 
-class Properties(DualSerializable, MutableMapping[Property, VT], metaclass=ABCMeta):
+class Properties(DualSerializable, MutableMapping[Property, PVT], metaclass=ABCMeta):
     _prop_by_id: dict[str, Property]
     _prop_by_name: dict[str, Property]
-    _prop_value_by_name: dict[str, VT]
-    _prop_value_by_prop: dict[Property, VT]
+    _prop_value_by_name: dict[str, PVT]
+    _prop_value_by_prop: dict[Property, PVT]
 
-    def __init__(self, items: Optional[dict[Property, VT]] = None):
+    def __init__(self, items: Optional[dict[Property, PVT]] = None):
         self._prop_by_id = {}
         self._prop_by_name = {}
         self._prop_value_by_name = {}
@@ -165,17 +168,17 @@ class Properties(DualSerializable, MutableMapping[Property, VT], metaclass=ABCMe
             return key
         raise KeyError(f'property key not found, {key=}')
 
-    def __getitem__(self, prop: str | Property) -> VT:
+    def __getitem__(self, prop: str | Property) -> PVT:
         return self._prop_value_by_prop[self._get_prop(prop)]
 
-    def get(self, prop: str | Property, default: Optional[VT] = None) -> Optional[VT]:
+    def get(self, prop: str | Property, default: Optional[PVT] = None) -> Optional[PVT]:
         try:
             prop = self._get_prop(prop)
             return self[prop.name]
         except KeyError:
             return default
 
-    def __setitem__(self, prop: str | Property, value: VT) -> None:
+    def __setitem__(self, prop: str | Property, value: PVT) -> None:
         prop = self._get_prop(prop)
         self._prop_by_id[prop.id] = prop
         self._prop_by_name[prop.name] = prop
@@ -190,7 +193,7 @@ class Properties(DualSerializable, MutableMapping[Property, VT], metaclass=ABCMe
 
 
 class DatabaseProperties(Properties,
-                         MutableMapping[Property[DVT, Any, Any], DVT]):
+                         MutableMapping[Property[DPVT, Any, Any], DPVT]):
     def serialize(self) -> dict[str, Any]:
         return {prop.name: {
             'type': prop.typename,
@@ -210,19 +213,19 @@ class DatabaseProperties(Properties,
             self[prop] = prop_value
         return self
 
-    def __getitem__(self, prop: str | Property[DVT, Any, Any]) -> DVT:
+    def __getitem__(self, prop: str | Property[DPVT, Any, Any]) -> DPVT:
         return super().__getitem__(prop)
 
-    def __setitem__(self, prop: str | Property[DVT, Any, Any],
-                    value: DVT) -> None:
+    def __setitem__(self, prop: str | Property[DPVT, Any, Any],
+                    value: DPVT) -> None:
         return super().__setitem__(prop, value)
 
-    def __delitem__(self, prop: str | Property[DVT, Any, Any]) -> None:
+    def __delitem__(self, prop: str | Property[DPVT, Any, Any]) -> None:
         return super().__delitem__(prop)
 
 
-class PageProperties(Properties, MutableMapping[Property[Any, PVT, Any], PVT]):
-    def __init__(self, properties: Optional[dict[Property, PVT]] = None):
+class PageProperties(Properties, MutableMapping[Property[Any, PPVT, Any], PPVT]):
+    def __init__(self, properties: Optional[dict[Property, PPVT]] = None):
         super().__init__(properties)
         self._title_prop: Optional[TitleProperty] = None
 
@@ -249,15 +252,15 @@ class PageProperties(Properties, MutableMapping[Property[Any, PVT, Any], PVT]):
                 self._title_prop = prop
         return self
 
-    def __getitem__(self, prop: str | Property[Any, PVT, Any]) \
-            -> PVT:
+    def __getitem__(self, prop: str | Property[Any, PPVT, Any]) \
+            -> PPVT:
         return super().__getitem__(prop)
 
-    def __setitem__(self, prop: str | Property[Any, PVT, Any],
-                    value: PVT) -> None:
+    def __setitem__(self, prop: str | Property[Any, PPVT, Any],
+                    value: PPVT) -> None:
         return super().__setitem__(prop, value)
 
-    def __delitem__(self, prop: str | Property[Any, PVT, Any]) \
+    def __delitem__(self, prop: str | Property[Any, PPVT, Any]) \
             -> None:
         return super().__delitem__(prop)
 
@@ -384,7 +387,7 @@ class DualRelationDatabasePropertyValue(RelationDatabasePropertyValue):
         return cls(database=Database(raw['database_id']), synced_property=synced_property)
 
 
-RelationDVT = TypeVar('RelationDVT', bound=RelationDatabasePropertyValue)
+RelationDPVT = TypeVar('RelationDPVT', bound=RelationDatabasePropertyValue)
 
 
 @dataclass
@@ -560,7 +563,7 @@ class FilesProperty(Property[PlainDatabasePropertyValue, Files, FilesFilterBuild
     _filter_cls = FilesFilterBuilder
 
 
-class FormulaProperty(Property[FormulaDatabasePropertyValue, PVT, FBT]):
+class FormulaProperty(Property[FormulaDatabasePropertyValue, PPVT, FBT]):
     """cannot access page properties - use subclasses instead."""
     typename = 'formula'
     value_typename: ClassVar[str]
@@ -574,12 +577,12 @@ class FormulaProperty(Property[FormulaDatabasePropertyValue, PVT, FBT]):
 
         return self._filter_cls(build)
 
-    def _serialize_page_value(self, prop_value: VT) -> dict[str, Any]:
+    def _serialize_page_value(self, prop_value: PVT) -> dict[str, Any]:
         return {'type': self.value_typename,
                 self.value_typename: prop_value}
 
     @classmethod
-    def _deserialize_page_value(cls, prop_serialized: dict[str, Any]) -> VT:
+    def _deserialize_page_value(cls, prop_serialized: dict[str, Any]) -> PVT:
         typename = prop_serialized['type']
         value_typename = prop_serialized[typename]['type']
         if cls == FormulaProperty:
@@ -665,7 +668,7 @@ class PhoneNumberProperty(Property[PlainDatabasePropertyValue, str, TextFilterBu
     _filter_cls = TextFilterBuilder
 
 
-class RelationProperty(Property[RelationDVT, RelationPagePropertyValue, RelationFilterBuilder]):
+class RelationProperty(Property[RelationDPVT, RelationPagePropertyValue, RelationFilterBuilder]):
     """cannot access database properties - use subclasses instead."""
     typename = 'relation'
     database_value: type[RelationDatabasePropertyValue] = RelationDatabasePropertyValue
@@ -673,7 +676,7 @@ class RelationProperty(Property[RelationDVT, RelationPagePropertyValue, Relation
     _filter_cls = RelationFilterBuilder
 
     @classmethod
-    def _deserialize_page_value(cls, prop_serialized: dict[str, Any]) -> VT:
+    def _deserialize_page_value(cls, prop_serialized: dict[str, Any]) -> PVT:
         prop_value = super()._deserialize_page_value(prop_serialized)
         prop_value.has_more = prop_serialized['has_more']
         return prop_value

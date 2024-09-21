@@ -11,7 +11,7 @@ from notion_df.core.request_base import SingleRequestBuilder, RequestSettings, V
 from notion_df.data import PageData
 from notion_df.file import ExternalFile
 from notion_df.misc import Icon, PartialParent
-from notion_df.property import PageProperties, Property, property_registry, PVT
+from notion_df.property import PageProperties, Property, property_registry, PPVT
 
 
 @dataclass
@@ -91,7 +91,7 @@ class RetrievePagePropertyItem(RequestBuilder):
     def get_body(self) -> None:
         return
 
-    def execute(self) -> tuple[Property[Any, PVT, Any], PVT, dict[str, Any]]:
+    def execute(self) -> tuple[Property[Any, PPVT, Any], PPVT, dict[str, Any]]:
         data = request_page(self)
         if (prop_serialized := data)['object'] == 'property_item':
             # noinspection PyProtectedMember
