@@ -13,9 +13,9 @@ from typing_extensions import Self
 
 from notion_df.constant import RollupFunction, NumberFormat, Number
 from notion_df.core.collection import FinalDict
-from notion_df.core.definition import repr_object
 from notion_df.core.exception import ImplementationError
 from notion_df.core.serialization import DualSerializable, deserialize, serialize
+from notion_df.core.struct import repr_object
 from notion_df.file import Files
 from notion_df.filter import PropertyFilter, CheckboxFilterBuilder, PeopleFilterBuilder, \
     DateFilterBuilder, TextFilterBuilder, FilesFilterBuilder, NumberFilterBuilder, MultiSelectFilterBuilder, \

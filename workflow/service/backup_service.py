@@ -4,10 +4,10 @@ from typing import Optional
 
 from loguru import logger
 
-from notion_df.core.data_base import EntityDataT
-from notion_df.core.entity_base import Entity
+from notion_df.core.data_core import EntityDataT
+from notion_df.core.entity_core import Entity
 from notion_df.core.serialization import SerializationError
-from notion_df.core.definition import get_generic_arg
+from notion_df.core.struct import get_generic_arg
 
 
 class ResponseBackupService:

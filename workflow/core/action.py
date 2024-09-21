@@ -7,9 +7,9 @@ from typing import Iterable, Any, final, Callable, TypeVar, Optional
 
 from loguru import logger
 
-from notion_df.core.definition import repr_object
-from notion_df.entity import Page, search_by_title
+from notion_df.core.struct import repr_object
 from notion_df.core.variable import print_width
+from notion_df.entity import Page, search_by_title
 from workflow.block import is_template
 from workflow.core.entrypoint import entrypoint, WorkflowRecord, WorkflowSkipException
 

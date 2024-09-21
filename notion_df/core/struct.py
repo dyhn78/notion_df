@@ -34,14 +34,14 @@ TypeT = TypeVar('TypeT', bound=type)
 
 
 def get_generic_args(cls: type[Generic]) -> Optional[tuple[type, ...]]:
-    """ex) class A(list[int]) -> return (<class 'int'>,)."""
+    """ex. class A(list[int]) -> return (<class 'int'>,)."""
     for base in cls.__orig_bases__:
         if args := get_args(base):
             return args
 
 
 def get_generic_arg(cls: type[Generic], cast_type: TypeT) -> TypeT:
-    """ex) class A(list[int]) -> return: <class 'int'>"""
+    """ex. class A(list[int]) -> return: <class 'int'>"""
     try:
         arg = cast(type[cast_type], get_generic_args(cls)[0])
     except IndexError:

@@ -9,11 +9,11 @@ from typing_extensions import Self
 
 from notion_df.contents import BlockContents
 from notion_df.core.collection import Paginator
-from notion_df.core.definition import undefined, repr_object
-from notion_df.core.entity_base import RetrievableEntity, retrieve_on_demand, CanBeParent, \
+from notion_df.core.entity_core import RetrievableEntity, retrieve_on_demand, CanBeParent, \
     HasParent
 from notion_df.core.exception import ImplementationError
-from notion_df.core.request_base import RequestError
+from notion_df.core.request_core import RequestError
+from notion_df.core.struct import undefined, repr_object
 from notion_df.core.uuid_parser import get_page_or_database_id, get_block_id
 from notion_df.core.variable import token
 from notion_df.data import BlockData, DatabaseData, PageData

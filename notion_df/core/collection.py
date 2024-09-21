@@ -1,12 +1,12 @@
 from __future__ import annotations
 
+from dataclasses import fields
 from enum import Enum
 from itertools import chain
 from typing import TypeVar, NewType, Iterable, Optional, Iterator, Sequence, overload
-from dataclasses import dataclass, fields
 
-from notion_df.core.definition import repr_object
 from notion_df.core.exception import ImplementationError
+from notion_df.core.struct import repr_object
 
 
 class StrEnum(str, Enum):  # TODO: use builtin StrEnum after py3.11

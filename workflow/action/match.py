@@ -8,7 +8,7 @@ from typing import Iterable, Optional, Any, Literal, cast
 from loguru import logger
 
 from notion_df.core.collection import Paginator
-from notion_df.core.definition import repr_object
+from notion_df.core.struct import repr_object
 from notion_df.entity import Page, Database
 from notion_df.filter import created_time_filter
 from notion_df.property import RelationProperty, TitleProperty, PageProperties, \

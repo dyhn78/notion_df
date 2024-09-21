@@ -1,10 +1,11 @@
 from __future__ import annotations
+
 # TODO: merge this file with ../data.py
 import functools
 from abc import ABCMeta
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, TypeVar, MutableMapping, Final, Tuple, Type
+from typing import Any, TypeVar, MutableMapping, Final
 from uuid import UUID
 
 from loguru import logger

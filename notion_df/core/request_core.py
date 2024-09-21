@@ -1,10 +1,9 @@
 from __future__ import annotations
 
 import inspect
-import pprint
 from abc import abstractmethod, ABCMeta
 from dataclasses import dataclass
-from typing import TypeVar, Generic, Any, final, Optional, Iterator
+from typing import Generic, Any, final, Optional, Iterator
 
 import requests.exceptions
 import tenacity
@@ -12,11 +11,10 @@ from loguru import logger
 from requests import Response
 
 from notion_df.core.collection import PlainStrEnum
-from notion_df.core.data_base import EntityDataT, EntityData
-from notion_df.core.definition import repr_object
+from notion_df.core.data_core import EntityDataT
 from notion_df.core.exception import ImplementationError, NotionDfException
-from notion_df.core.serialization import deserialize, serialize
-from notion_df.core.variable import print_width
+from notion_df.core.serialization import serialize
+from notion_df.core.struct import repr_object
 
 MAX_PAGE_SIZE = 100
 

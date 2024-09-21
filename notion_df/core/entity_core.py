@@ -8,9 +8,9 @@ from uuid import UUID
 from loguru import logger
 from typing_extensions import Self
 
-from notion_df.core.data_base import EntityDataT, latest_data_dict, preview_data_dict
-from notion_df.core.definition import undefined, repr_object, Undefined
+from notion_df.core.data_core import EntityDataT, latest_data_dict, preview_data_dict
 from notion_df.core.exception import ImplementationError
+from notion_df.core.struct import undefined, repr_object, Undefined
 
 
 class Entity(Hashable, Generic[EntityDataT], metaclass=ABCMeta):
