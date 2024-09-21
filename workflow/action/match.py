@@ -11,9 +11,9 @@ from notion_df.core.collection import Paginator
 from notion_df.core.definition import repr_object
 from notion_df.entity import Page, Database
 from notion_df.filter import created_time_filter
-from notion_df.rich_text import TextSpan, RichText
 from notion_df.property import RelationProperty, TitleProperty, PageProperties, \
     RelationPagePropertyValue
+from notion_df.rich_text import TextSpan, RichText
 from workflow.block import DatabaseEnum, schedule, progress, record_timestr_prop, \
     weeki_date_range_prop, datei_to_weeki_prop, event_to_datei_prop, \
     event_to_issue_prop, event_to_reading_prop, event_to_area_prop, \
@@ -21,7 +21,7 @@ from workflow.block import DatabaseEnum, schedule, progress, record_timestr_prop
     reading_to_main_date_prop, reading_to_start_date_prop, reading_to_event_prog_prop, \
     reading_match_date_by_created_time_prop, status_prop, status_auto_generated, \
     korean_weekday, record_kind_prop, \
-    datei_date_prop, journal_needs_datei_prop, parse_date_title_match
+    datei_date_prop, journal_needs_datei_prop, parse_date_title_match, reading_to_sch_date_prop, get_earliest_datei
 from workflow.core.action import SequentialAction, Action
 from workflow.emoji_code import EmojiCode
 
@@ -211,19 +211,15 @@ class MatchReadingStartDatei(MatchSequentialAction):
 
     def find_datei(self, reading: Page) -> Optional[Page]:
         def get_reading_event_dates() -> Iterable[Page]:
-            reading_event_progs = reading.data.properties[reading_to_event_prog_prop]
-            # TODO: RollupPagePropertyValue 구현 후 이곳을 간소화
+            reading_event_progs = reading.properties[reading_to_event_prog_prop]
             for event in reading_event_progs:
-                if not (date_list := event.data.properties[event_to_datei_prop]):
-                    continue
-                date = date_list[0]
-                if date.data.properties[datei_date_prop] is None:
-                    continue
-                yield date
+                if date_list := event.properties[event_to_datei_prop]:
+                    yield date_list[0]
 
-        # ignore reading_main_date := reading.data.properties[reading_to_main_date_prop]
-        if reading_event_dateis := {*get_reading_event_dates()}:
-            return get_earliest_date(reading_event_dateis)
+        if reading_event_datei_set := {*get_reading_event_dates()}:
+            return get_earliest_datei(reading_event_datei_set)
+        if reading_sch_date := reading.properties[reading_to_sch_date_prop]:
+            return get_earliest_datei(reading_sch_date)
         if (datei_by_title := self.date_namespace.get_page_by_record_title(
                 reading.data.properties.title.plain_text)) is not None:
             return datei_by_title
@@ -599,19 +595,3 @@ class WeekINamespace(DatabaseNamespace):
 def get_record_created_date(record: Page) -> dt.date:
     # TODO: '📆일지' parsing 지원
     return (record.data.created_time + dt.timedelta(hours=-5)).date()
-
-
-def get_earliest_date(datei_it: Iterable[Page]) -> Page:
-    """only works for children of `DatabaseEnum.datei_db` or `weeki_db`"""
-
-    def _get_start_date(datei: Page) -> dt.date:
-        parent_db = DatabaseEnum.from_entity(datei.data.parent)
-        if parent_db == DatabaseEnum.datei_db:
-            prop = datei_date_prop
-        elif parent_db == DatabaseEnum.weeki_db:
-            prop = weeki_date_range_prop
-        else:
-            raise ValueError(datei)
-        return datei.data.properties[prop].start
-
-    return min(datei_it, key=_get_start_date)

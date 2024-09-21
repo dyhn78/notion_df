@@ -6,12 +6,12 @@ import tenacity
 from loguru import logger
 
 from notion_df.core.request_base import RequestError
-from notion_df.entity import Page, Database
 from notion_df.data import PageData
+from notion_df.entity import Page, Database
 from notion_df.property import RelationProperty, PageProperties, RelationDatabasePropertyValue, \
     DualRelationDatabasePropertyValue
-from workflow.action.match import get_earliest_date
-from workflow.block import DatabaseEnum, schedule, start, common, elements, related
+from workflow.block import DatabaseEnum, schedule, start, common, elements, related, get_earliest_datei, \
+    get_earliest_weeki
 from workflow.core.action import SequentialAction
 from workflow.service.backup_service import ResponseBackupService
 
@@ -78,11 +78,8 @@ class MigrationBackupLoadAction(SequentialAction):
                         linked_prev_db = linked_prev_data.parent
                     else:
                         linked_prev_db = None
-                elif linked_prev_data:
-                    linked_db = linked_prev_db = linked_prev_data.parent
                 else:
-                    logger.info(f"Retrieve because initial data missing - {linked_page=}")
-                    linked_db = linked_prev_db = linked_page.get_data().parent
+                    linked_db = linked_prev_db = linked_prev_data.parent
                 candidate_props = self.get_candidate_props(this_db, linked_db)
                 if not candidate_props:
                     continue
@@ -99,9 +96,19 @@ class MigrationBackupLoadAction(SequentialAction):
                 this_new_properties[new_prop].append(linked_page)
         # TODO: manually remove relation to itself
         for this_new_prop in this_new_properties:
+            this_new_prop: RelationProperty
             if any(stem in this_new_prop.name for stem in [start, ]):
-                dates = cast(RelationProperty.page_value, this_new_properties[this_new_prop])
-                this_new_properties[this_new_prop] = RelationProperty.page_value([get_earliest_date(dates)])
+                timei_list = this_new_properties[this_new_prop]
+                if not timei_list:
+                    raise RuntimeError(f"{this_page=}, {this_new_prop=}")
+                match timei_list[0].parent:
+                    case DatabaseEnum.datei_db.entity:
+                        earliest_timei = get_earliest_datei(timei_list)
+                    case DatabaseEnum.weeki_db.entity:
+                        earliest_timei = get_earliest_weeki(timei_list)
+                    case _:
+                        raise RuntimeError(f"{this_page=}, {this_new_prop=}, {timei_list[0].parent=}")
+                this_new_properties[this_new_prop] = RelationProperty.page_value([earliest_timei])
         if not this_new_properties:
             return
         try:
@@ -125,7 +132,7 @@ class MigrationBackupLoadAction(SequentialAction):
                 this_page.update(this_new_properties)
                 for prop, excess_pages in excess_page_dict.items():
                     db_prop_value: RelationDatabasePropertyValue = \
-                    cast(Database, this_page.data.parent).get_data().properties[prop]
+                        cast(Database, this_page.data.parent).properties[prop]
                     if not isinstance(db_prop_value, DualRelationDatabasePropertyValue):
                         raise e
                     synced_prop = db_prop_value.synced_property
@@ -197,15 +204,15 @@ class MigrationBackupLoadAction(SequentialAction):
 
 # TODO: integrate to base package
 def iter_breadcrumb(page: Page) -> Iterator[Page]:
-    page.data
     yield page
-    if page.data.parent is not None:
+    if page.parent is not None:
         yield from iter_breadcrumb(page.data.parent)
 
 
 # TODO: integrate to base package
 def page_exists(page: Page) -> bool:
     try:
+        # noinspection PyStatementEffect
         page.data
         return True
     except RequestError:

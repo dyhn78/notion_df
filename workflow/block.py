@@ -4,7 +4,7 @@ import datetime as dt
 import re
 from abc import ABCMeta
 from enum import Enum
-from typing import Optional, ClassVar, NewType
+from typing import Optional, ClassVar, NewType, Iterable
 from uuid import UUID
 
 from typing_extensions import Self
@@ -216,9 +216,26 @@ journal_kind_prop = record_kind_prop = SelectProperty("📕유형")
 record_kind_progress = "🌳진행"
 journal_needs_datei_prop = CheckboxFormulaProperty("🛠일정")
 reading_to_main_date_prop = RelationProperty(DatabaseEnum.datei_db.prefix_title)
+reading_to_sch_date_prop = RelationProperty(DatabaseEnum.datei_db.prefix + schedule)
 reading_to_start_date_prop = RelationProperty(DatabaseEnum.datei_db.prefix + start)
 reading_to_event_prog_prop = RelationProperty(DatabaseEnum.event_db.prefix + progress)
 reading_match_date_by_created_time_prop = CheckboxFormulaProperty(
     EmojiCode.BLACK_NOTEBOOK + '시작일<-생성시간')
 status_prop = SelectProperty("📘정리")
 status_auto_generated = "⚙️자동"
+
+
+def get_earliest_datei(datei_it: Iterable[Page]) -> Page:
+    def _get_start_date(datei: Page) -> dt.date | None:
+        assert datei.parent == DatabaseEnum.datei_db.entity
+        return datei.properties[datei_date_prop].start
+
+    return min([datei for datei in datei_it if _get_start_date(datei)], key=_get_start_date)
+
+
+def get_earliest_weeki(weeki_it: Iterable[Page]) -> Page:
+    def _get_start_date(weeki: Page) -> dt.date | None:
+        assert weeki.parent == DatabaseEnum.weeki_db.entity
+        return weeki.properties[weeki_date_range_prop].start
+
+    return min([weeki for weeki in weeki_it if _get_start_date(weeki)], key=_get_start_date)
