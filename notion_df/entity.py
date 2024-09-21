@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import warnings
 from datetime import datetime
 from typing import Optional, TypeVar, Union, Any, Literal, overload, cast, Generic
 from uuid import UUID
@@ -97,22 +96,6 @@ class Block(RetrievableEntity[BlockData], HasParent, Generic[BlockT]):
     @retrieve_on_demand
     def contents(self) -> BlockContents:
         return self.data.contents
-
-    def set_preview_data(
-            self,
-            parent: Union[Block, Page, Workspace] = undefined,
-            created_time: datetime = undefined,
-            last_edited_time: datetime = undefined,
-            created_by: PartialUser = undefined,
-            last_edited_by: PartialUser = undefined,
-            has_children: bool = undefined,
-            archived: bool = undefined,
-            contents: BlockContents = undefined,
-    ) -> BlockData:
-        warnings.warn("use EntityData.set_preview()", DeprecationWarning)
-        return BlockData(self.id, parent, created_time, last_edited_time, created_by,
-                         last_edited_by, has_children,
-                         archived, contents, preview=True).set_preview()
 
     @staticmethod
     def _get_id(id_or_url: Union[UUID, str]) -> UUID:
@@ -217,24 +200,6 @@ class Database(RetrievableEntity[DatabaseData], HasParent, Generic[PageT]):
     def is_inline(self) -> bool:
         return self.data.is_inline
 
-    def set_preview_data(
-            self,
-            parent: Union[Block, Page, Workspace] = undefined,
-            created_time: datetime = undefined,
-            last_edited_time: datetime = undefined,
-            icon: Optional[Icon] = undefined,
-            cover: Optional[File] = undefined,
-            url: str = undefined,
-            title: RichText = undefined,
-            properties: DatabaseProperties = undefined,
-            archived: bool = undefined,
-            is_inline: bool = undefined,
-    ) -> DatabaseData:
-        warnings.warn("use EntityData.set_preview()", DeprecationWarning)
-        return DatabaseData(self.id, parent, created_time, last_edited_time, icon,
-                            cover, url, title, properties, archived,
-                            is_inline, preview=True).set_preview()
-
     @staticmethod
     def _get_id(id_or_url: Union[UUID, str]) -> UUID:
         return get_page_or_database_id(id_or_url)
@@ -338,24 +303,6 @@ class Page(RetrievableEntity[PageData], HasParent):
             return ret
         return self.retrieve().properties.title
 
-    def set_preview_data(
-            self,
-            parent: Union[Block, Database, Page, Workspace] = undefined,
-            created_time: datetime = undefined,
-            last_edited_time: datetime = undefined,
-            created_by: PartialUser = undefined,
-            last_edited_by: PartialUser = undefined,
-            icon: Optional[Icon] = undefined,
-            cover: Optional[File] = undefined,
-            url: str = undefined,
-            archived: bool = undefined,
-            properties: PageProperties = undefined,
-    ) -> PageData:
-        warnings.warn("use EntityData.set_preview()", DeprecationWarning)
-        return PageData(self.id, parent, created_time, last_edited_time, created_by,
-                        last_edited_by, icon, cover, url,
-                        archived, properties, preview=True).set_preview()
-
     @staticmethod
     def _get_id(id_or_url: Union[UUID, str]) -> UUID:
         return get_page_or_database_id(id_or_url)
@@ -375,14 +322,18 @@ class Page(RetrievableEntity[PageData], HasParent):
 
     def as_block(self) -> Block:
         block = Block(self.id)
-        block.set_preview_data(
+        BlockData(
+            id=self.id,
             parent=self.data.parent,
             created_time=self.data.created_time,
             last_edited_time=self.data.last_edited_time,
             created_by=self.data.created_by,
             last_edited_by=self.data.last_edited_by,
             archived=self.data.archived,
-        )
+            has_children=undefined,
+            contents=undefined,
+            preview=True
+        ).set_preview()
         return block
 
     def retrieve(self) -> Self:

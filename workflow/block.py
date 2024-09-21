@@ -9,14 +9,16 @@ from uuid import UUID
 
 from typing_extensions import Self
 
+from notion_df.core.definition import undefined
 from notion_df.core.entity_base import Entity
 from notion_df.core.uuid_parser import get_page_or_database_url
+from notion_df.data import DatabaseData
 from notion_df.entity import Database, Page, Workspace
 from notion_df.misc import Emoji
 from notion_df.property import TitleProperty, DateFormulaPropertyKey, RichTextProperty, \
     RelationProperty, \
     DateProperty, CheckboxFormulaProperty, SelectProperty, PageProperties
-from notion_df.rich_text import RichText, TextSpan
+from notion_df.rich_text import RichText
 from workflow.emoji_code import EmojiCode
 
 schedule = "일정"
@@ -56,16 +58,20 @@ class DatabaseEnum(Enum):
         self.title = title
         self.entity = Database(id_or_url)
         _entity_to_enum[self.entity] = self
-
-        title_span = TextSpan(self.title)
-        self.entity.set_preview_data(
+        DatabaseData(
+            id=self.entity.id,
             parent=Workspace(),
-            url=get_page_or_database_url(id_or_url, 'dyhn'),
+            created_time=undefined,
+            last_edited_time=undefined,
             icon=Emoji(self.prefix),
-            title=RichText([title_span]),
+            cover=undefined,
+            url=get_page_or_database_url(id_or_url, 'dyhn'),
+            title=RichText.from_plain_text(self.title),
+            properties=undefined,
             archived=False,
             is_inline=False,
-        )
+            preview=True
+        ).set_preview()
 
     @property
     def prefix_title(self) -> str:

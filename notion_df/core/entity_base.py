@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import warnings
 from abc import abstractmethod, ABCMeta
 from inspect import isabstract
 from typing import (Final, Generic, Hashable, Union, Optional, final, TypeVar, Any, Callable, ClassVar)
@@ -74,14 +73,6 @@ class Entity(Hashable, Generic[EntityDataT], metaclass=ABCMeta):
     @property
     def _preview_data(self) -> Optional[EntityDataT]:
         return preview_data_dict.get(self._hash_key)
-
-    @abstractmethod
-    def set_preview_data(self, **kwargs: Any) -> EntityDataT:
-        """
-        To save API calls, Set some invariant values(such as the root pages of your workspace) as "preview data".
-        Preview data is always at the last priority of reading data and not garbage collected.
-        """
-        pass  # TODO remove
 
 
 def retrieve_on_demand(func: CallableT) -> CallableT:
