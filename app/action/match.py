@@ -16,7 +16,8 @@ from app.my_block import DatabaseEnum, schedule, progress, record_timestr_prop, 
     reading_to_main_date_prop, reading_to_start_date_prop, reading_to_event_prog_prop, \
     reading_match_date_by_created_time_prop, status_prop, status_auto_generated, \
     korean_weekday, record_kind_prop, \
-    datei_date_prop, journal_needs_datei_prop, parse_date_title_match, reading_to_sch_date_prop, get_earliest_datei
+    datei_date_prop, journal_needs_datei_prop, parse_date_title_match, \
+    reading_to_sch_date_prop, get_earliest_datei, record_kind_progress
 from notion_df.core.collection import Paginator
 from notion_df.core.struct import repr_object
 from notion_df.entity import Page, Database
@@ -367,9 +368,8 @@ class MatchEventProgress(MatchSequentialAction):
     def __init__(self, base: MatchActionBase, target_db: DatabaseEnum):
         super().__init__(base)
         self.target_db = target_db
-        self.datei_to_target_prop = self.event_to_target_prop = RelationProperty(
-            target_db.prefix_title)
-        self.event_to_target_prog_prop = RelationProperty(target_db.prefix + progress)
+        self.event_to_target_prop: RelationProperty = RelationProperty(target_db.prefix_title)
+        self.event_to_target_prog_prop: RelationProperty = RelationProperty(target_db.prefix + progress)
 
     def __repr__(self):
         return repr_object(self, target_db=self.target_db)
@@ -397,18 +397,23 @@ class MatchEventProgress(MatchSequentialAction):
                 f'{event} : Forward Skipped - {status_prop.name} == {status_auto_generated}'
             )
 
-        # TODO: more edge case handling
-        if not (len(target_list := event.properties[
-            self.event_to_target_prop]) == 1
-                and sum([len(event.properties[prop]) for prop in [
-                    event_to_area_prop, event_to_resource_prop,
-                    event_to_issue_prop, event_to_reading_prop,
-                ]]) == 1):
+        target_prog_list = self._determine_forward_prog(event)
+        if not target_prog_list:
             logger.info(f'{event} : Forward Skipped')
             return
         event.update(properties=PageProperties({
-            self.event_to_target_prog_prop: target_list
+            self.event_to_target_prog_prop: target_prog_list
         }))
+
+    @staticmethod
+    def _determine_forward_prog(event: Page) -> Optional[list[Page]]:
+        issue_list = [target for target in event.properties[event_to_issue_prop]
+                       if target.properties[record_kind_progress]]
+        reading_list = event.properties[event_to_reading_prop]
+        if len(issue_list) == 1 and not reading_list:
+            return issue_list
+        if len(reading_list) == 1 and not issue_list:
+            return reading_list
 
     def process_page_backward(self, event: Page) -> Any:
         event_target_list = event.properties[self.event_to_target_prop]
