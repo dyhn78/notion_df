@@ -29,12 +29,12 @@ if TYPE_CHECKING:
 
 property_registry: FinalDict[str, type[Property]] = FinalDict()
 PVT = TypeVar('PVT')
-"""PagePropertyValueT"""
+"""PropertyValueT"""
 # TODO (low priority): fix that `DPVT.bound == DatabasePropertyValue` does not ruin the type hinting
 DPVT = TypeVar('DPVT')
-"""DatabasePagePropertyValueT"""
+"""DatabasePropertyValueT"""
 PPVT = TypeVar('PPVT')
-"""PagePagePropertyValueT"""
+"""PagePropertyValueT"""
 FBT = TypeVar('FBT', bound=FilterBuilder)
 """FilterBuilderType"""
 
