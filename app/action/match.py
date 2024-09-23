@@ -16,7 +16,7 @@ from app.my_block import DatabaseEnum, schedule, progress, record_timestr_prop, 
     reading_match_date_by_created_time_prop, status_prop, status_auto_generated, \
     korean_weekday, record_kind_prop, \
     datei_date_prop, thread_needs_datei_prop, parse_date_title_match, \
-    reading_to_sch_date_prop, get_earliest_datei, record_kind_progress
+    reading_to_sch_date_prop, get_earliest_datei, stage_is_progress_prop
 from notion_df.core.collection import Paginator
 from notion_df.core.struct import repr_object
 from notion_df.entity import Page, Database
@@ -403,12 +403,12 @@ class MatchEventProgress(MatchSequentialAction):
 
     @staticmethod
     def _determine_forward_prog(event: Page) -> Optional[list[Page]]:
-        issue_list = [target for target in event.properties[event_to_stage_prop]
-                      if target.properties[record_kind_progress]]
+        stage_list = [target for target in event.properties[event_to_stage_prop]
+                      if target.properties[stage_is_progress_prop]]
         reading_list = event.properties[event_to_reading_prop]
-        if len(issue_list) == 1 and not reading_list:
-            return issue_list
-        if len(reading_list) == 1 and not issue_list:
+        if len(stage_list) == 1 and not reading_list:
+            return stage_list
+        if len(reading_list) == 1 and not stage_list:
             return reading_list
 
     def process_page_backward(self, event: Page) -> Any:
