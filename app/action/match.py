@@ -89,7 +89,7 @@ class MatchRecordDatei(MatchSequentialAction):
         if self.prepend_datei_on_title and (
                 new_title := self.date_namespace.prepend_date_in_record_title(
                     record.retrieve(), datei_list,
-                    self.get_needs_separator(record))):
+                    self.check_needs_separator(record))):
             properties = PageProperties()
             properties[record.properties.title_prop] = new_title
             record.update(properties)
@@ -118,13 +118,13 @@ class MatchRecordDatei(MatchSequentialAction):
             if self.prepend_datei_on_title and (
                     new_title := self.date_namespace.prepend_date_in_record_title(
                         record.retrieve(), [datei],
-                        self.get_needs_separator(record))
+                        self.check_needs_separator(record))
             ):
                 properties[record.properties.title_prop] = new_title
             self._update_page(record, properties)
 
     @staticmethod
-    def get_needs_separator(record: Page) -> bool:
+    def check_needs_separator(record: Page) -> bool:
         if record.parent == DatabaseEnum.event_db.entity:
             return any([
                 record.properties[DatabaseEnum.reading_db.prefix + progress],
@@ -132,9 +132,7 @@ class MatchRecordDatei(MatchSequentialAction):
             ])
         if record.parent == DatabaseEnum.thread_db.entity:
             return record.properties[thread_needs_datei_prop]
-        if record.parent == DatabaseEnum.journal_db.entity:
-            return True
-        raise ValueError(f"get_needs_separator() - {record}")
+        return True
 
     def _update_page(self, record: Page, record_properties: PageProperties) -> None:
         if not record_properties:
