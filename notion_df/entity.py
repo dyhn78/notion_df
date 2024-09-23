@@ -19,7 +19,7 @@ from notion_df.core.variable import token
 from notion_df.data import BlockData, DatabaseData, PageData
 from notion_df.file import ExternalFile, File
 from notion_df.filter import Filter
-from notion_df.misc import Icon, PartialParent
+from notion_df.misc import Icon, PartialParent, Emoji
 from notion_df.property import Property, PageProperties, DatabaseProperties, \
     PPVT
 from notion_df.request.block import AppendBlockChildren, RetrieveBlock, \
@@ -169,6 +169,11 @@ class Database(RetrievableEntity[DatabaseData], HasParent, Generic[PageT]):
     @retrieve_on_demand
     def icon(self) -> Optional[Icon]:
         return self.data.icon
+
+    @property
+    @retrieve_on_demand
+    def emoji_value(self) -> Optional[str]:
+        return self.data.icon.value if isinstance(self.data.icon, Emoji) else None
 
     @property
     @retrieve_on_demand

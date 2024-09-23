@@ -3,7 +3,7 @@ from __future__ import annotations
 from app import backup_dir
 from app.action.match import MatchActionBase, MatchDatei, MatchRecordDatei, \
     MatchRecordWeekiByDatei, MatchRecordTimestr, MatchReadingStartDatei, MatchEventProgress, MatchRecordDateiSchedule, \
-    MatchEventProgressDatei
+    MatchRecordRelsByEventProgress
 from app.action.media_scrap import MediaScrapAction
 from app.action.migration_backup import MigrationBackupLoadAction, MigrationBackupSaveAction
 from app.core.action import CompositeAction
@@ -24,8 +24,8 @@ routine_action = CompositeAction([
     MatchRecordDateiSchedule(base, DatabaseEnum.event_db),
     MatchRecordWeekiByDatei(base, DatabaseEnum.event_db, schedule, schedule),
     MatchRecordTimestr(base, DatabaseEnum.event_db, schedule),
-    MatchEventProgressDatei(base, DatabaseEnum.stage_db),
-    MatchEventProgressDatei(base, DatabaseEnum.reading_db),
+    MatchRecordRelsByEventProgress(base, DatabaseEnum.stage_db),
+    MatchRecordRelsByEventProgress(base, DatabaseEnum.reading_db),
 
     MatchRecordDatei(base, DatabaseEnum.journal_db, DatabaseEnum.datei_db.title, read_datei_from_created_time=True,
                      read_datei_from_title=True, prepend_datei_on_title=True),
