@@ -105,7 +105,7 @@ class MatchRecordDatei(MatchSequentialAction):
             return
 
         if self.read_datei_from_created_time:
-            if (record.parent == DatabaseEnum.stage_db.entity
+            if (record.parent == DatabaseEnum.thread_db.entity
                     and schedule in self.record_to_datei.name
                     and not record.properties[thread_needs_datei_prop]):
                 return
@@ -130,7 +130,7 @@ class MatchRecordDatei(MatchSequentialAction):
                 record.properties[DatabaseEnum.reading_db.prefix + progress],
                 record.properties[DatabaseEnum.issue_db.prefix + progress]
             ])
-        if record.parent == DatabaseEnum.stage_db.entity:
+        if record.parent == DatabaseEnum.thread_db.entity:
             return record.properties[thread_needs_datei_prop]
         if record.parent == DatabaseEnum.journal_db.entity:
             return True

@@ -34,11 +34,11 @@ routine_action = CompositeAction([
     MatchRecordDatei(base, DatabaseEnum.idea_db, DatabaseEnum.datei_db.title, read_datei_from_created_time=True),
     MatchRecordWeekiByDatei(base, DatabaseEnum.idea_db, DatabaseEnum.weeki_db.title, DatabaseEnum.datei_db.title),
 
-    MatchRecordDatei(base, DatabaseEnum.stage_db, DatabaseEnum.datei_db.title, read_datei_from_created_time=True),
-    MatchRecordDatei(base, DatabaseEnum.stage_db, schedule, read_datei_from_created_time=True,
+    MatchRecordDatei(base, DatabaseEnum.thread_db, DatabaseEnum.datei_db.title, read_datei_from_created_time=True),
+    MatchRecordDatei(base, DatabaseEnum.thread_db, schedule, read_datei_from_created_time=True,
                      read_datei_from_title=True, prepend_datei_on_title=True),
-    MatchRecordDateiSchedule(base, DatabaseEnum.stage_db),
-    MatchRecordWeekiByDatei(base, DatabaseEnum.stage_db, schedule, schedule),
+    MatchRecordDateiSchedule(base, DatabaseEnum.thread_db),
+    MatchRecordWeekiByDatei(base, DatabaseEnum.thread_db, schedule, schedule),
 
     MatchRecordDatei(base, DatabaseEnum.issue_db, DatabaseEnum.datei_db.title, read_datei_from_created_time=True),
     MatchRecordDatei(base, DatabaseEnum.issue_db, schedule, read_datei_from_title=True),
