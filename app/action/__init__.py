@@ -16,7 +16,7 @@ routine_action = CompositeAction([
 
     MatchDatei(base),
 
-    MatchEventProgress(base, DatabaseEnum.issue_db),
+    MatchEventProgress(base, DatabaseEnum.stage_db),
     MatchEventProgress(base, DatabaseEnum.reading_db),
     MatchRecordDatei(base, DatabaseEnum.event_db, DatabaseEnum.datei_db.title, read_datei_from_created_time=True),
     MatchRecordDatei(base, DatabaseEnum.event_db, schedule, read_datei_from_created_time=True,
@@ -24,7 +24,7 @@ routine_action = CompositeAction([
     MatchRecordDateiSchedule(base, DatabaseEnum.event_db),
     MatchRecordWeekiByDatei(base, DatabaseEnum.event_db, schedule, schedule),
     MatchRecordTimestr(base, DatabaseEnum.event_db, schedule),
-    MatchEventProgressDatei(base, DatabaseEnum.issue_db),
+    MatchEventProgressDatei(base, DatabaseEnum.stage_db),
     MatchEventProgressDatei(base, DatabaseEnum.reading_db),
 
     MatchRecordDatei(base, DatabaseEnum.journal_db, DatabaseEnum.datei_db.title, read_datei_from_created_time=True,
@@ -40,10 +40,10 @@ routine_action = CompositeAction([
     MatchRecordDateiSchedule(base, DatabaseEnum.thread_db),
     MatchRecordWeekiByDatei(base, DatabaseEnum.thread_db, schedule, schedule),
 
-    MatchRecordDatei(base, DatabaseEnum.issue_db, DatabaseEnum.datei_db.title, read_datei_from_created_time=True),
-    MatchRecordDatei(base, DatabaseEnum.issue_db, schedule, read_datei_from_title=True),
-    MatchRecordDateiSchedule(base, DatabaseEnum.issue_db),
-    MatchRecordWeekiByDatei(base, DatabaseEnum.issue_db, schedule, schedule),
+    MatchRecordDatei(base, DatabaseEnum.stage_db, DatabaseEnum.datei_db.title, read_datei_from_created_time=True),
+    MatchRecordDatei(base, DatabaseEnum.stage_db, schedule, read_datei_from_title=True),
+    MatchRecordDateiSchedule(base, DatabaseEnum.stage_db),
+    MatchRecordWeekiByDatei(base, DatabaseEnum.stage_db, schedule, schedule),
 
     MatchRecordDatei(base, DatabaseEnum.reading_db, DatabaseEnum.datei_db.title, read_datei_from_created_time=True),
     MatchRecordWeekiByDatei(base, DatabaseEnum.reading_db, DatabaseEnum.weeki_db.title, DatabaseEnum.datei_db.title),

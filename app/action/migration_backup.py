@@ -189,7 +189,7 @@ class MigrationBackupLoadAction(SequentialAction):
             for prop_name_stem in [common, elements, related]:
                 if (prop_name_stem in this_prev_prop.name) and (prop_name := pick(prop_name_stem)):
                     return prop_name
-        if this_db_enum == DatabaseEnum.issue_db and linked_db_enum == DatabaseEnum.issue_db:
+        if this_db_enum == DatabaseEnum.stage_db and linked_db_enum == DatabaseEnum.stage_db:
             if this_prev_db_enum == DatabaseEnum.area_db:
                 return pick(elements)
         if this_db_enum == DatabaseEnum.area_db and linked_db_enum == DatabaseEnum.area_db:

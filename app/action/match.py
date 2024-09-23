@@ -11,7 +11,7 @@ from app.core.action import SequentialAction, Action
 from app.emoji_code import EmojiCode
 from app.my_block import DatabaseEnum, schedule, progress, record_timestr_prop, \
     weeki_date_range_prop, datei_to_weeki_prop, event_to_datei_prop, \
-    event_to_issue_prop, event_to_reading_prop, reading_to_main_date_prop, reading_to_start_date_prop, \
+    event_to_stage_prop, event_to_reading_prop, reading_to_main_date_prop, reading_to_start_date_prop, \
     reading_to_event_prog_prop, \
     reading_match_date_by_created_time_prop, status_prop, status_auto_generated, \
     korean_weekday, record_kind_prop, \
@@ -128,7 +128,7 @@ class MatchRecordDatei(MatchSequentialAction):
         if record.parent == DatabaseEnum.event_db.entity:
             return any([
                 record.properties[DatabaseEnum.reading_db.prefix + progress],
-                record.properties[DatabaseEnum.issue_db.prefix + progress]
+                record.properties[DatabaseEnum.stage_db.prefix + progress]
             ])
         if record.parent == DatabaseEnum.thread_db.entity:
             return record.properties[thread_needs_datei_prop]
@@ -405,7 +405,7 @@ class MatchEventProgress(MatchSequentialAction):
 
     @staticmethod
     def _determine_forward_prog(event: Page) -> Optional[list[Page]]:
-        issue_list = [target for target in event.properties[event_to_issue_prop]
+        issue_list = [target for target in event.properties[event_to_stage_prop]
                       if target.properties[record_kind_progress]]
         reading_list = event.properties[event_to_reading_prop]
         if len(issue_list) == 1 and not reading_list:
