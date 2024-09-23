@@ -401,15 +401,14 @@ class MatchEventProgress(MatchSequentialAction):
             self.event_to_target_prog_prop: target_prog_list
         }))
 
-    @staticmethod
-    def _determine_forward_prog(event: Page) -> Optional[list[Page]]:
+    def _determine_forward_prog(self, event: Page) -> Optional[RelationPagePropertyValue]:
         stage_list = [target for target in event.properties[event_to_stage_prop]
                       if target.properties[stage_is_progress_prop]]
         reading_list = event.properties[event_to_reading_prop]
-        if len(stage_list) == 1 and not reading_list:
-            return stage_list
-        if len(reading_list) == 1 and not stage_list:
-            return reading_list
+        if self.target_db == DatabaseEnum.stage_db and len(stage_list) == 1 and not reading_list:
+            return RelationPagePropertyValue(stage_list)
+        if self.target_db == DatabaseEnum.reading_db and len(reading_list) == 1 and not stage_list:
+            return RelationPagePropertyValue(reading_list)
 
     def process_page_backward(self, event: Page) -> Any:
         event_target_list = event.properties[self.event_to_target_prop]
