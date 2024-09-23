@@ -8,3 +8,6 @@ test.pylint:
 
 test.unit:
 	pytest tests/
+
+test.vulture:
+	vulture
