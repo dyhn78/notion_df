@@ -13,8 +13,7 @@ from app.my_block import DatabaseEnum, schedule, progress, record_timestr_prop, 
     weeki_date_range_prop, datei_to_weeki_prop, event_to_datei_prop, \
     event_to_stage_prop, event_to_reading_prop, reading_to_main_date_prop, reading_to_start_date_prop, \
     reading_to_event_prog_prop, \
-    reading_match_date_by_created_time_prop, status_prop, status_auto_generated, \
-    korean_weekday, record_kind_prop, \
+    reading_match_date_by_created_time_prop, korean_weekday, record_kind_prop, \
     datei_date_prop, thread_needs_datei_prop, parse_date_title_match, \
     reading_to_sch_date_prop, get_earliest_datei, stage_is_progress_prop
 from notion_df.core.collection import Paginator
@@ -388,10 +387,6 @@ class MatchEventProgress(MatchSequentialAction):
             logger.info(
                 f'{event} : Forward Skipped - {self.event_to_target_prog_prop.name} not empty')
             return
-        if event.properties[status_prop] == status_auto_generated:
-            logger.info(
-                f'{event} : Forward Skipped - {status_prop.name} == {status_auto_generated}'
-            )
 
         target_prog_list = self._determine_forward_prog(event)
         if not target_prog_list:

@@ -220,8 +220,6 @@ event_to_datei_prop = RelationProperty(DatabaseEnum.datei_db.prefix_title)
 event_to_journal_prop = RelationProperty(DatabaseEnum.journal_db.prefix_title)
 event_to_stage_prop = RelationProperty(DatabaseEnum.stage_db.prefix_title)
 event_to_reading_prop = RelationProperty(DatabaseEnum.reading_db.prefix_title)
-event_to_area_prop = RelationProperty(DatabaseEnum.area_db.prefix_title)
-event_to_resource_prop = RelationProperty(DatabaseEnum.resource_db.prefix_title)
 journal_kind_prop = record_kind_prop = SelectProperty("📕유형")
 thread_needs_datei_prop = CheckboxFormulaProperty("🛠일정")
 stage_is_progress_prop = CheckboxFormulaProperty("🛠진행")
@@ -231,8 +229,6 @@ reading_to_start_date_prop = RelationProperty(DatabaseEnum.datei_db.prefix + sta
 reading_to_event_prog_prop = RelationProperty(DatabaseEnum.event_db.prefix + progress)
 reading_match_date_by_created_time_prop = CheckboxFormulaProperty(
     EmojiCode.BLACK_NOTEBOOK + '시작일<-생성시간')
-status_prop = SelectProperty("📘정리")
-status_auto_generated = "⚙️자동"
 
 
 def get_earliest_datei(datei_it: Iterable[Page]) -> Page:
