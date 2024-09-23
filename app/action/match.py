@@ -11,12 +11,11 @@ from app.core.action import SequentialAction, Action
 from app.emoji_code import EmojiCode
 from app.my_block import DatabaseEnum, schedule, progress, record_timestr_prop, \
     weeki_date_range_prop, datei_to_weeki_prop, event_to_datei_prop, \
-    event_to_issue_prop, event_to_reading_prop, event_to_area_prop, \
-    event_to_resource_prop, \
-    reading_to_main_date_prop, reading_to_start_date_prop, reading_to_event_prog_prop, \
+    event_to_issue_prop, event_to_reading_prop, reading_to_main_date_prop, reading_to_start_date_prop, \
+    reading_to_event_prog_prop, \
     reading_match_date_by_created_time_prop, status_prop, status_auto_generated, \
     korean_weekday, record_kind_prop, \
-    datei_date_prop, journal_needs_datei_prop, parse_date_title_match, \
+    datei_date_prop, thread_needs_datei_prop, parse_date_title_match, \
     reading_to_sch_date_prop, get_earliest_datei, record_kind_progress
 from notion_df.core.collection import Paginator
 from notion_df.core.struct import repr_object
@@ -54,7 +53,7 @@ WriteTitleT = Literal['if_datei_empty', 'if_separator_exists', 'never']
 class MatchRecordDatei(MatchSequentialAction):
     def __init__(self, base: MatchActionBase, record: DatabaseEnum,
                  record_to_datei: str, *,
-                 read_datei_from_created_time: bool = True,
+                 read_datei_from_created_time: bool = False,
                  read_datei_from_title: bool = False,
                  prepend_datei_on_title: bool = False):
         """
@@ -105,25 +104,24 @@ class MatchRecordDatei(MatchSequentialAction):
             }))
             return
 
-        if not self.read_datei_from_created_time:
-            return
-        if record.parent == DatabaseEnum.stage_db.entity:
-            if schedule in self.record_to_datei.name and not record.properties[
-                journal_needs_datei_prop]:
+        if self.read_datei_from_created_time:
+            if (record.parent == DatabaseEnum.stage_db.entity
+                    and schedule in self.record_to_datei.name
+                    and not record.properties[thread_needs_datei_prop]):
                 return
-        record_created_date = get_record_created_date(record)
-        datei = self.date_namespace.get_page_by_date(record_created_date)
-        properties: PageProperties[RelationPagePropertyValue | RichText] = \
-            PageProperties({
-                self.record_to_datei: self.record_to_datei.page_value([datei]),
-            })
-        if self.prepend_datei_on_title and (
-                new_title := self.date_namespace.prepend_date_in_record_title(
-                    record.retrieve(), [datei],
-                    self.get_needs_separator(record))
-        ):
-            properties[record.properties.title_prop] = new_title
-        self._update_page(record, properties)
+            record_created_date = get_record_created_date(record)
+            datei = self.date_namespace.get_page_by_date(record_created_date)
+            properties: PageProperties[RelationPagePropertyValue | RichText] = \
+                PageProperties({
+                    self.record_to_datei: self.record_to_datei.page_value([datei]),
+                })
+            if self.prepend_datei_on_title and (
+                    new_title := self.date_namespace.prepend_date_in_record_title(
+                        record.retrieve(), [datei],
+                        self.get_needs_separator(record))
+            ):
+                properties[record.properties.title_prop] = new_title
+            self._update_page(record, properties)
 
     @staticmethod
     def get_needs_separator(record: Page) -> bool:
@@ -133,7 +131,7 @@ class MatchRecordDatei(MatchSequentialAction):
                 record.properties[DatabaseEnum.issue_db.prefix + progress]
             ])
         if record.parent == DatabaseEnum.stage_db.entity:
-            return record.properties[journal_needs_datei_prop]
+            return record.properties[thread_needs_datei_prop]
         if record.parent == DatabaseEnum.journal_db.entity:
             return True
         raise ValueError(f"get_needs_separator() - {record}")
@@ -249,8 +247,8 @@ class MatchRecordTimestr(MatchSequentialAction):
                                     & created_time_filter.equals(dt.date.today()))
 
     def will_process(self, record: Page) -> bool:
-        if not (record.parent == self.record_db and not record.properties[
-            record_timestr_prop]):
+        if not (record.parent == self.record_db
+                and not record.properties[record_timestr_prop]):
             return False
         try:
             record_date = record.properties[self.record_to_datei][0]
@@ -296,8 +294,8 @@ class MatchRecordWeekiByDatei(MatchSequentialAction):
             self.record_to_weeki.filter.is_empty() & self.record_to_datei.filter.is_not_empty())
 
     def process_page(self, record: Page) -> None:
-        if not (record.parent == self.record_db and record.properties[
-            self.record_to_datei]):
+        if not (record.parent == self.record_db
+                and record.properties[self.record_to_datei]):
             return
 
         new_record_weeks = self.record_to_weeki.page_value()
@@ -408,7 +406,7 @@ class MatchEventProgress(MatchSequentialAction):
     @staticmethod
     def _determine_forward_prog(event: Page) -> Optional[list[Page]]:
         issue_list = [target for target in event.properties[event_to_issue_prop]
-                       if target.properties[record_kind_progress]]
+                      if target.properties[record_kind_progress]]
         reading_list = event.properties[event_to_reading_prop]
         if len(issue_list) == 1 and not reading_list:
             return issue_list

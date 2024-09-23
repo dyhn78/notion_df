@@ -4,7 +4,7 @@ import datetime as dt
 import re
 from abc import ABCMeta
 from enum import Enum
-from typing import Optional, ClassVar, NewType, Iterable
+from typing import Optional, ClassVar, NewType, Iterable, Any
 from uuid import UUID
 
 from typing_extensions import Self
@@ -43,6 +43,8 @@ class DatabaseEnum(Enum):
     datei_db = ('일간', '961d1ca0a3d24a46b838ba85e710f18d', EmojiCode.PURPLE_CIRCLE)
     weeki_db = ('주간', 'd020b399cf5947a59d11a0b9e0ea45d0', EmojiCode.PURPLE_HEART)
 
+    genai_db = ('#GenAI', '16a93035080d4b93b9e4b3db1b52811d', '', Page("383cfe576d684df3823cb1535bebfaf0"))
+
     depr_event_db = ('일지', 'c226cffe6cf84ab996bbc384bf26bf1d', EmojiCode.ORANGE_CIRCLE)
     depr_writing_db = ('표현', '069bbebd632f4a6ea3044575a064cf0f', EmojiCode.BLACK_HEART)
     depr_stream_db = ('전개', '9f21ad86079d4caaa7ed9461a7f37288', EmojiCode.RED_HEART)
@@ -52,15 +54,19 @@ class DatabaseEnum(Enum):
     depr_location_db = ('장소', '920e2e10225d450d8bb084697f6d0fc6', EmojiCode.BLACK_HEART)
     depr_theme_db = ('주제 -220222', '5464267393e940a58e3f10db306bf3e4', EmojiCode.BLACK_HEART)
 
-    def __init__(self, title: str, id_or_url: str, prefix: str) -> None:
+    def __init__(self, title: str, id_or_url: str, prefix: str, *args: Any) -> None:
         self._value_ = self._name_
         self.prefix = prefix
         self.title = title
+        if args:
+            parent = args[0]
+        else:
+            parent = Workspace()
         self.entity = Database(id_or_url)
         _entity_to_enum[self.entity] = self
         DatabaseData(
             id=self.entity.id,
-            parent=Workspace(),
+            parent=parent,
             created_time=undefined,
             last_edited_time=undefined,
             icon=Emoji(self.prefix),
@@ -220,7 +226,7 @@ event_to_area_prop = RelationProperty(DatabaseEnum.area_db.prefix_title)
 event_to_resource_prop = RelationProperty(DatabaseEnum.resource_db.prefix_title)
 journal_kind_prop = record_kind_prop = SelectProperty("📕유형")
 record_kind_progress = "🌳진행"
-journal_needs_datei_prop = CheckboxFormulaProperty("🛠일정")
+thread_needs_datei_prop = CheckboxFormulaProperty("🛠일정")
 reading_to_main_date_prop = RelationProperty(DatabaseEnum.datei_db.prefix_title)
 reading_to_sch_date_prop = RelationProperty(DatabaseEnum.datei_db.prefix + schedule)
 reading_to_start_date_prop = RelationProperty(DatabaseEnum.datei_db.prefix + start)

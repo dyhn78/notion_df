@@ -18,45 +18,47 @@ routine_action = CompositeAction([
 
     MatchEventProgress(base, DatabaseEnum.issue_db),
     MatchEventProgress(base, DatabaseEnum.reading_db),
-    MatchRecordDatei(base, DatabaseEnum.event_db, DatabaseEnum.datei_db.title),
-    MatchRecordDatei(base, DatabaseEnum.event_db, schedule, read_datei_from_title=True, prepend_datei_on_title=True),
+    MatchRecordDatei(base, DatabaseEnum.event_db, DatabaseEnum.datei_db.title, read_datei_from_created_time=True),
+    MatchRecordDatei(base, DatabaseEnum.event_db, schedule, read_datei_from_created_time=True,
+                     read_datei_from_title=True, prepend_datei_on_title=True),
     MatchRecordDateiSchedule(base, DatabaseEnum.event_db),
     MatchRecordWeekiByDatei(base, DatabaseEnum.event_db, schedule, schedule),
     MatchRecordTimestr(base, DatabaseEnum.event_db, schedule),
     MatchEventProgressDatei(base, DatabaseEnum.issue_db),
     MatchEventProgressDatei(base, DatabaseEnum.reading_db),
 
-    MatchRecordDatei(base, DatabaseEnum.journal_db, DatabaseEnum.datei_db.title,
+    MatchRecordDatei(base, DatabaseEnum.journal_db, DatabaseEnum.datei_db.title, read_datei_from_created_time=True,
                      read_datei_from_title=True, prepend_datei_on_title=True),
     MatchRecordWeekiByDatei(base, DatabaseEnum.journal_db, DatabaseEnum.weeki_db.title, DatabaseEnum.datei_db.title),
 
-    MatchRecordDatei(base, DatabaseEnum.idea_db, DatabaseEnum.datei_db.title),
+    MatchRecordDatei(base, DatabaseEnum.idea_db, DatabaseEnum.datei_db.title, read_datei_from_created_time=True),
     MatchRecordWeekiByDatei(base, DatabaseEnum.idea_db, DatabaseEnum.weeki_db.title, DatabaseEnum.datei_db.title),
 
-    MatchRecordDatei(base, DatabaseEnum.stage_db, DatabaseEnum.datei_db.title),
-    MatchRecordDatei(base, DatabaseEnum.stage_db, schedule,
+    MatchRecordDatei(base, DatabaseEnum.stage_db, DatabaseEnum.datei_db.title, read_datei_from_created_time=True),
+    MatchRecordDatei(base, DatabaseEnum.stage_db, schedule, read_datei_from_created_time=True,
                      read_datei_from_title=True, prepend_datei_on_title=True),
     MatchRecordDateiSchedule(base, DatabaseEnum.stage_db),
     MatchRecordWeekiByDatei(base, DatabaseEnum.stage_db, schedule, schedule),
 
-    MatchRecordDatei(base, DatabaseEnum.issue_db, DatabaseEnum.datei_db.title),
-    MatchRecordDatei(base, DatabaseEnum.issue_db, schedule, read_datei_from_created_time=False, read_datei_from_title=True),
+    MatchRecordDatei(base, DatabaseEnum.issue_db, DatabaseEnum.datei_db.title, read_datei_from_created_time=True),
+    MatchRecordDatei(base, DatabaseEnum.issue_db, schedule, read_datei_from_title=True),
     MatchRecordDateiSchedule(base, DatabaseEnum.issue_db),
     MatchRecordWeekiByDatei(base, DatabaseEnum.issue_db, schedule, schedule),
 
-    MatchRecordDatei(base, DatabaseEnum.reading_db, DatabaseEnum.datei_db.title),
+    MatchRecordDatei(base, DatabaseEnum.reading_db, DatabaseEnum.datei_db.title, read_datei_from_created_time=True),
     MatchRecordWeekiByDatei(base, DatabaseEnum.reading_db, DatabaseEnum.weeki_db.title, DatabaseEnum.datei_db.title),
-    MatchRecordDatei(base, DatabaseEnum.reading_db, schedule, read_datei_from_created_time=False,
-                     read_datei_from_title=True),
+    MatchRecordDatei(base, DatabaseEnum.reading_db, schedule, read_datei_from_title=True),
     MatchReadingStartDatei(base),
     MatchRecordDateiSchedule(base, DatabaseEnum.reading_db),
     MatchRecordWeekiByDatei(base, DatabaseEnum.reading_db, start, start),
 
-    MatchRecordDatei(base, DatabaseEnum.area_db, DatabaseEnum.datei_db.title),
+    MatchRecordDatei(base, DatabaseEnum.area_db, DatabaseEnum.datei_db.title, read_datei_from_created_time=True),
     MatchRecordWeekiByDatei(base, DatabaseEnum.area_db, DatabaseEnum.weeki_db.title, DatabaseEnum.datei_db.title),
 
-    MatchRecordDatei(base, DatabaseEnum.resource_db, DatabaseEnum.datei_db.title),
+    MatchRecordDatei(base, DatabaseEnum.resource_db, DatabaseEnum.datei_db.title, read_datei_from_created_time=True),
     MatchRecordWeekiByDatei(base, DatabaseEnum.resource_db, DatabaseEnum.weeki_db.title, DatabaseEnum.datei_db.title),
+
+    MatchRecordDatei(base, DatabaseEnum.genai_db, DatabaseEnum.datei_db.title, read_datei_from_created_time=True),
 
     MediaScrapAction(create_window=False),
 ])
