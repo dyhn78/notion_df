@@ -445,13 +445,13 @@ class MatchRecordRelsByEventProgress(MatchSequentialAction):
         for rel_prop in [record_to_sch_datei_prop, record_to_journal_prop, record_to_idea_prop,
                          record_to_thread_prop, record_to_stage_prop, record_to_reading_prop,
                          record_to_area_prop, record_to_resource_prop]:
-            if self.target_db.title in rel_prop.name:
+            if self.event_db.properties[rel_prop].database == self.target_db:
                 try:
                     target_rel_prop = next(prop for prop in [self.target_db.emoji_value + elements,
                                                              self.target_db.emoji_value + related,
                                                              rel_prop] if prop in self.target_db.properties)
                 except StopIteration:
-                    raise RuntimeError(f"cannot find target_rel_prop, {self.target_db=}")
+                    raise RuntimeError(f"cannot find self-relation prop, {self.target_db=}")
             else:
                 target_rel_prop = rel_prop
             event_rel_value_list = event.properties[rel_prop]
