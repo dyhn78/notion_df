@@ -424,8 +424,6 @@ class MatchRecordRelsByEventProgress(MatchSequentialAction):
     def __init__(self, base: MatchActionBase, target_db_enum: DatabaseEnum):
         super().__init__(base)
         self.target_db = target_db_enum.entity
-        self.datei_to_target_prop = self.event_to_target_prop = RelationProperty(
-            target_db_enum.prefix_title)
         self.event_to_target_prog_prop = RelationProperty(target_db_enum.prefix + progress)
 
     def __repr__(self):
@@ -438,8 +436,11 @@ class MatchRecordRelsByEventProgress(MatchSequentialAction):
     def process_page(self, event: Page) -> Any:
         if event.parent != self.event_db:
             return
-        self.event_to_target_prop: RelationProperty
-        target = event.properties[self.event_to_target_prop][0]
+        self.event_to_target_prog_prop: RelationProperty
+        target_list = event.properties[self.event_to_target_prog_prop]
+        if not target_list:
+            return
+        target = target_list[0]
         target_new_properties = PageProperties()
 
         for rel_prop in [record_to_sch_datei_prop, record_to_journal_prop, record_to_idea_prop,
