@@ -80,7 +80,7 @@ class DatabaseEnum(Enum):
         ).set_preview()
 
     @property
-    def prefix_title(self) -> str:
+    def prefix_title(self) -> str:  # TODO: remove, use db.emoji_value + db.title instead
         return self.prefix + self.title
 
     @classmethod
