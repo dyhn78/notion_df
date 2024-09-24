@@ -396,9 +396,9 @@ class MatchEventProgress(MatchSequentialAction):
         stage_list = [target for target in event.properties[record_to_stage_prop]
                       if target.properties[stage_is_progress_prop]]
         reading_list = event.properties[record_to_reading_prop]
-        if self.target_db == DatabaseEnum.stage_db and len(stage_list) == 1 and not reading_list:
+        if self.target_db == DatabaseEnum.stage_db.entity and len(stage_list) == 1 and not reading_list:
             return RelationPagePropertyValue(stage_list)
-        if self.target_db == DatabaseEnum.reading_db and len(reading_list) == 1 and not stage_list:
+        if self.target_db == DatabaseEnum.reading_db.entity and len(reading_list) == 1 and not stage_list:
             return RelationPagePropertyValue(reading_list)
 
     def process_page_backward(self, event: Page) -> Any:
