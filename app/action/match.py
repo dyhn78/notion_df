@@ -125,11 +125,6 @@ class MatchRecordDatei(MatchSequentialAction):
 
     @staticmethod
     def check_needs_separator(record: Page) -> bool:
-        if record.parent == DatabaseEnum.event_db.entity:
-            return any([
-                record.properties[DatabaseEnum.reading_db.prefix + progress],
-                record.properties[DatabaseEnum.stage_db.prefix + progress]
-            ])
         if record.parent == DatabaseEnum.thread_db.entity:
             return record.properties[thread_needs_datei_prop]
         return True
