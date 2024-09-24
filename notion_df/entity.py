@@ -172,8 +172,8 @@ class Database(RetrievableEntity[DatabaseData], HasParent, Generic[PageT]):
 
     @property
     @retrieve_on_demand
-    def emoji_value(self) -> Optional[str]:
-        return self.data.icon.value if isinstance(self.data.icon, Emoji) else None
+    def emoji_value(self) -> str:
+        return self.data.icon.value if isinstance(self.data.icon, Emoji) else ""
 
     @property
     @retrieve_on_demand
