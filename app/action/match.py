@@ -443,8 +443,8 @@ class MatchRecordRelsByEventProgress(MatchSequentialAction):
                          record_to_area_prop, record_to_resource_prop]:
             if self.event_db.properties[rel_prop].database == self.target_db:
                 try:
-                    target_rel_prop = next(prop for prop in [RelationPagePropertyValue(self.target_db.emoji_value + elements),
-                                                             RelationPagePropertyValue(self.target_db.emoji_value + related),
+                    target_rel_prop = next(prop for prop in [RelationProperty(self.target_db.emoji_value + elements),
+                                                             RelationProperty(self.target_db.emoji_value + related),
                                                              rel_prop] if prop in self.target_db.properties)
                 except StopIteration:
                     raise RuntimeError(f"cannot find self-relation prop, {self.target_db=}")
