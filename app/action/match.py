@@ -456,7 +456,7 @@ class MatchRecordRelsByEventProgress(MatchSequentialAction):
             if target_rel_value_list_new != target_rel_value_list_prev:
                 target_new_properties[target_rel_prop] = target_rel_value_list_new
 
-        if target_new_properties:
+        if not target_new_properties:
             logger.info(f"{event}: Progress copy skipped")
             return
         target.update(properties=target_new_properties)
