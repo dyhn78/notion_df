@@ -441,7 +441,9 @@ class MatchRecordRelsByEventProgress(MatchSequentialAction):
         for rel_prop in [record_to_sch_datei_prop, record_to_journal_prop, record_to_idea_prop,
                          record_to_thread_prop, record_to_stage_prop, record_to_reading_prop,
                          record_to_area_prop, record_to_resource_prop]:
-            if self.event_db.properties[rel_prop].database == self.target_db:
+            if rel_prop == record_to_sch_datei_prop:
+                target_rel_prop = record_to_datei_prop
+            elif self.event_db.properties[rel_prop].database == self.target_db:
                 try:
                     target_rel_prop = next(prop for prop in [RelationProperty(self.target_db.emoji_value + elements),
                                                              RelationProperty(self.target_db.emoji_value + related),
