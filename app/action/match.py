@@ -125,11 +125,6 @@ class MatchRecordDatei(MatchSequentialAction):
 
     @staticmethod
     def check_needs_separator(record: Page) -> bool:
-        if record.parent == DatabaseEnum.event_db.entity:
-            return any([
-                record.properties[DatabaseEnum.reading_db.prefix + progress],
-                record.properties[DatabaseEnum.stage_db.prefix + progress]
-            ])
         if record.parent == DatabaseEnum.thread_db.entity:
             return record.properties[thread_needs_datei_prop]
         return True
@@ -401,9 +396,9 @@ class MatchEventProgress(MatchSequentialAction):
         stage_list = [target for target in event.properties[record_to_stage_prop]
                       if target.properties[stage_is_progress_prop]]
         reading_list = event.properties[record_to_reading_prop]
-        if self.target_db == DatabaseEnum.stage_db and len(stage_list) == 1 and not reading_list:
+        if self.target_db == DatabaseEnum.stage_db.entity and len(stage_list) == 1 and not reading_list:
             return RelationPagePropertyValue(stage_list)
-        if self.target_db == DatabaseEnum.reading_db and len(reading_list) == 1 and not stage_list:
+        if self.target_db == DatabaseEnum.reading_db.entity and len(reading_list) == 1 and not stage_list:
             return RelationPagePropertyValue(reading_list)
 
     def process_page_backward(self, event: Page) -> Any:
@@ -424,8 +419,6 @@ class MatchRecordRelsByEventProgress(MatchSequentialAction):
     def __init__(self, base: MatchActionBase, target_db_enum: DatabaseEnum):
         super().__init__(base)
         self.target_db = target_db_enum.entity
-        self.datei_to_target_prop = self.event_to_target_prop = RelationProperty(
-            target_db_enum.prefix_title)
         self.event_to_target_prog_prop = RelationProperty(target_db_enum.prefix + progress)
 
     def __repr__(self):
@@ -438,20 +431,25 @@ class MatchRecordRelsByEventProgress(MatchSequentialAction):
     def process_page(self, event: Page) -> Any:
         if event.parent != self.event_db:
             return
-        self.event_to_target_prop: RelationProperty
-        target = event.properties[self.event_to_target_prop][0]
+        self.event_to_target_prog_prop: RelationProperty
+        target_list = event.properties[self.event_to_target_prog_prop]
+        if not target_list:
+            return
+        target = target_list[0]
         target_new_properties = PageProperties()
 
         for rel_prop in [record_to_sch_datei_prop, record_to_journal_prop, record_to_idea_prop,
                          record_to_thread_prop, record_to_stage_prop, record_to_reading_prop,
                          record_to_area_prop, record_to_resource_prop]:
-            if self.target_db.name in rel_prop.name:
+            if rel_prop == record_to_sch_datei_prop:
+                target_rel_prop = record_to_datei_prop
+            elif self.event_db.properties[rel_prop].database == self.target_db:
                 try:
-                    target_rel_prop = next(prop for prop in [self.target_db.emoji_value + elements,
-                                                             self.target_db.emoji_value + related,
+                    target_rel_prop = next(prop for prop in [RelationProperty(self.target_db.emoji_value + elements),
+                                                             RelationProperty(self.target_db.emoji_value + related),
                                                              rel_prop] if prop in self.target_db.properties)
                 except StopIteration:
-                    raise RuntimeError(f"cannot find target_rel_prop, {self.target_db=}")
+                    raise RuntimeError(f"cannot find self-relation prop, {self.target_db=}")
             else:
                 target_rel_prop = rel_prop
             event_rel_value_list = event.properties[rel_prop]
@@ -460,7 +458,7 @@ class MatchRecordRelsByEventProgress(MatchSequentialAction):
             if target_rel_value_list_new != target_rel_value_list_prev:
                 target_new_properties[target_rel_prop] = target_rel_value_list_new
 
-        if target_new_properties:
+        if not target_new_properties:
             logger.info(f"{event}: Progress copy skipped")
             return
         target.update(properties=target_new_properties)
