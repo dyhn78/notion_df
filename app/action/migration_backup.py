@@ -114,7 +114,7 @@ class MigrationBackupLoadAction(SequentialAction):
                     case _:
                         raise RuntimeError(f"{this_page=}, {this_new_prop=}, {timei_list[0].parent=}")
                 this_new_properties[this_new_prop] = RelationProperty.page_value([earliest_timei])
-        if not this_new_properties:
+        if not this_new_properties and not new_mention_page_list:
             return
         try:
             logger.info(f'\t{this_page}: {this_new_properties=}, {new_mention_page_list=}')
