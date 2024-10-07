@@ -14,7 +14,7 @@ from notion_df.data import PageData
 from notion_df.entity import Page, Database
 from notion_df.property import RelationProperty, PageProperties, RelationDatabasePropertyValue, \
     DualRelationDatabasePropertyValue
-
+from notion_df.rich_text import PageMention, RichText
 
 class MigrationBackupSaveAction(SequentialAction):
     def __init__(self, backup_dir: Path):
@@ -68,6 +68,7 @@ class MigrationBackupLoadAction(SequentialAction):
             return
 
         this_new_properties = PageProperties()
+        new_mention_page_list = []
         for this_prev_prop, this_prev_prop_value in this_prev_data.properties.items():
             if not isinstance(this_prev_prop, RelationProperty):
                 continue
@@ -90,6 +91,7 @@ class MigrationBackupLoadAction(SequentialAction):
                 new_prop: RelationProperty = self.find_new_relation_property(this_db, this_prev_db, linked_db,
                                                                              linked_prev_db, this_prev_prop)
                 if not new_prop:
+                    new_mention_page_list.append(linked_page)
                     continue
                 if new_prop not in this_new_properties:
                     if this_page.properties[new_prop].has_more:
@@ -114,8 +116,11 @@ class MigrationBackupLoadAction(SequentialAction):
         if not this_new_properties:
             return
         try:
-            logger.info(f'\t{this_page}: {this_new_properties}')
+            logger.info(f'\t{this_page}: {this_new_properties=}, {new_mention_page_list=}')
             this_page.update(this_new_properties)
+            this_page.as_block().append_children([RichText([
+                PageMention(linked_page.id) for linked_page in new_mention_page_list
+            ])])
             return
         except RequestError as e:
             if (e.code == 'object_not_found') or ('Unsaved transactions' in e.message):
