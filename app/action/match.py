@@ -85,6 +85,16 @@ class MatchRecordDatei(MatchSequentialAction):
             self.process_if_record_to_datei_empty(record)
 
     def process_if_record_to_datei_not_empty(self, record: Page) -> None:
+        checkbox_prop = CheckboxProperty("🟣오늘#")
+        if self.read_datei_from_created_time and record.properties.get(checkbox_prop):  # TODO CheckboxProperty
+            record_created_date = get_record_created_date(record)
+            datei = self.date_namespace.get_page_by_date(record_created_date)
+            properties = PageProperties({
+                self.record_to_datei: record.properties[self.record_to_datei] + [datei],
+                checkbox_prop: False
+            })
+            record.update(properties)
+
         datei_list = record.properties[self.record_to_datei]
         if self.prepend_datei_on_title and (
                 new_title := self.date_namespace.prepend_date_in_record_title(
