@@ -22,7 +22,7 @@ from notion_df.core.struct import repr_object
 from notion_df.entity import Page, Database
 from notion_df.filter import created_time_filter
 from notion_df.property import RelationProperty, TitleProperty, PageProperties, \
-    RelationPagePropertyValue
+    RelationPagePropertyValue, CheckboxProperty
 from notion_df.rich_text import TextSpan, RichText
 
 
