@@ -86,6 +86,7 @@ class MigrationBackupLoadAction(SequentialAction):
                     linked_db = linked_prev_db = linked_prev_data.parent
                 candidate_props = self.get_candidate_props(this_db, linked_db)
                 if not candidate_props:
+                    new_mention_page_list.append(linked_page)
                     continue
                 if any(linked_page in this_page.properties[prop] for prop in candidate_props):
                     continue
