@@ -121,8 +121,8 @@ class MigrationBackupLoadAction(SequentialAction):
             logger.info(f'\t{this_page}: {this_new_properties=}, {new_mention_page_list=}')
             this_page.update(this_new_properties)
             this_page.as_block().append_children([ParagraphBlockContents(RichText([
-                PageMention(linked_page.id) for linked_page in new_mention_page_list
-            ]))])
+                PageMention(linked_page.id)
+            ])) for linked_page in new_mention_page_list])
             return
         except RequestError as e:
             if (e.code == 'object_not_found') or ('Unsaved transactions' in e.message):
