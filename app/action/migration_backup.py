@@ -10,6 +10,7 @@ from app.my_block import DatabaseEnum, schedule, start, common, elements, relate
     get_earliest_weeki
 from app.service.backup_service import ResponseBackupService
 from notion_df.core.request_core import RequestError
+from notion_df.contents import ParagraphBlockContents
 from notion_df.data import PageData
 from notion_df.entity import Page, Database
 from notion_df.property import RelationProperty, PageProperties, RelationDatabasePropertyValue, \
@@ -118,9 +119,9 @@ class MigrationBackupLoadAction(SequentialAction):
         try:
             logger.info(f'\t{this_page}: {this_new_properties=}, {new_mention_page_list=}')
             this_page.update(this_new_properties)
-            this_page.as_block().append_children([RichText([
+            this_page.as_block().append_children([ParagraphBlockContents(RichText([
                 PageMention(linked_page.id) for linked_page in new_mention_page_list
-            ])])
+            ]))])
             return
         except RequestError as e:
             if (e.code == 'object_not_found') or ('Unsaved transactions' in e.message):
