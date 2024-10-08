@@ -74,8 +74,10 @@ class MigrationBackupLoadAction(SequentialAction):
             if not isinstance(this_prev_prop, RelationProperty):
                 continue
             for linked_page in cast(Iterable[Page], this_prev_prop_value):
-
-                linked_prev_data: PageData = self.response_backup.read(linked_page)
+                linked_prev_data: Optional[PageData] = self.response_backup.read(linked_page)
+                if not linked_prev_data:
+                    logger.info(f'\t{linked_page=}: No previous response backup')
+                    continue
                 if linked_page.local_data:
                     linked_db = linked_page.parent
                     if linked_prev_data:
