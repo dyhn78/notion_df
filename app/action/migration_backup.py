@@ -76,7 +76,7 @@ class MigrationBackupLoadAction(SequentialAction):
             for linked_page in cast(Iterable[Page], this_prev_prop_value):
 
                 linked_prev_data: PageData = self.response_backup.read(linked_page)
-                if linked_page.data:
+                if linked_page.local_data:
                     linked_db = linked_page.parent
                     if linked_prev_data:
                         linked_prev_db = linked_prev_data.parent
