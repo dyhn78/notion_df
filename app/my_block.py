@@ -21,13 +21,6 @@ from notion_df.property import TitleProperty, DateFormulaPropertyKey, RichTextPr
     DateProperty, CheckboxFormulaProperty, SelectProperty, PageProperties
 from notion_df.rich_text import RichText
 
-schedule = "일정"
-start = "시작"
-progress = "진도"
-common = '공통'
-elements = '요소'
-related = '관계'
-
 _entity_to_enum = {}
 
 
@@ -210,10 +203,17 @@ class Weeki(TitleIndexedPage):
         return cls._get_first_day_of_week(date) + dt.timedelta(days=6)
 
 
+schedule = "일정"
+start = "시작"
+progress = "진도"
+common = '공통'
+elements = '요소'
+related = '관계'
 record_to_sch_datei_prop = RelationProperty(DatabaseEnum.datei_db.prefix + schedule)
 record_datetime_auto_prop = DateFormulaPropertyKey(EmojiCode.TIMER + '일시')
 record_timestr_prop = RichTextProperty(EmojiCode.CALENDAR + '일지')
 record_kind_prop = SelectProperty("📕유형")
+record_contents_merged_prop = CheckboxFormulaProperty("🛠병합됨")
 datei_to_weeki_prop = RelationProperty(DatabaseEnum.weeki_db.prefix_title)
 datei_date_prop = DateProperty(EmojiCode.CALENDAR + '날짜')
 weeki_date_range_prop = DateProperty(EmojiCode.BIG_CALENDAR + '날짜 범위')
