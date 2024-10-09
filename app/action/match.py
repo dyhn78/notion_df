@@ -16,7 +16,7 @@ from app.my_block import DatabaseEnum, schedule, progress, record_timestr_prop, 
     reading_match_date_by_created_time_prop, korean_weekday, record_kind_prop, \
     datei_date_prop, thread_needs_datei_prop, parse_date_title_match, \
     record_to_sch_datei_prop, get_earliest_datei, stage_is_progress_prop, record_to_journal_prop, record_to_idea_prop, \
-    record_to_thread_prop, record_to_area_prop, record_to_resource_prop, related, elements
+    record_to_thread_prop, record_to_area_prop, record_to_resource_prop, related, elements, record_contents_merged_prop
 from notion_df.core.collection import Paginator
 from notion_df.core.struct import repr_object
 from notion_df.entity import Page, Database
@@ -471,6 +471,23 @@ class MatchRecordRelsByEventProgress(MatchSequentialAction):
             logger.info(f"{event}: Progress copy skipped")
             return
         target.update(properties=target_new_properties)
+
+
+class ReplaceMentionToLinks(MatchSequentialAction):
+    # TODO: currently unused. find alternative way without editing blocks.
+    def __init__(self, base: MatchActionBase, record_db_enum: DatabaseEnum):
+        super().__init__(base)
+        self.record_db = record_db_enum.entity
+
+    def query(self) -> Iterable[Page]:
+        return self.record_db.query(
+            filter=record_contents_merged_prop.filter.is_not_empty())
+
+    def process_page(self, page: Page) -> Any:
+        if not page.properties[record_contents_merged_prop]:
+            logger.info(f"{page}: ReplaceMentionToLinks skipped")
+            return
+        page.as_block().retrieve_children()
 
 
 class DatabaseNamespace(metaclass=ABCMeta):
