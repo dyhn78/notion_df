@@ -391,3 +391,5 @@ class LinkPreviewMention(Span):
     @classmethod
     def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
         return cls(raw['mention']['link_preview']['url'])
+
+# TODO: link_mention
