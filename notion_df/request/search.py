@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Literal, Union
 
 from notion_df.core.collection import DictFilter
@@ -13,7 +13,7 @@ class SearchByTitle(PaginatedRequestBuilder[Union[PageData, DatabaseData]]):
     data_element_type = EntityData
     query: str
     entity: Literal['page', 'database', None] = None
-    sort: TimestampSort = TimestampSort('last_edited_time', 'descending')
+    sort: TimestampSort = field(default_factory=lambda: TimestampSort('last_edited_time', 'descending'))
     page_size: int | None = None
 
     def get_settings(self) -> RequestSettings:
