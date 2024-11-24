@@ -80,7 +80,7 @@ class GYLibraryScraper:
         from selenium.webdriver import ActionChains
         actions = ActionChains(self.driver)
         click_element = self.find_element(css_tag)
-        actions.move_to_element(click_element).click()
+        actions.move_to_element(click_element).click().perform()
         # self.driver.execute_script(f'document.querySelector("{css_tag}").click();')
 
     def remove_element(self, css_tag: GYLibraryCSSTag):
