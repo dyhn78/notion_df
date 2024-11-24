@@ -91,6 +91,8 @@ l.parentNode.removeChild(l);
         # insert title
         self.driver_wait.until(
             EC.presence_of_element_located((By.CSS_SELECTOR, GYLibraryCSSTag.input_box)))
+        from time import sleep
+        sleep(10)
         self.send_keys(GYLibraryCSSTag.input_box, self.title)
 
         match self.lib_key:
