@@ -58,6 +58,7 @@ class GYLibraryScraper:
 
     def __init__(self, driver: WebDriver, title: str, lib_key: LibKey):
         self.driver = driver
+        self.driver.implicitly_wait(10)
         self.driver.set_window_size(1920, 1080)
         self.driver_wait = WebDriverWait(self.driver, 120)
         # self.driver.minimize_window()
@@ -87,11 +88,12 @@ l.parentNode.removeChild(l);
         # load main page
         url_main_page = 'https://www.goyanglib.or.kr/center/menu/10003/program/30001/searchSimple.do'
         self.driver.get(url_main_page)
-        self.driver.implicitly_wait(10)
 
         # insert title
         self.driver_wait.until(
             EC.element_to_be_clickable((By.CSS_SELECTOR, GYLibraryCSSTag.input_box)))
+        from pathlib import Path
+        Path("~/page_source.html").write_text(self.driver.page_source)
         self.send_keys(GYLibraryCSSTag.input_box, self.title)
 
         match self.lib_key:
@@ -104,7 +106,6 @@ l.parentNode.removeChild(l);
         self.driver_wait.until(
             EC.element_to_be_clickable((By.CSS_SELECTOR, GYLibraryCSSTag.search_button)))
         self.find_element(GYLibraryCSSTag.search_button).click()
-        self.driver.implicitly_wait(10)
 
         if self.driver.find_elements(By.CLASS_NAME, "noResultNote"):
             return
