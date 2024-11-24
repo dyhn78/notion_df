@@ -207,5 +207,5 @@ if __name__ == '__main__':
             gy = GYLibraryScraper(_driver, my_title, 'all_libs')
             print(gy.execute())
         except Exception as e:
-            _driver.save_screenshot("/tmp/screenshots.png")
+            _driver.save_screenshot("~/screenshot.png")
             raise e
