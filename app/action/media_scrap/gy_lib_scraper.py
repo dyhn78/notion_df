@@ -93,7 +93,7 @@ l.parentNode.removeChild(l);
         self.driver_wait.until(
             EC.element_to_be_clickable((By.CSS_SELECTOR, GYLibraryCSSTag.input_box)))
         from pathlib import Path
-        Path("~/page_source.html").write_text(self.driver.page_source)
+        Path("/home/ubuntu/page_source.html").write_text(self.driver.page_source)
         self.send_keys(GYLibraryCSSTag.input_box, self.title)
 
         match self.lib_key:
