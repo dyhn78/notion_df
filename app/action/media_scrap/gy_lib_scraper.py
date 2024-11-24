@@ -200,8 +200,8 @@ class GoyangLibraryScrapBookAreaParser:
 
 if __name__ == '__main__':
     my_title = '하나부터 열까지 신경 쓸 게 너무 많은 브랜딩'
-    _driver = WebDriverService(create_window=True).create()
-    gy = GYLibraryScraper(_driver, my_title, 'gajwa')
-    print(gy.execute())
-    gy = GYLibraryScraper(_driver, my_title, 'all_libs')
-    print(gy.execute())
+    with WebDriverService(create_window=True).create() as _driver:
+        gy = GYLibraryScraper(_driver, my_title, 'gajwa')
+        print(gy.execute())
+        gy = GYLibraryScraper(_driver, my_title, 'all_libs')
+        print(gy.execute())
