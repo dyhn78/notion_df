@@ -51,7 +51,7 @@ WriteTitleT = Literal['if_datei_empty', 'if_separator_exists', 'never']
 
 
 class MatchRecordDateiByCheckbox(MatchSequentialAction):
-    checkbox_prop = CheckboxProperty("🟣오늘#")
+    checkbox_prop = CheckboxProperty("🟣오늘")
 
     def __init__(self, base: MatchActionBase, record: DatabaseEnum,
                  record_to_datei: str):
