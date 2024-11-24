@@ -4,7 +4,7 @@ from app import backup_dir
 from app.action.match import MatchActionBase, MatchDatei, MatchRecordDatei, \
     MatchRecordWeekiByDatei, MatchRecordTimestr, MatchReadingStartDatei, MatchEventProgress, MatchRecordDateiSchedule, \
     MatchRecordRelsByEventProgress
-from app.action.media_scrap import MediaScrapAction
+from app.action.media_scrap.main import MediaScrapAction
 from app.action.migration_backup import MigrationBackupLoadAction, MigrationBackupSaveAction
 from app.core.action import CompositeAction
 from app.my_block import DatabaseEnum, schedule, start

@@ -4,11 +4,11 @@ from typing import Optional, Callable, Any, Iterable, cast
 from loguru import logger
 from selenium.webdriver.chrome.webdriver import WebDriver
 
+from app.action.media_scrap.gy_lib_scraper import GYLibraryScraper, LibraryScrapResult
+from app.action.media_scrap.yes24_scraper import get_yes24_detail_page_url, Yes24ScrapResult
 from app.core.action import IndividualAction
 from app.my_block import DatabaseEnum
-from app.service.gy_lib_service import GYLibraryScraper, LibraryScrapResult
 from app.service.webdriver_service import WebDriverService
-from app.service.yes24_service import get_yes24_detail_page_url, Yes24ScrapResult
 from notion_df.constant import BlockColor
 from notion_df.contents import BlockContents, Heading1BlockContents, \
     Heading2BlockContents, Heading3BlockContents, ParagraphBlockContents
