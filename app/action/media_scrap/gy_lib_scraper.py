@@ -47,7 +47,7 @@ class LibraryScrapResult:
 
 
 class GYLibraryCSSTag(StrEnum):
-    input_box = 'input#searchKeyword'
+    input_box = '#searchKeyword'
     search_button = '#searchBtn'
     all_libs = '#searchLibraryAll'
     gajwa = '#searchManageCodeArr2'
@@ -77,7 +77,10 @@ class GYLibraryScraper:
         # self.driver.execute_script(f'document.querySelector("{css_tag}").value = "{value}";')
 
     def click_element(self, css_tag: GYLibraryCSSTag):
-        self.find_element(css_tag).click()
+        from selenium.webdriver import ActionChains
+        actions = ActionChains(self.driver)
+        click_element = self.find_element(css_tag)
+        actions.move_to_element(click_element).click()
         # self.driver.execute_script(f'document.querySelector("{css_tag}").click();')
 
     def remove_element(self, css_tag: GYLibraryCSSTag):
