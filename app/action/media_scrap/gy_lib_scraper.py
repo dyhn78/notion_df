@@ -61,7 +61,6 @@ class GYLibraryScraper:
         self.driver.implicitly_wait(10)
         self.driver.set_window_size(1920, 1080)
         self.driver_wait = WebDriverWait(self.driver, 120)
-        # self.driver.minimize_window()
         self.lib_key = lib_key
         self.title = title
         self.now_page_num = 1
@@ -72,17 +71,12 @@ class GYLibraryScraper:
 
     def send_keys(self, css_tag: GYLibraryCSSTag, value: str):
         element = self.find_element(css_tag)
-        # element.clear()
-        # element.send_keys(value)
-        # self.driver.execute_script(f'document.querySelector("{css_tag}").value = "{value}";')
         self.driver.execute_script("arguments[0].value = arguments[1]", element, value)
 
     def click_element(self, css_tag: GYLibraryCSSTag):
-        # from selenium.webdriver import ActionChains
-        # actions = ActionChains(self.driver)
-        # actions.move_to_element(click_element).click().perform()
+        self.driver_wait.until(
+            EC.element_to_be_clickable((By.CSS_SELECTOR, css_tag)))
         element = self.find_element(css_tag)
-        # self.driver.execute_script(f'document.querySelector("{css_tag}").click();')
         self.driver.execute_script(f"arguments[0].click();", element)
 
     def remove_element(self, css_tag: GYLibraryCSSTag):
@@ -112,10 +106,7 @@ l.parentNode.removeChild(l);
                 self.click_element(GYLibraryCSSTag.all_libs)
                 self.click_element(GYLibraryCSSTag.gajwa)
 
-        self.driver_wait.until(
-            EC.element_to_be_clickable((By.CSS_SELECTOR, GYLibraryCSSTag.search_button)))
-        self.find_element(GYLibraryCSSTag.search_button).click()
-
+        self.click_element(GYLibraryCSSTag.search_button)
         if self.driver.find_elements(By.CLASS_NAME, "noResultNote"):
             return
 
