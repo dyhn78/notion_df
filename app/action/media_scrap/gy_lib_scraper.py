@@ -58,6 +58,7 @@ class GYLibraryScraper:
 
     def __init__(self, driver: WebDriver, title: str, lib_key: LibKey):
         self.driver = driver
+        self.driver.set_window_size(1920, 1080)
         self.driver_wait = WebDriverWait(self.driver, 120)
         # self.driver.minimize_window()
         self.lib_key = lib_key
@@ -91,7 +92,6 @@ l.parentNode.removeChild(l);
         # insert title
         self.driver_wait.until(
             EC.presence_of_element_located((By.CSS_SELECTOR, GYLibraryCSSTag.input_box)))
-        print(self.driver.save_screenshot("/home/ubuntu/screenshot.png"))
         self.send_keys(GYLibraryCSSTag.input_box, self.title)
 
         match self.lib_key:
@@ -208,5 +208,4 @@ if __name__ == '__main__':
             gy = GYLibraryScraper(_driver, my_title, 'all_libs')
             print(gy.execute())
         except Exception as e:
-            _driver.save_screenshot("~/screenshot.png")
-            raise e
+            raise Exception(_driver.save_screenshot("~/screenshot.png"), e)
