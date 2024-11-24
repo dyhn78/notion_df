@@ -77,7 +77,8 @@ class GYLibraryScraper:
         # self.driver.execute_script(f'document.querySelector("{css_tag}").value = "{value}";')
 
     def click_element(self, css_tag: GYLibraryCSSTag):
-        self.driver.execute_script(f'document.querySelector("{css_tag}").click();')
+        self.find_element(css_tag).click()
+        # self.driver.execute_script(f'document.querySelector("{css_tag}").click();')
 
     def remove_element(self, css_tag: GYLibraryCSSTag):
         self.driver.execute_script(f"""
