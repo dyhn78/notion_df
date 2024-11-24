@@ -91,8 +91,6 @@ l.parentNode.removeChild(l);
         # insert title
         self.driver_wait.until(
             EC.presence_of_element_located((By.CSS_SELECTOR, GYLibraryCSSTag.input_box)))
-        from time import sleep
-        sleep(10)
         self.send_keys(GYLibraryCSSTag.input_box, self.title)
 
         match self.lib_key:
@@ -203,7 +201,11 @@ class GoyangLibraryScrapBookAreaParser:
 if __name__ == '__main__':
     my_title = '하나부터 열까지 신경 쓸 게 너무 많은 브랜딩'
     with WebDriverService(create_window=False).create() as _driver:
-        gy = GYLibraryScraper(_driver, my_title, 'gajwa')
-        print(gy.execute())
-        gy = GYLibraryScraper(_driver, my_title, 'all_libs')
-        print(gy.execute())
+        try:
+            gy = GYLibraryScraper(_driver, my_title, 'gajwa')
+            print(gy.execute())
+            gy = GYLibraryScraper(_driver, my_title, 'all_libs')
+            print(gy.execute())
+        except Exception as e:
+            _driver.save_screenshot("/tmp/screenshots.png")
+            raise e
