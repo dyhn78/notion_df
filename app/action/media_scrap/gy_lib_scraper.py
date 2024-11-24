@@ -71,17 +71,19 @@ class GYLibraryScraper:
         return self.driver.find_element(By.CSS_SELECTOR, css_tag)
 
     def send_keys(self, css_tag: GYLibraryCSSTag, value: str):
-        input_element = self.find_element(css_tag)
-        input_element.clear()
-        input_element.send_keys(value)
+        element = self.find_element(css_tag)
+        # element.clear()
+        # element.send_keys(value)
         # self.driver.execute_script(f'document.querySelector("{css_tag}").value = "{value}";')
+        self.driver.execute_script("arguments[0].value = arguments[1]", element, value)
 
     def click_element(self, css_tag: GYLibraryCSSTag):
-        from selenium.webdriver import ActionChains
-        actions = ActionChains(self.driver)
-        click_element = self.find_element(css_tag)
-        actions.move_to_element(click_element).click().perform()
+        # from selenium.webdriver import ActionChains
+        # actions = ActionChains(self.driver)
+        # actions.move_to_element(click_element).click().perform()
+        element = self.find_element(css_tag)
         # self.driver.execute_script(f'document.querySelector("{css_tag}").click();')
+        self.driver.execute_script(f"arguments[0].click();", element)
 
     def remove_element(self, css_tag: GYLibraryCSSTag):
         self.driver.execute_script(f"""
