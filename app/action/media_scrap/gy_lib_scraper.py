@@ -47,7 +47,7 @@ class LibraryScrapResult:
 
 
 class GYLibraryCSSTag(StrEnum):
-    input_box = '#searchKeyword'
+    input_box = 'input#searchKeyword'
     search_button = '#searchBtn'
     all_libs = '#searchLibraryAll'
     gajwa = '#searchManageCodeArr2'
@@ -91,8 +91,7 @@ l.parentNode.removeChild(l);
 
         # insert title
         self.driver_wait.until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, GYLibraryCSSTag.input_box)))
-        print(self.driver.page_source)
+            EC.element_to_be_clickable((By.CSS_SELECTOR, GYLibraryCSSTag.input_box)))
         self.send_keys(GYLibraryCSSTag.input_box, self.title)
 
         match self.lib_key:
