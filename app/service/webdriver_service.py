@@ -17,6 +17,11 @@ class WebDriverService:
         self.create_window = create_window
 
     def create(self) -> webdriver.Chrome:
+        """
+        with WebDriverService(...).create() as driver:
+            # do your thing
+        # driver.__exit__() will call quit()
+        """
         driver_path = ChromeDriverManager().install()
         service = Service(driver_path)
         if not self.create_window and self.ON_WINDOWS:
@@ -33,10 +38,6 @@ class WebDriverService:
         driver = webdriver.Chrome(executable_path=driver_path, service=service, options=options)
         self.drivers.append(driver)
         return driver
-
-    def __del__(self):
-        for driver in self.drivers:
-            driver.quit()       
 
 
 def retry_webdriver(function: Callable, recursion_limit=1) -> Callable:

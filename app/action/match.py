@@ -50,6 +50,33 @@ class MatchSequentialAction(MatchAction, SequentialAction, metaclass=ABCMeta):
 WriteTitleT = Literal['if_datei_empty', 'if_separator_exists', 'never']
 
 
+class MatchRecordDateiByCheckbox(MatchSequentialAction):
+    checkbox_prop = CheckboxProperty("🟣오늘")
+
+    def __init__(self, base: MatchActionBase, record: DatabaseEnum,
+                 record_to_datei: str):
+        super().__init__(base)
+        self.record_db = record.entity
+        self.record_to_datei = RelationProperty(
+            f'{DatabaseEnum.datei_db.prefix}{record_to_datei}')
+
+    def query(self) -> Iterable[Page]:
+        return self.record_db.query(self.checkbox_prop.filter.is_not_empty())
+
+    def process_page(self, record: Page) -> None:
+        if record.parent != self.record_db:
+            return
+        if not record.properties.get(self.checkbox_prop):
+            return
+        datei = self.date_namespace.get_page_by_date(record.last_edited_time)
+        properties = PageProperties({
+            self.record_to_datei: record.properties[self.record_to_datei] + [datei],
+            self.checkbox_prop: False
+        })
+        logger.info(f'{record} -> {properties}')
+        record.update(properties=properties)
+
+
 class MatchRecordDatei(MatchSequentialAction):
     def __init__(self, base: MatchActionBase, record: DatabaseEnum,
                  record_to_datei: str, *,
@@ -85,15 +112,6 @@ class MatchRecordDatei(MatchSequentialAction):
             self.process_if_record_to_datei_empty(record)
 
     def process_if_record_to_datei_not_empty(self, record: Page) -> None:
-        checkbox_prop = CheckboxProperty("🟣오늘#")
-        if self.read_datei_from_created_time and record.properties.get(checkbox_prop):  # TODO CheckboxProperty
-            datei = self.date_namespace.get_page_by_date(record.last_edited_time)
-            properties = PageProperties({
-                self.record_to_datei: record.properties[self.record_to_datei] + [datei],
-                checkbox_prop: False
-            })
-            record.update(properties)
-
         datei_list = record.properties[self.record_to_datei]
         if self.prepend_datei_on_title and (
                 new_title := self.date_namespace.prepend_date_in_record_title(

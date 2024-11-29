@@ -1,6 +1,6 @@
 from pprint import pprint
 
-from app.service.yes24_service import parse_contents
+from app.action.media_scrap.yes24_scraper import parse_contents
 
 
 def test_parse_contents():
