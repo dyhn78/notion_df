@@ -35,6 +35,7 @@ routine_action = CompositeAction([
     MatchRecordWeekiByDatei(base, DatabaseEnum.idea_db, DatabaseEnum.weeki_db.title, DatabaseEnum.datei_db.title),
 
     MatchRecordDatei(base, DatabaseEnum.thread_db, DatabaseEnum.datei_db.title, read_datei_from_created_time=True),
+    MatchRecordWeekiByDatei(base, DatabaseEnum.thread_db, DatabaseEnum.weeki_db.title, DatabaseEnum.datei_db.title),
     MatchRecordDatei(base, DatabaseEnum.thread_db, schedule, read_datei_from_created_time=True,
                      read_datei_from_title=True, prepend_datei_on_title=True),
     MatchRecordDateiSchedule(base, DatabaseEnum.thread_db),
