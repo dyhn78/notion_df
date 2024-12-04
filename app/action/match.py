@@ -11,12 +11,15 @@ from app.core.action import SequentialAction, Action
 from app.emoji_code import EmojiCode
 from app.my_block import DatabaseEnum, schedule, progress, record_timestr_prop, \
     weeki_date_range_prop, datei_to_weeki_prop, record_to_datei_prop, \
-    record_to_stage_prop, record_to_reading_prop, reading_to_main_date_prop, reading_to_start_date_prop, \
+    record_to_stage_prop, record_to_reading_prop, reading_to_main_date_prop, \
+    reading_to_start_date_prop, \
     reading_to_event_prog_prop, \
     reading_match_date_by_created_time_prop, korean_weekday, record_kind_prop, \
     datei_date_prop, thread_needs_datei_prop, parse_date_title_match, \
-    record_to_sch_datei_prop, get_earliest_datei, stage_is_progress_prop, record_to_journal_prop, record_to_idea_prop, \
-    record_to_thread_prop, record_to_area_prop, record_to_resource_prop, related, elements, record_contents_merged_prop
+    record_to_sch_datei_prop, get_earliest_datei, stage_is_progress_prop, \
+    record_to_journal_prop, record_to_idea_prop, \
+    record_to_thread_prop, record_to_area_prop, record_to_resource_prop, related, \
+    elements, record_contents_merged_prop
 from notion_df.core.collection import Paginator
 from notion_df.core.struct import repr_object
 from notion_df.entity import Page, Database
@@ -357,41 +360,33 @@ class MatchDatei(MatchSequentialAction):
     def process_page(self, datei: Page) -> None:
         if datei.parent != self.date_db:
             return
-        if not datei.properties[datei_date_prop]:
-            self.match_date(datei)
-        if not datei.properties[datei_to_weeki_prop]:
-            self.match_weeki(datei)
-        self.match_title(datei)
+        properties = PageProperties()
 
-    def match_date(self, datei: Page) -> None:
-        date = self.date_namespace.get_date_of_title(
-            datei.properties.title.plain_text)
-        datei.update(PageProperties(
-            {datei_date_prop: datei_date_prop.page_value(start=date, end=None)}))
-        logger.info(f'{datei} -> {date}')
+        # match date
+        if date_range := datei.properties[datei_date_prop]:
+            date = date_range.start
+        else:
+            date = self.date_namespace.get_date_of_title(datei.properties.title.plain_text)
+            properties[datei_date_prop] = datei_date_prop.page_value(start=date, end=None)
 
-    def match_weeki(self, datei: Page) -> None:
-        date = datei.properties[datei_date_prop].start
+        # match weeki
         weeki = self.week_namespace.get_page_by_date(date)
-        if datei.retrieve().properties[datei_to_weeki_prop]:
-            return
-        datei.update(
-            PageProperties(
-                {datei_to_weeki_prop: datei_to_weeki_prop.page_value([weeki])}))
-        logger.info(f'{datei} -> {weeki}')
+        if not datei.retrieve().properties[datei_to_weeki_prop]:
+            properties[datei_to_weeki_prop] = datei_to_weeki_prop.page_value([weeki])
 
-    @classmethod
-    def match_title(cls, datei: Page) -> None:
-        date = datei.properties[datei_date_prop].start
+        # match title
         day_name = korean_weekday[date.weekday()] + '요일'
         title_plain_text = f'{date.strftime("%y%m%d")} {day_name}'
-        if datei.title.plain_text == title_plain_text:
-            logger.info(f"{datei} : Title Skipped")
-        datei.update(PageProperties(
-            {datei.properties.title_prop:
-                 datei.properties.title_prop.page_value.from_plain_text(title_plain_text)}
-        ))
-        logger.info(f'{datei} -> {title_plain_text}')
+        if datei.title.plain_text != title_plain_text:
+            properties[datei.properties.title_prop] = (
+                datei.properties.title_prop.page_value.from_plain_text(title_plain_text)
+            )
+
+        if properties:
+            logger.info(f'{datei} -> {properties}')
+            datei.update(properties=properties)
+        else:
+            logger.info(f"{datei} : Skipped")
 
 
 class MatchEventProgress(MatchSequentialAction):
