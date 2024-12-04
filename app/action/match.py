@@ -382,7 +382,7 @@ class MatchDatei(MatchSequentialAction):
 
     @classmethod
     def match_title(cls, datei: Page) -> None:
-        date = datei.properties[datei_date_prop]
+        date = datei.properties[datei_date_prop].start
         day_name = korean_weekday[date.weekday()] + '요일'
         title_plain_text = f'{date.strftime("%y%m%d")} {day_name}'
         if datei.title.plain_text == title_plain_text:
