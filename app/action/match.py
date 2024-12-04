@@ -355,12 +355,13 @@ class MatchDatei(MatchSequentialAction):
                                   or datei_to_weeki_prop.filter.is_empty())
 
     def process_page(self, datei: Page) -> None:
-        if not (datei.parent == self.date_db):
+        if datei.parent != self.date_db:
             return
         if not datei.properties[datei_date_prop]:
             self.match_date(datei)
         if not datei.properties[datei_to_weeki_prop]:
             self.match_weeki(datei)
+        self.match_title(datei)
 
     def match_date(self, datei: Page) -> None:
         date = self.date_namespace.get_date_of_title(
@@ -378,6 +379,19 @@ class MatchDatei(MatchSequentialAction):
             PageProperties(
                 {datei_to_weeki_prop: datei_to_weeki_prop.page_value([weeki])}))
         logger.info(f'{datei} -> {weeki}')
+
+    @classmethod
+    def match_title(cls, datei: Page) -> None:
+        date = datei.properties[datei_date_prop]
+        day_name = korean_weekday[date.weekday()] + '요일'
+        title_plain_text = f'{date.strftime("%y%m%d")} {day_name}'
+        if datei.title.plain_text == title_plain_text:
+            logger.info(f"{datei} : Title Skipped")
+        datei.update(PageProperties(
+            {datei.properties.title_prop:
+                 datei.properties.title_prop.page_value.from_plain_text(title_plain_text)}
+        ))
+        logger.info(f'{datei} -> {title_plain_text}')
 
 
 class MatchEventProgress(MatchSequentialAction):
