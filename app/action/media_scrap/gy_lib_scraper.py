@@ -74,8 +74,8 @@ class GYLibraryScraper:
         self.driver.execute_script("arguments[0].value = arguments[1]", element, value)
 
     def click_element(self, css_tag: GYLibraryCSSTag):
-        self.driver_wait.until(
-            EC.element_to_be_clickable((By.CSS_SELECTOR, css_tag)))
+        # self.driver_wait.until(
+        #    EC.element_to_be_clickable((By.CSS_SELECTOR, css_tag)))
         element = self.find_element(css_tag)
         self.driver.execute_script(f"arguments[0].click();", element)
 
