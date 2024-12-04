@@ -25,8 +25,8 @@ _entity_to_enum = {}
 
 
 class DatabaseEnum(Enum):
-    event_db = ('일과', 'c8d46c01d6c941a9bf8df5d115a05f03', EmojiCode.BLUE_CIRCLE)
-    journal_db = ('바탕', 'fa7d93f6fbd341f089b185745c834811', EmojiCode.BLUE_HEART)
+    journal_db = ('바탕', 'fa7d93f6fbd341f089b185745c834811', EmojiCode.BLUE_CIRCLE)
+    event_db = ('일과', 'c8d46c01d6c941a9bf8df5d115a05f03', EmojiCode.BLUE_HEART)
     area_db = ('꼭지', 'eb2f09a1de41412e8b2357bc04f26e74', EmojiCode.RED_CIRCLE)  # TODO
     thread_db = ('줄기', 'addc94642ee74825bd31109f4fd1c9ee', EmojiCode.RED_HEART)
     stage_db = ('수행', 'e8782fe4e1a34c9d846d57b01a370327', EmojiCode.YELLOW_CIRCLE)  # TODO
