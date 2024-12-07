@@ -9,13 +9,14 @@ from app.core.action import SequentialAction
 from app.my_block import DatabaseEnum, schedule, start, common, elements, related, get_earliest_datei, \
     get_earliest_weeki
 from app.service.backup_service import ResponseBackupService
-from notion_df.core.request_core import RequestError
 from notion_df.contents import ParagraphBlockContents
+from notion_df.core.request_core import RequestError
 from notion_df.data import PageData
 from notion_df.entity import Page, Database
 from notion_df.property import RelationProperty, PageProperties, RelationDatabasePropertyValue, \
     DualRelationDatabasePropertyValue
 from notion_df.rich_text import PageMention, RichText
+
 
 class MigrationBackupSaveAction(SequentialAction):
     def __init__(self, backup_dir: Path):
@@ -198,11 +199,11 @@ class MigrationBackupLoadAction(SequentialAction):
             for prop_name_stem in [common, elements, related]:
                 if (prop_name_stem in this_prev_prop.name) and (prop_name := pick(prop_name_stem)):
                     return prop_name
-        if this_db_enum == DatabaseEnum.stage_db and linked_db_enum == DatabaseEnum.stage_db:
-            if this_prev_db_enum == DatabaseEnum.area_db:
-                return pick(elements)
-        if this_db_enum == DatabaseEnum.area_db and linked_db_enum == DatabaseEnum.area_db:
+        if this_db_enum == DatabaseEnum.matter_db and linked_db_enum == DatabaseEnum.matter_db:
             if this_prev_db_enum == DatabaseEnum.idea_db:
+                return pick(elements)
+        if this_db_enum == DatabaseEnum.idea_db and linked_db_enum == DatabaseEnum.idea_db:
+            if this_prev_db_enum == DatabaseEnum.occasion_db:
                 return pick(elements)
             return pick(common)
 

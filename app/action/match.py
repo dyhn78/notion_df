@@ -3,7 +3,7 @@ from __future__ import annotations
 import datetime as dt
 import re
 from abc import ABCMeta
-from typing import Iterable, Optional, Any, Literal, cast
+from typing import Iterable, Optional, Any, cast
 
 from loguru import logger
 
@@ -11,21 +11,21 @@ from app.core.action import SequentialAction, Action
 from app.emoji_code import EmojiCode
 from app.my_block import DatabaseEnum, schedule, progress, record_timestr_prop, \
     weeki_date_range_prop, datei_to_weeki_prop, record_to_datei_prop, \
-    record_to_stage_prop, record_to_reading_prop, reading_to_main_date_prop, \
+    record_to_matter_prop, record_to_reading_prop, reading_to_main_date_prop, \
     reading_to_start_date_prop, \
     reading_to_event_prog_prop, \
     reading_match_date_by_created_time_prop, korean_weekday, record_kind_prop, \
-    datei_date_prop, thread_needs_datei_prop, parse_date_title_match, \
+    datei_date_prop, thread_needs_sch_datei_prop, parse_date_title_match, \
     record_to_sch_datei_prop, get_earliest_datei, stage_is_progress_prop, \
-    record_to_journal_prop, record_to_idea_prop, \
-    record_to_thread_prop, record_to_area_prop, record_to_resource_prop, related, \
+    record_to_stage_prop, record_to_occasion_prop, \
+    record_to_thread_prop, record_to_idea_prop, record_to_knowledge_prop, related, \
     elements, record_contents_merged_prop
 from notion_df.core.collection import Paginator
 from notion_df.core.struct import repr_object
 from notion_df.entity import Page, Database
 from notion_df.filter import created_time_filter
 from notion_df.property import RelationProperty, TitleProperty, PageProperties, \
-    RelationPagePropertyValue, CheckboxProperty
+    RelationPagePropertyValue, CheckboxProperty, CheckboxFormulaProperty
 from notion_df.rich_text import TextSpan, RichText
 
 
@@ -50,10 +50,8 @@ class MatchSequentialAction(MatchAction, SequentialAction, metaclass=ABCMeta):
     pass
 
 
-WriteTitleT = Literal['if_datei_empty', 'if_separator_exists', 'never']
-
-
-class MatchRecordDateiByCheckbox(MatchSequentialAction):
+class MatchRecordDateiByLastEditedTime(MatchSequentialAction):
+    """Use checkbox to trigger."""
     checkbox_prop = CheckboxProperty("🟣오늘")
 
     def __init__(self, base: MatchActionBase, record: DatabaseEnum,
@@ -80,97 +78,116 @@ class MatchRecordDateiByCheckbox(MatchSequentialAction):
         record.update(properties=properties)
 
 
-class MatchRecordDatei(MatchSequentialAction):
+class MatchRecordDateiByCreatedTime(MatchSequentialAction):
     def __init__(self, base: MatchActionBase, record: DatabaseEnum,
-                 record_to_datei: str, *,
-                 read_datei_from_created_time: bool = False,
-                 read_datei_from_title: bool = False,
-                 prepend_datei_on_title: bool = False):
+                 record_to_datei: str, only_if_empty: bool = False,
+                 only_if_this_checkbox_filled: Optional[CheckboxProperty | CheckboxFormulaProperty] = None):
         """
-        :arg read_datei_from_title: can get the datei from the record title if the current value includes "YYMMDD"
-        :arg prepend_datei_on_title: prepend the date string "YYMMDD" to the record title
+        :arg only_if_empty: will only add the datei if the current record[datei] is empty.
         """
         super().__init__(base)
         self.record_db = record.entity
         self.record_to_datei = RelationProperty(
             f'{DatabaseEnum.datei_db.prefix}{record_to_datei}')
-        self.read_datei_from_created_time = read_datei_from_created_time
-        self.read_datei_from_title = read_datei_from_title
-        self.prepend_datei_on_title = prepend_datei_on_title
+        self.only_if_empty = only_if_empty
+        self.only_if_this_checkbox_filled = only_if_this_checkbox_filled
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        return repr_object(self,
+                           record_db_title=self.record_db.title,
+                           record_to_datei=self.record_to_datei,
+                           only_if_empty=self.only_if_empty)
+
+    def query(self) -> Paginator[Page]:
+        return self.record_db.query(filter=(self.record_to_datei.filter.is_empty() if self.only_if_empty else None))
+
+    def process_page(self, record: Page) -> None:
+        if record.parent != self.record_db:
+            return
+        if self.only_if_empty and record.properties[self.record_to_datei]:
+            logger.info(f'{record} -> Already filled')
+            return
+        if self.only_if_this_checkbox_filled and not record.properties[self.only_if_this_checkbox_filled]:
+            logger.info(f"{record} -> Checkbox not filled '{self.only_if_this_checkbox_filled}'")
+            return
+        record_created_date = get_record_created_date(record)
+        datei = self.date_namespace.get_page_by_date(record_created_date)
+        if datei in (current_datei_list := record.properties[self.record_to_datei]):
+            logger.info(f"{record} -> Already includes created date {datei=}")
+            return
+        properties = PageProperties({
+            self.record_to_datei: current_datei_list + [datei],
+        })
+        if self.only_if_empty and record.retrieve().properties[self.record_to_datei]:
+            logger.info(f'{record} -> Already filled in the meantime')
+            return
+        logger.info(f'{record} -> {properties}')
+        record.update(properties)
+
+
+class MatchRecordDateiByTitle(MatchSequentialAction):
+    def __init__(self, base: MatchActionBase, record: DatabaseEnum,
+                 record_to_datei: str):
+        super().__init__(base)
+        self.record_db = record.entity
+        self.record_to_datei = RelationProperty(
+            f'{DatabaseEnum.datei_db.prefix}{record_to_datei}')
+
+    def __repr__(self) -> str:
         return repr_object(self,
                            record_db_title=self.record_db.title,
                            record_to_datei=self.record_to_datei)
 
     def query(self) -> Paginator[Page]:
-        return self.record_db.query(self.record_to_datei.filter.is_empty())
+        return self.record_db.query()
+
+    def process_page(self, record: Page) -> Any:
+        if record.parent != self.record_db:
+            return
+        if datei := self.date_namespace.get_page_by_record_title(
+                record.properties.title.plain_text):
+            properties = PageProperties({
+                self.record_to_datei: self.record_to_datei.page_value([datei]),
+            })
+            logger.info(f"{record} -> {properties}")
+            record.update(properties)
+            return
+
+
+class PrependDateiOnRecordTitle(MatchSequentialAction):
+    record_to_datei: RelationProperty
+
+    def __init__(self, base: MatchActionBase, record: DatabaseEnum,
+                 record_to_datei: str):
+        super().__init__(base)
+        self.record_db = record.entity
+        self.record_to_datei = RelationProperty(
+            f'{DatabaseEnum.datei_db.prefix}{record_to_datei}')
+
+    def query(self) -> Paginator[Page]:
+        return self.record_db.query(filter=self.record_to_datei.filter.is_not_empty())
 
     def process_page(self, record: Page) -> None:
         if record.parent != self.record_db:
             return
-        if record.properties[self.record_to_datei]:
-            self.process_if_record_to_datei_not_empty(record)
-        else:
-            self.process_if_record_to_datei_empty(record)
-
-    def process_if_record_to_datei_not_empty(self, record: Page) -> None:
-        datei_list = record.properties[self.record_to_datei]
-        if self.prepend_datei_on_title and (
-                new_title := self.date_namespace.prepend_date_in_record_title(
-                    record.retrieve(), datei_list,
-                    self.check_needs_separator(record))):
+        if not (datei_list := record.properties[self.record_to_datei]):
+            return
+        if new_title := self.date_namespace.prepend_date_in_record_title(
+                record.retrieve(), datei_list,
+                self.check_needs_separator(record)):
             properties = PageProperties()
             properties[record.properties.title_prop] = new_title
             record.update(properties)
             logger.info(f'{record} -> {properties}')
 
-    def process_if_record_to_datei_empty(self, record: Page) -> None:
-        if (self.read_datei_from_title
-                and (datei := self.date_namespace.get_page_by_record_title(
-                    record.properties.title.plain_text)) is not None):
-            self._update_page(record, PageProperties({
-                self.record_to_datei: self.record_to_datei.page_value([datei]),
-            }))
-            return
-
-        if self.read_datei_from_created_time:
-            if (record.parent == DatabaseEnum.thread_db.entity
-                    and schedule in self.record_to_datei.name
-                    and not record.properties[thread_needs_datei_prop]):
-                return
-            record_created_date = get_record_created_date(record)
-            datei = self.date_namespace.get_page_by_date(record_created_date)
-            properties: PageProperties[RelationPagePropertyValue | RichText] = \
-                PageProperties({
-                    self.record_to_datei: self.record_to_datei.page_value([datei]),
-                })
-            if self.prepend_datei_on_title and (
-                    new_title := self.date_namespace.prepend_date_in_record_title(
-                        record.retrieve(), [datei],
-                        self.check_needs_separator(record))
-            ):
-                properties[record.properties.title_prop] = new_title
-            self._update_page(record, properties)
-
     @staticmethod
     def check_needs_separator(record: Page) -> bool:
         if record.parent == DatabaseEnum.thread_db.entity:
-            return record.properties[thread_needs_datei_prop]
+            return record.properties[thread_needs_sch_datei_prop]
         return True
 
-    def _update_page(self, record: Page, record_properties: PageProperties) -> None:
-        if not record_properties:
-            return
-        # final check if the property value is filled in the meantime
-        if record.retrieve().properties[self.record_to_datei]:
-            logger.info(f'{record} -> Skipped')
-            return
-        record.update(record_properties)
-        logger.info(f'{record} -> {record_properties}')
 
-
-class MatchRecordDateiSchedule(MatchSequentialAction):
+class CopyRecordDateiScheduleToDatei(MatchSequentialAction):
     def __init__(self, base: MatchActionBase, record: DatabaseEnum):
         super().__init__(base)
         self.record_db = record.entity
@@ -429,10 +446,10 @@ class MatchEventProgress(MatchSequentialAction):
         }))
 
     def _determine_forward_prog(self, event: Page) -> Optional[RelationPagePropertyValue]:
-        stage_list = [target for target in event.properties[record_to_stage_prop]
+        stage_list = [target for target in event.properties[record_to_matter_prop]
                       if target.properties[stage_is_progress_prop]]
         reading_list = event.properties[record_to_reading_prop]
-        if self.target_db == DatabaseEnum.stage_db.entity and stage_list:
+        if self.target_db == DatabaseEnum.matter_db.entity and stage_list:
             return RelationPagePropertyValue(stage_list)
         if self.target_db == DatabaseEnum.reading_db.entity and len(reading_list) == 1 and not stage_list:
             return RelationPagePropertyValue(reading_list)
@@ -449,7 +466,7 @@ class MatchEventProgress(MatchSequentialAction):
         }))
 
 
-class MatchRecordRelsByEventProgress(MatchSequentialAction):
+class CopyEventProgressRels(MatchSequentialAction):
     event_db = DatabaseEnum.event_db.entity
 
     def __init__(self, base: MatchActionBase, target_db_enum: DatabaseEnum):
@@ -474,9 +491,9 @@ class MatchRecordRelsByEventProgress(MatchSequentialAction):
         target = target_list[0]
         target_new_properties = PageProperties()
 
-        for rel_prop in [record_to_sch_datei_prop, record_to_journal_prop, record_to_idea_prop,
-                         record_to_thread_prop, record_to_stage_prop, record_to_reading_prop,
-                         record_to_area_prop, record_to_resource_prop]:
+        for rel_prop in [record_to_sch_datei_prop, record_to_stage_prop, record_to_idea_prop,
+                         record_to_thread_prop, record_to_matter_prop, record_to_reading_prop,
+                         record_to_occasion_prop, record_to_knowledge_prop]:
             if rel_prop == record_to_sch_datei_prop:
                 target_rel_prop = record_to_datei_prop
             elif self.event_db.properties[rel_prop].database == self.target_db:
@@ -495,8 +512,9 @@ class MatchRecordRelsByEventProgress(MatchSequentialAction):
                 target_new_properties[target_rel_prop] = target_rel_value_list_new
 
         if not target_new_properties:
-            logger.info(f"{event}: Progress copy skipped")
+            logger.info(f"{target} <--Copy-- progress {event} : Skipped")
             return
+        logger.info(f"{target} <--Copy-- progress {event} : {target_new_properties}")
         target.update(properties=target_new_properties)
 
 
@@ -593,6 +611,7 @@ class DateINamespace(DatabaseNamespace):
     def prepend_date_in_record_title(
             cls, record: Page, candidate_datei_list: Iterable[Page], needs_separator: bool
     ) -> RichText:
+        """if candidate is many, choose the earliest."""
         title = record.properties.title
         datei_date_list = [datei.properties[datei_date_prop].start
                            for datei in candidate_datei_list]
