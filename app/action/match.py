@@ -67,8 +67,6 @@ class MatchRecordDateiByLastEditedTime(MatchSequentialAction):
     def process_page(self, record: Page) -> None:
         if record.parent != self.record_db:
             return
-        if not record.properties.get(self.checkbox_prop):
-            return
         datei = self.date_namespace.get_page_by_date(record.last_edited_time)
         properties = PageProperties({
             self.record_to_datei: record.properties[self.record_to_datei] + [datei],
