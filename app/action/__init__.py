@@ -67,8 +67,8 @@ routine_action = CompositeAction([
 
     MatchRecordDateiByTitle(base, DatabaseEnum.genai_db, DatabaseEnum.datei_db.title),
     MatchRecordDateiByCreatedTime(base, DatabaseEnum.genai_db, DatabaseEnum.datei_db.title),
-    PrependDateiOnRecordTitle(base, DatabaseEnum.genai_db, DatabaseEnum.datei_db.title),
     MatchRecordDateiByLastEditedTime(base, DatabaseEnum.genai_db, DatabaseEnum.datei_db.title),
+    PrependDateiOnRecordTitle(base, DatabaseEnum.genai_db, DatabaseEnum.datei_db.title),
     MatchRecordWeekiByDatei(base, DatabaseEnum.genai_db, DatabaseEnum.weeki_db.title, DatabaseEnum.datei_db.title),
 
     MediaScrapAction(create_window=False),
