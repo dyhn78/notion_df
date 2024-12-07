@@ -79,12 +79,12 @@ class CompositeAction(Action):
         self.actions = actions
 
     def process_all(self) -> Any:
-        logger.info(self)
+        logger.info(f'#### {self}')
         for action in self.actions:
             action.process_all()
 
     def process_pages(self, pages: Iterable[Page]) -> Any:
-        logger.info(self)
+        logger.info(f'#### {self}')
         for action in self.actions:
             action.process_pages(pages)
 
@@ -92,7 +92,7 @@ class CompositeAction(Action):
 class IndividualAction(Action):
     @final
     def process_all(self) -> Any:
-        logger.info(self)
+        logger.info(f'#### {self}')
         return self.process_pages(page for page in self.query() if not is_template(page))
 
     @abstractmethod
@@ -103,7 +103,7 @@ class IndividualAction(Action):
 class SequentialAction(IndividualAction):
     @final
     def process_pages(self, pages: Iterable[Page]) -> Any:
-        logger.info(self)
+        logger.info(f'#### {self}')
         for page in pages:
             self.process_page(page)
 

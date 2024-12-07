@@ -50,10 +50,10 @@ class MatchSequentialAction(MatchAction, SequentialAction, metaclass=ABCMeta):
     pass
 
 
-class MatchRecordDateiByLastEditedTime(MatchSequentialAction):
-    """Use checkbox to trigger."""
-    checkbox_prop = CheckboxProperty("🟣오늘")
+last_edited_time_checkbox_prop = CheckboxProperty("🟣오늘")
 
+
+class MatchRecordDateiByLastEditedTime(MatchSequentialAction):
     def __init__(self, base: MatchActionBase, record: DatabaseEnum,
                  record_to_datei: str):
         super().__init__(base)
@@ -62,15 +62,17 @@ class MatchRecordDateiByLastEditedTime(MatchSequentialAction):
             f'{DatabaseEnum.datei_db.prefix}{record_to_datei}')
 
     def query(self) -> Iterable[Page]:
-        return self.record_db.query(self.checkbox_prop.filter.is_not_empty())
+        return self.record_db.query(last_edited_time_checkbox_prop.filter.is_not_empty())
 
     def process_page(self, record: Page) -> None:
         if record.parent != self.record_db:
             return
+        if not record.properties[last_edited_time_checkbox_prop]:
+            return
         datei = self.date_namespace.get_page_by_date(record.last_edited_time)
         properties = PageProperties({
+            last_edited_time_checkbox_prop: False,
             self.record_to_datei: record.properties[self.record_to_datei] + [datei],
-            self.checkbox_prop: False
         })
         logger.info(f'{record} -> {properties}')
         record.update(properties=properties)
@@ -142,14 +144,16 @@ class MatchRecordDateiByTitle(MatchSequentialAction):
     def process_page(self, record: Page) -> Any:
         if record.parent != self.record_db:
             return
-        if datei := self.date_namespace.get_page_by_record_title(
-                record.properties.title.plain_text):
-            properties = PageProperties({
-                self.record_to_datei: self.record_to_datei.page_value([datei]),
-            })
-            logger.info(f"{record} -> {properties}")
-            record.update(properties)
+        if not (datei := self.date_namespace.get_page_by_record_title(
+                record.properties.title.plain_text)):
             return
+        if datei in (current_datei_list := record.properties[self.record_to_datei]):
+            return
+        properties = PageProperties({
+            self.record_to_datei: current_datei_list + [datei],
+        })
+        logger.info(f"{record} -> {properties}")
+        record.update(properties)
 
 
 class PrependDateiOnRecordTitle(MatchSequentialAction):
