@@ -42,6 +42,7 @@ class Workspace(CanBeParent):
     # TODO: allow multiple workspace, corresponding to multiple tokens
     """the singleton representing the workspace root."""
     __instance: Optional[Self] = None
+    parent = None
 
     def __new__(cls) -> Workspace:
         return cls.__instance or super().__new__(cls)
