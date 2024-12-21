@@ -106,7 +106,8 @@ class MigrationBackupLoadAction(SequentialAction):
         # TODO: manually remove relation to itself
         for this_new_prop in this_new_properties:
             this_new_prop: RelationProperty
-            if any(stem in this_new_prop.name for stem in [start, ]):
+            if ((start in this_new_prop.name)
+                    or (schedule in this_new_prop.name and this_page.parent == DatabaseEnum.event_db.entity)):
                 timei_list = this_new_properties[this_new_prop]
                 if not timei_list:
                     raise RuntimeError(f"{this_page=}, {this_new_prop=}")
