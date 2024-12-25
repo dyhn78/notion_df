@@ -25,14 +25,14 @@ _entity_to_enum = {}
 
 
 class DatabaseEnum(Enum):
-    stage_db = ('바탕', 'fa7d93f6fbd341f089b185745c834811', EmojiCode.BLUE_CIRCLE)
+    journal_db = ('바탕', 'fa7d93f6fbd341f089b185745c834811', EmojiCode.BLUE_CIRCLE)
     event_db = ('일과', 'c8d46c01d6c941a9bf8df5d115a05f03', EmojiCode.BLUE_HEART)
     idea_db = ('꼭지', 'eb2f09a1de41412e8b2357bc04f26e74', EmojiCode.RED_CIRCLE)
-    thread_db = ('줄기', 'addc94642ee74825bd31109f4fd1c9ee', EmojiCode.RED_HEART)
-    matter_db = ('수행', 'e8782fe4e1a34c9d846d57b01a370327', EmojiCode.YELLOW_CIRCLE)
+    stage_db = ('줄기', 'addc94642ee74825bd31109f4fd1c9ee', EmojiCode.RED_HEART)
+    thread_db = ('수행', 'e8782fe4e1a34c9d846d57b01a370327', EmojiCode.YELLOW_CIRCLE)
     reading_db = ('읽기', 'c326f77425a0446a8aa309478767c85b', EmojiCode.YELLOW_HEART)
-    occasion_db = ('사태', '52d387ea0aaa470cb69332708c61b34d', EmojiCode.GREEN_CIRCLE)
-    knowledge_db = ('기술', '2c5411ba6a0f43a0a8aa06295751e37a', EmojiCode.GREEN_HEART)
+    matter_db = ('문제', '52d387ea0aaa470cb69332708c61b34d', EmojiCode.GREEN_CIRCLE)
+    gist_db = ('요점', '2c5411ba6a0f43a0a8aa06295751e37a', EmojiCode.GREEN_HEART)
     datei_db = ('일간', '961d1ca0a3d24a46b838ba85e710f18d', EmojiCode.PURPLE_CIRCLE)
     weeki_db = ('주간', 'd020b399cf5947a59d11a0b9e0ea45d0', EmojiCode.PURPLE_HEART)
     genai_db = ('#GenAI', '16a93035080d4b93b9e4b3db1b52811d', '', Page("383cfe576d684df3823cb1535bebfaf0"))
@@ -194,11 +194,11 @@ class Weeki(TitleIndexedPage):
 
 
 schedule = "일정"
-start = "시작"
 progress = "진도"
-common = '공통'
-elements = '요소'
-related = '관계'
+start = "시작"
+relevant = "관련"
+upper = "상위"
+lower = "하위"
 record_to_sch_datei_prop = RelationProperty(DatabaseEnum.datei_db.prefix + schedule)
 record_datetime_auto_prop = DateFormulaPropertyKey(EmojiCode.TIMER + '일시')
 record_timestr_prop = RichTextProperty(EmojiCode.CALENDAR + '일지')
@@ -209,13 +209,13 @@ datei_date_prop = DateProperty(EmojiCode.CALENDAR + '날짜')
 weeki_date_range_prop = DateProperty(EmojiCode.BIG_CALENDAR + '날짜 범위')
 event_title_prop = TitleProperty(EmojiCode.ORANGE_BOOK + '제목')
 record_to_datei_prop = RelationProperty(DatabaseEnum.datei_db.prefix_title)
-record_to_stage_prop = RelationProperty(DatabaseEnum.stage_db.prefix_title)
+record_to_journal_prop = RelationProperty(DatabaseEnum.journal_db.prefix_title)
 record_to_idea_prop = RelationProperty(DatabaseEnum.idea_db.prefix_title)
+record_to_stage_prop = RelationProperty(DatabaseEnum.stage_db.prefix_title)
 record_to_thread_prop = RelationProperty(DatabaseEnum.thread_db.prefix_title)
-record_to_matter_prop = RelationProperty(DatabaseEnum.matter_db.prefix_title)
 record_to_reading_prop = RelationProperty(DatabaseEnum.reading_db.prefix_title)
-record_to_occasion_prop = RelationProperty(DatabaseEnum.occasion_db.prefix_title)
-record_to_knowledge_prop = RelationProperty(DatabaseEnum.knowledge_db.prefix_title)
+record_to_matter_prop = RelationProperty(DatabaseEnum.matter_db.prefix_title)
+record_to_gist_prop = RelationProperty(DatabaseEnum.gist_db.prefix_title)
 thread_needs_sch_datei_prop = CheckboxFormulaProperty("🛠일정")
 stage_is_progress_prop = CheckboxFormulaProperty("🛠진행")
 reading_to_main_date_prop = RelationProperty(DatabaseEnum.datei_db.prefix_title)

@@ -6,7 +6,7 @@ import tenacity
 from loguru import logger
 
 from app.core.action import SequentialAction
-from app.my_block import DatabaseEnum, schedule, start, common, elements, related, get_earliest_datei, \
+from app.my_block import DatabaseEnum, schedule, start, upper, lower, relevant, get_earliest_datei, \
     get_earliest_weeki
 from app.service.backup_service import ResponseBackupService
 from notion_df.contents import ParagraphBlockContents
@@ -197,16 +197,16 @@ class MigrationBackupLoadAction(SequentialAction):
             if this_prev_prop.name in [prefix_title, f'{prefix}{schedule}', f'{prefix}{start}']:
                 return pick(this_prev_prop.name) or pick(prefix_title)
         if this_db_enum == linked_db_enum and this_prev_db_enum == linked_prev_db_enum:
-            for prop_name_stem in [common, elements, related]:
+            for prop_name_stem in [upper, lower, relevant]:
                 if (prop_name_stem in this_prev_prop.name) and (prop_name := pick(prop_name_stem)):
                     return prop_name
-        if this_db_enum == DatabaseEnum.matter_db and linked_db_enum == DatabaseEnum.matter_db:
+        if this_db_enum == DatabaseEnum.thread_db and linked_db_enum == DatabaseEnum.thread_db:
             if this_prev_db_enum == DatabaseEnum.idea_db:
-                return pick(elements)
+                return pick(lower)
         if this_db_enum == DatabaseEnum.idea_db and linked_db_enum == DatabaseEnum.idea_db:
-            if this_prev_db_enum == DatabaseEnum.occasion_db:
-                return pick(elements)
-            return pick(common)
+            if this_prev_db_enum == DatabaseEnum.matter_db:
+                return pick(lower)
+            return pick(upper)
 
         # default cases
         if linked_db_enum:

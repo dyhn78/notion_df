@@ -11,15 +11,15 @@ from app.core.action import SequentialAction, Action
 from app.emoji_code import EmojiCode
 from app.my_block import DatabaseEnum, schedule, progress, record_timestr_prop, \
     weeki_date_range_prop, datei_to_weeki_prop, record_to_datei_prop, \
-    record_to_matter_prop, record_to_reading_prop, reading_to_main_date_prop, \
+    record_to_thread_prop, record_to_reading_prop, reading_to_main_date_prop, \
     reading_to_start_date_prop, \
     reading_to_event_prog_prop, \
     reading_match_date_by_created_time_prop, korean_weekday, record_kind_prop, \
     datei_date_prop, thread_needs_sch_datei_prop, parse_date_title_match, \
     record_to_sch_datei_prop, get_earliest_datei, stage_is_progress_prop, \
-    record_to_stage_prop, record_to_occasion_prop, \
-    record_to_thread_prop, record_to_idea_prop, record_to_knowledge_prop, related, \
-    elements, record_contents_merged_prop
+    record_to_journal_prop, record_to_matter_prop, \
+    record_to_stage_prop, record_to_idea_prop, record_to_gist_prop, relevant, \
+    lower, record_contents_merged_prop
 from notion_df.core.collection import Paginator
 from notion_df.core.struct import repr_object
 from notion_df.entity import Page, Database
@@ -184,7 +184,7 @@ class PrependDateiOnRecordTitle(MatchSequentialAction):
 
     @staticmethod
     def check_needs_separator(record: Page) -> bool:
-        if record.parent == DatabaseEnum.thread_db.entity:
+        if record.parent == DatabaseEnum.stage_db.entity:
             return record.properties[thread_needs_sch_datei_prop]
         return True
 
@@ -448,10 +448,10 @@ class MatchEventProgress(MatchSequentialAction):
         }))
 
     def _determine_forward_prog(self, event: Page) -> Optional[RelationPagePropertyValue]:
-        stage_list = [target for target in event.properties[record_to_matter_prop]
+        stage_list = [target for target in event.properties[record_to_thread_prop]
                       if target.properties[stage_is_progress_prop]]
         reading_list = event.properties[record_to_reading_prop]
-        if self.target_db == DatabaseEnum.matter_db.entity and stage_list:
+        if self.target_db == DatabaseEnum.thread_db.entity and stage_list:
             return RelationPagePropertyValue(stage_list)
         if self.target_db == DatabaseEnum.reading_db.entity and len(reading_list) == 1 and not stage_list:
             return RelationPagePropertyValue(reading_list)
@@ -493,15 +493,15 @@ class CopyEventProgressRels(MatchSequentialAction):
         target = target_list[0]
         target_new_properties = PageProperties()
 
-        for rel_prop in [record_to_sch_datei_prop, record_to_stage_prop, record_to_idea_prop,
-                         record_to_thread_prop, record_to_matter_prop, record_to_reading_prop,
-                         record_to_occasion_prop, record_to_knowledge_prop]:
+        for rel_prop in [record_to_sch_datei_prop, record_to_journal_prop, record_to_idea_prop,
+                         record_to_stage_prop, record_to_thread_prop, record_to_reading_prop,
+                         record_to_matter_prop, record_to_gist_prop]:
             if rel_prop == record_to_sch_datei_prop:
                 target_rel_prop = record_to_datei_prop
             elif self.event_db.properties[rel_prop].database == self.target_db:
                 try:
-                    target_rel_prop = next(prop for prop in [RelationProperty(self.target_db.emoji_value + elements),
-                                                             RelationProperty(self.target_db.emoji_value + related),
+                    target_rel_prop = next(prop for prop in [RelationProperty(self.target_db.emoji_value + lower),
+                                                             RelationProperty(self.target_db.emoji_value + relevant),
                                                              rel_prop] if prop in self.target_db.properties)
                 except StopIteration:
                     raise RuntimeError(f"cannot find self-relation prop, {self.target_db=}")
