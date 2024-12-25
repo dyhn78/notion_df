@@ -32,7 +32,7 @@ class DatabaseEnum(Enum):
     thread_db = ('수행', 'e8782fe4e1a34c9d846d57b01a370327', EmojiCode.YELLOW_CIRCLE)
     reading_db = ('읽기', 'c326f77425a0446a8aa309478767c85b', EmojiCode.YELLOW_HEART)
     matter_db = ('단초', '52d387ea0aaa470cb69332708c61b34d', EmojiCode.GREEN_CIRCLE)
-    gist_db = ('자료', '2c5411ba6a0f43a0a8aa06295751e37a', EmojiCode.GREEN_HEART)
+    gist_db = ('단편', '2c5411ba6a0f43a0a8aa06295751e37a', EmojiCode.GREEN_HEART)
     datei_db = ('일간', '961d1ca0a3d24a46b838ba85e710f18d', EmojiCode.PURPLE_CIRCLE)
     weeki_db = ('주간', 'd020b399cf5947a59d11a0b9e0ea45d0', EmojiCode.PURPLE_HEART)
     genai_db = ('#GenAI', '16a93035080d4b93b9e4b3db1b52811d', '', Page("383cfe576d684df3823cb1535bebfaf0"))
