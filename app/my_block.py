@@ -196,7 +196,7 @@ class Weeki(TitleIndexedPage):
 schedule = "일정"
 progress = "진도"
 start = "시작"
-relevant = "관련"
+relevant = "연관"
 upper = "상위"
 lower = "하위"
 record_to_sch_datei_prop = RelationProperty(DatabaseEnum.datei_db.prefix + schedule)
