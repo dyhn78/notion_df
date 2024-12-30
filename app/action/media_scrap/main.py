@@ -175,10 +175,10 @@ class ReadingMediaScraperUnit:
             else:
                 content_page = current_content_page.update(content_page_properties)
 
-            self.reading.update(PageProperties({
-                link_to_contents_prop:
-                    link_to_contents_prop.page_value([PageMention(content_page.id)])
-            }))
+            # self.reading.update(PageProperties({
+            #    link_to_contents_prop:
+            #        link_to_contents_prop.page_value([PageMention(content_page.id)])
+            # }))
             child_contents: list[BlockContents] = [
                 TableOfContentsBlockContents(BlockColor.GRAY),
                 *(get_block_value_of_contents_line(content_line) for content_line in
