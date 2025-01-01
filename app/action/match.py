@@ -17,7 +17,7 @@ from app.my_block import DatabaseEnum, schedule, progress, record_timestr_prop, 
     reading_match_date_by_created_time_prop, korean_weekday, record_kind_prop, \
     datei_date_prop, thread_needs_sch_datei_prop, parse_date_title_match, \
     record_to_sch_datei_prop, get_earliest_datei, stage_is_progress_prop, \
-    record_to_journal_prop, record_to_matter_prop, \
+    record_to_journal_prop, record_to_series_prop, \
     record_to_stage_prop, record_to_idea_prop, record_to_gist_prop, relevant, \
     lower, record_contents_merged_prop
 from notion_df.core.collection import Paginator
@@ -495,7 +495,7 @@ class CopyEventProgressRels(MatchSequentialAction):
 
         for rel_prop in [record_to_sch_datei_prop, record_to_journal_prop, record_to_idea_prop,
                          record_to_stage_prop, record_to_thread_prop, record_to_reading_prop,
-                         record_to_matter_prop, record_to_gist_prop]:
+                         record_to_series_prop, record_to_gist_prop]:
             if rel_prop == record_to_sch_datei_prop:
                 target_rel_prop = record_to_datei_prop
             elif self.event_db.properties[rel_prop].database == self.target_db:

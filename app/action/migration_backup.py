@@ -204,7 +204,7 @@ class MigrationBackupLoadAction(SequentialAction):
             if this_prev_db_enum == DatabaseEnum.idea_db:
                 return pick(lower)
         if this_db_enum == DatabaseEnum.idea_db and linked_db_enum == DatabaseEnum.idea_db:
-            if this_prev_db_enum == DatabaseEnum.matter_db:
+            if this_prev_db_enum == DatabaseEnum.series_db:
                 return pick(lower)
             return pick(upper)
 
