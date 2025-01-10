@@ -193,7 +193,7 @@ class Weeki(TitleIndexedPage):
         return cls._get_first_day_of_week(date) + dt.timedelta(days=6)
 
 
-schedule = "일정"
+schedule = "관련"
 progress = "진도"
 start = "시작"
 relevant = "연관"
