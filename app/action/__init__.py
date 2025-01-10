@@ -25,7 +25,7 @@ routine_action = CompositeAction([
 
     MatchEventProgress(base, DatabaseEnum.thread_db),
     MatchEventProgress(base, DatabaseEnum.reading_db),
-    MatchRecordDateiByCreatedTime(base, DatabaseEnum.event_db, "정리"),
+    MatchRecordDateiByCreatedTime(base, DatabaseEnum.event_db, schedule),
     MatchRecordDateiByTitle(base, DatabaseEnum.event_db, DatabaseEnum.datei_db.title),
     MatchRecordDateiByCreatedTime(base, DatabaseEnum.event_db, DatabaseEnum.datei_db.title, only_if_empty=True),
     PrependDateiOnRecordTitle(base, DatabaseEnum.event_db, DatabaseEnum.datei_db.title),
