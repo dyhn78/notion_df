@@ -9,7 +9,7 @@ from app.action.match import MatchActionBase, MatchDatei, \
 from app.action.media_scrap.main import MediaScrapAction
 from app.action.migration_backup import MigrationBackupLoadAction, MigrationBackupSaveAction
 from app.core.action import CompositeAction
-from app.my_block import DatabaseEnum, schedule, start, thread_needs_sch_datei_prop
+from app.my_block import DatabaseEnum, schedule, start, thread_needs_sch_datei_prop, progress
 
 base = MatchActionBase()
 routine_action = CompositeAction([
