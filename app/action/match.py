@@ -190,12 +190,12 @@ class PrependDateiOnRecordTitle(MatchSequentialAction):
 
 
 class CopyRecordDateiScheduleToDatei(MatchSequentialAction):
-    def __init__(self, base: MatchActionBase, record: DatabaseEnum):
+    def __init__(self, base: MatchActionBase, record: DatabaseEnum, prop: str):
         super().__init__(base)
         self.record_db = record.entity
         self.record_to_datei_prop = RelationProperty(DatabaseEnum.datei_db.prefix_title)
         self.record_to_datei_sch_prop = RelationProperty(
-            f"{DatabaseEnum.datei_db.prefix}{progress}")
+            f"{DatabaseEnum.datei_db.prefix}{prop}")
 
     def __repr__(self):
         return repr_object(self, record_db=self.record_db)
