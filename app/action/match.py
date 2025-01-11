@@ -195,7 +195,7 @@ class CopyRecordDateiScheduleToDatei(MatchSequentialAction):
         self.record_db = record.entity
         self.record_to_datei_prop = RelationProperty(DatabaseEnum.datei_db.prefix_title)
         self.record_to_datei_sch_prop = RelationProperty(
-            f"{DatabaseEnum.datei_db.prefix}{schedule}")
+            f"{DatabaseEnum.datei_db.prefix}{progress}")
 
     def __repr__(self):
         return repr_object(self, record_db=self.record_db)
