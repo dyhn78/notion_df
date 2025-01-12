@@ -30,7 +30,7 @@ routine_action = CompositeAction([
     MatchRecordDateiByCreatedTime(base, DatabaseEnum.event_db, progress, only_if_empty=True),
     PrependDateiOnRecordTitle(base, DatabaseEnum.event_db, progress),
     CopyRecordDateiScheduleToDatei(base, DatabaseEnum.event_db, progress),
-    MatchRecordWeekiByDatei(base, DatabaseEnum.event_db, progress, DatabaseEnum.datei_db.title),
+    MatchRecordWeekiByDatei(base, DatabaseEnum.event_db, progress, progress),
     MatchRecordTimestr(base, DatabaseEnum.event_db, progress),
     CopyEventProgressRels(base, DatabaseEnum.thread_db),
     CopyEventProgressRels(base, DatabaseEnum.reading_db),
