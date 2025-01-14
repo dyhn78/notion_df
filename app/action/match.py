@@ -259,7 +259,7 @@ class MatchReadingStartDatei(MatchSequentialAction):
 
         if reading_event_datei_set := {*get_reading_event_dates()}:
             return get_earliest_datei(reading_event_datei_set)
-        if reading_sch_date := reading.properties[record_to_sch_datei_prop]:
+        if reading_sch_date := reading.properties["🟣연관"]:
             return get_earliest_datei(reading_sch_date)
         if (datei_by_title := self.date_namespace.get_page_by_record_title(
                 reading.properties.title.plain_text)) is not None:
