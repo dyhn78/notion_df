@@ -16,10 +16,10 @@ from app.my_block import DatabaseEnum, schedule, progress, record_timestr_prop, 
     reading_to_event_prog_prop, \
     reading_match_date_by_created_time_prop, korean_weekday, record_kind_prop, \
     datei_date_prop, thread_needs_sch_datei_prop, parse_date_title_match, \
-    record_to_sch_datei_prop, get_earliest_datei, stage_is_progress_prop, \
-    record_to_journal_prop, record_to_view_prop, \
+    record_to_progress_datei_prop, get_earliest_datei, stage_is_progress_prop, \
+    record_to_journal_prop, record_to_scrap_prop, \
     record_to_stage_prop, record_to_idea_prop, record_to_gist_prop, relevant, \
-    lower, record_contents_merged_prop
+    lower, record_contents_merged_prop, record_to_schedule_datei_prop
 from notion_df.core.collection import Paginator
 from notion_df.core.struct import repr_object
 from notion_df.entity import Page, Database
@@ -259,8 +259,8 @@ class MatchReadingStartDatei(MatchSequentialAction):
 
         if reading_event_datei_set := {*get_reading_event_dates()}:
             return get_earliest_datei(reading_event_datei_set)
-        if reading_sch_date := reading.properties["🟣연관"]:
-            return get_earliest_datei(reading_sch_date)
+        if reading_relevant_date := reading.properties[record_to_schedule_datei_prop]:
+            return get_earliest_datei(reading_relevant_date)
         if (datei_by_title := self.date_namespace.get_page_by_record_title(
                 reading.properties.title.plain_text)) is not None:
             return datei_by_title
@@ -493,10 +493,10 @@ class CopyEventProgressRels(MatchSequentialAction):
         target = target_list[0]
         target_new_properties = PageProperties()
 
-        for rel_prop in [record_to_sch_datei_prop, record_to_journal_prop, record_to_idea_prop,
+        for rel_prop in [record_to_progress_datei_prop, record_to_journal_prop, record_to_idea_prop,
                          record_to_stage_prop, record_to_thread_prop, record_to_reading_prop,
-                         record_to_view_prop, record_to_gist_prop]:
-            if rel_prop == record_to_sch_datei_prop:
+                         record_to_scrap_prop, record_to_gist_prop]:
+            if rel_prop == record_to_progress_datei_prop:
                 target_rel_prop = record_to_datei_prop
             elif self.event_db.properties[rel_prop].database == self.target_db:
                 try:
