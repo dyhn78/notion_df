@@ -9,13 +9,13 @@ from loguru import logger
 
 from app.core.action import SequentialAction, Action
 from app.emoji_code import EmojiCode
-from app.my_block import DatabaseEnum, schedule, progress, record_timestr_prop, \
+from app.my_block import DatabaseEnum, progress, record_timestr_prop, \
     weeki_date_range_prop, datei_to_weeki_prop, record_to_datei_prop, \
     record_to_thread_prop, record_to_reading_prop, reading_to_main_date_prop, \
     reading_to_start_date_prop, \
     reading_to_event_prog_prop, \
     reading_match_date_by_created_time_prop, korean_weekday, record_kind_prop, \
-    datei_date_prop, thread_needs_sch_datei_prop, parse_date_title_match, \
+    datei_date_prop, record_needs_sch_datei_prop, parse_date_title_match, \
     record_to_progress_datei_prop, get_earliest_datei, stage_is_progress_prop, \
     record_to_journal_prop, record_to_scrap_prop, \
     record_to_stage_prop, record_to_idea_prop, record_to_gist_prop, relevant, \
@@ -185,7 +185,7 @@ class PrependDateiOnRecordTitle(MatchSequentialAction):
     @staticmethod
     def check_needs_separator(record: Page) -> bool:
         if record.parent == DatabaseEnum.stage_db.entity:
-            return record.properties[thread_needs_sch_datei_prop]
+            return record.properties[record_needs_sch_datei_prop]
         return True
 
 

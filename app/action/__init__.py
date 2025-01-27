@@ -9,7 +9,7 @@ from app.action.match import MatchActionBase, MatchDatei, \
 from app.action.media_scrap.main import MediaScrapAction
 from app.action.migration_backup import MigrationBackupLoadAction, MigrationBackupSaveAction
 from app.core.action import CompositeAction
-from app.my_block import DatabaseEnum, schedule, start, thread_needs_sch_datei_prop, progress
+from app.my_block import DatabaseEnum, schedule, start, record_needs_sch_datei_prop, progress
 
 base = MatchActionBase()
 routine_action = CompositeAction([
@@ -35,28 +35,30 @@ routine_action = CompositeAction([
     CopyEventProgressRels(base, DatabaseEnum.thread_db),
     CopyEventProgressRels(base, DatabaseEnum.reading_db),
 
-    MatchRecordDateiByCreatedTime(base, DatabaseEnum.idea_db, DatabaseEnum.datei_db.title),
-    MatchRecordWeekiByDatei(base, DatabaseEnum.idea_db, DatabaseEnum.weeki_db.title, DatabaseEnum.datei_db.title),
+    MatchRecordDateiByCreatedTime(base, DatabaseEnum.thread_db, DatabaseEnum.datei_db.title),
+    MatchRecordWeekiByDatei(base, DatabaseEnum.thread_db, DatabaseEnum.weeki_db.title, DatabaseEnum.datei_db.title),
+    # MatchRecordDateiByTitle(base, DatabaseEnum.thread_db, schedule),
+    # CopyRecordDateiScheduleToDatei(base, DatabaseEnum.thread_db, schedule),
+    # MatchRecordWeekiByDatei(base, DatabaseEnum.thread_db, schedule, schedule),
 
     MatchRecordDateiByCreatedTime(base, DatabaseEnum.stage_db, DatabaseEnum.datei_db.title),
     MatchRecordDateiByTitle(base, DatabaseEnum.stage_db, schedule),
     MatchRecordDateiByCreatedTime(base, DatabaseEnum.stage_db, schedule, only_if_empty=True,
-                                  only_if_this_checkbox_filled=thread_needs_sch_datei_prop),
+                                  only_if_this_checkbox_filled=record_needs_sch_datei_prop),
     PrependDateiOnRecordTitle(base, DatabaseEnum.stage_db, schedule),
     CopyRecordDateiScheduleToDatei(base, DatabaseEnum.stage_db, schedule),
     MatchRecordWeekiByDatei(base, DatabaseEnum.stage_db, DatabaseEnum.weeki_db.title, DatabaseEnum.datei_db.title),
     MatchRecordWeekiByDatei(base, DatabaseEnum.stage_db, schedule, schedule),
 
-    MatchRecordDateiByCreatedTime(base, DatabaseEnum.thread_db, DatabaseEnum.datei_db.title),
-    MatchRecordDateiByTitle(base, DatabaseEnum.thread_db, schedule),
-    CopyRecordDateiScheduleToDatei(base, DatabaseEnum.thread_db, schedule),
-    MatchRecordWeekiByDatei(base, DatabaseEnum.thread_db, schedule, schedule),
+    MatchRecordDateiByCreatedTime(base, DatabaseEnum.idea_db, DatabaseEnum.datei_db.title),
+    MatchRecordWeekiByDatei(base, DatabaseEnum.idea_db, DatabaseEnum.weeki_db.title, DatabaseEnum.datei_db.title),
 
     MatchRecordDateiByCreatedTime(base, DatabaseEnum.reading_db, DatabaseEnum.datei_db.title),
     MatchRecordDateiByTitle(base, DatabaseEnum.reading_db, schedule),
     CopyRecordDateiScheduleToDatei(base, DatabaseEnum.reading_db, schedule),
     MatchReadingStartDatei(base),
     MatchRecordWeekiByDatei(base, DatabaseEnum.reading_db, DatabaseEnum.weeki_db.title, DatabaseEnum.datei_db.title),
+    MatchRecordWeekiByDatei(base, DatabaseEnum.reading_db, schedule, schedule),
     MatchRecordWeekiByDatei(base, DatabaseEnum.reading_db, start, start),
 
     MatchRecordDateiByCreatedTime(base, DatabaseEnum.scrap_db, DatabaseEnum.datei_db.title),
