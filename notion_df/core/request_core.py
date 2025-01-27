@@ -29,6 +29,8 @@ def is_server_error(exception: BaseException) -> bool:
             requests.exceptions.ChunkedEncodingError,
             # requests.exceptions.SSLError,
         ])
+    if isinstance(exception, requests.exceptions.ConnectionError):
+        return 'Connection aborted.' == exception.args[0]
     return False
 
 
