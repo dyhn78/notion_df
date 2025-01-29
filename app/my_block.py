@@ -27,10 +27,10 @@ _entity_to_enum = {}
 class DatabaseEnum(Enum):
     journal_db = ('바탕', 'fa7d93f6fbd341f089b185745c834811', EmojiCode.BLUE_CIRCLE)
     event_db = ('일과', 'c8d46c01d6c941a9bf8df5d115a05f03', EmojiCode.BLUE_HEART)
-    thread_db = ('안배', 'e8782fe4e1a34c9d846d57b01a370327', EmojiCode.YELLOW_CIRCLE)
-    stage_db = ('줄기', 'addc94642ee74825bd31109f4fd1c9ee', EmojiCode.YELLOW_HEART)
     idea_db = ('꼭지', 'eb2f09a1de41412e8b2357bc04f26e74', EmojiCode.RED_CIRCLE)
     reading_db = ('읽기', 'c326f77425a0446a8aa309478767c85b', EmojiCode.RED_HEART)
+    thread_db = ('안배', 'e8782fe4e1a34c9d846d57b01a370327', EmojiCode.YELLOW_CIRCLE)
+    stage_db = ('줄기', 'addc94642ee74825bd31109f4fd1c9ee', EmojiCode.YELLOW_HEART)
     gist_db = ('자료', '2c5411ba6a0f43a0a8aa06295751e37a', EmojiCode.GREEN_CIRCLE)
     scrap_db = ('수집', '52d387ea0aaa470cb69332708c61b34d', EmojiCode.GREEN_HEART)
     datei_db = ('일간', '961d1ca0a3d24a46b838ba85e710f18d', EmojiCode.PURPLE_CIRCLE)
