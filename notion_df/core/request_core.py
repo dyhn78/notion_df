@@ -171,7 +171,7 @@ class SingleRequestBuilder(Generic[EntityDataT], RequestBuilder, metaclass=ABCMe
 
     @classmethod
     def parse_response_data(cls, data: dict[str, Any]) -> EntityDataT:
-        return cls.data_type.deserialize(data).set_latest()
+        return cls.data_type.deserialize(data).set_real()
 
 
 class PaginatedRequestBuilder(Generic[EntityDataT], RequestBuilder, metaclass=ABCMeta):
@@ -195,7 +195,7 @@ class PaginatedRequestBuilder(Generic[EntityDataT], RequestBuilder, metaclass=AB
     @classmethod
     def parse_response_data(cls, data: dict[str, Any]) -> Iterator[EntityDataT]:
         for data_element in data['results']:
-            yield cls.data_element_type.deserialize(data_element).set_latest()
+            yield cls.data_element_type.deserialize(data_element).set_real()
 
 
 def request_page(self: RequestBuilder, page_size: Optional[int] = MAX_PAGE_SIZE,

@@ -8,7 +8,7 @@ from uuid import UUID
 from loguru import logger
 from typing_extensions import Self
 
-from notion_df.core.data_core import EntityDataT, latest_data_dict, preview_data_dict
+from notion_df.core.data_core import EntityDataT, real_data_dict, preview_data_dict
 from notion_df.core.exception import ImplementationError
 from notion_df.core.struct import undefined, repr_object, Undefined
 
@@ -64,11 +64,11 @@ class Entity(Hashable, Generic[EntityDataT], metaclass=ABCMeta):
 
     @property
     def local_data(self) -> Union[EntityDataT, Undefined]:
-        return latest_data_dict.get(self._hash_key, preview_data_dict.get(self._hash_key, undefined))
+        return real_data_dict.get(self._hash_key, preview_data_dict.get(self._hash_key, undefined))
 
     @property
     def _latest_data(self) -> Optional[EntityDataT]:
-        return latest_data_dict.get(self._hash_key)
+        return real_data_dict.get(self._hash_key)
 
     @property
     def _preview_data(self) -> Optional[EntityDataT]:

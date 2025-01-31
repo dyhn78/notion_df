@@ -59,12 +59,11 @@ class DatabaseEnum(Enum):
             properties=undefined,
             archived=False,
             is_inline=False,
-            preview=True
-        ).set_preview()
+        ).add_preview()
 
     @property
     def prefix_title(self) -> str:  # TODO: remove
-        return self.entity.emoji_value + self.entity.title.plain_text
+        return self.entity.icon.as_emoji_value() + self.entity.title.plain_text
 
     @classmethod
     def from_entity(cls, entity: Entity) -> Optional[DatabaseEnum]:

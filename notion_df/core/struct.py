@@ -61,3 +61,11 @@ def check_classvars_are_defined(cls):
             attr_names.append(attr_name)
     if attr_names:
         raise TypeError('all class attributes must be filled', {'cls': cls, 'undefined_attr_names': attr_names})
+
+
+T = TypeVar("T")
+
+
+def force_cast(cls: type[T], obj: Any) -> T:
+    assert isinstance(obj, cls)
+    return cast(cls, obj)

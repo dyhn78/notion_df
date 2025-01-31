@@ -3,13 +3,14 @@ from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime, date
-from typing import Any, Literal, Optional, TYPE_CHECKING, Iterator, Union, overload
+from typing import Any, Literal, Optional, TYPE_CHECKING, Iterator, Union, overload, cast
 from uuid import UUID
 
 from typing_extensions import Self
 
 from notion_df.core.serialization import DualSerializable
 from notion_df.constant import BlockColor, OptionColor
+from notion_df.core.struct import force_cast
 
 if TYPE_CHECKING:
     from notion_df.entity import Block, Database, Page, Workspace
@@ -89,6 +90,9 @@ class Icon(DualSerializable, metaclass=ABCMeta):
     def _deserialize_subclass(cls, raw: dict[str, Any]) -> Self:
         subclass = icon_registry[raw['type']]
         return subclass.deserialize(raw)
+
+    def as_emoji_value(self) -> str:
+        return force_cast(Emoji, self).value
 
 
 @dataclass
