@@ -59,8 +59,11 @@ class EntityData(Deserializable, metaclass=ABCMeta):
         return self
 
     def add_preview(self) -> Self:
-        """set the instance as the preview data.
-        if another preview data exists, coalesce them (this one has priority)."""
+        """Set the instance as the preview data.
+        If another preview data exists, COALESCE them (with this one taking priority).
+
+        Preview data acts as a default, placeholder data with last lookup priority.
+        Set preview data for static pages to reduce the number of API calls."""
         if past_self := preview_data_dict.get(self._pk):
             self.finalized = False
             coalesce_dataclass(self, past_self)
@@ -69,7 +72,7 @@ class EntityData(Deserializable, metaclass=ABCMeta):
         return self
 
     def clear_preview(self) -> Self:
-        """unset the preview data."""
+        """Clear ALL the preview data."""
         del preview_data_dict[self._pk]
         return self
 

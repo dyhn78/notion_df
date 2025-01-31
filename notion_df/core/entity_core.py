@@ -7,7 +7,6 @@ from typing import (
     Generic,
     Hashable,
     Union,
-    Optional,
     final,
     TypeVar,
     Any,
@@ -66,26 +65,19 @@ class Entity(Hashable, Generic[EntityDataT], metaclass=ABCMeta):
     @property
     def data(self) -> Union[EntityDataT, Undefined]:
         """
-        Return the latest data of the entity.
-
-        if the data is retrievable, this will trigger on-demand retrieval and thus never be None.
+        - If there is any local data, return it. (You should call `retrieve()` if you really want the up-to-date data.)
+        - If there is no local data, and its class is retrievable, retrieve it. (Use `local_data` if you want to avoid this.)
+        - If there is no local data, and its class is not retrievable, return undefined.
         """
         return self.local_data
 
     @final
     @property
     def local_data(self) -> Union[EntityDataT, Undefined]:
+        """Use this instead of `data` if you want to avoid on-demand retrieval."""
         return real_data_dict.get(
             self._hash_key, preview_data_dict.get(self._hash_key, undefined)
         )
-
-    @property
-    def _latest_data(self) -> Optional[EntityDataT]:
-        return real_data_dict.get(self._hash_key)
-
-    @property
-    def _preview_data(self) -> Optional[EntityDataT]:
-        return preview_data_dict.get(self._hash_key)
 
 
 def retrieve_on_demand(func: CallableT) -> CallableT:
@@ -114,7 +106,7 @@ class RetrievableEntity(Entity[EntityDataT], Generic[EntityDataT]):
         return self.local_data
 
 
-CallableT = TypeVar("CallableT", bound=Callable[[RetrievableEntity, ...], Any])
+CallableT = TypeVar("CallableT", bound=Callable)
 
 
 class CanBeParent(metaclass=ABCMeta):

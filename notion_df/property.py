@@ -85,10 +85,12 @@ class Property(Generic[DPVT, PPVT, FBT], metaclass=ABCMeta):
     def __repr__(self) -> str:
         return repr_object(self, name=self.name, id=self.id)
 
-    def __eq__(self, other: Property) -> bool:
-        if self.name is not None and other.name is not None and self.name != other.name:
+    def __eq__(self, other: Any) -> bool:
+        if not isinstance(other, Property):
             return False
-        if self.id is not None and other.id is not None and self.id != other.id:
+        if all([self.name, other.name]) and self.name != other.name:
+            return False
+        if all([self.id, other.id]) and self.id != other.id:
             return False
         if not (
             issubclass(type(self), type(other)) or issubclass(type(other), type(self))
