@@ -34,13 +34,13 @@ class CreatePage(SingleRequestBuilder[PageData]):
     data_type = PageData
     parent: PartialParent
     properties: PageProperties = field(default_factory=PageProperties)
-    children: list[BlockContents] = None
+    children: list[BlockContents] = field(default_factory=list)
     icon: Optional[Icon] = field(default=None)
     cover: Optional[ExternalFile] = field(default=None)
 
     def get_settings(self) -> RequestSettings:
         return RequestSettings(Version.v20220628, Method.POST,
-                               f'pages')
+                               'pages')
 
     def get_body(self) -> dict[str, Any]:
         return DictFilter.not_none({

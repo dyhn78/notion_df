@@ -54,9 +54,9 @@ class BlockContents(DualSerializable, metaclass=ABCMeta):
         return _get_type_hints(cls)
 
 
-def serialize_block_contents_list(block_contents_list: Optional[list[BlockContents]]) -> \
+def serialize_block_contents_list(block_contents_list: list[BlockContents]) -> \
 Optional[list[dict[str, Any]]]:
-    if block_contents_list is None:
+    if not block_contents_list:
         return None
     return [{
         "object": "block",

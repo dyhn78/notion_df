@@ -11,7 +11,7 @@ from app.core.entrypoint import entrypoint, WorkflowRecord, WorkflowSkipExceptio
 from app.my_block import is_template
 from notion_df.core.struct import repr_object
 from notion_df.core.variable import print_width
-from notion_df.entity import Page, search_by_title
+from notion_df.entity import Page, Workspace
 
 CallableT = TypeVar('CallableT', bound=Callable)
 
@@ -37,7 +37,7 @@ class Action(metaclass=ABCMeta):
         logger.info(f"{self}.process_by_last_edited_time(): lower_bound - {lower_bound}, upper_bound - {upper_bound}")
         lower_bound = lower_bound.replace(second=0, microsecond=0)
         pages = set()
-        for page in search_by_title('', 'page', page_size=30):
+        for page in Workspace().search_by_title('', 'page', page_size=30):
             if upper_bound is not None and page.last_edited_time > upper_bound:
                 continue
             if page.last_edited_time < lower_bound:

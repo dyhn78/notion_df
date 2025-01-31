@@ -37,9 +37,6 @@ def is_server_error(exception: BaseException) -> bool:
 @dataclass(frozen=True)
 class Request:
     """request builder tailored to Notion API."""
-    # TODO: import Entity;
-    #  AS-IS: Entity ==> EntityData, Request
-    #  TO-BE: Entity <== EntityData, Request
     # TODO: rename to RequestBuilder
     # TODO: async with throttling  https://chat.openai.com/c/adcf80cd-d800-4fef-bfa9-56c548e0058a
     token: str
@@ -132,6 +129,8 @@ class RequestSettings:
 
 @dataclass
 class RequestBuilder(metaclass=ABCMeta):
+    # TODO: receive Workspace.token
+    # ---
     # TODO: make it more functional-programming-like
     #  page_create_request: Request = Request.build()
     #  database_query_request: PaginatedRequest = PaginatedRequest.build()
