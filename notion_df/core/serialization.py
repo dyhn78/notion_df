@@ -200,7 +200,7 @@ class Deserializable(metaclass=ABCMeta):
     Concrete classes should implement _deserialize_this();
     Abstract classes can implement _deserialize_this() and _deserialize_subclass()."""
 
-    def __init_subclass__(cls, **kwargs):
+    def __init_subclass__(cls, **kwargs) -> None:
         super().__init_subclass__()
         if not inspect.isabstract(cls):
             # noinspection PyBroadException
