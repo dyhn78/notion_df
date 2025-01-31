@@ -23,7 +23,14 @@ apply.cloc:
 	cloc ${DEFAULT_TARGET_PATH}
 
 ####### TEST #######
-test: test.ruff test.pylint test.mypy test.unit
+test: test.vulture test.ruff test.pylint test.mypy test.unit
+
+test.vulture:
+	vulture
+
+test.ruff:
+	ruff format --check ${DEFAULT_TARGET_PATH}
+	ruff check ${DEFAULT_TARGET_PATH}
 
 test.pylint:
 	pylint notion_df/
@@ -33,10 +40,3 @@ test.mypy:
 
 test.unit:
 	pytest tests/
-
-test.vulture:
-	vulture
-
-test.ruff:
-	ruff format --check ${DEFAULT_TARGET_PATH}
-	ruff check ${DEFAULT_TARGET_PATH}
