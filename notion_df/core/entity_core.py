@@ -16,9 +16,7 @@ from notion_df.core.struct import undefined, repr_object, Undefined
 class Entity(Hashable, Generic[EntityDataT], metaclass=ABCMeta):
     """The base class for blocks, users, and comments.
 
-    There is only one instance with given subclass and id.
-    You can identify two blocks directly `block_1 == block_2`,
-    not need to `block_1.id == block_2.id`
+    Two entities will be equal if their class and id are the same.
     """
     id: UUID
     # noinspection PyClassVar
