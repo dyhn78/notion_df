@@ -1,3 +1,5 @@
+DEFAULT_TARGET_PATH=notion_df test app
+
 ####### INITIALIZE #######
 RUFF_VERSION=0.8.2
 install.ruff:
@@ -8,11 +10,17 @@ install.ruff:
 	# ruff-lsp is feature for IDE. Details: https://github.com/astral-sh/ruff-lsp
 	brew install --ignore-dependencies ruff-lsp
 
+install.cloc:
+	# https://github.com/AlDanial/cloc
+	brew install cloc
+
 ####### APPLY #######
-RUFF_TARGET_PATH=notion_df test app
 apply.ruff:
-	ruff format ${RUFF_TARGET_PATH}
-	ruff check --fix ${RUFF_TARGET_PATH}
+	ruff format ${DEFAULT_TARGET_PATH}
+	ruff check --fix ${DEFAULT_TARGET_PATH}
+
+apply.cloc:
+	cloc ${DEFAULT_TARGET_PATH}
 
 ####### TEST #######
 test: test.ruff test.pylint test.mypy test.unit
@@ -30,5 +38,5 @@ test.vulture:
 	vulture
 
 test.ruff:
-	ruff format --check ${RUFF_TARGET_PATH}
-	ruff check ${RUFF_TARGET_PATH}
+	ruff format --check ${DEFAULT_TARGET_PATH}
+	ruff check ${DEFAULT_TARGET_PATH}
