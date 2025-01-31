@@ -23,10 +23,10 @@ class PlainStrEnum(StrEnum):
         return self.value
 
 
-Keychain = NewType('Keychain', tuple[str, ...])
+Keychain = NewType("Keychain", tuple[str, ...])
 
-KT = TypeVar('KT')
-VT = TypeVar('VT')
+KT = TypeVar("KT")
+VT = TypeVar("VT")
 
 
 class FinalDict(dict[KT, VT]):
@@ -34,8 +34,10 @@ class FinalDict(dict[KT, VT]):
 
     def __setitem__(self, k: KT, v: VT) -> None:
         if cv := self.get(k):
-            raise ImplementationError('cannot overwrite FinalDict',
-                                      {'key': k, 'new_value': v, 'current_value': cv})
+            raise ImplementationError(
+                "cannot overwrite FinalDict",
+                {"key": k, "new_value": v, "current_value": cv},
+            )
         super().__setitem__(k, v)
 
 
@@ -49,7 +51,7 @@ class DictFilter:
         return {k: v for k, v in d.items() if v is not None}
 
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 def peek(it: Iterable[T]) -> Optional[Iterator[T]]:
@@ -88,12 +90,10 @@ class Paginator(Sequence[T]):
         return len(self._values)
 
     @overload
-    def __getitem__(self, index_or_id: int) -> T:
-        ...
+    def __getitem__(self, index_or_id: int) -> T: ...
 
     @overload
-    def __getitem__(self, index_or_id: slice) -> list[T]:
-        ...
+    def __getitem__(self, index_or_id: slice) -> list[T]: ...
 
     def __getitem__(self, index: int | slice) -> T | list[T]:
         if isinstance(index, int):
@@ -105,10 +105,12 @@ class Paginator(Sequence[T]):
         if isinstance(index, slice):
             step = index.step if index.step is not None else 1
 
-            if ((index.start is not None and index.start < 0)
-                    or (index.stop is not None and index.stop < 0)
-                    or (index.stop is None and step > 0)
-                    or (index.start is None and step < 0)):
+            if (
+                (index.start is not None and index.start < 0)
+                or (index.stop is not None and index.stop < 0)
+                or (index.stop is None and step > 0)
+                or (index.start is None and step < 0)
+            ):
                 self._fetch_all()
                 return self._values[index]
 
@@ -122,7 +124,7 @@ class Paginator(Sequence[T]):
 
 def coalesce_dataclass(target: T, source: T) -> None:
     """Modify the target, by filling None fields from source."""
-    if type(target) != type(source):
+    if type(target) is not type(source):
         raise ValueError("Both instances must be of the same dataclass type.")
     for field in fields(target):
         if getattr(target, field.name) is None:

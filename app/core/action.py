@@ -13,7 +13,7 @@ from notion_df.core.struct import repr_object
 from notion_df.core.variable import print_width
 from notion_df.entity import Page, Workspace
 
-CallableT = TypeVar('CallableT', bound=Callable)
+CallableT = TypeVar("CallableT", bound=Callable)
 
 
 class Action(metaclass=ABCMeta):
@@ -31,13 +31,17 @@ class Action(metaclass=ABCMeta):
         pass
 
     @final
-    def process_by_last_edited_time(self, lower_bound: datetime, upper_bound: Optional[datetime] = None) -> Any:
+    def process_by_last_edited_time(
+        self, lower_bound: datetime, upper_bound: Optional[datetime] = None
+    ) -> Any:
         """process with last-edited-time-based search query.
         Note: Notion APIs' last_edited_time info is only with minutes resolution"""
-        logger.info(f"{self}.process_by_last_edited_time(): lower_bound - {lower_bound}, upper_bound - {upper_bound}")
+        logger.info(
+            f"{self}.process_by_last_edited_time(): lower_bound - {lower_bound}, upper_bound - {upper_bound}"
+        )
         lower_bound = lower_bound.replace(second=0, microsecond=0)
         pages = set()
-        for page in Workspace().search_by_title('', 'page', page_size=30):
+        for page in Workspace().search_by_title("", "page", page_size=30):
             if upper_bound is not None and page.last_edited_time > upper_bound:
                 continue
             if page.last_edited_time < lower_bound:
@@ -52,7 +56,9 @@ class Action(metaclass=ABCMeta):
         return self.process_pages(pages)
 
     @entrypoint
-    def run_by_last_edited_time(self, lower_bound: datetime, upper_bound: Optional[datetime] = None) -> Any:
+    def run_by_last_edited_time(
+        self, lower_bound: datetime, upper_bound: Optional[datetime] = None
+    ) -> Any:
         return self.process_by_last_edited_time(lower_bound, upper_bound)
 
     @entrypoint
@@ -61,14 +67,22 @@ class Action(metaclass=ABCMeta):
             return self.process_all()
 
     @entrypoint
-    def run_recent(self, interval: timedelta, update_last_success_time: bool = False) -> Any:
-        with WorkflowRecord(update_last_success_time=update_last_success_time) as wf_rec:
-            return self.process_by_last_edited_time(wf_rec.start_time - interval, wf_rec.start_time)
+    def run_recent(
+        self, interval: timedelta, update_last_success_time: bool = False
+    ) -> Any:
+        with WorkflowRecord(
+            update_last_success_time=update_last_success_time
+        ) as wf_rec:
+            return self.process_by_last_edited_time(
+                wf_rec.start_time - interval, wf_rec.start_time
+            )
 
     @entrypoint
     def run_from_last_success(self, update_last_success_time: bool) -> Any:
         # TODO: if the last result was RetryError, sleep for 10 mins
-        with WorkflowRecord(update_last_success_time=update_last_success_time) as wf_rec:
+        with WorkflowRecord(
+            update_last_success_time=update_last_success_time
+        ) as wf_rec:
             if wf_rec.last_success_time is None:
                 self.process_all()
             return self.process_by_last_edited_time(wf_rec.last_success_time, None)
@@ -79,12 +93,12 @@ class CompositeAction(Action):
         self.actions = actions
 
     def process_all(self) -> Any:
-        logger.info(f'#### {self}')
+        logger.info(f"#### {self}")
         for action in self.actions:
             action.process_all()
 
     def process_pages(self, pages: Iterable[Page]) -> Any:
-        logger.info(f'#### {self}')
+        logger.info(f"#### {self}")
         for action in self.actions:
             action.process_pages(pages)
 
@@ -92,8 +106,10 @@ class CompositeAction(Action):
 class IndividualAction(Action):
     @final
     def process_all(self) -> Any:
-        logger.info(f'#### {self}')
-        return self.process_pages(page for page in self.query() if not is_template(page))
+        logger.info(f"#### {self}")
+        return self.process_pages(
+            page for page in self.query() if not is_template(page)
+        )
 
     @abstractmethod
     def query(self) -> Iterable[Page]:
@@ -103,7 +119,7 @@ class IndividualAction(Action):
 class SequentialAction(IndividualAction):
     @final
     def process_pages(self, pages: Iterable[Page]) -> Any:
-        logger.info(f'#### {self}')
+        logger.info(f"#### {self}")
         for page in pages:
             self.process_page(page)
 

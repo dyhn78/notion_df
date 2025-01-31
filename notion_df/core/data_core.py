@@ -22,7 +22,9 @@ preview_data_dict: Final[MutableMapping[tuple[type[EntityData], UUID], EntityDat
 class EntityData(Deserializable, metaclass=ABCMeta):
     id: UUID
     raw: dict[str, Any] = field(init=False, default_factory=dict)
-    timestamp: int = field(init=False, default_factory=lambda: int(datetime.now().timestamp()))
+    timestamp: int = field(
+        init=False, default_factory=lambda: int(datetime.now().timestamp())
+    )
     """the timestamp of instance creation."""
     finalized: bool = field(init=False, default=False)  # TODO use frozen=True
 
@@ -43,7 +45,10 @@ class EntityData(Deserializable, metaclass=ABCMeta):
     def set_real(self) -> Self:
         """ATTEMPT to set the instance as the real data, if it is the latest."""
         current_latest_data = real_data_dict.get(self._pk)
-        if current_latest_data is None or self.timestamp >= current_latest_data.timestamp:
+        if (
+            current_latest_data is None
+            or self.timestamp >= current_latest_data.timestamp
+        ):
             real_data_dict[self._pk] = self
         return self
 
@@ -83,18 +88,19 @@ class EntityData(Deserializable, metaclass=ABCMeta):
             self.finalized = True
             return self
 
-        setattr(cls, '_deserialize_this', _deserialize_this_wrapped)
+        setattr(cls, "_deserialize_this", _deserialize_this_wrapped)
 
     @classmethod
     def _deserialize_subclass(cls, raw: Any) -> Self:
         from notion_df.data import BlockData, DatabaseData, PageData
-        object_kind = raw['object']
+
+        object_kind = raw["object"]
         match object_kind:
-            case 'block':
+            case "block":
                 subclass = BlockData
-            case 'database':
+            case "database":
                 subclass = DatabaseData
-            case 'page':
+            case "page":
                 subclass = PageData
             case _:
                 raise ValueError(object_kind)
@@ -106,4 +112,4 @@ class EntityData(Deserializable, metaclass=ABCMeta):
         return datetime.fromtimestamp(self.timestamp)
 
 
-EntityDataT = TypeVar('EntityDataT', bound=EntityData)
+EntityDataT = TypeVar("EntityDataT", bound=EntityData)

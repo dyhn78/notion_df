@@ -5,7 +5,7 @@ from typing import Literal, Any
 from notion_df.core.serialization import Serializable
 from notion_df.constant import TimestampName
 
-Direction = Literal['ascending', 'descending']
+Direction = Literal["ascending", "descending"]
 
 
 class Sort(Serializable, metaclass=ABCMeta):
@@ -26,6 +26,6 @@ class TimestampSort(Sort):
 
     def serialize(self) -> dict[str, Any]:
         return {
-            'timestamp': self.timestamp_type,
-            'direction': self.direction,
+            "timestamp": self.timestamp_type,
+            "direction": self.direction,
         }

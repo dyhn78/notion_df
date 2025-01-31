@@ -17,8 +17,7 @@ def test_coalesce_dataclass():
         field2: str | None = None
         field3: float | None = None
 
-
     instance1 = ExampleDataClass(field1=1, field2=None, field3=2.5)
     instance2 = ExampleDataClass(field1=None, field2="Hello", field3=None)
     coalesce_dataclass(instance1, instance2)
-    assert instance1 == ExampleDataClass(field1=1, field2='Hello', field3=2.5)
+    assert instance1 == ExampleDataClass(field1=1, field2="Hello", field3=2.5)

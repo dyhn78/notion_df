@@ -9,8 +9,8 @@ from uuid import UUID
 from notion_df.core.serialization import Serializable, serialize
 from notion_df.constant import TimestampName, Number
 
-CompoundOperator = Literal['and', 'or']
-RollupAggregate = Literal['any', 'every', 'none']
+CompoundOperator = Literal["and", "or"]
+RollupAggregate = Literal["any", "every", "none"]
 FilterCondition = dict[str, Any]
 
 
@@ -30,31 +30,31 @@ class TextFilterBuilder(FilterBuilder):
 
     @classmethod
     def get_typename(cls) -> str:
-        return 'text'
+        return "text"
 
     def equals(self, value: str) -> Filter:
-        return self._build({'equals': value})
+        return self._build({"equals": value})
 
     def does_not_equal(self, value: str) -> Filter:
-        return self._build({'does_not_equal': value})
+        return self._build({"does_not_equal": value})
 
     def contains(self, value: str) -> Filter:
-        return self._build({'contains': value})
+        return self._build({"contains": value})
 
     def does_not_contain(self, value: str) -> Filter:
-        return self._build({'does_not_contain': value})
+        return self._build({"does_not_contain": value})
 
     def starts_with(self, value: str) -> Filter:
-        return self._build({'starts_with': value})
+        return self._build({"starts_with": value})
 
     def ends_with(self, value: str) -> Filter:
-        return self._build({'ends_with': value})
+        return self._build({"ends_with": value})
 
     def is_empty(self) -> Filter:
-        return self._build({'is_empty': True})
+        return self._build({"is_empty": True})
 
     def is_not_empty(self) -> Filter:
-        return self._build({'is_not_empty': True})
+        return self._build({"is_not_empty": True})
 
 
 class NumberFilterBuilder(FilterBuilder):
@@ -62,31 +62,31 @@ class NumberFilterBuilder(FilterBuilder):
 
     @classmethod
     def get_typename(cls) -> str:
-        return 'number'
+        return "number"
 
     def equals(self, value: Number) -> Filter:
-        return self._build({'equals': value})
+        return self._build({"equals": value})
 
     def does_not_equal(self, value: Number) -> Filter:
-        return self._build({'does_not_equal': value})
+        return self._build({"does_not_equal": value})
 
     def greater_than(self, value: Number) -> Filter:
-        return self._build({'greater_than': value})
+        return self._build({"greater_than": value})
 
     def less_than(self, value: Number) -> Filter:
-        return self._build({'less_than': value})
+        return self._build({"less_than": value})
 
     def greater_than_or_equal_to(self, value: Number) -> Filter:
-        return self._build({'greater_than_or_equal_to': value})
+        return self._build({"greater_than_or_equal_to": value})
 
     def less_than_or_equal_to(self, value: Number) -> Filter:
-        return self._build({'less_than_or_equal_to': value})
+        return self._build({"less_than_or_equal_to": value})
 
     def is_empty(self) -> Filter:
-        return self._build({'is_empty': True})
+        return self._build({"is_empty": True})
 
     def is_not_empty(self) -> Filter:
-        return self._build({'is_not_empty': True})
+        return self._build({"is_not_empty": True})
 
 
 class CheckboxFilterBuilder(FilterBuilder):
@@ -94,13 +94,13 @@ class CheckboxFilterBuilder(FilterBuilder):
 
     @classmethod
     def get_typename(cls) -> str:
-        return 'checkbox'
+        return "checkbox"
 
     def equals(self, value: bool) -> Filter:
-        return self._build({'equals': value})
+        return self._build({"equals": value})
 
     def does_not_equal(self, value: bool) -> Filter:
-        return self._build({'does_not_equal': value})
+        return self._build({"does_not_equal": value})
 
     def is_empty(self) -> Filter:
         return self.equals(False)
@@ -114,23 +114,23 @@ class SelectFilterBuilder(FilterBuilder):
 
     @classmethod
     def get_typename(cls) -> str:
-        return 'select'
+        return "select"
 
     def equals(self, value: Optional[str]) -> Filter:
         if value is None:
             return self.is_empty()
-        return self._build({'equals': value})
+        return self._build({"equals": value})
 
     def does_not_equal(self, value: Optional[str]) -> Filter:
         if value is None:
             return self.is_not_empty()
-        return self._build({'does_not_equal': value})
+        return self._build({"does_not_equal": value})
 
     def is_empty(self) -> Filter:
-        return self._build({'is_empty': True})
+        return self._build({"is_empty": True})
 
     def is_not_empty(self) -> Filter:
-        return self._build({'is_not_empty': True})
+        return self._build({"is_not_empty": True})
 
 
 class MultiSelectFilterBuilder(FilterBuilder):
@@ -138,19 +138,19 @@ class MultiSelectFilterBuilder(FilterBuilder):
 
     @classmethod
     def get_typename(cls) -> str:
-        return 'multi_select'
+        return "multi_select"
 
     def contains(self, value: str) -> Filter:
-        return self._build({'contains': value})
+        return self._build({"contains": value})
 
     def does_not_contain(self, value: str) -> Filter:
-        return self._build({'does_not_contain': value})
+        return self._build({"does_not_contain": value})
 
     def is_empty(self) -> Filter:
-        return self._build({'is_empty': True})
+        return self._build({"is_empty": True})
 
     def is_not_empty(self) -> Filter:
-        return self._build({'is_not_empty': True})
+        return self._build({"is_not_empty": True})
 
 
 class DateFilterBuilder(FilterBuilder):
@@ -158,46 +158,46 @@ class DateFilterBuilder(FilterBuilder):
 
     @classmethod
     def get_typename(cls) -> str:
-        return 'date'
+        return "date"
 
     def equals(self, value: date | datetime) -> Filter:
-        return self._build({'equals': value})
+        return self._build({"equals": value})
 
     def before(self, value: date | datetime) -> Filter:
-        return self._build({'before': value})
+        return self._build({"before": value})
 
     def after(self, value: date | datetime) -> Filter:
-        return self._build({'after': value})
+        return self._build({"after": value})
 
     def on_or_before(self, value: date | datetime) -> Filter:
-        return self._build({'on_or_before': value})
+        return self._build({"on_or_before": value})
 
     def on_or_after(self, value: date | datetime) -> Filter:
-        return self._build({'on_or_after': value})
+        return self._build({"on_or_after": value})
 
     def is_empty(self) -> Filter:
-        return self._build({'is_empty': True})
+        return self._build({"is_empty": True})
 
     def is_not_empty(self) -> Filter:
-        return self._build({'is_not_empty': True})
+        return self._build({"is_not_empty": True})
 
     def past_week(self) -> Filter:
-        return self._build({'past_week': {}})
+        return self._build({"past_week": {}})
 
     def past_month(self) -> Filter:
-        return self._build({'past_month': {}})
+        return self._build({"past_month": {}})
 
     def past_year(self) -> Filter:
-        return self._build({'past_year': {}})
+        return self._build({"past_year": {}})
 
     def next_week(self) -> Filter:
-        return self._build({'next_week': {}})
+        return self._build({"next_week": {}})
 
     def next_month(self) -> Filter:
-        return self._build({'next_month': {}})
+        return self._build({"next_month": {}})
 
     def next_year(self) -> Filter:
-        return self._build({'next_year': {}})
+        return self._build({"next_year": {}})
 
 
 class PeopleFilterBuilder(FilterBuilder):
@@ -205,19 +205,19 @@ class PeopleFilterBuilder(FilterBuilder):
 
     @classmethod
     def get_typename(cls) -> str:
-        return 'people'
+        return "people"
 
     def contains(self, value: str) -> Filter:
-        return self._build({'contains': value})
+        return self._build({"contains": value})
 
     def does_not_contain(self, value: str) -> Filter:
-        return self._build({'does_not_contain': value})
+        return self._build({"does_not_contain": value})
 
     def is_empty(self) -> Filter:
-        return self._build({'is_empty': True})
+        return self._build({"is_empty": True})
 
     def is_not_empty(self) -> Filter:
-        return self._build({'is_not_empty': True})
+        return self._build({"is_not_empty": True})
 
 
 class FilesFilterBuilder(FilterBuilder):
@@ -225,13 +225,13 @@ class FilesFilterBuilder(FilterBuilder):
 
     @classmethod
     def get_typename(cls) -> str:
-        return 'files'
+        return "files"
 
     def is_empty(self) -> Filter:
-        return self._build({'is_empty': True})
+        return self._build({"is_empty": True})
 
     def is_not_empty(self) -> Filter:
-        return self._build({'is_not_empty': True})
+        return self._build({"is_not_empty": True})
 
 
 class RelationFilterBuilder(FilterBuilder):
@@ -239,29 +239,29 @@ class RelationFilterBuilder(FilterBuilder):
 
     @classmethod
     def get_typename(cls) -> str:
-        return 'relation'
+        return "relation"
 
     def contains(self, value: UUID) -> Filter:
-        return self._build({'contains': str(value)})
+        return self._build({"contains": str(value)})
 
     def does_not_contain(self, value: UUID) -> Filter:
-        return self._build({'does_not_contain': str(value)})
+        return self._build({"does_not_contain": str(value)})
 
     def is_empty(self) -> Filter:
-        return self._build({'is_empty': True})
+        return self._build({"is_empty": True})
 
     def is_not_empty(self) -> Filter:
-        return self._build({'is_not_empty': True})
+        return self._build({"is_not_empty": True})
 
 
 @dataclass
 class Filter(Serializable, metaclass=ABCMeta):
     # https://developers.notion.com/reference/post-database-query-filter
     def __and__(self, other: Filter) -> CompoundFilter:
-        return self.__compound(other, 'and')
+        return self.__compound(other, "and")
 
     def __or__(self, other: Filter) -> CompoundFilter:
-        return self.__compound(other, 'or')
+        return self.__compound(other, "or")
 
     def __compound(self, other: Filter, operator: CompoundOperator) -> CompoundFilter:
         if isinstance(self, CompoundFilter) and self.operator == operator:
@@ -284,12 +284,12 @@ class CompoundFilter(Filter):
 
 # noinspection PyPep8Naming
 def AND(elements: list[Filter]) -> CompoundFilter:
-    return CompoundFilter('and', elements)
+    return CompoundFilter("and", elements)
 
 
 # noinspection PyPep8Naming
 def OR(elements: list[Filter]) -> CompoundFilter:
-    return CompoundFilter('or', elements)
+    return CompoundFilter("or", elements)
 
 
 @dataclass
@@ -299,10 +299,7 @@ class PropertyFilter(Filter):
     condition: FilterCondition
 
     def serialize(self):
-        return {
-            "property": self.name_or_id,
-            self.typename: serialize(self.condition)
-        }
+        return {"property": self.name_or_id, self.typename: serialize(self.condition)}
 
 
 @dataclass
@@ -315,7 +312,7 @@ class FormulaPropertyFilter(Filter):
     def serialize(self):
         return {
             "property": self.name_or_id,
-            self.typename: {self.value_typename: serialize(self.condition)}
+            self.typename: {self.value_typename: serialize(self.condition)},
         }
 
 
@@ -329,20 +326,14 @@ class RollupPropertyAggregateFilter(Filter):
     def serialize(self):
         return {
             "property": self.name_or_id,
-            "rollup": {
-                self.aggregate_type: {
-                    self.typename: serialize(self.condition)
-                }
-            }
+            "rollup": {self.aggregate_type: {self.typename: serialize(self.condition)}},
         }
 
     def serialize2(self):
         # TODO: find which is correct by actual testing
         return {
             "property": self.name_or_id,
-            self.aggregate_type: {
-                self.typename: serialize(self.condition)
-            }
+            self.aggregate_type: {self.typename: serialize(self.condition)},
         }
 
 
@@ -352,10 +343,7 @@ class TimestampFilter(Filter):
     condition: FilterCondition
 
     def serialize(self):
-        return {
-            "timestamp_type": self.name,
-            self.name: serialize(self.condition)
-        }
+        return {"timestamp_type": self.name, self.name: serialize(self.condition)}
 
 
 def _get_timestamp_filter_builder(name: TimestampName) -> DateFilterBuilder:
@@ -365,5 +353,5 @@ def _get_timestamp_filter_builder(name: TimestampName) -> DateFilterBuilder:
     return DateFilterBuilder(build)
 
 
-created_time_filter = _get_timestamp_filter_builder('created_time')
-last_edited_time_filter = _get_timestamp_filter_builder('last_edited_time')
+created_time_filter = _get_timestamp_filter_builder("created_time")
+last_edited_time_filter = _get_timestamp_filter_builder("last_edited_time")

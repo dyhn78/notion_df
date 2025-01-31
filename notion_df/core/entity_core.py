@@ -2,7 +2,18 @@ from __future__ import annotations
 
 from abc import abstractmethod, ABCMeta
 from inspect import isabstract
-from typing import (Final, Generic, Hashable, Union, Optional, final, TypeVar, Any, Callable, ClassVar)
+from typing import (
+    Final,
+    Generic,
+    Hashable,
+    Union,
+    Optional,
+    final,
+    TypeVar,
+    Any,
+    Callable,
+    ClassVar,
+)
 from uuid import UUID
 
 from loguru import logger
@@ -18,6 +29,7 @@ class Entity(Hashable, Generic[EntityDataT], metaclass=ABCMeta):
 
     Two entities will be equal if their class and id are the same.
     """
+
     id: UUID
     # noinspection PyClassVar
     data_cls: ClassVar[type[EntityDataT]]
@@ -36,7 +48,7 @@ class Entity(Hashable, Generic[EntityDataT], metaclass=ABCMeta):
         self.id: Final[UUID] = self._get_id(id_or_url)
 
     def __getnewargs__(self):  # required for pickling
-        return self.id,
+        return (self.id,)
 
     @property
     def _hash_key(self) -> tuple[type[EntityDataT], UUID]:
@@ -55,7 +67,7 @@ class Entity(Hashable, Generic[EntityDataT], metaclass=ABCMeta):
     def data(self) -> Union[EntityDataT, Undefined]:
         """
         Return the latest data of the entity.
-        
+
         if the data is retrievable, this will trigger on-demand retrieval and thus never be None.
         """
         return self.local_data
@@ -63,7 +75,9 @@ class Entity(Hashable, Generic[EntityDataT], metaclass=ABCMeta):
     @final
     @property
     def local_data(self) -> Union[EntityDataT, Undefined]:
-        return real_data_dict.get(self._hash_key, preview_data_dict.get(self._hash_key, undefined))
+        return real_data_dict.get(
+            self._hash_key, preview_data_dict.get(self._hash_key, undefined)
+        )
 
     @property
     def _latest_data(self) -> Optional[EntityDataT]:

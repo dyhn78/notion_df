@@ -29,12 +29,14 @@ class Span(DualSerializable, metaclass=ABCMeta):
     href: str = field(init=False, repr=False)
 
     def __post_init__(self):
-        self.plain_text = ''
-        self.href = ''
+        self.plain_text = ""
+        self.href = ""
 
     def __init_subclass__(cls, **kwargs) -> None:
         super().__init_subclass__(**kwargs)
-        if (typename := cls.get_typename()) and typename != cast(cls, super(cls, cls)).get_typename():
+        if (typename := cls.get_typename()) and typename != cast(
+            cls, super(cls, cls)
+        ).get_typename():
             span_registry[cls.get_typename()] = cls
 
         _serialize = cls.serialize
@@ -45,19 +47,19 @@ class Span(DualSerializable, metaclass=ABCMeta):
             raw = _serialize(self)
             if self.annotations is not None:
                 # noinspection PyTestUnpassedFixture
-                raw['annotations'] = self.annotations.serialize()
+                raw["annotations"] = self.annotations.serialize()
             return raw
 
         @functools.wraps(_deserialize_this)
         def _deserialize_this_wrapped(raw: dict[str, Any]):
             self = _deserialize_this(raw)
-            self.annotations = Annotations.deserialize(raw['annotations'])
-            self.plain_text = raw['plain_text']
-            self.href = raw['href']
+            self.annotations = Annotations.deserialize(raw["annotations"])
+            self.plain_text = raw["plain_text"]
+            self.href = raw["href"]
             return self
 
-        setattr(cls, 'serialize', _serialize_wrapped)
-        setattr(cls, '_deserialize_this', _deserialize_this_wrapped)
+        setattr(cls, "serialize", _serialize_wrapped)
+        setattr(cls, "_deserialize_this", _deserialize_this_wrapped)
 
     @classmethod
     @abstractmethod
@@ -67,8 +69,8 @@ class Span(DualSerializable, metaclass=ABCMeta):
     @classmethod
     def _deserialize_subclass(cls, raw: dict[str, Any]) -> Self:
         def get_typename(_raw: dict[str, Any]) -> tuple[str, ...]:
-            if 'type' in _raw:
-                typename = _raw['type']
+            if "type" in _raw:
+                typename = _raw["type"]
                 return (typename,) + get_typename(_raw[typename])
             return ()
 
@@ -86,7 +88,7 @@ class RichText(list[Span], DualSerializable):
 
     @property
     def plain_text(self) -> str:
-        return ''.join(span.plain_text for span in self)
+        return "".join(span.plain_text for span in self)
 
     @classmethod
     def from_plain_text(cls, plain_text: Optional[str]) -> Self:
@@ -122,25 +124,22 @@ class TextSpan(Span):
 
     def serialize(self) -> dict[str, Any]:
         return {
-            'type': 'text',
-            'text': {
-                'content': self.content,
-                'link': {
-                    'type': 'url',
-                    'url': self.link
-                } if self.link else None
-            }
+            "type": "text",
+            "text": {
+                "content": self.content,
+                "link": {"type": "url", "url": self.link} if self.link else None,
+            },
         }
 
     @classmethod
     def get_typename(cls) -> tuple[str, ...]:
-        return 'text',
+        return ("text",)
 
     @classmethod
     def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
-        link_item = raw['text']['link']
-        link = link_item['url'] if link_item else None
-        return cls(raw['text']['content'], link)
+        link_item = raw["text"]["link"]
+        link = link_item["url"] if link_item else None
+        return cls(raw["text"]["content"], link)
 
 
 @dataclass
@@ -156,18 +155,15 @@ class Equation(Span):
     """
 
     def serialize(self) -> dict[str, Any]:
-        return {
-            'type': 'equation',
-            'expression': self.expression
-        }
+        return {"type": "equation", "expression": self.expression}
 
     @classmethod
     def get_typename(cls) -> tuple[str, ...]:
-        return 'equation',
+        return ("equation",)
 
     @classmethod
     def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
-        return cls(raw['expression'])
+        return cls(raw["expression"])
 
 
 @dataclass
@@ -185,23 +181,20 @@ class UserMention(Span):
 
     def serialize(self) -> dict[str, Any]:
         return {
-            'type': 'mention',
-            'mention': {
-                'type': 'user',
-                'user': {
-                    'object': 'user',
-                    'id': str(self.user_id)
-                }
-            }
+            "type": "mention",
+            "mention": {
+                "type": "user",
+                "user": {"object": "user", "id": str(self.user_id)},
+            },
         }
 
     @classmethod
     def get_typename(cls) -> tuple[str, ...]:
-        return 'mention', 'user'
+        return "mention", "user"
 
     @classmethod
     def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
-        return cls(raw['mention']['user']['id'])
+        return cls(raw["mention"]["user"]["id"])
 
 
 @dataclass
@@ -218,20 +211,17 @@ class PageMention(Span):
 
     def serialize(self) -> dict[str, Any]:
         return {
-            'type': 'mention',
-            'mention': {
-                'type': 'page',
-                'page': {"id": str(self.page_id)}
-            }
+            "type": "mention",
+            "mention": {"type": "page", "page": {"id": str(self.page_id)}},
         }
 
     @classmethod
     def get_typename(cls) -> tuple[str, ...]:
-        return 'mention', 'page'
+        return "mention", "page"
 
     @classmethod
     def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
-        return cls(raw['mention']['page']["id"])
+        return cls(raw["mention"]["page"]["id"])
 
 
 @dataclass
@@ -248,20 +238,17 @@ class DatabaseMention(Span):
 
     def serialize(self) -> dict[str, Any]:
         return {
-            'type': 'mention',
-            'mention': {
-                'type': 'database',
-                'database': {"id": str(self.database_id)}
-            }
+            "type": "mention",
+            "mention": {"type": "database", "database": {"id": str(self.database_id)}},
         }
 
     @classmethod
     def get_typename(cls) -> tuple[str, ...]:
-        return 'mention', 'database'
+        return "mention", "database"
 
     @classmethod
     def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
-        return cls(raw['mention']['database']["id"])
+        return cls(raw["mention"]["database"]["id"])
 
 
 @dataclass
@@ -278,20 +265,17 @@ class DateMention(Span):
 
     def serialize(self) -> dict[str, Any]:
         return {
-            'type': 'mention',
-            'mention': {
-                'type': 'date',
-                'date': self.date.serialize()
-            }
+            "type": "mention",
+            "mention": {"type": "date", "date": self.date.serialize()},
         }
 
     @classmethod
     def get_typename(cls) -> tuple[str, ...]:
-        return 'mention', 'date'
+        return "mention", "date"
 
     @classmethod
     def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
-        return cls(raw['mention']['date'])
+        return cls(raw["mention"]["date"])
 
 
 @dataclass
@@ -308,28 +292,28 @@ class TemplateDateMention(Span):
 
     def serialize(self) -> dict[str, Any]:
         return {
-            'type': 'mention',
-            'mention': {
+            "type": "mention",
+            "mention": {
                 "type": "template_mention",
                 "template_mention": {
                     "type": "template_mention_date",
-                    "template_mention_date": self.template_mention_date
-                }
-            }
+                    "template_mention_date": self.template_mention_date,
+                },
+            },
         }
 
     @classmethod
     def get_typename(cls) -> tuple[str, ...]:
-        return 'mention', 'template_mention', 'template_mention_date'
+        return "mention", "template_mention", "template_mention_date"
 
     @classmethod
     def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
-        return cls(raw['mention']['database'])
+        return cls(raw["mention"]["database"])
 
 
 @dataclass
 class TemplateUserMention(Span):
-    template_mention_user = 'me'
+    template_mention_user = "me"
     # ---
     annotations: Optional[Annotations] = None
     """
@@ -341,19 +325,19 @@ class TemplateUserMention(Span):
 
     def serialize(self) -> dict[str, Any]:
         return {
-            'type': 'mention',
-            'mention': {
+            "type": "mention",
+            "mention": {
                 "type": "template_mention",
                 "template_mention": {
                     "type": "template_mention_user",
-                    "template_mention_user": self.template_mention_user
-                }
-            }
+                    "template_mention_user": self.template_mention_user,
+                },
+            },
         }
 
     @classmethod
     def get_typename(cls) -> tuple[str, ...]:
-        return 'mention', 'template_mention', 'template_mention_user'
+        return "mention", "template_mention", "template_mention_user"
 
     @classmethod
     def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
@@ -363,6 +347,7 @@ class TemplateUserMention(Span):
 @dataclass
 class LinkPreviewMention(Span):
     """https://developers.notion.com/reference/rich-text#link-preview-mentions"""
+
     url: str
     # ---
     annotations: Optional[Annotations] = None
@@ -375,20 +360,17 @@ class LinkPreviewMention(Span):
 
     def serialize(self) -> dict[str, Any]:
         return {
-            'type': 'mention',
-            'mention': {
-                'type': 'link_preview',
-                'link_preview': {
-                    'url': self.url
-                }
-            }
+            "type": "mention",
+            "mention": {"type": "link_preview", "link_preview": {"url": self.url}},
         }
 
     @classmethod
     def get_typename(cls) -> tuple[str, ...]:
-        return 'mention', 'link_preview'
+        return "mention", "link_preview"
 
     @classmethod
     def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
-        return cls(raw['mention']['link_preview']['url'])
+        return cls(raw["mention"]["link_preview"]["url"])
+
+
 # TODO: link_mention

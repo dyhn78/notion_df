@@ -25,9 +25,9 @@ block_contents_registry: FinalDict[str, type[BlockContents]] = FinalDict()
 def _get_type_hints(cls) -> dict[str, type]:
     from notion_df.data import BlockData
 
-    return get_type_hints(cls, {
-        **globals(), **{cls.__name__: cls for cls in (BlockData,)}
-    })
+    return get_type_hints(
+        cls, {**globals(), **{cls.__name__: cls for cls in (BlockData,)}}
+    )
 
 
 @dataclass
@@ -35,11 +35,12 @@ class BlockContents(DualSerializable, metaclass=ABCMeta):
     @classmethod
     @abstractmethod
     def get_typename(cls) -> str:
-        return ''
+        return ""
 
     def __init_subclass__(cls, **kwargs):
-        if (typename := cls.get_typename()) and typename != cast(cls, super(cls,
-                                                                            cls)).get_typename():
+        if (typename := cls.get_typename()) and typename != cast(
+            cls, super(cls, cls)
+        ).get_typename():
             block_contents_registry[typename] = cls
 
     def serialize(self) -> dict[str, Any]:
@@ -54,15 +55,19 @@ class BlockContents(DualSerializable, metaclass=ABCMeta):
         return _get_type_hints(cls)
 
 
-def serialize_block_contents_list(block_contents_list: list[BlockContents]) -> \
-Optional[list[dict[str, Any]]]:
+def serialize_block_contents_list(
+    block_contents_list: list[BlockContents],
+) -> Optional[list[dict[str, Any]]]:
     if not block_contents_list:
         return None
-    return [{
-        "object": "block",
-        "type": block_type.get_typename(),
-        block_type.get_typename(): block_type.serialize(),
-    } for block_type in block_contents_list]
+    return [
+        {
+            "object": "block",
+            "type": block_type.get_typename(),
+            block_type.get_typename(): block_type.serialize(),
+        }
+        for block_type in block_contents_list
+    ]
 
 
 @dataclass
@@ -72,14 +77,14 @@ class BookmarkBlockContents(BlockContents):
 
     @classmethod
     def get_typename(cls) -> str:
-        return 'bookmark'
+        return "bookmark"
 
 
 @dataclass
 class BreadcrumbBlockContents(BlockContents):
     @classmethod
     def get_typename(cls) -> str:
-        return 'breadcrumb'
+        return "breadcrumb"
 
 
 @dataclass
@@ -90,7 +95,7 @@ class BulletedListItemBlockContents(BlockContents):
 
     @classmethod
     def get_typename(cls) -> str:
-        return 'bulleted_list_item'
+        return "bulleted_list_item"
 
 
 @dataclass
@@ -102,7 +107,7 @@ class CalloutBlockContents(BlockContents):
 
     @classmethod
     def get_typename(cls) -> str:
-        return 'callout'
+        return "callout"
 
 
 @dataclass
@@ -111,7 +116,7 @@ class ChildDatabaseBlockContents(BlockContents):
 
     @classmethod
     def get_typename(cls) -> str:
-        return 'child_database'
+        return "child_database"
 
 
 @dataclass
@@ -120,7 +125,7 @@ class ChildPageBlockContents(BlockContents):
 
     @classmethod
     def get_typename(cls) -> str:
-        return 'child_page'
+        return "child_page"
 
 
 @dataclass
@@ -131,28 +136,28 @@ class CodeBlockContents(BlockContents):
 
     @classmethod
     def get_typename(cls) -> str:
-        return 'code'
+        return "code"
 
 
 @dataclass
 class ColumnListBlockContents(BlockContents):
     @classmethod
     def get_typename(cls) -> str:
-        return 'column_list'
+        return "column_list"
 
 
 @dataclass
 class ColumnBlockContents(BlockContents):
     @classmethod
     def get_typename(cls) -> str:
-        return 'column'
+        return "column"
 
 
 @dataclass
 class DividerBlockContents(BlockContents):
     @classmethod
     def get_typename(cls) -> str:
-        return 'divider'
+        return "divider"
 
 
 @dataclass
@@ -161,7 +166,7 @@ class EmbedBlockContents(BlockContents):
 
     @classmethod
     def get_typename(cls) -> str:
-        return 'embed'
+        return "embed"
 
 
 @dataclass
@@ -171,7 +176,7 @@ class EquationBlockContents(BlockContents):
 
     @classmethod
     def get_typename(cls) -> str:
-        return 'equation'
+        return "equation"
 
 
 @dataclass
@@ -181,14 +186,14 @@ class FileBlockContents(BlockContents):
 
     @classmethod
     def get_typename(cls) -> str:
-        return 'file'
+        return "file"
 
     def serialize(self) -> dict[str, Any]:
-        return {'caption': self.caption, **self.file.serialize()}
+        return {"caption": self.caption, **self.file.serialize()}
 
     @classmethod
     def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
-        return cls(File.deserialize(raw), raw['caption'])
+        return cls(File.deserialize(raw), raw["caption"])
 
 
 @dataclass
@@ -199,7 +204,7 @@ class Heading1BlockContents(BlockContents):
 
     @classmethod
     def get_typename(cls) -> str:
-        return 'heading_1'
+        return "heading_1"
 
 
 @dataclass
@@ -210,7 +215,7 @@ class Heading2BlockContents(BlockContents):
 
     @classmethod
     def get_typename(cls) -> str:
-        return 'heading_2'
+        return "heading_2"
 
 
 @dataclass
@@ -221,7 +226,7 @@ class Heading3BlockContents(BlockContents):
 
     @classmethod
     def get_typename(cls) -> str:
-        return 'heading_3'
+        return "heading_3"
 
 
 @dataclass
@@ -231,6 +236,7 @@ class ImageBlockContents(BlockContents):
     - supported image types (as of 2023-04-02): **.bmp .gif .heic .jpeg .jpg .png .svg .tif .tiff**
     https://developers.notion.com/reference/block#image
     """
+
     file: File
 
     def serialize(self) -> dict[str, Any]:
@@ -242,7 +248,7 @@ class ImageBlockContents(BlockContents):
 
     @classmethod
     def get_typename(cls) -> str:
-        return 'image'
+        return "image"
 
 
 @dataclass
@@ -253,7 +259,7 @@ class NumberedListItemBlockContents(BlockContents):
 
     @classmethod
     def get_typename(cls) -> str:
-        return 'numbered_list_item'
+        return "numbered_list_item"
 
 
 @dataclass
@@ -264,7 +270,7 @@ class ParagraphBlockContents(BlockContents):
 
     @classmethod
     def get_typename(cls) -> str:
-        return 'paragraph'
+        return "paragraph"
 
 
 @dataclass
@@ -273,15 +279,15 @@ class PDFBlockContents(BlockContents):
     caption: RichText = field(default_factory=RichText)
 
     def serialize(self) -> dict[str, Any]:
-        return {'caption': self.caption, **self.file.serialize()}
+        return {"caption": self.caption, **self.file.serialize()}
 
     @classmethod
     def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
-        return cls(File.deserialize(raw), raw['caption'])
+        return cls(File.deserialize(raw), raw["caption"])
 
     @classmethod
     def get_typename(cls) -> str:
-        return 'pdf'
+        return "pdf"
 
 
 @dataclass
@@ -292,7 +298,7 @@ class QuoteBlockContents(BlockContents):
 
     @classmethod
     def get_typename(cls) -> str:
-        return 'quote'
+        return "quote"
 
 
 @dataclass
@@ -301,12 +307,12 @@ class SyncedBlockContents(BlockContents, metaclass=ABCMeta):
 
     @classmethod
     def get_typename(cls) -> str:
-        return 'synced_block'
+        return "synced_block"
 
     @classmethod
     def _deserialize_subclass(cls, raw: dict[str, Any]) -> Self:
         def get_subclass():
-            if raw['synced_from']:
+            if raw["synced_from"]:
                 return DuplicatedSyncedBlockValue
             else:
                 return OriginalSyncedBlockValue
@@ -317,22 +323,21 @@ class SyncedBlockContents(BlockContents, metaclass=ABCMeta):
 @dataclass
 class OriginalSyncedBlockValue(SyncedBlockContents):
     """cannot be changed (2023-04-02)"""
+
     children: list[BlockData] = field(init=False, default=None)
 
     def serialize(self) -> dict[str, Any]:
-        return {
-            "synced_from": None,
-            "children": self.children
-        }
+        return {"synced_from": None, "children": self.children}
 
 
 @dataclass
 class DuplicatedSyncedBlockValue(SyncedBlockContents):
     """cannot be changed (2023-04-02)"""
+
     block_id: UUID
 
     def serialize(self) -> dict[str, Any]:
-        return {'synced_from': {'block_id': str(self.block_id)}}
+        return {"synced_from": {"block_id": str(self.block_id)}}
 
     @classmethod
     def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
@@ -348,7 +353,7 @@ class TableBlockContents(BlockContents):
 
     @classmethod
     def get_typename(cls) -> str:
-        return 'table'
+        return "table"
 
 
 @dataclass
@@ -358,7 +363,7 @@ class TableRowBlockContents(BlockContents):
 
     @classmethod
     def get_typename(cls) -> str:
-        return 'table_row'
+        return "table_row"
 
 
 @dataclass
@@ -367,7 +372,7 @@ class TableOfContentsBlockContents(BlockContents):
 
     @classmethod
     def get_typename(cls) -> str:
-        return 'table_of_contents'
+        return "table_of_contents"
 
 
 @dataclass
@@ -379,7 +384,7 @@ class ToDoBlockContents(BlockContents):
 
     @classmethod
     def get_typename(cls) -> str:
-        return 'to_do'
+        return "to_do"
 
 
 @dataclass
@@ -390,7 +395,7 @@ class ToggleBlockContents(BlockContents):
 
     @classmethod
     def get_typename(cls) -> str:
-        return 'toggle'
+        return "toggle"
 
 
 @dataclass
@@ -401,6 +406,7 @@ class VideoBlockContents(BlockContents):
 
     https://developers.notion.com/reference/block#supported-video-types
     """
+
     file: File
 
     def serialize(self) -> dict[str, Any]:
@@ -412,11 +418,11 @@ class VideoBlockContents(BlockContents):
 
     @classmethod
     def get_typename(cls) -> str:
-        return 'video'
+        return "video"
 
 
 @dataclass
 class UnsupportedBlockContents(BlockContents):
     @classmethod
     def get_typename(cls) -> str:
-        return 'unsupported'
+        return "unsupported"

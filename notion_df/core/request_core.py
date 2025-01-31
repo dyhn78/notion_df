@@ -24,19 +24,23 @@ def is_server_error(exception: BaseException) -> bool:
         status_code = exception.response.status_code
         return 500 <= status_code < 600 or status_code == 409  # conflict
     if isinstance(exception, requests.exceptions.RequestException):
-        return any(isinstance(exception, cls) for cls in [
-            requests.exceptions.ReadTimeout,
-            requests.exceptions.ChunkedEncodingError,
-            # requests.exceptions.SSLError,
-        ])
+        return any(
+            isinstance(exception, cls)
+            for cls in [
+                requests.exceptions.ReadTimeout,
+                requests.exceptions.ChunkedEncodingError,
+                # requests.exceptions.SSLError,
+            ]
+        )
     if isinstance(exception, requests.exceptions.ConnectionError):
-        return 'Connection aborted.' == exception.args[0]
+        return "Connection aborted." == exception.args[0]
     return False
 
 
 @dataclass(frozen=True)
 class Request:
     """request builder tailored to Notion API."""
+
     # TODO: rename to RequestBuilder
     # TODO: async with throttling  https://chat.openai.com/c/adcf80cd-d800-4fef-bfa9-56c548e0058a
     token: str
@@ -49,21 +53,29 @@ class Request:
     @property
     def headers(self) -> dict[str, Any]:
         return {
-            'Authorization': f"Bearer {self.token}",
-            'Notion-Version': self.version.value,
+            "Authorization": f"Bearer {self.token}",
+            "Notion-Version": self.version.value,
         }
 
     @property
     def url(self) -> str:
         return f"{self.version.base_url.rstrip('/')}/{self.path.lstrip('/')}"
 
-    @tenacity.retry(wait=tenacity.wait_none(),
-                    stop=tenacity.stop_after_attempt(3),
-                    retry=tenacity.retry_if_exception(is_server_error))  # TODO: add request info on TimeoutError
+    @tenacity.retry(
+        wait=tenacity.wait_none(),
+        stop=tenacity.stop_after_attempt(3),
+        retry=tenacity.retry_if_exception(is_server_error),
+    )  # TODO: add request info on TimeoutError
     def execute(self) -> Response:
         logger.debug(self)
-        response = requests.request(method=self.method.value, url=self.url, headers=self.headers,
-                                    params=self.params, json=self.json, timeout=80)  # TODO: relate with tenacity
+        response = requests.request(
+            method=self.method.value,
+            url=self.url,
+            headers=self.headers,
+            params=self.params,
+            json=self.json,
+            timeout=80,
+        )  # TODO: relate with tenacity
         try:
             response.raise_for_status()
             return response
@@ -79,9 +91,9 @@ class RequestError(NotionDfException):
     raw_data: Any
     """ex) {'object': 'error', 'status': 400, 'code': 'validation_error', 
     'message': 'Unsaved transactions: Invalid value for property with limit'}"""
-    code: str = ''
+    code: str = ""
     """ex) 'validation_error'"""
-    message: str = ''
+    message: str = ""
     """ex) 'Unsaved transactions: Invalid value for property with limit'"""
 
     def __init__(self, request: Request, response: Response):
@@ -89,8 +101,8 @@ class RequestError(NotionDfException):
         self.request = request
         try:
             self.raw_data = self.response.json()
-            self.code = self.raw_data['code']
-            self.message = self.raw_data['message']
+            self.code = self.raw_data["code"]
+            self.message = self.raw_data["message"]
         except requests.JSONDecodeError:
             self.raw_data = self.response.text
         except KeyError as e:  # unexpected error format
@@ -101,23 +113,23 @@ class RequestError(NotionDfException):
 
 
 class Method(PlainStrEnum):
-    GET = 'GET'
-    POST = 'POST'
-    PUT = 'PUT'
-    PATCH = 'PATCH'
-    DELETE = 'DELETE'
+    GET = "GET"
+    POST = "POST"
+    PUT = "PUT"
+    PATCH = "PATCH"
+    DELETE = "DELETE"
 
 
 class Version(PlainStrEnum):
-    v20220222 = '2022-02-22'
-    v20220628 = '2022-06-28'
+    v20220222 = "2022-02-22"
+    v20220628 = "2022-06-28"
 
     def __str__(self):
         return repr_object(self, self.value)
 
     @property
     def base_url(self) -> str:
-        return 'https://api.notion.com/v1'
+        return "https://api.notion.com/v1"
 
 
 @dataclass
@@ -137,6 +149,7 @@ class RequestBuilder(metaclass=ABCMeta):
     """base request form made of various Resources.
     all non-abstract subclasses must provide class type argument `EntityDataT`.
     get token from https://www.notion.so/my-integrations"""
+
     token: str
 
     @abstractmethod
@@ -164,8 +177,14 @@ class SingleRequestBuilder(Generic[EntityDataT], RequestBuilder, metaclass=ABCMe
     @final
     def execute(self) -> EntityDataT:
         settings = self.get_settings()
-        response = Request(token=self.token, method=settings.method, path=settings.path, version=settings.version,
-                           params=None, json=self.get_body()).execute()
+        response = Request(
+            token=self.token,
+            method=settings.method,
+            path=settings.path,
+            version=settings.version,
+            params=None,
+            json=self.get_body(),
+        ).execute()
         return self.parse_response_data(response.json())  # nomypy
 
     @classmethod
@@ -175,7 +194,9 @@ class SingleRequestBuilder(Generic[EntityDataT], RequestBuilder, metaclass=ABCMe
 
 class PaginatedRequestBuilder(Generic[EntityDataT], RequestBuilder, metaclass=ABCMeta):
     data_element_type: type[EntityDataT]
-    page_size: int  # TODO - AS-IS: total size of all pages summed, TO-BE: each request size
+    page_size: (
+        int  # TODO - AS-IS: total size of all pages summed, TO-BE: each request size
+    )
 
     def __init_subclass__(cls, **kwargs):
         if not inspect.isabstract(cls):
@@ -187,26 +208,29 @@ class PaginatedRequestBuilder(Generic[EntityDataT], RequestBuilder, metaclass=AB
         while True:
             data = request_page(self, self.page_size, start_cursor)
             yield from self.parse_response_data(data)
-            if not data['has_more']:
+            if not data["has_more"]:
                 return
-            start_cursor = data['next_cursor']
+            start_cursor = data["next_cursor"]
 
     @classmethod
     def parse_response_data(cls, data: dict[str, Any]) -> Iterator[EntityDataT]:
-        for data_element in data['results']:
+        for data_element in data["results"]:
             yield cls.data_element_type.deserialize(data_element).set_real()
 
 
-def request_page(self: RequestBuilder, page_size: Optional[int] = MAX_PAGE_SIZE,
-                 start_cursor: Optional[str] = None) -> dict[str, Any]:
+def request_page(
+    self: RequestBuilder,
+    page_size: Optional[int] = MAX_PAGE_SIZE,
+    start_cursor: Optional[str] = None,
+) -> dict[str, Any]:
     settings = self.get_settings()
     body = self.get_body()
 
     pagination_params = {}
     if page_size not in {MAX_PAGE_SIZE, None}:
-        pagination_params.update({'page_size': page_size})
+        pagination_params.update({"page_size": page_size})
     if start_cursor:
-        pagination_params.update({'start_cursor': start_cursor})
+        pagination_params.update({"start_cursor": start_cursor})
 
     match settings.method:
         case Method.GET:
@@ -217,8 +241,14 @@ def request_page(self: RequestBuilder, page_size: Optional[int] = MAX_PAGE_SIZE,
                 body = {}
             body.update(pagination_params)
         case _:
-            raise ImplementationError(f'Invalid method. {type(self)=}')
+            raise ImplementationError(f"Invalid method. {type(self)=}")
 
-    response = Request(token=self.token, method=settings.method, path=settings.path, version=settings.version,
-                       params=params, json=serialize(body)).execute()
+    response = Request(
+        token=self.token,
+        method=settings.method,
+        path=settings.path,
+        version=settings.version,
+        params=params,
+        json=serialize(body),
+    ).execute()
     return response.json()

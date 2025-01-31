@@ -9,10 +9,22 @@ from datetime import datetime, date
 from decimal import Decimal
 from enum import Enum
 from functools import cache
+
 # noinspection PyUnresolvedReferences
-from typing import Any, get_origin, get_args, final, NewType, cast, get_type_hints, \
-    _GenericAlias, Union, Literal, \
-    TypeVar, overload
+from typing import (
+    Any,
+    get_origin,
+    get_args,
+    final,
+    NewType,
+    cast,
+    get_type_hints,
+    _GenericAlias,
+    Union,
+    Literal,
+    TypeVar,
+    overload,
+)
 from uuid import UUID
 
 import dateutil.parser
@@ -24,7 +36,7 @@ from notion_df.core.variable import my_tz
 
 @dataclass(kw_only=True)
 class SerializationError(NotionDfException):
-    description: str = field(default='')
+    description: str = field(default="")
     """instance-specific description"""
     err_vars: dict[str, Any] = field(default_factory=dict)
     """dumped variables in error log"""
@@ -36,16 +48,16 @@ class SerializationError(NotionDfException):
     def __post_init__(self) -> None:
         self.args: tuple[str, ...] = ()
         if self.description:
-            self.args += self.description,
+            self.args += (self.description,)
         if self.inverted_path:
-            self.args += self.inverted_path,
+            self.args += (self.inverted_path,)
         if self.err_vars:
-            var_items_list = [f'{k} = {v}' for k, v in self.err_vars.items()]
+            var_items_list = [f"{k} = {v}" for k, v in self.err_vars.items()]
             if self.linebreak:
-                var_items_str = '[[\n' + '\n'.join(var_items_list) + '\n]]'
+                var_items_str = "[[\n" + "\n".join(var_items_list) + "\n]]"
             else:
-                var_items_str = '[[ ' + ', '.join(var_items_list) + ' ]]'
-            self.args += var_items_str,
+                var_items_str = "[[ " + ", ".join(var_items_list) + " ]]"
+            self.args += (var_items_str,)
 
 
 def serialize(obj: Any):
@@ -67,25 +79,23 @@ def serialize(obj: Any):
         return serialize_datetime(obj)
     if isinstance(obj, UUID):
         return str(obj)
-    raise SerializationError(description='Cannot serialize', err_vars={'obj': obj})
+    raise SerializationError(description="Cannot serialize", err_vars={"obj": obj})
 
 
-T = TypeVar('T')
-
-
-@overload
-def deserialize(typ: type[T], serialized: Any) -> T:
-    ...
+T = TypeVar("T")
 
 
 @overload
-def deserialize(typ: type, serialized: Any) -> Any:
-    ...
+def deserialize(typ: type[T], serialized: Any) -> T: ...
+
+
+@overload
+def deserialize(typ: type, serialized: Any) -> Any: ...
 
 
 def deserialize(typ: type, serialized: Any) -> Any:
     """unified deserializer for both Deserializable and external classes."""
-    err_vars = {'typ': typ, 'serialized': serialized}
+    err_vars = {"typ": typ, "serialized": serialized}
     typ_origin: type = get_origin(typ)
     typ_args = get_args(typ)
 
@@ -102,19 +112,28 @@ def deserialize(typ: type, serialized: Any) -> Any:
     if typ_origin == Literal:
         if serialized in typ_args:
             return serialized
-        raise SerializationError(description='Serialized value does not match any of Literal types', err_vars=err_vars)
-    if isinstance(typ, types.UnionType) or typ_origin == Union:  # also can handle Optional
+        raise SerializationError(
+            description="Serialized value does not match any of Literal types",
+            err_vars=err_vars,
+        )
+    if (
+        isinstance(typ, types.UnionType) or typ_origin == Union
+    ):  # also can handle Optional
         for typ_arg in typ_args:
             try:
                 return deserialize(typ_arg, serialized)
             except SerializationError as e:
                 err_vars.setdefault("exception_list", [])
                 err_vars["exception_list"].append(e)
-        raise SerializationError(description='Cannot deserialize to any of the UnionType', err_vars=err_vars)
+        raise SerializationError(
+            description="Cannot deserialize to any of the UnionType", err_vars=err_vars
+        )
     if isinstance(typ, types.GenericAlias) or isinstance(typ, _GenericAlias):
-        err_vars.update({'typ.origin': typ_origin, 'typ.args': typ_args})
-        collection_type_error = SerializationError(description='Collection types require value type to be defined',
-                                                   err_vars=err_vars)
+        err_vars.update({"typ.origin": typ_origin, "typ.args": typ_args})
+        collection_type_error = SerializationError(
+            description="Collection types require value type to be defined",
+            err_vars=err_vars,
+        )
         if issubclass(typ_origin, dict):
             try:
                 value_type = typ_args[1]
@@ -141,9 +160,13 @@ def deserialize(typ: type, serialized: Any) -> Any:
                     e.inverted_path.append(i)
                     raise e
             return typ_origin(result)
-        raise SerializationError(description='GenericAlias with invalid origin', err_vars=err_vars)
+        raise SerializationError(
+            description="GenericAlias with invalid origin", err_vars=err_vars
+        )
     if not inspect.isclass(typ):
-        raise SerializationError(description='Unsupported non-class type', err_vars=err_vars)
+        raise SerializationError(
+            description="Unsupported non-class type", err_vars=err_vars
+        )
 
     # 2. class types
     if issubclass(typ, Deserializable):
@@ -166,7 +189,7 @@ def deserialize(typ: type, serialized: Any) -> Any:
         except (ValueError, TypeError) as e:
             err_vars["exception"] = e
             raise SerializationError(err_vars=err_vars)
-    raise SerializationError(description='Unsupported class', err_vars=err_vars)
+    raise SerializationError(description="Unsupported class", err_vars=err_vars)
 
 
 class Serializable(metaclass=ABCMeta):
@@ -208,9 +231,10 @@ class Deserializable(metaclass=ABCMeta):
                 cls._deserialize_subclass(None)
             except NotImplementedError:
                 pass
-            except:  # NOSONAR noqa: E722
+            except:  # noqa: E722 NOSONAR
                 raise ImplementationError(
-                    "_deserialize_subclass() should not be defined on concrete classes")
+                    "_deserialize_subclass() should not be defined on concrete classes"
+                )
         deserialize_subclass_old = cls._deserialize_subclass
 
         # noinspection PyDecorator
@@ -241,21 +265,26 @@ class Deserializable(metaclass=ABCMeta):
     @classmethod
     def _deserialize_subclass(cls, raw: Any) -> Self:
         """Override this to deserialize its subclasses.
-         only reachable from the defined class itself.
-         prioritized over _deserialize_this().
-         should NOT be defined on concrete classes."""
+        only reachable from the defined class itself.
+        prioritized over _deserialize_this().
+        should NOT be defined on concrete classes."""
         raise NotImplementedError
 
     @classmethod
     @final
-    def _deserialize_from_dict(cls, serialized: dict[str, Any], **overrides: Any) -> Self:
+    def _deserialize_from_dict(
+        cls, serialized: dict[str, Any], **overrides: Any
+    ) -> Self:
         """this should only be called from dataclass.
 
         helper method to implement _deserialize_this().
         Note: this collects post-init fields as well."""
         assert is_dataclass(cls)
         if inspect.isabstract(cls):
-            raise TypeError('cannot instantiate abstract class', {'cls': cls, 'serialized': serialized})
+            raise TypeError(
+                "cannot instantiate abstract class",
+                {"cls": cls, "serialized": serialized},
+            )
 
         _undefined = object()
 
@@ -265,8 +294,11 @@ class Deserializable(metaclass=ABCMeta):
             if _fd.name in serialized:
                 if _fd.name not in cls._get_type_hints():
                     raise SerializationError(
-                        description=f'field "{_fd.name}" should have explicit type hint or provided as "overrides"')
-                return deserialize(cls._get_type_hints()[_fd.name], serialized[_fd.name])
+                        description=f'field "{_fd.name}" should have explicit type hint or provided as "overrides"'
+                    )
+                return deserialize(
+                    cls._get_type_hints()[_fd.name], serialized[_fd.name]
+                )
             return _undefined
             # TODO: post-init fields should be explicitly set inside each _deserialize_this()
             # if _fd.default or _fd.default_factory:
@@ -305,16 +337,22 @@ class Deserializable(metaclass=ABCMeta):
         # noinspection PyDataclass
         assert is_dataclass(self)
         # noinspection PyDataclass
-        return (f'{type(self).__name__}('
-                + ','.join(f'{fd.name}={getattr(self, fd.name)}'
-                           for fd in fields(self) if getattr(self, fd.name) != fd.default)
-                + ')')
+        return (
+            f"{type(self).__name__}("
+            + ",".join(
+                f"{fd.name}={getattr(self, fd.name)}"
+                for fd in fields(self)
+                if getattr(self, fd.name) != fd.default
+            )
+            + ")"
+        )
 
 
 class DualSerializable(Serializable, Deserializable, metaclass=ABCMeta):
     """dataclass representation of the resources defined in Notion REST API.
     interchangeable with JSON object.
     field with `init=False` are usually the case which not required from user-side but provided from server-side."""
+
     pass
 
 
@@ -330,6 +368,6 @@ def deserialize_datetime(serialized: str) -> date | datetime:
     except dateutil.parser.ParserError as e:
         print(serialized)
         raise e
-    if re.match(r'^\d{4}-\d{2}-\d{2}$', serialized):
+    if re.match(r"^\d{4}-\d{2}-\d{2}$", serialized):
         return dt.date()
     return dt.astimezone(my_tz)

@@ -14,9 +14,12 @@ from loguru import logger
 from typing_extensions import Self
 
 from app import log_dir
-from notion_df.contents import CodeBlockContents, DividerBlockContents, \
-    ParagraphBlockContents, \
-    ToggleBlockContents
+from notion_df.contents import (
+    CodeBlockContents,
+    DividerBlockContents,
+    ParagraphBlockContents,
+    ToggleBlockContents,
+)
 from notion_df.core.serialization import deserialize_datetime
 from notion_df.core.variable import my_tz
 from notion_df.entity import Block
@@ -27,8 +30,8 @@ class WorkflowSkipException(Exception):
     pass
 
 
-P = ParamSpec('P')
-T = TypeVar('T')
+P = ParamSpec("P")
+T = TypeVar("T")
 
 
 def entrypoint(func: Callable[P, T]) -> Callable[P, Optional[T]]:
@@ -44,9 +47,11 @@ def entrypoint(func: Callable[P, T]) -> Callable[P, Optional[T]]:
     @wraps(func)
     def wrapper(*args: P.args, **kwargs: P.kwargs) -> Optional[T]:
         logger.add(
-            (get_latest_log_path() or (log_dir / '{time}.log')),
+            (get_latest_log_path() or (log_dir / "{time}.log")),
             # log_dir / '{time}.log',
-            level='DEBUG', rotation='100 MB', retention=timedelta(weeks=2)
+            level="DEBUG",
+            rotation="100 MB",
+            retention=timedelta(weeks=2),
         )
         logger.info(f'{"#" * 5} Start.')
         with logger.catch(reraise=True):
@@ -63,12 +68,12 @@ def entrypoint(func: Callable[P, T]) -> Callable[P, Optional[T]]:
 
 
 class WorkflowRecord:
-    user_id = UUID('a007d150-bc67-422c-87db-030a71867dd9')
-    page_id = UUID('6d16dc6747394fca95dc169c8c736e2d')
+    user_id = UUID("a007d150-bc67-422c-87db-030a71867dd9")
+    page_id = UUID("6d16dc6747394fca95dc169c8c736e2d")
     page_block = Block(page_id)
-    last_success_time_parent_block = Block('c66d852e27e84d92b6203dfdadfefad8')
-    date_format = '%Y-%m-%d %H:%M:%S+09:00'
-    date_group_format = '%Y-%m-%d'
+    last_success_time_parent_block = Block("c66d852e27e84d92b6203dfdadfefad8")
+    date_format = "%Y-%m-%d %H:%M:%S+09:00"
+    date_group_format = "%Y-%m-%d"
 
     # Note: the record page is implemented as page with log blocks, not database with log pages,
     #  since 1. Notion API does not directly support permanently deleting pages,
@@ -82,13 +87,16 @@ class WorkflowRecord:
         self.enabled = True
         self.processed_pages: Optional[int] = None
 
-        self.last_success_time_blocks = self.last_success_time_parent_block.retrieve_children()
+        self.last_success_time_blocks = (
+            self.last_success_time_parent_block.retrieve_children()
+        )
         last_execution_time_block = self.last_success_time_blocks[0]
-        self.last_execution_time_str = (cast(ParagraphBlockContents, last_execution_time_block.data.contents)
-                                        .rich_text.plain_text)
-        if self.last_execution_time_str == 'STOP':
+        self.last_execution_time_str = cast(
+            ParagraphBlockContents, last_execution_time_block.data.contents
+        ).rich_text.plain_text
+        if self.last_execution_time_str == "STOP":
             raise WorkflowSkipException("last_execution_time_str == 'STOP'")
-        if self.last_execution_time_str == 'ALL':
+        if self.last_execution_time_str == "ALL":
             self.last_success_time = None
         else:
             self.last_success_time = deserialize_datetime(self.last_execution_time_str)
@@ -98,44 +106,69 @@ class WorkflowRecord:
 
     def format_time(self) -> str:
         execution_time = datetime.now().astimezone(my_tz) - self.start_time
-        return f'{self.start_time_str} - {round(execution_time.total_seconds(), 3)} seconds'
+        return f"{self.start_time_str} - {round(execution_time.total_seconds(), 3)} seconds"
 
     def __exit__(self, exc_type: type, exc_val, exc_tb) -> None:
         if exc_type is WorkflowSkipException:
             return
         if exc_type is not None:
-            logger.info(f'WorkflowRecord.__exit__() : {exc_type=}, {exc_val=}, exc_tb="""{exc_tb}"""')
+            logger.info(
+                f'WorkflowRecord.__exit__() : {exc_type=}, {exc_val=}, exc_tb="""{exc_tb}"""'
+            )
         child_block_values = []
         if exc_type is None:
             summary_text = f"success - {self.format_time()}"
-            summary_block_value = ParagraphBlockContents(RichText([TextSpan(summary_text)]))
+            summary_block_value = ParagraphBlockContents(
+                RichText([TextSpan(summary_text)])
+            )
             if self.update_last_success_time:
-                self.last_success_time_parent_block.append_children([
-                    ParagraphBlockContents(RichText([TextSpan(self.start_time_str)]))])
+                self.last_success_time_parent_block.append_children(
+                    [ParagraphBlockContents(RichText([TextSpan(self.start_time_str)]))]
+                )
                 for block in self.last_success_time_blocks:
                     block.delete(ignore_archived=True)
-        elif (exc_type in [KeyboardInterrupt, json.JSONDecodeError, tenacity.RetryError]
-              or "Can't edit block that is archived." in str(exc_val)):
+        elif exc_type in [
+            KeyboardInterrupt,
+            json.JSONDecodeError,
+            tenacity.RetryError,
+        ] or "Can't edit block that is archived." in str(exc_val):
             summary_text = f"failure - {self.format_time()}: {exc_val}"
-            summary_block_value = ParagraphBlockContents(RichText([TextSpan(summary_text)]))
+            summary_block_value = ParagraphBlockContents(
+                RichText([TextSpan(summary_text)])
+            )
         else:
             # TODO: needs full print by redirecting print() stream to logger
-            summary_text = f"error - {self.format_time()} - {exc_type.__name__} - {exc_val}"
+            summary_text = (
+                f"error - {self.format_time()} - {exc_type.__name__} - {exc_val}"
+            )
             summary_block_value = ToggleBlockContents(
-                RichText([TextSpan(summary_text), UserMention(self.user_id)]))
+                RichText([TextSpan(summary_text), UserMention(self.user_id)])
+            )
             traceback_str = traceback.format_exc()
             child_block_values = []
             # TODO: should be splitting incrementally denser (1000->500->250->...)
             for i in range(0, len(traceback_str), 1000):
-                child_block_values.append(CodeBlockContents(RichText.from_plain_text(traceback_str[i:i + 1000])))
+                child_block_values.append(
+                    CodeBlockContents(
+                        RichText.from_plain_text(traceback_str[i : i + 1000])
+                    )
+                )
 
         log_group_block = None
         for block in reversed(self.page_block.retrieve_children()):
             if isinstance(block.data.contents, DividerBlockContents):
-                log_group_block = self.page_block.append_children([
-                    ToggleBlockContents(RichText([TextSpan(self.start_time_group_str)]))])[0]
+                log_group_block = self.page_block.append_children(
+                    [
+                        ToggleBlockContents(
+                            RichText([TextSpan(self.start_time_group_str)])
+                        )
+                    ]
+                )[0]
                 break
-            if cast(ToggleBlockContents, block.data.contents).rich_text.plain_text == self.start_time_group_str:
+            if (
+                cast(ToggleBlockContents, block.data.contents).rich_text.plain_text
+                == self.start_time_group_str
+            ):
                 log_group_block = block
                 break
             if self.start_time - block.data.created_time > timedelta(days=7):

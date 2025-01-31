@@ -18,13 +18,15 @@ class File(Icon, metaclass=ABCMeta):
 
     @classmethod
     def _deserialize_subclass(cls, raw: dict[str, Any]) -> Self:
-        match raw['type']:
-            case 'file':
+        match raw["type"]:
+            case "file":
                 subclass = InternalFile
-            case 'external':
+            case "external":
                 subclass = ExternalFile
             case _:
-                raise ImplementationError(f"invalid relation_type, {raw['type']=}, {raw=}")
+                raise ImplementationError(
+                    f"invalid relation_type, {raw['type']=}, {raw=}"
+                )
         return subclass.deserialize(raw)
 
 
@@ -51,20 +53,17 @@ class InternalFile(File):
 
     @classmethod
     def get_typename(cls) -> str:
-        return 'file'
+        return "file"
 
     def serialize(self):
         return {
             "type": "file",
-            "file": {
-                "url": self.url,
-                "expiry_time": serialize(self.expiry_time)
-            }
+            "file": {"url": self.url, "expiry_time": serialize(self.expiry_time)},
         }
 
     @classmethod
     def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
-        return cls(raw['file']['url'], raw['file']['expiry_time'])
+        return cls(raw["file"]["url"], raw["file"]["expiry_time"])
 
 
 @dataclass
@@ -74,17 +73,11 @@ class ExternalFile(File):
 
     @classmethod
     def get_typename(cls) -> str:
-        return 'external'
+        return "external"
 
     def serialize(self):
-        return {
-            "type": "external",
-            "name": self.name,
-            "external": {
-                "url": self.url
-            }
-        }
+        return {"type": "external", "name": self.name, "external": {"url": self.url}}
 
     @classmethod
     def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
-        return cls(raw['external']['url'], '')
+        return cls(raw["external"]["url"], "")

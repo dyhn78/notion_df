@@ -3,7 +3,15 @@ from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime, date
-from typing import Any, Literal, Optional, TYPE_CHECKING, Iterator, Union, overload, cast
+from typing import (
+    Any,
+    Literal,
+    Optional,
+    TYPE_CHECKING,
+    Iterator,
+    Union,
+    overload,
+)
 from uuid import UUID
 
 from typing_extensions import Self
@@ -19,20 +27,17 @@ if TYPE_CHECKING:
 @dataclass
 class PartialParent(DualSerializable):
     # https://developers.notion.com/reference/parent-object
-    typename: Literal['block_id', 'database_id', 'page_id', 'workspace']
+    typename: Literal["block_id", "database_id", "page_id", "workspace"]
     id: Optional[UUID]
 
     def serialize(self) -> dict[str, Any]:
-        return {
-            "type": self.typename,
-            self.typename: str(self.id) if self.id else None
-        }
+        return {"type": self.typename, self.typename: str(self.id) if self.id else None}
 
     @classmethod
     def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
-        typename = raw['type']
-        if typename == 'workspace':
-            return cls('workspace', None)
+        typename = raw["type"]
+        if typename == "workspace":
+            return cls("workspace", None)
         parent_id = UUID(raw[typename])
         return cls(typename, parent_id)
 
@@ -41,13 +46,13 @@ class PartialParent(DualSerializable):
         from notion_df.entity import Block, Database, Page, Workspace
 
         match self.typename:
-            case 'block_id':
+            case "block_id":
                 return Block(self.id)
-            case 'database_id':
+            case "database_id":
                 return Database(self.id)
-            case 'page_id':
+            case "page_id":
                 return Page(self.id)
-            case 'workspace':
+            case "workspace":
                 return Workspace()
 
 
@@ -88,7 +93,7 @@ class Icon(DualSerializable, metaclass=ABCMeta):
 
     @classmethod
     def _deserialize_subclass(cls, raw: dict[str, Any]) -> Self:
-        subclass = icon_registry[raw['type']]
+        subclass = icon_registry[raw["type"]]
         return subclass.deserialize(raw)
 
     def as_emoji_value(self) -> str:
@@ -101,41 +106,39 @@ class Emoji(Icon):
     value: str
 
     def __repr__(self) -> str:
-        return f'{type(self).__name__}({self.value})'
+        return f"{type(self).__name__}({self.value})"
 
     def __str__(self) -> str:
         return self.value
 
     @classmethod
     def get_typename(cls) -> str:
-        return 'emoji'
+        return "emoji"
 
     def serialize(self):
-        return {
-            "type": "emoji",
-            "emoji": self.value
-        }
+        return {"type": "emoji", "emoji": self.value}
 
     @classmethod
     def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
-        return cls(raw['emoji'])
+        return cls(raw["emoji"])
 
 
 @dataclass
 class DateRange(DualSerializable):
     """timezone option is disabled. you should handle timezone inside 'start' and 'end'."""
+
     start: date | datetime | None
     end: date | datetime | None
 
     @overload
-    def __init__(self, start: date | datetime | None):
-        ...
+    def __init__(self, start: date | datetime | None): ...
 
     @overload
-    def __init__(self, start: date | datetime, end: date | datetime | None):
-        ...
+    def __init__(self, start: date | datetime, end: date | datetime | None): ...
 
-    def __init__(self, start: date | datetime | None = None, end: date | datetime | None = None):
+    def __init__(
+        self, start: date | datetime | None = None, end: date | datetime | None = None
+    ):
         self.start = start
         self.end = end
 
@@ -171,7 +174,11 @@ class SelectOption(DualSerializable):
         if isinstance(other, SelectOption):
             if self.id != other.id and self.id is not None and other.id is not None:
                 return False
-            if self.color != other.color and self.color is not None and other.color is not None:
+            if (
+                self.color != other.color
+                and self.color is not None
+                and other.color is not None
+            ):
                 return False
             return self.name == other.name
         if isinstance(other, str):
