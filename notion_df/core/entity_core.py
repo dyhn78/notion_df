@@ -62,6 +62,7 @@ class Entity(Hashable, Generic[EntityDataT], metaclass=ABCMeta):
         """
         return self.local_data
 
+    @final
     @property
     def local_data(self) -> Union[EntityDataT, Undefined]:
         return real_data_dict.get(self._hash_key, preview_data_dict.get(self._hash_key, undefined))
@@ -99,11 +100,6 @@ class RetrievableEntity(Entity[EntityDataT], Generic[EntityDataT]):
     @retrieve_on_demand
     def data(self) -> EntityDataT:
         return self.local_data
-
-    @final
-    @property
-    def local_data(self) -> Union[EntityDataT, Undefined]:
-        return super().local_data
 
 
 CallableT = TypeVar("CallableT", bound=Callable[[RetrievableEntity, ...], Any])
