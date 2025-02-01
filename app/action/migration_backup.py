@@ -269,8 +269,8 @@ class MigrationBackupLoadAction(SequentialAction):
                 ):
                     return prop_name
         if (
-            this_db_enum == DatabaseEnum.set_db
-            and linked_db_enum == DatabaseEnum.set_db
+                this_db_enum == DatabaseEnum.region_db
+                and linked_db_enum == DatabaseEnum.region_db
         ):
             if this_prev_db_enum == DatabaseEnum.idea_db:
                 return pick(lower)

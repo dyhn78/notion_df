@@ -575,7 +575,7 @@ class MatchEventProgress(MatchSequentialAction):
             if target.properties[stage_is_progress_prop]
         ]
         reading_list = event.properties[record_to_reading_prop]
-        if self.target_db == DatabaseEnum.set_db.entity and stage_list:
+        if self.target_db == DatabaseEnum.region_db.entity and stage_list:
             return RelationPagePropertyValue(stage_list)
         if (
             self.target_db == DatabaseEnum.reading_db.entity
