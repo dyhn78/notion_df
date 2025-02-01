@@ -197,7 +197,7 @@ class MigrationBackupLoadAction(SequentialAction):
                             PageProperties(
                                 {
                                     synced_prop: synced_prop.page_value(
-                                        that_page.get_data().properties[synced_prop]
+                                        that_page.properties[synced_prop]
                                         + [this_page]
                                     )
                                 }
