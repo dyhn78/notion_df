@@ -134,8 +134,9 @@ class MigrationBackupLoadAction(SequentialAction):
         # TODO: manually remove relation to itself
         for this_new_prop in this_new_properties:
             this_new_prop: RelationProperty
+            # TODO: lookup the db property' relevant "unique constraint" field
             if (start in this_new_prop.name) or (
-                schedule in this_new_prop.name
+                progress in this_new_prop.name
                 and this_page.parent == DatabaseEnum.event_db.entity
             ):
                 timei_list = this_new_properties[this_new_prop]
