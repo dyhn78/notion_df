@@ -32,8 +32,8 @@ def is_server_error(exception: BaseException) -> bool:
                 # requests.exceptions.SSLError,
             ]
         )
-    if isinstance(exception, requests.exceptions.ConnectionError):
-        return "Connection aborted." == exception.args[0]
+    if "Connection aborted." in str(exception):
+        return True
     return False
 
 
