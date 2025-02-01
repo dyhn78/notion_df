@@ -16,7 +16,7 @@ from app.my_block import (
     weeki_date_range_prop,
     datei_to_weeki_prop,
     record_to_datei_prop,
-    record_to_set_prop,
+    record_to_channel_prop,
     record_to_reading_prop,
     reading_to_main_date_prop,
     reading_to_start_date_prop,
@@ -29,11 +29,11 @@ from app.my_block import (
     parse_date_title_match,
     record_to_progress_datei_prop,
     get_earliest_datei,
-    stage_is_progress_prop,
+    record_is_progress_prop,
     record_to_stage_prop,
-    record_to_scrap_prop,
+    record_to_check_prop,
     record_to_thread_prop,
-    record_to_idea_prop,
+    record_to_heart_prop,
     record_to_gist_prop,
     relevant,
     lower,
@@ -571,11 +571,11 @@ class MatchEventProgress(MatchSequentialAction):
     ) -> Optional[RelationPagePropertyValue]:
         stage_list = [
             target
-            for target in event.properties[record_to_set_prop]
-            if target.properties[stage_is_progress_prop]
+            for target in event.properties[record_to_channel_prop]
+            if target.properties[record_is_progress_prop]
         ]
         reading_list = event.properties[record_to_reading_prop]
-        if self.target_db == DatabaseEnum.region_db.entity and stage_list:
+        if self.target_db == DatabaseEnum.channel_db.entity and stage_list:
             return RelationPagePropertyValue(stage_list)
         if (
             self.target_db == DatabaseEnum.reading_db.entity
@@ -626,11 +626,11 @@ class CopyEventProgressRels(MatchSequentialAction):
         for rel_prop in [
             record_to_progress_datei_prop,
             record_to_stage_prop,
-            record_to_idea_prop,
+            record_to_heart_prop,
             record_to_thread_prop,
-            record_to_set_prop,
+            record_to_channel_prop,
             record_to_reading_prop,
-            record_to_scrap_prop,
+            record_to_check_prop,
             record_to_gist_prop,
         ]:
             if rel_prop == record_to_progress_datei_prop:
