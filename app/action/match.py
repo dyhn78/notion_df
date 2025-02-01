@@ -25,11 +25,10 @@ from app.my_block import (
     korean_weekday,
     record_kind_prop,
     datei_date_prop,
-    record_needs_sch_datei_prop,
+    thread_needs_sch_datei_prop,
     parse_date_title_match,
-    record_to_progress_datei_prop,
+    record_to_prog_datei_prop,
     get_earliest_datei,
-    record_is_progress_prop,
     record_to_stage_prop,
     record_to_check_prop,
     record_to_thread_prop,
@@ -38,7 +37,7 @@ from app.my_block import (
     relevant,
     lower,
     record_contents_merged_prop,
-    record_to_schedule_datei_prop,
+    record_to_sch_datei_prop,
 )
 from notion_df.core.collection import Paginator
 from notion_df.core.struct import repr_object
@@ -48,7 +47,6 @@ from notion_df.property import (
     RelationProperty,
     TitleProperty,
     PageProperties,
-    RelationPagePropertyValue,
     CheckboxProperty,
     CheckboxFormulaProperty,
 )
@@ -248,31 +246,31 @@ class PrependDateiOnRecordTitle(MatchSequentialAction):
     @staticmethod
     def check_needs_separator(record: Page) -> bool:
         if record.parent == DatabaseEnum.thread_db.entity:
-            return record.properties[record_needs_sch_datei_prop]
+            return record.properties[thread_needs_sch_datei_prop]
         return True
 
 
-class CopyRecordDateiScheduleToDatei(MatchSequentialAction):
-    def __init__(self, base: MatchActionBase, record: DatabaseEnum, prop: str):
+class CopyRecordDatei(MatchSequentialAction):
+    def __init__(self, base: MatchActionBase, record: DatabaseEnum, src_datei_prop: str):
         super().__init__(base)
         self.record_db = record.entity
         self.record_to_datei_prop = RelationProperty(DatabaseEnum.datei_db.prefix_title)
-        self.record_to_datei_sch_prop = RelationProperty(
-            f"{DatabaseEnum.datei_db.prefix}{prop}"
+        self.record_to_src_datei_prop = RelationProperty(
+            f"{DatabaseEnum.datei_db.prefix}{src_datei_prop}"
         )
 
     def __repr__(self):
         return repr_object(self, record_db=self.record_db)
 
     def query(self) -> Iterable[Page]:
-        return self.record_db.query(self.record_to_datei_sch_prop.filter.is_not_empty())
+        return self.record_db.query(self.record_to_src_datei_prop.filter.is_not_empty())
 
     def process_page(self, record: Page) -> Any:
         if not (record.parent == self.record_db):
             return
         record_datei = record.properties[self.record_to_datei_prop]
         record_datei_new = (
-            record_datei + record.properties[self.record_to_datei_sch_prop]
+                record_datei + record.properties[self.record_to_src_datei_prop]
         )
         if record_datei == record_datei_new:
             logger.info(f"{record} : Skipped")
@@ -331,7 +329,7 @@ class MatchReadingStartDatei(MatchSequentialAction):
 
         if reading_event_datei_set := {*get_reading_event_dates()}:
             return get_earliest_datei(reading_event_datei_set)
-        if reading_relevant_date := reading.properties[record_to_schedule_datei_prop]:
+        if reading_relevant_date := reading.properties[record_to_sch_datei_prop]:
             return get_earliest_datei(reading_relevant_date)
         if (
             datei_by_title := self.date_namespace.get_page_by_record_title(
@@ -513,7 +511,7 @@ class MatchDatei(MatchSequentialAction):
             logger.info(f"{datei} : Skipped")
 
 
-class MatchEventProgress(MatchSequentialAction):
+class CopyEventProgress(MatchSequentialAction):
     event_db = DatabaseEnum.event_db.entity
 
     def __init__(self, base: MatchActionBase, target_db_enum: DatabaseEnum):
@@ -546,51 +544,12 @@ class MatchEventProgress(MatchSequentialAction):
     def process_page(self, event: Page) -> Any:
         if event.parent != self.event_db:
             return
-        self.process_page_forward(event)
-        self.process_page_backward(event)
-
-    def process_page_forward(self, event: Page) -> Any:
-        if event.properties[self.event_to_target_prog_prop]:
-            logger.info(
-                f"{event} : Forward Skipped - {self.event_to_target_prog_prop.name} not empty"
-            )
-            return
-
-        target_prog_list = self._determine_forward_prog(event)
-        if not target_prog_list:
-            logger.info(f"{event} : Forward Skipped")
-            return
-        event.update(
-            properties=PageProperties(
-                {self.event_to_target_prog_prop: target_prog_list}
-            )
-        )
-
-    def _determine_forward_prog(
-        self, event: Page
-    ) -> Optional[RelationPagePropertyValue]:
-        stage_list = [
-            target
-            for target in event.properties[record_to_channel_prop]
-            if target.properties[record_is_progress_prop]
-        ]
-        reading_list = event.properties[record_to_reading_prop]
-        if self.target_db == DatabaseEnum.channel_db.entity and stage_list:
-            return RelationPagePropertyValue(stage_list)
-        if (
-            self.target_db == DatabaseEnum.reading_db.entity
-            and len(reading_list) == 1
-            and not stage_list
-        ):
-            return RelationPagePropertyValue(reading_list)
-
-    def process_page_backward(self, event: Page) -> Any:
         event_target_list = event.properties[self.event_to_target_prop]
         event_target_list_new = (
             event_target_list + event.properties[self.event_to_target_prog_prop]
         )
         if event_target_list == event_target_list_new:
-            logger.info(f"{event} : Backward Skipped")
+            logger.info(f"{event} : CopyEventProgress Skipped since already added")
             return
         event.update(PageProperties({self.event_to_target_prop: event_target_list_new}))
 
@@ -624,7 +583,7 @@ class CopyEventProgressRels(MatchSequentialAction):
         target_new_properties = PageProperties()
 
         for rel_prop in [
-            record_to_progress_datei_prop,
+            record_to_prog_datei_prop,
             record_to_stage_prop,
             record_to_heart_prop,
             record_to_thread_prop,
@@ -633,7 +592,7 @@ class CopyEventProgressRels(MatchSequentialAction):
             record_to_check_prop,
             record_to_gist_prop,
         ]:
-            if rel_prop == record_to_progress_datei_prop:
+            if rel_prop == record_to_prog_datei_prop:
                 target_rel_prop = record_to_datei_prop
             elif self.event_db.properties[rel_prop].database == self.target_db:
                 try:

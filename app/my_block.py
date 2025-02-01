@@ -226,12 +226,8 @@ start = "시작"
 relevant = "연관"
 upper = "상위"
 lower = "하위"
-record_to_progress_datei_prop = RelationProperty(
-    DatabaseEnum.datei_db.prefix + progress
-)
-record_to_schedule_datei_prop = RelationProperty(
-    DatabaseEnum.datei_db.prefix + schedule
-)
+record_to_prog_datei_prop = RelationProperty(DatabaseEnum.datei_db.prefix + progress)
+record_to_sch_datei_prop = RelationProperty(DatabaseEnum.datei_db.prefix + schedule)
 record_datetime_auto_prop = DateFormulaPropertyKey(EmojiCode.TIMER + "일시")
 record_timestr_prop = RichTextProperty(EmojiCode.CALENDAR + "일지")
 record_kind_prop = SelectProperty("📕유형")
@@ -248,8 +244,7 @@ record_to_thread_prop = RelationProperty(DatabaseEnum.thread_db.prefix_title)
 record_to_reading_prop = RelationProperty(DatabaseEnum.reading_db.prefix_title)
 record_to_gist_prop = RelationProperty(DatabaseEnum.gist_db.prefix_title)
 record_to_check_prop = RelationProperty(DatabaseEnum.check_db.prefix_title)
-record_needs_sch_datei_prop = CheckboxFormulaProperty("🛠일정")
-record_is_progress_prop = CheckboxFormulaProperty("🛠진행")
+thread_needs_sch_datei_prop = CheckboxFormulaProperty("🛠일정")
 reading_to_main_date_prop = RelationProperty(DatabaseEnum.datei_db.prefix_title)
 reading_to_start_date_prop = RelationProperty(DatabaseEnum.datei_db.prefix + start)
 reading_to_event_prog_prop = RelationProperty(DatabaseEnum.event_db.prefix + progress)
