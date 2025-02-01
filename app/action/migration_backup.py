@@ -9,6 +9,7 @@ from app.core.action import SequentialAction
 from app.my_block import (
     DatabaseEnum,
     schedule,
+    progress,
     start,
     upper,
     lower,
