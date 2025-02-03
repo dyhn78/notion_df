@@ -9,6 +9,7 @@ from app.core.action import SequentialAction
 from app.my_block import (
     DatabaseEnum,
     schedule,
+    progress,
     start,
     upper,
     lower,
@@ -134,8 +135,9 @@ class MigrationBackupLoadAction(SequentialAction):
         # TODO: manually remove relation to itself
         for this_new_prop in this_new_properties:
             this_new_prop: RelationProperty
+            # TODO: lookup the db property' relevant "unique constraint" field
             if (start in this_new_prop.name) or (
-                schedule in this_new_prop.name
+                progress in this_new_prop.name
                 and this_page.parent == DatabaseEnum.event_db.entity
             ):
                 timei_list = this_new_properties[this_new_prop]
@@ -197,7 +199,7 @@ class MigrationBackupLoadAction(SequentialAction):
                             PageProperties(
                                 {
                                     synced_prop: synced_prop.page_value(
-                                        that_page.get_data().properties[synced_prop]
+                                        that_page.properties[synced_prop]
                                         + [this_page]
                                     )
                                 }
@@ -269,16 +271,16 @@ class MigrationBackupLoadAction(SequentialAction):
                 ):
                     return prop_name
         if (
-            this_db_enum == DatabaseEnum.set_db
-            and linked_db_enum == DatabaseEnum.set_db
+                this_db_enum == DatabaseEnum.channel_db
+                and linked_db_enum == DatabaseEnum.channel_db
         ):
-            if this_prev_db_enum == DatabaseEnum.idea_db:
+            if this_prev_db_enum == DatabaseEnum.heart_db:
                 return pick(lower)
         if (
-            this_db_enum == DatabaseEnum.idea_db
-            and linked_db_enum == DatabaseEnum.idea_db
+                this_db_enum == DatabaseEnum.heart_db
+                and linked_db_enum == DatabaseEnum.heart_db
         ):
-            if this_prev_db_enum == DatabaseEnum.scrap_db:
+            if this_prev_db_enum == DatabaseEnum.check_db:
                 return pick(lower)
             return pick(upper)
 

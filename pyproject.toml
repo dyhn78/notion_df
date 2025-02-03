@@ -1,1 +1,5 @@
-# TODO
+# TODO basic stuffs
+[tool.ruff]
+extend-exclude = [
+    "app/action/__init__.py"
+]
