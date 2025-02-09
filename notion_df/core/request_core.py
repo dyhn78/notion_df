@@ -20,10 +20,15 @@ MAX_PAGE_SIZE = 100
 
 
 def is_server_error(exception: BaseException) -> bool:
+    # http request completed with failure response
     if isinstance(exception, RequestError):
         status_code = exception.response.status_code
         return 500 <= status_code < 600 or status_code == 409  # conflict
+    # http request did not completed
+    # TODO[1]: move inside RequestError
     if isinstance(exception, requests.exceptions.RequestException):
+        if "Connection aborted." in str(exception):
+            return True
         return any(
             isinstance(exception, cls)
             for cls in [
@@ -32,8 +37,6 @@ def is_server_error(exception: BaseException) -> bool:
                 # requests.exceptions.SSLError,
             ]
         )
-    if "Connection aborted." in str(exception):
-        return True
     return False
 
 
@@ -68,6 +71,7 @@ class Request:
     )  # TODO: add request info on TimeoutError
     def execute(self) -> Response:
         logger.debug(self)
+        # TODO[1]: catch RequestException
         response = requests.request(
             method=self.method.value,
             url=self.url,
