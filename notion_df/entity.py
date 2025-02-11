@@ -493,6 +493,7 @@ class Page(BaseBlock["PageData"]):
     ) -> PPVT:
         logger.info(f'Page.retrieve_property_item({self}, property_id="{property_id}")')
         from notion_df.request.page import RetrievePagePropertyItem
+        from notion_df.property import Property
 
         if isinstance(prop := property_id, Property):
             property_id = prop.id
