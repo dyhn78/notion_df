@@ -9,7 +9,7 @@ from app.action.media_scrap.yes24_scraper import (
     get_yes24_detail_page_url,
     Yes24ScrapResult,
 )
-from app.action.core import IndividualAction
+from app.action.__core__ import IndividualAction
 from app.my_block import DatabaseEnum
 from app.service.webdriver_service import WebDriverService
 from notion_df.constant import BlockColor

@@ -7,7 +7,6 @@ from uuid import UUID
 from loguru import logger
 from typing_extensions import Self
 
-from notion_df.contents import BlockContents
 from notion_df.core.collection import Paginator
 from notion_df.core.entity_core import (
     retrieve_on_demand,
@@ -21,6 +20,7 @@ from notion_df.core.uuid_parser import get_page_or_database_id, get_block_id
 from notion_df.core.variable import token
 
 if TYPE_CHECKING:
+    from notion_df.contents import BlockContents
     from notion_df.data import BlockData, DatabaseData, PageData
     from notion_df.file import ExternalFile, File
     from notion_df.filter import Filter

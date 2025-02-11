@@ -7,7 +7,7 @@ from typing import Iterable, Optional, Any, cast
 
 from loguru import logger
 
-from app.action.core import SequentialAction, Action
+from app.action.__core__ import SequentialAction, Action
 from app.emoji_code import EmojiCode
 from app.my_block import (
     DatabaseEnum,

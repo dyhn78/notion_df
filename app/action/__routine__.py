@@ -20,7 +20,7 @@ from app.action.migration_backup import (
     MigrationBackupLoadAction,
     MigrationBackupSaveAction,
 )
-from app.action.core import CompositeAction
+from app.action.__core__ import CompositeAction
 from app.my_block import (
     DatabaseEnum,
     schedule,

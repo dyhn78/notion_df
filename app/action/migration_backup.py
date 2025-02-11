@@ -5,7 +5,7 @@ from typing import Optional, cast, Iterator, Iterable
 import tenacity
 from loguru import logger
 
-from app.action.core import SequentialAction
+from app.action.__core__ import SequentialAction
 from app.my_block import (
     DatabaseEnum,
     schedule,
