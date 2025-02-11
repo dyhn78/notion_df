@@ -7,7 +7,7 @@ from typing import Iterable, Optional, Any, cast
 
 from loguru import logger
 
-from app.core.action import SequentialAction, Action
+from app.action.core import SequentialAction, Action
 from app.emoji_code import EmojiCode
 from app.my_block import (
     DatabaseEnum,
@@ -659,7 +659,7 @@ class DatabaseNamespace(metaclass=ABCMeta):
             return page
         page_list = self.database.query(self.title_prop.filter.equals(title_plain_text))
         if not page_list:
-            return
+            return None
         page = page_list[0]
         self.pages_by_title_plain_text[page.properties.title.plain_text] = page
         return page
@@ -702,7 +702,7 @@ class DateINamespace(DatabaseNamespace):
     def get_page_by_record_title(self, title_plain_text: str) -> Optional[Page]:
         date = self.get_date_of_title(title_plain_text)
         if date is None:
-            return
+            return None
         return self.get_page_by_date(date)
 
     @classmethod

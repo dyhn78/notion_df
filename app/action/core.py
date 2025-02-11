@@ -3,30 +3,30 @@ from __future__ import annotations
 import inspect
 import json
 import traceback
+from abc import ABCMeta, abstractmethod
 from datetime import datetime, timedelta
 from functools import wraps
 from pathlib import Path
-from typing import Optional, Callable, ParamSpec, cast, TypeVar
-from uuid import UUID
+from pprint import pformat
+from typing import Iterable, Any, final, Callable, TypeVar, Optional, ParamSpec, cast
 
 import tenacity
-from loguru import logger
 from typing_extensions import Self
+from uuid import UUID
+
+from loguru import logger
 
 from app import log_dir
-from notion_df.contents import (
-    CodeBlockContents,
-    DividerBlockContents,
-    ParagraphBlockContents,
-    ToggleBlockContents,
-)
+from app.my_block import is_template
+from notion_df.contents import ParagraphBlockContents, ToggleBlockContents, CodeBlockContents, DividerBlockContents
 from notion_df.core.serialization import deserialize_datetime
-from notion_df.core.variable import my_tz
-from notion_df.entity import Block
+from notion_df.core.struct import repr_object
+from notion_df.core.variable import print_width, my_tz
+from notion_df.entity import Page, Workspace, Block
 from notion_df.rich_text import RichText, TextSpan, UserMention
 
 
-class WorkflowSkipException(Exception):
+class ActionSkipException(Exception):
     pass
 
 
@@ -35,7 +35,7 @@ T = TypeVar("T")
 
 
 def entrypoint(func: Callable[P, T]) -> Callable[P, Optional[T]]:
-    """functions with this decorator can handle WorkflowSkipException,
+    """functions with this decorator can handle ActionSkipException,
     therefore, it can be used as the program entrypoint."""
 
     def get_latest_log_path() -> Optional[Path]:
@@ -59,15 +59,15 @@ def entrypoint(func: Callable[P, T]) -> Callable[P, Optional[T]]:
                 ret = func(*args, **kwargs)
                 logger.info(f'{"#" * 5} Done.')
                 return ret
-            except WorkflowSkipException as e:
+            except ActionSkipException as e:
                 logger.info(f'{"#" * 5} Skipped : {e.args[0]}')
-                return
+                return None
 
     wrapper.__signature__ = inspect.signature(func)
     return cast(Callable[P, Optional[T]], wrapper)
 
 
-class WorkflowRecord:
+class ActionRecord:
     user_id = UUID("a007d150-bc67-422c-87db-030a71867dd9")
     page_id = UUID("6d16dc6747394fca95dc169c8c736e2d")
     page_block = Block(page_id)
@@ -95,7 +95,7 @@ class WorkflowRecord:
             ParagraphBlockContents, last_execution_time_block.data.contents
         ).rich_text.plain_text
         if self.last_execution_time_str == "STOP":
-            raise WorkflowSkipException("last_execution_time_str == 'STOP'")
+            raise ActionSkipException("last_execution_time_str == 'STOP'")
         if self.last_execution_time_str == "ALL":
             self.last_success_time = None
         else:
@@ -109,11 +109,11 @@ class WorkflowRecord:
         return f"{self.start_time_str} - {round(execution_time.total_seconds(), 3)} seconds"
 
     def __exit__(self, exc_type: type, exc_val, exc_tb) -> None:
-        if exc_type is WorkflowSkipException:
+        if exc_type is ActionSkipException:
             return
         if exc_type is not None:
             logger.info(
-                f'WorkflowRecord.__exit__() : {exc_type=}, {exc_val=}, exc_tb="""{exc_tb}"""'
+                f'{type(self).__name__}.__exit__() : {exc_type=}, {exc_val=}, exc_tb="""{exc_tb}"""'
             )
         child_block_values = []
         if exc_type is None:
@@ -178,3 +178,116 @@ class WorkflowRecord:
         summary_block = log_group_block.append_children([summary_block_value])[0]
         if child_block_values:
             summary_block.append_children(child_block_values)
+
+
+
+class Action(metaclass=ABCMeta):
+    def __repr__(self) -> str:
+        return repr_object(self)
+
+    @abstractmethod
+    def process_pages(self, pages: Iterable[Page]) -> Any:
+        """process the given pages."""
+        pass
+
+    @abstractmethod
+    def process_all(self) -> Any:
+        """process with full-scan query."""
+        pass
+
+    @final
+    def process_by_last_edited_time(
+        self, lower_bound: datetime, upper_bound: Optional[datetime] = None
+    ) -> Any:
+        """process with last-edited-time-based search query.
+        Note: Notion APIs' last_edited_time info is only with minutes resolution"""
+        logger.info(
+            f"{self}.process_by_last_edited_time(): lower_bound - {lower_bound}, upper_bound - {upper_bound}"
+        )
+        lower_bound = lower_bound.replace(second=0, microsecond=0)
+        pages = set()
+        for page in Workspace().search_by_title("", "page", page_size=30):
+            if upper_bound is not None and page.last_edited_time > upper_bound:
+                continue
+            if page.last_edited_time < lower_bound:
+                break
+            pages.add(page)
+        logger.debug(f"Before filtered - {pformat(pages, width=print_width)}")
+        pages.discard(Page(ActionRecord.page_id))
+        pages = {page for page in pages if not is_template(page)}
+        if not pages:
+            raise ActionSkipException("No new record.")
+        logger.debug(f"After filtered - {pformat(pages, width=print_width)}")
+        return self.process_pages(pages)
+
+    @entrypoint
+    def run_by_last_edited_time(
+        self, lower_bound: datetime, upper_bound: Optional[datetime] = None
+    ) -> Any:
+        return self.process_by_last_edited_time(lower_bound, upper_bound)
+
+    @entrypoint
+    def run_all(self, update_last_success_time: bool = False) -> Any:
+        with ActionRecord(update_last_success_time=update_last_success_time):
+            return self.process_all()
+
+    @entrypoint
+    def run_recent(
+        self, interval: timedelta, update_last_success_time: bool = False
+    ) -> Any:
+        with ActionRecord(
+            update_last_success_time=update_last_success_time
+        ) as wf_rec:
+            return self.process_by_last_edited_time(
+                wf_rec.start_time - interval, wf_rec.start_time
+            )
+
+    @entrypoint
+    def run_from_last_success(self, update_last_success_time: bool) -> Any:
+        # TODO: if the last result was RetryError, sleep for 10 mins
+        with ActionRecord(
+            update_last_success_time=update_last_success_time
+        ) as wf_rec:
+            if wf_rec.last_success_time is None:
+                self.process_all()
+            return self.process_by_last_edited_time(wf_rec.last_success_time, None)
+
+
+class CompositeAction(Action):
+    def __init__(self, actions: list[Action]) -> None:
+        self.actions = actions
+
+    def process_all(self) -> Any:
+        logger.info(f"#### {self}")
+        for action in self.actions:
+            action.process_all()
+
+    def process_pages(self, pages: Iterable[Page]) -> Any:
+        logger.info(f"#### {self}")
+        for action in self.actions:
+            action.process_pages(pages)
+
+
+class IndividualAction(Action):
+    @final
+    def process_all(self) -> Any:
+        logger.info(f"#### {self}")
+        return self.process_pages(
+            page for page in self.query() if not is_template(page)
+        )
+
+    @abstractmethod
+    def query(self) -> Iterable[Page]:
+        pass
+
+
+class SequentialAction(IndividualAction):
+    @final
+    def process_pages(self, pages: Iterable[Page]) -> Any:
+        logger.info(f"#### {self}")
+        for page in pages:
+            self.process_page(page)
+
+    @abstractmethod
+    def process_page(self, page: Page) -> Any:
+        pass
