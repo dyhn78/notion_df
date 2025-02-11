@@ -7,7 +7,6 @@ from loguru import logger
 from notion_df.core.data_core import EntityDataT
 from notion_df.core.entity_core import Entity
 from notion_df.core.serialization import SerializationError
-from notion_df.core.struct import get_generic_arg
 
 
 class ResponseBackupService:

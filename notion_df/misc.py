@@ -7,7 +7,6 @@ from typing import (
     Any,
     Literal,
     Optional,
-    TYPE_CHECKING,
     Iterator,
     Union,
     overload,
@@ -16,12 +15,10 @@ from uuid import UUID
 
 from typing_extensions import Self
 
-from notion_df.core.serialization import DualSerializable
 from notion_df.constant import BlockColor, OptionColor
+from notion_df.core.serialization import DualSerializable
 from notion_df.core.struct import force_cast
-
-if TYPE_CHECKING:
-    from notion_df.entity import Block, Database, Page, Workspace
+from notion_df.entity import Block, Database, Page, Workspace
 
 
 @dataclass

@@ -24,7 +24,7 @@ if TYPE_CHECKING:
     from notion_df.data import BlockData, DatabaseData, PageData
     from notion_df.file import ExternalFile, File
     from notion_df.filter import Filter
-    from notion_df.misc import Icon, PartialParent
+    from notion_df.misc import Icon
     from notion_df.property import Property, PageProperties, DatabaseProperties, PPVT
     from notion_df.rich_text import RichText
     from notion_df.sort import Sort, TimestampSort, Direction
@@ -346,6 +346,7 @@ class Database(BaseBlock["DatabaseData"], Generic[PageT]):
     ) -> Page:
         logger.info(f"Database.create_child_page({self})")
         from notion_df.request.page import CreatePage
+        from notion_df.misc import PartialParent
 
         return Page(
             CreatePage(
@@ -540,6 +541,7 @@ class Page(BaseBlock["PageData"]):
     ) -> Page:
         logger.info(f"Page.create_child_page({self})")
         from notion_df.request.page import CreatePage
+        from notion_df.misc import PartialParent
 
         return Page(
             CreatePage(
