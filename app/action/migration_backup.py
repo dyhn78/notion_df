@@ -21,7 +21,7 @@ from app.service.backup_service import ResponseBackupService
 from notion_df.contents import ParagraphBlockContents
 from notion_df.core.request_core import RequestError
 from notion_df.data import PageData
-from notion_df.entity import Page, Database
+from notion_df.entity import Page, Database, Block
 from notion_df.property import (
     RelationProperty,
     PageProperties,
@@ -71,11 +71,11 @@ class MigrationBackupLoadAction(SequentialAction):
 
     def process_page(self, end_page: Page) -> None:
         # this_page: the global page, directly under one of the global dbs
-        this_page = next(
+        this_page: Page = next(
             (
                 breadcrumb_page
                 for breadcrumb_page in iter_breadcrumb(end_page)
-                if isinstance(this_page, Database)
+                if isinstance(breadcrumb_page.parent, Database)
                 # if DatabaseEnum.from_entity(breadcrumb_page.parent) is not None
             ),
             None,
@@ -293,7 +293,7 @@ class MigrationBackupLoadAction(SequentialAction):
 
 
 # TODO: integrate to base package
-def iter_breadcrumb(page: Page) -> Iterator[Page]:
+def iter_breadcrumb(page: Page) -> Iterator[Page | Block | Database]:
     yield page
     if page.parent is not None:
         yield from iter_breadcrumb(page.parent)

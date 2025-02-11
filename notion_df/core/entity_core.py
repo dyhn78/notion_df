@@ -115,6 +115,7 @@ class CanBeParent(metaclass=ABCMeta):
         pass
 
 
+# TODO: BaseBlock
 class HasParent(Entity, CanBeParent, metaclass=ABCMeta):
     @property
     @abstractmethod
