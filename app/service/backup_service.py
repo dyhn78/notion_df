@@ -23,7 +23,7 @@ class ResponseBackupService:
         if not path.is_file():
             return None
         response_raw_data = json.loads(path.read_text())
-        response_cls = get_generic_arg(type(entity), EntityDataT)
+        response_cls = entity.get_data_cls()
         try:
             return response_cls.deserialize(response_raw_data)
         except SerializationError:

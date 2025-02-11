@@ -124,7 +124,7 @@ class Workspace(HaveChildren):
 
 class Block(BaseBlock["BlockData"], Generic[BlockT]):
     @classmethod
-    def _get_data_cls(cls) -> type[BlockData]:
+    def get_data_cls(cls) -> type[BlockData]:
         from notion_df.data import BlockData
         return BlockData
 
@@ -248,7 +248,7 @@ class Block(BaseBlock["BlockData"], Generic[BlockT]):
 
 class Database(BaseBlock["DatabaseData"], Generic[PageT]):
     @classmethod
-    def _get_data_cls(cls) -> type[DatabaseData]:
+    def get_data_cls(cls) -> type[DatabaseData]:
         from notion_df.data import DatabaseData
         return DatabaseData
 
@@ -383,7 +383,7 @@ class Database(BaseBlock["DatabaseData"], Generic[PageT]):
 
 class Page(BaseBlock["PageData"]):
     @classmethod
-    def _get_data_cls(cls) -> type[PageData]:
+    def get_data_cls(cls) -> type[PageData]:
         from notion_df.data import PageData
         return PageData
 

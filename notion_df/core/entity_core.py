@@ -34,7 +34,7 @@ class Entity(Hashable, Generic[EntityDataT], metaclass=ABCMeta):
 
     @classmethod
     @abstractmethod
-    def _get_data_cls(cls) -> type[EntityDataT]:
+    def get_data_cls(cls) -> type[EntityDataT]:
         raise NotImplementedError
 
     def __init_subclass__(cls, **kwargs):
@@ -53,7 +53,7 @@ class Entity(Hashable, Generic[EntityDataT], metaclass=ABCMeta):
 
     @property
     def _hash_key(self) -> tuple[type[EntityDataT], UUID]:
-        return self._get_data_cls(), self.id
+        return self.get_data_cls(), self.id
 
     def __hash__(self) -> int:
         return hash(self._hash_key)
