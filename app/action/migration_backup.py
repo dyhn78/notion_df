@@ -75,7 +75,8 @@ class MigrationBackupLoadAction(SequentialAction):
             (
                 breadcrumb_page
                 for breadcrumb_page in iter_breadcrumb(end_page)
-                if DatabaseEnum.from_entity(breadcrumb_page.parent) is not None
+                if isinstance(this_page, Database)
+                # if DatabaseEnum.from_entity(breadcrumb_page.parent) is not None
             ),
             None,
         )
