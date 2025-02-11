@@ -24,7 +24,7 @@ from notion_df.core.struct import repr_object
 from notion_df.core.variable import print_width, my_tz
 from notion_df.entity import Page, Workspace, Block
 from notion_df.rich_text import RichText, TextSpan, UserMention
-from notion_df.user import User, Person
+from notion_df.user import User, Person, PartialUser
 
 
 class ActionSkipException(Exception):
@@ -69,7 +69,7 @@ def entrypoint(func: Callable[P, T]) -> Callable[P, Optional[T]]:
 
 
 class ActionRecord:
-    user = Person(UUID("a007d150-bc67-422c-87db-030a71867dd9"))
+    user = PartialUser(UUID("a007d150-bc67-422c-87db-030a71867dd9"))
     page = Page("6d16dc6747394fca95dc169c8c736e2d")
     page_block = page.as_block()
     last_success_time_parent_block = Block("c66d852e27e84d92b6203dfdadfefad8")
