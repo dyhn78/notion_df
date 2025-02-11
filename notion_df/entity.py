@@ -93,6 +93,7 @@ class Workspace(HaveChildren):
     ) -> Paginator[Union[Page, Database]]:
         from notion_df.request.search import SearchByTitle
         from notion_df.sort import TimestampSort
+        from notion_df.data import DatabaseData, PageData
 
         contents_it = SearchByTitle(
             token,
