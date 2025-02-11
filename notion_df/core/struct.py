@@ -49,7 +49,7 @@ def get_generic_arg(cls: type[Generic], cast_type: TypeT) -> TypeT:
         raise TypeError(f"{cls.__name__} should be explicitly subscribed")
     if not inspect.isabstract(cls) and not inspect.isclass(arg):
         raise TypeError(
-            f"since {cls.__name__} is not abstract, it should be subscribed with class arguments (not TypeVar)"
+            f"since {cls.__name__} is not abstract, it should be subscribed with class arguments (not {arg})"
         )
     return arg
 

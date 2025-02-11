@@ -18,11 +18,11 @@ class ResponseBackupService:
         return self.root / f"{str(entity.id).replace('-', '')}.json"
 
     def read(self, entity: Entity[EntityDataT]) -> Optional[EntityDataT]:
+        from notion_df.entity import BlockData, DatabaseData, PageData  # type: ignore
         path = self._get_path(entity)
         if not path.is_file():
-            return
-        with path.open("r") as file:
-            response_raw_data = json.load(file)
+            return None
+        response_raw_data = json.loads(path.read_text())
         response_cls = get_generic_arg(type(entity), EntityDataT)
         try:
             return response_cls.deserialize(response_raw_data)
