@@ -9,8 +9,10 @@ from uuid import UUID
 from typing_extensions import Self
 
 from notion_df.core.serialization import DualSerializable, deserialize, serialize
+from notion_df.entity import Page, Database
 from notion_df.misc import DateRange, Annotations
 from notion_df.core.collection import FinalDict
+from notion_df.user import User
 
 span_registry: FinalDict[tuple[str, ...], type[Span]] = FinalDict()
 
@@ -168,8 +170,7 @@ class Equation(Span):
 
 @dataclass
 class UserMention(Span):
-    # TODO: use User class
-    user_id: UUID
+    user: User
     # ---
     annotations: Optional[Annotations] = None
     """
@@ -184,7 +185,7 @@ class UserMention(Span):
             "type": "mention",
             "mention": {
                 "type": "user",
-                "user": {"object": "user", "id": str(self.user_id)},
+                "user": {"object": "user", "id": str(self.user.id)},
             },
         }
 
@@ -199,7 +200,7 @@ class UserMention(Span):
 
 @dataclass
 class PageMention(Span):
-    page_id: UUID
+    page: Page
     # ---
     annotations: Optional[Annotations] = None
     """
@@ -212,7 +213,7 @@ class PageMention(Span):
     def serialize(self) -> dict[str, Any]:
         return {
             "type": "mention",
-            "mention": {"type": "page", "page": {"id": str(self.page_id)}},
+            "mention": {"type": "page", "page": {"id": str(self.page.id)}},
         }
 
     @classmethod
@@ -226,7 +227,7 @@ class PageMention(Span):
 
 @dataclass
 class DatabaseMention(Span):
-    database_id: UUID
+    database: Database
     # ---
     annotations: Optional[Annotations] = None
     """
@@ -239,7 +240,7 @@ class DatabaseMention(Span):
     def serialize(self) -> dict[str, Any]:
         return {
             "type": "mention",
-            "mention": {"type": "database", "database": {"id": str(self.database_id)}},
+            "mention": {"type": "database", "database": {"id": str(self.database.id)}},
         }
 
     @classmethod

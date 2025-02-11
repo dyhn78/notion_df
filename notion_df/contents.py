@@ -11,6 +11,7 @@ from typing_extensions import Self
 from notion_df.constant import BlockColor, CodeLanguage
 from notion_df.core.collection import FinalDict
 from notion_df.core.serialization import DualSerializable
+from notion_df.entity import Block
 from notion_df.file import File
 from notion_df.misc import Icon
 from notion_df.rich_text import RichText, Span
@@ -334,14 +335,14 @@ class OriginalSyncedBlockValue(SyncedBlockContents):
 class DuplicatedSyncedBlockValue(SyncedBlockContents):
     """cannot be changed (2023-04-02)"""
 
-    block_id: UUID
+    block: Block
 
     def serialize(self) -> dict[str, Any]:
-        return {"synced_from": {"block_id": str(self.block_id)}}
+        return {"synced_from": {"block_id": str(self.block.id)}}
 
     @classmethod
     def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
-        return cls(block_id=UUID(raw["synced_from"]["block_id"]))
+        return cls(block=Block(raw["synced_from"]["block_id"]))
 
 
 @dataclass

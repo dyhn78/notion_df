@@ -17,7 +17,6 @@ from typing import (
     Union,
     Iterable,
     Final,
-    TYPE_CHECKING,
     get_type_hints,
     cast,
     overload,
@@ -30,6 +29,7 @@ from notion_df.core.collection import FinalDict
 from notion_df.core.exception import ImplementationError
 from notion_df.core.serialization import DualSerializable, deserialize, serialize
 from notion_df.core.struct import repr_object
+from notion_df.entity import Page, Database
 from notion_df.file import Files
 from notion_df.filter import (
     PropertyFilter,
@@ -48,7 +48,6 @@ from notion_df.filter import (
 from notion_df.misc import StatusGroups, SelectOption, DateRange
 from notion_df.rich_text import RichText
 from notion_df.user import PartialUser, User
-from notion_df.entity import Page, Database
 
 property_registry: FinalDict[str, type[Property]] = FinalDict()
 PVT = TypeVar("PVT")

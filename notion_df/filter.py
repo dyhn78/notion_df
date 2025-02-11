@@ -8,6 +8,7 @@ from uuid import UUID
 
 from notion_df.core.serialization import Serializable, serialize
 from notion_df.constant import TimestampName, Number
+from notion_df.entity import Page
 
 CompoundOperator = Literal["and", "or"]
 RollupAggregate = Literal["any", "every", "none"]
@@ -241,11 +242,11 @@ class RelationFilterBuilder(FilterBuilder):
     def get_typename(cls) -> str:
         return "relation"
 
-    def contains(self, value: UUID) -> Filter:
-        return self._build({"contains": str(value)})
+    def contains(self, value: Page) -> Filter:
+        return self._build({"contains": str(value.id)})
 
-    def does_not_contain(self, value: UUID) -> Filter:
-        return self._build({"does_not_contain": str(value)})
+    def does_not_contain(self, value: Page) -> Filter:
+        return self._build({"does_not_contain": str(value.id)})
 
     def is_empty(self) -> Filter:
         return self._build({"is_empty": True})
