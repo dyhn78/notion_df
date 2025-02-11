@@ -116,7 +116,7 @@ class HaveChildren(metaclass=ABCMeta):
         pass
 
 
-class HaveParent(Entity, HaveChildren, metaclass=ABCMeta):
+class HaveParentAndChildren(Entity, HaveChildren, metaclass=ABCMeta):
     @property
     @abstractmethod
     def parent(self) -> HaveChildren:
@@ -132,6 +132,6 @@ class HaveParent(Entity, HaveChildren, metaclass=ABCMeta):
         return repr_object(self, id=self.id, parent=self._repr_parent())
 
 
-class BaseBlock(RetrievableEntity[EntityDataT], HaveChildren, HaveParent):
+class BaseBlock(RetrievableEntity[EntityDataT], HaveParentAndChildren, metaclass=ABCMeta):
     """base class for Block, Database, Page"""
     pass
