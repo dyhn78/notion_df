@@ -80,6 +80,9 @@ class Entity(Hashable, Generic[EntityDataT], metaclass=ABCMeta):
         )
 
 
+CallableT = TypeVar("CallableT", bound=Callable)
+
+
 def retrieve_on_demand(func: CallableT) -> CallableT:
     def wrapper(self: RetrievableEntity, *args, **kwargs):
         if (result := func(self, *args, **kwargs)) is not undefined:
@@ -93,7 +96,7 @@ def retrieve_on_demand(func: CallableT) -> CallableT:
     return wrapper
 
 
-class RetrievableEntity(Entity[EntityDataT], Generic[EntityDataT]):
+class RetrievableEntity(Entity[EntityDataT]):
     @abstractmethod
     def retrieve(self) -> Self:
         # TODO: raise EntityNotExistError(ValueError), with page_exists()
@@ -106,20 +109,17 @@ class RetrievableEntity(Entity[EntityDataT], Generic[EntityDataT]):
         return self.local_data
 
 
-CallableT = TypeVar("CallableT", bound=Callable)
-
-
-class CanBeParent(metaclass=ABCMeta):
+# TODO: Generic[ChildrenT]
+class HaveChildren(metaclass=ABCMeta):
     @abstractmethod
     def _repr_as_parent(self) -> str:
         pass
 
 
-# TODO: BaseBlock
-class HasParent(Entity, CanBeParent, metaclass=ABCMeta):
+class HaveParent(Entity, HaveChildren, metaclass=ABCMeta):
     @property
     @abstractmethod
-    def parent(self) -> CanBeParent:
+    def parent(self) -> HaveChildren:
         pass
 
     @final
@@ -130,3 +130,8 @@ class HasParent(Entity, CanBeParent, metaclass=ABCMeta):
 
     def __repr__(self) -> str:
         return repr_object(self, id=self.id, parent=self._repr_parent())
+
+
+class BaseBlock(RetrievableEntity[EntityDataT], HaveChildren, HaveParent):
+    """base class for Block, Database, Page"""
+    pass

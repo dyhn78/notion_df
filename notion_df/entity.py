@@ -10,10 +10,9 @@ from typing_extensions import Self
 from notion_df.contents import BlockContents
 from notion_df.core.collection import Paginator
 from notion_df.core.entity_core import (
-    RetrievableEntity,
     retrieve_on_demand,
-    CanBeParent,
-    HasParent,
+    HaveChildren,
+    BaseBlock,
 )
 from notion_df.core.exception import ImplementationError
 from notion_df.core.request_core import RequestError
@@ -37,7 +36,7 @@ PageT = TypeVar("PageT", bound="Page")
 # TODO: import Entity;
 #  AS-IS: Entity ==> EntityData
 #  TO-BE: Entity <== EntityData
-class Workspace(CanBeParent):
+class Workspace(HaveChildren):
     # TODO: allow multiple workspace, like following:
     #  ws0 = Workspace(token)
     #  page1 = Page(id, ws0)
@@ -122,7 +121,7 @@ class Workspace(CanBeParent):
         return Paginator(element_type, it())
 
 
-class Block(RetrievableEntity[BlockData], HasParent, Generic[BlockT]):
+class Block(BaseBlock[BlockData], Generic[BlockT]):
     data_cls = BlockData
 
     @property
@@ -243,7 +242,7 @@ class Block(RetrievableEntity[BlockData], HasParent, Generic[BlockT]):
         )
 
 
-class Database(RetrievableEntity[DatabaseData], HasParent, Generic[PageT]):
+class Database(BaseBlock[DatabaseData], Generic[PageT]):
     data_cls = DatabaseData
 
     @property
@@ -375,7 +374,7 @@ class Database(RetrievableEntity[DatabaseData], HasParent, Generic[PageT]):
         )
 
 
-class Page(RetrievableEntity[PageData], HasParent):
+class Page(BaseBlock[PageData]):
     data_cls = PageData
 
     @property
