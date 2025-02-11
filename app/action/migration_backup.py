@@ -165,7 +165,7 @@ class MigrationBackupLoadAction(SequentialAction):
             this_page.update(this_new_properties)
             this_page.as_block().append_children(
                 [
-                    ParagraphBlockContents(RichText([PageMention(linked_page.id)]))
+                    ParagraphBlockContents(RichText([PageMention(linked_page)]))
                     for linked_page in new_mention_page_list
                 ]
             )

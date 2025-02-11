@@ -24,6 +24,7 @@ from notion_df.core.struct import repr_object
 from notion_df.core.variable import print_width, my_tz
 from notion_df.entity import Page, Workspace, Block
 from notion_df.rich_text import RichText, TextSpan, UserMention
+from notion_df.user import User
 
 
 class ActionSkipException(Exception):
@@ -68,9 +69,9 @@ def entrypoint(func: Callable[P, T]) -> Callable[P, Optional[T]]:
 
 
 class ActionRecord:
-    user_id = UUID("a007d150-bc67-422c-87db-030a71867dd9")
-    page_id = UUID("6d16dc6747394fca95dc169c8c736e2d")
-    page_block = Block(page_id)
+    user = User(UUID("a007d150-bc67-422c-87db-030a71867dd9"))
+    page = Page("6d16dc6747394fca95dc169c8c736e2d")
+    page_block = page.as_block()
     last_success_time_parent_block = Block("c66d852e27e84d92b6203dfdadfefad8")
     date_format = "%Y-%m-%d %H:%M:%S+09:00"
     date_group_format = "%Y-%m-%d"
@@ -142,7 +143,7 @@ class ActionRecord:
                 f"error - {self.format_time()} - {exc_type.__name__} - {exc_val}"
             )
             summary_block_value = ToggleBlockContents(
-                RichText([TextSpan(summary_text), UserMention(self.user_id)])
+                RichText([TextSpan(summary_text), UserMention(self.user)])
             )
             traceback_str = traceback.format_exc()
             child_block_values = []
@@ -213,7 +214,7 @@ class Action(metaclass=ABCMeta):
                 break
             pages.add(page)
         logger.debug(f"Before filtered - {pformat(pages, width=print_width)}")
-        pages.discard(Page(ActionRecord.page_id))
+        pages.discard(ActionRecord.page)
         pages = {page for page in pages if not is_template(page)}
         if not pages:
             raise ActionSkipException("No new record.")
