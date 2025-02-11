@@ -463,6 +463,7 @@ class Page(BaseBlock["PageData"]):
             return repr_object(self, id=self.id)
 
     def as_block(self) -> Block:
+        from notion_df.data import BlockData
         block = Block(self.id)
         BlockData(
             id=self.id,
