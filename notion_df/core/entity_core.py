@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from abc import abstractmethod, ABCMeta
+from functools import cache
 from inspect import isabstract
 from typing import (
     Final,
@@ -30,13 +31,14 @@ class Entity(Hashable, Generic[EntityDataT], metaclass=ABCMeta):
     """
 
     id: UUID
-    # noinspection PyClassVar
-    data_cls: ClassVar[type[EntityDataT]]
+
+    @classmethod
+    @abstractmethod
+    def _get_data_cls(cls) -> type[EntityDataT]:
+        raise NotImplementedError
 
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
-        if not isabstract(cls):
-            assert cls.data_cls
 
     @staticmethod
     @abstractmethod
@@ -51,7 +53,7 @@ class Entity(Hashable, Generic[EntityDataT], metaclass=ABCMeta):
 
     @property
     def _hash_key(self) -> tuple[type[EntityDataT], UUID]:
-        return self.data_cls, self.id
+        return self._get_data_cls(), self.id
 
     def __hash__(self) -> int:
         return hash(self._hash_key)

@@ -48,9 +48,7 @@ from notion_df.filter import (
 from notion_df.misc import StatusGroups, SelectOption, DateRange
 from notion_df.rich_text import RichText
 from notion_df.user import PartialUser, User
-
-if TYPE_CHECKING:
-    from notion_df.entity import Page, Database
+from notion_df.entity import Page, Database
 
 property_registry: FinalDict[str, type[Property]] = FinalDict()
 PVT = TypeVar("PVT")
@@ -382,9 +380,6 @@ class RelationDatabasePropertyValue(DatabasePropertyValue, metaclass=ABCMeta):
     @classmethod
     @cache
     def _get_type_hints(cls) -> dict[str, type]:
-        # TODO deduplicate
-        from notion_df.entity import Database
-
         return get_type_hints(
             cls, {**globals(), **{cls.__name__: cls for cls in (Database,)}}
         )
@@ -400,8 +395,6 @@ class SingleRelationDatabasePropertyValue(RelationDatabasePropertyValue):
 
     @classmethod
     def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
-        from notion_df.entity import Database
-
         return cls(Database(raw["database_id"]))
 
 
@@ -422,8 +415,6 @@ class DualRelationDatabasePropertyValue(RelationDatabasePropertyValue):
 
     @classmethod
     def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
-        from notion_df.entity import Database
-
         synced_property = DualRelationProperty(
             raw["dual_property"]["synced_property_name"]
         )
@@ -465,8 +456,6 @@ class RelationPagePropertyValue(MutableSequence["Page"], DualSerializable):
 
     @classmethod
     def _deserialize_this(cls, raw: list[dict[str, Any]]) -> Self:
-        from notion_df.entity import Page
-
         self = cls([Page(partial_page["id"]) for partial_page in raw])
         return self
 
@@ -513,8 +502,6 @@ class RelationPagePropertyValue(MutableSequence["Page"], DualSerializable):
     def __setitem__(
         self, index: int | slice, value: Union["Page", Iterable["Page"]]
     ) -> None:
-        from notion_df.entity import Page
-
         if isinstance(index, int) and isinstance(page := value, Page):
             self._data_set.remove(self._data_list[index])
             self._data_set.add(page)

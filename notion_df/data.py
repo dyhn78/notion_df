@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime
 from functools import cache
-from typing import Any, Optional, Union, TYPE_CHECKING, get_type_hints
+from typing import Any, Optional, Union, get_type_hints
 from uuid import UUID
 
 from typing_extensions import Self
@@ -14,21 +14,17 @@ from notion_df.contents import (
     UnsupportedBlockContents,
 )
 from notion_df.core.data_core import EntityData
+from notion_df.core.entity_core import Entity, RetrievableEntity
+from notion_df.entity import Block, Database, Page, Workspace
 from notion_df.file import File
 from notion_df.misc import Icon, PartialParent
 from notion_df.property import DatabaseProperties, PageProperties
 from notion_df.rich_text import RichText
 from notion_df.user import PartialUser
 
-if TYPE_CHECKING:
-    from notion_df.entity import Block, Database, Page, Workspace
-
 
 @cache
 def _get_type_hints(cls) -> dict[str, type]:
-    from notion_df.core.entity_core import Entity, RetrievableEntity
-    from notion_df.entity import Block, Database, Page, Workspace
-
     return get_type_hints(
         cls,
         {

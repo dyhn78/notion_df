@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Optional, TypeVar, Union, Any, Literal, overload, cast, Generic
+from typing import Optional, TypeVar, Union, Any, Literal, overload, cast, Generic, TYPE_CHECKING
 from uuid import UUID
 
 from loguru import logger
@@ -19,23 +19,22 @@ from notion_df.core.request_core import RequestError
 from notion_df.core.struct import undefined, repr_object
 from notion_df.core.uuid_parser import get_page_or_database_id, get_block_id
 from notion_df.core.variable import token
-from notion_df.data import BlockData, DatabaseData, PageData
-from notion_df.file import ExternalFile, File
-from notion_df.filter import Filter
-from notion_df.misc import Icon, PartialParent
-from notion_df.property import Property, PageProperties, DatabaseProperties, PPVT
-from notion_df.rich_text import RichText
-from notion_df.sort import Sort, TimestampSort, Direction
-from notion_df.user import PartialUser
+
+if TYPE_CHECKING:
+    from notion_df.data import BlockData, DatabaseData, PageData
+    from notion_df.file import ExternalFile, File
+    from notion_df.filter import Filter
+    from notion_df.misc import Icon, PartialParent
+    from notion_df.property import Property, PageProperties, DatabaseProperties, PPVT
+    from notion_df.rich_text import RichText
+    from notion_df.sort import Sort, TimestampSort, Direction
+    from notion_df.user import PartialUser
 
 BlockT = TypeVar("BlockT", bound="Block")
 DatabaseT = TypeVar("DatabaseT", bound="Database")
 PageT = TypeVar("PageT", bound="Page")
 
 
-# TODO: import Entity;
-#  AS-IS: Entity ==> EntityData
-#  TO-BE: Entity <== EntityData
 class Workspace(HaveChildren):
     # TODO: allow multiple workspace, like following:
     #  ws0 = Workspace(token)
@@ -121,8 +120,11 @@ class Workspace(HaveChildren):
         return Paginator(element_type, it())
 
 
-class Block(BaseBlock[BlockData], Generic[BlockT]):
-    data_cls = BlockData
+class Block(BaseBlock["BlockData"], Generic[BlockT]):
+    @classmethod
+    def _get_data_cls(cls) -> type[BlockData]:
+        from notion_df.data import BlockData
+        return BlockData
 
     @property
     @retrieve_on_demand
@@ -242,8 +244,11 @@ class Block(BaseBlock[BlockData], Generic[BlockT]):
         )
 
 
-class Database(BaseBlock[DatabaseData], Generic[PageT]):
-    data_cls = DatabaseData
+class Database(BaseBlock["DatabaseData"], Generic[PageT]):
+    @classmethod
+    def _get_data_cls(cls) -> type[DatabaseData]:
+        from notion_df.data import DatabaseData
+        return DatabaseData
 
     @property
     @retrieve_on_demand
@@ -374,8 +379,11 @@ class Database(BaseBlock[DatabaseData], Generic[PageT]):
         )
 
 
-class Page(BaseBlock[PageData]):
-    data_cls = PageData
+class Page(BaseBlock["PageData"]):
+    @classmethod
+    def _get_data_cls(cls) -> type[PageData]:
+        from notion_df.data import PageData
+        return PageData
 
     @property
     @retrieve_on_demand
