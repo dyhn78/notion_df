@@ -195,7 +195,7 @@ class UserMention(Span):
 
     @classmethod
     def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
-        return cls(User(raw["mention"]["user"]["id"]))
+        return cls(PartialUser(raw["mention"]["user"]["id"]))
 
 
 @dataclass
