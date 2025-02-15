@@ -10,7 +10,7 @@ from notion_df.core.serialization import DualSerializable
 
 
 @dataclass
-class PartialUser(DualSerializable):
+class PartialUser(DualSerializable):  # TODO: User
     id: UUID
 
     def serialize(self) -> dict[str, Any]:
@@ -22,7 +22,7 @@ class PartialUser(DualSerializable):
 
 
 @dataclass
-class User(DualSerializable, metaclass=ABCMeta):
+class User(DualSerializable, metaclass=ABCMeta):  # TODO: UserData
     id: UUID
     name: str = field(init=False, default=None)
     avatar_url: str = field(init=False, default=None)
