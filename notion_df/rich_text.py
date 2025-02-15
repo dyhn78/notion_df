@@ -12,7 +12,7 @@ from notion_df.core.serialization import DualSerializable, deserialize, serializ
 from notion_df.entity import Page, Database
 from notion_df.misc import DateRange, Annotations
 from notion_df.core.collection import FinalDict
-from notion_df.user import User
+from notion_df.user import User, PartialUser
 
 span_registry: FinalDict[tuple[str, ...], type[Span]] = FinalDict()
 
@@ -170,7 +170,7 @@ class Equation(Span):
 
 @dataclass
 class UserMention(Span):
-    user: User
+    user: PartialUser
     # ---
     annotations: Optional[Annotations] = None
     """
@@ -195,7 +195,7 @@ class UserMention(Span):
 
     @classmethod
     def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
-        return cls(raw["mention"]["user"]["id"])
+        return cls(User(raw["mention"]["user"]["id"]))
 
 
 @dataclass
@@ -222,7 +222,7 @@ class PageMention(Span):
 
     @classmethod
     def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
-        return cls(raw["mention"]["page"]["id"])
+        return cls(Page(raw["mention"]["page"]["id"]))
 
 
 @dataclass
@@ -249,7 +249,7 @@ class DatabaseMention(Span):
 
     @classmethod
     def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
-        return cls(raw["mention"]["database"]["id"])
+        return cls(Database(raw["mention"]["database"]["id"])]
 
 
 @dataclass
@@ -276,6 +276,7 @@ class DateMention(Span):
 
     @classmethod
     def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
+        # TODO check?
         return cls(raw["mention"]["date"])
 
 
