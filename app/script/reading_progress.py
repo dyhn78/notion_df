@@ -5,7 +5,7 @@ summit_datei1_prop = RelationProperty("🟣일간")
 summit_datei2_prop = RelationProperty("🟣생성")
 
 if __name__ == "__main__":
-    for summit in DatabaseEnum.heart_db.entity.query(
+    for summit in DatabaseEnum.point_db.entity.query(
         summit_datei2_prop.filter.is_not_empty()
     ):
         summit_datei1 = summit.data.properties[summit_datei1_prop]

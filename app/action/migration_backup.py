@@ -9,7 +9,6 @@ from app.action.__core__ import SequentialAction
 from app.my_block import (
     DatabaseEnum,
     schedule,
-    progress,
     start,
     upper,
     lower,
@@ -138,8 +137,8 @@ class MigrationBackupLoadAction(SequentialAction):
             this_new_prop: RelationProperty
             # TODO: lookup the db property' relevant "unique constraint" field
             if (start in this_new_prop.name) or (
-                progress in this_new_prop.name
-                and this_page.parent == DatabaseEnum.event_db.entity
+                this_page.parent == DatabaseEnum.event_db.entity
+                and this_new_prop.name in [DatabaseEnum.datei_db.prefix_title, DatabaseEnum.weeki_db.prefix_title]
             ):
                 timei_list = this_new_properties[this_new_prop]
                 if not timei_list:
@@ -275,13 +274,13 @@ class MigrationBackupLoadAction(SequentialAction):
                 this_db_enum == DatabaseEnum.channel_db
                 and linked_db_enum == DatabaseEnum.channel_db
         ):
-            if this_prev_db_enum == DatabaseEnum.heart_db:
+            if this_prev_db_enum == DatabaseEnum.point_db:
                 return pick(lower)
         if (
-                this_db_enum == DatabaseEnum.heart_db
-                and linked_db_enum == DatabaseEnum.heart_db
+                this_db_enum == DatabaseEnum.point_db
+                and linked_db_enum == DatabaseEnum.point_db
         ):
-            if this_prev_db_enum == DatabaseEnum.check_db:
+            if this_prev_db_enum == DatabaseEnum.scrap_db:
                 return pick(lower)
             return pick(upper)
 

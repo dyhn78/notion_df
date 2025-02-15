@@ -181,7 +181,6 @@ class ActionRecord:
             summary_block.append_children(child_block_values)
 
 
-
 class Action(metaclass=ABCMeta):
     def __repr__(self) -> str:
         return repr_object(self)

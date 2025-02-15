@@ -1,15 +1,14 @@
 from __future__ import annotations
 
 from app import backup_dir
+from app.action.__core__ import CompositeAction
 from app.action.match import (
     MatchActionBase,
     MatchDatei,
     MatchRecordWeekiByDatei,
     MatchRecordTimestr,
     MatchReadingStartDatei,
-    CopyEventProgress,
-    CopyRecordDatei,
-    CopyEventProgressRels,
+    CopyEventRelsToTarget,
     MatchRecordDateiByLastEditedTime,
     MatchRecordDateiByCreatedTime,
     MatchRecordDateiByTitle,
@@ -20,13 +19,11 @@ from app.action.migration_backup import (
     MigrationBackupLoadAction,
     MigrationBackupSaveAction,
 )
-from app.action.__core__ import CompositeAction
 from app.my_block import (
     DatabaseEnum,
     schedule,
     start,
     thread_needs_sch_datei_prop,
-    progress,
 )
 
 base = MatchActionBase()
@@ -42,20 +39,16 @@ routine_action = CompositeAction(
         MatchRecordWeekiByDatei(base, DatabaseEnum.stage_db, DatabaseEnum.weeki_db.title,
                                 DatabaseEnum.datei_db.title),
 
-        CopyEventProgress(base, DatabaseEnum.thread_db),
-        CopyEventProgress(base, DatabaseEnum.reading_db),
-        MatchRecordDateiByCreatedTime(base, DatabaseEnum.event_db, DatabaseEnum.datei_db.title),
-        MatchRecordDateiByTitle(base, DatabaseEnum.event_db, progress),
-        MatchRecordDateiByCreatedTime(base, DatabaseEnum.event_db, progress, only_if_empty=True),
-        PrependDateiOnRecordTitle(base, DatabaseEnum.event_db, progress),
-        CopyRecordDatei(base, DatabaseEnum.event_db, progress),
-        MatchRecordWeekiByDatei(base, DatabaseEnum.event_db, progress, progress),
-        MatchRecordTimestr(base, DatabaseEnum.event_db, progress),
-        CopyEventProgressRels(base, DatabaseEnum.thread_db),
-        CopyEventProgressRels(base, DatabaseEnum.reading_db),
+        MatchRecordDateiByTitle(base, DatabaseEnum.event_db, DatabaseEnum.datei_db.title),
+        MatchRecordDateiByCreatedTime(base, DatabaseEnum.event_db, DatabaseEnum.datei_db.title, only_if_empty=True),
+        PrependDateiOnRecordTitle(base, DatabaseEnum.event_db, DatabaseEnum.datei_db.title),
+        MatchRecordWeekiByDatei(base, DatabaseEnum.event_db, DatabaseEnum.datei_db.title, DatabaseEnum.datei_db.title),
+        MatchRecordTimestr(base, DatabaseEnum.event_db, DatabaseEnum.datei_db.title),
+        CopyEventRelsToTarget(base, DatabaseEnum.thread_db),
+        CopyEventRelsToTarget(base, DatabaseEnum.reading_db),
 
-        MatchRecordDateiByCreatedTime(base, DatabaseEnum.heart_db, DatabaseEnum.datei_db.title),
-        MatchRecordWeekiByDatei(base, DatabaseEnum.heart_db, DatabaseEnum.weeki_db.title, DatabaseEnum.datei_db.title),
+        MatchRecordDateiByCreatedTime(base, DatabaseEnum.point_db, DatabaseEnum.datei_db.title),
+        MatchRecordWeekiByDatei(base, DatabaseEnum.point_db, DatabaseEnum.weeki_db.title, DatabaseEnum.datei_db.title),
 
         MatchRecordDateiByCreatedTime(base, DatabaseEnum.channel_db, DatabaseEnum.datei_db.title),
         MatchRecordWeekiByDatei(base, DatabaseEnum.channel_db, DatabaseEnum.weeki_db.title,
@@ -66,24 +59,22 @@ routine_action = CompositeAction(
         MatchRecordDateiByCreatedTime(base, DatabaseEnum.thread_db, schedule, only_if_empty=True,
                                       only_if_this_checkbox_filled=thread_needs_sch_datei_prop),
         PrependDateiOnRecordTitle(base, DatabaseEnum.thread_db, schedule),
-        CopyRecordDatei(base, DatabaseEnum.thread_db, schedule),
         MatchRecordWeekiByDatei(base, DatabaseEnum.thread_db, DatabaseEnum.weeki_db.title, DatabaseEnum.datei_db.title),
         MatchRecordWeekiByDatei(base, DatabaseEnum.thread_db, schedule, schedule),
 
         MatchRecordDateiByCreatedTime(base, DatabaseEnum.reading_db, DatabaseEnum.datei_db.title),
         MatchRecordDateiByTitle(base, DatabaseEnum.reading_db, schedule),
-        CopyRecordDatei(base, DatabaseEnum.reading_db, schedule),
         MatchReadingStartDatei(base),
         MatchRecordWeekiByDatei(base, DatabaseEnum.reading_db, DatabaseEnum.weeki_db.title,
                                 DatabaseEnum.datei_db.title),
         MatchRecordWeekiByDatei(base, DatabaseEnum.reading_db, schedule, schedule),
         MatchRecordWeekiByDatei(base, DatabaseEnum.reading_db, start, start),
 
-        MatchRecordDateiByCreatedTime(base, DatabaseEnum.gist_db, DatabaseEnum.datei_db.title),
-        MatchRecordWeekiByDatei(base, DatabaseEnum.gist_db, DatabaseEnum.weeki_db.title, DatabaseEnum.datei_db.title),
-
         MatchRecordDateiByCreatedTime(base, DatabaseEnum.check_db, DatabaseEnum.datei_db.title),
-        MatchRecordWeekiByDatei(base, DatabaseEnum.check_db, DatabaseEnum.weeki_db.title,
+        MatchRecordWeekiByDatei(base, DatabaseEnum.check_db, DatabaseEnum.weeki_db.title, DatabaseEnum.datei_db.title),
+
+        MatchRecordDateiByCreatedTime(base, DatabaseEnum.scrap_db, DatabaseEnum.datei_db.title),
+        MatchRecordWeekiByDatei(base, DatabaseEnum.scrap_db, DatabaseEnum.weeki_db.title,
                                 DatabaseEnum.datei_db.title),
 
         MatchRecordDateiByTitle(base, DatabaseEnum.genai_db, DatabaseEnum.datei_db.title),

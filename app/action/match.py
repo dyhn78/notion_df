@@ -11,29 +11,27 @@ from app.action.__core__ import SequentialAction, Action
 from app.emoji_code import EmojiCode
 from app.my_block import (
     DatabaseEnum,
-    progress,
     record_timestr_prop,
     weeki_date_range_prop,
     datei_to_weeki_prop,
     record_to_datei_prop,
     record_to_channel_prop,
     record_to_reading_prop,
-    reading_to_main_date_prop,
+    reading_to_date_prop,
     reading_to_start_date_prop,
-    reading_to_event_prog_prop,
+    reading_to_event_prop,
     reading_match_date_by_created_time_prop,
     korean_weekday,
     record_kind_prop,
     datei_date_prop,
     thread_needs_sch_datei_prop,
     parse_date_title_match,
-    record_to_prog_datei_prop,
     get_earliest_datei,
     record_to_stage_prop,
-    record_to_check_prop,
+    record_to_scrap_prop,
     record_to_thread_prop,
-    record_to_heart_prop,
-    record_to_gist_prop,
+    record_to_point_prop,
+    record_to_check_prop,
     relevant,
     lower,
     record_contents_merged_prop,
@@ -250,13 +248,15 @@ class PrependDateiOnRecordTitle(MatchSequentialAction):
         return True
 
 
-class CopyRecordDatei(MatchSequentialAction):
-    def __init__(self, base: MatchActionBase, record: DatabaseEnum, src_datei_prop: str):
+class CopyRecordRel(MatchSequentialAction):
+    def __init__(self, base: MatchActionBase, record: DatabaseEnum, dst_prop: str, src_prop: str):
         super().__init__(base)
         self.record_db = record.entity
-        self.record_to_datei_prop = RelationProperty(DatabaseEnum.datei_db.prefix_title)
+        self.record_to_datei_prop = RelationProperty(
+            f"{DatabaseEnum.datei_db.prefix}{dst_prop}"
+        )
         self.record_to_src_datei_prop = RelationProperty(
-            f"{DatabaseEnum.datei_db.prefix}{src_datei_prop}"
+            f"{DatabaseEnum.datei_db.prefix}{src_prop}"
         )
 
     def __repr__(self):
@@ -288,9 +288,9 @@ class MatchReadingStartDatei(MatchSequentialAction):
         return self.reading_db.query(
             reading_to_start_date_prop.filter.is_empty()
             & (
-                reading_to_event_prog_prop.filter.is_not_empty()
-                | reading_to_main_date_prop.filter.is_not_empty()
-                | reading_match_date_by_created_time_prop.filter.is_not_empty()
+                    reading_to_event_prop.filter.is_not_empty()
+                    | reading_to_date_prop.filter.is_not_empty()
+                    | reading_match_date_by_created_time_prop.filter.is_not_empty()
             )
         )
 
@@ -318,11 +318,11 @@ class MatchReadingStartDatei(MatchSequentialAction):
                 }
             )
         )
-        logger.info(f"{reading} - {reading_to_main_date_prop.name} : {datei}")
+        logger.info(f"{reading} - {reading_to_date_prop.name} : {datei}")
 
     def find_datei(self, reading: Page) -> Optional[Page]:
         def get_reading_event_dates() -> Iterable[Page]:
-            reading_event_progs = reading.properties[reading_to_event_prog_prop]
+            reading_event_progs = reading.properties[reading_to_event_prop]
             for event in reading_event_progs:
                 if date_list := event.properties[record_to_datei_prop]:
                     yield date_list[0]
@@ -511,90 +511,45 @@ class MatchDatei(MatchSequentialAction):
             logger.info(f"{datei} : Skipped")
 
 
-class CopyEventProgress(MatchSequentialAction):
+class CopyEventRelsToTarget(MatchSequentialAction):
     event_db = DatabaseEnum.event_db.entity
 
     def __init__(self, base: MatchActionBase, target_db_enum: DatabaseEnum):
         super().__init__(base)
         self.target_db = target_db_enum.entity
-        self.event_to_target_prop: RelationProperty = RelationProperty(
+        self.event_to_target_prop = RelationProperty(
             target_db_enum.prefix_title
         )
-        self.event_to_target_prog_prop: RelationProperty = RelationProperty(
-            target_db_enum.prefix + progress
-        )
 
     def __repr__(self):
         return repr_object(self, target_db=self.target_db)
 
     def query(self) -> Iterable[Page]:
         return self.event_db.query(
-            filter=(
-                (
-                    self.event_to_target_prop.filter.is_not_empty()
-                    & self.event_to_target_prog_prop.filter.is_empty()
-                )
-                | (
-                    self.event_to_target_prop.filter.is_empty()
-                    & self.event_to_target_prog_prop.filter.is_not_empty()
-                )
-            )
+            filter=self.event_to_target_prop.filter.is_not_empty()
         )
 
     def process_page(self, event: Page) -> Any:
         if event.parent != self.event_db:
             return
-        event_target_list = event.properties[self.event_to_target_prop]
-        event_target_list_new = (
-            event_target_list + event.properties[self.event_to_target_prog_prop]
-        )
-        if event_target_list == event_target_list_new:
-            logger.info(f"{event} : CopyEventProgress Skipped since already added")
-            return
-        event.update(PageProperties({self.event_to_target_prop: event_target_list_new}))
-
-
-class CopyEventProgressRels(MatchSequentialAction):
-    event_db = DatabaseEnum.event_db.entity
-
-    def __init__(self, base: MatchActionBase, target_db_enum: DatabaseEnum):
-        super().__init__(base)
-        self.target_db = target_db_enum.entity
-        self.event_to_target_prog_prop = RelationProperty(
-            target_db_enum.prefix + progress
-        )
-
-    def __repr__(self):
-        return repr_object(self, target_db=self.target_db)
-
-    def query(self) -> Iterable[Page]:
-        return self.event_db.query(
-            filter=self.event_to_target_prog_prop.filter.is_not_empty()
-        )
-
-    def process_page(self, event: Page) -> Any:
-        if event.parent != self.event_db:
-            return
-        self.event_to_target_prog_prop: RelationProperty
-        target_list = event.properties[self.event_to_target_prog_prop]
+        self.event_to_target_prop: RelationProperty
+        target_list = event.properties[self.event_to_target_prop]
         if not target_list:
             return
         target = target_list[0]
         target_new_properties = PageProperties()
 
         for rel_prop in [
-            record_to_prog_datei_prop,
+            record_to_datei_prop,
             record_to_stage_prop,
-            record_to_heart_prop,
+            record_to_point_prop,
             record_to_thread_prop,
             record_to_channel_prop,
             record_to_reading_prop,
+            record_to_scrap_prop,
             record_to_check_prop,
-            record_to_gist_prop,
         ]:
-            if rel_prop == record_to_prog_datei_prop:
-                target_rel_prop = record_to_datei_prop
-            elif self.event_db.properties[rel_prop].database == self.target_db:
+            if self.event_db.properties[rel_prop].database == self.target_db:
                 try:
                     target_rel_prop = next(
                         prop
