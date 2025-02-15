@@ -367,7 +367,7 @@ class Database(BaseBlock["DatabaseData"], Generic[PageT]):
         filter: Optional[Filter] = None,
         sort: Optional[list[Sort]] = None,
         page_size: Optional[int] = None,
-    ) -> Paginator[PageT]:
+    ) -> Paginator[Page]:  # TODO: temp fix since generic[PageT] not recognized
         logger.info(f"Database.query({self})")
         from notion_df.request.database import QueryDatabase
 

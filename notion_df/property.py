@@ -479,6 +479,10 @@ class RelationPagePropertyValue(MutableSequence["Page"], DualSerializable):
     def __add__(self, other: Iterable[Page]) -> RelationPagePropertyValue:
         return RelationPagePropertyValue((*self, *other))
 
+    def __sub__(self, other: Iterable[Page]) -> RelationPagePropertyValue:
+        other_set = set(other)
+        return RelationPagePropertyValue(page for page in self if page not in other_set)
+
     @overload
     @abstractmethod
     def __getitem__(self, index: int) -> "Page": ...
