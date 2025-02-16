@@ -42,7 +42,7 @@ routine_action = CompositeAction(
         MatchRecordDateiByTitle(base, DatabaseEnum.event_db, DatabaseEnum.datei_db.title),
         MatchRecordDateiByCreatedTime(base, DatabaseEnum.event_db, DatabaseEnum.datei_db.title, only_if_empty=True),
         PrependDateiOnRecordTitle(base, DatabaseEnum.event_db, DatabaseEnum.datei_db.title),
-        MatchRecordWeekiByDatei(base, DatabaseEnum.event_db, DatabaseEnum.datei_db.title, DatabaseEnum.datei_db.title),
+        MatchRecordWeekiByDatei(base, DatabaseEnum.event_db, DatabaseEnum.weeki_db.title, DatabaseEnum.datei_db.title),
         MatchRecordTimestr(base, DatabaseEnum.event_db, DatabaseEnum.datei_db.title),
         CopyEventRelsToTarget(base, DatabaseEnum.thread_db),
         CopyEventRelsToTarget(base, DatabaseEnum.reading_db),
