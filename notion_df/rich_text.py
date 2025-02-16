@@ -4,15 +4,13 @@ import functools
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, field
 from typing import Optional, Any, Literal, Iterable, cast
-from uuid import UUID
-
 from typing_extensions import Self
 
+from notion_df.core.collection import FinalDict
 from notion_df.core.serialization import DualSerializable, deserialize, serialize
 from notion_df.entity import Page, Database
 from notion_df.misc import DateRange, Annotations
-from notion_df.core.collection import FinalDict
-from notion_df.user import User, PartialUser
+from notion_df.user import PartialUser
 
 span_registry: FinalDict[tuple[str, ...], type[Span]] = FinalDict()
 
@@ -249,7 +247,7 @@ class DatabaseMention(Span):
 
     @classmethod
     def _deserialize_this(cls, raw: dict[str, Any]) -> Self:
-        return cls(Database(raw["mention"]["database"]["id"])]
+        return cls(Database(raw["mention"]["database"]["id"]))
 
 
 @dataclass
