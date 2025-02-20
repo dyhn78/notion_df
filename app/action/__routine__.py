@@ -32,13 +32,6 @@ routine_action = CompositeAction(
         MigrationBackupLoadAction(backup_dir),
         MigrationBackupSaveAction(backup_dir),
 
-        MatchDatei(base),
-        MatchRecordDateiByTitle(base, DatabaseEnum.stage_db, DatabaseEnum.datei_db.title),
-        MatchRecordDateiByCreatedTime(base, DatabaseEnum.stage_db, DatabaseEnum.datei_db.title),
-        PrependDateiOnRecordTitle(base, DatabaseEnum.stage_db, DatabaseEnum.datei_db.title),
-        MatchRecordWeekiByDatei(base, DatabaseEnum.stage_db, DatabaseEnum.weeki_db.title,
-                                DatabaseEnum.datei_db.title),
-
         MatchRecordDateiByTitle(base, DatabaseEnum.event_db, DatabaseEnum.datei_db.title),
         MatchRecordDateiByCreatedTime(base, DatabaseEnum.event_db, DatabaseEnum.datei_db.title, only_if_empty=True),
         PrependDateiOnRecordTitle(base, DatabaseEnum.event_db, DatabaseEnum.datei_db.title),
@@ -47,11 +40,17 @@ routine_action = CompositeAction(
         CopyEventRelsToTarget(base, DatabaseEnum.thread_db),
         CopyEventRelsToTarget(base, DatabaseEnum.reading_db),
 
+        MatchRecordDateiByCreatedTime(base, DatabaseEnum.check_db, DatabaseEnum.datei_db.title),
+        MatchRecordWeekiByDatei(base, DatabaseEnum.check_db, DatabaseEnum.weeki_db.title, DatabaseEnum.datei_db.title),
+
         MatchRecordDateiByCreatedTime(base, DatabaseEnum.point_db, DatabaseEnum.datei_db.title),
         MatchRecordWeekiByDatei(base, DatabaseEnum.point_db, DatabaseEnum.weeki_db.title, DatabaseEnum.datei_db.title),
 
-        MatchRecordDateiByCreatedTime(base, DatabaseEnum.channel_db, DatabaseEnum.datei_db.title),
-        MatchRecordWeekiByDatei(base, DatabaseEnum.channel_db, DatabaseEnum.weeki_db.title,
+        MatchDatei(base),
+        MatchRecordDateiByTitle(base, DatabaseEnum.stage_db, DatabaseEnum.datei_db.title),
+        MatchRecordDateiByCreatedTime(base, DatabaseEnum.stage_db, DatabaseEnum.datei_db.title),
+        PrependDateiOnRecordTitle(base, DatabaseEnum.stage_db, DatabaseEnum.datei_db.title),
+        MatchRecordWeekiByDatei(base, DatabaseEnum.stage_db, DatabaseEnum.weeki_db.title,
                                 DatabaseEnum.datei_db.title),
 
         MatchRecordDateiByCreatedTime(base, DatabaseEnum.thread_db, DatabaseEnum.datei_db.title),
@@ -70,8 +69,9 @@ routine_action = CompositeAction(
         MatchRecordWeekiByDatei(base, DatabaseEnum.reading_db, schedule, schedule),
         MatchRecordWeekiByDatei(base, DatabaseEnum.reading_db, start, start),
 
-        MatchRecordDateiByCreatedTime(base, DatabaseEnum.check_db, DatabaseEnum.datei_db.title),
-        MatchRecordWeekiByDatei(base, DatabaseEnum.check_db, DatabaseEnum.weeki_db.title, DatabaseEnum.datei_db.title),
+        MatchRecordDateiByCreatedTime(base, DatabaseEnum.channel_db, DatabaseEnum.datei_db.title),
+        MatchRecordWeekiByDatei(base, DatabaseEnum.channel_db, DatabaseEnum.weeki_db.title,
+                                DatabaseEnum.datei_db.title),
 
         MatchRecordDateiByCreatedTime(base, DatabaseEnum.scrap_db, DatabaseEnum.datei_db.title),
         MatchRecordWeekiByDatei(base, DatabaseEnum.scrap_db, DatabaseEnum.weeki_db.title,
