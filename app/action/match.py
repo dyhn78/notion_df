@@ -175,13 +175,15 @@ class MatchRecordDateiByCreatedTime(MatchSequentialAction):
 
 class MatchRecordDateiByTitle(MatchSequentialAction):
     def __init__(
-        self, base: MatchActionBase, record: DatabaseEnum, record_to_datei: str
+            self, base: MatchActionBase, record: DatabaseEnum, record_to_datei: str,
+            only_if_empty: bool = False,
     ):
         super().__init__(base)
         self.record_db = record.entity
         self.record_to_datei = RelationProperty(
             f"{DatabaseEnum.datei_db.prefix}{record_to_datei}"
         )
+        self.only_if_empty = only_if_empty
 
     def __repr__(self) -> str:
         return repr_object(
@@ -195,6 +197,9 @@ class MatchRecordDateiByTitle(MatchSequentialAction):
 
     def process_page(self, record: Page) -> Any:
         if record.parent != self.record_db:
+            return
+        if self.only_if_empty and record.properties[self.record_to_datei]:
+            logger.info(f"{record} -> Already filled")
             return
         if not (
             datei := self.date_namespace.get_page_by_record_title(

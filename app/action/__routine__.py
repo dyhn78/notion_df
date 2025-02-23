@@ -32,7 +32,7 @@ routine_action = CompositeAction(
         MigrationBackupLoadAction(backup_dir),
         MigrationBackupSaveAction(backup_dir),
 
-        MatchRecordDateiByTitle(base, DatabaseEnum.event_db, DatabaseEnum.datei_db.title),
+        MatchRecordDateiByTitle(base, DatabaseEnum.event_db, DatabaseEnum.datei_db.title, only_if_empty=True),
         MatchRecordDateiByCreatedTime(base, DatabaseEnum.event_db, DatabaseEnum.datei_db.title, only_if_empty=True),
         PrependDateiOnRecordTitle(base, DatabaseEnum.event_db, DatabaseEnum.datei_db.title),
         MatchRecordWeekiByDatei(base, DatabaseEnum.event_db, DatabaseEnum.weeki_db.title, DatabaseEnum.datei_db.title),
