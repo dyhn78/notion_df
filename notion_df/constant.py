@@ -19,6 +19,7 @@ class BlockColor(PlainStrEnum):
     PURPLE = "purple"
     PINK = "pink"
     RED = "red"
+    DEFAULT_BACKGROUND = "default_background"
     GRAY_BACKGROUND = "gray_background"
     BROWN_BACKGROUND = "brown_background"
     ORANGE_BACKGROUND = "orange_background"
