@@ -25,7 +25,7 @@ from app.my_block import (
     record_kind_prop,
     datei_date_prop,
     thread_needs_sch_datei_prop,
-    parse_date_title_match,
+    parse_yymmdd,
     get_earliest_datei,
     record_to_stage_prop,
     record_to_scrap_prop,
@@ -35,8 +35,7 @@ from app.my_block import (
     relevant,
     lower,
     record_contents_merged_prop,
-    record_to_sch_datei_prop,
-)
+    record_to_sch_datei_prop, )
 from notion_df.core.collection import Paginator
 from notion_df.core.struct import repr_object
 from notion_df.entity import Page, Database
@@ -78,7 +77,7 @@ last_edited_time_checkbox = CheckboxProperty("🟣오늘")
 
 class MatchRecordDateiByLastEditedTime(MatchSequentialAction):
     def __init__(
-        self, base: MatchActionBase, record: DatabaseEnum, record_to_datei: str
+            self, base: MatchActionBase, record: DatabaseEnum, record_to_datei: str
     ):
         super().__init__(base)
         self.record_db = record.entity
@@ -107,14 +106,14 @@ class MatchRecordDateiByLastEditedTime(MatchSequentialAction):
 
 class MatchRecordDateiByCreatedTime(MatchSequentialAction):
     def __init__(
-        self,
-        base: MatchActionBase,
-        record: DatabaseEnum,
-        record_to_datei: str,
-        only_if_empty: bool = False,
-        only_if_this_checkbox_filled: Optional[
-            CheckboxProperty | CheckboxFormulaProperty
-        ] = None,
+            self,
+            base: MatchActionBase,
+            record: DatabaseEnum,
+            record_to_datei: str,
+            only_if_empty: bool = False,
+            only_if_this_checkbox_filled: Optional[
+                CheckboxProperty | CheckboxFormulaProperty
+                ] = None,
     ):
         """
         :arg only_if_empty: will only add the datei if the current record[datei] is empty.
@@ -149,8 +148,8 @@ class MatchRecordDateiByCreatedTime(MatchSequentialAction):
             logger.info(f"{record} -> Already filled")
             return
         if (
-            self.only_if_this_checkbox_filled
-            and not record.properties[self.only_if_this_checkbox_filled]
+                self.only_if_this_checkbox_filled
+                and not record.properties[self.only_if_this_checkbox_filled]
         ):
             logger.info(
                 f"{record} -> Checkbox not filled '{self.only_if_this_checkbox_filled}'"
@@ -202,9 +201,9 @@ class MatchRecordDateiByTitle(MatchSequentialAction):
             logger.info(f"{record} -> Already filled")
             return
         if not (
-            datei := self.date_namespace.get_page_by_record_title(
-                record.properties.title.plain_text
-            )
+                datei := self.date_namespace.get_page_by_record_title(
+                    record.properties.title.plain_text
+                )
         ):
             return
         if datei in (current_datei_list := record.properties[self.record_to_datei]):
@@ -222,7 +221,7 @@ class PrependDateiOnRecordTitle(MatchSequentialAction):
     record_to_datei: RelationProperty
 
     def __init__(
-        self, base: MatchActionBase, record: DatabaseEnum, record_to_datei: str
+            self, base: MatchActionBase, record: DatabaseEnum, record_to_datei: str
     ):
         super().__init__(base)
         self.record_db = record.entity
@@ -239,7 +238,7 @@ class PrependDateiOnRecordTitle(MatchSequentialAction):
         if not (datei_list := record.properties[self.record_to_datei]):
             return
         if new_title := self.date_namespace.prepend_date_in_record_title(
-            record.retrieve(), datei_list, self.check_needs_separator(record)
+                record.retrieve(), datei_list, self.check_needs_separator(record)
         ):
             properties = PageProperties()
             properties[record.properties.title_prop] = new_title
@@ -301,8 +300,8 @@ class MatchReadingStartDatei(MatchSequentialAction):
 
     def process_page(self, reading: Page) -> None:
         if not (
-            reading.parent == self.reading_db
-            and not reading.properties[reading_to_start_date_prop]
+                reading.parent == self.reading_db
+                and not reading.properties[reading_to_start_date_prop]
         ):
             return
 
@@ -337,9 +336,9 @@ class MatchReadingStartDatei(MatchSequentialAction):
         if reading_relevant_date := reading.properties[record_to_sch_datei_prop]:
             return get_earliest_datei(reading_relevant_date)
         if (
-            datei_by_title := self.date_namespace.get_page_by_record_title(
-                reading.properties.title.plain_text
-            )
+                datei_by_title := self.date_namespace.get_page_by_record_title(
+                    reading.properties.title.plain_text
+                )
         ) is not None:
             return datei_by_title
         if reading.properties[reading_match_date_by_created_time_prop]:
@@ -349,7 +348,7 @@ class MatchReadingStartDatei(MatchSequentialAction):
 
 class MatchRecordTimestr(MatchSequentialAction):
     def __init__(
-        self, base: MatchActionBase, record: DatabaseEnum, record_to_date: str
+            self, base: MatchActionBase, record: DatabaseEnum, record_to_date: str
     ):
         super().__init__(base)
         self.record_db = record.entity
@@ -372,8 +371,8 @@ class MatchRecordTimestr(MatchSequentialAction):
 
     def will_process(self, record: Page) -> bool:
         if not (
-            record.parent == self.record_db
-            and not record.properties[record_timestr_prop]
+                record.parent == self.record_db
+                and not record.properties[record_timestr_prop]
         ):
             return False
         try:
@@ -407,11 +406,11 @@ class MatchRecordTimestr(MatchSequentialAction):
 
 class MatchRecordWeekiByDatei(MatchSequentialAction):
     def __init__(
-        self,
-        base: MatchActionBase,
-        record_db_enum: DatabaseEnum,
-        record_to_week: str,
-        record_to_date: str,
+            self,
+            base: MatchActionBase,
+            record_db_enum: DatabaseEnum,
+            record_to_week: str,
+            record_to_date: str,
     ):
         super().__init__(base)
         self.record_db = record_db_enum.entity
@@ -439,7 +438,7 @@ class MatchRecordWeekiByDatei(MatchSequentialAction):
 
     def process_page(self, record: Page) -> None:
         if not (
-            record.parent == self.record_db and record.properties[self.record_to_datei]
+                record.parent == self.record_db and record.properties[self.record_to_datei]
         ):
             return
 
@@ -458,7 +457,7 @@ class MatchRecordWeekiByDatei(MatchSequentialAction):
 
         curr_record_weeks = record.retrieve().properties[self.record_to_weeki]
         if (set(prev_record_weeks) != set(curr_record_weeks)) or (
-            set(curr_record_weeks) == set(new_record_weeks)
+                set(curr_record_weeks) == set(new_record_weeks)
         ):
             logger.info(f"{record} : Skipped")
             return
@@ -578,7 +577,7 @@ class CopyEventRelsToTarget(MatchSequentialAction):
             event_rel_value_list = event.properties[rel_prop]
             target_rel_value_list_prev = target.properties[target_rel_prop]
             target_rel_value_list_new = (
-                target_rel_value_list_prev + event_rel_value_list
+                    target_rel_value_list_prev + event_rel_value_list
             )
             if target_rel_value_list_new != target_rel_value_list_prev:
                 target_new_properties[target_rel_prop] = target_rel_value_list_new
@@ -654,46 +653,44 @@ class DateINamespace(DatabaseNamespace):
     def strf_date(cls, datei: Page) -> str:
         return datei.properties[datei_date_prop].start.strftime("%y%m%d")
 
-    _getter_pattern = re.compile(r"(\d{2})(\d{2})(\d{2}).*")
-    _getter_pattern_2 = re.compile(r"(\d{2})(\d{2})(\d{2})[|]")
-    _checker_pattern_1 = _getter_pattern
-    _checker_pattern_2 = re.compile(r"(\d{2})(\d{2})\d{2}-(\d{2})")
-
     def get_page_by_record_title(self, title_plain_text: str) -> Optional[Page]:
         date = self.get_date_of_title(title_plain_text)
         if date is None:
             return None
         return self.get_page_by_date(date)
 
+    _getter_pattern = re.compile(r"(\d{2})(\d{2})(\d{2}).*")
+    _getter_pattern_2 = re.compile(r"(\d{2})(\d{2})(\d{2})[|]")
+
     @classmethod
     def get_date_of_title(cls, title_plain_text: str) -> Optional[dt.date]:
         match = cls._getter_pattern.match(
             title_plain_text
         ) or cls._getter_pattern_2.search(title_plain_text)
-        return parse_date_title_match(match)
+        return parse_yymmdd(match)
+
+    _checker_yymmdd_1 = re.compile(r"(\d{2})(\d{2})(\d{2}).*")
+    _checker_yymmdd_2 = re.compile(r"(\d{2})(\d{2})\d{2}-(\d{2})")
+    _checker_yymm_1 = re.compile(r"(\d{2})(\d{2})[ -]")
 
     @classmethod
     def _check_date_in_record_title(
-        cls, title_plain_text: str, date_candidates: list[dt.date]
+            cls, title_plain_text: str, date_candidates: list[dt.date]
     ) -> bool:
-        dates_in_record_title = []
-        match_1 = cls._checker_pattern_1.search(title_plain_text)
-        dates_in_record_title.append(parse_date_title_match(match_1))
-        match_2 = cls._checker_pattern_2.search(title_plain_text)
-        dates_in_record_title.append(parse_date_title_match(match_2))
-        return any(
-            (
-                date_in_record_title is not None
-                and date_in_record_title in date_candidates
-            )
-            for date_in_record_title in dates_in_record_title
-        )
-
-    _digit_pattern = re.compile(r"[\d. -]+")
+        yymmdd_1 = parse_yymmdd(cls._checker_yymmdd_1.search(title_plain_text))
+        if yymmdd_1 in date_candidates:
+            return True
+        yymmdd_2 = parse_yymmdd(cls._checker_yymmdd_2.search(title_plain_text))
+        if yymmdd_2 in date_candidates:
+            return True
+        # yymm_1 = parse_yymm(cls._checker_yymm_1.search(title_plain_text))
+        # if yymm_1 and any((date.year == yymm_1.year and date.month == yymm_1.month) for date in date_candidates):
+        #     return True
+        return False
 
     @classmethod
     def prepend_date_in_record_title(
-        cls, record: Page, candidate_datei_list: Iterable[Page], needs_separator: bool
+            cls, record: Page, candidate_datei_list: Iterable[Page], needs_separator: bool
     ) -> RichText:
         """if candidate is many, choose the earliest."""
         title = record.properties.title

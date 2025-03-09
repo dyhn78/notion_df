@@ -98,7 +98,7 @@ korean_weekday = "월화수목금토일"
 DateTitleMatch = NewType("DateTitleMatch", re.Match[str])
 
 
-def parse_date_title_match(match: Optional[DateTitleMatch]) -> Optional[dt.date]:
+def parse_yymmdd(match: Optional[DateTitleMatch]) -> Optional[dt.date]:
     if not match:
         return None
     year, month, day = (int(s) for s in match.groups())
@@ -107,6 +107,17 @@ def parse_date_title_match(match: Optional[DateTitleMatch]) -> Optional[dt.date]
         return dt.date(full_year, month, day)
     except ValueError:
         # In case the date is not valid (like '000229' for non-leap year)
+        return None
+
+
+def parse_yymm(match: Optional[DateTitleMatch]) -> Optional[dt.date]:
+    if not match:
+        return None
+    year, month = (int(s) for s in match.groups())
+    full_year = (2000 if year < 90 else 1900) + year
+    try:
+        return dt.date(full_year, month, 1)
+    except ValueError:
         return None
 
 
@@ -149,7 +160,7 @@ class Datei(TitleIndexedPage):
 
     def get_date_in_title(self) -> dt.date:
         match = self.getter_pattern.match(self.title.plain_text)
-        date = parse_date_title_match(match)
+        date = parse_yymmdd(match)
         if date is None:
             raise RuntimeError(f"Invalid Datei title. {self=}")
         return date

@@ -31,6 +31,12 @@ routine_action = CompositeAction(
     [
         MigrationBackupLoadAction(backup_dir),
         MigrationBackupSaveAction(backup_dir),
+        MatchDatei(base),
+
+        MatchRecordDateiByTitle(base, DatabaseEnum.check_db, DatabaseEnum.datei_db.title),
+        MatchRecordDateiByCreatedTime(base, DatabaseEnum.check_db, DatabaseEnum.datei_db.title),
+        PrependDateiOnRecordTitle(base, DatabaseEnum.check_db, DatabaseEnum.datei_db.title),
+        MatchRecordWeekiByDatei(base, DatabaseEnum.check_db, DatabaseEnum.weeki_db.title, DatabaseEnum.datei_db.title),
 
         MatchRecordDateiByTitle(base, DatabaseEnum.event_db, DatabaseEnum.datei_db.title, only_if_empty=True),
         MatchRecordDateiByCreatedTime(base, DatabaseEnum.event_db, DatabaseEnum.datei_db.title, only_if_empty=True),
@@ -40,18 +46,13 @@ routine_action = CompositeAction(
         CopyEventRelsToTarget(base, DatabaseEnum.thread_db),
         CopyEventRelsToTarget(base, DatabaseEnum.reading_db),
 
-        MatchDatei(base),
-        MatchRecordDateiByTitle(base, DatabaseEnum.stage_db, DatabaseEnum.datei_db.title),
-        MatchRecordDateiByCreatedTime(base, DatabaseEnum.stage_db, DatabaseEnum.datei_db.title),
-        PrependDateiOnRecordTitle(base, DatabaseEnum.stage_db, DatabaseEnum.datei_db.title),
-        MatchRecordWeekiByDatei(base, DatabaseEnum.stage_db, DatabaseEnum.weeki_db.title,
-                                DatabaseEnum.datei_db.title),
-
         MatchRecordDateiByCreatedTime(base, DatabaseEnum.point_db, DatabaseEnum.datei_db.title),
         MatchRecordWeekiByDatei(base, DatabaseEnum.point_db, DatabaseEnum.weeki_db.title, DatabaseEnum.datei_db.title),
 
-        MatchRecordDateiByCreatedTime(base, DatabaseEnum.check_db, DatabaseEnum.datei_db.title),
-        MatchRecordWeekiByDatei(base, DatabaseEnum.check_db, DatabaseEnum.weeki_db.title, DatabaseEnum.datei_db.title),
+        MatchRecordDateiByTitle(base, DatabaseEnum.stage_db, DatabaseEnum.datei_db.title),
+        MatchRecordDateiByCreatedTime(base, DatabaseEnum.stage_db, DatabaseEnum.datei_db.title),
+        PrependDateiOnRecordTitle(base, DatabaseEnum.stage_db, DatabaseEnum.datei_db.title),
+        MatchRecordWeekiByDatei(base, DatabaseEnum.stage_db, DatabaseEnum.weeki_db.title, DatabaseEnum.datei_db.title),
 
         MatchRecordDateiByCreatedTime(base, DatabaseEnum.thread_db, DatabaseEnum.datei_db.title),
         MatchRecordDateiByTitle(base, DatabaseEnum.thread_db, schedule),
