@@ -31,7 +31,7 @@ from app.my_block import (
     record_to_scrap_prop,
     record_to_thread_prop,
     record_to_point_prop,
-    record_to_check_prop,
+    record_to_journal_prop,
     relevant,
     lower,
     record_contents_merged_prop,
@@ -551,7 +551,7 @@ class CopyEventRelsToTarget(MatchSequentialAction):
             record_to_channel_prop,
             record_to_reading_prop,
             record_to_scrap_prop,
-            record_to_check_prop,
+            record_to_journal_prop,
         ]:
             if self.event_db.properties[rel_prop].database == self.target_db:
                 try:
