@@ -35,13 +35,13 @@ routine_action = CompositeAction(
 
         MatchRecordDateiByTitle(base, DatabaseEnum.journal_db, DatabaseEnum.datei_db.title),
         MatchRecordDateiByCreatedTime(base, DatabaseEnum.journal_db, DatabaseEnum.datei_db.title),
-        PrependDateiOnRecordTitle(base, DatabaseEnum.journal_db, DatabaseEnum.datei_db.title),
+        # PrependDateiOnRecordTitle(base, DatabaseEnum.journal_db, DatabaseEnum.datei_db.title),
         MatchRecordWeekiByDatei(base, DatabaseEnum.journal_db, DatabaseEnum.weeki_db.title,
                                 DatabaseEnum.datei_db.title),
 
         MatchRecordDateiByTitle(base, DatabaseEnum.event_db, DatabaseEnum.datei_db.title, only_if_empty=True),
         MatchRecordDateiByCreatedTime(base, DatabaseEnum.event_db, DatabaseEnum.datei_db.title, only_if_empty=True),
-        PrependDateiOnRecordTitle(base, DatabaseEnum.event_db, DatabaseEnum.datei_db.title),
+        # PrependDateiOnRecordTitle(base, DatabaseEnum.event_db, DatabaseEnum.datei_db.title),
         MatchRecordWeekiByDatei(base, DatabaseEnum.event_db, DatabaseEnum.weeki_db.title, DatabaseEnum.datei_db.title),
         MatchRecordTimestr(base, DatabaseEnum.event_db, DatabaseEnum.datei_db.title),
         CopyEventRelsToTarget(base, DatabaseEnum.thread_db),
@@ -52,14 +52,14 @@ routine_action = CompositeAction(
 
         MatchRecordDateiByTitle(base, DatabaseEnum.stage_db, DatabaseEnum.datei_db.title),
         MatchRecordDateiByCreatedTime(base, DatabaseEnum.stage_db, DatabaseEnum.datei_db.title),
-        PrependDateiOnRecordTitle(base, DatabaseEnum.stage_db, DatabaseEnum.datei_db.title),
+        # PrependDateiOnRecordTitle(base, DatabaseEnum.stage_db, DatabaseEnum.datei_db.title),
         MatchRecordWeekiByDatei(base, DatabaseEnum.stage_db, DatabaseEnum.weeki_db.title, DatabaseEnum.datei_db.title),
 
         MatchRecordDateiByCreatedTime(base, DatabaseEnum.thread_db, DatabaseEnum.datei_db.title),
         MatchRecordDateiByTitle(base, DatabaseEnum.thread_db, schedule),
         MatchRecordDateiByCreatedTime(base, DatabaseEnum.thread_db, schedule, only_if_empty=True,
                                       only_if_this_checkbox_filled=thread_needs_sch_datei_prop),
-        PrependDateiOnRecordTitle(base, DatabaseEnum.thread_db, schedule),
+        # PrependDateiOnRecordTitle(base, DatabaseEnum.thread_db, schedule),
         MatchRecordWeekiByDatei(base, DatabaseEnum.thread_db, DatabaseEnum.weeki_db.title, DatabaseEnum.datei_db.title),
         MatchRecordWeekiByDatei(base, DatabaseEnum.thread_db, schedule, schedule),
 

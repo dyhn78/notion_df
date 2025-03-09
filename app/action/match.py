@@ -671,7 +671,8 @@ class DateINamespace(DatabaseNamespace):
 
     _checker_yymmdd_1 = re.compile(r"(\d{2})(\d{2})(\d{2}).*")
     _checker_yymmdd_2 = re.compile(r"(\d{2})(\d{2})\d{2}-(\d{2})")
-    _checker_yymm_1 = re.compile(r"(\d{2})(\d{2})[ -]")
+    _checker_yymm_1 = re.compile(r"(\d{2})(\d{2})([ -]|$)")
+    _checker_yy = re.compile(r"(\d{2})([ -]|$)")
 
     @classmethod
     def _check_date_in_record_title(

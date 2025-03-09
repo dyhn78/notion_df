@@ -121,6 +121,13 @@ def parse_yymm(match: Optional[DateTitleMatch]) -> Optional[dt.date]:
         return None
 
 
+def parse_yy(match: Optional[DateTitleMatch]) -> Optional[dt.date]:
+    if not match:
+        return None
+    year = int(match.group(1))
+    return dt.date((2000 if year < 90 else 1900) + year, 1, 1)
+
+
 class TitleIndexedPage(Page, metaclass=ABCMeta):
     db: ClassVar[Database]
     title_prop: ClassVar[TitleProperty]
