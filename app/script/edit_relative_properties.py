@@ -73,7 +73,7 @@ def update_page(
 
 if __name__ == "__main__":
     for db in [
-        DatabaseEnum.area_db,
+        DatabaseEnum.doing_db,
         DatabaseEnum.reading_db,
         DatabaseEnum.datei_db,
         DatabaseEnum.weeki_db,

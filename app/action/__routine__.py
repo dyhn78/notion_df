@@ -44,7 +44,7 @@ routine_action = CompositeAction(
         # PrependDateiOnRecordTitle(base, DatabaseEnum.event_db, DatabaseEnum.datei_db.title),
         MatchRecordWeekiByDatei(base, DatabaseEnum.event_db, DatabaseEnum.weeki_db.title, DatabaseEnum.datei_db.title),
         MatchRecordTimestr(base, DatabaseEnum.event_db, DatabaseEnum.datei_db.title),
-        CopyEventRelsToTarget(base, DatabaseEnum.area_db),
+        CopyEventRelsToTarget(base, DatabaseEnum.doing_db),
         CopyEventRelsToTarget(base, DatabaseEnum.reading_db),
 
         MatchRecordDateiByCreatedTime(base, DatabaseEnum.point_db, DatabaseEnum.datei_db.title),
@@ -55,13 +55,13 @@ routine_action = CompositeAction(
         # PrependDateiOnRecordTitle(base, DatabaseEnum.stage_db, DatabaseEnum.datei_db.title),
         MatchRecordWeekiByDatei(base, DatabaseEnum.stage_db, DatabaseEnum.weeki_db.title, DatabaseEnum.datei_db.title),
 
-        MatchRecordDateiByCreatedTime(base, DatabaseEnum.area_db, DatabaseEnum.datei_db.title),
-        MatchRecordDateiByTitle(base, DatabaseEnum.area_db, schedule),
-        MatchRecordDateiByCreatedTime(base, DatabaseEnum.area_db, schedule, only_if_empty=True,
+        MatchRecordDateiByCreatedTime(base, DatabaseEnum.doing_db, DatabaseEnum.datei_db.title),
+        MatchRecordDateiByTitle(base, DatabaseEnum.doing_db, schedule),
+        MatchRecordDateiByCreatedTime(base, DatabaseEnum.doing_db, schedule, only_if_empty=True,
                                       only_if_this_checkbox_filled=thread_needs_sch_datei_prop),
-        # PrependDateiOnRecordTitle(base, DatabaseEnum.area_db, schedule),
-        MatchRecordWeekiByDatei(base, DatabaseEnum.area_db, DatabaseEnum.weeki_db.title, DatabaseEnum.datei_db.title),
-        MatchRecordWeekiByDatei(base, DatabaseEnum.area_db, schedule, schedule),
+        # PrependDateiOnRecordTitle(base, DatabaseEnum.doing_db, schedule),
+        MatchRecordWeekiByDatei(base, DatabaseEnum.doing_db, DatabaseEnum.weeki_db.title, DatabaseEnum.datei_db.title),
+        MatchRecordWeekiByDatei(base, DatabaseEnum.doing_db, schedule, schedule),
 
         MatchRecordDateiByCreatedTime(base, DatabaseEnum.reading_db, DatabaseEnum.datei_db.title),
         MatchRecordDateiByTitle(base, DatabaseEnum.reading_db, schedule),
