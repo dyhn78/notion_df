@@ -65,7 +65,13 @@ FBT = TypeVar("FBT", bound=FilterBuilder)
 #  - __repr__(typ: PropertyMeta): return(cls_attributes)
 #  - cls_attributes
 #    - use_dataclass: bool = (inherit)
-# TODO: UnsupportedProperty
+#
+# TODO: UnsupportedProperty by default
+#
+# TODO resolve following typing error:
+#   class Datei(TitleIndexedPage):
+#       title_prop = TitleProperty("제목")
+#   Datei.title_prop.foo()  # Datei.title_prop is recognized as None in PyCharm
 class Property(Generic[DPVT, PPVT, FBT], metaclass=ABCMeta):
     # TODO: move base class and PropertyValue classes to notion_df.core.property
     typename: ClassVar[str] = ""
