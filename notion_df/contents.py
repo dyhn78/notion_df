@@ -4,7 +4,6 @@ from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, field
 from functools import cache
 from typing import cast, Any, Optional, TYPE_CHECKING, get_type_hints
-from uuid import UUID
 
 from typing_extensions import Self
 

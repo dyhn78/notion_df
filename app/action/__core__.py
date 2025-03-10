@@ -18,13 +18,18 @@ from loguru import logger
 
 from app import log_dir
 from app.my_block import is_template
-from notion_df.contents import ParagraphBlockContents, ToggleBlockContents, CodeBlockContents, DividerBlockContents
+from notion_df.contents import (
+    ParagraphBlockContents,
+    ToggleBlockContents,
+    CodeBlockContents,
+    DividerBlockContents,
+)
 from notion_df.core.serialization import deserialize_datetime
 from notion_df.core.struct import repr_object
 from notion_df.core.variable import print_width, my_tz
 from notion_df.entity import Page, Workspace, Block
 from notion_df.rich_text import RichText, TextSpan, UserMention
-from notion_df.user import User, Person, PartialUser
+from notion_df.user import PartialUser
 
 
 class ActionSkipException(Exception):
@@ -235,9 +240,7 @@ class Action(metaclass=ABCMeta):
     def run_recent(
         self, interval: timedelta, update_last_success_time: bool = False
     ) -> Any:
-        with ActionRecord(
-            update_last_success_time=update_last_success_time
-        ) as wf_rec:
+        with ActionRecord(update_last_success_time=update_last_success_time) as wf_rec:
             return self.process_by_last_edited_time(
                 wf_rec.start_time - interval, wf_rec.start_time
             )
@@ -245,9 +248,7 @@ class Action(metaclass=ABCMeta):
     @entrypoint
     def run_from_last_success(self, update_last_success_time: bool) -> Any:
         # TODO: if the last result was RetryError, sleep for 10 mins
-        with ActionRecord(
-            update_last_success_time=update_last_success_time
-        ) as wf_rec:
+        with ActionRecord(update_last_success_time=update_last_success_time) as wf_rec:
             if wf_rec.last_success_time is None:
                 self.process_all()
             return self.process_by_last_edited_time(wf_rec.last_success_time, None)

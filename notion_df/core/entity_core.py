@@ -1,8 +1,6 @@
 from __future__ import annotations
 
 from abc import abstractmethod, ABCMeta
-from functools import cache
-from inspect import isabstract
 from typing import (
     Final,
     Generic,
@@ -12,7 +10,6 @@ from typing import (
     TypeVar,
     Any,
     Callable,
-    ClassVar,
 )
 from uuid import UUID
 
@@ -134,6 +131,9 @@ class HaveParentAndChildren(Entity, HaveChildren, metaclass=ABCMeta):
         return repr_object(self, id=self.id, parent=self._repr_parent())
 
 
-class BaseBlock(RetrievableEntity[EntityDataT], HaveParentAndChildren, metaclass=ABCMeta):
+class BaseBlock(
+    RetrievableEntity[EntityDataT], HaveParentAndChildren, metaclass=ABCMeta
+):
     """base class for Block, Database, Page"""
+
     pass

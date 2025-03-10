@@ -1,7 +1,17 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Optional, TypeVar, Union, Any, Literal, overload, cast, Generic, TYPE_CHECKING
+from typing import (
+    Optional,
+    TypeVar,
+    Union,
+    Any,
+    Literal,
+    overload,
+    cast,
+    Generic,
+    TYPE_CHECKING,
+)
 from uuid import UUID
 
 from loguru import logger
@@ -27,7 +37,7 @@ if TYPE_CHECKING:
     from notion_df.misc import Icon
     from notion_df.property import Property, PageProperties, DatabaseProperties, PPVT
     from notion_df.rich_text import RichText
-    from notion_df.sort import Sort, TimestampSort, Direction
+    from notion_df.sort import Sort, Direction
     from notion_df.user import PartialUser
 
 BlockT = TypeVar("BlockT", bound="Block")
@@ -126,6 +136,7 @@ class Block(BaseBlock["BlockData"], Generic[BlockT]):
     @classmethod
     def get_data_cls(cls) -> type[BlockData]:
         from notion_df.data import BlockData
+
         return BlockData
 
     @property
@@ -250,6 +261,7 @@ class Database(BaseBlock["DatabaseData"], Generic[PageT]):
     @classmethod
     def get_data_cls(cls) -> type[DatabaseData]:
         from notion_df.data import DatabaseData
+
         return DatabaseData
 
     @property
@@ -386,6 +398,7 @@ class Page(BaseBlock["PageData"]):
     @classmethod
     def get_data_cls(cls) -> type[PageData]:
         from notion_df.data import PageData
+
         return PageData
 
     @property
@@ -467,6 +480,7 @@ class Page(BaseBlock["PageData"]):
 
     def as_block(self) -> Block:
         from notion_df.data import BlockData
+
         block = Block(self.id)
         BlockData(
             id=self.id,

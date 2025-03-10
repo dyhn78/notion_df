@@ -138,7 +138,11 @@ class MigrationBackupLoadAction(SequentialAction):
             # TODO: lookup the db property' relevant "unique constraint" field
             if (start in this_new_prop.name) or (
                 this_page.parent == DatabaseEnum.event_db.entity
-                and this_new_prop.name in [DatabaseEnum.datei_db.prefix_title, DatabaseEnum.weeki_db.prefix_title]
+                and this_new_prop.name
+                in [
+                    DatabaseEnum.datei_db.prefix_title,
+                    DatabaseEnum.weeki_db.prefix_title,
+                ]
             ):
                 timei_list = this_new_properties[this_new_prop]
                 if not timei_list:
@@ -199,8 +203,7 @@ class MigrationBackupLoadAction(SequentialAction):
                             PageProperties(
                                 {
                                     synced_prop: synced_prop.page_value(
-                                        that_page.properties[synced_prop]
-                                        + [this_page]
+                                        that_page.properties[synced_prop] + [this_page]
                                     )
                                 }
                             )
@@ -271,14 +274,14 @@ class MigrationBackupLoadAction(SequentialAction):
                 ):
                     return prop_name
         if (
-                this_db_enum == DatabaseEnum.channel_db
-                and linked_db_enum == DatabaseEnum.channel_db
+            this_db_enum == DatabaseEnum.channel_db
+            and linked_db_enum == DatabaseEnum.channel_db
         ):
             if this_prev_db_enum == DatabaseEnum.point_db:
                 return pick(lower)
         if (
-                this_db_enum == DatabaseEnum.point_db
-                and linked_db_enum == DatabaseEnum.point_db
+            this_db_enum == DatabaseEnum.point_db
+            and linked_db_enum == DatabaseEnum.point_db
         ):
             if this_prev_db_enum == DatabaseEnum.scrap_db:
                 return pick(lower)
