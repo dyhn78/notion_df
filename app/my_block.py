@@ -129,9 +129,9 @@ def parse_yy(match: Optional[DateTitleMatch]) -> Optional[dt.date]:
 
 
 class TitleIndexedPage(Page, metaclass=ABCMeta):
-    db: ClassVar[Database]
-    title_prop: ClassVar[TitleProperty]
-    pages_by_title_plain_text: ClassVar[dict[str, Self]] = {}
+    db: Database
+    title_prop: TitleProperty
+    pages_by_title_plain_text: dict[str, Self] = {}
 
     def __init__(self, id_or_url: UUID | str):
         super().__init__(id_or_url)
@@ -143,7 +143,7 @@ class TitleIndexedPage(Page, metaclass=ABCMeta):
             return page
         plain_page_list = cls.db.query(cls.title_prop.filter.equals(title_plain_text))
         if not plain_page_list:
-            return
+            return None
         page = cls(plain_page_list[0].id)
         return page
 
