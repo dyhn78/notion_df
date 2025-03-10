@@ -69,5 +69,5 @@ def update_page(target: Page, prop: RelationProperty, new_prop_value: RelationPa
 
 
 if __name__ == "__main__":
-    for db in [DatabaseEnum.thread_db, DatabaseEnum.reading_db, DatabaseEnum.datei_db, DatabaseEnum.weeki_db]:
+    for db in [DatabaseEnum.area_db, DatabaseEnum.reading_db, DatabaseEnum.datei_db, DatabaseEnum.weeki_db]:
         subtract_db(db)

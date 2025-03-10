@@ -29,7 +29,7 @@ from app.my_block import (
     get_earliest_datei,
     record_to_stage_prop,
     record_to_scrap_prop,
-    record_to_thread_prop,
+    record_to_area_prop,
     record_to_point_prop,
     record_to_journal_prop,
     relevant,
@@ -247,7 +247,7 @@ class PrependDateiOnRecordTitle(MatchSequentialAction):
 
     @staticmethod
     def check_needs_separator(record: Page) -> bool:
-        if record.parent == DatabaseEnum.thread_db.entity:
+        if record.parent == DatabaseEnum.area_db.entity:
             return record.properties[thread_needs_sch_datei_prop]
         return True
 
@@ -547,7 +547,7 @@ class CopyEventRelsToTarget(MatchSequentialAction):
             record_to_datei_prop,
             record_to_stage_prop,
             record_to_point_prop,
-            record_to_thread_prop,
+            record_to_area_prop,
             record_to_channel_prop,
             record_to_reading_prop,
             record_to_scrap_prop,
