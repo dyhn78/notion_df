@@ -13,8 +13,8 @@ from app.my_block import (
     upper,
     lower,
     relevant,
-    get_earliest_datei,
-    get_earliest_weeki,
+    Datei,
+    Weeki,
 )
 from app.service.backup_service import ResponseBackupService
 from notion_df.contents import ParagraphBlockContents
@@ -145,9 +145,9 @@ class MigrationBackupLoadAction(SequentialAction):
                     raise RuntimeError(f"{this_page=}, {this_new_prop=}")
                 match timei_list[0].parent:
                     case DatabaseEnum.datei_db.entity:
-                        earliest_timei = get_earliest_datei(timei_list)
+                        earliest_timei = Datei.get_earliest(timei_list)
                     case DatabaseEnum.weeki_db.entity:
-                        earliest_timei = get_earliest_weeki(timei_list)
+                        earliest_timei = Weeki.get_earliest(timei_list)
                     case _:
                         raise RuntimeError(
                             f"{this_page=}, {this_new_prop=}, {timei_list[0].parent=}"

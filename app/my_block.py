@@ -194,6 +194,16 @@ class Datei(TitleIndexedPage):
         )
         return cls(plain_page.id)
 
+    @classmethod
+    def get_earliest(cls, datei_it: Iterable[Page]) -> Page:
+        def _get_start_date(datei: Page) -> dt.date | None:
+            assert datei.parent == DatabaseEnum.datei_db.entity
+            return datei.properties[datei_date_prop].start
+
+        return min(
+            [datei for datei in datei_it if _get_start_date(datei)], key=_get_start_date
+        )
+
 
 class Weeki(TitleIndexedPage):
     db = DatabaseEnum.weeki_db.entity
@@ -237,6 +247,16 @@ class Weeki(TitleIndexedPage):
     def _get_last_day_of_week(cls, date: dt.date) -> dt.date:
         return cls._get_first_day_of_week(date) + dt.timedelta(days=6)
 
+    @classmethod
+    def get_earliest(cls, weeki_it: Iterable[Page]) -> Page:
+        def _get_start_date(weeki: Page) -> dt.date | None:
+            assert weeki.parent == DatabaseEnum.weeki_db.entity
+            return weeki.properties[weeki_date_range_prop].start
+
+        return min(
+            [weeki for weeki in weeki_it if _get_start_date(weeki)], key=_get_start_date
+        )
+
 
 schedule = "일정"
 start = "시작"
@@ -267,23 +287,3 @@ reading_to_event_prop = RelationProperty(DatabaseEnum.event_db.prefix_title)
 reading_match_date_by_created_time_prop = CheckboxFormulaProperty(
     EmojiCode.BLACK_NOTEBOOK + "시작일<-생성시간"
 )
-
-
-def get_earliest_datei(datei_it: Iterable[Page]) -> Page:
-    def _get_start_date(datei: Page) -> dt.date | None:
-        assert datei.parent == DatabaseEnum.datei_db.entity
-        return datei.properties[datei_date_prop].start
-
-    return min(
-        [datei for datei in datei_it if _get_start_date(datei)], key=_get_start_date
-    )
-
-
-def get_earliest_weeki(weeki_it: Iterable[Page]) -> Page:
-    def _get_start_date(weeki: Page) -> dt.date | None:
-        assert weeki.parent == DatabaseEnum.weeki_db.entity
-        return weeki.properties[weeki_date_range_prop].start
-
-    return min(
-        [weeki for weeki in weeki_it if _get_start_date(weeki)], key=_get_start_date
-    )

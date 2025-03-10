@@ -26,7 +26,6 @@ from app.my_block import (
     datei_date_prop,
     thread_needs_sch_datei_prop,
     parse_yymmdd,
-    get_earliest_datei,
     record_to_stage_prop,
     record_to_scrap_prop,
     record_to_area_prop,
@@ -35,7 +34,9 @@ from app.my_block import (
     relevant,
     lower,
     record_contents_merged_prop,
-    record_to_sch_datei_prop, )
+    record_to_sch_datei_prop,
+    Datei,
+)
 from notion_df.core.collection import Paginator
 from notion_df.core.struct import repr_object
 from notion_df.entity import Page, Database
@@ -332,9 +333,9 @@ class MatchReadingStartDatei(MatchSequentialAction):
                     yield date_list[0]
 
         if reading_event_datei_set := {*get_reading_event_dates()}:
-            return get_earliest_datei(reading_event_datei_set)
+            return Datei.get_earliest(reading_event_datei_set)
         if reading_relevant_date := reading.properties[record_to_sch_datei_prop]:
-            return get_earliest_datei(reading_relevant_date)
+            return Datei.get_earliest(reading_relevant_date)
         if (
                 datei_by_title := self.date_namespace.get_page_by_record_title(
                     reading.properties.title.plain_text
