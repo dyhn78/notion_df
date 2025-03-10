@@ -96,36 +96,35 @@ def is_template(page: Page) -> bool:
 
 korean_weekday = "월화수목금토일"
 DateTitleMatch = NewType("DateTitleMatch", re.Match[str])
-
-
-def parse_yymmdd(match: Optional[DateTitleMatch]) -> Optional[dt.date]:
-    if not match:
-        return None
-    year, month, day = (int(s) for s in match.groups())
-    full_year = (2000 if year < 90 else 1900) + year
-    try:
-        return dt.date(full_year, month, day)
-    except ValueError:
-        # In case the date is not valid (like '000229' for non-leap year)
-        return None
-
-
-def parse_yymm(match: Optional[DateTitleMatch]) -> Optional[dt.date]:
-    if not match:
-        return None
-    year, month = (int(s) for s in match.groups())
-    full_year = (2000 if year < 90 else 1900) + year
-    try:
-        return dt.date(full_year, month, 1)
-    except ValueError:
-        return None
-
-
-def parse_yy(match: Optional[DateTitleMatch]) -> Optional[dt.date]:
-    if not match:
-        return None
-    year = int(match.group(1))
-    return dt.date((2000 if year < 90 else 1900) + year, 1, 1)
+schedule = "일정"
+start = "시작"
+relevant = "연관"
+upper = "상위"
+lower = "하위"
+record_to_sch_datei_prop = RelationProperty(DatabaseEnum.datei_db.prefix + schedule)
+record_datetime_auto_prop = DateFormulaPropertyKey(EmojiCode.TIMER + "일시")
+record_timestr_prop = RichTextProperty(EmojiCode.CALENDAR + "일지")
+record_kind_prop = SelectProperty("📕유형")
+record_contents_merged_prop = CheckboxFormulaProperty("🛠병합됨")
+datei_to_weeki_prop = RelationProperty(DatabaseEnum.weeki_db.prefix_title)
+datei_date_prop = DateProperty(EmojiCode.CALENDAR + "날짜")
+weeki_date_range_prop = DateProperty(EmojiCode.BIG_CALENDAR + "날짜 범위")
+event_title_prop = TitleProperty(EmojiCode.ORANGE_BOOK + "제목")
+record_to_datei_prop = RelationProperty(DatabaseEnum.datei_db.prefix_title)
+record_to_journal_prop = RelationProperty(DatabaseEnum.journal_db.prefix_title)
+record_to_point_prop = RelationProperty(DatabaseEnum.point_db.prefix_title)
+record_to_stage_prop = RelationProperty(DatabaseEnum.stage_db.prefix_title)
+record_to_area_prop = RelationProperty(DatabaseEnum.area_db.prefix_title)
+record_to_reading_prop = RelationProperty(DatabaseEnum.reading_db.prefix_title)
+record_to_channel_prop = RelationProperty(DatabaseEnum.channel_db.prefix_title)
+record_to_scrap_prop = RelationProperty(DatabaseEnum.scrap_db.prefix_title)
+thread_needs_sch_datei_prop = CheckboxFormulaProperty("🛠일정")
+reading_to_date_prop = RelationProperty(DatabaseEnum.datei_db.prefix_title)
+reading_to_start_date_prop = RelationProperty(DatabaseEnum.datei_db.prefix + start)
+reading_to_event_prop = RelationProperty(DatabaseEnum.event_db.prefix_title)
+reading_match_date_by_created_time_prop = CheckboxFormulaProperty(
+    EmojiCode.BLACK_NOTEBOOK + "시작일<-생성시간"
+)
 
 
 class TitleIndexedPage(Page, metaclass=ABCMeta):
@@ -258,32 +257,31 @@ class Weeki(TitleIndexedPage):
         )
 
 
-schedule = "일정"
-start = "시작"
-relevant = "연관"
-upper = "상위"
-lower = "하위"
-record_to_sch_datei_prop = RelationProperty(DatabaseEnum.datei_db.prefix + schedule)
-record_datetime_auto_prop = DateFormulaPropertyKey(EmojiCode.TIMER + "일시")
-record_timestr_prop = RichTextProperty(EmojiCode.CALENDAR + "일지")
-record_kind_prop = SelectProperty("📕유형")
-record_contents_merged_prop = CheckboxFormulaProperty("🛠병합됨")
-datei_to_weeki_prop = RelationProperty(DatabaseEnum.weeki_db.prefix_title)
-datei_date_prop = DateProperty(EmojiCode.CALENDAR + "날짜")
-weeki_date_range_prop = DateProperty(EmojiCode.BIG_CALENDAR + "날짜 범위")
-event_title_prop = TitleProperty(EmojiCode.ORANGE_BOOK + "제목")
-record_to_datei_prop = RelationProperty(DatabaseEnum.datei_db.prefix_title)
-record_to_journal_prop = RelationProperty(DatabaseEnum.journal_db.prefix_title)
-record_to_point_prop = RelationProperty(DatabaseEnum.point_db.prefix_title)
-record_to_stage_prop = RelationProperty(DatabaseEnum.stage_db.prefix_title)
-record_to_area_prop = RelationProperty(DatabaseEnum.area_db.prefix_title)
-record_to_reading_prop = RelationProperty(DatabaseEnum.reading_db.prefix_title)
-record_to_channel_prop = RelationProperty(DatabaseEnum.channel_db.prefix_title)
-record_to_scrap_prop = RelationProperty(DatabaseEnum.scrap_db.prefix_title)
-thread_needs_sch_datei_prop = CheckboxFormulaProperty("🛠일정")
-reading_to_date_prop = RelationProperty(DatabaseEnum.datei_db.prefix_title)
-reading_to_start_date_prop = RelationProperty(DatabaseEnum.datei_db.prefix + start)
-reading_to_event_prop = RelationProperty(DatabaseEnum.event_db.prefix_title)
-reading_match_date_by_created_time_prop = CheckboxFormulaProperty(
-    EmojiCode.BLACK_NOTEBOOK + "시작일<-생성시간"
-)
+def parse_yymmdd(match: Optional[DateTitleMatch]) -> Optional[dt.date]:
+    if not match:
+        return None
+    year, month, day = (int(s) for s in match.groups())
+    full_year = (2000 if year < 90 else 1900) + year
+    try:
+        return dt.date(full_year, month, day)
+    except ValueError:
+        # In case the date is not valid (like '000229' for non-leap year)
+        return None
+
+
+def parse_yymm(match: Optional[DateTitleMatch]) -> Optional[dt.date]:
+    if not match:
+        return None
+    year, month = (int(s) for s in match.groups())
+    full_year = (2000 if year < 90 else 1900) + year
+    try:
+        return dt.date(full_year, month, 1)
+    except ValueError:
+        return None
+
+
+def parse_yy(match: Optional[DateTitleMatch]) -> Optional[dt.date]:
+    if not match:
+        return None
+    year = int(match.group(1))
+    return dt.date((2000 if year < 90 else 1900) + year, 1, 1)
