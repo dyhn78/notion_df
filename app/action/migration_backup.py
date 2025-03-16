@@ -81,6 +81,7 @@ class MigrationBackupLoadAction(SequentialAction):
         )
         if this_page is None:
             logger.info(f"\t{end_page}: Moved outside DatabaseEnum")
+            return
 
         this_db: Database = this_page.parent
         this_prev_data: Optional[PageData] = self.response_backup.read(end_page)
