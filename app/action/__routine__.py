@@ -59,7 +59,7 @@ routine_action = CompositeAction(
         MatchRecordDateiByTitle(base, DatabaseEnum.doing_db, schedule),
         MatchRecordDateiByCreatedTime(base, DatabaseEnum.doing_db, schedule, only_if_empty=True,
                                       only_if_this_checkbox_filled=thread_needs_sch_datei_prop),
-        PrependDateiOnRecordTitle(base, DatabaseEnum.doing_db, schedule),
+        # PrependDateiOnRecordTitle(base, DatabaseEnum.doing_db, schedule),
         MatchRecordWeekiByDatei(base, DatabaseEnum.doing_db, DatabaseEnum.weeki_db.title, DatabaseEnum.datei_db.title),
         MatchRecordWeekiByDatei(base, DatabaseEnum.doing_db, schedule, schedule),
 
