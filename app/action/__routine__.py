@@ -47,8 +47,8 @@ routine_action = CompositeAction(
         CopyEventRelsToTarget(base, DatabaseEnum.doing_db),
         CopyEventRelsToTarget(base, DatabaseEnum.reading_db),
 
-        MatchRecordDateiByCreatedTime(base, DatabaseEnum.point_db, DatabaseEnum.datei_db.title),
-        MatchRecordWeekiByDatei(base, DatabaseEnum.point_db, DatabaseEnum.weeki_db.title, DatabaseEnum.datei_db.title),
+        MatchRecordDateiByCreatedTime(base, DatabaseEnum.domain_db, DatabaseEnum.datei_db.title),
+        MatchRecordWeekiByDatei(base, DatabaseEnum.domain_db, DatabaseEnum.weeki_db.title, DatabaseEnum.datei_db.title),
 
         MatchRecordDateiByTitle(base, DatabaseEnum.stage_db, DatabaseEnum.datei_db.title),
         MatchRecordDateiByCreatedTime(base, DatabaseEnum.stage_db, DatabaseEnum.datei_db.title),

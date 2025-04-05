@@ -278,11 +278,11 @@ class MigrationBackupLoadAction(SequentialAction):
             this_db_enum == DatabaseEnum.channel_db
             and linked_db_enum == DatabaseEnum.channel_db
         ):
-            if this_prev_db_enum == DatabaseEnum.point_db:
+            if this_prev_db_enum == DatabaseEnum.domain_db:
                 return pick(lower)
         if (
-            this_db_enum == DatabaseEnum.point_db
-            and linked_db_enum == DatabaseEnum.point_db
+            this_db_enum == DatabaseEnum.domain_db
+            and linked_db_enum == DatabaseEnum.domain_db
         ):
             if this_prev_db_enum == DatabaseEnum.scrap_db:
                 return pick(lower)
