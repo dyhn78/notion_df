@@ -18,7 +18,8 @@ dependencies = [
     "typing_extensions==4.10.0",
     "webdriver-manager==4.0.2",
     "psutil==5.9.6",
-    "loguru==0.7.2"
+    "loguru==0.7.2",
+    "pytest==7.3.1"  # TODO remove
 ]
 
 [project.optional-dependencies]
