@@ -1,13 +1,15 @@
 from abc import abstractmethod, ABCMeta
 from typing import Any, Callable, TypeVar, Protocol, runtime_checkable, Self
 
+from loguru import logger
+
 TypeT = TypeVar("TypeT", bound=type)
 T = TypeVar("T")
 
 
 class Serializable(metaclass=ABCMeta):
-    """representation of the resources defined in Notion REST API.
-    can be dumped into JSON object."""
+    """Representation of the resources defined in Notion REST API.
+    Can be dumped into JSON object."""
 
     @abstractmethod
     def serialize(self) -> Any:
@@ -16,39 +18,42 @@ class Serializable(metaclass=ABCMeta):
 
 @runtime_checkable
 class Deserializable(Protocol):
-    """representation of the resources defined in Notion REST API.
-    can be loaded from JSON object."""
+    """Representation of the resources defined in Notion REST API.
+    Can be loaded from JSON object."""
 
     @classmethod
     def deserialize(cls, data: Any) -> Any:
         """:param data: python object, instead of JSON string."""
 
 
-class DualSerializable(Serializable, Deserializable, metaclass=ABCMeta):
-    """dataclass representation of the resources defined in Notion REST API.
-    interchangeable with JSON object."""
-    pass
+class Concrete(Serializable, Deserializable, metaclass=ABCMeta):
+    """Classes which can deserialize into itself."""
 
-
-class Concrete(Deserializable, metaclass=ABCMeta):
     @classmethod
+    @abstractmethod
     def deserialize(cls, data: Any) -> Self:
         raise NotImplementedError
 
 
 class Dispatcher[T](Deserializable, metaclass=ABCMeta):
-    """Dispatch by the value of data["type"], or, typename."""
-
     @abstractmethod
-    def get_dest_cls(self, data: dict) -> type[Deserializable]: ...
+    def get_dispatch_target(self, data: dict) -> type[Deserializable]: ...
 
     def deserialize(self, data: Any) -> T:
-        return self.get_dest_cls(data).deserialize(data)
+        return self.get_dispatch_target(data).deserialize(data)
 
 
-class TypebasedDispatcher(Dispatcher[T], metaclass=ABCMeta):
+# TODO: clean TypeVars
+class TypenameDispatcher(Dispatcher[T]):
     """Dispatch by the value of data["type"], or, typename."""
     _registry: dict[str, type[Deserializable]] = {}
+
+    def __init__(self, name: str):
+        """:param name: must be same as the variable name"""
+        self.name = name
+
+    def __repr__(self) -> str:
+        return self.name
 
     def register(self, typename: str) -> Callable[[TypeT], TypeT]:
         def wrapper(dest_cls: TypeT) -> TypeT:
@@ -57,6 +62,11 @@ class TypebasedDispatcher(Dispatcher[T], metaclass=ABCMeta):
 
         return wrapper
 
-    def get_dest_cls(self, data: dict) -> type[Deserializable]:
-        typename = data["type"]
-        return self._registry[typename]
+    def get_dispatch_target(self, data: dict) -> type[Deserializable]:
+        typename = data.get("type")
+        try:
+            ret = self._registry[typename]
+            logger.debug(f"{self}.get_dispatch_target() => {ret}")
+            return ret
+        except KeyError:
+            raise KeyError(f"{self}.get_dispatch_target({typename=}, registry={set(self._registry.keys())})")
