@@ -24,8 +24,8 @@ from notion_df.core.entity_core import (
     BaseBlock,
 )
 from notion_df.core.exception import ImplementationError
+from notion_df.core.misc import undefined, repr_object
 from notion_df.core.request_core import RequestError
-from notion_df.core.struct import undefined, repr_object
 from notion_df.core.uuid_parser import get_page_or_database_id, get_block_id
 from notion_df.core.variable import token
 

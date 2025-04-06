@@ -9,12 +9,11 @@ from functools import wraps
 from pathlib import Path
 from pprint import pformat
 from typing import Iterable, Any, final, Callable, TypeVar, Optional, ParamSpec, cast
-
-import tenacity
-from typing_extensions import Self
 from uuid import UUID
 
+import tenacity
 from loguru import logger
+from typing_extensions import Self
 
 from app import log_dir
 from app.my_block import is_template
@@ -24,8 +23,8 @@ from notion_df.contents import (
     CodeBlockContents,
     DividerBlockContents,
 )
+from notion_df.core.misc import repr_object
 from notion_df.core.serialization import deserialize_datetime
-from notion_df.core.struct import repr_object
 from notion_df.core.variable import print_width, my_tz
 from notion_df.entity import Page, Workspace, Block
 from notion_df.rich_text import RichText, TextSpan, UserMention

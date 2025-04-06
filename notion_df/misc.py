@@ -16,8 +16,8 @@ from uuid import UUID
 from typing_extensions import Self
 
 from notion_df.constant import BlockColor, OptionColor
+from notion_df.core.misc import force_cast
 from notion_df.core.serialization import DualSerializable
-from notion_df.core.struct import force_cast
 from notion_df.entity import Block, Database, Page, Workspace
 
 

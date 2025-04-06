@@ -35,4 +35,4 @@ T = TypeVar("T")
 
 def force_cast(cls: type[T], obj: Any) -> T:
     assert isinstance(obj, cls)
-    return cast(cls, obj)
+    return cast(cls, obj)  # type: ignore

@@ -13,8 +13,8 @@ from requests import Response
 from notion_df.core.collection import PlainStrEnum
 from notion_df.core.data_core import EntityDataT
 from notion_df.core.exception import ImplementationError, NotionDfException
+from notion_df.core.misc import repr_object
 from notion_df.core.serialization import serialize
-from notion_df.core.struct import repr_object
 
 MAX_PAGE_SIZE = 100
 
