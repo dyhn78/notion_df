@@ -1,8 +1,8 @@
-from _scratch.icon import IconDispatcher
-from notion_df.file import ExternalFile
+from _scratch.icon import Icon, File, ExternalFile
 
 
 def test_icon():
     external_file_data = {"type": "external", "name": "self.name", "external": {"url": "self_url"}}
-    assert type(IconDispatcher.deserialize(external_file_data)) == ExternalFile
-    assert type()
+    assert type(Icon.deserialize(external_file_data)) == ExternalFile
+    assert Icon.deserialize(external_file_data) == File.deserialize(external_file_data) == ExternalFile.deserialize(
+        external_file_data)

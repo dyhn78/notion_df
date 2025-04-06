@@ -1,10 +1,8 @@
 from abc import abstractmethod, ABCMeta
-from typing import Any, Callable, TypeVar, Protocol, runtime_checkable, Self
+from inspect import isabstract
+from typing import Any, Callable, TypeVar, Self, final
 
 from loguru import logger
-
-TypeT = TypeVar("TypeT", bound=type)
-T = TypeVar("T")
 
 
 class Serializable(metaclass=ABCMeta):
@@ -16,57 +14,72 @@ class Serializable(metaclass=ABCMeta):
         """:return: python object, instead of JSON string."""
 
 
-@runtime_checkable
-class Deserializable(Protocol):
+class Deserializable(metaclass=ABCMeta):
     """Representation of the resources defined in Notion REST API.
     Can be loaded from JSON object."""
 
     @classmethod
-    def deserialize(cls, data: Any) -> Any:
+    @final
+    def deserialize(cls, data: Any) -> Self:
         """:param data: python object, instead of JSON string."""
-
-
-class Concrete(Serializable, Deserializable, metaclass=ABCMeta):
-    """Classes which can deserialize into itself."""
+        if isabstract(cls):
+            try:
+                get_dispatch_cls = registry__get_dispatch_cls[cls]
+            except KeyError:
+                raise NotImplementedError(
+                    f"Dispatcher not added for the base class. Cannot find a concrete class."
+                    f" cls={cls.__name__}"
+                )
+            dispatch_cls = get_dispatch_cls(data)
+            return dispatch_cls.deserialize(data)
+        else:
+            return cls._deserialize(data)
 
     @classmethod
     @abstractmethod
-    def deserialize(cls, data: Any) -> Self:
+    def _deserialize(cls, data: Any) -> Self:
         raise NotImplementedError
 
 
-class Dispatcher[T](Deserializable, metaclass=ABCMeta):
+registry__get_dispatch_cls: dict[type[Deserializable], Callable[[Any], type[Deserializable]]] = {}
+
+
+class DualSerializable(Serializable, Deserializable, metaclass=ABCMeta):
+    """Dataclass representation of the resources defined in Notion REST API.
+    Interchangeable with JSON object."""
+
+
+TypeDT = TypeVar("TypeDT", bound=type[Deserializable])
+
+
+class Dispatcher[TypeDT](metaclass=ABCMeta):
+    def __init__(self, client_cls: TypeDT) -> None:
+        self.client_cls = client_cls
+        registry__get_dispatch_cls[client_cls] = self.get_dispatch_cls
+
+    def __repr__(self) -> str:
+        return f"{type(self).__name__}({self.client_cls.__name__})"
+
     @abstractmethod
-    def get_dispatch_target(self, data: dict) -> type[Deserializable]: ...
-
-    def deserialize(self, data: Any) -> T:
-        return self.get_dispatch_target(data).deserialize(data)
+    def get_dispatch_cls(self, data: dict) -> TypeDT: ...
 
 
-# TODO: clean TypeVars
-class TypenameDispatcher(Dispatcher[T]):
+class TypeBasedDispatcher(Dispatcher[TypeDT]):
     """Dispatch by the value of data["type"], or, typename."""
     _registry: dict[str, type[Deserializable]] = {}
 
-    def __init__(self, name: str):
-        """:param name: must be same as the variable name"""
-        self.name = name
-
-    def __repr__(self) -> str:
-        return self.name
-
-    def register(self, typename: str) -> Callable[[TypeT], TypeT]:
-        def wrapper(dest_cls: TypeT) -> TypeT:
+    def register(self, typename: str) -> Callable[[TypeDT], TypeDT]:
+        def wrapper(dest_cls: TypeDT) -> TypeDT:
             self._registry[typename] = dest_cls
             return dest_cls
 
         return wrapper
 
-    def get_dispatch_target(self, data: dict) -> type[Deserializable]:
+    def get_dispatch_cls(self, data: dict) -> TypeDT:
         typename = data.get("type")
         try:
             ret = self._registry[typename]
-            logger.debug(f"{self}.get_dispatch_target() => {ret}")
+            logger.debug(f"{self}.get_dispatch_cls() => {ret}")
             return ret
         except KeyError:
-            raise KeyError(f"{self}.get_dispatch_target({typename=}, registry={set(self._registry.keys())})")
+            raise KeyError(f"{self}.get_dispatch_cls({typename=}, registry={set(self._registry.keys())})")

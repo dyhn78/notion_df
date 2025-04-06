@@ -1,21 +1,22 @@
+from abc import ABCMeta
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Self
 
-from _scratch.serialization import TypenameDispatcher, Concrete
+from _scratch.serialization import TypeBasedDispatcher, DualSerializable
 from notion_df.core.serialization import serialize_datetime
 
 
-class Icon:
-    dispatcher = TypenameDispatcher("Icon")
+class Icon(DualSerializable, metaclass=ABCMeta):
+    ...
 
 
-Icon.dispatcher = Icon.dispatcher
+_icon_dp = TypeBasedDispatcher(Icon)
 
 
-@Icon.dispatcher.register("emoji")
+@_icon_dp.register("emoji")
 @dataclass
-class Emoji(Concrete):
+class Emoji(Icon):
     """https://developers.notion.com/reference/emoji-object"""
     value: str
 
@@ -25,26 +26,25 @@ class Emoji(Concrete):
     def __str__(self) -> str:
         return self.value
 
-    @classmethod
-    def get_typename(cls) -> str:
-        return "emoji"
-
     def serialize(self):
         return {"type": "emoji", "emoji": self.value}
 
     @classmethod
-    def deserialize(cls, data: dict[str, Any]) -> Self:
+    def _deserialize(cls, data: dict[str, Any]) -> Self:
         return cls(data["emoji"])
 
 
-File = TypenameDispatcher("File")
-"""https://developers.notion.com/reference/file-object"""
+class File(Icon, metaclass=ABCMeta):
+    """https://developers.notion.com/reference/file-object"""
 
 
-@Icon.dispatcher.register("file")
-@File.register("file")
+_file_dp = TypeBasedDispatcher(File)
+
+
+@_icon_dp.register("file")
+@_file_dp.register("file")
 @dataclass
-class InternalFile(Concrete):
+class InternalFile(Icon):
     url: str
     expiry_time: datetime
 
@@ -55,14 +55,14 @@ class InternalFile(Concrete):
         }
 
     @classmethod
-    def deserialize(cls, data: dict[str, Any]) -> Self:
+    def _deserialize(cls, data: dict[str, Any]) -> Self:
         return cls(data["file"]["url"], data["file"]["expiry_time"])
 
 
-@Icon.dispatcher.register("external")
-@File.register("external")
+@_icon_dp.register("external")
+@_file_dp.register("external")
 @dataclass
-class ExternalFile(Concrete):
+class ExternalFile(Icon):
     url: str
     name: str
 
@@ -70,5 +70,5 @@ class ExternalFile(Concrete):
         return {"type": "external", "name": self.name, "external": {"url": self.url}}
 
     @classmethod
-    def deserialize(cls, data: dict[str, Any]) -> Self:
+    def _deserialize(cls, data: dict[str, Any]) -> Self:
         return cls(data["external"]["url"], "")
