@@ -5,10 +5,15 @@ from typing import Any, Self
 from _scratch.serialization import TypenameDispatcher, Concrete
 from notion_df.core.serialization import serialize_datetime
 
-Icon = TypenameDispatcher("Icon")
+
+class Icon:
+    dispatcher = TypenameDispatcher("Icon")
 
 
-@Icon.register("emoji")
+Icon.dispatcher = Icon.dispatcher
+
+
+@Icon.dispatcher.register("emoji")
 @dataclass
 class Emoji(Concrete):
     """https://developers.notion.com/reference/emoji-object"""
@@ -36,7 +41,7 @@ File = TypenameDispatcher("File")
 """https://developers.notion.com/reference/file-object"""
 
 
-@Icon.register("file")
+@Icon.dispatcher.register("file")
 @File.register("file")
 @dataclass
 class InternalFile(Concrete):
@@ -54,7 +59,7 @@ class InternalFile(Concrete):
         return cls(data["file"]["url"], data["file"]["expiry_time"])
 
 
-@Icon.register("external")
+@Icon.dispatcher.register("external")
 @File.register("external")
 @dataclass
 class ExternalFile(Concrete):
