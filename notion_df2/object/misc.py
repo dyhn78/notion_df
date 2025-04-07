@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Self
 
-from notion_df2.core.serialization import TypeBasedDispatcher, DualSerializable
+from notion_df2.core.serializable import TypeBasedDispatcher, DualSerializable
 from notion_df.core.serialization import serialize_datetime
 
 

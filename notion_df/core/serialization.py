@@ -362,6 +362,10 @@ def serialize_datetime(dt: date | datetime):
 
 
 def deserialize_datetime(serialized: str) -> date | datetime:
+    """
+    Raises:
+        dateutil.parser.ParserError
+    """
     try:
         dt = dateutil.parser.parse(serialized)
     except dateutil.parser.ParserError as e:
