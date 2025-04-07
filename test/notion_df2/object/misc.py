@@ -1,4 +1,4 @@
-from _scratch.icon import Icon, File, ExternalFile
+from notion_df2.object.misc import Icon, File, ExternalFile
 
 
 def test_icon():

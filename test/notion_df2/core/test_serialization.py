@@ -2,8 +2,8 @@ from inspect import isabstract
 
 import pytest
 
-from _scratch.icon import Icon, File, Emoji, InternalFile, ExternalFile
-from _scratch.serialization import registry__get_dispatch_class, Deserializable
+from notion_df2.object.misc import Icon, File, Emoji, InternalFile, ExternalFile
+from notion_df2.core.serialization import registry__get_dispatch_class, Deserializable
 
 
 @pytest.mark.parametrize("cls", [Icon, File, Emoji, InternalFile, ExternalFile])
