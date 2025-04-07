@@ -94,9 +94,9 @@ def _deserialize_class_type(obj: Any, tp: type, path: list[str]) -> Any:
     if issubclass(tp, dict | list | set | tuple):
         raise DeserializationError("Collection types require explicit value types", obj, tp, path)
     if issubclass(tp, datetime):
-        return serialize_datetime(obj, path)
+        return deserialize_datetime(obj, path)
     if issubclass(tp, date):
-        return serialize_date(obj, path)
+        return deserialize_date(obj, path)
     raise DeserializationError(
         _UNSUPPORTED_TYPE_MSG, obj, tp, path
     )
@@ -115,6 +115,9 @@ def _deserialize_non_class_type(obj: Any, tp: type, path: list[str]) -> Any:
             obj, tp, path
         )
     elif origin in [Union, UnionType]:
+        if typ == int | float:
+            assert isinstance(obj, int | float), DeserializationError("Not a number", obj, tp, path)
+            return obj
         try:
             inner_type, = [
                 arg for arg in args if arg is not NoneType
@@ -124,7 +127,7 @@ def _deserialize_non_class_type(obj: Any, tp: type, path: list[str]) -> Any:
                 "Union type except Optionals are not supported. Create a common base class instead.",
                 obj, tp, path
             )
-        return _deserialize(inner_type, tp, path) if obj is not None else None
+        return _deserialize(obj, inner_type, path) if obj is not None else None
     elif issubclass(origin, dict):
         ret = {}
         assert isinstance(obj, dict), DeserializationError(
