@@ -38,10 +38,9 @@ class File(Icon, metaclass=ABCMeta):
     """https://developers.notion.com/reference/file-object"""
 
 
-_file_dp = TypeBasedDispatcher(File)
+_file_dp = TypeBasedDispatcher(File, [_icon_dp])
 
 
-@_icon_dp.register("file")
 @_file_dp.register("file")
 @dataclass
 class InternalFile(Icon):
@@ -59,7 +58,6 @@ class InternalFile(Icon):
         return cls(data["file"]["url"], data["file"]["expiry_time"])
 
 
-@_icon_dp.register("external")
 @_file_dp.register("external")
 @dataclass
 class ExternalFile(Icon):

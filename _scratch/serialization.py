@@ -1,6 +1,6 @@
 from abc import abstractmethod, ABCMeta
 from inspect import isabstract
-from typing import Any, Callable, TypeVar, Self, final
+from typing import Any, Callable, TypeVar, Self, final, Iterable
 
 from loguru import logger
 
@@ -24,14 +24,14 @@ class Deserializable(metaclass=ABCMeta):
         """:param data: python object, instead of JSON string."""
         if isabstract(cls):
             try:
-                get_dispatch_cls = registry__get_dispatch_cls[cls]
+                get_dispatch_class = registry__get_dispatch_class[cls]
             except KeyError:
                 raise NotImplementedError(
                     f"Dispatcher not added for the base class. Cannot find a concrete class."
                     f" cls={cls.__name__}"
                 )
-            dispatch_cls = get_dispatch_cls(data)
-            return dispatch_cls.deserialize(data)
+            dispatch_class = get_dispatch_class(data)
+            return dispatch_class.deserialize(data)
         else:
             return cls._deserialize(data)
 
@@ -41,7 +41,7 @@ class Deserializable(metaclass=ABCMeta):
         raise NotImplementedError
 
 
-registry__get_dispatch_cls: dict[type[Deserializable], Callable[[Any], type[Deserializable]]] = {}
+registry__get_dispatch_class: dict[type[Deserializable], Callable[[Any], type[Deserializable]]] = {}
 
 
 class DualSerializable(Serializable, Deserializable, metaclass=ABCMeta):
@@ -53,15 +53,20 @@ TypeDT = TypeVar("TypeDT", bound=type[Deserializable])
 
 
 class Dispatcher[TypeDT](metaclass=ABCMeta):
-    def __init__(self, client_cls: TypeDT) -> None:
-        self.client_cls = client_cls
-        registry__get_dispatch_cls[client_cls] = self.get_dispatch_cls
+    def __init__(self, client_class: TypeDT, parent_dispatchers: Iterable[Self] = ()) -> None:
+        self.client_class = client_class
+        self.other_dispatchers = parent_dispatchers
+        registry__get_dispatch_class[client_class] = self.get_dispatch_class
 
     def __repr__(self) -> str:
-        return f"{type(self).__name__}({self.client_cls.__name__})"
+        if not self.other_dispatchers:
+            return f"{type(self).__name__}({self.client_class.__name__})"
+        else:
+            return (f"{type(self).__name__}({self.client_class.__name__},"
+                    f" [{", ".join(dispatcher.client_class.__name__ for dispatcher in self.other_dispatchers)}])")
 
     @abstractmethod
-    def get_dispatch_cls(self, data: dict) -> TypeDT: ...
+    def get_dispatch_class(self, data: dict) -> TypeDT: ...
 
 
 class TypeBasedDispatcher(Dispatcher[TypeDT]):
@@ -69,17 +74,17 @@ class TypeBasedDispatcher(Dispatcher[TypeDT]):
     _registry: dict[str, type[Deserializable]] = {}
 
     def register(self, typename: str) -> Callable[[TypeDT], TypeDT]:
-        def wrapper(dest_cls: TypeDT) -> TypeDT:
-            self._registry[typename] = dest_cls
-            return dest_cls
+        def wrapper(cls: TypeDT) -> TypeDT:
+            self._registry[typename] = cls
+            return cls
 
         return wrapper
 
-    def get_dispatch_cls(self, data: dict) -> TypeDT:
+    def get_dispatch_class(self, data: dict) -> TypeDT:
         typename = data.get("type")
         try:
             ret = self._registry[typename]
-            logger.debug(f"{self}.get_dispatch_cls() => {ret}")
+            logger.debug(f"{self}.get_dispatch_class() => {ret}")
             return ret
         except KeyError:
-            raise KeyError(f"{self}.get_dispatch_cls({typename=}, registry={set(self._registry.keys())})")
+            raise KeyError(f"{self}.get_dispatch_class({typename=}, registry={set(self._registry.keys())})")
