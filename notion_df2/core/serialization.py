@@ -105,6 +105,8 @@ def _deserialize_class_type(obj: Any, tp: type, path: list[str]) -> Any:
 def _deserialize_non_class_type(obj: Any, tp: type, path: list[str]) -> Any:
     origin = get_origin(tp)
     args = get_args(tp)
+    if tp is Any:
+        return obj
     if is_newtype(tp):
         return tp(_deserialize(obj, getattr(tp, "__supertype__"), path))
     elif origin is Literal:
@@ -152,7 +154,7 @@ def _deserialize_non_class_type(obj: Any, tp: type, path: list[str]) -> Any:
         )
         try:
             value_type = args[0]
-        except TypeError:
+        except IndexError:
             raise DeserializationError(
                 "List type requires exactly one type argument", obj, tp, path
             )
