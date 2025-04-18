@@ -679,7 +679,7 @@ class DateINamespace(DatabaseNamespace):
     _checker_yy = re.compile(r"(\d{2})([ -]|$)")
 
     @classmethod
-    def _check_date_in_record_title(
+    def _check_date_in_record_title__candidate(
         cls, title_plain_text: str, date_candidates: list[dt.date]
     ) -> bool:
         yymmdd_1 = parse_yymmdd(cls._checker_yymmdd_1.search(title_plain_text))
@@ -688,9 +688,18 @@ class DateINamespace(DatabaseNamespace):
         yymmdd_2 = parse_yymmdd(cls._checker_yymmdd_2.search(title_plain_text))
         if yymmdd_2 in date_candidates:
             return True
-        # yymm_1 = parse_yymm(cls._checker_yymm_1.search(title_plain_text))
-        # if yymm_1 and any((date.year == yymm_1.year and date.month == yymm_1.month) for date in date_candidates):
-        #     return True
+        return False
+
+    @classmethod
+    def _check_date_in_record_title(
+        cls, title_plain_text: str
+    ) -> bool:
+        yymmdd_1 = parse_yymmdd(cls._checker_yymmdd_1.search(title_plain_text))
+        if yymmdd_1:
+            return True
+        yymmdd_2 = parse_yymmdd(cls._checker_yymmdd_2.search(title_plain_text))
+        if yymmdd_2:
+            return True
         return False
 
     @classmethod
@@ -704,7 +713,7 @@ class DateINamespace(DatabaseNamespace):
         ]
 
         needs_update = not cls._check_date_in_record_title(
-            title.plain_text, datei_date_list
+            title.plain_text
         )
         if not needs_update:
             return RichText()
